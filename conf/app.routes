@@ -1,0 +1,65 @@
+# microservice app routes
+
+GET  /:nino                                                                                     @uk.gov.hmrc.tai.controllers.TaiController.getTaiRoot(nino: Nino)
+
+GET  /:nino/tax-summary/:year                                                                   @uk.gov.hmrc.tai.controllers.TaxSummaryController.getTaxSummaryPartial(nino: Nino, year: Int)
+
+GET  /:nino/tax-summary-full/:year                                                              @uk.gov.hmrc.tai.controllers.TaxSummaryController.getTaxSummary(nino: Nino, year: Int)
+
+POST /:nino/incomes/:year/update                                                                @uk.gov.hmrc.tai.controllers.TaxSummaryController.updateEmployments(nino: Nino, year: Int)
+
+POST /calculator/calculate-estimated-pay                                                        @uk.gov.hmrc.tai.controllers.EstimatedPayCalculatorController.calculateFullYearEstimatedPay()
+
+GET  /:nino/tai-data                                                                            @uk.gov.hmrc.tai.controllers.TaiController.taiData(nino: Nino)
+PUT  /:nino/tai-data                                                                            @uk.gov.hmrc.tai.controllers.TaiController.updateTaiData(nino: Nino)
+
+#New endpoints**************************************************************
+
+GET  /:nino/person                                                                                  @uk.gov.hmrc.tai.controllers.TaxPayerController.taxPayer(nino: Nino)
+
+GET  /:nino/employments/years/:year                                                                 @uk.gov.hmrc.tai.controllers.EmploymentsController.employments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+POST /:nino/employments/years/:year/update                                                          @uk.gov.hmrc.tai.controllers.EmploymentsController.updatePreviousYearIncome(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET  /:nino/employments/:id                                                                         @uk.gov.hmrc.tai.controllers.EmploymentsController.employment(nino: Nino, id: Int)
+POST /:nino/employments                                                                             @uk.gov.hmrc.tai.controllers.EmploymentsController.addEmployment(nino: Nino)
+PUT  /:nino/employments/:id/end-date                                                                @uk.gov.hmrc.tai.controllers.EmploymentsController.endEmployment(nino: Nino, id: Int)
+POST /:nino/employments/:id/reason                                                                  @uk.gov.hmrc.tai.controllers.EmploymentsController.incorrectEmployment(nino: Nino, id: Int)
+
+POST /:nino/pensionProvider                                                                         @uk.gov.hmrc.tai.controllers.PensionProviderController.addPensionProvider(nino: Nino)
+
+#Benefits
+GET  /:nino/tax-account/:year/benefits                                                              @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.benefits(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET  /:nino/tax-account/tax-components/employments/:id/benefits/company-car                         @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.companyCarBenefitForEmployment(nino: Nino, id: Int)
+PUT  /:nino/tax-account/tax-components/employments/:empId/benefits/company-car/:carId/withdrawn     @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.withdrawCompanyCarAndFuel(nino: Nino, empId: Int, carId: Int)
+GET  /:nino/tax-account/tax-components/benefits/company-cars                                        @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.companyCarBenefits(nino: Nino)
+POST /:nino/tax-account/tax-component/employments/:employmentId/benefits/ended-benefit              @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.removeCompanyBenefits(nino: Nino, employmentId: Int)
+
+#Incomes
+GET     /:nino/tax-account/income/savings-investments/untaxed-interest                                   @uk.gov.hmrc.tai.controllers.income.IncomeController.untaxedInterest(nino: Nino)
+GET     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts                     @uk.gov.hmrc.tai.controllers.income.BbsiController.bbsiDetails(nino: Nino)
+GET     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id                 @uk.gov.hmrc.tai.controllers.income.BbsiController.bbsiAccount(nino: Nino, id: Int)
+DELETE  /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id                 @uk.gov.hmrc.tai.controllers.income.BbsiController.removeAccount(nino: Nino, id: Int)
+PUT     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id/closedAccount   @uk.gov.hmrc.tai.controllers.income.BbsiController.closeBankAccount(nino: Nino, id: Int)
+PUT     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id/interest-amount @uk.gov.hmrc.tai.controllers.income.BbsiController.updateAccountInterest(nino: Nino, id: Int)
+GET     /:nino/tax-account/:year/income/tax-code-incomes                                                 @uk.gov.hmrc.tai.controllers.income.IncomeController.taxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/tax-account/:year/income                                                                  @uk.gov.hmrc.tai.controllers.income.IncomeController.income(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay    @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)
+
+#Coding Components
+GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
+#Tax Summary
+GET  /:nino/tax-account/:year/summary                                                                    @uk.gov.hmrc.tai.controllers.TaxAccountSummaryController.taxAccountSummaryForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
+#Total Tax
+GET  /:nino/tax-account/:year/total-tax                                                                  @uk.gov.hmrc.tai.controllers.TotalTaxController.totalTax(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
+POST /file-upload/callback                                                                      @uk.gov.hmrc.tai.controllers.FileUploadController.fileUploadCallback()
+
+# journey cache api - for tai-frontend service use
+GET     /journey-cache/:journey                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.currentCache(journey: String)
+GET     /journey-cache/:journey/values/:key                                                     @uk.gov.hmrc.tai.controllers.JourneyCacheController.currentCacheValue(journey: String, key: String)
+POST    /journey-cache/:journey                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.cached(journey: String)
+DELETE  /journey-cache/:journey                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.flush(journey: String)
+
+# Invalidate Session Cache
+DELETE /session-cache                                                                        @uk.gov.hmrc.tai.controllers.SessionController.invalidateCache()

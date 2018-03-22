@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "id": "http://<tai-url>/tai/schemas/taxFreeAmountSchema.json",
+  "title": "Tax free amount Response object",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "title": "Generic Data object",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "coding-components": {
+          "title": "Coding component list",
+          "type": "array",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "componentType": {
+                "type": "string"
+              },
+              "employmentId": {
+                "type": "number"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "description": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "componentType",
+              "amount",
+              "description",
+              "category"
+            ]
+          }
+        }
+      },
+      "required": [
+        "amount",
+        "coding-components"
+      ]
+    },
+    "links": {
+      "title": "Links Data list",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "rel": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "href",
+          "rel",
+          "method"
+        ]
+      }
+    }
+  },
+  "required": [
+    "data",
+    "links"
+  ]
+}

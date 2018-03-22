@@ -1,0 +1,335 @@
+{
+  "queryResult" : 0,
+  "individual" : {
+    "relatedTaxYear" : "17-18",
+    "employments" : {
+      "employment" : [
+        {
+          "sequenceNumber" : 1,
+          "currentPayId" : "000",
+          "empRefs" : {
+            "aoRef" : "00000",
+            "officeNo" : "00",
+            "payeRef" : "000"
+          },
+          "payments" : {
+            "inYear" : [
+
+              {
+                "monthNo" : "1",
+                "pmtConfidence" : 4,
+                "optionalMonetaryAmount" : [
+                  {
+                    "amount" : 0.00,
+                    "type" : "BenefitsTaxedViaPayrollYTD"
+                  }
+                ],
+                "hoursWorked" : "Up to 15.99",
+                "payId" : "000000",
+                "rcvdDate" : "2015-05-06",
+                "periodsCovered" : 1,
+                "mandatoryMonetaryAmount" : [
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePayYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TotalTaxYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePay"
+                  }
+                ],
+                "starter" : {
+                  "startDate" : "2014-01-01",
+                  "startDec" : "A"
+                },
+                "taxYear" : "14-15",
+                "taxCode" : {
+                  "value" : "1000L"
+                },
+                "niLettersAndValues" : [
+                  {
+                    "scon" : "",
+                    "niLetter" : "",
+                    "niFigure" : [
+                    ]
+                  }
+                ],
+                "pmtDate" : "2014-04-30",
+                "payFreq" : "M1"
+              }
+
+            ],
+            "eyu": [
+              {
+                "payId": "000000",
+                "optionalAdjustmentAmount": [
+                  {
+                    "type": "TaxablePayDelta",
+                    "amount": -600.99
+                  },
+                  {
+                    "type": "TotalTaxDelta",
+                    "amount": -10.99
+                  }
+                ],
+                "taxCode": {
+                  "value": "1000L"
+                },
+                "starter": {
+                  "startDate": "2015-08-01",
+                  "startDec": "C"
+                },
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "J",
+                    "niFigure": [
+                      {
+                        "type": "AtLELDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsDelta",
+                        "amount": -5.99
+                      },
+                      {
+                        "type": "GrossEarningsForNICs",
+                        "amount": -600.99
+                      },
+                      {
+                        "type": "LELtoPTDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUAPDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "UAPtoUELDelta",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "type": "E",
+                "rcvdDate": "2017-06-01"
+              }
+            ]
+          }
+        },
+        {
+          "sequenceNumber" : 2,
+          "currentPayId" : "000",
+          "empRefs" : {
+            "aoRef" : "00000",
+            "officeNo" : "000",
+            "payeRef" : "000"
+          },
+          "payments" : {
+            "inYear" : [
+
+              {
+                "monthNo" : "1",
+                "pmtConfidence" : 4,
+                "optionalMonetaryAmount" : [
+                  {
+                    "amount" : 0.00,
+                    "type" : "BenefitsTaxedViaPayrollYTD"
+                  }
+                ],
+                "hoursWorked" : "Up to 15.99",
+                "payId" : "000",
+                "rcvdDate" : "2015-06-06",
+                "periodsCovered" : 1,
+                "mandatoryMonetaryAmount" : [
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePayYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TotalTaxYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePay"
+                  }
+                ],
+                "starter" : {
+                  "startDate" : "2014-01-01",
+                  "startDec" : "A"
+                },
+                "taxYear" : "14-15",
+                "taxCode" : {
+                  "value" : "1000L"
+                },
+                "niLettersAndValues" : [
+                  {
+                    "scon" : "",
+                    "niLetter" : "",
+                    "niFigure" : [
+                    ]
+                  }
+                ],
+                "pmtDate" : "2014-04-30",
+                "payFreq" : "M1"
+              }
+
+            ]
+          }
+        },
+        {
+          "sequenceNumber" : 3,
+          "currentPayId" : "000",
+          "empRefs" : {
+            "aoRef" : "00000",
+            "officeNo" : "000",
+            "payeRef" : "000"
+          },
+          "payments" : {
+            "inYear" : [
+
+              {
+                "monthNo" : "1",
+                "pmtConfidence" : 4,
+                "optionalMonetaryAmount" : [
+                  {
+                    "amount" : 0.00,
+                    "type" : "BenefitsTaxedViaPayrollYTD"
+                  }
+                ],
+                "hoursWorked" : "Up to 15.99",
+                "payId" : "000",
+                "rcvdDate" : "2015-06-06",
+                "periodsCovered" : 1,
+                "mandatoryMonetaryAmount" : [
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePayYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TotalTaxYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePay"
+                  }
+                ],
+                "starter" : {
+                  "startDate" : "2014-01-01",
+                  "startDec" : "A"
+                },
+                "taxYear" : "14-15",
+                "taxCode" : {
+                  "value" : "1000L"
+                },
+                "niLettersAndValues" : [
+                  {
+                    "scon" : "",
+                    "niLetter" : "",
+                    "niFigure" : [
+                    ]
+                  }
+                ],
+                "pmtDate" : "2014-04-30",
+                "payFreq" : "M1"
+              }
+
+            ]
+          }
+        },
+        {
+          "sequenceNumber" : 4,
+          "currentPayId" : "000",
+          "empRefs" : {
+            "aoRef" : "00000",
+            "officeNo" : "0",
+            "payeRef" : "00000"
+          },
+          "payments" : {
+            "inYear" : [
+
+              {
+                "monthNo" : "1",
+                "pmtConfidence" : 4,
+                "optionalMonetaryAmount" : [
+                  {
+                    "amount" : 0.00,
+                    "type" : "BenefitsTaxedViaPayrollYTD"
+                  }
+                ],
+                "hoursWorked" : "Up to 15.99",
+                "payId" : "000",
+                "rcvdDate" : "2015-06-06",
+                "periodsCovered" : 1,
+                "mandatoryMonetaryAmount" : [
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePayYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TotalTaxYTD"
+                  },
+                  {
+                    "amount" : 0.00,
+                    "type" : "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount" : 500.00,
+                    "type" : "TaxablePay"
+                  }
+                ],
+                "starter" : {
+                  "startDate" : "2014-01-01",
+                  "startDec" : "A"
+                },
+                "taxYear" : "14-15",
+                "taxCode" : {
+                  "value" : "1000L"
+                },
+                "niLettersAndValues" : [
+                  {
+                    "scon" : "",
+                    "niLetter" : "",
+                    "niFigure" : [
+                    ]
+                  }
+                ],
+                "pmtDate" : "2014-04-30",
+                "payFreq" : "M1"
+              }
+
+            ]
+          }
+        }
+      ]
+    },
+    "currentNino" : "$NINO"
+  },
+  "request" : {
+    "relatedTaxYear" : "17-18",
+    "nino" : "$NINO",
+    "requestId" : "00000000000000"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "data": {
+    "tax-code-incomes": "",
+    "non-tax-code-incomes": {
+      "untaxed-interest": {
+        "componentType": "",
+        "description": "",
+        "amount": 200.00,
+        "bank-accounts": [
+          {
+            "id": 23,
+            "gross-interest": 200.00,
+            "account-number": "xxxxxxxx",
+            "sortcode": "xx-xx-xx",
+            "bank-name": "The bank",
+            "source": "Customer",
+            "number-of-account-holders": 1
+          }
+        ]
+      }
+    }
+  },
+  "links": []
+}

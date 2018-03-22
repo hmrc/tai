@@ -1,0 +1,71 @@
+{
+  "date": "14/02/2017",
+  "totalEstTax": 64396.55,
+  "totalLiability": {
+    "nonSavings": {
+      "taxBands": [
+        {
+          "bandType": "B",
+          "income": 33500,
+          "tax": 6700,
+          "lowerBand": 0,
+          "upperBand": 33500,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "income": 116500,
+          "tax": 46600,
+          "lowerBand": 33500,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "income": 15000,
+          "tax": 6750,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ],
+      "totalTax": 60050,
+      "totalTaxableIncome": 165000,
+      "totalIncome": 165000
+    },
+    "ukDividends": {
+      "taxBands": [
+        {
+          "bandType": "SDR",
+          "income": 2000,
+          "tax": 0,
+          "lowerBand": 0,
+          "upperBand": 5000,
+          "rate": 0
+        }
+      ],
+      "totalTax": 0,
+      "totalTaxableIncome": 2000,
+      "totalIncome": 2000
+    }
+  },
+  "incomeSources": [
+    {
+      "employmentId": 2,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 1,
+      "employmentPayeRef": "AAAA000",
+      "pensionIndicator": false,
+      "jsaIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "name": "AAAABBBBBBAAAA",
+      "endDate": null,
+      "worksNumber": null,
+      "taxCode": "K965",
+      "potentialUnderpayment": 0,
+      "employmentRecord": null
+    }
+  ],
+  "iabds": []
+}

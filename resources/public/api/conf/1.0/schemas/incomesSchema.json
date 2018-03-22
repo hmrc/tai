@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "id": "http://<tai-url>/tai/schemas/incomesSchema.json",
+
+  "title": "Incomes Response object",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "title": "Generic Data object",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tax-code-incomes": {
+          "type": "string"
+        },
+        "non-tax-code-incomes": {
+          "title": "other incomes object",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "untaxed-interest": {
+              "title": "untaxed interest object",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "componentType": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "bank-accounts": {
+                  "title": "bank account list",
+                  "type": "array",
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "number"
+                      },
+                      "account-number": {
+                        "type": "string"
+                      },
+                      "sortcode": {
+                        "type": "string"
+                      },
+                      "bank-name": {
+                        "type": "string"
+                      },
+                      "gross-interest": {
+                        "type": "number"
+                      },
+                      "source": {
+                        "type": "string"
+                      },
+                      "number-of-account-holders": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "gross-interest"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "componentType",
+                "description",
+                "amount",
+                "bank-accounts"
+              ]
+            }
+          },
+          "required": [
+            "untaxed-interest"
+          ]
+        }
+      },
+      "required": [
+        "tax-code-incomes",
+        "non-tax-code-incomes"
+      ]
+    },
+    "links": {
+      "title": "Links Data list",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "rel": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "href",
+          "rel",
+          "method"
+        ]
+      }
+    }
+  },
+  "required": [
+    "data",
+    "links"
+  ]
+}

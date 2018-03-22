@@ -1,0 +1,873 @@
+{
+
+    "taxAccountId": null,
+    "date": "10/12/2014",
+    "nino": "$NINO",
+    "taxYear": 2014,
+    "previousTaxAccountId": 74,
+    "previousYearTaxAccountId": 54,
+    "nextTaxAccountId": null,
+    "nextYearTaxAccountId": null,
+    "totalEstTax": 0,
+    "totalEstPay": {
+        "npsDescription": null,
+        "amount": 4000,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 8
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 9
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 10
+            }
+        ],
+        "sourceAmount": null
+    },
+    "adjustedNetIncome": {
+        "npsDescription": null,
+        "amount": 31543,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 22,
+                "type": 75,
+                "npsDescription": "Bank / Building Society Interest",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 21,
+                "npsDescription": "Other Income (Earned)",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 23,
+                "npsDescription": "Part Time Earnings",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 25,
+                "npsDescription": "Other Earnings",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 8
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 9
+            },
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 10
+            },
+            {
+                "amount": 1000,
+                "type": 66,
+                "npsDescription": "State Pension",
+                "employmentId": null
+            },
+            {
+                "amount": 500,
+                "type": 1,
+                "npsDescription": "Gift Aid Payments",
+                "employmentId": null
+            },
+            {
+                "amount": 500,
+                "type": 5,
+                "npsDescription": "Personal Pension Payments",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 28,
+                "npsDescription": "Benefit in Kind",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 33,
+                "npsDescription": "Service Benefit",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 53,
+                "npsDescription": "Travel and Subsistence",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 35,
+                "npsDescription": "Van Benefit",
+                "employmentId": 7
+            },
+            {
+                "amount": 1000,
+                "type": 117,
+                "npsDescription": "Non-Cash Benefit",
+                "employmentId": 7
+            },
+            {
+                "amount": 880,
+                "type": 124,
+                "npsDescription": "Child Benefit",
+                "link": null,
+                "employmentId": null
+            },
+            {
+                "amount": 880,
+                "type": 124,
+                "npsDescription": "Child Benefit",
+                "link": null,
+                "employmentId": null
+            }
+        ],
+        "sourceAmount": null
+    },
+    "totalLiability": {
+        "nonSavings": {
+            "totalIncome": {
+                "npsDescription": null,
+                "amount": 15582,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 3582,
+                        "type": 19,
+                        "npsDescription": "Non-Coded Income",
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 21,
+                        "npsDescription": "Other Income (Earned)",
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 23,
+                        "npsDescription": "Part Time Earnings",
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 25,
+                        "npsDescription": "Other Earnings",
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 7
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 8
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 9
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 10
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 66,
+                        "npsDescription": "State Pension",
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 28,
+                        "npsDescription": "Benefit in Kind",
+                        "employmentId": 7
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 33,
+                        "npsDescription": "Service Benefit",
+                        "employmentId": 7
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 53,
+                        "npsDescription": "Travel and Subsistence",
+                        "employmentId": 7
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 35,
+                        "npsDescription": "Van Benefit",
+                        "employmentId": 7
+                    },
+                    {
+                        "amount": 1000,
+                        "type": 117,
+                        "npsDescription": "Non-Cash Benefit",
+                        "employmentId": 7
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts": {
+                "npsDescription": null,
+                "amount": 10100,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 100,
+                        "type": 17,
+                        "npsDescription": "Gifts of Shares to Charity",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "totalTax": 1096.4,
+            "totalTaxableIncome": 5482,
+            "taxBands": [
+                {
+                    "income": 5482,
+                    "tax": 1096.4,
+                    "lowerBand": 0,
+                    "upperBand": 31865,
+                    "rate": 20
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 31865,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "untaxedInterest": null,
+        "bankInterest": {
+            "totalIncome": {
+                "npsDescription": null,
+                "amount": 22,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 22,
+                        "type": 75,
+                        "npsDescription": "Bank / Building Society Interest",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts": {
+                "npsDescription": null,
+                "amount": 0,
+                "type": null,
+                "iabdSummaries": null,
+                "sourceAmount": null
+            },
+            "totalTax": 4.4,
+            "totalTaxableIncome": 22,
+            "taxBands": [
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 0,
+                    "upperBand": 2880,
+                    "rate": 10
+                },
+                {
+                    "income": 22,
+                    "tax": 4.4,
+                    "lowerBand": 2880,
+                    "upperBand": 31865,
+                    "rate": 20
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 31865,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "ukDividends": null,
+        "foreignInterest": null,
+        "foreignDividends": null,
+        "basicRateExtensions": {
+            "npsDescription": null,
+            "amount": 1125,
+            "type": null,
+            "iabdSummaries": [
+                {
+                    "amount": 500,
+                    "type": 1,
+                    "npsDescription": "Gift Aid Payments",
+                    "employmentId": null
+                },
+                {
+                    "amount": 500,
+                    "type": 5,
+                    "npsDescription": "Personal Pension Payments",
+                    "employmentId": null
+                }
+            ],
+            "sourceAmount": null
+        },
+        "reliefsGivingBackTax": {
+            "npsDescription": null,
+            "amount": 655.4,
+            "type": null,
+            "iabdSummaries": [
+                {
+                    "amount": 6554,
+                    "type": 109,
+                    "npsDescription": "Married Couples Allowance (MAE)",
+                    "employmentId": null
+                }
+            ],
+            "sourceAmount": null,
+            "enterpriseInvestmentSchemeRelief": null,
+            "concessionalRelief": null,
+            "maintenancePayments": null,
+            "marriedCouplesAllowance": 602.1,
+            "doubleTaxationRelief": null
+        },
+        "otherTaxDue": null,
+        "alreadyTaxedAtSource": {
+            "npsDescription": null,
+            "amount": 4.4,
+            "type": null,
+            "iabdSummaries": [
+                {
+                    "amount": 22,
+                    "type": 75,
+                    "npsDescription": "Bank / Building Society Interest",
+                    "employmentId": null
+                }
+            ],
+            "sourceAmount": null,
+            "taxOnBankBSInterest": 2.2,
+            "taxCreditOnUKDividends": null,
+            "taxCreditOnForeignInterest": null,
+            "taxCreditOnForeignIncomeDividends": null
+        },
+        "totalLiability": 441
+    },
+    "incomeSources": [
+        {
+            "employmentId": 8,
+            "employmentType": 1,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 1,
+            "employmentPayeRef": "000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "227T",
+            "allowances": [
+                {
+                    "npsDescription": "Personal Pension Relief",
+                    "amount": 0,
+                    "type": 5,
+                    "iabdSummaries": [
+                        {
+                            "amount": 500,
+                            "type": 5,
+                            "npsDescription": "Personal Pension Payments",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 500
+                },
+                {
+                    "npsDescription": "Gift Aid payments",
+                    "amount": 0,
+                    "type": 6,
+                    "iabdSummaries": [
+                        {
+                            "amount": 500,
+                            "type": 1,
+                            "npsDescription": "Gift Aid Payments",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 500
+                },
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10660,
+                    "type": 13,
+                    "iabdSummaries": null,
+                    "sourceAmount": 10660
+                },
+                {
+                    "npsDescription": "married couple's allowance",
+                    "amount": 6554,
+                    "type": 17,
+                    "iabdSummaries": null,
+                    "sourceAmount": 8165
+                }
+            ],
+            "deductions": [
+                {
+                    "npsDescription": "other earnings, (or pension)",
+                    "amount": 3000,
+                    "type": 29,
+                    "iabdSummaries": null,
+                    "sourceAmount": 3000
+                },
+                {
+                    "npsDescription": "Underpayments",
+                    "amount": 1000,
+                    "type": 35,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "van benefit",
+                    "amount": 1000,
+                    "type": 9,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 35,
+                            "npsDescription": "Van Benefit",
+                            "employmentId": 7
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "Non Cash Benefits",
+                    "amount": 1000,
+                    "type": 39,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 117,
+                            "npsDescription": "Non-Cash Benefit",
+                            "employmentId": 7
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "state pension/state benefits",
+                    "amount": 1000,
+                    "type": 1,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 66,
+                            "npsDescription": "State Pension",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "other earnings",
+                    "amount": 1000,
+                    "type": 17,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 25,
+                            "npsDescription": "Other Earnings",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "part time earnings",
+                    "amount": 1000,
+                    "type": 19,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 23,
+                            "npsDescription": "Part Time Earnings",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "other earnings",
+                    "amount": 1000,
+                    "type": 22,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 21,
+                            "npsDescription": "Other Income (Earned)",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "service benefit",
+                    "amount": 1000,
+                    "type": 11,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 33,
+                            "npsDescription": "Service Benefit",
+                            "employmentId": 7
+                        }
+                    ],
+                    "sourceAmount": 1000
+                },
+                {
+                    "npsDescription": "Higher Personal Allowance Restriction",
+                    "amount": 3277,
+                    "type": 37,
+                    "iabdSummaries": null,
+                    "sourceAmount": 0
+                },
+                {
+                    "amount": 2368,
+                    "type": 124,
+                    "iabdSummaries": [
+                        {
+                            "amount": 120,
+                            "type": 124,
+                            "npsDescription": "Child Benefit",
+                            "link": null,
+                            "employmentId": null
+                        },
+                        {
+                            "amount": 150,
+                            "type": 124,
+                            "npsDescription": "Child Benefit",
+                            "link": null,
+                            "employmentId": null
+                        }
+                    ]
+                }
+            ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 8
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 2279.16,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 10,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 1,
+            "employmentPayeRef": "000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 10
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 9,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 9
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 7,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 7
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        }
+    ]
+
+}

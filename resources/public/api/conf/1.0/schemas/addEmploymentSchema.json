@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://<tai-url>/tai/schemas/addEmploymentSchema.json",
+
+    "title": "New Employment Request object",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "employerName" : {"type" : "string"},
+        "startDate" : {"type" : "string"},
+        "payrollNumber" : {"type" : "string"},
+        "telephoneContactAllowed" : {"type" : "string"},
+        "telephoneNumber" : {"type" : "string"}
+    },
+    "required" : ["employerName", "startDate", "payrollNumber", "telephoneContactAllowed"]
+}

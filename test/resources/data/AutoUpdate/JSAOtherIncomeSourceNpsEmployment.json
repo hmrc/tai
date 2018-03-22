@@ -1,0 +1,30 @@
+[
+  {
+    "sequenceNumber": 1,
+    "startDate": "01/09/2013",
+    "taxDistrictNumber": "001",
+    "payeNumber": "A1",
+    "employerName": "EMPLOYER1",
+    "employmentType": 1,
+    "employmentStatus": 1,
+    "receivingJobseekersAllowance": true,
+    "receivingOccupationalPension": false,
+    "otherIncomeSourceIndicator": false,
+    "payrolledTaxYear": false,
+    "payrolledTaxYear1": false
+  },
+  {
+    "sequenceNumber": 1,
+    "startDate": "01/09/2014",
+    "taxDistrictNumber": "002",
+    "payeNumber": "A2",
+    "employerName": "EMPLOYER1",
+    "employmentType": 1,
+    "employmentStatus": 1,
+    "receivingJobseekersAllowance": false,
+    "receivingOccupationalPension": false,
+    "otherIncomeSourceIndicator": true,
+    "payrolledTaxYear": false,
+    "payrolledTaxYear1": false
+  }
+]

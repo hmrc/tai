@@ -1,0 +1,35 @@
+[
+
+    {
+        "nino": "$NINO",
+        "sequenceNumber": 1,
+        "payeSchemeType": 0,
+        "employerNumber": 1,
+        "payeSequenceNumber": 1,
+        "employmentType": 1,
+        "employmentStatus": 2,
+        "jobTitle": "HOUSEKEEPER",
+        "worksNumber": "1",
+        "startingTaxCode": "647L",
+        "weekOneMonthOne": 1,
+        "receivingJobseekersAllowance": false,
+        "receivingOccupationalPension": false,
+        "director": false,
+        "manualCorrespondence": false,
+        "p161Issued": false,
+        "creationMedia": 3,
+        "creationSource": 5,
+        "startDateSource": null,
+        "startDate": "01/09/2010",
+        "cessationMedia": 3,
+        "cessationSource": 1,
+        "endDateSource": null,
+        "endDate": "13/10/2010",
+        "taxDistrictNumber": "000",
+        "payeNumber": "0000",
+        "employerName": "EMPLOYER1",
+        "otherIncomeSourceIndicator": false,
+        "cessationPayThisEmployment": null
+    }
+
+]

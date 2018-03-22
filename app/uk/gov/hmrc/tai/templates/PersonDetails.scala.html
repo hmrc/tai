@@ -1,0 +1,54 @@
+@*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@(personDetails: uk.gov.hmrc.tai.model.domain.Person)
+<h3 class="heading-medium">Your details</h3>
+<table>
+    <tbody>
+    <tr>
+        <td>National Insurance number</td>
+        <td>@personDetails.nino</td>
+    </tr>
+    <tr>
+        <td>First name</td>
+        <td>@personDetails.firstName</td>
+    </tr>
+    <tr>
+        <td>Last name</td>
+        <td>@personDetails.surname</td>
+    </tr>
+    <tr>
+        <td>Date of birth</td>
+        <td>@personDetails.dateOfBirth.map(_.toString("d MMMM yyyy")).getOrElse("")</td>
+    </tr>
+    <tr>
+        <td>Telephone number</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Is your address in the UK?</td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td>UK address</td>
+        <td>@personDetails.address.line1
+            <br>@personDetails.address.line2
+            <br>@personDetails.address.line3
+            <br>@personDetails.address.postcode</td>
+    </tr>
+
+    </tbody>
+</table>

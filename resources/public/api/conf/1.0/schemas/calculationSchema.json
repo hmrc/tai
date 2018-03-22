@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://<tai-url>/tai/schemas/calculationSchema.json",
+
+    "title": "Calculation Response object",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data" : {
+            "title": "Generic Data object",
+            "type" : "object",
+            "additionalProperties" : false,
+            "properties" : {
+                "totalEstimatedTax" : {"type" : "number"},
+                "taxFreeAmount" : {"$ref": "taxFreeAmountSchema.json#data"},
+                "totalInYearAdjustment" : {"type" : "number"}
+            },
+            "required" : ["totalEstimatedTax", "taxFreeAmount", "totalInYearAdjustment"]
+        },
+        "links" : {
+            "title": "Links Data list",
+            "type" : "array",
+            "items" : {
+                "additionalProperties" : false,
+                "properties" : {
+                    "href" : {"type" : "string"},
+                    "rel" : {"type" : "string"},
+                    "method" : {"type" : "string"}
+                },
+                "required": ["href", "rel", "method"]
+            }
+        }
+    },
+    "required" : ["data", "links"]
+}

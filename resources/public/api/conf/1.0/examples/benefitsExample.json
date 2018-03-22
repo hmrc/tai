@@ -1,0 +1,24 @@
+{
+  "data": {
+    "car-benefit": [
+      {
+        "componentType": "",
+        "description": "",
+        "amount": 200.00,
+        "employmentSeqNo": "",
+        "company-cars": [
+          {
+            "carSeqNo": "",
+            "makeModel": "",
+            "hasActiveFuelBenefit": false,
+            "dateMadeAvailable": "",
+            "dateActiveFuelBenefitMadeAvailable": "",
+            "dateWithdrawn": ""
+          }
+        ]
+      }
+    ],
+    "other-benefits": ""
+  },
+  "links": []
+}

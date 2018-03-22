@@ -1,0 +1,381 @@
+{ "individual": {
+    "currentNino": "$NINO",
+    "employments": {
+      "employment": [
+        {
+          "currentPayId": "0",
+          "empRefs": {
+            "aoRef": "0",
+            "officeNo": "0",
+            "payeRef": "0"
+          },
+          "payments": {
+            "inYear": [
+              {
+                "aggregatedEarnings": true,
+                "flexibleDrawdown": {},
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "amount": 5000.0,
+                    "type": "TaxablePayYTD"
+                  },
+                  {
+                    "amount": 1500.0,
+                    "type": "TotalTaxYTD"
+                  },
+                  {
+                    "amount": 1500.0,
+                    "type": "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount": 5000.0,
+                    "type": "TaxablePay"
+                  }
+                ],
+                "monthNo": "1",
+                "niLettersAndValues": [
+                  {
+                    "niFigure": [
+                      {
+                        "amount": 0.0,
+                        "type": "AtLELYTD"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsInPd"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsYTD"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsInPd"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "LELtoPTYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "PTtoUELYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICInPd"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICYTD"
+                      }
+                    ],
+                    "niLetter": "A"
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "amount": 0.0,
+                    "type": "BenefitsTaxedViaPayroll"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "DednsFromNetPay"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsNotPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "ItemsSubjectToClass1NIC"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "NonTaxOrNICPmt"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "PayAfterStatDedns"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "StudentLoanRecovered"
+                  }
+                ],
+                "payFreq": "MA",
+                "payId": "0",
+                "periodsCovered": 1,
+                "pmtConfidence": 1,
+                "pmtDate": "2016-04-30",
+                "rcvdDate": "2016-04-06",
+                "taxCode": {
+                  "value": "123L"
+                },
+                "taxYear": "16-17"
+              }
+            ],
+            "eyu": [
+              {
+                "payId": "0",
+                "optionalAdjustmentAmount": [
+                  {
+                    "type": "TotalTaxDelta",
+                    "amount": -27.99
+                  },
+                  {
+                    "type": "OccPensionAmount",
+                    "amount": -500.55
+                  }
+                ],
+                "taxCode": {
+                  "value": "1000L"
+                },
+                "starter": {
+                  "startDate": "2015-09-17",
+                  "startDec": "C"
+                },
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "J",
+                    "niFigure": [
+                      {
+                        "type": "AtLELDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsDelta",
+                        "amount": 12.3
+                      },
+                      {
+                        "type": "GrossEarningsForNICs",
+                        "amount": 0
+                      },
+                      {
+                        "type": "LELtoPTDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUAPDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "UAPtoUELDelta",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "type": "E",
+                "rcvdDate": "2016-06-17"
+              }
+            ]
+          },
+          "sequenceNumber": 39
+        },
+        {
+          "currentPayId": "00",
+          "empRefs": {
+            "aoRef": "00",
+            "officeNo": "00",
+            "payeRef": "00"
+          },
+          "payments": {
+            "inYear": [
+              {
+                "aggregatedEarnings": true,
+                "flexibleDrawdown": {},
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "amount": 6600.0,
+                    "type": "TaxablePayYTD"
+                  },
+                  {
+                    "amount": 1600.0,
+                    "type": "TotalTaxYTD"
+                  },
+                  {
+                    "amount": 1600.0,
+                    "type": "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount": 6600.0,
+                    "type": "TaxablePay"
+                  }
+                ],
+                "monthNo": "1",
+                "niLettersAndValues": [
+                  {
+                    "niFigure": [
+                      {
+                        "amount": 0.0,
+                        "type": "AtLELYTD"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsInPd"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsYTD"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsInPd"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "LELtoPTYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "PTtoUELYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICInPd"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICYTD"
+                      }
+                    ],
+                    "niLetter": "A"
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "amount": 0.0,
+                    "type": "BenefitsTaxedViaPayroll"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "DednsFromNetPay"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsNotPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "ItemsSubjectToClass1NIC"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "NonTaxOrNICPmt"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "PayAfterStatDedns"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "StudentLoanRecovered"
+                  }
+                ],
+                "payFreq": "W4",
+                "payId": "0",
+                "periodsCovered": 1,
+                "pmtConfidence": 1,
+                "pmtDate": "2016-04-30",
+                "rcvdDate": "2016-04-06",
+                "taxCode": {
+                  "value": "123L"
+                },
+                "taxYear": "16-17"
+              }
+            ],
+            "eyu": [
+              {
+                "payId": "00",
+                "optionalAdjustmentAmount": [
+                  {
+                    "type": "TotalTaxDelta",
+                    "amount": -66.6
+                  },
+                  {
+                    "type": "OccPensionAmount",
+                    "amount": -500.55
+                  }
+                ],
+                "taxCode": {
+                  "value": "1000L"
+                },
+                "starter": {
+                  "startDate": "2015-09-17",
+                  "startDec": "C"
+                },
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "J",
+                    "niFigure": [
+                      {
+                        "type": "AtLELDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsDelta",
+                        "amount": 66.6
+                      },
+                      {
+                        "type": "GrossEarningsForNICs",
+                        "amount": 0
+                      },
+                      {
+                        "type": "LELtoPTDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUAPDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICDelta",
+                        "amount": 0
+                      },
+                      {
+                        "type": "UAPtoUELDelta",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "type": "E",
+                "rcvdDate": "2016-06-17"
+              }
+            ]
+          },
+          "sequenceNumber": 39
+        }
+      ]
+    },
+    "relatedTaxYear": "17-18"
+  },
+  "queryResult": 0,
+  "request": {
+    "nino": "$NINO",
+    "relatedTaxYear": "16-17",
+    "requestId": "00"
+  }
+}

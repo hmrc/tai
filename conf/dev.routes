@@ -1,0 +1,4 @@
+# Any test-only end-point should be defined here
+
+# Add all the application routes to the prod.routes file
+->         /                          prod.Routes

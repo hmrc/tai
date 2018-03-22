@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://<tai-url>/tai/schemas/incorrectEmploymentSchema.json",
+
+    "title": "Incorrect Employment Request object",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "whatYouToldUs" : {"type" : "string"},
+        "telephoneContactAllowed" : {"type" : "string"},
+        "telephoneNumber" : {"type" : "string"}
+    },
+    "required" : ["whatYouToldUs", "telephoneContactAllowed"]
+}

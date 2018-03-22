@@ -1,0 +1,478 @@
+{
+    "taxAccountId": null,
+    "date": "22/05/2015",
+    "nino": "$NINO",
+    "taxYear": 2015,
+    "previousTaxAccountId": 11,
+    "previousYearTaxAccountId": 10,
+    "nextTaxAccountId": null,
+    "nextYearTaxAccountId": null,
+    "totalEstTax": 9328.2,
+    "totalEstPay":
+    {
+        "npsDescription": null,
+        "amount": 28314,
+        "type": null,
+        "iabdSummaries":
+        [
+            {
+                "amount": 28314,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 5
+            }
+        ],
+        "sourceAmount": null
+    },
+    "adjustedNetIncome":
+    {
+        "npsDescription": null,
+        "amount": 49814,
+        "type": null,
+        "iabdSummaries":
+        [
+            {
+                "amount": 28314,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 5
+            },
+            {
+                "amount": 5000,
+                "type": 39,
+                "npsDescription": "Assets",
+                "employmentId": 5
+            },
+            {
+                "amount": 10000,
+                "type": 28,
+                "npsDescription": "Benefit in Kind",
+                "employmentId": 5
+            },
+            {
+                "amount": 5000,
+                "type": 53,
+                "npsDescription": "Travel and Subsistence",
+                "employmentId": 5
+            },
+            {
+                "amount": 6500,
+                "type": 32,
+                "npsDescription": "Telephone",
+                "employmentId": 5
+            },
+            {
+                "amount": 5000,
+                "type": 72,
+                "npsDescription": "Profit",
+                "employmentId": null
+            }
+        ],
+        "sourceAmount": null
+    },
+    "totalLiability":
+    {
+        "nonSavings":
+        {
+            "totalIncome":
+            {
+                "npsDescription": null,
+                "amount": 49814,
+                "type": null,
+                "iabdSummaries":
+                [
+                    {
+                        "amount": 28314,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 5
+                    },
+                    {
+                        "amount": 5000,
+                        "type": 39,
+                        "npsDescription": "Assets",
+                        "employmentId": 5
+                    },
+                    {
+                        "amount": 10000,
+                        "type": 28,
+                        "npsDescription": "Benefit in Kind",
+                        "employmentId": 5
+                    },
+                    {
+                        "amount": 5000,
+                        "type": 53,
+                        "npsDescription": "Travel and Subsistence",
+                        "employmentId": 5
+                    },
+                    {
+                        "amount": 6500,
+                        "type": 32,
+                        "npsDescription": "Telephone",
+                        "employmentId": 5
+                    },
+                    {
+                        "amount": 5000,
+                        "type": 72,
+                        "npsDescription": "Profit",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts":
+            {
+                "npsDescription": null,
+                "amount": 10600,
+                "type": null,
+                "iabdSummaries":
+                [
+                    {
+                        "amount": 10600,
+                        "type": 118,
+                        "npsDescription": "Personal Allowance (PA)",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "totalTax": 9328.6,
+            "totalTaxableIncome": 39214,
+            "taxBands":
+            [
+                {
+                    "income": 31785,
+                    "tax": 6357,
+                    "lowerBand": 0,
+                    "upperBand": 31785,
+                    "rate": 20
+                },
+                {
+                    "income": 7429,
+                    "tax": 2971.6,
+                    "lowerBand": 31785,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "untaxedInterest": null,
+        "bankInterest": null,
+        "ukDividends": null,
+        "foreignInterest": null,
+        "foreignDividends": null,
+        "basicRateExtensions":
+        {
+            "npsDescription": null,
+            "amount": 0,
+            "type": null,
+            "iabdSummaries": null,
+            "sourceAmount": null
+        },
+        "reliefsGivingBackTax": null,
+        "otherTaxDue": null,
+        "alreadyTaxedAtSource": null,
+        "totalLiability": 9328.6
+    },
+    "incomeSources":
+    [
+        {
+            "employmentId": 5,
+            "employmentType": 1,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 1,
+            "employmentPayeRef": "000",
+            "pensionIndicator": false,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "EMPLOYER1",
+            "taxCode": "K1089",
+            "totalInYearAdjustment": 272,
+            "inYearAdjustmentIntoCY": 12,
+            "inYearAdjustmentIntoCYPlusOne": 34,
+            "inYearAdjustmentFromPreviousYear": 56,
+            "allowances":
+            [
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10600,
+                    "type": 11,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 10600,
+                            "type": 118,
+                            "npsDescription": "Personal Allowance (PA)",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 10600
+                }
+            ],
+            "deductions":
+            [
+                {
+                    "npsDescription": "employer benefits ",
+                    "amount": 10000,
+                    "type": 7,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 5000,
+                            "type": 39,
+                            "npsDescription": "Assets",
+                            "employmentId": 5
+                        },
+                        {
+                            "amount": 10000,
+                            "type": 28,
+                            "npsDescription": "Benefit in Kind",
+                            "employmentId": 5
+                        },
+                        {
+                            "amount": 5000,
+                            "type": 53,
+                            "npsDescription": "Travel and Subsistence",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": 10000
+                },
+                {
+                    "npsDescription": "telephone",
+                    "amount": 6500,
+                    "type": 14,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 6500,
+                            "type": 32,
+                            "npsDescription": "Telephone",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": 6500
+                },
+                {
+                    "npsDescription": "property income",
+                    "amount": 5000,
+                    "type": 27,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 5000,
+                            "type": 72,
+                            "npsDescription": "Profit",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 5000
+                }
+            ],
+            "payAndTax":
+            {
+                "totalIncome":
+                {
+                    "npsDescription": null,
+                    "amount": 28314,
+                    "type": null,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 28314,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts":
+                {
+                    "npsDescription": null,
+                    "amount": -10899.72,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 9328.2,
+                "totalTaxableIncome": 39213,
+                "taxBands":
+                [
+                    {
+                        "income": 31785,
+                        "tax": 6357,
+                        "lowerBand": 0,
+                        "upperBand": 31785,
+                        "rate": 20
+                    },
+                    {
+                        "income": 7428,
+                        "tax": 2971.2,
+                        "lowerBand": 31785,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 6,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 581,
+            "employmentPayeRef": "000",
+            "pensionIndicator": false,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "EMPLOYER1",
+            "taxCode": "K1089",
+            "potentialUnderpayment": 0,
+            "allowances":
+            [
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10600,
+                    "type": 11,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 10600,
+                            "type": 118,
+                            "npsDescription": "Personal Allowance (PA)",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 10600
+                }
+            ],
+            "deductions":
+            [
+                {
+                    "npsDescription": "employer benefits ",
+                    "amount": 10000,
+                    "type": 7,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 5000,
+                            "type": 39,
+                            "npsDescription": "Assets",
+                            "employmentId": 5
+                        },
+                        {
+                            "amount": 10000,
+                            "type": 28,
+                            "npsDescription": "Benefit in Kind",
+                            "employmentId": 5
+                        },
+                        {
+                            "amount": 5000,
+                            "type": 53,
+                            "npsDescription": "Travel and Subsistence",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": 10000
+                },
+                {
+                    "npsDescription": "telephone",
+                    "amount": 6500,
+                    "type": 14,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 6500,
+                            "type": 32,
+                            "npsDescription": "Telephone",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": 6500
+                },
+                {
+                    "npsDescription": "property income",
+                    "amount": 5000,
+                    "type": 27,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 5000,
+                            "type": 72,
+                            "npsDescription": "Profit",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 5000
+                }
+            ],
+            "payAndTax":
+            {
+                "totalIncome":
+                {
+                    "npsDescription": null,
+                    "amount": 28314,
+                    "type": null,
+                    "iabdSummaries":
+                    [
+                        {
+                            "amount": 28314,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts":
+                {
+                    "npsDescription": null,
+                    "amount": -10899.72,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 9328.2,
+                "totalTaxableIncome": 39213,
+                "taxBands":
+                [
+                    {
+                        "income": 31785,
+                        "tax": 6357,
+                        "lowerBand": 0,
+                        "upperBand": 31785,
+                        "rate": 20
+                    },
+                    {
+                        "income": 7428,
+                        "tax": 2971.2,
+                        "lowerBand": 31785,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,43 @@
+{
+    "data" : {
+        "name": "company name",
+        "payrollNumber": "",
+        "startDate": "",
+        "endDate": "",
+        "annualAccounts": [
+            {
+                "taxYear": "2016",
+                "totalIncome": 100,
+                "realTimeStatus": "Available",
+                "payments": [
+                    {
+                        "date": "2016-05-26",
+                        "amount": 3000.00,
+                        "nationalInsuranceAmount": 400.00,
+                        "taxAmount": 100
+                    }
+                ],
+                "endOfTaxYearUpdates": [
+                    {
+                        "date": "2017-03-26",
+                        "adjustments": [
+                            {
+                                "type": "NationalInsuranceAdjustment",
+                                "amount": 50.00
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        
+        
+    },
+    "links": [
+        {
+            "href": "http://<tai-url>/tai/tax-payers/$NINO/person",
+            "rel": "self",
+            "method": "GET"
+        }
+    ]               
+}

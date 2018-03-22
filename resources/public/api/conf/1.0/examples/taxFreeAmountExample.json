@@ -1,0 +1,15 @@
+{
+  "data": {
+    "amount": 100.00,
+    "coding-components": [
+      {
+        "componentType": "PersonalAllowancePA",
+        "employmentId" : 12,
+        "amount": 100,
+        "description": "Personal Allowance",
+        "category": "Allowance"
+      }
+    ]
+  },
+  "links": []
+}

@@ -1,0 +1,32 @@
+[
+    {
+        "nino": "$NINO",
+        "sequenceNumber": 15,
+        "payeSchemeType": 0,
+        "employerNumber": 1,
+        "payeSequenceNumber": 1,
+        "employmentType": 1,
+        "employmentStatus": 3,
+        "jobTitle": "Job title",
+        "worksNumber": "0",
+        "startingTaxCode": "944L",
+        "weekOneMonthOne": 2,
+        "receivingJobseekersAllowance": false,
+        "receivingOccupationalPension": false,
+        "director": false,
+        "manualCorrespondence": false,
+        "p161Issued": false,
+        "creationMedia": 4,
+        "creationSource": 4,
+        "startDateSource": null,
+        "startDate": "31\/03\/2014",
+        "cessationMedia": 4,
+        "cessationSource": 1,
+        "endDateSource": null,
+        "endDate": "21\/04\/2014",
+        "taxDistrictNumber": "000",
+        "payeNumber": "0",
+        "employerName": "EMPLOYER1",
+        "otherIncomeSourceIndicator": true
+    }
+]

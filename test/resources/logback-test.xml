@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <withJansi>true</withJansi>
+    <encoder>
+      <pattern>  %coloredLevel [%-12.12logger] %date{yyyy-MM-dd HH:mm:ss} - [%message] %replace(exception=[%xException]){'^exception=\[\]$',''}%n</pattern>
+    </encoder>
+  </appender>
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/tai.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%date{ISO8601} level=[%level] logger=[%logger] thread=[%thread] message=[%message] %replace(exception=[%xException]){'^exception=\[\]$',''}%n</pattern>
+        </encoder>
+    </appender>
+
+  <appender name="STDOUT_IGNORE_NETTY" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%date{ISO8601} level=[%level] logger=[%logger] thread=[%thread] rid=[not-available] user=[not-available] message=[%message] %replace(exception=[%xException]){'^exception=\[\]$',''}%n</pattern>
+    </encoder>
+  </appender>
+  
+  <appender name="ACCESS_LOG_FILE" class="ch.qos.logback.core.FileAppender">
+    <file>logs/access.log</file>
+    <encoder>
+      <pattern>%message%n</pattern>
+    </encoder>
+  </appender>
+  
+  <appender name="CONNECTOR_LOG_FILE" class="ch.qos.logback.core.FileAppender">
+    <file>logs/connector.log</file>
+    <encoder>
+      <pattern>%message%n</pattern>
+    </encoder>
+  </appender>
+  
+  
+  <logger name="accesslog" additivity="false">
+    <appender-ref ref="ACCESS_LOG_FILE" />
+    </logger>
+    
+    <logger name="com.ning.http.client.providers.netty" additivity="false">
+      <appender-ref ref="STDOUT_IGNORE_NETTY" />
+    </logger>
+    
+    <root level="WARN">
+      <appender-ref ref="STDOUT"/>
+      <appender-ref ref="FILE"/>
+    </root>
+</configuration>

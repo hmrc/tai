@@ -1,0 +1,180 @@
+{
+
+    "taxAccountId": null,
+    "date": "10/12/2014",
+    "nino": "$NINO",
+    "taxYear": 2014,
+    "previousTaxAccountId": 6,
+    "previousYearTaxAccountId": 5,
+    "nextTaxAccountId": null,
+    "nextYearTaxAccountId": null,
+    "totalEstTax": 0,
+    "totalEstPay": {
+        "npsDescription": null,
+        "amount": 1288,
+        "type": null,
+        "iabdSummaries": null,
+        "sourceAmount": null
+    },
+    "adjustedNetIncome": {
+        "npsDescription": null,
+        "amount": 7282,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 5997.16,
+                "type": 66,
+                "npsDescription": "State Pension",
+                "employmentId": null
+            }
+        ],
+        "sourceAmount": null
+    },
+    "totalLiability": {
+        "nonSavings": {
+            "totalIncome": {
+                "npsDescription": null,
+                "amount": 7282,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 5997.16,
+                        "type": 66,
+                        "npsDescription": "State Pension",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts": {
+                "npsDescription": null,
+                "amount": 10000,
+                "type": null,
+                "iabdSummaries": null,
+                "sourceAmount": null
+            },
+            "totalTax": 0,
+            "totalTaxableIncome": 0,
+            "taxBands": [
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 0,
+                    "upperBand": 31865,
+                    "rate": 20
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 31865,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "untaxedInterest": null,
+        "bankInterest": null,
+        "ukDividends": null,
+        "foreignInterest": null,
+        "foreignDividends": null,
+        "basicRateExtensions": {
+            "npsDescription": null,
+            "amount": 0,
+            "type": null,
+            "iabdSummaries": null,
+            "sourceAmount": null
+        },
+        "reliefsGivingBackTax": null,
+        "otherTaxDue": null,
+        "alreadyTaxedAtSource": null,
+        "totalLiability": null
+    },
+    "incomeSources": [
+        {
+            "employmentId": 1,
+            "employmentType": 1,
+            "employmentStatus": 2,
+            "employmentTaxDistrictNumber": 1,
+            "employmentPayeRef": "0000",
+            "pensionIndicator": false,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "EMPLOYER1",
+            "taxCode": "400L",
+            "allowances": [
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10000,
+                    "type": 11,
+                    "iabdSummaries": null,
+                    "sourceAmount": 10000
+                }
+            ],
+            "deductions": [
+                {
+                    "npsDescription": "state pension/state benefits",
+                    "amount": 5994,
+                    "type": 1,
+                    "iabdSummaries": [
+                        {
+                            "amount": 5997.16,
+                            "type": 66,
+                            "npsDescription": "State Pension",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 5997.16
+                }
+            ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1288,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 4009.2,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        }
+    ]
+
+}

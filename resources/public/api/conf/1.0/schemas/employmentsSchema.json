@@ -1,0 +1,96 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://<tai-url>/tai/schemas/employmentsSchema.json",
+
+    "title": "Employments Response object",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data" : {
+            "title": "Generic Data object",
+            "type" : "object",
+            "additionalProperties" : false,
+            "properties" : {
+                "employments" : {
+                    "title": "Employments Data list",
+                    "type" : "array",
+                    "items" : {
+                        "additionalProperties" : false,
+                        "properties" : {
+                            "name" : {"type" : "string"},
+                            "payrollNumber" : {"type" : "string"},
+                            "startDate" : {"type" : "string"},
+                            "endDate" : {"type" : "string"},
+                            "annualAccounts" : {
+                                "title": "AnnualAccount Data list",
+                                "type" : "array",
+                                "items" : {
+                                    "additionalProperties" : false,
+                                    "properties" : {
+                                        "taxYear" : {"type" : "string"},
+                                        "totalIncome" : {"type" : "number"},
+                                        "realTimeStatus" : {"type" : "string"},
+                                        "payments" : {
+                                            "title": "Payment Data list",
+                                            "type" : "array",
+                                            "items" : {
+                                                "additionalProperties" : false,
+                                                "properties" : {
+                                                    "date" : {"type" : "string"},
+                                                    "amount" : {"type" : "number"},
+                                                    "nationalInsuranceAmount" : {"type" : "number"},
+                                                    "taxAmount" : {"type" : "number"}
+                                                },
+                                                "required": ["date", "amount", "nationalInsuranceAmount", "taxAmount"]
+                                            }
+                                        },
+                                        "endOfTaxYearUpdates" : {
+                                            "title": "End of tax year update Data list",
+                                            "type" : "array",
+                                            "items" : {
+                                                "additionalProperties" : false,
+                                                "properties" : {
+                                                    "date" : {"type" : "string"},
+                                                    "adjustments" : {
+                                                        "title": "End of tax year update adjustment Data list",
+                                                        "type" : "array",
+                                                        "items" : {
+                                                            "additionalProperties" : false,
+                                                            "properties" : {
+                                                                "type" : {"type" : "string"},
+                                                                "amount" : {"type" : "number"}
+                                                            },
+                                                            "required": ["type", "amount"]
+                                                        }
+                                                    }
+                                                },
+                                                "required": ["date", "adjustments"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["taxYear", "totalIncome", "realTimeStatus", "payments", "endOfTaxYearUpdates"]
+                                }
+                            }
+                        },
+                        "required" : ["name", "startDate", "annualAccounts"]
+                    }
+                }
+            },
+            "required" : ["employments"]
+        },
+        "links" : {
+            "title": "Links Data list",
+            "type" : "array",
+            "items" : {
+                "additionalProperties" : false,
+                "properties" : {
+                    "href" : {"type" : "string"},
+                    "rel" : {"type" : "string"},
+                    "method" : {"type" : "string"}
+                },
+                "required": ["href", "rel", "method"]
+            }
+        }
+    },
+    "required" : ["data", "links"]
+}

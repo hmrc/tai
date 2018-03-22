@@ -1,0 +1,308 @@
+{
+    "taxAccountId": null,
+    "date": "23/04/2015",
+    "nino": "$NINO",
+    "taxYear": 2015,
+    "previousTaxAccountId": 68,
+    "previousYearTaxAccountId": 67,
+    "nextTaxAccountId": null,
+    "nextYearTaxAccountId": null,
+    "totalEstTax": 3758.8,
+    "totalEstPay": {
+        "npsDescription": null,
+        "amount": 17425,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 42385,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 5
+            }
+        ],
+        "sourceAmount": null
+    },
+    "adjustedNetIncome": {
+        "npsDescription": null,
+        "amount": 32332,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 42385,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 5
+            }
+        ],
+        "sourceAmount": null
+    },
+    "totalLiability": {
+        "nonSavings": {
+            "totalIncome": {
+                "npsDescription": null,
+                "amount": 42385,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 42385,
+                        "type": 27,
+                        "npsDescription": "New Estimated Pay",
+                        "employmentId": 5
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts": {
+                "npsDescription": null,
+                "amount": 10600,
+                "type": null,
+                "iabdSummaries": null,
+                "sourceAmount": null
+            },
+            "totalTax": 4412.6,
+            "totalTaxableIncome": 22063,
+            "taxBands": [
+                {
+                    "income": 31785,
+                    "tax": 6357,
+                    "lowerBand": 0,
+                    "upperBand": 31785,
+                    "rate": 20
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 31785,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "untaxedInterest": null,
+        "bankInterest": {
+            "totalIncome": {
+                "npsDescription": null,
+                "amount": 1500,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 118,
+                        "type": 75,
+                        "npsDescription": "Bank / Building Society Interest",
+                        "employmentId": null
+                    }
+                ],
+                "sourceAmount": null
+            },
+            "allowReliefDeducts": {
+                "npsDescription": null,
+                "amount": 0,
+                "type": null,
+                "iabdSummaries": null,
+                "sourceAmount": null
+            },
+            "totalTax": 23.6,
+            "totalTaxableIncome": 118,
+            "taxBands": [
+                {
+                    "income": 0,
+                    "tax": 0,
+                    "lowerBand": 5000,
+                    "upperBand": 31785,
+                    "rate": 20
+                },
+                {
+                    "income": 1500,
+                    "tax": 600,
+                    "lowerBand": 31785,
+                    "upperBand": 150000,
+                    "rate": 40
+                },
+                {
+                    "income": null,
+                    "tax": null,
+                    "lowerBand": 150000,
+                    "upperBand": 0,
+                    "rate": 45
+                }
+            ]
+        },
+        "ukDividends": null,
+        "foreignInterest": null,
+        "foreignDividends": null,
+        "basicRateExtensions": null,
+        "reliefsGivingBackTax": null,
+        "otherTaxDue": null,
+        "alreadyTaxedAtSource": {
+            "npsDescription": null,
+            "amount": 43.6,
+            "type": null,
+            "iabdSummaries": [
+                {
+                    "amount": 100,
+                    "type": 79,
+                    "npsDescription": "National Savings",
+                    "employmentId": null
+                }
+            ],
+            "sourceAmount": null
+        },
+        "totalLiability": 4412.6
+    },
+    "incomeSources": [
+        {
+            "employmentId": 5,
+            "employmentType": 1,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 846,
+            "employmentPayeRef": "000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAAAAAAAAAAA",
+            "taxCode": "K136",
+            "allowances": [
+                {
+                    "npsDescription": "Personal Pension Relief",
+                    "amount": 0,
+                    "type": 5,
+                    "iabdSummaries": [
+                        {
+                            "amount": 549,
+                            "type": 5,
+                            "npsDescription": "Personal Pension Payments",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 549
+                },
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10600,
+                    "type": 11,
+                    "iabdSummaries": null,
+                    "sourceAmount": 10600
+                }
+            ],
+            "deductions": [
+                {
+                    "npsDescription": "employer benefits ",
+                    "amount": 10,
+                    "type": 7,
+                    "iabdSummaries": [
+                        {
+                            "amount": 10,
+                            "type": 54,
+                            "npsDescription": "Vouchers and Credit Cards",
+                            "employmentId": 4
+                        },
+                        {
+                            "amount": 10,
+                            "type": 28,
+                            "npsDescription": "Benefit in Kind",
+                            "employmentId": 4
+                        }
+                    ],
+                    "sourceAmount": 10
+                },
+                {
+                    "npsDescription": "state pension/state benefits",
+                    "amount": 6963,
+                    "type": 1,
+                    "iabdSummaries": [
+                        {
+                            "amount": 6967.62,
+                            "type": 66,
+                            "npsDescription": "State Pension",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 6967.62
+                },
+                {
+                    "npsDescription": "annuity",
+                    "amount": 4900,
+                    "type": 26,
+                    "iabdSummaries": [
+                        {
+                            "amount": 4900,
+                            "type": 70,
+                            "npsDescription": "Personal Pension Annuity",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 4900
+                },
+                {
+                    "npsDescription": "interest without tax taken off (gross interest)",
+                    "amount": 100,
+                    "type": 23,
+                    "iabdSummaries": [
+                        {
+                            "amount": 100,
+                            "type": 79,
+                            "npsDescription": "National Savings",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 100
+                }
+            ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 42385,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 42385,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 5
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": -1369.16,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 3758.8,
+                "totalTaxableIncome": 18794,
+                "taxBands": [
+                    {
+                        "income": 18794,
+                        "tax": 3758.8,
+                        "lowerBand": 0,
+                        "upperBand": 31785,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31785,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        }
+    ]
+}

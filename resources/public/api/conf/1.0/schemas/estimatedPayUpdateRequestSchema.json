@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "id": "http://<tai-url>/tai/schemas/estimatedPayUpdateRequestSchema.json",
+  "title": "Estimated Pay Update Request object",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "number"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "amount",
+    "source"
+  ]
+}

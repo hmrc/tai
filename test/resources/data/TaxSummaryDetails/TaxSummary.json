@@ -1,0 +1,899 @@
+{
+  "nino": "$NINO",
+  "version": 2,
+  "accounts": [{
+    "year": 2016,
+    "nps": {
+      "date": "05/05/2016",
+      "totalEstTax": 2209.6,
+      "totalLiability": {
+        "nonSavings": {
+          "taxBands": [{
+            "bandType": "B",
+            "income": 11056,
+            "tax": 2211.2,
+            "lowerBand": 0,
+            "upperBand": 32000,
+            "rate": 20
+          },
+            {
+              "bandType": "D0",
+              "income": 0,
+              "tax": 0,
+              "lowerBand": 32000,
+              "upperBand": 150000,
+              "rate": 40
+            },
+            {
+              "bandType": "D1",
+              "income": 0,
+              "tax": 0,
+              "lowerBand": 150000,
+              "upperBand": 0,
+              "rate": 45
+            }],
+          "totalTax": 2211.2,
+          "totalTaxableIncome": 11056
+        }
+      },
+      "incomeSources": [{
+        "employmentId": 1,
+        "employmentType": 1,
+        "employmentStatus": 1,
+        "employmentTaxDistrictNumber": 1,
+        "employmentPayeRef": "000",
+        "pensionIndicator": false,
+        "jsaIndicator": false,
+        "otherIncomeSourceIndicator": false,
+        "name": "EMPLOYER1",
+        "endDate": null,
+        "worksNumber": null,
+        "taxCode": "227L",
+        "potentialUnderpayment": 0,
+        "employmentRecord": {
+          "employerName": "EMPLOYER1",
+          "employmentType": 1,
+          "sequenceNumber": 1,
+          "worksNumber": "AAAA0000",
+          "taxDistrictNumber": "126",
+          "iabds": [],
+          "startDate": "07/11/2005"
+        }
+      }],
+      "iabds": []
+    },
+    "rti": {
+      "request": {
+        "nino": "$NINO",
+        "relatedTaxYear": "16-17",
+        "requestId": "M1464687373867"
+      },
+      "individual": {
+        "employments": {
+          "employment": [{
+            "empRefs": {
+              "officeNo": "126",
+              "payeRef": "000",
+              "aoRef": "00000"
+            },
+            "payments": {
+              "inYear": [{
+                "payFreq": "W2",
+                "pmtDate": "2016-04-15",
+                "rcvdDate": "2016-04-06",
+                "mandatoryMonetaryAmount": [{
+                  "type": "TaxablePayYTD",
+                  "amount": 1000
+                },
+                  {
+                    "type": "TotalTaxYTD",
+                    "amount": 200
+                  },
+                  {
+                    "type": "TaxablePay",
+                    "amount": 1000
+                  },
+                  {
+                    "type": "TaxDeductedOrRefunded",
+                    "amount": 200
+                  }],
+                "optionalMonetaryAmount": [],
+                "payId": "000",
+                "occPenInd": false,
+                "irrEmp": false,
+                "weekNo": "2",
+                "monthNo": null,
+                "niLettersAndValues": [{
+                  "niFigure": [{
+                    "type": "EmpeeContribnsInPd",
+                    "amount": 0
+                  },
+                    {
+                      "type": "EmpeeContribnsYTD",
+                      "amount": 0
+                    }]
+                }]
+              },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-04-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 1000
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 200
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1000
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 200
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "2",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 0
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 0
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-04-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 2050
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 410
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1050
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 210
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "4",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 0
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 0
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-05-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 3150
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 660
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1100
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 250
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "6",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 0
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 0
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-05-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 4300
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 935
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1150
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 275
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "8",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 0
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 0
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-06-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 5500
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 1235
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1200
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 300
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "10",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 0
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 0
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-06-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 6750
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 1545
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1250
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 310
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "12",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 150
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 810
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-07-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 8050
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 1895
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "14",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 966
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-07-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 9350
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2245
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "16",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1122
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 10650
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2595
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "18",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1278
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 10650
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2595
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "18",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1278
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-15",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 10650
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2595
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "18",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1278
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 11950
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2945
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "20",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1434
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 11950
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2945
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "20",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1434
+                      }]
+                  }]
+                },
+                {
+                  "payFreq": "W2",
+                  "pmtDate": "2016-08-30",
+                  "rcvdDate": "2016-04-06",
+                  "mandatoryMonetaryAmount": [{
+                    "type": "TaxablePayYTD",
+                    "amount": 11950
+                  },
+                    {
+                      "type": "TotalTaxYTD",
+                      "amount": 2945
+                    },
+                    {
+                      "type": "TaxablePay",
+                      "amount": 1300
+                    },
+                    {
+                      "type": "TaxDeductedOrRefunded",
+                      "amount": 350
+                    }],
+                  "optionalMonetaryAmount": [],
+                  "payId": "000",
+                  "occPenInd": false,
+                  "irrEmp": false,
+                  "weekNo": "20",
+                  "monthNo": null,
+                  "niLettersAndValues": [{
+                    "niFigure": [{
+                      "type": "EmpeeContribnsInPd",
+                      "amount": 156
+                    },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1434
+                      }]
+                  }]
+                }]
+            },
+            "currentPayId": "000",
+            "sequenceNumber": 16
+          }]
+        }
+      }
+    }
+  }],
+  "increasesTax": {
+    "incomes": {
+      "taxCodeIncomes": {
+        "employments": {
+          "taxCodeIncomes": [{
+            "name": "EMPLOYER1",
+            "taxCode": "227L",
+            "employmentId": 1,
+            "employmentPayeRef": "000",
+            "employmentType": 1,
+            "incomeType": 0,
+            "employmentStatus": 1,
+            "tax": {
+              "totalIncome": 13328,
+              "totalTaxableIncome": 11056,
+              "totalTax": 2211.2,
+              "potentialUnderpayment": 0,
+              "taxBands": [{
+                "income": 11056,
+                "tax": 2211.2,
+                "lowerBand": 0,
+                "upperBand": 32000,
+                "rate": 20
+              },
+                {
+                  "income": 0,
+                  "tax": 0,
+                  "lowerBand": 32000,
+                  "upperBand": 150000,
+                  "rate": 40
+                },
+                {
+                  "income": 0,
+                  "tax": 0,
+                  "lowerBand": 150000,
+                  "upperBand": 0,
+                  "rate": 45
+                }],
+              "allowReliefDeducts": 2272
+            },
+            "worksNumber": "AAAA0000",
+            "startDate": "2005-11-07",
+            "income": 13328,
+            "otherIncomeSourceIndicator": false,
+            "isEditable": true,
+            "isLive": true,
+            "isOccupationalPension": false,
+            "isPrimary": true
+          }],
+          "totalIncome": 13328,
+          "totalTax": 2211.2,
+          "totalTaxableIncome": 11056
+        },
+        "hasDuplicateEmploymentNames": false,
+        "totalIncome": 13328,
+        "totalTaxableIncome": 11056,
+        "totalTax": 2211.2
+      },
+      "noneTaxCodeIncomes": {
+        "totalIncome": 0
+      },
+      "total": 13328
+    },
+    "benefitsFromEmployment": {
+      "amount": 8728,
+      "componentType": 0,
+      "description": "",
+      "iabdSummaries": [{
+        "iabdType": 31,
+        "description": "Car Benefit",
+        "amount": 8026,
+        "employmentId": 1,
+        "employmentName": "EMPLOYER1"
+      },
+        {
+          "iabdType": 30,
+          "description": "Medical Insurance",
+          "amount": 637,
+          "employmentId": 1,
+          "employmentName": "EMPLOYER1"
+        },
+        {
+          "iabdType": 47,
+          "description": "Other Items",
+          "amount": 65,
+          "employmentId": 1,
+          "employmentName": "EMPLOYER1"
+        }]
+    },
+    "total": 22056
+  },
+  "decreasesTax": {
+    "personalAllowance": 11000,
+    "personalAllowanceSourceAmount": 11000,
+    "paTapered": false,
+    "total": 11000
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": 22056,
+      "totalTaxableIncome": 11056,
+      "totalTax": 2211.2,
+      "taxBands": [{
+        "income": 11056,
+        "tax": 2211.2,
+        "lowerBand": 0,
+        "upperBand": 32000,
+        "rate": 20
+      },
+        {
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }],
+      "allowReliefDeducts": 11000
+    },
+    "mergedIncomes": {
+      "totalIncome": 22056,
+      "totalTaxableIncome": 11056,
+      "totalTax": 2211.2,
+      "taxBands": [{
+        "income": 11056,
+        "tax": 2211.2,
+        "lowerBand": 0,
+        "upperBand": 32000,
+        "rate": 20
+      },
+        {
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 32000,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }],
+      "allowReliefDeducts": 11000
+    },
+    "totalLiability": 2211.2,
+    "totalTax": 2211.2,
+    "totalTaxOnIncome": 2211.2,
+    "underpaymentPreviousYear": 0,
+    "inYearAdjustment": 0,
+    "outstandingDebt": 0,
+    "childBenefitAmount": 0,
+    "childBenefitTaxDue": 0,
+    "liabilityReductions": {
+      "enterpriseInvestmentSchemeRelief": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      },
+      "concessionalRelief": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      },
+      "maintenancePayments": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      },
+      "doubleTaxationRelief": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      }
+    },
+    "liabilityAdditions": {
+      "excessGiftAidTax": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      },
+      "excessWidowsAndOrphans": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      },
+      "pensionPaymentsAdjustment": {
+        "codingAmount": 0,
+        "amountInTermsOfTax": 0
+      }
+    }
+  },
+  "adjustedNetIncome": 22056,
+  "extensionReliefs": {
+    "giftAid": {
+      "sourceAmount": 0,
+      "reliefAmount": 0
+    },
+    "personalPension": {
+      "sourceAmount": 0,
+      "reliefAmount": 0
+    }
+  },
+  "taxCodeDetails": {
+    "employment": [{
+      "id": 1,
+      "name": "EMPLOYER1",
+      "taxCode": "227L"
+    }],
+    "taxCode": [{
+      "taxCode": "L"
+    }],
+    "taxCodeDescriptions": [{
+      "taxCode": "227L",
+      "name": "EMPLOYER1",
+      "taxCodeDescriptors": [{
+        "taxCode": "L"
+      }]
+    }],
+    "deductions": [{
+      "amount": 8728,
+      "componentType": 7
+    }],
+    "allowances": [{
+      "description": "Tax Free Amount",
+      "amount": 11000,
+      "componentType": 0
+    }],
+    "splitAllowances": false,
+    "total": 2272
+  },
+  "incomeData": {
+    "incomeExplanations": [{
+      "employerName": "EMPLOYER1",
+      "incomeId": 1,
+      "hasDuplicateEmploymentNames": false,
+      "worksNumber": "AAAA0000",
+      "paymentDate": "2016-08-30",
+      "notificationDate": "2015-11-26",
+      "updateActionDate": "2015-11-26",
+      "startDate": "2005-11-07",
+      "employmentStatus": 1,
+      "employmentType": 1,
+      "isPension": false,
+      "iabdSource": 46,
+      "payToDate": 11950,
+      "calcAmount": 31070.0,
+      "grossAmount": 13328,
+      "payFrequency": "W2",
+      "editableDetails": {
+        "isEditable": true,
+        "payRollingBiks": false
+      }
+    }]
+  }
+}

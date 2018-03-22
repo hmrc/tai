@@ -1,0 +1,126 @@
+#%RAML 1.0
+
+title: TAI API
+version: v1.0
+baseUri: http://<tai-url>/tai
+mediaType: [ application/json, application/hal+json ]
+
+/tai:
+  /{nino}:
+    /person:
+      get:
+        description: Returns the personal details of the user
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include "schemas/personDetailsSchema.json"
+                example: !include "examples/personDetailsExample.json"
+          404:
+    /employments:
+      post:
+        description: Add a new employment
+        body:
+          application/json:
+            type: !include "schemas/addEmploymentSchema.json"
+            example: !include "examples/addEmploymentExample.json"
+      /years:
+        /{year}:
+          get:
+            description: Retrieves all employments for a given year with Annual Account information
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: !include "schemas/employmentsSchema.json"
+                    example: !include "examples/employmentsExample.json"                      
+              404:
+      /{id}:
+        get:
+          description: Retrieves an employment by ID
+          responses:
+              200:
+                body:
+                  application/json:
+                    type: !include "schemas/employmentSchema.json"
+                    example: !include "examples/employmentExample.json"                      
+              404:
+        /endDate:
+          put:
+            description: Allows the consumer to update the end date for the employment
+            body:
+              application/json:
+                type: !include "schemas/dateSchema.json"
+                example: !include "examples/dateExample.json"
+            responses:
+              202:
+              400:
+        /reason:
+          post:
+            description: Allows the consumer to update the end date for the employment
+            body:
+              application/json:
+                type: !include "schemas/incorrectEmploymentSchema.json"
+                example: !include "examples/incorrectEmploymentExample.json"
+            responses:
+              202:
+              400:
+
+    /tax-account/snapshots/{snapshotId}:
+      /calculation-details:
+        get:
+          description: Retrieves all of the items that make up the calculation
+          responses:
+            200:
+              body:
+                application/json:
+                  type: !include "schemas/calculationSchema.json"
+                  example: !include "examples/calculationExample.json"
+            423:
+              description: The user account is locked.  No data can be retrieved online. Please contact HMRC by phone
+
+        /tax-free-amount:
+          get:
+            description: Retrieves all of the items that make up the tax free amounts of a calculation
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: !include "schemas/taxFreeAmountSchema.json"
+                    example: !include "examples/taxFreeAmountExample.json"
+              423:
+                description: The user account is locked.  No data can be retrieved online. Please contact HMRC by phone
+      /incomes:
+        get:
+          description: Retrieves the incomes of the tax account
+          responses:
+            200:
+              body:
+                application/json:
+                  type: !include "schemas/incomesSchema.json"
+                  example: !include "examples/incomesExample.json"
+            423:
+              description: The user account is locked.  No data can be retrieved online. Please contact HMRC by phone
+        /tax-code-incomes/{employmentId}/estimated-pay:
+          put:
+            description: Update the estimated pay for the specified nino, snapshot and employment
+            body:
+              application/json:
+                type: !include "schemas/estimatedPayUpdateRequestSchema.json"
+                example: !include "examples/estimatedPayUpdateRequestExample.json"
+            responses:
+              204:
+              404:
+              423:
+                description: The user account is locked.  No data can be retrieved online. Please contact HMRC by phone
+      /benefits:
+        get:
+          description: Retrieves the benefits of the tax account
+          responses:
+            200:
+              body:
+                application/json:
+                  type: !include "schemas/benefitsSchema.json"
+                  example: !include "examples/benefitsExample.json"
+            423:
+              description: The user account is locked.  No data can be retrieved online. Please contact HMRC by phone

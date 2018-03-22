@@ -1,0 +1,19 @@
+{
+  "payId": "000",
+  "optionalAdjustmentAmount": [
+    {
+      "type": "TotalTaxDelta",
+      "amount": -20.99
+    }
+  ],
+  "taxCode": {
+    "value": "1000L"
+  },
+  "starter": {
+    "startDate": "2015-09-17",
+    "startDec": "C"
+  },
+  "niLettersAndValues": [],
+  "type": "E",
+  "rcvdDate": "2016-06-04"
+}

@@ -1,0 +1,436 @@
+{
+
+    "taxAccountId": null,
+    "date": "10/12/2014",
+    "nino": "$NINO",
+    "taxYear": 2015,
+    "previousTaxAccountId": 74,
+    "previousYearTaxAccountId": 54,
+    "nextTaxAccountId": null,
+    "nextYearTaxAccountId": null,
+    "totalEstTax": 0,
+    "totalEstPay": {
+        "npsDescription": null,
+        "amount": 1000,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 7
+            }
+        ],
+        "sourceAmount": null
+    },
+    "adjustedNetIncome": {
+        "npsDescription": null,
+        "amount": 31543,
+        "type": null,
+        "iabdSummaries": [
+            {
+                "amount": 1000,
+                "type": 27,
+                "npsDescription": "New Estimated Pay",
+                "employmentId": 7
+            },
+            {
+                "amount": 500,
+                "type": 5,
+                "npsDescription": "Personal Pension Payments",
+                "employmentId": null
+            },
+            {
+                "amount": 1000,
+                "type": 76,
+                "npsDescription": "Dividends",
+                "employmentId": 7
+            }
+        ],
+        "sourceAmount": null
+    },
+    "totalLiability": {
+        "nonSavings": null,
+        "untaxedInterest": null,
+        "bankInterest": null,
+        "ukDividends": {
+            "totalIncome": {
+                "amount": 1600,
+                "type": null,
+                "iabdSummaries": [
+                    {
+                        "amount": 1000,
+                        "type": 76,
+                        "npsDescription": "UK Dividends",
+                        "link": null,
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 500,
+                        "type": 77,
+                        "npsDescription": "Unit Trust",
+                        "link": null,
+                        "employmentId": null
+                    },
+                    {
+                        "amount": 100,
+                        "type": 78,
+                        "npsDescription": "Stock Dividend",
+                        "link": null,
+                        "employmentId": null
+                    }
+
+                ]
+            },
+            "allowReliefDeducts": {
+                "amount": 0,
+                "type": null,
+                "iabdSummaries": null
+            },
+            "totalTaxableIncome": 1600,
+            "totalTax": 272652.1,
+            "taxBands": [
+                {
+                    "income": 31944,
+                    "tax": 6388.8,
+                    "lowerBand": null,
+                    "upperBand": null,
+                    "rate": 10
+                },
+                {
+                    "income": 118135,
+                    "tax": 47254,
+                    "lowerBand": null,
+                    "upperBand": null,
+                    "rate": 32.5
+                },
+                {
+                    "income": 380508,
+                    "tax": 171228.6,
+                    "lowerBand": null,
+                    "upperBand": null,
+                    "rate": 42.5
+                }
+            ]
+        },
+        "foreignInterest": null,
+        "foreignDividends": null,
+        "basicRateExtensions": null,
+        "reliefsGivingBackTax": {"marriedCouplesAllowance":120},
+        "otherTaxDue": null,
+        "alreadyTaxedAtSource": null,
+        "totalLiability": 441
+    },
+    "incomeSources": [
+        {
+            "employmentId": 8,
+            "employmentType": 1,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "0000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "227T",
+            "allowances": [
+                {
+                    "npsDescription": "Personal Pension Relief",
+                    "amount": 0,
+                    "type": 5,
+                    "iabdSummaries": [
+                        {
+                            "amount": 500,
+                            "type": 5,
+                            "npsDescription": "Personal Pension Payments",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 500
+                },
+                {
+                    "npsDescription": "personal allowance",
+                    "amount": 10660,
+                    "type": 13,
+                    "iabdSummaries": null,
+                    "sourceAmount": 10660
+                }
+            ],
+            "deductions": [
+                {
+                    "npsDescription": "state pension/state benefits",
+                    "amount": 0,
+                    "type": 1,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 66,
+                            "npsDescription": "State Pension",
+                            "employmentId": null
+                        }
+                    ],
+                    "sourceAmount": 1000
+                }
+            ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 13582,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 8
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 2279.16,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 10,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "0000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 10
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 9,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "0000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 9
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        },
+        {
+            "employmentId": 7,
+            "employmentType": 2,
+            "employmentStatus": 1,
+            "employmentTaxDistrictNumber": 961,
+            "employmentPayeRef": "0000",
+            "pensionIndicator": true,
+            "otherIncomeSourceIndicator": false,
+            "jsaIndicator": false,
+            "name": "AAAAAAAAAAAAA",
+            "taxCode": "100T",
+            "allowances": [
+                {
+                    "npsDescription": "balance of tax allowances",
+                    "amount": 1000,
+                    "type": 23,
+                    "iabdSummaries": null,
+                    "sourceAmount": 1000
+                }
+            ],
+            "deductions": [ ],
+            "payAndTax": {
+                "totalIncome": {
+                    "npsDescription": null,
+                    "amount": 1000,
+                    "type": null,
+                    "iabdSummaries": [
+                        {
+                            "amount": 1000,
+                            "type": 27,
+                            "npsDescription": "New Estimated Pay",
+                            "employmentId": 7
+                        }
+                    ],
+                    "sourceAmount": null
+                },
+                "allowReliefDeducts": {
+                    "npsDescription": null,
+                    "amount": 1009.32,
+                    "type": null,
+                    "iabdSummaries": null,
+                    "sourceAmount": null
+                },
+                "totalTax": 0,
+                "totalTaxableIncome": 0,
+                "taxBands": [
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 0,
+                        "upperBand": 31865,
+                        "rate": 20
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 31865,
+                        "upperBand": 150000,
+                        "rate": 40
+                    },
+                    {
+                        "income": null,
+                        "tax": null,
+                        "lowerBand": 150000,
+                        "upperBand": 0,
+                        "rate": 45
+                    }
+                ]
+            }
+        }
+    ]
+
+}

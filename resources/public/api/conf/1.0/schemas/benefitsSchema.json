@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "id": "http://<tai-url>/tai/schemas/taxComponentsSchema.json",
+
+  "title": "Benefits Response object",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "title": "Generic Data object",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "car-benefit": {
+          "title": "company car benefit list",
+          "type": "array",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "componentType": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "employmentSeqNo": {
+                "type": "string"
+              },
+              "company-cars": {
+                "title": "company car list",
+                "type": "array",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "carSeqNo": {
+                      "type": "string"
+                    },
+                    "makeModel": {
+                      "type": "string"
+                    },
+                    "hasActiveFuelBenefit": {
+                      "type": "boolean"
+                    },
+                    "dateMadeAvailable": {
+                      "type": "string"
+                    },
+                    "dateActiveFuelBenefitMadeAvailable": {
+                      "type": "string"
+                    },
+                    "dateWithdrawn": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "carSeqNo",
+                    "makeModel",
+                    "hasActiveFuelBenefit"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "componentType",
+              "description",
+              "amount",
+              "employmentSeqNo",
+              "company-cars"
+            ]
+          }
+        },
+        "other-benefits": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "car-benefit",
+        "other-benefits"
+      ]
+    },
+    "links": {
+      "title": "Links Data list",
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "rel": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "href",
+          "rel",
+          "method"
+        ]
+      }
+    }
+  },
+  "required": [
+    "data",
+    "links"
+  ]
+}
