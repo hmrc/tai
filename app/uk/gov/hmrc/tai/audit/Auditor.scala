@@ -30,7 +30,7 @@ class Auditor @Inject()(audit: Audit)  {
                     tags: Map[String, String] = Map.empty[String, String],
                     detail: Map[String, String])
                    (implicit hc: HeaderCarrier): Unit =
-
+  
     audit.sendDataEvent(DataEvent(
       auditSource = TaiConstants.ApplicationName,
       auditType = transactionName,
