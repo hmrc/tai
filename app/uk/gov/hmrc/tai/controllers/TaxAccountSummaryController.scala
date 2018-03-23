@@ -39,7 +39,9 @@ class TaxAccountSummaryController @Inject()(taxAccountSummaryService: TaxAccount
     taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
       Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
     } recoverWith {
-      case ex: BadRequestException if ex.message.contains(CodingCalculationCYPlusOne) =>
+      case ex: BadRequestException if ex.message.contains(CodingCalculationCYPlusOne) ||
+        ex.message.contains(CodingCalculationNoPrimary) ||
+        ex.message.contains(CodingCalculationNoEmpCY) =>
         Future.successful(BadRequest(ex.message))
       case ex => throw ex
     }

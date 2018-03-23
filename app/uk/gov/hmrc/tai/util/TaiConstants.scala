@@ -32,7 +32,7 @@ object TaiConstants {
   val IADB_TYPE_OTHER_PENSIONS = List(
     Some(PersonalPensionPayments.code),Some(LumpSumDeferral.code), Some(PersonalPensionAnnuity.code), Some(ForcesPension.code),
     Some(PublicServicesPension.code), Some(OccupationalPension.code)
-    )
+  )
 
   val IADB_TYPES_TO_NOT_GROUP= List(
     Some(StatePension.code), Some(IncapacityBenefit.code),
@@ -75,14 +75,14 @@ object TaiConstants {
 
   val IABD_TYPE_BLIND_PERSON = List(Some(IabdType.BlindPersonsAllowance.code), Some(BpaReceivedFromSpouseOrCivilPartner.code))
   val IABD_TYPE_JOB_EXPENSES = List(Some(IabdType.JobExpenses.code), Some(HotelAndMealExpenses.code), Some(OtherExpenses.code),
-      Some(VehicleExpenses.code), Some(MileageAllowanceRelief.code))
+    Some(VehicleExpenses.code), Some(MileageAllowanceRelief.code))
   val IABD_TYPE_GIFT_RELATED = List(Some(GiftAidAdjustment.code), Some(GiftsSharesCharity.code), Some(ConcessionRelief.code))
   val IABD_TYPE_EXPENSES = List(Some(IabdType.FlatRateJobExpenses.code), Some(IabdType.ProfessionalSubscriptions.code), Some(EarlyYearsAdjustment.code))
   val IABD_TYPE_MISCELLANEOUS = List(Some(MaintenancePayments.code), Some(LoanInterestAmount.code), Some(TradeUnionSubscriptions.code),
-      Some(CommunityInvestmentTaxCredit.code), Some(VentureCapitalTrust.code), Some(EnterpriseInvestmentScheme.code), Some(IabdType.LossRelief.code),
-      Some(IabdType.DoubleTaxationRelief.code))
+    Some(CommunityInvestmentTaxCredit.code), Some(VentureCapitalTrust.code), Some(EnterpriseInvestmentScheme.code), Some(IabdType.LossRelief.code),
+    Some(IabdType.DoubleTaxationRelief.code))
   val IABD_TYPE_PENSION_CONTRIBUTIONS = List(Some(PersonalPensionPayments.code), Some(RetirementAnnuityPayments.code),
-      Some(IabdType.ForeignPensionAllowance.code))
+    Some(IabdType.ForeignPensionAllowance.code))
   val IABD_TYPE_DIVIDENDS = List(Some(UkDividend.code), Some(UnitTrust.code), Some(StockDividend.code))
   val IABD_TYPE_BANK_INTEREST = List(Some(BankOrBuildingSocietyInterest.code), Some(PurchasedLifeAnnuities.code))
   val IABD_TYPE_UNTAXED_INTEREST = List(Some(UntaxedInterest.code), Some(SavingsBond.code), Some(NationalSavings.code))
@@ -157,11 +157,11 @@ object TaiConstants {
 
   val STANDARD_DATE_FORMAT = "dd/MM/yyyy"
   val DEFAULT_CY_PLUS_ONE_ENABLED_DATE = "05/01"
-  
+
   val CEASED_MINUS_ONE = "CY-1"
   val CEASED_MINUS_TWO = "CY-2"
   val CEASED_MINUS_THREE  = "CY-3"
-  
+
   val DEFAULT_PRIMARY_PAY = 15000
   val DEFAULT_SECONDARY_PAY = 5000
   val contentType: String = "application/json"
@@ -197,6 +197,8 @@ trait RequestQueryFilter {
 
 trait NpsExceptions {
   val CodingCalculationCYPlusOne = "Cannot perform a Coding Calculation for CY+1"
+  val CodingCalculationNoPrimary = "Cannot complete a Coding Calculation without a Primary Employment"
+  val CodingCalculationNoEmpCY = "No Employments recorded for current tax year"
 }
 
 trait HodsSource {
