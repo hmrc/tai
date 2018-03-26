@@ -84,6 +84,24 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
         val ex = the[BadRequestException] thrownBy Await.result(result, 5.seconds)
         ex.message mustBe "Cannot perform a Coding Calculation for CY"
       }
+      "nps throws bad request for cy and no primary employment" in {
+        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
+        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoPrimary)))
+
+        val sut = createSUT(mockTaxAccountSummaryService)
+        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe BAD_REQUEST
+      }
+      "nps throws bad request for cy and no employment" in {
+        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
+        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoEmpCY)))
+
+        val sut = createSUT(mockTaxAccountSummaryService)
+        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe BAD_REQUEST
+      }
     }
 
     "return Locked exception" when {
