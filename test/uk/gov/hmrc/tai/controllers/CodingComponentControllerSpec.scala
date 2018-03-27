@@ -25,25 +25,25 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException}
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
-import uk.gov.hmrc.tai.util.RequestQueryFilter
+import uk.gov.hmrc.tai.util.{NpsExceptions, RequestQueryFilter}
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with RequestQueryFilter {
+class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions {
 
   "codingComponentsForYear" must {
     "return NotFound" when {
       "coding component service returns Nil" in {
         val mockCodingComponentService = mock[CodingComponentService]
         when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.failed(new NotFoundException("No coding components found")))
 
         val sut = createSUT(mockCodingComponentService)
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
@@ -51,6 +51,17 @@ class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with Requ
       }
     }
 
+    "return BadRequest" when {
+      "coding component service returns BadRequest" in {
+        val mockCodingComponentService = mock[CodingComponentService]
+        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoPrimary)))
+
+        val sut = createSUT(mockCodingComponentService)
+        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe BAD_REQUEST
+      }
+    }
     "return sequence of coding components" when {
       "coding component service returns a sequence of coding components" in {
         val codingComponentSeq = Seq(CodingComponent(EmployerProvidedServices, Some(12), 12321, "Some Description"),

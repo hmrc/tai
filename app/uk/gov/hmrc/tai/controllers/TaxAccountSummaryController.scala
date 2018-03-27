@@ -21,7 +21,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -39,10 +39,8 @@ class TaxAccountSummaryController @Inject()(taxAccountSummaryService: TaxAccount
     taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
       Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
     } recoverWith {
-      case ex: BadRequestException if ex.message.contains(CodingCalculationCYPlusOne) ||
-        ex.message.contains(CodingCalculationNoPrimary) ||
-        ex.message.contains(CodingCalculationNoEmpCY) =>
-        Future.successful(BadRequest(ex.message))
+      case ex: BadRequestException  => Future.successful(BadRequest(ex.message))
+      case ex: NotFoundException => Future.successful(NotFound(ex.message))
       case ex => throw ex
     }
   }

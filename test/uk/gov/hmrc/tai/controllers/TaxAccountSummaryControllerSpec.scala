@@ -81,8 +81,7 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
 
         val sut = createSUT(mockTaxAccountSummaryService)
         val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest())
-        val ex = the[BadRequestException] thrownBy Await.result(result, 5.seconds)
-        ex.message mustBe "Cannot perform a Coding Calculation for CY"
+        status(result) mustBe BAD_REQUEST
       }
       "nps throws bad request for cy and no primary employment" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
