@@ -33,7 +33,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.{NpsExceptions, RequestQueryFilter}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.util.Random
 
 class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions {
@@ -60,6 +61,18 @@ class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with Requ
         val sut = createSUT(mockCodingComponentService)
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
         status(result) mustBe BAD_REQUEST
+      }
+    }
+    "return Internal server error" when {
+      "coding component service returns 500 response" in {
+        val mockCodingComponentService = mock[CodingComponentService]
+        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new InternalServerException("any other error")))
+
+        val sut = createSUT(mockCodingComponentService)
+        val ex = the[InternalServerException] thrownBy Await.result(sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()), 5.seconds)
+
+        ex.getMessage mustBe "any other error"
       }
     }
     "return sequence of coding components" when {
