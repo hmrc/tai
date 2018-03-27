@@ -25,7 +25,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, LockedException}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -100,6 +100,15 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
         val sut = createSUT(mockTaxAccountSummaryService)
         val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
         status(result) mustBe BAD_REQUEST
+      }
+      "nps throws Not Found" in {
+        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
+        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new NotFoundException("No coding components found")))
+
+        val sut = createSUT(mockTaxAccountSummaryService)
+        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe NOT_FOUND
       }
       "nps throws internal server error" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
