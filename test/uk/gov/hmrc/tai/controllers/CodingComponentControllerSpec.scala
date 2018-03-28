@@ -40,42 +40,7 @@ import scala.util.Random
 class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions {
 
   "codingComponentsForYear" must {
-    "return NotFound" when {
-      "coding component service returns Nil" in {
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new NotFoundException("No coding components found")))
-
-        val sut = createSUT(mockCodingComponentService)
-        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe NOT_FOUND
-      }
-    }
-
-    "return BadRequest" when {
-      "coding component service returns BadRequest" in {
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoPrimary)))
-
-        val sut = createSUT(mockCodingComponentService)
-        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-    }
-    "return Internal server error" when {
-      "coding component service returns 500 response" in {
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new InternalServerException("any other error")))
-
-        val sut = createSUT(mockCodingComponentService)
-        val ex = the[InternalServerException] thrownBy Await.result(sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()), 5.seconds)
-
-        ex.getMessage mustBe "any other error"
-      }
-    }
-    "return sequence of coding components" when {
+     "return sequence of coding components" when {
       "coding component service returns a sequence of coding components" in {
         val codingComponentSeq = Seq(CodingComponent(EmployerProvidedServices, Some(12), 12321, "Some Description"),
           CodingComponent(PersonalPensionPayments, Some(31), 12345, "Some Description Some"))

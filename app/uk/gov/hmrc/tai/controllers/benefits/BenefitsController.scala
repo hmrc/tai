@@ -22,18 +22,19 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
 @Singleton
-class BenefitsController @Inject()(benefitService: BenefitsService) extends BaseController with ApiFormats {
+class BenefitsController @Inject()(benefitService: BenefitsService) extends BaseController with ApiFormats with ControllerErrorHandler{
 
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = Action.async { implicit request =>
     benefitService.benefits(nino, taxYear).map { benefitsFromService =>
       Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
-    }
+    } recoverWith taxAccountErrorHandler
   }
 
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = Action.async(parse.json){
