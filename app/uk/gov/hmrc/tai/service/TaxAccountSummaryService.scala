@@ -54,7 +54,7 @@ class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccount
       val totalIya = ( taxCodeIncomes map ( _.totalInYearAdjustment ) sum )
       val totalIyatIntoCYPlusOne = ( taxCodeIncomes map ( _.inYearAdjustmentIntoCYPlusOne ) sum )
       val taxFreeAllowance = taxFreeAmountComponents.collect {
-        case cc@CodingComponent(_: AllowanceComponentType, _, _, _, _) if !isTaxReliefComponents(cc) => cc
+        case cc@CodingComponent(allowanceType: AllowanceComponentType, _, _, _, _) if !isTaxReliefComponents(allowanceType) => cc
       }.map(_.amount).sum
       val totalEstimatedIncome = totalTax.incomeCategories.map(_.totalTaxableIncome).sum + taxFreeAllowance
 
@@ -62,8 +62,8 @@ class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccount
     }
   }
 
-  private def isTaxReliefComponents(cc: CodingComponent) = {
-    cc.componentType == PersonalPensionPayments || cc.componentType == GiftAidPayments
+  private def isTaxReliefComponents(allowanceType: AllowanceComponentType) = {
+    allowanceType == PersonalPensionPayments || allowanceType == GiftAidPayments
   }
 
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal = {
