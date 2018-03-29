@@ -55,8 +55,9 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
             "taxFreeAmount" -> 1,
             "totalInYearAdjustmentIntoCY" -> 56.78,
             "totalInYearAdjustment" -> 100.00,
-            "totalInYearAdjustmentIntoCYPlusOne" -> 43.22
-
+            "totalInYearAdjustmentIntoCYPlusOne" -> 43.22,
+            "totalEstimatedIncome" -> 200,
+            "taxFreeAllowance" -> 100
           ),
           "links" -> Json.arr())
         contentAsJson(result) mustBe expectedJson
@@ -141,8 +142,8 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
-  val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0)
-  val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22)
+  val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0, 0, 0)
+  val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(taxAccountSummaryService: TaxAccountSummaryService) =
     new TaxAccountSummaryController(taxAccountSummaryService)
 

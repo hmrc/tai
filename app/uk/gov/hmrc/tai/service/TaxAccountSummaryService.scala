@@ -22,8 +22,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
-import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome
-import uk.gov.hmrc.tai.model.domain.{AllowanceComponentType, TaxAccountSummary}
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
 
@@ -33,26 +32,38 @@ import scala.language.postfixOps
 @Singleton
 class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccountSummaryRepository,
                                          codingComponentService: CodingComponentService,
-                                         incomeService: IncomeService) extends TaxAccountSummaryHodFormatters {
+                                         incomeService: IncomeService,
+                                         totalTaxService: TotalTaxService) extends TaxAccountSummaryHodFormatters {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxAccountSummary] = {
 
     val taxSummaryRepo = taxAccountSummaryRepository.taxAccountSummary(nino, year)
     val taxFreeAmountComponentsFuture = codingComponentService.codingComponents(nino, year)
     val taxCodeIncomesFuture = incomeService.taxCodeIncomes(nino, year)
+    val totalTaxFuture = totalTaxService.totalTax(nino, year)
 
     for {
       totalEstimatedTax <- taxSummaryRepo
       taxFreeAmountComponents <- taxFreeAmountComponentsFuture
       taxCodeIncomes <- taxCodeIncomesFuture
+      totalTax <- totalTaxFuture
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
       val totalIyaIntoCY = ( taxCodeIncomes map ( _.inYearAdjustmentIntoCY ) sum )
       val totalIya = ( taxCodeIncomes map ( _.totalInYearAdjustment ) sum )
       val totalIyatIntoCYPlusOne = ( taxCodeIncomes map ( _.inYearAdjustmentIntoCYPlusOne ) sum )
-      TaxAccountSummary(totalEstimatedTax, taxFreeAmount, totalIyaIntoCY, totalIya, totalIyatIntoCYPlusOne)
+      val taxFreeAllowance = taxFreeAmountComponents.collect {
+        case cc@CodingComponent(_: AllowanceComponentType, _, _, _, _) if !isTaxReliefComponents(cc) => cc
+      }.map(_.amount).sum
+      val totalEstimatedIncome = totalTax.incomeCategories.map(_.totalTaxableIncome).sum + taxFreeAllowance
+
+      TaxAccountSummary(totalEstimatedTax, taxFreeAmount, totalIyaIntoCY, totalIya, totalIyatIntoCYPlusOne, totalEstimatedIncome, taxFreeAllowance)
     }
+  }
+
+  private def isTaxReliefComponents(cc: CodingComponent) = {
+    cc.componentType == PersonalPensionPayments || cc.componentType == GiftAidPayments
   }
 
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal = {
