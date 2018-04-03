@@ -26,7 +26,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -91,7 +91,19 @@ class EmploymentsControllerSpec extends PlaySpec
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
-      "the employments service returns and error" in {
+      "the employments service returns a bad request exception" in {
+        val mockEmploymentService = mock[EmploymentService]
+        when(mockEmploymentService.employments(any(), any())(any()))
+          .thenReturn(Future.failed(new BadRequestException("no employments recorded for this individual")))
+
+        val sut = new EmploymentsController(mockEmploymentService)
+
+        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe "no employments recorded for this individual"
+
+      }
+      "the employments service returns an error" in {
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new InternalServerException("employment service failed")))
