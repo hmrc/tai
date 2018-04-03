@@ -24,7 +24,7 @@ import scala.concurrent.Future
 
 trait ControllerErrorHandler{
 
-  def taxAccountErrorHandler()(implicit request: Request[AnyContent]):PartialFunction[Throwable, Future[Result]] ={
+  def taxAccountErrorHandler():PartialFunction[Throwable, Future[Result]] ={
     case ex: BadRequestException  => Future.successful(BadRequest(ex.message))
     case ex: NotFoundException => Future.successful(NotFound(ex.message))
     case ex => throw ex

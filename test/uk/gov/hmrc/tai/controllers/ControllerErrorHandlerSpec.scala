@@ -34,7 +34,7 @@ class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication
     "return BAD_REQUEST"when {
       "there is hod BAD_REQUEST exception"in {
         val sut = createSUT
-        val pf = sut.taxAccountErrorHandler()(FakeRequest())
+        val pf = sut.taxAccountErrorHandler()
         val result = pf(new BadRequestException(CodingCalculationCYPlusOne))
         status(result) mustBe BAD_REQUEST
       }
@@ -42,7 +42,7 @@ class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication
     "return NOT_FOUND" when{
       "tax account returns NOT_FOUND"in{
         val sut = createSUT
-        val pf = sut.taxAccountErrorHandler()(FakeRequest())
+        val pf = sut.taxAccountErrorHandler()
         val result = pf(new NotFoundException("No coding components found"))
         status(result) mustBe NOT_FOUND
       }
@@ -50,7 +50,7 @@ class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication
     "return internal server error" when{
       "tax account returns internal server error"in{
         val sut = createSUT
-        val pf = sut.taxAccountErrorHandler()(FakeRequest())
+        val pf = sut.taxAccountErrorHandler()
         val result = the[InternalServerException] thrownBy Await.result(
           pf(new InternalServerException("any other error")), 5.seconds
         )
