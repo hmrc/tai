@@ -64,66 +64,6 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
       }
     }
 
-    "return the bad request exception" when {
-      "nps throws coding calculation error for cy+1" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new BadRequestException(CodingCalculationCYPlusOne)))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-
-      "nps throws bad request for cy" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new BadRequestException("Cannot perform a Coding Calculation for CY")))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-      "nps throws bad request for cy and no primary employment" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoPrimary)))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-      "nps throws bad request for cy and no employment" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new BadRequestException(CodingCalculationNoEmpCY)))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe BAD_REQUEST
-      }
-      "nps throws Not Found" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new NotFoundException("No coding components found")))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
-        status(result) mustBe NOT_FOUND
-      }
-      "nps throws internal server error" in {
-        val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new InternalServerException("any other error")))
-
-        val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest())
-        val ex = the[InternalServerException] thrownBy Await.result(result, 5.seconds)
-
-        ex.getMessage mustBe "any other error"
-      }
-    }
-
     "return Locked exception" when {
       "nps throws locked exception" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]

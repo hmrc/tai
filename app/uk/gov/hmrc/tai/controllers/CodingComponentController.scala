@@ -51,15 +51,12 @@ import scala.concurrent.Future
 class CodingComponentController @Inject()(codingComponentService: CodingComponentService) extends BaseController
   with ApiFormats
   with RequestQueryFilter
-  with CodingComponentAPIFormatters {
+  with CodingComponentAPIFormatters
+with ControllerErrorHandler {
 
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = Action.async { implicit request =>
     codingComponentService.codingComponents(nino, year) map { codingComponentList =>
       Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
-    }recoverWith {
-      case ex: BadRequestException  => Future.successful(BadRequest(ex.message))
-      case ex: NotFoundException => Future.successful(NotFound(ex.message))
-      case ex => throw ex
-    }
+    } recoverWith taxAccountErrorHandler
   }
 }

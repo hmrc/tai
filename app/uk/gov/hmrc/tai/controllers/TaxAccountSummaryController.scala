@@ -21,27 +21,21 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
 import uk.gov.hmrc.tai.util.NpsExceptions
 
-import scala.concurrent.Future
-
 @Singleton
 class TaxAccountSummaryController @Inject()(taxAccountSummaryService: TaxAccountSummaryService) extends BaseController
   with ApiFormats
-  with NpsExceptions {
+  with NpsExceptions
+ with ControllerErrorHandler{
 
   def taxAccountSummaryForYear(nino: Nino, year:TaxYear): Action[AnyContent] = Action.async { implicit request =>
     taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
       Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
-    } recoverWith {
-      case ex: BadRequestException  => Future.successful(BadRequest(ex.message))
-      case ex: NotFoundException => Future.successful(NotFound(ex.message))
-      case ex => throw ex
-    }
+    } recoverWith taxAccountErrorHandler
   }
 }

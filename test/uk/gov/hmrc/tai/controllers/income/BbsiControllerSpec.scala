@@ -135,17 +135,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
         status(result) mustBe NOT_FOUND
       }
     }
-
-    "return internal server error" in {
-      val mockBbsiService = mock[BbsiService]
-      when(mockBbsiService.bbsiAccount(any(), any())(any()))
-        .thenReturn(Future.failed(new RuntimeException("Error")))
-
-      val sut = createSUT(mockBbsiService)
-      val result = sut.bbsiAccount(nino, 1)(FakeRequest())
-
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
   }
 
   "close bank account" must {

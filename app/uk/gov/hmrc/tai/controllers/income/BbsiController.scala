@@ -26,12 +26,14 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.{AmountRequest, CloseAccountRequest}
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+
 import scala.concurrent.Future
 
 @Singleton
-class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController with ApiFormats {
+class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController with ApiFormats
+  with ControllerErrorHandler {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = Action.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>
@@ -43,10 +45,7 @@ class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController 
     bbsiService.bbsiAccount(nino, id).map {
       case Some(account) => Ok(Json.toJson(ApiResponse(account, Nil)))
       case None => NotFound
-    }.recover {
-      case _: NotFoundException => NotFound
-      case _ => InternalServerError
-    }
+    } recoverWith taxAccountErrorHandler
   }
 
   def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = Action.async(parse.json) {
