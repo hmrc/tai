@@ -128,8 +128,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
 
         val sut = createSUT(mockTotalTaxService)
         val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        val ex = the[BadRequestException] thrownBy Await.result(result, 5 seconds)
-        ex.message mustBe "Cannot perform a Coding Calculation for CY"
+        status(result) mustBe BAD_REQUEST
       }
     }
 

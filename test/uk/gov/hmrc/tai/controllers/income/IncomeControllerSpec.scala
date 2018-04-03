@@ -92,17 +92,6 @@ class IncomeControllerSpec extends PlaySpec
         status(result) mustBe NOT_FOUND
       }
     }
-
-    "return Internal Server Error when an exception other than a Not Found Exception is raised" in {
-      val mockIncomeService = mock[IncomeService]
-      when(mockIncomeService.untaxedInterest(any())(any()))
-        .thenReturn(Future.failed(new RuntimeException("Error")))
-
-        val SUT = createSUT(mockIncomeService)
-      val result = SUT.untaxedInterest(nino)(FakeRequest())
-
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
   }
 
   "taxCodeIncomesForYear" must {
@@ -181,33 +170,9 @@ class IncomeControllerSpec extends PlaySpec
         contentAsJson(result) mustBe expectedJson
       }
     }
-
-    "return Internal Server Error when an exception other than a Not Found Exception is raised" in {
-      val mockIncomeService = mock[IncomeService]
-      when(mockIncomeService.taxCodeIncomes(any(),Matchers.eq(TaxYear().next))(any()))
-        .thenReturn(Future.failed(new RuntimeException("Error")))
-
-      val SUT = createSUT(mockIncomeService)
-      val result = SUT.taxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
-
-      status(result) mustBe INTERNAL_SERVER_ERROR
-    }
   }
 
   "incomes" must {
-    "return internal server error" when {
-      "any exception occurs" in {
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.incomes(any(), Matchers.eq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new RuntimeException("Error")))
-
-        val SUT = createSUT(mockIncomeService)
-        val result = SUT.income(nino, TaxYear())(FakeRequest())
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
-      }
-    }
-
     "return Ok with income" when {
       "income returned by IncomeService" in {
         val mockIncomeService = mock[IncomeService]
