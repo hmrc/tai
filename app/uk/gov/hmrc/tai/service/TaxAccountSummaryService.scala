@@ -61,10 +61,6 @@ class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccount
     }
   }
 
-  private def isTaxReliefComponents(allowanceType: AllowanceComponentType) = {
-    allowanceType == PersonalPensionPayments || allowanceType == GiftAidPayments
-  }
-
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal = {
     codingComponents.foldLeft(BigDecimal(0))((total: BigDecimal, component: CodingComponent) =>
       component.componentType match {
