@@ -40,4 +40,8 @@ class TotalTaxService @Inject()(totalTaxRepository: TotalTaxRepository,
     } yield {
       TotalTax(totalTaxAmount, incomeCategories, reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource)
     }
+
+  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    totalTaxRepository.taxFreeAllowance(nino, year)
+  }
 }

@@ -169,4 +169,108 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
       }
     }
   }
+
+  "taxFreeAllowanceReads" must {
+    "return taxFreeAllowance" when {
+      "all the 6 income categories as null" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> JsNull,
+            "untaxedInterest" -> JsNull,
+            "bankInterest" -> JsNull,
+            "ukDividends" -> JsNull,
+            "foreignInterest" -> JsNull,
+            "foreignDividends" -> JsNull
+          ))
+
+        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+      }
+
+      "some income categories have allowance relief deduct" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "untaxedInterest" -> JsNull,
+            "bankInterest" -> JsNull,
+            "ukDividends" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "foreignInterest" -> JsNull,
+            "foreignDividends" -> JsNull
+          ))
+
+        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+      }
+
+      "ignore untaxed interest income categories" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "untaxedInterest" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "bankInterest" -> JsNull,
+            "ukDividends" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "foreignInterest" -> JsNull,
+            "foreignDividends" -> JsNull
+          ))
+
+        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+      }
+
+      "all income categories are present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "untaxedInterest" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "bankInterest" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "ukDividends" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "foreignInterest" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            ),
+            "foreignDividends" -> Json.obj(
+              "allowReliefDeducts" -> Json.obj(
+                "amount" -> 100
+              )
+            )
+          ))
+
+        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
+      }
+    }
+  }
 }

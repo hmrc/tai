@@ -21,6 +21,16 @@ import uk.gov.hmrc.tai.model.domain.calculation._
 
 trait IncomeCategoryHodFormatters {
 
+  val taxFreeAllowanceReads = new Reads[BigDecimal] {
+    override def reads(json: JsValue): JsResult[BigDecimal] = {
+      val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+      val totalLiability = (json \ "totalLiability").as[JsValue]
+      JsSuccess(
+        categoryNames map (category =>  (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
+      )
+    }
+  }
+
   val incomeCategorySeqReads = new Reads[Seq[IncomeCategory]] {
     override def reads(json: JsValue): JsResult[Seq[IncomeCategory]] = {
       val categoryNames = Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
