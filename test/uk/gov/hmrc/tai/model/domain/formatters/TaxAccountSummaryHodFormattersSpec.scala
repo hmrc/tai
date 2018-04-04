@@ -672,4 +672,73 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
       }
     }
   }
+
+  "taxOnOtherIncomeRead" must {
+    "return income" when {
+      "non-coded income is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> Json.obj(
+              "totalIncome" -> Json.obj(
+                "iabdSummaries" -> JsArray(Seq(Json.obj(
+                  "amount" -> 100,
+                  "type" -> 19,
+                  "npsDescription" -> "Non-Coded Income",
+                  "employmentId" -> JsNull
+                ),
+                  Json.obj(
+                    "amount" -> 100,
+                    "type" -> 84,
+                    "npsDescription" -> "Job-Seeker Allowance",
+                    "employmentId" -> JsNull
+                  ))
+
+                )
+              ),
+              "taxBands" -> JsArray(Seq(Json.obj(
+                "bandType" -> "B",
+                "income" -> 1000,
+                "taxCode" -> "BR",
+                "rate" -> 40
+              ),
+                Json.obj(
+                  "bandType" -> "D0",
+                  "taxCode" -> "BR",
+                  "income" -> 1000,
+                  "rate" -> 20
+                )))
+            )
+          )
+        )
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe Some(40)
+      }
+    }
+
+    "return none" when {
+      "details are not present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings" -> Json.obj(
+              "totalIncome" -> Json.obj(
+                "iabdSummaries" -> JsArray()
+                ),
+              "taxBands" -> JsArray(Seq(Json.obj(
+                "bandType" -> "B",
+                "income" -> 1000,
+                "taxCode" -> "BR",
+                "rate" -> 40
+              ),
+                Json.obj(
+                  "bandType" -> "D0",
+                  "taxCode" -> "BR",
+                  "income" -> 1000,
+                  "rate" -> 20
+                )))
+            )
+          )
+        )
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe None
+      }
+    }
+  }
 }

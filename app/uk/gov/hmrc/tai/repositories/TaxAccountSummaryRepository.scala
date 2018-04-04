@@ -102,4 +102,8 @@ class TaxAccountSummaryRepository @Inject()(taxAccountRepository: TaxAccountRepo
       if (taxAdjustments.nonEmpty) Some(TaxAdjustment(taxAdjustments.map(_.taxAdjustmentAmount).sum, taxAdjustments)) else None
     }
   }
+
+  def taxOnOtherIncome(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[BigDecimal]] = {
+    taxAccountRepository.taxAccount(nino, year) map (_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+  }
 }
