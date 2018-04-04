@@ -131,6 +131,19 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
     }
   }
 
+  "taxFreeAllowance" must {
+    "return tax free allowance amount" in {
+      val mockTotalTaxRepository = mock[TotalTaxRepository]
+      when(mockTotalTaxRepository.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
+
+      val sut = createSUT(mockTotalTaxRepository, mock[TaxAccountSummaryRepository])
+      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5.seconds)
+
+      result mustBe 100
+
+    }
+  }
+
     private val nino: Nino = new Generator(new Random).nextNino
 
     private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))

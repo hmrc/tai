@@ -41,21 +41,20 @@ class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccount
     val taxFreeAmountComponentsFuture = codingComponentService.codingComponents(nino, year)
     val taxCodeIncomesFuture = incomeService.taxCodeIncomes(nino, year)
     val totalTaxFuture = totalTaxService.totalTax(nino, year)
+    val taxFreeAllowanceFuture = totalTaxService.taxFreeAllowance(nino, year)
 
     for {
       totalEstimatedTax <- taxSummaryRepo
       taxFreeAmountComponents <- taxFreeAmountComponentsFuture
       taxCodeIncomes <- taxCodeIncomesFuture
       totalTax <- totalTaxFuture
+      taxFreeAllowance <- taxFreeAllowanceFuture
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
       val totalIyaIntoCY = ( taxCodeIncomes map ( _.inYearAdjustmentIntoCY ) sum )
       val totalIya = ( taxCodeIncomes map ( _.totalInYearAdjustment ) sum )
       val totalIyatIntoCYPlusOne = ( taxCodeIncomes map ( _.inYearAdjustmentIntoCYPlusOne ) sum )
-      val taxFreeAllowance = taxFreeAmountComponents.collect {
-        case cc@CodingComponent(allowanceType: AllowanceComponentType, _, _, _, _) if !isTaxReliefComponents(allowanceType) => cc
-      }.map(_.amount).sum
       val totalEstimatedIncome = totalTax.incomeCategories.map(_.totalTaxableIncome).sum + taxFreeAllowance
 
       TaxAccountSummary(totalEstimatedTax, taxFreeAmount, totalIyaIntoCY, totalIya, totalIyatIntoCYPlusOne, totalEstimatedIncome, taxFreeAllowance)

@@ -34,4 +34,9 @@ class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository) e
   def incomeCategories(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IncomeCategory]] =
     taxAccountRepository.taxAccount(nino, year)
       .map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
+
+  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    taxAccountRepository.taxAccount(nino, year)
+      .map(_.as[BigDecimal](taxFreeAllowanceReads))
+  }
 }
