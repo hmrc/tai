@@ -20,7 +20,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, JsNull, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -55,7 +55,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
         val result = Await.result(responseFuture, 5 seconds)
-        result mustBe BigDecimal(1211)
+        result mustBe BigDecimal(1171)
       }
 
       "outstanding debt present" in {
@@ -72,7 +72,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
         val result = Await.result(responseFuture, 5 seconds)
-        result mustBe BigDecimal(1211)
+        result mustBe BigDecimal(1171)
       }
 
       "EstimatedTaxYouOweThisYear present" in {
@@ -89,7 +89,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
         val result = Await.result(responseFuture, 5 seconds)
-        result mustBe BigDecimal(1211)
+        result mustBe BigDecimal(1171)
       }
 
       "all components" which {
@@ -110,7 +110,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
           val result = Await.result(responseFuture, 5 seconds)
-          result mustBe BigDecimal(1411)
+          result mustBe BigDecimal(1371)
         }
       }
 
@@ -129,7 +129,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
           val result = Await.result(responseFuture, 5 seconds)
-          result mustBe BigDecimal(1111)
+          result mustBe BigDecimal(1071)
         }
       }
     }
@@ -269,6 +269,32 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
     }
   }
 
+  "Tax on other income Component" must {
+    "return only tax on other income components" in {
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+      when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
+        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
+      val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
+
+      val result = Await.result(sut.taxOnOtherIncome(nino, TaxYear()), 5.seconds)
+
+      result mustBe Some(40)
+    }
+
+    "return empty list " when {
+      "tax on other income is not present" in {
+        val mockTaxAccountRepository = mock[TaxAccountRepository]
+        when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(Json.obj()))
+        val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
+
+        val result = Await.result(sut.taxOnOtherIncome(nino, TaxYear()), 5.seconds)
+
+        result mustBe None
+      }
+    }
+  }
+
   private val nino: Nino = new Generator(new Random).nextNino
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
@@ -296,6 +322,36 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         "taxCreditOnUKDividends" -> 100,
         "taxCreditOnForeignInterest" -> 200,
         "taxCreditOnForeignIncomeDividends" -> 300
+      ),
+      "nonSavings" -> Json.obj(
+        "totalIncome" -> Json.obj(
+          "iabdSummaries" -> JsArray(Seq(Json.obj(
+            "amount" -> 100,
+            "type" -> 19,
+            "npsDescription" -> "Non-Coded Income",
+            "employmentId" -> JsNull
+          ),
+            Json.obj(
+              "amount" -> 100,
+              "type" -> 84,
+              "npsDescription" -> "Job-Seeker Allowance",
+              "employmentId" -> JsNull
+            ))
+
+          )
+        ),
+        "taxBands" -> JsArray(Seq(Json.obj(
+          "bandType" -> "B",
+          "income" -> 1000,
+          "taxCode" -> "BR",
+          "rate" -> 40
+        ),
+          Json.obj(
+            "bandType" -> "D0",
+            "taxCode" -> "BR",
+            "income" -> 1000,
+            "rate" -> 20
+          )))
       )
     )
   )

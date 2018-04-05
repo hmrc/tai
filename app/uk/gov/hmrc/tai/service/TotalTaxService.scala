@@ -37,8 +37,9 @@ class TotalTaxService @Inject()(totalTaxRepository: TotalTaxRepository,
       reliefsGivingBackTax <- taxAccountSummaryRepository.reliefsGivingBackTaxComponents(nino, year)
       otherTaxDue <- taxAccountSummaryRepository.otherTaxDueComponents(nino, year)
       alreadyTaxedAtSource <- taxAccountSummaryRepository.alreadyTaxedAtSourceComponents(nino, year)
+      taxOnOtherIncome <- taxAccountSummaryRepository.taxOnOtherIncome(nino, year)
     } yield {
-      TotalTax(totalTaxAmount, incomeCategories, reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource)
+      TotalTax(totalTaxAmount, incomeCategories, reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource, taxOnOtherIncome)
     }
 
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
