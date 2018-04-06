@@ -51,6 +51,18 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
     }
   }
 
+  "taxFreeAllowance" must {
+    "return the tax free allowance amount" in {
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+      when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        .thenReturn(Future.successful(json))
+      val sut = createSUT(mockTaxAccountRepository)
+      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5 seconds)
+
+      result mustBe 100
+    }
+  }
+
     private val nino: Nino = new Generator(new Random).nextNino
 
     private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
@@ -59,6 +71,9 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
   val json = Json.obj(
     "totalLiability" -> Json.obj(
       "ukDividends" -> Json.obj(
+        "allowReliefDeducts" -> Json.obj(
+          "amount" -> 100
+        ),
         "totalIncome" -> Json.obj(),
         "taxBands" -> Json.arr(
           Json.obj(

@@ -33,6 +33,12 @@ trait TaxAccountSummaryHodFormatters extends TaxOnOtherIncomeFormatters with Rel
     }
   }
 
+  val taxOnOtherIncomeRead = new Reads[Option[BigDecimal]] {
+    override def reads(json: JsValue): JsResult[Option[BigDecimal]] = {
+      JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map(_.tax))
+    }
+  }
+
   val taxAdjustmentComponentReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
       val reliefs = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
