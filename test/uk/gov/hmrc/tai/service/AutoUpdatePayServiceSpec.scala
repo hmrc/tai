@@ -1581,16 +1581,12 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockDesConnector = mock[DesConnector]
 
         val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+        when(mockNpsConfig.autoUpdatePayEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.updateSourceEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.postCalcEnabled).thenReturn(Some(true))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
-        when(mockFeatureTogglesConfig.desEnabled)
-          .thenReturn(true)
+        when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
@@ -1606,16 +1602,12 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockDesConnector = mock[DesConnector]
 
         val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+        when(mockNpsConfig.autoUpdatePayEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.updateSourceEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.postCalcEnabled).thenReturn(Some(true))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
-        when(mockFeatureTogglesConfig.desEnabled)
-          .thenReturn(true)
+        when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
@@ -2608,7 +2600,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
   }
 
   private val nino: Nino = new Generator(new Random).nextNino
-  private val CurrentYear: Int = 2017
+  private val CurrentYear: Int = TaxYear().year
   private val NextYear: Int = CurrentYear + 1
   private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))
   private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))

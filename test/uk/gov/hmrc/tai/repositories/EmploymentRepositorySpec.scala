@@ -236,7 +236,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     }
 
     "append supplied data to existing cached data" when {
-      val pty = TaxYear(2016)
+      val pty = TaxYear().prev
       val cty = TaxYear()
       val cachedEmployments = List(
         Employment("TEST",Some("12345"),LocalDate.parse("2017-07-24"),None,List(
@@ -262,8 +262,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val expectedEmp1 = Employment("TEST",Some("12346"),LocalDate.parse("2017-07-24"),None,List(
           AnnualAccount("tdNo-payeNumber-12346",cty,Available,Nil,Nil)),"tdNo","payeNumber",2, Some(100), false)
         val expectedEmp2 = Employment("TEST",Some("12345"),LocalDate.parse("2017-07-24"),None,List(
-          AnnualAccount("tdNo-payeNumber-12345",TaxYear(2016),Available,Nil,Nil),
-          AnnualAccount("tdNo-payeNumber-12345",TaxYear(2017),Available,Nil,Nil)),"tdNo","payeNumber",1, Some(100), false)
+          AnnualAccount("tdNo-payeNumber-12345",pty,Available,Nil,Nil),
+          AnnualAccount("tdNo-payeNumber-12345",cty,Available,Nil,Nil)),"tdNo","payeNumber",1, Some(100), false)
 
         verify(mockCacheConnector, times(1))
           .findSeq[Employment](Matchers.eq("TESTING"), Matchers.eq("EmploymentData"))(any())

@@ -277,7 +277,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     "return correct answer" in {
       val annualAccounts = Seq(
         AnnualAccount(TaxYear().prev, None, Some(rtiDataPY), Some(rtiStatus)),
-        AnnualAccount(TaxYear(taxYear), None, Some(rtiDataCY), Some(rtiStatus)))
+        AnnualAccount(TaxYear(), None, Some(rtiDataCY), Some(rtiStatus)))
 
       val expectedResult:(List[NpsEmployment], List[RtiCalc], List[nps2.NpsEmployment], List[GateKeeperRule], Seq[AnnualAccount]) =
         (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts)
@@ -1475,7 +1475,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   private val employmentAmount = EmploymentAmount("", "", 1, 20, 20)
   private lazy val timeoutDuration: Duration = 5 seconds
 
-  private lazy val taxYear = 2017
+  private lazy val taxYear = TaxYear().year
   private lazy val employmentName = Some("employmentName1")
   private lazy val worksNumber = Some("00000")
   private lazy val rtiDataCY = RtiData(
