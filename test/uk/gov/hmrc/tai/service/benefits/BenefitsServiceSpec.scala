@@ -214,12 +214,13 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
     "successfully call company car service (PAYE) and remove company car from db" when {
       "PAYE company car returns a successful response with id" in {
         val expectedResult = "id"
-        val carWithdrawDate = new LocalDate(2017, 4, 24)
-        val fuelWithdrawDate = Some(new LocalDate(2017, 4, 24))
+        val currentTaxYear = TaxYear().year
+        val carWithdrawDate = new LocalDate(currentTaxYear, 4, 24)
+        val fuelWithdrawDate = Some(new LocalDate(currentTaxYear, 4, 24))
         val nino = randomNino
         val carSeqNum = 10
         val employmentSeqNum = 11
-        val taxYear = TaxYear(2017)
+        val taxYear = TaxYear()
         val removeCarAndFuel = WithdrawCarAndFuel(10, carWithdrawDate, fuelWithdrawDate)
 
         val mockTaxAccountService = mock[TaxAccountService]
