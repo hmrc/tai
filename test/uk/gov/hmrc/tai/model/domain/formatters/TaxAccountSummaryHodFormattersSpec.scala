@@ -650,6 +650,11 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
               "taxCreditOnUKDividends" -> 100,
               "taxCreditOnForeignInterest" -> 200,
               "taxCreditOnForeignIncomeDividends" -> 300
+            ),
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "personalPensionPaymentRelief" -> 100,
+              "giftAidPaymentsRelief" -> 200
             )
           )
         )
@@ -667,7 +672,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
           TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
           TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
-          TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
+          TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300),
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
         )
       }
     }
