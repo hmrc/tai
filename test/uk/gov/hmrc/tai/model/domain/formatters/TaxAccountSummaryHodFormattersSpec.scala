@@ -741,4 +741,68 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
       }
     }
   }
+
+  "taxReliefComponentRead" must {
+    "return empty sequence" when {
+      "basic rate extension is null" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> JsNull
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq.empty[TaxAdjustmentComponent]
+      }
+
+      "no details in basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> JsNull,
+              "personalPensionPaymentRelief" -> JsNull,
+              "giftAidPaymentsRelief" -> JsNull
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq.empty[TaxAdjustmentComponent]
+      }
+    }
+
+    "return tax relief components" when {
+      "basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "personalPensionPaymentRelief" -> 100,
+              "giftAidPaymentsRelief" -> 200
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq(
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+        )
+      }
+
+      "partial details in basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "giftAidPaymentsRelief" -> 200
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq(
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+        )
+      }
+    }
+  }
 }
