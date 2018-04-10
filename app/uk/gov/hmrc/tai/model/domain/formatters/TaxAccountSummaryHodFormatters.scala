@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import scala.annotation.tailrec
 
 trait TaxAccountSummaryHodFormatters extends TaxOnOtherIncomeFormatters with ReliefsGivingBackTaxFormatters
-  with OtherTaxDueFormatters with AlreadyTaxedAtSourceFormatters {
+  with OtherTaxDueFormatters with AlreadyTaxedAtSourceFormatters with TaxReliefFormatters {
 
   val taxAccountSummaryReads = new Reads[BigDecimal] {
     override def reads(json: JsValue): JsResult[BigDecimal] = {
@@ -41,10 +41,11 @@ trait TaxAccountSummaryHodFormatters extends TaxOnOtherIncomeFormatters with Rel
 
   val taxAdjustmentComponentReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
-      val reliefs = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
+      val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
       val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
       val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
-      JsSuccess(reliefs ++ otherTaxDues ++ alreadyTaxedAtSources)
+      val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
+      JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
     }
   }
 }
@@ -142,6 +143,22 @@ trait AlreadyTaxedAtSourceFormatters extends CommonFormatters {
           val taxOnForeignDividends = readTaxAdjustmentComponent(js, "taxCreditOnForeignIncomeDividends", TaxCreditOnForeignIncomeDividends)
 
           JsSuccess(flattenTaxAdjustmentComponents(taxOnBankInterest, taxOnUkDividends, taxOnForeignInterest, taxOnForeignDividends))
+        case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
+      }
+    }
+  }
+}
+
+trait TaxReliefFormatters extends CommonFormatters {
+  val taxReliefFormattersReads = new Reads[Seq[TaxAdjustmentComponent]] {
+    override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
+      (json \ "totalLiability" \ "basicRateExtensions").asOpt[JsObject] match {
+        case Some(js) =>
+          val personalPensionPayment = readTaxAdjustmentComponent(js, "personalPensionPayment", PersonalPensionPayment)
+          val personalPensionPaymentRelief = readTaxAdjustmentComponent(js, "personalPensionPaymentRelief", PersonalPensionPaymentRelief)
+          val giftAidPaymentsRelief = readTaxAdjustmentComponent(js, "giftAidPaymentsRelief", GiftAidPaymentsRelief)
+
+          JsSuccess(flattenTaxAdjustmentComponents(personalPensionPayment, personalPensionPaymentRelief, giftAidPaymentsRelief))
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
     }

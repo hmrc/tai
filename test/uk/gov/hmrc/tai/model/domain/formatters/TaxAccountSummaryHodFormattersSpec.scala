@@ -650,6 +650,11 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
               "taxCreditOnUKDividends" -> 100,
               "taxCreditOnForeignInterest" -> 200,
               "taxCreditOnForeignIncomeDividends" -> 300
+            ),
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "personalPensionPaymentRelief" -> 100,
+              "giftAidPaymentsRelief" -> 200
             )
           )
         )
@@ -667,7 +672,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
           TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
           TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
-          TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
+          TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300),
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
         )
       }
     }
@@ -738,6 +746,70 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           )
         )
         json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe None
+      }
+    }
+  }
+
+  "taxReliefComponentRead" must {
+    "return empty sequence" when {
+      "basic rate extension is null" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> JsNull
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq.empty[TaxAdjustmentComponent]
+      }
+
+      "no details in basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> JsNull,
+              "personalPensionPaymentRelief" -> JsNull,
+              "giftAidPaymentsRelief" -> JsNull
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq.empty[TaxAdjustmentComponent]
+      }
+    }
+
+    "return tax relief components" when {
+      "basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "personalPensionPaymentRelief" -> 100,
+              "giftAidPaymentsRelief" -> 200
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq(
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+        )
+      }
+
+      "partial details in basic rate extension is present" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "basicRateExtensions" -> Json.obj(
+              "personalPensionPayment" -> 600,
+              "giftAidPaymentsRelief" -> 200
+            )
+          )
+        )
+
+        json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads) mustBe Seq(
+          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+        )
       }
     }
   }
