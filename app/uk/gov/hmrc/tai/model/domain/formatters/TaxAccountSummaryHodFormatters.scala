@@ -41,11 +41,11 @@ trait TaxAccountSummaryHodFormatters extends TaxOnOtherIncomeFormatters with Rel
 
   val taxAdjustmentComponentReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
-      val reliefs = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
+      val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
       val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
       val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
       val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
-      JsSuccess(reliefs ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
+      JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
     }
   }
 }
