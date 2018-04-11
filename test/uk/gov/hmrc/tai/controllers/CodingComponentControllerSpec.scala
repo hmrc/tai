@@ -19,28 +19,36 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.{NpsExceptions, RequestQueryFilter}
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.util.Random
 
-class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions {
+class CodingComponentControllerSpec
+    extends PlaySpec
+    with MockitoSugar
+    with RequestQueryFilter
+    with NpsExceptions
+    with MockAuthenticationPredicate{
 
   "codingComponentsForYear" must {
-     "return sequence of coding components" when {
+     "return OK with sequence of coding components" when {
       "coding component service returns a sequence of coding components" in {
         val codingComponentSeq = Seq(CodingComponent(EmployerProvidedServices, Some(12), 12321, "Some Description"),
           CodingComponent(PersonalPensionPayments, Some(31), 12345, "Some Description Some"))
@@ -71,12 +79,24 @@ class CodingComponentControllerSpec extends PlaySpec with MockitoSugar with Requ
         contentAsJson(result) mustBe expectedJson
       }
     }
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+
+        val sut = createSUT(mock[CodingComponentService], notLoggedInAuthenticationPredicate)
+        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
   }
 
   val nino = new Generator(new Random).nextNino
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
-  private def createSUT(codingComponentService: CodingComponentService) =
-    new CodingComponentController(codingComponentService)
+  private def createSUT(codingComponentService: CodingComponentService,
+                        predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new CodingComponentController(predicate, codingComponentService)
 }
