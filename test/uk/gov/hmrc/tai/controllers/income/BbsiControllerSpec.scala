@@ -18,25 +18,44 @@ package uk.gov.hmrc.tai.controllers.income
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsNull, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.tai.controllers.benefits.BenefitsController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.BankAccount
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class BbsiControllerSpec extends PlaySpec with MockitoSugar {
+class BbsiControllerSpec
+  extends PlaySpec
+    with MockitoSugar
+    with MockAuthenticationPredicate{
 
-  "Bbsi Controller" must {
+  "Bbsi details" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
+        val result = sut.bbsiDetails(nino)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return OK" in {
       val expectedJson =
         Json.obj(
@@ -85,6 +104,15 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   "bbsiAccount" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
+        val result = sut.bbsiAccount(nino, 1)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return bank account" in {
       val expectedJson =
         Json.obj(
@@ -138,7 +166,16 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   "close bank account" must {
-
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
+        val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/", FakeHeaders(), JsNull)
+          .withHeaders(("content-type", "application/json")))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -217,6 +254,15 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   "remove bank account" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
+        val result = sut.removeAccount(nino, 1)(FakeRequest("DELETE", "/"))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -259,6 +305,18 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   "update bank account" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
+        val result = sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
+          FakeHeaders(), JsNull)
+          .withHeaders(("content-type", "application/json")))
+
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -324,5 +382,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar {
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   private val nino = new Generator(new Random).nextNino
 
-  private def createSUT(bbsiService: BbsiService) = new BbsiController(bbsiService)
+  private def createSUT(bbsiService: BbsiService, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new BbsiController(bbsiService, authentication)
 }

@@ -28,27 +28,31 @@ import uk.gov.hmrc.tai.model.{AmountRequest, CloseAccountRequest}
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 import scala.concurrent.Future
 
 @Singleton
-class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController with ApiFormats
-  with ControllerErrorHandler {
+class BbsiController @Inject()(bbsiService: BbsiService,
+                               authentication: AuthenticationPredicate)
+  extends BaseController
+    with ApiFormats
+    with ControllerErrorHandler {
 
-  def bbsiDetails(nino: Nino): Action[AnyContent] = Action.async { implicit request =>
+  def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>
       Ok(Json.toJson(ApiResponse(accounts, Nil)))
     }
   }
 
-  def bbsiAccount(nino: Nino, id: Int): Action[AnyContent] = Action.async { implicit request =>
+  def bbsiAccount(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiAccount(nino, id).map {
       case Some(account) => Ok(Json.toJson(ApiResponse(account, Nil)))
       case None => NotFound
     } recoverWith taxAccountErrorHandler
   }
 
-  def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = Action.async(parse.json) {
+  def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request => {
       withJsonBody[CloseAccountRequest] {
         closeAccountRequest =>
@@ -65,7 +69,7 @@ class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController 
     }
   }
 
-  def removeAccount(nino: Nino, id: Int): Action[AnyContent] = Action.async {
+  def removeAccount(nino: Nino, id: Int): Action[AnyContent] = authentication.async {
     implicit request => {
       bbsiService.removeIncorrectBankAccount(nino, id) map { envelopeId =>
         Accepted(Json.toJson(ApiResponse(envelopeId, Nil)))
@@ -79,7 +83,7 @@ class BbsiController @Inject()(bbsiService: BbsiService) extends BaseController 
     }
   }
 
-  def updateAccountInterest(nino: Nino, id: Int): Action[JsValue] = Action.async(parse.json) {
+  def updateAccountInterest(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request => {
       withJsonBody[AmountRequest] {
         amountRequest =>
