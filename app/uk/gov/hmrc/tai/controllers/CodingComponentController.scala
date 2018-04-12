@@ -31,8 +31,8 @@ import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.RequestQueryFilter
 
 @Singleton
-class CodingComponentController @Inject()(val authentication: AuthenticationPredicate,
-                                           codingComponentService: CodingComponentService)
+class CodingComponentController @Inject()(authentication: AuthenticationPredicate,
+                                          codingComponentService: CodingComponentService)
   extends BaseController
   with ApiFormats
   with RequestQueryFilter
