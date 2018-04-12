@@ -20,14 +20,17 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
@@ -35,16 +38,31 @@ import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.util.Random
 
-class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
+class CompanyCarBenefitControllerSpec
+  extends PlaySpec
+    with MockitoSugar
+    with MockAuthenticationPredicate{
 
   "companyCarBenefits" must {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val nino = randomNino
+        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
+        val result = sut.companyCarBenefits(nino)(FakeRequest())
+
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return NotFound" when {
       "company car benefit service returns Nil" in {
         val mockCompanyCarService = mock[BenefitsService]
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService)
+        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
         val result = sut.companyCarBenefits(randomNino)(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
@@ -63,7 +81,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService)
+        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
         val result = sut.companyCarBenefits(randomNino)(FakeRequest())
 
         status(result) mustBe OK
@@ -98,7 +116,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
           .thenReturn(Future.successful(companyCarSeq))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService)
+        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
         val result = sut.companyCarBenefits(randomNino)(FakeRequest())
 
         status(result) mustBe OK
@@ -125,13 +143,24 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
     }
   }
   "companyCarBenefitForEmployment" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val nino = randomNino
+        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
+        val result = sut.companyCarBenefitForEmployment(nino, employmentSeqNum)(FakeRequest())
+
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return NotFound" when {
       "company car benefit service returns Nil" in {
         val mockCompanyCarService = mock[BenefitsService]
         when(mockCompanyCarService.companyCarBenefitForEmployment(any(), any())(any()))
           .thenReturn(Future.successful(None))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService)
+        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
         val result = sut.companyCarBenefitForEmployment(randomNino, employmentSeqNum)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
@@ -150,7 +179,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
         when(mockCompanyCarService.companyCarBenefitForEmployment(any(), any())(any()))
           .thenReturn(Future.successful(Some(companyCarBenefit)))
 
-        val sut = new CompanyCarBenefitController(mockCompanyCarService)
+        val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
         val result = sut.companyCarBenefitForEmployment(randomNino, employmentSeqNum)(FakeRequest())
 
         status(result) mustBe OK
@@ -174,6 +203,19 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   "removeCompanyCarAndFuel" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val nino = randomNino
+        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
+        val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, 1)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).
+          withHeaders(("content-type", "application/json")))
+
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+
     "return OK when called with correct parameters" in{
       val carWithdrawDate = new LocalDate(2017, 4, 24)
       val fuelWithdrawDate = Some(new LocalDate(2017, 4, 24))
@@ -188,7 +230,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar {
       when(mockCompanyCarService.withdrawCompanyCarAndFuel(Matchers.eq(nino),Matchers.eq(employmentSeqNum),
         Matchers.eq(carSeqNum), Matchers.eq(removeCarAndFuel))(any())).thenReturn(Future.successful("123456"))
 
-      val sut = new CompanyCarBenefitController(mockCompanyCarService)
+      val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
       val result = sut.withdrawCompanyCarAndFuel(nino,employmentSeqNum, carSeqNum)(fakeRequest)
 
       status(result) mustBe OK
