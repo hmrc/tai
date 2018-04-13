@@ -41,7 +41,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
     with TaxCodeIncomeSourceAPIFormatters
     with ControllerErrorHandler{
 
-  def untaxedInterest(nino: Nino): Action[AnyContent] = Action.async {
+  def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
 
       incomeService.untaxedInterest(nino).map {
@@ -50,7 +50,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
       } recoverWith taxAccountErrorHandler
   }
 
-  def taxCodeIncomesForYear(nino: Nino, year:TaxYear): Action[AnyContent] = Action.async {
+  def taxCodeIncomesForYear(nino: Nino, year:TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.taxCodeIncomes(nino, year).map {
         case Seq() => NotFound
@@ -58,25 +58,26 @@ class IncomeController @Inject()(incomeService: IncomeService,
       }recoverWith taxAccountErrorHandler
   }
 
-  def income(nino: Nino, year: TaxYear): Action[AnyContent] = Action.async {
+  def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.incomes(nino, year).map{
         income => Ok(Json.toJson(ApiResponse(income, Seq.empty[ApiLink])))
       } recoverWith taxAccountErrorHandler
   }
 
-  def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
-        incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId,
-          updateTaxCodeIncomeRequest.amount) map {
-          case IncomeUpdateSuccess => Ok
-          case InvalidAmount(message) => BadRequest(message)
-          case IncomeUpdateFailed(message) => InternalServerError(message)
+  def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] =
+    authentication.async(parse.json) {
+      implicit request =>
+        withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
+          incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId,
+            updateTaxCodeIncomeRequest.amount) map {
+            case IncomeUpdateSuccess => Ok
+            case InvalidAmount(message) => BadRequest(message)
+            case IncomeUpdateFailed(message) => InternalServerError(message)
+          }
+        }.recover {
+          case _ => InternalServerError
         }
-      }.recover {
-        case _ => InternalServerError
-      }
-  }
+    }
 
 }
