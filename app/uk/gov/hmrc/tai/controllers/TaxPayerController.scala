@@ -20,13 +20,14 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 import scala.concurrent.Future
 
 @Singleton
-class TaxPayerController @Inject()() extends BaseController {
+class TaxPayerController @Inject()(authentication: AuthenticationPredicate) extends BaseController {
 
-  def taxPayer(nino: Nino): Action[AnyContent] = Action.async {
+  def taxPayer(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     Future.successful(Ok)
   }
 }
