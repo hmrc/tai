@@ -19,14 +19,18 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, LockedException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -37,7 +41,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptions {
+class TotalTaxControllerSpec extends PlaySpec
+  with MockitoSugar
+  with NpsExceptions
+  with MockAuthenticationPredicate{
 
   "totalTax" must {
     "return the total tax details for the given year" in {
@@ -144,6 +151,16 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
         ex.message mustBe "Account is locked"
       }
     }
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TotalTaxService], notLoggedInAuthenticationPredicate)
+        val result = sut.totalTax(nino, TaxYear())(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
   }
 
   val nino = new Generator(new Random).nextNino
@@ -160,7 +177,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
       TaxBand(bandType = "B", code = "BR", income = 10000, tax = 500, lowerBand = Some(5000), upperBand = Some(20000), rate = 10)))),
     reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource)
 
-  private def createSUT(totalTaxService: TotalTaxService) =
-    new TotalTaxController(totalTaxService)
+  private def createSUT(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate =
+                        loggedInAuthenticationPredicate) = new TotalTaxController(totalTaxService, authentication)
 
 }
