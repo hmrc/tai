@@ -19,15 +19,19 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsString, JsValue, Json}
+import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import play.mvc.Http.Status
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
@@ -37,9 +41,22 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter {
+class TaiControllerTest extends PlaySpec
+  with MockitoSugar
+  with MongoFormatter
+  with MockAuthenticationPredicate{
 
   "getTaiRoot" should {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val result = sut.getTaiRoot(nino)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
 
     "return the TaiRoot for the supplied nino " in {
       val data = sessionData.copy(taiRoot =
@@ -64,6 +81,15 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter {
   }
 
   "taiData" should {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val result = sut.taiData(nino)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return cached data" in {
       val data = sessionData.copy(taiRoot =
         Some(TaiRoot(nino.nino, 1, "Mr", "TestFName", Some("TestMName"), "TestLName", "TestFName TestLName", manualCorrespondenceInd = false, Some(false))))
@@ -156,6 +182,16 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter {
   }
 
   "updateTaiData" should {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val result = sut.updateTaiData(nino)(FakeRequest("PUT","/",
+          FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return successful when data saved in cache" in {
       val fakeRequest = FakeRequest(method = "Put", uri = "",
         headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(sessionData))
@@ -196,6 +232,7 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter {
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
 
-  private def createSUT(taxAccountService: TaxAccountService, metrics: Metrics) =
-    new TaiController(taxAccountService, metrics)
+  private def createSUT(taxAccountService: TaxAccountService, metrics: Metrics,
+                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+              new TaiController(taxAccountService, metrics, authentication)
 }

@@ -31,12 +31,15 @@ import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
 class TaiController @Inject()(taxAccountService: TaxAccountService,
-                              metrics: Metrics) extends BaseController with MongoFormatter {
+                              metrics: Metrics, authentication: AuthenticationPredicate)
+  extends BaseController
+    with MongoFormatter {
 
-  def getTaiRoot(nino: Nino): Action[AnyContent] = Action.async {
+  def getTaiRoot(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
     for {
       taiRoot <- taxAccountService.personDetails(nino)
@@ -44,7 +47,7 @@ class TaiController @Inject()(taxAccountService: TaxAccountService,
 
   }
 
-  def taiData(nino: Nino): Action[AnyContent] = Action.async {
+  def taiData(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request => {
       for {
         sessionData <- taxAccountService.taiData(nino, TaxYearResolver.currentTaxYear)
@@ -65,7 +68,7 @@ class TaiController @Inject()(taxAccountService: TaxAccountService,
     }
   }
 
-  def updateTaiData(nino: Nino): Action[JsValue] = Action.async(parse.json) {
+  def updateTaiData(nino: Nino): Action[JsValue] = authentication.async(parse.json) {
     implicit request => {
       withJsonBody[SessionData] {
         sessionData => {
