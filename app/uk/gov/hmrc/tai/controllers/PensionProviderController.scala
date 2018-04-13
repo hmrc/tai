@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import javax.inject.Singleton
-
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Action
@@ -26,14 +25,16 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.AddPensionProvider
 import uk.gov.hmrc.tai.service.PensionProviderService
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class PensionProviderController @Inject()(pensionProviderService: PensionProviderService) extends BaseController
+class PensionProviderController @Inject()(pensionProviderService: PensionProviderService,
+                                          authentication: AuthenticationPredicate)
+  extends BaseController
   with ApiFormats {
 
-  def addPensionProvider(nino: Nino): Action[JsValue] = Action.async(parse.json) {
+  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[AddPensionProvider] {
         pensionProvider =>

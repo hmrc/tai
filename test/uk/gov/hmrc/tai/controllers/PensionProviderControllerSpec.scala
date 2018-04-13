@@ -20,24 +20,39 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsNull, Json}
 import play.api.test.Helpers.{contentAsJson, status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.AddPensionProvider
 import uk.gov.hmrc.tai.service.PensionProviderService
 
 import scala.concurrent.Future
 
-class PensionProviderControllerSpec extends PlaySpec with MockitoSugar {
+class PensionProviderControllerSpec extends PlaySpec
+  with MockitoSugar
+  with MockAuthenticationPredicate{
 
   "addPensionProvider" must {
-    "return envelop Id" when {
-      "called with valid add employment request" in {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = new PensionProviderController(mock[PensionProviderService], authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.addPensionProvider(nextNino)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
+          .withHeaders(("content-type", "application/json")))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+    "return envelope Id" when {
+      "called with valid add pension request" in {
         val envelopeId = "envelopId"
         val pensionProvider = AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(pensionProvider)
@@ -47,7 +62,7 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar {
         when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new PensionProviderController(mockPensionProviderService)
+        val sut = new PensionProviderController(mockPensionProviderService, authentication = loggedInAuthenticationPredicate)
         val result = sut.addPensionProvider(nino)(FakeRequest("POST", "/", FakeHeaders(), json)
           .withHeaders(("content-type", "application/json")))
 
