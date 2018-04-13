@@ -22,7 +22,6 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.model.DateRequest
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear

@@ -21,13 +21,15 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class JourneyCacheController @Inject()(repository: JourneyCacheRepository) extends BaseController {
+class JourneyCacheController @Inject()(repository: JourneyCacheRepository,
+                                       authentication: AuthenticationPredicate)
+  extends BaseController {
 
-  def currentCache(journeyName: String): Action[AnyContent] = Action.async { implicit request =>
+  def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.currentCache(journeyName) map {
       case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
       case _ => NotFound
@@ -36,7 +38,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository) exten
     }
   }
 
-  def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = Action.async { implicit request =>
+  def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.currentCache(journeyName, key) map {
       case Some(value) if value.trim!="" => Ok(Json.toJson(value))
       case _ => NotFound
@@ -45,7 +47,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository) exten
     }
   }
 
-  def cached(journeyName: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[Map[String, String]] {
       cache => repository.cached(journeyName, cache) map { cache =>
         Created(Json.toJson(cache))
@@ -55,7 +57,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository) exten
     }
   }
 
-  def flush(journeyName: String): Action[AnyContent] = Action.async { implicit request =>
+  def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.flush(journeyName) map { res =>
       NoContent
     } recover {
