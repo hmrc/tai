@@ -24,6 +24,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
@@ -33,7 +34,9 @@ import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
 
 @Singleton
 class IncomeController @Inject()(incomeService: IncomeService,
-                                 taxAccountService: TaxAccountService) extends BaseController
+                                 taxAccountService: TaxAccountService,
+                                 authentication: AuthenticationPredicate)
+  extends BaseController
     with ApiFormats
     with TaxCodeIncomeSourceAPIFormatters
     with ControllerErrorHandler{

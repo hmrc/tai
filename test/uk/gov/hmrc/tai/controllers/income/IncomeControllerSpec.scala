@@ -27,6 +27,8 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
@@ -40,7 +42,8 @@ import scala.util.Random
 
 class IncomeControllerSpec extends PlaySpec
     with MockitoSugar
-    with TaxCodeIncomeSourceAPIFormatters {
+    with TaxCodeIncomeSourceAPIFormatters
+    with MockAuthenticationPredicate{
 
   "untaxedInterest" must {
     "return OK with untaxed interest" when {
@@ -292,5 +295,7 @@ class IncomeControllerSpec extends PlaySpec
   private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
 
   private def createSUT(incomeService: IncomeService = mock[IncomeService],
-                        taxAccountService: TaxAccountService = mock[TaxAccountService]) = new IncomeController(incomeService, taxAccountService)
+                        taxAccountService: TaxAccountService = mock[TaxAccountService],
+                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+                        new IncomeController(incomeService, taxAccountService, authentication)
 }
