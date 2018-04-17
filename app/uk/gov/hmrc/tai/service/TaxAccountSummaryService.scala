@@ -37,18 +37,12 @@ class TaxAccountSummaryService @Inject()(taxAccountSummaryRepository: TaxAccount
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxAccountSummary] = {
 
-    val taxSummaryRepo = taxAccountSummaryRepository.taxAccountSummary(nino, year)
-    val taxFreeAmountComponentsFuture = codingComponentService.codingComponents(nino, year)
-    val taxCodeIncomesFuture = incomeService.taxCodeIncomes(nino, year)
-    val totalTaxFuture = totalTaxService.totalTax(nino, year)
-    val taxFreeAllowanceFuture = totalTaxService.taxFreeAllowance(nino, year)
-
     for {
-      totalEstimatedTax <- taxSummaryRepo
-      taxFreeAmountComponents <- taxFreeAmountComponentsFuture
-      taxCodeIncomes <- taxCodeIncomesFuture
-      totalTax <- totalTaxFuture
-      taxFreeAllowance <- taxFreeAllowanceFuture
+      totalEstimatedTax <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
+      taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
+      taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
+      totalTax <- totalTaxService.totalTax(nino, year)
+      taxFreeAllowance <- totalTaxService.taxFreeAllowance(nino, year)
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
