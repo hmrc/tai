@@ -32,16 +32,13 @@ class TaxAccountSummaryRepository @Inject()(taxAccountRepository: TaxAccountRepo
                                             codingComponentRepository: CodingComponentRepository) extends TaxAccountSummaryHodFormatters {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
-    val totalEstTax = taxAccountRepository.taxAccount(nino, year) map(_.as[BigDecimal](taxAccountSummaryReads))
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] = Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
-    val components = codingComponentRepository.codingComponents(nino, year).map(_.filter(
-      c => componentTypesCanAffectTotalEst.contains(c.componentType)
-    ))
-
     for{
-      totalTax <- totalEstTax
-      componentsCanAffectTotal <- components
+      totalTax <- taxAccountRepository.taxAccount(nino, year) map(_.as[BigDecimal](taxAccountSummaryReads))
+      componentsCanAffectTotal <- codingComponentRepository.codingComponents(nino, year).map(_.filter(
+        c => componentTypesCanAffectTotalEst.contains(c.componentType)
+      ))
     } yield totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum
   }
 
