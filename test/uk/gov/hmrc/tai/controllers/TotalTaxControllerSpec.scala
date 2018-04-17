@@ -111,6 +111,15 @@ class TotalTaxControllerSpec extends PlaySpec
                   "taxAdjustmentAmount" -> 100
                 )
               )
+            ),
+            "taxReliefComponent" -> Json.obj(
+              "amount" -> 100,
+              "taxAdjustmentComponents" -> Json.arr(
+                Json.obj(
+                  "taxAdjustmentType" -> "PersonalPensionPaymentRelief",
+                  "taxAdjustmentAmount" -> 100
+                )
+              )
             )
           ),
           "links" -> Json.arr())
@@ -170,12 +179,13 @@ class TotalTaxControllerSpec extends PlaySpec
   val reliefsGivingBackTax = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
   val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
   val alreadyTaxedAtSource = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
+  val taxReliefComponents = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
 
   val totalTax = TotalTax(BigDecimal(1000), Seq(
     IncomeCategory(UkDividendsIncomeCategory, 10, 20, 30, Seq(
       TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
       TaxBand(bandType = "B", code = "BR", income = 10000, tax = 500, lowerBand = Some(5000), upperBand = Some(20000), rate = 10)))),
-    reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource)
+    reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource, None, taxReliefComponents)
 
   private def createSUT(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate =
                         loggedInAuthenticationPredicate) = new TotalTaxController(totalTaxService, authentication)

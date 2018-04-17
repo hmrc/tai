@@ -22,7 +22,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.{OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, AlreadyTaxedAtSource}
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.{OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, AlreadyTaxedAtSource, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
@@ -91,6 +91,31 @@ class TaxAccountSummaryRepository @Inject()(taxAccountRepository: TaxAccountRepo
     for {
       alreadyTaxedAtSourceComponents <- alreadyTaxedSourcesComponents
     } yield if (alreadyTaxedAtSourceComponents.nonEmpty) Some(TaxAdjustment(alreadyTaxedAtSourceComponents.map(_.taxAdjustmentAmount).sum, alreadyTaxedAtSourceComponents)) else None
+  }
+
+
+  def taxReliefComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[TaxAdjustment]] = {
+    val taxReliefsComponentsFuture = taxAdjustmentComponents(nino, year).map {
+      case Some(taxAdjustment) => taxAdjustment.taxAdjustmentComponents.filter {
+        _.taxAdjustmentType match {
+          case _: TaxReliefComponent => true
+          case _ => false
+        }
+      }
+      case None => Seq.empty[TaxAdjustmentComponent]
+    }
+
+    for{
+      taxReliefComponents <- taxReliefsComponentsFuture
+      codingComponents <- codingComponentRepository.codingComponents(nino, year)
+    } yield {
+      val giftAidPayments = codingComponents.find(_.componentType == GiftAidPayments).flatMap(_.inputAmount)
+      val components = giftAidPayments.collect{
+        case amount => taxReliefComponents :+ TaxAdjustmentComponent(taxAdjustments.GiftAidPayments, amount)
+      } getOrElse taxReliefComponents
+
+      if(components.nonEmpty) Some(TaxAdjustment(components.map(_.taxAdjustmentAmount).sum, components)) else None
+    }
   }
 
   def taxAdjustmentComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[TaxAdjustment]] = {
