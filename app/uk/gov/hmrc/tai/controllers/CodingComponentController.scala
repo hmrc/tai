@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
@@ -36,8 +35,7 @@ class CodingComponentController @Inject()(authentication: AuthenticationPredicat
   extends BaseController
   with ApiFormats
   with RequestQueryFilter
-  with CodingComponentAPIFormatters
-  with ControllerErrorHandler{
+  with CodingComponentAPIFormatters {
 
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
