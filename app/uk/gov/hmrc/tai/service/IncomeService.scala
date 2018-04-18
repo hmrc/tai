@@ -20,6 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain.income.{Incomes, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.domain.response._
@@ -34,7 +35,8 @@ import scala.concurrent.Future
 class IncomeService @Inject()(employmentService: EmploymentService,
                               taxAccountService: TaxAccountService,
                               incomeRepository: IncomeRepository,
-                              taxAccountRepository: TaxAccountRepository) {
+                              taxAccountRepository: TaxAccountRepository,
+                              auditor: Auditor) {
 
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] = {
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
@@ -50,17 +52,21 @@ class IncomeService @Inject()(employmentService: EmploymentService,
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
-
-    validateUpdateAmount(nino, year, employmentId, amount) flatMap {
-
-      case Some(invalidAmount) => Future.successful(invalidAmount)
-      case _ =>
         for {
           root <- taxAccountService.personDetails(nino)
           cyResponse <- taxAccountRepository.updateTaxCodeAmount(nino, year, root.version, employmentId, NewEstimatedPay.code, amount)
           incomeUpdateResponse <- updateCyPlusOneIfCySuccess(nino, year, employmentId, amount, root, cyResponse)
-        } yield incomeUpdateResponse
-    }
+        } yield {
+          auditor.sendDataEvent(
+            transactionName = "Update Multiple Employments Data",
+            detail = Map(
+              "nino" -> nino.value,
+              "year" -> year.toString,
+              "employmentId" -> employmentId.toString,
+              "newAmount" -> amount.toString))
+
+          incomeUpdateResponse
+        }
   }
 
   private def updateCyPlusOneIfCySuccess(nino: Nino, year: TaxYear, employmentId: Int, amount: Int, root: TaiRoot,
@@ -78,27 +84,6 @@ class IncomeService @Inject()(employmentService: EmploymentService,
       NewEstimatedPay.code, amount) map {
       case HodUpdateSuccess => IncomeUpdateSuccess
       case HodUpdateFailure => IncomeUpdateFailed("Hod update failed for CY+1 update")
-    }
-  }
-
-  def validateUpdateAmount(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
-                          (implicit hc: HeaderCarrier): Future[Option[IncomeUpdateResponse]] = {
-    val taxCodeIncomesFuture = taxCodeIncomes(nino, year)
-    val employmentFuture = employmentService.employment(nino, employmentId)
-    for {
-      taxCodeIncomes <- taxCodeIncomesFuture
-      employment <- employmentFuture
-    } yield {
-      val taxCodeIncomeAmount = retrieveTaxCodeIncomeAmount(nino, employmentId, taxCodeIncomes)
-      val amountYearToDate = retrieveEmploymentAmountYearToDate(nino, employment)
-
-      if (amount == taxCodeIncomeAmount) {
-        Some(InvalidAmount("updated amount is equal to current estimate amount"))
-      } else if (amount < amountYearToDate) {
-        Some(InvalidAmount("updated amount is less than the actual Year To Date amount"))
-      } else {
-        None
-      }
     }
   }
 
