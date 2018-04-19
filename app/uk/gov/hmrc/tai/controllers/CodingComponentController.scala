@@ -17,30 +17,29 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.CodingComponentAPIFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.RequestQueryFilter
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
-
-import scala.concurrent.Future
 
 @Singleton
-class CodingComponentController @Inject()(codingComponentService: CodingComponentService) extends BaseController
+class CodingComponentController @Inject()(authentication: AuthenticationPredicate,
+                                          codingComponentService: CodingComponentService)
+  extends BaseController
   with ApiFormats
   with RequestQueryFilter
-  with CodingComponentAPIFormatters
-with ControllerErrorHandler {
+  with CodingComponentAPIFormatters {
 
-  def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = Action.async { implicit request =>
-    codingComponentService.codingComponents(nino, year) map { codingComponentList =>
-      Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
-    } recoverWith taxAccountErrorHandler
-  }
+  def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
+      codingComponentService.codingComponents(nino, year) map { codingComponentList =>
+        Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
+      }
+    }
 }

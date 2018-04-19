@@ -22,18 +22,20 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.model.DateRequest
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class EmploymentsController @Inject()(employmentService: EmploymentService) extends BaseController
+class EmploymentsController @Inject()(employmentService: EmploymentService,
+                                      authentication: AuthenticationPredicate)
+  extends BaseController
   with ApiFormats {
 
-  def employments(nino: Nino, year: TaxYear): Action[AnyContent] = Action.async { implicit request =>
+  def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
 
     employmentService.employments(nino, year).map { employments =>
 
@@ -46,7 +48,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService) exte
     }
   }
 
-  def employment(nino: Nino, id: Int): Action[AnyContent] = Action.async { implicit request =>
+  def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     employmentService.employment(nino, id).map {
       case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
       case None => NotFound
@@ -56,7 +58,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService) exte
     }
   }
 
-  def endEmployment(nino: Nino, id: Int): Action[JsValue] = Action.async(parse.json) {
+  def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[EndEmployment] {
         endEmployment =>
@@ -66,7 +68,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService) exte
       }
   }
 
-  def addEmployment(nino: Nino): Action[JsValue] =  Action.async(parse.json) {
+  def addEmployment(nino: Nino): Action[JsValue] =  authentication.async(parse.json) {
     implicit request =>
       withJsonBody[AddEmployment] {
         employment =>
@@ -76,7 +78,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService) exte
       }
   }
 
-  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] =  Action.async(parse.json) {
+  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] =  authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IncorrectEmployment] {
         employment =>
@@ -86,7 +88,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService) exte
       }
   }
 
-  def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] =  Action.async(parse.json) {
+  def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] =  authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IncorrectEmployment] {
         employment =>

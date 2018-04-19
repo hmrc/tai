@@ -19,14 +19,18 @@ package uk.gov.hmrc.tai.controllers.income
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsArray, JsNull, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
@@ -40,9 +44,21 @@ import scala.util.Random
 
 class IncomeControllerSpec extends PlaySpec
     with MockitoSugar
-    with TaxCodeIncomeSourceAPIFormatters {
+    with TaxCodeIncomeSourceAPIFormatters
+    with MockAuthenticationPredicate{
 
   "untaxedInterest" must {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.untaxedInterest(nino)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+
     "return OK with untaxed interest" when {
       "untaxed interest is returned by income service" in {
         val mockIncomeService = mock[IncomeService]
@@ -95,6 +111,17 @@ class IncomeControllerSpec extends PlaySpec
   }
 
   "taxCodeIncomesForYear" must {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.taxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+
     "return Not Found" when {
       "Nil is returned by income service" in {
         val mockIncomeService = mock[IncomeService]
@@ -173,6 +200,17 @@ class IncomeControllerSpec extends PlaySpec
   }
 
   "incomes" must {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.income(nino, TaxYear())(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+
     "return Ok with income" when {
       "income returned by IncomeService" in {
         val mockIncomeService = mock[IncomeService]
@@ -211,6 +249,18 @@ class IncomeControllerSpec extends PlaySpec
   }
 
   "updateTaxCodeIncome" must {
+
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.updateTaxCodeIncome(nino, TaxYear(), 1)(FakeRequest("POST", "/",
+          FakeHeaders(), JsNull)
+          .withHeaders(("content-type", "application/json")))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
 
     "return Ok" when {
       "a valid update amount is provided" in {
@@ -292,5 +342,7 @@ class IncomeControllerSpec extends PlaySpec
   private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
 
   private def createSUT(incomeService: IncomeService = mock[IncomeService],
-                        taxAccountService: TaxAccountService = mock[TaxAccountService]) = new IncomeController(incomeService, taxAccountService)
+                        taxAccountService: TaxAccountService = mock[TaxAccountService],
+                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+                        new IncomeController(incomeService, taxAccountService, authentication)
 }

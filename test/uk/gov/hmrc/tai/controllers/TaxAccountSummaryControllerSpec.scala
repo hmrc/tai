@@ -19,14 +19,18 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
@@ -36,9 +40,21 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
-class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with NpsExceptions {
+class TaxAccountSummaryControllerSpec extends PlaySpec
+  with MockitoSugar
+  with NpsExceptions
+  with MockAuthenticationPredicate{
 
   "taxAccountSummaryForYear" must {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TaxAccountSummaryService],notLoggedInAuthenticationPredicate)
+        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
@@ -84,7 +100,7 @@ class TaxAccountSummaryControllerSpec extends PlaySpec with MockitoSugar with Np
 
   val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0, 0, 0)
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22, 200, 100)
-  private def createSUT(taxAccountSummaryService: TaxAccountSummaryService) =
-    new TaxAccountSummaryController(taxAccountSummaryService)
+  private def createSUT(taxAccountSummaryService: TaxAccountSummaryService, authentication: AuthenticationPredicate =
+  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication)
 
 }

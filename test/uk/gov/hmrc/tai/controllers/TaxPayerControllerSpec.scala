@@ -16,23 +16,35 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Generator
 import play.api.test.Helpers._
+import uk.gov.hmrc.auth.core.MissingBearerToken
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
 import scala.util.Random
 
-class TaxPayerControllerSpec extends PlaySpec{
+class TaxPayerControllerSpec extends PlaySpec
+  with MockAuthenticationPredicate{
 
   "taxPayer" should {
     "return 200" when{
       "given a valid nino" in{
-        val sut = new TaxPayerController{}
+        val sut = new TaxPayerController(loggedInAuthenticationPredicate)
         val result = sut.taxPayer(new Generator(new Random).nextNino)(FakeRequest())
         status(result) mustBe OK
       }
     }
   }
-
+  "return NOT AUTHORISED" when {
+    "the user is not logged in" in {
+      val sut = new TaxPayerController(notLoggedInAuthenticationPredicate)
+      val result = sut.taxPayer(new Generator(new Random).nextNino)(FakeRequest())
+      ScalaFutures.whenReady(result.failed) { e =>
+        e mustBe a[MissingBearerToken]
+      }
+    }
+  }
 }

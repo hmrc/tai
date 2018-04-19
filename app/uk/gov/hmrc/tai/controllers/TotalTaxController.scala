@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TotalTaxService
@@ -31,12 +32,13 @@ import uk.gov.hmrc.tai.util.NpsExceptions
 import scala.concurrent.Future
 
 @Singleton
-class TotalTaxController @Inject()(totalTaxService: TotalTaxService) extends BaseController
+class TotalTaxController @Inject()(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate)
+  extends BaseController
   with ApiFormats
   with NpsExceptions
   with ControllerErrorHandler{
 
-  def totalTax(nino: Nino, year:TaxYear): Action[AnyContent] = Action.async { implicit request =>
+  def totalTax(nino: Nino, year:TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     totalTaxService.totalTax(nino, year) map { totalTax =>
       Ok(Json.toJson(ApiResponse(totalTax, Nil)))
     } recoverWith taxAccountErrorHandler

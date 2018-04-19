@@ -21,15 +21,18 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.service.TaiService
 
 import scala.concurrent.Future
 
 @Singleton
-class EstimatedPayCalculatorController @Inject()(taiService: TaiService) extends BaseController {
+class EstimatedPayCalculatorController @Inject()(taiService: TaiService,
+                                                 authentication: AuthenticationPredicate)
+  extends BaseController {
 
-  def calculateFullYearEstimatedPay(): Action[JsValue] = Action.async(parse.json) {
+  def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
     withJsonBody[PayDetails] {
       payDetails =>

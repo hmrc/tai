@@ -18,17 +18,23 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{Json, JsString}
+import play.api.libs.json.{JsNull, JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpException }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
-class JourneyCacheControllerSpec  extends PlaySpec with MockitoSugar {
+class JourneyCacheControllerSpec  extends PlaySpec
+  with MockitoSugar
+  with MockAuthenticationPredicate{
 
   "JourneyCacheController" must {
 
@@ -154,10 +160,57 @@ class JourneyCacheControllerSpec  extends PlaySpec with MockitoSugar {
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
+    "return NOT AUTHORISED" when {
+      "the user is not logged in and tries to request the current cache" in {
+        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val result = sut.currentCache("testjourney")(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+    "return NOT AUTHORISED" when {
+      "the user is not logged in and tries to request a named journey cache entry" in {
+        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val result = sut.currentCache("testjourney")(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+    "return NOT AUTHORISED" when {
+      "the user is not logged in and tries to request an individual journey cache entry" in {
+        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val result = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+    "return NOT AUTHORISED" when {
+      "the user is not logged in and tries to post a journey cache entry" in {
+        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val result = sut.cached("testjourney")(FakeRequest("POST", "/", FakeHeaders(),
+          JsNull).withHeaders(("content-type", "application/json")))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
+    "return NOT AUTHORISED" when {
+      "the user is not logged in and tries to flush the cache" in {
+        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val result = sut.flush("testjourney")(FakeRequest("DELETE", ""))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
   }
 
 
-  private def createSUT(repository: JourneyCacheRepository) = new JourneyCacheController(repository)
+  private def createSUT(repository: JourneyCacheRepository, authentication: AuthenticationPredicate =
+  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication)
 
   private implicit val hc = HeaderCarrier()
 }

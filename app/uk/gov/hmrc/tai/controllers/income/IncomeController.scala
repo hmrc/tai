@@ -24,6 +24,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
@@ -33,12 +34,14 @@ import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
 
 @Singleton
 class IncomeController @Inject()(incomeService: IncomeService,
-                                 taxAccountService: TaxAccountService) extends BaseController
+                                 taxAccountService: TaxAccountService,
+                                 authentication: AuthenticationPredicate)
+  extends BaseController
     with ApiFormats
     with TaxCodeIncomeSourceAPIFormatters
     with ControllerErrorHandler{
 
-  def untaxedInterest(nino: Nino): Action[AnyContent] = Action.async {
+  def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
 
       incomeService.untaxedInterest(nino).map {
@@ -47,7 +50,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
       } recoverWith taxAccountErrorHandler
   }
 
-  def taxCodeIncomesForYear(nino: Nino, year:TaxYear): Action[AnyContent] = Action.async {
+  def taxCodeIncomesForYear(nino: Nino, year:TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.taxCodeIncomes(nino, year).map {
         case Seq() => NotFound
@@ -55,25 +58,26 @@ class IncomeController @Inject()(incomeService: IncomeService,
       }recoverWith taxAccountErrorHandler
   }
 
-  def income(nino: Nino, year: TaxYear): Action[AnyContent] = Action.async {
+  def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.incomes(nino, year).map{
         income => Ok(Json.toJson(ApiResponse(income, Seq.empty[ApiLink])))
       } recoverWith taxAccountErrorHandler
   }
 
-  def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
-        incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId,
-          updateTaxCodeIncomeRequest.amount) map {
-          case IncomeUpdateSuccess => Ok
-          case InvalidAmount(message) => BadRequest(message)
-          case IncomeUpdateFailed(message) => InternalServerError(message)
+  def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] =
+    authentication.async(parse.json) {
+      implicit request =>
+        withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
+          incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId,
+            updateTaxCodeIncomeRequest.amount) map {
+            case IncomeUpdateSuccess => Ok
+            case InvalidAmount(message) => BadRequest(message)
+            case IncomeUpdateFailed(message) => InternalServerError(message)
+          }
+        }.recover {
+          case _ => InternalServerError
         }
-      }.recover {
-        case _ => InternalServerError
-      }
-  }
+    }
 
 }

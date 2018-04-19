@@ -33,21 +33,25 @@ import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
 
 import scala.concurrent.Future
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
 @Singleton
 class TaxSummaryController @Inject()(taiService: TaiService,
                                      taxAccountService: TaxAccountService,
-                                     metrics: Metrics) extends BaseController with MongoFormatter {
+                                     metrics: Metrics,
+                                     authentication: AuthenticationPredicate)
+  extends BaseController
+    with MongoFormatter {
 
-  def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] = Action.async {
+  def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] = authentication.async {
     implicit request =>
       taiService.getCalculatedTaxAccountPartial(nino, year)
         .map(summaryDetails => Ok(Json.toJson(summaryDetails)))
         .recoverWith(convertToErrorResponse)
   }
 
-  def getTaxSummary(nino: Nino, year: Int): Action[AnyContent] = Action.async {
+  def getTaxSummary(nino: Nino, year: Int): Action[AnyContent] = authentication.async {
     implicit request => {
       taxAccountService.taxSummaryDetails(nino, year).map(td => Ok(Json.toJson(td)))
     } recoverWith {
@@ -66,7 +70,7 @@ class TaxSummaryController @Inject()(taiService: TaiService,
     }
   }
 
-  def updateEmployments(nino: Nino, year: Int): Action[JsValue] = Action.async(parse.json) {
+  def updateEmployments(nino: Nino, year: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IabdUpdateEmploymentsRequest] {
         editIabd =>

@@ -19,19 +19,34 @@ package uk.gov.hmrc.tai.controllers
 import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.play.audit.model.Audit
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.service.TaiService
 
-class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar {
+class EstimatedPayCalculatorControllerSpec extends PlaySpec
+  with MockitoSugar
+  with MockAuthenticationPredicate{
 
-  "calculateFullYearEstimatedPay" should {
+  "Estimated pay calculator controller" should {
+    "return NOT AUTHORISED" when {
+      "the user is not logged in" in {
+        val sut = createSUT(mock[TaiService], notLoggedInAuthenticationPredicate)
+        val result = sut.calculateFullYearEstimatedPay().apply(createRequest(payDetails))
+        ScalaFutures.whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
+        }
+      }
+    }
     "return an OK response with CalculatedPay json" when {
       "given a valid request" in {
 
@@ -58,8 +73,8 @@ class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private def createSUT(taiService: TaiService) =
-    new EstimatedPayCalculatorController(taiService)
+  private def createSUT(taiService: TaiService, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new EstimatedPayCalculatorController(taiService, authentication)
 
   val date = new LocalDate(2017, 4, 14)
 
