@@ -24,6 +24,7 @@ import uk.gov.hmrc.auth.core.PlayAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 
+// $COVERAGE-OFF$ No proper implementation to test
 @Singleton
 class MicroserviceAuthConnector @Inject()(val environment: Environment,
                                           val conf: Configuration,
@@ -33,3 +34,4 @@ class MicroserviceAuthConnector @Inject()(val environment: Environment,
   lazy val serviceUrl = baseUrl("auth")
   lazy val http = WSHttp
 }
+// $COVERAGE-ON$
