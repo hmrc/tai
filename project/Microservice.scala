@@ -26,7 +26,8 @@ trait MicroService {
       "uk.gov.hmrc.BuildInfo.*",
       "prod.*",
       "dev.*",
-      "uk.gov.hmrc.tai.config")
+      "uk.gov.hmrc.tai.config",
+      "uk.gov.hmrc.tai.auth")
 
     Seq(
       ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
