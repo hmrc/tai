@@ -19,11 +19,12 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -121,16 +122,23 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
         when(mockTaxAccountRepository.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HodUpdateSuccess))
 
+        val mockAuditor = mock[Auditor]
+        doNothing().when(mockAuditor)
+          .sendDataEvent(any(), any(), any(),any())(any())
+
         val SUT = createSUT(
           employmentService = mockEmploymentSvc,
           taxAccountService = mockTaxAccountSvc,
           incomeRepository = mockIncomeRepository,
-          taxAccountRepository = mockTaxAccountRepository)
+          taxAccountRepository = mockTaxAccountRepository,
+          auditor = mockAuditor)
 
         val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5 seconds)
 
         result mustBe IncomeUpdateSuccess
         verify(mockTaxAccountSvc, times(1)).invalidateTaiCacheData()(any())
+        verify(mockAuditor)
+          .sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any(), any(),any())(any())
       }
     }
 
@@ -205,89 +213,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
   }
 
-  "validateUpdateAmount" must {
-
-    "not return an error list" when {
-      "a valid update amount is provided" in {
-
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false))))
-
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
-          .thenReturn(Future.successful(taxCodeIncomes))
-
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HodUpdateSuccess))
-
-        val SUT = createSUT(
-          employmentService = mockEmploymentSvc,
-          incomeRepository = mockIncomeRepository,
-          taxAccountRepository = mockTaxAccountRepository)
-
-        val result = Await.result(SUT.validateUpdateAmount(nino, TaxYear(), 1, 1234)(HeaderCarrier()), 5 seconds)
-
-        result mustBe None
-      }
-    }
-
-    "return an error message" when {
-      "the update amount provided is equal to the current amount" in {
-
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false))))
-
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
-          .thenReturn(Future.successful(taxCodeIncomes))
-
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateSuccess))
-
-        val SUT = createSUT(employmentService = mockEmploymentSvc,
-          incomeRepository = mockIncomeRepository,
-          taxAccountRepository = mockTaxAccountRepository)
-
-        val result = Await.result(SUT.validateUpdateAmount(nino, TaxYear(), 1, 123)(HeaderCarrier()), 5 seconds)
-
-        result mustBe Some(InvalidAmount("updated amount is equal to current estimate amount"))
-      }
-    }
-
-    "not return any errors" when {
-      "a valid update is supplied" in {
-
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(12300.45),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
-        val payment = Payment(LocalDate.now(), 1234.56, 0, 0, 0, 0, 0, Weekly)
-        val annualAccount = AnnualAccount("", TaxYear(), Available, Seq(payment), Nil)
-
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false))))
-
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
-          .thenReturn(Future.successful(taxCodeIncomes))
-
-        val SUT = createSUT(employmentService = mockEmploymentSvc, incomeRepository = mockIncomeRepository)
-        val result = Await.result(SUT.validateUpdateAmount(nino, TaxYear(), 1, 123)(HeaderCarrier()), 5 seconds)
-
-        result mustBe Some(InvalidAmount("updated amount is less than the actual Year To Date amount"))
-      }
-    }
-  }
-
   "retrieveTaxCodeIncomeAmount" must {
 
     "return an amount" when {
@@ -298,6 +223,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(employmentId), BigDecimal(12300.45),
           "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
+
 
         val SUT = createSUT()
 
@@ -373,6 +300,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
   private def createSUT(employmentService: EmploymentService = mock[EmploymentService],
                         taxAccountService: TaxAccountService = mock[TaxAccountService],
                         incomeRepository: IncomeRepository = mock[IncomeRepository],
-                        taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository]) =
-    new IncomeService(employmentService, taxAccountService, incomeRepository, taxAccountRepository)
+                        taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
+                        auditor: Auditor = mock[Auditor]) =
+    new IncomeService(employmentService, taxAccountService, incomeRepository, taxAccountRepository,auditor)
 }
