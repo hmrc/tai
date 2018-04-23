@@ -35,7 +35,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
-import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateSuccess, InvalidAmount}
+import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
 
@@ -311,6 +311,30 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return internal server error" when {
+
+      "income update exception has been thrown" in {
+
+        val employmentId = 1
+
+        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
+
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        val mockIncomeService = mock[IncomeService]
+        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(IncomeUpdateFailed("Failed")))
+
+        val mockTaxAccountService = mock[TaxAccountService]
+        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+
+        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
+
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+
+      }
+
       "any exception has been thrown" in {
 
         val employmentId = 1
