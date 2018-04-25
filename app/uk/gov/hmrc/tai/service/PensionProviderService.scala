@@ -22,16 +22,18 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, Person}
+import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.templates.html.PensionProviderIForm
+import uk.gov.hmrc.tai.repositories.EmploymentRepository
+import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.Future
 
 @Singleton
 class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionService,
+                                       employmentRepository: EmploymentRepository,
                                        auditable: Auditor) {
 
   def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
@@ -47,6 +49,27 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
         "start-date" -> pensionProvider.startDate.toString(),
         "pensionNumber" -> pensionProvider.pensionNumber,
         "pensionProviderName" -> pensionProvider.pensionProviderName
+      ))
+
+      envelopeId
+    }
+  }
+
+  def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
+    iFormSubmissionService.uploadIForm(nino, IFormConstants.IncorrectPensionProviderSubmissionKey, "TES1", (person: Person) => {
+      for {
+        Some(existingEmployment) <- employmentRepository.employment(nino, id)
+        templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
+      } yield EmploymentIForm(templateModel).toString
+    }) map { envelopeId =>
+      Logger.info("Envelope Id for incorrect pension provider- " + envelopeId)
+
+      auditable.sendDataEvent(transactionName = IFormConstants.IncorrectPensionProviderSubmissionKey, detail = Map(
+        "nino" -> nino.nino,
+        "envelope Id" -> envelopeId,
+        "what-you-told-us" -> incorrectPensionProvider.whatYouToldUs.length.toString,
+        "telephoneContactAllowed" -> incorrectPensionProvider.telephoneContactAllowed,
+        "telephoneNumber" -> incorrectPensionProvider.telephoneNumber.getOrElse("")
       ))
 
       envelopeId

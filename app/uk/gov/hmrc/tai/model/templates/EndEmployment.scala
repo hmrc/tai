@@ -144,6 +144,32 @@ object EmploymentPensionViewModel {
     )
   }
 
+  def apply(taxYear: TaxYear, person: Person, incorrectPensionProvider: IncorrectPensionProvider, existingEmployment: Employment):
+            EmploymentPensionViewModel = {
+
+    EmploymentPensionViewModel(
+      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      nino = person.nino.nino,
+      firstName = person.firstName,
+      lastName = person.surname,
+      dateOfBirth = person.dateOfBirth.map(_.toString(IFormConstants.DateFormat)).getOrElse(""),
+      telephoneContactAllowed = incorrectPensionProvider.telephoneContactAllowed,
+      telephoneNumber = incorrectPensionProvider.telephoneNumber.getOrElse(""),
+      addressLine1 = person.address.line1,
+      addressLine2 = person.address.line2,
+      addressLine3 = person.address.line3,
+      postcode = person.address.postcode,
+      isAdd = No,
+      isUpdate = Yes,
+      isEnd = No,
+      employmentPensionName = existingEmployment.name,
+      payrollNumber = existingEmployment.payrollNumber.getOrElse("No"),
+      startDate = "",
+      endDate = "",
+      whatYouToldUs = incorrectPensionProvider.whatYouToldUs
+    )
+  }
+
   def apply(taxYear: TaxYear, person: Person, incorrectEmployment: IncorrectEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
       taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
@@ -167,3 +193,5 @@ object EmploymentPensionViewModel {
       whatYouToldUs = incorrectEmployment.whatYouToldUs
     )
 }
+
+
