@@ -118,18 +118,20 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
           Seq(bankAccount, bankAccount)))
       }
 
-      "non-tax-code income without untaxed interest is present" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        val mockBbsiRepository = mock[BbsiRepository]
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(70), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-          thenReturn(Future.successful(json))
+      "bypass any bank account retrieval and return no untaxed interest" when{
+        "no UntaxedInterestIncome is present" in {
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          val mockBbsiRepository = mock[BbsiRepository]
+          val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(70), 100))
+          when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
+            thenReturn(Future.successful(json))
 
-        val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
+          val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+          val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
 
-        result.nonTaxCodeIncomes.untaxedInterest mustBe None
+          result.nonTaxCodeIncomes.untaxedInterest mustBe None
+        }
       }
 
       "bbsi api throws exception" in {
