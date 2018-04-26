@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.Matchers
 import org.mockito.Matchers.any
+import scala.language.postfixOps
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar

@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
@@ -39,19 +40,21 @@ class IncomeRepository @Inject()(taxAccountRepository: TaxAccountRepository,
     with IabdHodFormatters {
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
-    val taxAccountFuture = taxAccountRepository.taxAccount(nino, year)
-    val bankAccounts = bbsiRepository.bbsiDetails(nino, year).recover({case NonFatal(_)=> Seq.empty[BankAccount]})
-
-    for {
-      nonTaxCodeIncome <- taxAccountFuture map (_.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads))
-      accounts <- bankAccounts
-    } yield {
+    taxAccountRepository.taxAccount(nino, year) flatMap  { jsValue =>
+      val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) = nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
-      val untaxedInterestDetails = untaxedInterestIncome.headOption map { income =>
-        UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description, accounts)
-      }
 
-      Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(untaxedInterestDetails, otherNonTaxCodeIncome))
+      if(untaxedInterestIncome.nonEmpty){
+        for {
+          accounts <- bbsiRepository.bbsiDetails(nino, year).recover({ case NonFatal(_) => Seq.empty[BankAccount] })
+        } yield {
+          val income = untaxedInterestIncome.head
+          val untaxedInterest = UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description, accounts)
+          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
+        }
+      } else {
+        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
+      }
     }
   }
 
