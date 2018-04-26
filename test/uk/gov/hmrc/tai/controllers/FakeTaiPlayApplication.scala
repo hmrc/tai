@@ -28,7 +28,11 @@ trait FakeTaiPlayApplication extends OneServerPerSuite with PatienceConfiguratio
 
   override lazy val port = 19331
 
+  val additionalConfiguration = Map [String, Any] (
+    "metrics.enabled" -> false)
+
   implicit override lazy val app: Application =
     new GuiceApplicationBuilder()
+      .configure(additionalConfiguration)
       .build()
 }

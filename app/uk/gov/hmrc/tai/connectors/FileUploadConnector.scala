@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.google.inject.{Inject, Singleton}

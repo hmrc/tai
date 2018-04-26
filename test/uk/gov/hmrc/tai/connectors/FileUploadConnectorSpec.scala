@@ -94,8 +94,12 @@ class FileUploadConnectorSpec extends PlaySpec
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(CREATED)))
+        val mockTimerContext = mock[Timer.Context]
+        val mockMetrics = mock[Metrics]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
 
-        val sut = createSut(mock[Metrics], mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
+        val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
         val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
@@ -115,8 +119,12 @@ class FileUploadConnectorSpec extends PlaySpec
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(400)))
+        val mockTimerContext = mock[Timer.Context]
+        val mockMetrics = mock[Metrics]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
 
-        val sut = createSut(mock[Metrics], mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
+        val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
         val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
@@ -202,6 +210,9 @@ class FileUploadConnectorSpec extends PlaySpec
         val ahcWSClient: AhcWSClient = mock[AhcWSClient]
         val mockUrls = mock[FileUploadUrls]
         val mockConfig = mock[FileUploadConfig]
+        val mockTimerContext = mock[Timer.Context]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
         val mockWSResponse = createMockResponse(BAD_REQUEST, "")
         val mockWSRequest = mock[WSRequest]
@@ -287,6 +298,10 @@ class FileUploadConnectorSpec extends PlaySpec
         val mockWsClient = mock[WSClient]
         val mockUrls = mock[FileUploadUrls]
         val mockConfig = mock[FileUploadConfig]
+        val mockTimerContext = mock[Timer.Context]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
+
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
@@ -302,6 +317,10 @@ class FileUploadConnectorSpec extends PlaySpec
         val mockWsClient = mock[WSClient]
         val mockUrls = mock[FileUploadUrls]
         val mockConfig = mock[FileUploadConfig]
+        val mockTimerContext = mock[Timer.Context]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
+
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
@@ -318,6 +337,9 @@ class FileUploadConnectorSpec extends PlaySpec
         val mockWsClient = mock[WSClient]
         val mockUrls = mock[FileUploadUrls]
         val mockConfig = mock[FileUploadConfig]
+        val mockTimerContext = mock[Timer.Context]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))

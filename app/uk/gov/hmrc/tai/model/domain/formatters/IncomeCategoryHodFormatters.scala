@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.formatters
 
 import play.api.libs.json._
+import scala.language.postfixOps
 import uk.gov.hmrc.tai.model.domain.calculation._
 
 trait IncomeCategoryHodFormatters {
