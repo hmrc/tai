@@ -47,8 +47,8 @@ class PensionProviderController @Inject()(pensionProviderService: PensionProvide
   def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] =  authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IncorrectPensionProvider] {
-        employment =>
-          pensionProviderService.incorrectPensionProvider(nino, id, employment) map (envelopeId => {
+        incorrectPension =>
+          pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId => {
             Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
           })
       }
