@@ -25,9 +25,13 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
+import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
+import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -116,6 +120,28 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey), any(), any(),
         Matchers.eq(map))(any())
+    }
+  }
+
+  "incorrectPensionProviderForm" must{
+    "return the correct employment IForm" when{
+      "applied with Person" in {
+        val pensionProvider = IncorrectPensionProvider("whatYouToldUs", "No", None)
+        val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),
+          Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+        val employment = Employment("TEST", Some("12345"), LocalDate.now(), None,
+          List(AnnualAccount("", TaxYear(TaxYearResolver.currentTaxYear), Available, Nil, Nil)), "", "", 2, Some(100), false)
+
+        val mockEmploymentRepository = mock[EmploymentRepository]
+        when(mockEmploymentRepository.employment(any(), any())(any()))
+          .thenReturn(Future.successful(Some(employment)))
+
+        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
+
+        val result = Await.result(sut.incorrectPensionProviderForm(nino,1,pensionProvider)(hc) (person), 5 seconds)
+        result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
+
+      }
     }
   }
 

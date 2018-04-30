@@ -37,10 +37,8 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
                                        auditable: Auditor) {
 
   def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
-    iFormSubmissionService.uploadIForm(nino, IFormConstants.AddPensionProviderSubmissionKey, "TES1", (person: Person) => {
-      val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
-      Future.successful(PensionProviderIForm(templateModel).toString)
-    }) map { envelopeId =>
+    iFormSubmissionService.uploadIForm(nino, IFormConstants.AddPensionProviderSubmissionKey, "TES1",
+      addPensionProviderForm(pensionProvider)) map { envelopeId =>
       Logger.info("Envelope Id for incorrect employment- " + envelopeId)
 
       auditable.sendDataEvent(transactionName = IFormConstants.AddPensionProviderAuditTxnName, detail = Map(
@@ -55,13 +53,20 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
     }
   }
 
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = {
+    person: Person => {
+      val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
+      Future.successful(PensionProviderIForm(templateModel).toString)
+    }
+  }
+
   def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
-    iFormSubmissionService.uploadIForm(nino, IFormConstants.IncorrectPensionProviderSubmissionKey, "TES1", (person: Person) => {
-      for {
-        Some(existingEmployment) <- employmentRepository.employment(nino, id)
-        templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
-      } yield EmploymentIForm(templateModel).toString
-    }) map { envelopeId =>
+    iFormSubmissionService.uploadIForm(
+      nino,
+      IFormConstants.IncorrectPensionProviderSubmissionKey,
+      "TES1",
+      incorrectPensionProviderForm(nino, id, incorrectPensionProvider)
+    ) map { envelopeId =>
       Logger.info("Envelope Id for incorrect pension provider- " + envelopeId)
 
       auditable.sendDataEvent(transactionName = IFormConstants.IncorrectPensionProviderSubmissionKey, detail = Map(
@@ -76,4 +81,13 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
     }
   }
 
+  private[service] def incorrectPensionProviderForm(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)
+                                                   (implicit hc: HeaderCarrier) = {
+    person: Person => {
+      for {
+        Some(existingEmployment) <- employmentRepository.employment(nino, id)
+        templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
+      } yield EmploymentIForm(templateModel).toString
+    }
+  }
 }
