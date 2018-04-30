@@ -53,7 +53,7 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
     }
   }
 
-  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = {
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier) = {
     person: Person => {
       val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
       Future.successful(PensionProviderIForm(templateModel).toString)

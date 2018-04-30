@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
-import uk.gov.hmrc.tai.templates.html.EmploymentIForm
+import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -78,6 +78,22 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.AddPensionProviderAuditTxnName), any(), any(),
         Matchers.eq(map))(any())
+    }
+  }
+
+  "addPensionProviderForm" must{
+    "return the correct employment IForm" when{
+      "applied with Person" in {
+        val pensionProvider = AddPensionProvider("testName", new LocalDate(2017,6,9), "1234", "Yes", Some("123456789"))
+        val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),
+          Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+
+        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
+
+        val result = Await.result(sut.addPensionProviderForm(pensionProvider)(hc)(person), 5 seconds)
+        result mustBe PensionProviderIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider)).toString
+
+      }
     }
   }
 
