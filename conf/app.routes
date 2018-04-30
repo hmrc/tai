@@ -25,6 +25,7 @@ PUT  /:nino/employments/:id/end-date                                            
 POST /:nino/employments/:id/reason                                                                  @uk.gov.hmrc.tai.controllers.EmploymentsController.incorrectEmployment(nino: Nino, id: Int)
 
 POST /:nino/pensionProvider                                                                         @uk.gov.hmrc.tai.controllers.PensionProviderController.addPensionProvider(nino: Nino)
+POST /:nino/pensionProvider/:id/reason                                                              @uk.gov.hmrc.tai.controllers.PensionProviderController.incorrectPensionProvider(nino: Nino, id: Int)
 
 #Benefits
 GET  /:nino/tax-account/:year/benefits                                                              @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.benefits(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)

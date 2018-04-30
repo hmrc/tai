@@ -188,6 +188,7 @@ object IFormConstants {
   val RemoveCompanyBenefitAuditTxnName = "RemoveCompanyBenefitRequest"
   val AddPensionProviderSubmissionKey = "AddPensionProvider"
   val AddPensionProviderAuditTxnName = "AddPensionProviderRequest"
+  val IncorrectPensionProviderSubmissionKey = "IncorrectPensionProviderRequest"
 }
 
 trait RequestQueryFilter {

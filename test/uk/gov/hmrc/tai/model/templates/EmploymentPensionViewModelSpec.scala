@@ -171,6 +171,25 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     }
   }
 
+  "EmploymentPensionViewModel incorrect pension apply method" must {
+    "generate a view model with the correct yes/no combination" in {
+      val incorrectPensionProvider = IncorrectPensionProvider("TEST", "Yes", Some("123455"))
+      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
+        incorrectPensionProvider = incorrectPensionProvider, existingEmployment = existingEmployment)
+      sut.isAdd mustBe No
+      sut.isEnd mustBe No
+      sut.isUpdate mustBe Yes
+    }
+
+    "generate a view model with the employer name and payroll number present" in {
+      val incorrectPensionProvider = IncorrectPensionProvider("TEST", "Yes", Some("123455"))
+      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
+        incorrectPensionProvider = incorrectPensionProvider, existingEmployment = existingEmployment)
+      sut.employmentPensionName mustBe "fake employer"
+      sut.payrollNumber mustBe "12345"
+    }
+  }
+
 
   private val nino = new Generator(new Random()).nextNino
   private val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),

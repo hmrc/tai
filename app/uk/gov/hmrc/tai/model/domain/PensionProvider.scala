@@ -28,3 +28,11 @@ case class AddPensionProvider(pensionProviderName: String,
 object AddPensionProvider {
   implicit val addPensionProviderFormat: Format[AddPensionProvider] = Json.format[AddPensionProvider]
 }
+
+case class IncorrectPensionProvider(whatYouToldUs: String,
+                                    telephoneContactAllowed: String,
+                                    telephoneNumber: Option[String])
+
+object IncorrectPensionProvider {
+  implicit val formats: Format[IncorrectPensionProvider] = Json.format[IncorrectPensionProvider]
+}
