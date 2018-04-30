@@ -20,6 +20,7 @@ API
 | ```/tai/:nino/employments/:id/end-date ```  | PUT | The end point allows the consumer to update the end date for the employment [More...](docs/employments/update-enddate-employment.md)|
 | ```/tai/:nino/employments/:id/reason ```  | POST | The end point updates the incorrect employment details for current year [More...](docs/employments/reason-employment.md)|
 | ```/tai/:nino/pensionProvider ```  | POST | The end point adds a new pension provider for the user [More...](docs/pensions/pension-provider.md) |
+| ```/tai/:nino/pensionProvider/:id/reason ```  | POST | The end point updates the incorrect pension details for the current year [More...](docs/pensions/update-pension-provider.md) |
 | ```/tai/:nino/tax-account/:year/benefits ```  | GET | The end point provides fetches the benefits for the provided nino and tax year [More...](docs/benefits/benefits.md) |
 | ```/tai/:nino/tax-account/tax-components/employments/:id/benefits/company-car ```  | GET | The end point fetches the benefits for employment [More...](docs/benefits/employment-company-car.md) |
 | ```/tai/:nino/tax-account/tax-components/employments/:empId/benefits/company-car/:carId/withdrawn ```  | PUT | The end point would submit a request to withdraw a company car [More...](docs/benefits/withdraw-company-car.md) |
