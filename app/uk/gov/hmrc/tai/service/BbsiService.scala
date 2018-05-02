@@ -96,7 +96,7 @@ class BbsiService @Inject()(bbsiRepository: BbsiRepository,
       case Some(bankAccount) =>
 
         iFormSubmissionService.uploadIForm(nino, "UpdateBankAccountInterest", "BBSI5", (person: Person) => {
-          val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount)
+          val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount, Some(interest))
           Future.successful(IncorrectBankAccountIform(templateModel).toString())
         }) map { envelopeId: String =>
 
