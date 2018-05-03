@@ -198,6 +198,8 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
       testIform must include("1234.56")
       testIform must include("Tell us what is incorrect and why")
       testIform must include("My gross interest is wrong")
+
+      testIform must not include("I never had this account")
     }
   }
 
