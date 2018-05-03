@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{doNothing, verify, when}
 import org.scalatest.mock.MockitoSugar
@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.CloseAccountRequest
-import uk.gov.hmrc.tai.model.domain.BankAccount
+import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.BbsiRepository
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -135,7 +135,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  "updateBankAccount" must {
+  "updateBankAccountInterest" must {
     "return an envelopeId" when {
       "given valid inputs" in {
 
@@ -170,6 +170,36 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         the[BankAccountNotFound] thrownBy Await.result(sut.updateBankAccountInterest(nino, 49, 1000), 5.seconds)
       }
+    }
+
+    "internally generate an interest update version of the Incorrect Bank Account iform" in {
+
+      val iformFunctionCaptor = ArgumentCaptor.forClass(classOf[(Person) => Future[String]])
+
+      val mockBbsiRepository = mock[BbsiRepository]
+      when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Seq(bankAccount)))
+
+      val mockIFormSubmissionService = mock[IFormSubmissionService]
+      when(mockIFormSubmissionService.uploadIForm(any(), any(), any(), iformFunctionCaptor.capture())(any()))
+        .thenReturn(Future.successful("1"))
+
+      val mockAuditor = mock[Auditor]
+      doNothing().when(mockAuditor)
+        .sendDataEvent(any(), any(), any(),any())(any())
+
+      val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
+      Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
+
+      val fakePerson = Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
+      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
+
+      testIform must include("Correct amount of gross interest")
+      testIform must include("1234.56")
+      testIform must include("Tell us what is incorrect and why")
+      testIform must include("My gross interest is wrong")
+
+      testIform must not include("I never had this account")
     }
   }
 
