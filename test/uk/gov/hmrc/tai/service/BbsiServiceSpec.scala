@@ -172,7 +172,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
       }
     }
 
-    "internnally generate an interest update version of the Incorrect Bank Account iform" in {
+    "internally generate an interest update version of the Incorrect Bank Account iform" in {
 
       val iformFunctionCaptor = ArgumentCaptor.forClass(classOf[(Person) => Future[String]])
 
