@@ -24,7 +24,8 @@ case class Person(nino: Nino,
                   surname: String,
                   dateOfBirth: Option[LocalDate],
                   address: Address,
-                  isDeceased: Boolean = false)
+                  isDeceased: Boolean = false,
+                  hasCorruptData: Boolean = false)
 
 case class Address(line1: String,
                    line2: String,
@@ -47,6 +48,7 @@ object PersonFormatter {
     ((JsPath \ "person" \ "lastName").read[String] or Reads.pure("")) and
     (JsPath \ "person" \ "dateOfBirth").readNullable[LocalDate] and
     ((JsPath \ "address" ).read[Address] or Reads.pure(Address("", "", "", "", ""))) and
-    ((JsPath \ "person" \ "deceased").read[Boolean] or Reads.pure(false))
+    ((JsPath \ "person" \ "deceased").read[Boolean] or Reads.pure(false)) and
+    ((JsPath \ "person" \ "manualCorrespondenceInd").read[Boolean] or Reads.pure(false))
   )(Person.apply _)
 }
