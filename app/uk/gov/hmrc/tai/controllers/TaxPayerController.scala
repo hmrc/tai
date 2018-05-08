@@ -30,7 +30,6 @@ import uk.gov.hmrc.tai.service.PersonService
 class TaxPayerController @Inject()(authentication: AuthenticationPredicate, personService: PersonService) extends BaseController with ApiFormats {
 
   def taxPayer(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-
     personService.person(nino) map { person =>
       Ok(Json.toJson(ApiResponse(person, Nil)))
     }
