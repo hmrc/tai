@@ -15,7 +15,7 @@ PUT  /:nino/tai-data                                                            
 
 #New endpoints**************************************************************
 
-GET  /:nino/person                                                                                  @uk.gov.hmrc.tai.controllers.TaxPayerController.taxPayer(nino: Nino)
+GET  /:nino/person                                                                                  @uk.gov.hmrc.tai.controllers.PersonController.person(nino: Nino)
 
 GET  /:nino/employments/years/:year                                                                 @uk.gov.hmrc.tai.controllers.EmploymentsController.employments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 POST /:nino/employments/years/:year/update                                                          @uk.gov.hmrc.tai.controllers.EmploymentsController.updatePreviousYearIncome(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
@@ -26,6 +26,7 @@ POST /:nino/employments/:id/reason                                              
 
 POST /:nino/pensionProvider                                                                         @uk.gov.hmrc.tai.controllers.PensionProviderController.addPensionProvider(nino: Nino)
 POST /:nino/pensionProvider/:id/reason                                                              @uk.gov.hmrc.tai.controllers.PensionProviderController.incorrectPensionProvider(nino: Nino, id: Int)
+
 
 #Benefits
 GET  /:nino/tax-account/:year/benefits                                                              @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.benefits(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)

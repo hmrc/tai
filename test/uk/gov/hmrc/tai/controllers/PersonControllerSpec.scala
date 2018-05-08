@@ -39,7 +39,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxPayerControllerSpec extends PlaySpec
+class PersonControllerSpec extends PlaySpec
   with MockAuthenticationPredicate with MockitoSugar {
 
   "taxPayer method" should {
@@ -48,7 +48,7 @@ class TaxPayerControllerSpec extends PlaySpec
         val mockPersonService = mock[PersonService]
         when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
 
-        val result = createSUT(personService = mockPersonService).taxPayer(nino)(FakeRequest())
+        val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
         status(result) mustBe OK
       }
     }
@@ -75,7 +75,7 @@ class TaxPayerControllerSpec extends PlaySpec
         val mockPersonService = mock[PersonService]
         when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
 
-        val result = createSUT(personService = mockPersonService).taxPayer(nino)(FakeRequest())
+        val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
         contentAsJson(result) mustBe expectedJson
       }
     }
@@ -83,7 +83,7 @@ class TaxPayerControllerSpec extends PlaySpec
       val mockPersonService = mock[PersonService]
       when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.failed(new NotFoundException("an example not found exception")))
 
-      val result = createSUT(personService = mockPersonService).taxPayer(nino)(FakeRequest())
+      val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
       val thrown = the[NotFoundException] thrownBy Await.result(result, 5 seconds)
       thrown.getMessage mustBe("an example not found exception")
     }
@@ -91,7 +91,7 @@ class TaxPayerControllerSpec extends PlaySpec
   "return NOT AUTHORISED" when {
     "the user is not logged in" in {
       val sut = createSUT(authenticationPredicate = notLoggedInAuthenticationPredicate)
-      val result = sut.taxPayer(nino)(FakeRequest())
+      val result = sut.person(nino)(FakeRequest())
       ScalaFutures.whenReady(result.failed) { e =>
         e mustBe a[MissingBearerToken]
       }
@@ -103,5 +103,5 @@ class TaxPayerControllerSpec extends PlaySpec
   val person = Person(nino, "firstname", "surname", Some(new LocalDate(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"), false, false)
 
   private def createSUT(authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-                        personService: PersonService = mock[PersonService]) = new TaxPayerController(authenticationPredicate, personService)
+                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService)
 }
