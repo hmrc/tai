@@ -74,5 +74,11 @@ trait ApiFormats {
   }
 
   implicit val employmentUpdateFormat: Format[EmploymentUpdate] = Json.format[EmploymentUpdate]
+
   implicit val bbsiFormat: Format[BankAccount] = Json.format[BankAccount]
+
+  implicit val addressFormat: Format[Address] = Json.format[Address]
+
+  implicit val personFormat: Format[Person] = Json.format[Person]
+
 }

@@ -17,17 +17,22 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-
-import scala.concurrent.Future
+import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.service.PersonService
 
 @Singleton
-class TaxPayerController @Inject()(authentication: AuthenticationPredicate) extends BaseController {
+class TaxPayerController @Inject()(authentication: AuthenticationPredicate, personService: PersonService) extends BaseController with ApiFormats {
 
   def taxPayer(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    Future.successful(Ok)
+
+    personService.person(nino) map { person =>
+      Ok(Json.toJson(ApiResponse(person, Nil)))
+    }
   }
 }
