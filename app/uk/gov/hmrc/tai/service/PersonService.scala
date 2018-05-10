@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers
+package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.model.domain.Person
+import uk.gov.hmrc.tai.repositories.PersonRepository
 
 import scala.concurrent.Future
 
 @Singleton
-class TaxPayerController @Inject()(authentication: AuthenticationPredicate) extends BaseController {
+class PersonService @Inject()(personRepository: PersonRepository){
 
-  def taxPayer(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    Future.successful(Ok)
-  }
+  def person(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = personRepository.getPerson(nino)
 }
