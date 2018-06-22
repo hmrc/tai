@@ -224,7 +224,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
         Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds) mustBe
-          TaxAccountSummary(1111, -620, 67.46, 0, 0, 10000, 10000)
+          TaxAccountSummary(1111, -620, 67.46, 0, 0, 0, 10000)
       }
     }
 
@@ -295,6 +295,38 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
 
         result.totalEstimatedIncome mustBe 1000
         result.taxFreeAllowance mustBe 0
+      }
+    }
+    "return TaxAccount summary with total estimated income and total estimated tax" when {
+      "total estimated tax is zero" in {
+        val taxFreeAmountCompnents = Seq(
+          CodingComponent(PersonalAllowancePA, Some(234), 11500, "PersonalAllowancePA")
+        )
+        val mockcodingComponentService = mock[CodingComponentService]
+        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any())).thenReturn(Future.successful(taxFreeAmountCompnents))
+
+        val mockIncomeService = mock[IncomeService]
+        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+          .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
+
+        val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+          .thenReturn(Future.successful(BigDecimal(0)))
+
+        val mockTotalTaxService = mock[TotalTaxService]
+        val incomeCategories = Seq(
+          IncomeCategory(NonSavingsIncomeCategory, 0, 0, 8000, Seq.empty[TaxBand])
+        )
+        val totalTax = TotalTax(0, incomeCategories, None, None, None)
+        when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTax))
+        when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(11500)))
+
+        val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
+
+        val result = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
+
+        result.totalEstimatedIncome mustBe 8000
+        result.taxFreeAllowance mustBe 11500
       }
     }
   }
