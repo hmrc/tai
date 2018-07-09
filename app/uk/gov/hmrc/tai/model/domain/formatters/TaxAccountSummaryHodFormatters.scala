@@ -157,8 +157,9 @@ trait TaxReliefFormatters extends CommonFormatters {
           val personalPensionPayment = readTaxAdjustmentComponent(js, "personalPensionPayment", PersonalPensionPayment)
           val personalPensionPaymentRelief = readTaxAdjustmentComponent(js, "personalPensionPaymentRelief", PersonalPensionPaymentRelief)
           val giftAidPaymentsRelief = readTaxAdjustmentComponent(js, "giftAidPaymentsRelief", GiftAidPaymentsRelief)
+          val giftAidPayments = readTaxAdjustmentComponent(js, "giftAidPayments", GiftAidPayments)
 
-          JsSuccess(flattenTaxAdjustmentComponents(personalPensionPayment, personalPensionPaymentRelief, giftAidPaymentsRelief))
+          JsSuccess(flattenTaxAdjustmentComponents(personalPensionPayment, personalPensionPaymentRelief, giftAidPaymentsRelief, giftAidPayments))
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
     }
