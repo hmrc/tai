@@ -41,7 +41,9 @@ private object AppDependencies {
         "org.pegdown" % "pegdown" % pegdownVersion % scope,
         "org.jsoup" % "jsoup" % "1.7.3" % scope,
         "org.scalacheck" %% "scalacheck" % "1.13.4" % scope,
-        "org.mockito" % "mockito-core" % "1.9.5")
+        "org.mockito" % "mockito-core" % "1.9.5",
+        "com.github.tomakehurst" % "wiremock" % "2.15.0" % scope
+      )
     }.test
   }
 
