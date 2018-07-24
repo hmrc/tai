@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers.taxCodeChange
+package uk.gov.hmrc.tai.service
 
-import com.google.inject.Inject
-import play.api.libs.json.Json
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+class TaxCodeChangeServiceSpec {
 
-import scala.concurrent.Future
-
-class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate) extends BaseController  {
-
-  def hasTaxCodeChanged(nino: Nino) = authentication.async {
-    implicit request => Future.successful(
-      Ok(
-        Json.obj("hasTaxCodeChanged" -> true)
-      )
-    )
-  }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package uk.gov.hmrc.tai.util
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
@@ -51,4 +51,3 @@ trait WireMockHelper  extends BeforeAndAfterAll with BeforeAndAfterEach {
   }
 
 }
-
