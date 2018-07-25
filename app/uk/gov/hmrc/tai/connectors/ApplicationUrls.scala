@@ -90,3 +90,10 @@ class IabdUrls @Inject()(config: NpsConfig) {
   def iabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
     s"${iabdUrl(nino, taxYear)}/employment/$iabdType"
 }
+
+@Singleton
+class TaxCodeChangeUrl @Inject()(config: NpsConfig) {
+
+  def taxCodeChangeUrl(nino: Nino, taxYear: TaxYear): String =
+    s"${config.baseURL}/personal-tax-account/tax-code/history/api/v1/${nino.nino}/${taxYear}"
+}

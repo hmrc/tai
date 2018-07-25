@@ -23,18 +23,18 @@ import uk.gov.hmrc.domain.Generator
 import scala.util.Random
 
 class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
+
   "hasTaxCodeChanged" should {
+
     "return true" in {
       val testNino = new Generator(new Random).nextNino
       val service = new TaxCodeChangeServiceImpl()
-
       service.hasTaxCodeChanged(testNino) mustEqual true
     }
 
     "return false" in {
       val testNino = new Generator(new Random).nextNino
       val service = new TaxCodeChangeServiceImpl()
-
       service.hasTaxCodeChanged(testNino) mustEqual false
     }
   }

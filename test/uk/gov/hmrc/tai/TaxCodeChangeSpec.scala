@@ -32,14 +32,16 @@ import uk.gov.hmrc.tai.util.WireMockHelper
 import scala.util.Random
 
 class TaxCodeChangeSpec extends PlaySpec with MockitoSugar with WireMockHelper with MockAuthenticationPredicate {
+
   "for a GET for a nino with a tax code change" should {
     "return true for hasTaxCodeChanged" in {
-      val testNino = new Generator(new Random).nextNino
 
+      val testNino = new Generator(new Random).nextNino
       val host = "localhost"
       val port = 9332
       val taxYearLow = 1
       val url = s"http://$host:$port/nps-json-service/nps/itmp/personal-tax-account/tax-code/history/api/v1/$testNino/$taxYearLow"
+
       val stubResponse = Json.obj(
         "nino" -> "",
         "taxHistoryList" -> Seq(
