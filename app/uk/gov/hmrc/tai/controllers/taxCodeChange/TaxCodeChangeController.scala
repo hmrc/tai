@@ -21,16 +21,22 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
 import scala.concurrent.Future
 
-class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate) extends BaseController  {
+class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
+                                        taxCodeChangeService: TaxCodeChangeService) extends BaseController  {
 
   def hasTaxCodeChanged(nino: Nino) = authentication.async {
-    implicit request => Future.successful(
-      Ok(
-        Json.obj("hasTaxCodeChanged" -> true)
+    implicit request => {
+      val result = taxCodeChangeService.hasTaxCodeChanged(nino)
+
+      Future.successful(
+        Ok(
+          Json.obj("hasTaxCodeChanged" -> result)
+        )
       )
-    )
+    }
   }
 }

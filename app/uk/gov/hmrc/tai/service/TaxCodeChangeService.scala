@@ -16,26 +16,21 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
+import com.google.inject.ImplementedBy
+import uk.gov.hmrc.domain.Nino
 
-import scala.util.Random
+class TaxCodeChangeServiceImpl {
 
-class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
-  "hasTaxCodeChanged" should {
-    "return true" in {
-      val testNino = new Generator(new Random).nextNino
-      val service = new TaxCodeChangeServiceImpl()
-
-      service.hasTaxCodeChanged(testNino) mustEqual true
-    }
-
-    "return false" in {
-      val testNino = new Generator(new Random).nextNino
-      val service = new TaxCodeChangeServiceImpl()
-
-      service.hasTaxCodeChanged(testNino) mustEqual false
-    }
+  def hasTaxCodeChanged(nino: Nino): Boolean  = {
+    true
   }
+
+}
+
+
+@ImplementedBy(classOf[TaxCodeChangeServiceImpl])
+trait TaxCodeChangeService {
+
+  def hasTaxCodeChanged(nino: Nino): Boolean
+
 }

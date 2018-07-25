@@ -27,6 +27,7 @@ trait WireMockHelper  extends BeforeAndAfterAll with BeforeAndAfterEach {
   this: Suite =>
 
   protected val server: WireMockServer = new WireMockServer(wireMockConfig().dynamicPort())
+
   protected lazy val app: Application =
     new GuiceApplicationBuilder()
       .configure(

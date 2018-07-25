@@ -16,23 +16,19 @@
 
 package uk.gov.hmrc.tai
 
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.test.Helpers.{status, _}
+import play.api.libs.json.{JsObject, Json}
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController
-import uk.gov.hmrc.tai.util.WireMockHelper
-import uk.gov.hmrc.http.logging.SessionId
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.libs.json.{JsObject, JsValue, Json}
-import play.api.mvc.Result
-import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.service.TaxCodeChangeService
+import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.Future
 import scala.util.Random
 
 class TaxCodeChangeSpec extends PlaySpec with MockitoSugar with WireMockHelper with MockAuthenticationPredicate {
@@ -111,5 +107,6 @@ class TaxCodeChangeSpec extends PlaySpec with MockitoSugar with WireMockHelper w
 
   implicit val hc = HeaderCarrier()
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate)
+  val mockTaxCodeService = mock[TaxCodeChangeService]
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, mockTaxCodeService)
 }
