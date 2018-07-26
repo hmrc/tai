@@ -92,4 +92,5 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration, playEnv: En
 class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
   lazy val desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
   def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
+  def taxCodeChangeEnabled: Boolean = runModeConfiguration.getBoolean("tai.taxCodeChange.enabled").getOrElse(false)
 }

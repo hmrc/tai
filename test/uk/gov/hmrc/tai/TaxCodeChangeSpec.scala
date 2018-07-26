@@ -19,11 +19,13 @@ package uk.gov.hmrc.tai
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.{Configuration, Environment}
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
@@ -110,5 +112,6 @@ class TaxCodeChangeSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   implicit val hc = HeaderCarrier()
 
   val mockTaxCodeService = mock[TaxCodeChangeService]
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, mockTaxCodeService)
+  val featureToggler = new FeatureTogglesConfig(mock[Configuration], mock[Environment])
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, mockTaxCodeService, featureToggler)
 }
