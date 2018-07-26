@@ -21,14 +21,24 @@ import org.joda.time.LocalDate
 
 import scala.util.matching.Regex
 
+object TaxYearDates {
+  val startDay = 6
+  val startMonth = 4
+  val endDay = 5
+  val endMonth = 4
+}
+
 case class TaxYear(year: Int) extends Ordered[TaxYear] {
+  import TaxYearDates._
+
   require(year.toString.length == 4, "Invalid year")
-  def start: LocalDate = new LocalDate(year, 4, 6)
-  def end: LocalDate = new LocalDate(year + 1, 4, 5)
+
+  def start: LocalDate = new LocalDate(year, startMonth, startDay)
+  def end: LocalDate = new LocalDate(year + 1, endMonth , endDay)
   def next = TaxYear(year + 1)
   def prev = TaxYear(year - 1)
-  def startPrev: LocalDate = new LocalDate(prev.year, 4, 6)
-  def endPrev: LocalDate = new LocalDate(prev.year + 1, 4, 5)
+  def startPrev: LocalDate = new LocalDate(prev.year, endMonth, startDay)
+  def endPrev: LocalDate = new LocalDate(prev.year + 1, startMonth, endDay)
   def compare(that: TaxYear): Int = this.year compare that.year
   def twoDigitRange = s"${start.year.get % 100}-${end.year.get % 100}"
   def fourDigitRange = s"${start.year.get}-${end.year.get}"
