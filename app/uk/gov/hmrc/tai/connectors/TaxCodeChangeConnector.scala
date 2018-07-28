@@ -23,6 +23,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -53,13 +54,8 @@ class TaxCodeChangeConnector @Inject()(config: NpsConfig,
                                        urlConfig: TaxCodeChangeUrl,
                                        httpHandler: HttpHandler){
 
-  def taxCodeChanges(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistoryDetails] = {
-
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val url = s"http://localhost:9332/personal-tax-account/tax-code/history/api/v1/${nino.nino}/${taxYear.year}"
-
-    httpHandler.getFromApi(url, APITypes.TaxCodeChangeAPI) map {
-      x => x.as[TaxCodeHistoryDetails]
-    }
-
+    httpHandler.getFromApi(url, APITypes.TaxCodeChangeAPI)
   }
 }

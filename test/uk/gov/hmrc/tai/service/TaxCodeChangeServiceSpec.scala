@@ -16,26 +16,54 @@
 
 package uk.gov.hmrc.tai.service
 
+import org.mockito.Matchers.any
+import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
 
   "hasTaxCodeChanged" should {
 
-    "return true" in {
-      val testNino = new Generator(new Random).nextNino
-      val service = new TaxCodeChangeServiceImpl()
-      service.hasTaxCodeChanged(testNino) mustEqual true
+    "return true" when {
+      "there has been a tax code change" in {
+        val testNino = new Generator(new Random).nextNino
+        val taxCodeHistory =
+          TaxCodeHistory(
+            testNino,
+            Seq(
+              TaxCodeRecord(taxCode="1185L",employerName="employer2", operatedTaxCode=true, p2Date="2018-07-11"),
+              TaxCodeRecord(taxCode="1080L",employerName="employer1", operatedTaxCode=true, p2Date="2018-04-11")
+            )
+          )
+
+        val mockConnector = mock[TaxCodeChangeConnector]
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        when(mockConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future.successful(Json.toJson(taxCodeHistory)))
+
+        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual Some(true)
+      }
     }
 
-    "return false" in {
-      val testNino = new Generator(new Random).nextNino
-      val service = new TaxCodeChangeServiceImpl()
-      service.hasTaxCodeChanged(testNino) mustEqual false
+    "return false" when {
+      "there has not been a tax code change" in {
+
+        val service = new TaxCodeChangeServiceImpl(mock[TaxCodeChangeConnector])
+        val testNino = new Generator(new Random).nextNino
+
+        service.hasTaxCodeChanged(testNino) mustEqual false
+      }
     }
   }
+
+
 }

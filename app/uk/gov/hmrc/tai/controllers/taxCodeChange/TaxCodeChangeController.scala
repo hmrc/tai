@@ -36,15 +36,15 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
   def hasTaxCodeChanged(nino: Nino) = authentication.async {
     implicit request =>
 
-      val result =
-        if (toggleConfig.taxCodeChangeEnabled)
-          taxCodeChangeService.hasTaxCodeChanged(nino)
-        else
-          false
-
-      Future.successful(Ok(Json.obj("hasTaxCodeChanged" -> result)))
+        if (toggleConfig.taxCodeChangeEnabled){
+          taxCodeChangeService.hasTaxCodeChanged(nino).map{
+            taxCodeChanged => Ok(Json.toJson(taxCodeChanged))
+          }
+        }
+        else{
+          Future.successful(Ok(Json.toJson(false)))
+        }
   }
-
 
   def taxCodeHistory(nino: Nino) = authentication.async {
     implicit request =>

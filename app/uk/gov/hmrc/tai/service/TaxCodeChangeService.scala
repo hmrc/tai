@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.tai.service
 
-import com.google.inject.ImplementedBy
+import com.google.inject.{ImplementedBy, Inject}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector){
 
-  def hasTaxCodeChanged(nino: Nino): Boolean  = {
-    true
+  def hasTaxCodeChanged(nino: Nino): Future[Option[Boolean]]  = {
+    Future.successful(Some(true))
   }
 
   def taxCodeHistory(nino: Nino) : Future[Option[TaxCodeHistory]] = {
@@ -38,7 +39,7 @@ class TaxCodeChangeServiceImpl {
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Boolean
+  def hasTaxCodeChanged(nino: Nino): Future[Option[Boolean]]
   def taxCodeHistory(nino: Nino): Future[Option[TaxCodeHistory]]
 
 }
