@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.service
+package uk.gov.hmrc.tai.model
 
-import com.google.inject.ImplementedBy
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 
-import scala.concurrent.Future
+case class TaxCodeHistory(nino: Nino, taxCodeRecords:Seq[TaxCodeRecord])
 
-class TaxCodeChangeServiceImpl {
-
-  def hasTaxCodeChanged(nino: Nino): Boolean  = {
-    true
-  }
-
-  def taxCodeHistory(nino: Nino) : Future[Option[TaxCodeHistory]] = {
-    ???
-  }
-
-}
-
-
-@ImplementedBy(classOf[TaxCodeChangeServiceImpl])
-trait TaxCodeChangeService {
-
-  def hasTaxCodeChanged(nino: Nino): Boolean
-  def taxCodeHistory(nino: Nino): Future[Option[TaxCodeHistory]]
-
+object TaxCodeHistory {
+  implicit val format = Json.format[TaxCodeHistory]
 }

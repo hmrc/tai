@@ -23,7 +23,9 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
@@ -32,18 +34,22 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
                                         featureToggle: FeatureTogglesConfig) extends BaseController  {
 
   def hasTaxCodeChanged(nino: Nino) = authentication.async {
-    implicit request => {
-      val result = if (featureToggle.taxCodeChangeEnabled) taxCodeChangeService.hasTaxCodeChanged(nino) else false
+    implicit request =>
+
+      val result =
+        if (featureToggle.taxCodeChangeEnabled)
+          taxCodeChangeService.hasTaxCodeChanged(nino)
+        else
+          false
 
       Future.successful(Ok(Json.obj("hasTaxCodeChanged" -> result)))
-    }
   }
 
 
-  def lastTaxCodeChange(nino: Nino) = authentication.async {
+  def taxCodeHistory(nino: Nino) = authentication.async {
     implicit request =>
-      Future.successful(Ok(Json.obj("employmentId" -> 1234567890,
-                                    "p2Issued" -> true,
-                                    "p2Date" -> "2011-06-23")))
+      taxCodeChangeService.taxCodeHistory(nino) map { taxCodeHistory =>
+        Ok(Json.toJson(taxCodeHistory))
+      }
   }
 }
