@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.ImplementedBy
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.TaxCodeHistory
 
 import scala.concurrent.Future
 
