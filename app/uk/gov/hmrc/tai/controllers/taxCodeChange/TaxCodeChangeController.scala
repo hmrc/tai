@@ -31,13 +31,13 @@ import scala.concurrent.Future
 
 class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
                                         taxCodeChangeService: TaxCodeChangeService,
-                                        featureToggle: FeatureTogglesConfig) extends BaseController  {
+                                        toggleConfig: FeatureTogglesConfig) extends BaseController  {
 
   def hasTaxCodeChanged(nino: Nino) = authentication.async {
     implicit request =>
 
       val result =
-        if (featureToggle.taxCodeChangeEnabled)
+        if (toggleConfig.taxCodeChangeEnabled)
           taxCodeChangeService.hasTaxCodeChanged(nino)
         else
           false
