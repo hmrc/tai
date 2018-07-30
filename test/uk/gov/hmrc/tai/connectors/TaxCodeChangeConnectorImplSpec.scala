@@ -25,15 +25,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 
 class TaxCodeChangeConnectorImplSpec extends PlaySpec with WireMockHelper with MockitoSugar {
 
   def config = injector.instanceOf[TaxCodeChangeUrl]
-  lazy val connector = injector.instanceOf[TaxCodeChangeConnectorImpl]
+  lazy val connector = injector.instanceOf[TaxCodeChangeConnector]
 
   "tax code change API" must {
     "return tax code change response" in {
