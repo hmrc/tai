@@ -20,7 +20,6 @@ import com.google.inject.{ImplementedBy, Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -28,8 +27,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class TaxCodeChangeConnectorImpl @Inject()(config: NpsConfig,
-                                           urlConfig: TaxCodeChangeUrl,
+class TaxCodeChangeConnectorImpl @Inject()(urlConfig: TaxCodeChangeUrl,
                                            httpHandler: HttpHandler) extends TaxCodeChangeConnector {
 
   implicit val hc = HeaderCarrier()

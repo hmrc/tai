@@ -31,7 +31,7 @@ trait WireMockHelper  extends BeforeAndAfterAll with BeforeAndAfterEach {
   protected lazy val app: Application =
     new GuiceApplicationBuilder() //.build()
       .configure(
-        "nps-hod" -> s"http://localhost:${server.port()}"
+        "nps-json-hod" -> s"http://localhost:${server.port()}"
       ).build()
 
   protected lazy val injector: Injector = app.injector

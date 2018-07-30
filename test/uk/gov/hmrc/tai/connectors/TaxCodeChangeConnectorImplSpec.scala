@@ -25,38 +25,32 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
+import scala.concurrent.ExecutionContext.Implicits.global
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
 class TaxCodeChangeConnectorImplSpec extends PlaySpec with WireMockHelper with MockitoSugar {
 
-  private lazy val connector = injector.instanceOf[TaxCodeChangeConnectorImpl]
+  def config = injector.instanceOf[TaxCodeChangeUrl]
+  lazy val connector = injector.instanceOf[TaxCodeChangeConnectorImpl]
 
   "tax code change API" must {
     "return tax code change response" in {
 
       val taxYear = TaxYear(2017)
       val testNino = randomNino
-      val host = "localhost"
-      val port = 9332
 
-      val url = injector.instanceOf[TaxCodeChangeUrl].taxCodeChangeUrl(testNino, taxYear)
-
-//      val url = s"http://$host:$port/personal-tax-account/tax-code/history/api/v1/$testNino/${taxYear.year}"
-
+      val url = config.taxCodeChangeUrl(testNino, taxYear)
 
       server.stubFor(
         get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
       )
 
-      val expectedResult = jsonResponse.as[TaxCodeHistory]
-
-      val result = Await.result(connector.taxCodeHistory(testNino, taxYear), 10.seconds)
-
-      result mustEqual expectedResult
+      connector.taxCodeHistory(testNino, taxYear) map {
+        result =>
+          result mustEqual jsonResponse.as[TaxCodeHistory]
+      }
     }
   }
 
