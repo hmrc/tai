@@ -29,9 +29,9 @@ trait WireMockHelper  extends BeforeAndAfterAll with BeforeAndAfterEach {
   protected val server: WireMockServer = new WireMockServer(wireMockConfig().dynamicPort())
 
   protected lazy val app: Application =
-    new GuiceApplicationBuilder()
+    new GuiceApplicationBuilder() //.build()
       .configure(
-        "des-hod" -> s"http://localhost:${server.port()}"
+        "nps-hod" -> s"http://localhost:${server.port()}"
       ).build()
 
   protected lazy val injector: Injector = app.injector

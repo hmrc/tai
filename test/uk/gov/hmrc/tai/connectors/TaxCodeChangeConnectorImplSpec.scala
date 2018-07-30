@@ -22,6 +22,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
@@ -32,41 +33,49 @@ import scala.util.Random
 
 class TaxCodeChangeConnectorImplSpec extends PlaySpec with WireMockHelper with MockitoSugar {
 
-//  private lazy val connector = injector.instanceOf[TaxCodeChangeConnector]
-//
-//  "tax code change API" must{
-//    "return tax code change response" in {
-//      val taxYear = TaxYear(2017)
-//      val testNino = randomNino
-//      val host = "localhost"
-//      val port = 9332
+  private lazy val connector = injector.instanceOf[TaxCodeChangeConnectorImpl]
+
+  "tax code change API" must {
+    "return tax code change response" in {
+
+      val taxYear = TaxYear(2017)
+      val testNino = randomNino
+      val host = "localhost"
+      val port = 9332
+
+      val url = injector.instanceOf[TaxCodeChangeUrl].taxCodeChangeUrl(testNino, taxYear)
+
 //      val url = s"http://$host:$port/personal-tax-account/tax-code/history/api/v1/$testNino/${taxYear.year}"
-//
-//      server.stubFor(
-//        get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-//      )
-//
-//      val expectedResult = TaxCodeHistoryDetails(testNino, Seq(TaxCodeHistoryItem(1234567890, true, "2011-06-23")))
-//
-//      val result = Await.result(connector.taxCodeChanges(testNino, taxYear), 5 seconds)
-//
-//      result mustEqual expectedResult
-//    }
-//  }
-//
-//  private val jsonResponse = Json.obj(
-//    "nino" -> new Generator(new Random).nextNino,
-//    "taxHistoryList" -> Seq(
-//      Json.obj(
-//        "employmentId" -> 1234567890,
-//        "p2Issued" -> true,
-//        "p2Date" -> "2011-06-23"
-//      )
-//    )
-//  )
-//
-//  implicit val headerCarrier: HeaderCarrier = mock[HeaderCarrier]
-//
-//  private def randomNino: Nino = new Generator(new Random).nextNino
+
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
+      )
+
+      val expectedResult = jsonResponse.as[TaxCodeHistory]
+
+      val result = Await.result(connector.taxCodeHistory(testNino, taxYear), 10.seconds)
+
+      result mustEqual expectedResult
+    }
+  }
+
+  private val jsonResponse = Json.obj(
+    "nino" -> new Generator(new Random).nextNino,
+    "taxCodeRecord" -> Seq(
+      Json.obj(
+        "taxCode" -> "1185L",
+        "employerName" -> "Employer 1",
+        "operatedTaxCode" -> true,
+        "p2Issued" -> true,
+        "p2Date" -> "2017-06-23"
+      )
+    )
+  )
+
+
+  implicit val headerCarrier: HeaderCarrier = mock[HeaderCarrier]
+
+  private def randomNino: Nino = new Generator(new Random).nextNino
 
 }

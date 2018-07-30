@@ -28,9 +28,7 @@ import scala.concurrent.Future
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
-    taxCodeHistory(nino).map {
-      taxCodeHistoryOpt => taxCodeHistoryOpt.taxCodeRecords.nonEmpty //TODO: Double check logic
-    }
+    taxCodeHistory(nino).map(_.taxCodeRecord.nonEmpty) // TODO: Double check logic
   }
 
   def taxCodeHistory(nino: Nino): Future[TaxCodeHistory] = {

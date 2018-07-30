@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 
-case class TaxCodeHistory(nino: Nino, taxCodeRecords: Seq[TaxCodeRecord])
+case class TaxCodeHistory(nino: Nino, taxCodeRecord: Seq[TaxCodeRecord])
 
 object TaxCodeHistory {
   implicit val format = Json.format[TaxCodeHistory]
