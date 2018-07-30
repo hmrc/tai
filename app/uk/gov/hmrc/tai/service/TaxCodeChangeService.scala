@@ -17,20 +17,24 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector){
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Future[Option[Boolean]]  = {
-    Future.successful(Some(true))
+  def hasTaxCodeChanged(nino: Nino): Future[Boolean] = taxCodeHistory(nino) map {
+    taxCodeHistoryOpt =>
+      taxCodeHistoryOpt.exists(_.taxCodeRecords.nonEmpty)
   }
 
-  def taxCodeHistory(nino: Nino) : Future[Option[TaxCodeHistory]] = {
-    ???
+  def taxCodeHistory(nino: Nino): Future[Option[TaxCodeHistory]] = {
+    val currentYear = TaxYear()
+    taxCodeChangeConnector.taxCodeHistory(nino, currentYear)
   }
 
 }
@@ -39,7 +43,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Future[Option[Boolean]]
+  def hasTaxCodeChanged(nino: Nino): Future[Boolean]
+
   def taxCodeHistory(nino: Nino): Future[Option[TaxCodeHistory]]
 
 }
