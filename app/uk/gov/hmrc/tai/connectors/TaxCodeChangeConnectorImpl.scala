@@ -35,7 +35,7 @@ class TaxCodeChangeConnectorImpl @Inject()(config: NpsConfig,
   implicit val hc = HeaderCarrier()
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
-    val url = s"http://localhost:9332/personal-tax-account/tax-code/history/api/v1/${nino.nino}/${taxYear.year}"
+    val url = urlConfig.taxCodeChangeUrl(nino, taxYear)
     httpHandler.getFromApi(url, APITypes.TaxCodeChangeAPI).map(_.as[TaxCodeHistory])
   }
 }

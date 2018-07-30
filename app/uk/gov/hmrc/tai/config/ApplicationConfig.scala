@@ -77,6 +77,18 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
 }
 
 @Singleton
+class NpsJsonServiceConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) with HodConfig {
+  lazy val optionalPath: Option[String] = runModeConfiguration.getConfig(s"$rootServices.nps-json-hod").flatMap(_.getString("path"))
+  lazy val path: String = optionalPath.fold("")(path => s"$path")
+  lazy val taxCodeURL: String = s"$baseURL/personal-tax-account/tax-code/history/api/v1"
+
+  override lazy val baseURL: String = s"${baseUrl("nps-json-hod")}$path"
+  override lazy val environment = ""
+  override lazy val authorization = ""
+  override lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-json-hod.originatorId").getOrElse("local")
+}
+
+@Singleton
 class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
   lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getBoolean("cy-plus-one.enabled")
   lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getString("cy-plus-one.startDayMonth")
