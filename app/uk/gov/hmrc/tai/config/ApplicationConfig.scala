@@ -80,7 +80,6 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
 class NpsJsonServiceConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) with HodConfig {
   lazy val optionalPath: Option[String] = runModeConfiguration.getConfig(s"$rootServices.nps-json-hod").flatMap(_.getString("path"))
   lazy val path: String = optionalPath.fold("")(path => s"$path")
-  lazy val taxCodeURL: String = s"$baseURL/personal-tax-account/tax-code/history/api/v1"
 
   override lazy val baseURL: String = s"${baseUrl("nps-json-hod")}$path"
   override lazy val environment = ""
