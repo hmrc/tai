@@ -90,7 +90,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val result = Await.result(sut.taiData(nino, 2017), 5.seconds)
+        val result = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         result.nino mustBe nino.nino
 
@@ -132,7 +132,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        Await.result(sut.taiData(nino, 2017), 5.seconds) mustBe sessionData(gateKeeperTaxSummaryDetails, gatekeeperTaiRoot)
+        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds) mustBe sessionData(gateKeeperTaxSummaryDetails, gatekeeperTaiRoot)
 
         verify(mockCacheConnector, times(1))
           .find[SessionData](Matchers.eq("TESTING"), any())(any())
@@ -172,7 +172,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[MongoConfig],
           mock[FeatureTogglesConfig])
 
-        val sessionData = Await.result(sut.taiData(nino, 2017), 5.seconds)
+        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
         verify(mockCitizenDetailsConnector, times(1))
@@ -223,7 +223,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        Await.result(sut.taiData(nino, 2017), 5.seconds)
+        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[SessionData](Matchers.eq("TESTING"), Matchers.eq(sessionData()), any())(any())
@@ -265,7 +265,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val sessionData = Await.result(sut.taiData(nino, 2017), 5.seconds)
+        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
 
@@ -309,7 +309,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val sessionData = Await.result(sut.taiData(nino, 2017), 5.seconds)
+        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
         verify(mockCitizenDetailsConnector, times(1)).getPersonDetails(any())(any(), any())
@@ -483,7 +483,7 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[MongoConfig],
         mock[FeatureTogglesConfig])
 
-      val awaitResult = Await.result(sut.personDetails(nino), 5.seconds)
+      val awaitResult = Await.result(sut.personDetails(nino)(hc), 5.seconds)
       awaitResult mustBe nonGatekeeperTaiRoot
     }
   }
@@ -526,7 +526,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[MongoConfig],
           mockFeatureToggleConfig)
 
-        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016), 5.seconds)
+        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
 
         verify(mockDesConnector, times(1))
           .getCalculatedTaxAccountRawResponseFromDes(any(), any())(any())
@@ -570,7 +570,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016), 5.seconds)
+        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
 
         verify(mockDesConnector, never)
           .getCalculatedTaxAccountRawResponseFromDes(any(), any())(any())
@@ -622,7 +622,7 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[FeatureTogglesConfig])
 
 
-      val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014), 5 seconds)
+      val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014)(hc), 5 seconds)
 
       summaryDetails mustBe taxSummaryDetails
     }
@@ -673,7 +673,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val summaryDetails = sut.taxSummaryDetails(nino, 2014)
+        val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
         val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
         Json.parse(ex.message) mustBe failureMsg
@@ -721,7 +721,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val summaryDetails = sut.taxSummaryDetails(nino, 2014)
+        val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
         val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
         ex.message mustBe failureMsg
@@ -768,7 +768,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val data = Await.result(sut.updateTaiData(nino, sessionData()), 5.seconds)
+        val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
 
         data mustBe sessionData()
         verify(mockCacheConnector, times(1))
@@ -813,7 +813,7 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMongoConfig,
           mock[FeatureTogglesConfig])
 
-        val data = Await.result(sut.updateTaiData(nino, sessionData()), 5.seconds)
+        val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
 
         data mustBe sessionData()
         verify(mockCacheConnector, never())
