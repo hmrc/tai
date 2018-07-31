@@ -29,7 +29,7 @@ trait WireMockHelper  extends BeforeAndAfterAll with BeforeAndAfterEach {
   protected val server: WireMockServer = new WireMockServer(wireMockConfig().dynamicPort())
 
   protected lazy val app: Application =
-    new GuiceApplicationBuilder() //.build()
+    new GuiceApplicationBuilder()
       .configure(
         "microservice.services.nps-json-hod.port" -> server.port()
       ).build()
