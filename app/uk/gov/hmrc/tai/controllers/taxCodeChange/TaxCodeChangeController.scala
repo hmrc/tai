@@ -18,14 +18,12 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
@@ -35,8 +33,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
 
   def hasTaxCodeChanged(nino: Nino) = authentication.async {
     implicit request =>
-
-        if (toggleConfig.taxCodeChangeEnabled){
+        if (toggleConfig.taxCodeChangeEnabled) {
           taxCodeChangeService.hasTaxCodeChanged(nino).map{
             taxCodeChanged => Ok(Json.toJson(taxCodeChanged))
           }
