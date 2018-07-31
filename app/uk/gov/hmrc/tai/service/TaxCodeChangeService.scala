@@ -17,18 +17,29 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
+import org.joda.time.format.DateTimeFormat
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
-    taxCodeHistory(nino).map(_.taxCodeRecord.nonEmpty) // TODO: Double check logic
+    val currentYear = TaxYear()
+    val dateFormatter = DateTimeFormat.forPattern(TaiConstants.npsDateFormat)
+
+    taxCodeHistory(nino) map {
+      _.taxCodeRecord
+        .exists(record => {
+          val recordDate = TaxYear(dateFormatter.parseLocalDate(record.p2Date))
+          recordDate == currentYear
+        })
+    }
   }
 
   def taxCodeHistory(nino: Nino): Future[TaxCodeHistory] = {

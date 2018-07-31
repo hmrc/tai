@@ -156,6 +156,7 @@ object TaiConstants {
     DeductionType.VanFuelBenefit.id)
 
   val STANDARD_DATE_FORMAT = "dd/MM/yyyy"
+  val npsDateFormat = "yyyy-MM-dd"
   val DEFAULT_CY_PLUS_ONE_ENABLED_DATE = "05/01"
 
   val CEASED_MINUS_ONE = "CY-1"
