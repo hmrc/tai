@@ -34,14 +34,14 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
                                        config: NpsJsonServiceConfig,
-                                       urlConfig: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
+                                       taxCodeChangeUrl: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = config.originatorId
 
   implicit val hc = HeaderCarrier()
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
-    val url = urlConfig.taxCodeChangeUrl(nino, taxYear)
+    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, taxYear)
     httpClient.GET[TaxCodeHistory](url)
   }
 }
