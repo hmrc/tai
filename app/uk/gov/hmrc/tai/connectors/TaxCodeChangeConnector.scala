@@ -34,8 +34,7 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
                                        config: NpsJsonServiceConfig,
-                                       urlConfig: TaxCodeChangeUrl,
-                                       httpHandler: HttpHandler) extends BaseConnector(auditor, metrics, httpClient) {
+                                       urlConfig: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = config.originatorId
 
@@ -43,7 +42,7 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
     val url = urlConfig.taxCodeChangeUrl(nino, taxYear)
-    httpHandler.getFromApi(url, APITypes.TaxCodeChangeAPI).map(_.as[TaxCodeHistory])
+    httpClient.GET[TaxCodeHistory](url)
   }
 }
 
