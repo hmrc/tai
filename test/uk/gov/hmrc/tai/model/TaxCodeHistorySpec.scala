@@ -17,10 +17,25 @@
 package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
-case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, p2Date: LocalDate)
+class TaxCodeRecordSpec extends PlaySpec {
 
-object TaxCodeRecord {
-  implicit val format = Json.format[TaxCodeRecord]
+  "TaxCodeRecord reads" should {
+    "return a TaxCodeRecord when given valid Json" in {
+
+      val taxCodeRecord = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2))
+
+      val validJson = Json.obj(
+        "taxCode" -> "testCode",
+        "employerName" -> "employerName",
+        "operatedTaxCode" -> true,
+        "p2Date" -> "2018-02-02"
+      )
+
+      validJson.as[TaxCodeRecord] mustEqual taxCodeRecord
+
+    }
+  }
 }
