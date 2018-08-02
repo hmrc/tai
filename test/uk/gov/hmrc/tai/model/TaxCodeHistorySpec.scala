@@ -18,24 +18,60 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsNull, JsValue, Json}
+import uk.gov.hmrc.domain.Generator
 
-class TaxCodeRecordSpec extends PlaySpec {
+import scala.util.Random
 
-  "TaxCodeRecord reads" should {
-    "return a TaxCodeRecord when given valid Json" in {
+class TaxCodeHistorySpec extends PlaySpec {
 
-      val taxCodeRecord = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2))
+  "TaxCodeHistory reads" should {
+    "return a TaxCodeHistory given valid Json missing the taxCodeRecord field" in {
+
+      val nino = new Generator(new Random).nextNino
+      val taxCodeHistory = TaxCodeHistory(nino, None)
 
       val validJson = Json.obj(
-        "taxCode" -> "testCode",
-        "employerName" -> "employerName",
-        "operatedTaxCode" -> true,
-        "p2Date" -> "2018-02-02"
+        "nino" -> nino.nino.toString,
+        "taxCodeRecord" -> JsNull
       )
 
-      validJson.as[TaxCodeRecord] mustEqual taxCodeRecord
+      validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
   }
+
+
+  "TaxCodeHistory writes" should {
+    "return a json representation of TaxCodeHistory given a taxCodeRecord" when {
+      "taxCodeRecord is present" in {
+        val nino = new Generator(new Random).nextNino
+        val taxCodeHistory = TaxCodeHistory(nino, Some(Seq()))
+
+        val validJson = Json.obj(
+          "nino" -> nino.nino.toString,
+          "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
+        )
+
+        Json.toJson(taxCodeHistory) mustEqual validJson
+
+      }
+
+
+      "taxCodeRecord is not present" in {
+        val nino = new Generator(new Random).nextNino
+        val taxCodeHistory = TaxCodeHistory(nino, None)
+
+        val validJson = Json.obj(
+          "nino" -> nino.nino.toString,
+          "taxCodeRecord" -> JsNull
+        )
+
+        Json.toJson(taxCodeHistory) mustEqual validJson
+
+      }
+
+    }
+  }
+
 }

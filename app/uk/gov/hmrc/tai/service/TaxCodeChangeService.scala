@@ -31,14 +31,11 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
-    val dateFormatter = DateTimeFormat.forPattern(TaiConstants.npsDateFormat)
 
     taxCodeHistory(nino) map {
       _.taxCodeRecord
-        .exists(record => {
-          val recordDate = TaxYear(dateFormatter.parseLocalDate(record.p2Date))
-          recordDate == currentYear
-        })
+        .exists(
+          _.exists(record => TaxYear(record.p2Date) == currentYear))
     }
   }
 
