@@ -28,11 +28,11 @@ class TaxCodeHistorySpec extends PlaySpec {
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json missing the taxCodeRecord field" in {
 
-      val nino = new Generator(new Random).nextNino
+      val nino = randomNino
       val taxCodeHistory = TaxCodeHistory(nino, None)
 
       val validJson = Json.obj(
-        "nino" -> nino.nino.toString,
+        "nino" -> nino,
         "taxCodeRecord" -> JsNull
       )
 
@@ -45,11 +45,11 @@ class TaxCodeHistorySpec extends PlaySpec {
   "TaxCodeHistory writes" should {
     "return a json representation of TaxCodeHistory given a taxCodeRecord" when {
       "taxCodeRecord is present" in {
-        val nino = new Generator(new Random).nextNino
+        val nino = randomNino
         val taxCodeHistory = TaxCodeHistory(nino, Some(Seq()))
 
         val validJson = Json.obj(
-          "nino" -> nino.nino.toString,
+          "nino" -> nino,
           "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
         )
 
@@ -59,12 +59,11 @@ class TaxCodeHistorySpec extends PlaySpec {
 
 
       "taxCodeRecord is not present" in {
-        val nino = new Generator(new Random).nextNino
+        val nino = randomNino
         val taxCodeHistory = TaxCodeHistory(nino, None)
 
         val validJson = Json.obj(
-          "nino" -> nino.nino.toString,
-          "taxCodeRecord" -> JsNull
+          "nino" -> nino
         )
 
         Json.toJson(taxCodeHistory) mustEqual validJson
@@ -73,5 +72,8 @@ class TaxCodeHistorySpec extends PlaySpec {
 
     }
   }
+
+
+  private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
 
 }
