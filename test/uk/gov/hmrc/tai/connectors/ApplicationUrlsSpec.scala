@@ -168,20 +168,5 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-
-  "TaxCodeChangeUrl" must {
-    "return the correct url" when {
-      "given argument values" in {
-
-        val mockConfig = mock[NpsJsonServiceConfig]
-        when(mockConfig.baseURL).thenReturn("")
-
-        val sut = new TaxCodeChangeUrl(mockConfig)
-        val year = 2017
-        sut.taxCodeChangeUrl(nino, TaxYear(year)) mustBe
-          s"/personal-tax-account/tax-code/history/api/v1/${nino.nino}/$year"
-      }
-    }
-  }
   private val nino: Nino = new Generator(new Random).nextNino
 }
