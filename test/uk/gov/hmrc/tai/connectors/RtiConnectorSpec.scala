@@ -20,13 +20,10 @@ import com.codahale.metrics.Timer
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
-import play.api.{Application, Mode}
-import play.api.inject.guice.GuiceApplicationBuilder
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.graphite.GraphiteMetricsModule
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -41,16 +38,9 @@ import scala.util.Random
 
 
 class RtiConnectorSpec extends PlaySpec
-  with MockitoSugar
-  with OneAppPerSuite {
+  with MockitoSugar {
 
   private implicit val hc = HeaderCarrier()
-
-  implicit override lazy val app: Application =
-    new GuiceApplicationBuilder()
-      .in(Mode.Test)
-      .disable[GraphiteMetricsModule]
-      .build()
 
   "RtiConnector" should {
 
