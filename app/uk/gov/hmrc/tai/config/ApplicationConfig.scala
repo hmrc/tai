@@ -77,6 +77,17 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
 }
 
 @Singleton
+class NpsJsonServiceConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) with HodConfig {
+  lazy val optionalPath: Option[String] = runModeConfiguration.getConfig(s"$rootServices.nps-json-hod").flatMap(_.getString("path"))
+  lazy val path: String = optionalPath.fold("")(path => s"$path")
+
+  override lazy val baseURL: String = s"${baseUrl("nps-json-hod")}$path"
+  override lazy val environment = ""
+  override lazy val authorization = ""
+  override lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-json-hod.originatorId").getOrElse("local")
+}
+
+@Singleton
 class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
   lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getBoolean("cy-plus-one.enabled")
   lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getString("cy-plus-one.startDayMonth")
@@ -92,4 +103,5 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration, playEnv: En
 class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
   lazy val desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
   def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
+  def taxCodeChangeEnabled: Boolean = runModeConfiguration.getBoolean("tai.taxCodeChange.enabled").getOrElse(false)
 }
