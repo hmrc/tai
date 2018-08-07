@@ -17,13 +17,11 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
-import org.joda.time.format.DateTimeFormat
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
 

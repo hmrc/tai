@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tai.service
 
+import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
@@ -38,30 +38,59 @@ class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
         val testNino = new Generator(new Random).nextNino
         val taxCodeHistory =
           TaxCodeHistory(
-            testNino,
-            Seq(
-              TaxCodeRecord(taxCode="1185L",employerName="employer2", operatedTaxCode=true, p2Date="2018-07-11"),
-              TaxCodeRecord(taxCode="1080L",employerName="employer1", operatedTaxCode=true, p2Date="2018-04-11")
-            )
+            testNino.nino,
+            Some(Seq(
+              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode="operated", p2Date=LocalDate.now()),
+              TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode="operated", p2Date=LocalDate.now().minusMonths(1))
+            ))
           )
 
         val mockConnector = mock[TaxCodeChangeConnector]
         val service = new TaxCodeChangeServiceImpl(mockConnector)
 
-        when(mockConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future.successful(Json.toJson(taxCodeHistory)))
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual Some(true)
+        Await.result(service.hasTaxCodeChanged(testNino), 1.seconds) mustEqual true
       }
     }
 
     "return false" when {
-      "there has not been a tax code change" in {
-
-        val service = new TaxCodeChangeServiceImpl(mock[TaxCodeChangeConnector])
+      "tax code change is not returned" in {
         val testNino = new Generator(new Random).nextNino
+        val mockConnector = mock[TaxCodeChangeConnector]
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(TaxCodeHistory(testNino.nino, None)))
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
 
-        service.hasTaxCodeChanged(testNino) mustEqual false
+        Await.result(service.hasTaxCodeChanged(testNino), 1.seconds) mustEqual false
       }
+
+      "tax code change is empty" in {
+        val testNino = new Generator(new Random).nextNino
+        val mockConnector = mock[TaxCodeChangeConnector]
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(TaxCodeHistory(testNino.nino, Some(Seq.empty[TaxCodeRecord]))))
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        Await.result(service.hasTaxCodeChanged(testNino), 1.seconds) mustEqual false
+      }
+
+      "tax code changes are not in this year" in {
+        val testNino = new Generator(new Random).nextNino
+        val taxCodeHistory =
+          TaxCodeHistory(
+            testNino.nino,
+            Some(Seq(
+              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode="operated", p2Date=LocalDate.now().minusYears(1))
+            ))
+          )
+
+        val mockConnector = mock[TaxCodeChangeConnector]
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        Await.result(service.hasTaxCodeChanged(testNino), 1.seconds) mustEqual false
+      }
+
     }
   }
 
