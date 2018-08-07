@@ -24,7 +24,7 @@ import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.ws.ahc.AhcWSClient
@@ -43,8 +43,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class FileUploadConnectorSpec extends PlaySpec
-  with MockitoSugar
-  with OneAppPerSuite {
+  with MockitoSugar {
 
   "createEnvelope" must {
     "return an envelope id" in {
