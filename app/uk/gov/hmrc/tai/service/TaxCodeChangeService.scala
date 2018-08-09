@@ -20,7 +20,7 @@ import com.google.inject.{ImplementedBy, Inject}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.domain.taxCodeChange.TaxCodeChange
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
@@ -40,16 +40,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeHistory(nino: Nino): Future[Seq[TaxCodeChange]] = {
-    val currentYear = TaxYear()
-    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
-      _.taxCodeRecord match {
-        case Some(taxCodeRecord) =>
-          taxCodeRecord.map(taxCodeRecord =>
-            new TaxCodeChange(taxCodeRecord.taxCode, taxCodeRecord.p2Date, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName))
-        }
+
+    for{
+      TaxCodeHistory(_,Some(taxCodeRecords)) <- taxCodeChangeConnector.taxCodeHistory(nino, TaxYear())
+    }yield{
+      taxCodeRecords.map(taxCodeRecord => new
+          TaxCodeChange(taxCodeRecord.taxCode, taxCodeRecord.p2Date, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName))
     }
   }
-
 }
 
 
