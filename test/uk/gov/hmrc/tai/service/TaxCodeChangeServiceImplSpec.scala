@@ -22,10 +22,14 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.model.domain.taxCodeChange
+import uk.gov.hmrc.tai.model.domain.taxCodeChange.TaxCodeChange
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -91,6 +95,34 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
 
+    }
+  }
+
+  "taxCodeHistory" should {
+
+    "return a domain TaxCodeRecord" when {
+
+      "there is only one tax code in the current tax year" in {
+
+        val startDate = LocalDate.now()
+        val endDate = TaxYearResolver.endOfCurrentTaxYear
+        val testNino = randomNino
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Some(Seq(
+            TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true, p2Date = startDate)
+          ))
+        )
+        val mockConnector = mock[TaxCodeChangeConnector]
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        val expectedResult = Seq(TaxCodeChange("1185L", startDate, endDate, "Employer 1"))
+
+        Await.result(service.taxCodeHistory(testNino), 5.seconds) mustEqual expectedResult
+      }
     }
   }
 

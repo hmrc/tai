@@ -21,7 +21,9 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.domain.taxCodeChange.TaxCodeChange
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
@@ -30,16 +32,22 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
 
-    taxCodeHistory(nino) map {
+    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
       _.taxCodeRecord
         .exists(
           _.exists(record => TaxYear(record.p2Date) == currentYear))
     }
   }
 
-  def taxCodeHistory(nino: Nino): Future[TaxCodeHistory] = {
+  def taxCodeHistory(nino: Nino): Future[Seq[TaxCodeChange]] = {
     val currentYear = TaxYear()
-    taxCodeChangeConnector.taxCodeHistory(nino, currentYear)
+    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
+      _.taxCodeRecord match {
+        case Some(taxCodeRecord) =>
+          taxCodeRecord.map(taxCodeRecord =>
+            new TaxCodeChange(taxCodeRecord.taxCode, taxCodeRecord.p2Date, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName))
+        }
+    }
   }
 
 }
@@ -50,6 +58,6 @@ trait TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
-  def taxCodeHistory(nino: Nino): Future[TaxCodeHistory]
+  def taxCodeHistory(nino: Nino): Future[Seq[TaxCodeChange]]
 
 }
