@@ -25,12 +25,12 @@ class TaxCodeRecordSpec extends PlaySpec {
   "TaxCodeRecord reads" should {
     "return a TaxCodeRecord when given valid Json" in {
 
-      val taxCodeRecord = TaxCodeRecord("testCode", "employerName", "operated", new LocalDate(2018, 2, 2))
+      val taxCodeRecord = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2))
 
       val validJson = Json.obj(
         "taxCode" -> "testCode",
         "employerName" -> "employerName",
-        "operatedTaxCode" -> "operated",
+        "operatedTaxCode" -> true,
         "p2Date" -> "2018-02-02"
       )
 

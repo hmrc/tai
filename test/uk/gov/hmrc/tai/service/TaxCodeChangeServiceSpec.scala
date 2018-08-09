@@ -40,8 +40,8 @@ class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
           TaxCodeHistory(
             testNino.nino,
             Some(Seq(
-              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode="operated", p2Date=LocalDate.now()),
-              TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode="operated", p2Date=LocalDate.now().minusMonths(1))
+              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode=true, p2Date=LocalDate.now()),
+              TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode=true, p2Date=LocalDate.now().minusMonths(1))
             ))
           )
 
@@ -79,7 +79,7 @@ class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar {
           TaxCodeHistory(
             testNino.nino,
             Some(Seq(
-              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode="operated", p2Date=LocalDate.now().minusYears(1))
+              TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode=true, p2Date=LocalDate.now().minusYears(1))
             ))
           )
 

@@ -67,7 +67,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         npsConfig,
         config).taxCodeHistory(testNino, taxYear), 10.seconds)
 
-      result mustEqual TaxCodeHistory(testNino.nino, Some(Seq(TaxCodeRecord("1185L", "Employer 1", "operated", LocalDate.parse("2017-06-23")))))
+      result mustEqual TaxCodeHistory(testNino.nino, Some(Seq(TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23")))))
     }
 
   }
@@ -80,7 +80,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       Json.obj(
         "taxCode" -> "1185L",
         "employerName" -> "Employer 1",
-        "operatedTaxCode" -> "operated",
+        "operatedTaxCode" -> true,
         "p2Issued" -> true,
         "p2Date" -> "2017-06-23"
       )

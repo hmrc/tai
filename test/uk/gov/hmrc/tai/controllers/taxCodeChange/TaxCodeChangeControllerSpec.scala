@@ -96,8 +96,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         TaxCodeHistory(
           testNino.nino,
           Some(Seq(
-            TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode="operated", p2Date=new LocalDate(2018, 7, 11)),
-            TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode="operated", p2Date=new LocalDate(2018, 4, 11))
+            TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode=true, p2Date=new LocalDate(2018, 7, 11)),
+            TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode=true, p2Date=new LocalDate(2018, 4, 11))
           ))
         )
 
