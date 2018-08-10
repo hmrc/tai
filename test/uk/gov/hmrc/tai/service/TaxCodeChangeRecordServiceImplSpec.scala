@@ -44,10 +44,10 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeHistory = TaxCodeHistory(
           nino = testNino.withoutSuffix,
-          taxCodeRecord = Some(Seq(
+          taxCodeRecord = Seq(
             TaxCodeRecord(taxCode = "1185L", employerName = "employer2", operatedTaxCode = true, p2Date = thisYear),
             TaxCodeRecord(taxCode = "1080L", employerName = "employer1", operatedTaxCode = true, p2Date = lastYear)
-          ))
+          )
         )
 
         val mockConnector = mock[TaxCodeChangeConnector]
@@ -65,7 +65,7 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Some(Seq())
+          Seq()
         )
 
         val mockConnector = mock[TaxCodeChangeConnector]
@@ -81,9 +81,9 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Some(Seq(
+          Seq(
             TaxCodeRecord(taxCode = "1185L", employerName = "employer2", operatedTaxCode = true, p2Date = lastYear)
-          ))
+          )
         )
 
         val mockConnector = mock[TaxCodeChangeConnector]
@@ -119,7 +119,7 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Some(Seq(previousTaxCodeRecord, currentTaxCodeRecord))
+          Seq(previousTaxCodeRecord, currentTaxCodeRecord)
         )
 
         val mockConnector = mock[TaxCodeChangeConnector]
@@ -151,7 +151,7 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Some(Seq(previousTaxCodeRecord, currentTaxCodeRecord))
+          Seq(previousTaxCodeRecord, currentTaxCodeRecord)
         )
 
         val mockConnector = mock[TaxCodeChangeConnector]

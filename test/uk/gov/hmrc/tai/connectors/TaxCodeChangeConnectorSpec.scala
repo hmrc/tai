@@ -39,7 +39,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeRecordConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
+class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
 
 
   def config = injector.instanceOf[TaxCodeChangeUrl]
@@ -67,7 +67,10 @@ class TaxCodeChangeRecordConnectorSpec extends PlaySpec with WireMockHelper with
         npsConfig,
         config).taxCodeHistory(testNino, taxYear), 10.seconds)
 
-      result mustEqual TaxCodeHistory(testNino.nino, Some(Seq(TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23")))))
+      result mustEqual TaxCodeHistory(testNino.nino, Seq(
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23")),
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"))
+      ))
     }
 
   }
@@ -77,6 +80,13 @@ class TaxCodeChangeRecordConnectorSpec extends PlaySpec with WireMockHelper with
   private val jsonResponse = Json.obj(
     "nino" -> testNino.nino,
     "taxCodeRecord" -> Seq(
+      Json.obj(
+        "taxCode" -> "1185L",
+        "employerName" -> "Employer 1",
+        "operatedTaxCode" -> true,
+        "p2Issued" -> true,
+        "p2Date" -> "2017-06-23"
+      ),
       Json.obj(
         "taxCode" -> "1185L",
         "employerName" -> "Employer 1",

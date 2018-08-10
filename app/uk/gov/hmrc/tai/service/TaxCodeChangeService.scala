@@ -33,26 +33,22 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val currentYear = TaxYear()
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
-      _.taxCodeRecord
-        .exists(
-          _.exists(record => TaxYear(record.p2Date) == currentYear))
+      _.taxCodeRecord.exists(record => TaxYear(record.p2Date) == currentYear)
     }
   }
 
   def taxCodeHistory(nino: Nino): Future[TaxCodeChange] = {
     implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
-    taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map {
-      _.taxCodeRecord match {
-        case Some(taxCodeRecord) =>
-          val currentRecord :: previousRecord :: _ = taxCodeRecord.sortBy(_.p2Date)
 
-          val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode, currentRecord.p2Date,
-                                                          TaxYearResolver.endOfCurrentTaxYear, currentRecord.employerName)
-          val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode, previousStartDate(previousRecord.p2Date),
-                                                          currentRecord.p2Date.minusDays(1), previousRecord.employerName)
+    taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
+      val currentRecord :: previousRecord :: _ = taxCodeHistory.taxCodeRecord.sortBy(_.p2Date)
 
-          TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
-      }
+      val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode, currentRecord.p2Date,
+                                                      TaxYearResolver.endOfCurrentTaxYear, currentRecord.employerName)
+      val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode, previousStartDate(previousRecord.p2Date),
+                                                      currentRecord.p2Date.minusDays(1), previousRecord.employerName)
+
+      TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
     }
   }
 

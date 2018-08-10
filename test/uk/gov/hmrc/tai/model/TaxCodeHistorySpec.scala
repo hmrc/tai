@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, JsValue, Json}
+import play.api.libs.json.{JsNull, JsResultException, JsValue, Json}
 import uk.gov.hmrc.domain.Generator
 
 import scala.util.Random
@@ -26,53 +26,39 @@ import scala.util.Random
 class TaxCodeHistorySpec extends PlaySpec {
 
   "TaxCodeHistory reads" should {
-    "return a TaxCodeHistory given valid Json missing the taxCodeRecord field" in {
+    "return a TaxCodeHistory given valid Json" in {
+
+      val taxCodeRecordSequence = Seq(
+        TaxCodeRecord("tax code", "Employee 1", true, LocalDate.now()),
+        TaxCodeRecord("tax code", "Employee 1", true, LocalDate.now())
+      )
 
       val nino = randomNino
-      val taxCodeHistory = TaxCodeHistory(nino, None)
+      val taxCodeHistory = TaxCodeHistory(nino, taxCodeRecordSequence)
 
       val validJson = Json.obj(
         "nino" -> nino,
-        "taxCodeRecord" -> JsNull
+        "taxCodeRecord" -> taxCodeRecordSequence
       )
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
-  }
 
+    "throw an error given invalid Json" in {
 
-  "TaxCodeHistory writes" should {
-    "return a json representation of TaxCodeHistory given a taxCodeRecord" when {
-      "taxCodeRecord is present" in {
-        val nino = randomNino
-        val taxCodeHistory = TaxCodeHistory(nino, Some(Seq()))
+      val nino = randomNino
+      val taxCodeHistory = TaxCodeHistory(nino, Seq.empty)
 
-        val validJson = Json.obj(
-          "nino" -> nino,
-          "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
-        )
+      val invalidJson = Json.obj(
+        "nino" -> nino,
+        "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
+      )
 
-        Json.toJson(taxCodeHistory) mustEqual validJson
-
-      }
-
-
-      "taxCodeRecord is not present" in {
-        val nino = randomNino
-        val taxCodeHistory = TaxCodeHistory(nino, None)
-
-        val validJson = Json.obj(
-          "nino" -> nino
-        )
-
-        Json.toJson(taxCodeHistory) mustEqual validJson
-
-      }
+      a[JsResultException] should be thrownBy invalidJson.as[TaxCodeHistory]
 
     }
   }
-
 
   private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
 
