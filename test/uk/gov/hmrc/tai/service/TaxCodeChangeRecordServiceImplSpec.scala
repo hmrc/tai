@@ -22,12 +22,10 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.domain.taxCodeChange
-import uk.gov.hmrc.tai.model.domain.taxCodeChange.TaxCodeChange
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.api.TaxCodeChange
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord, api}
 import uk.gov.hmrc.tai.util.TaiConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -35,7 +33,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
+class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
   "hasTaxCodeChanged" should {
     "return true" when {
@@ -98,28 +96,70 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  "taxCodeHistory" should {
+  "taxCodeChange" should {
 
     "return a domain TaxCodeRecord" when {
 
-      "there is only one tax code in the current tax year" in {
+      "there is only one tax code change in the current tax year" in {
 
-        val startDate = LocalDate.now()
-        val endDate = TaxYearResolver.endOfCurrentTaxYear
+        val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
+        val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
+        val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
+        val PreviousEndDate = currentStartDate.minusDays(1)
+
         val testNino = randomNino
+
+        val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, PreviousEndDate, "Employer 1")
+        val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 2")
+
+        val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true,
+                                                  p2Date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1))
+        val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true,
+                                                  p2Date = currentStartDate)
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Some(Seq(
-            TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true, p2Date = startDate)
-          ))
+          Some(Seq(previousTaxCodeRecord, currentTaxCodeRecord))
         )
+
         val mockConnector = mock[TaxCodeChangeConnector]
         when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
         val service = new TaxCodeChangeServiceImpl(mockConnector)
 
-        val expectedResult = Seq(TaxCodeChange("1185L", startDate, endDate, "Employer 1"))
+        val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
+
+        Await.result(service.taxCodeHistory(testNino), 5.seconds) mustEqual expectedResult
+      }
+
+      "there are two tax code change in the current tax year" in {
+
+        val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
+        val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
+        val previousStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(1)
+        val PreviousEndDate = currentStartDate.minusDays(1)
+
+        val testNino = randomNino
+
+        val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, PreviousEndDate, "Employer 1")
+        val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 2")
+
+        val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true,
+          p2Date = previousStartDate)
+        val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true,
+          p2Date = currentStartDate)
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Some(Seq(previousTaxCodeRecord, currentTaxCodeRecord))
+        )
+
+        val mockConnector = mock[TaxCodeChangeConnector]
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
 
         Await.result(service.taxCodeHistory(testNino), 5.seconds) mustEqual expectedResult
       }

@@ -35,7 +35,7 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class TaxCodeChangeRecordControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "hasTaxCodeChanged" should {
 

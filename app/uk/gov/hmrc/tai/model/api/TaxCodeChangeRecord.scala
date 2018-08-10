@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.taxCodeChange
+package uk.gov.hmrc.tai.model.api
 
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
+case class TaxCodeChangeRecord(taxCode: String, startDate: LocalDate, endDate: LocalDate, employerName: String)
 
-case class TaxCodeChange(taxCode: String, startDate: LocalDate, endDate: LocalDate, employerName: String)
+object TaxCodeChangeRecord {
+  implicit val format = Json.format[TaxCodeChangeRecord]
+}
+
+case class TaxCodeChange(current: TaxCodeChangeRecord, previous: TaxCodeChangeRecord)
 
 object TaxCodeChange {
   implicit val format = Json.format[TaxCodeChange]
 }
+

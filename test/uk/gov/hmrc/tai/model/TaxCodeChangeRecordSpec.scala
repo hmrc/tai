@@ -20,7 +20,7 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
-class TaxCodeRecordSpec extends PlaySpec {
+class TaxCodeChangeRecordSpec extends PlaySpec {
 
   "TaxCodeRecord reads" should {
     "return a TaxCodeRecord when given valid Json" in {
