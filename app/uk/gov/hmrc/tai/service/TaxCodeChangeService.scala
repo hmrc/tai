@@ -37,7 +37,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def taxCodeHistory(nino: Nino): Future[TaxCodeChange] = {
+  def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
     implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
 
     taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
@@ -66,6 +66,6 @@ trait TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
-  def taxCodeHistory(nino: Nino): Future[TaxCodeChange]
+  def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
 }

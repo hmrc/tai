@@ -33,7 +33,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
+class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
 
   "hasTaxCodeChanged" should {
     "return true" when {
@@ -129,7 +129,7 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
 
-        Await.result(service.taxCodeHistory(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there are two tax code change in the current tax year" in {
@@ -161,7 +161,7 @@ class TaxCodeChangeRecordServiceImplSpec extends PlaySpec with MockitoSugar {
 
         val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
 
-        Await.result(service.taxCodeHistory(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
   }

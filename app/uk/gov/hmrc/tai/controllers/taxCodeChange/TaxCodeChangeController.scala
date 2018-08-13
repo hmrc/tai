@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeChange}
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
 import scala.concurrent.Future
@@ -46,7 +46,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
 
   def taxCodeHistory(nino: Nino) = authentication.async {
     implicit request =>
-      taxCodeChangeService.taxCodeHistory(nino) map { taxCodeHistory =>
+      taxCodeChangeService.taxCodeChange(nino) map { taxCodeHistory =>
         Ok(Json.toJson(ApiResponse(taxCodeHistory, Nil)))
       }
   }
