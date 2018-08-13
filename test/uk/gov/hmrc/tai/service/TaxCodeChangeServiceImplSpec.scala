@@ -36,27 +36,27 @@ import scala.util.Random
 class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
 
   "hasTaxCodeChanged" should {
-    "return true" when {
-      "there has been a tax code change in the year where the code has been operated" in {
-        val thisYear = LocalDate.now()
-        val lastYear = LocalDate.now().minusYears(1)
-        val testNino = randomNino
-
-        val taxCodeHistory = TaxCodeHistory(
-          nino = testNino.withoutSuffix,
-          taxCodeRecord = Seq(
-            TaxCodeRecord(taxCode = "1185L", employerName = "employer2", operatedTaxCode = true, dateOfCalculation = thisYear),
-            TaxCodeRecord(taxCode = "1080L", employerName = "employer1", operatedTaxCode = true, dateOfCalculation = lastYear)
-          )
-        )
-
-        val mockConnector = mock[TaxCodeChangeConnector]
-        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
-
-        val service = new TaxCodeChangeServiceImpl(mockConnector)
-        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
-      }
-    }
+//    "return true" when {
+//      "there has been a tax code change in the year where the code has been operated" in {
+//        val thisYear = LocalDate.now()
+//        val lastYear = LocalDate.now().minusYears(1)
+//        val testNino = randomNino
+//
+//        val taxCodeHistory = TaxCodeHistory(
+//          nino = testNino.withoutSuffix,
+//          taxCodeRecord = Seq(
+//            TaxCodeRecord(taxCode = "1185L", employerName = "employer2", operatedTaxCode = true, dateOfCalculation = thisYear),
+//            TaxCodeRecord(taxCode = "1080L", employerName = "employer1", operatedTaxCode = true, dateOfCalculation = lastYear)
+//          )
+//        )
+//
+//        val mockConnector = mock[TaxCodeChangeConnector]
+//        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
+//
+//        val service = new TaxCodeChangeServiceImpl(mockConnector)
+//        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+//      }
+//    }
 
     "return false" when {
       "there are no tax code changes" in {
