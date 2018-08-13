@@ -31,7 +31,7 @@ class TaxCodeChangeRecordSpec extends PlaySpec {
         "taxCode" -> "testCode",
         "employerName" -> "employerName",
         "operatedTaxCode" -> true,
-        "p2Date" -> "2018-02-02"
+        "dateOfCalculation" -> "2018-02-02"
       )
 
       validJson.as[TaxCodeRecord] mustEqual taxCodeRecord

@@ -85,14 +85,14 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "employerName" -> "Employer 1",
         "operatedTaxCode" -> true,
         "p2Issued" -> true,
-        "p2Date" -> "2017-06-23"
+        "dateOfCalculation" -> "2017-06-23"
       ),
       Json.obj(
         "taxCode" -> "1185L",
         "employerName" -> "Employer 1",
         "operatedTaxCode" -> true,
         "p2Issued" -> true,
-        "p2Date" -> "2017-06-23"
+        "dateOfCalculation" -> "2017-06-23"
       )
     )
   )

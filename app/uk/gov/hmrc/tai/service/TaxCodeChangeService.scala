@@ -45,21 +45,28 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
       val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
 
-      val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode, currentRecord.p2Date,
-                                                      TaxYearResolver.endOfCurrentTaxYear, currentRecord.employerName)
-      val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode, previousStartDate(previousRecord.p2Date),
-                                                      currentRecord.p2Date.minusDays(1), previousRecord.employerName)
+      val perviousEndDate = currentRecord.dateOfCalculation.minusDays(1)
+
+      val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode,
+                                                     currentRecord.dateOfCalculation,
+                                                     TaxYearResolver.endOfCurrentTaxYear,
+                                                     currentRecord.employerName)
+
+      val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode,
+                                                      previousStartDate(previousRecord.dateOfCalculation),
+                                                      perviousEndDate,
+                                                      previousRecord.employerName)
 
       TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
     }
   }
 
-  private val inYearOf = (year: TaxYear) => (record: TaxCodeRecord) => TaxYear(record.p2Date) == year
+  private val inYearOf = (year: TaxYear) => (record: TaxCodeRecord) => TaxYear(record.dateOfCalculation) == year
 
   private val sortedByDate = (records: Seq[TaxCodeRecord]) => {
     implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
 
-    records.sortBy(_.p2Date)
+    records.sortBy(_.dateOfCalculation)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {

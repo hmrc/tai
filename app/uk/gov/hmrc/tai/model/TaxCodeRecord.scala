@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
-case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, p2Date: LocalDate)
+case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, dateOfCalculation: LocalDate)
 
 object TaxCodeRecord {
   implicit val format = Json.format[TaxCodeRecord]
