@@ -21,6 +21,7 @@ import org.joda.time.LocalDate
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
@@ -32,17 +33,17 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
 
-    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
-      _.taxCodeRecord
-          .exists(record => record.operatedTaxCode && TaxYear(record.p2Date) == currentYear)
+    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
+      val records = taxCodeHistory.operatedTaxCodeRecords.count(inYearOf(currentYear)(_))
+
+      records > 1
     }
   }
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
-    implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
 
     taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
-      val currentRecord :: previousRecord :: _ = taxCodeHistory.taxCodeRecord.sortBy(_.p2Date)
+      val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
 
       val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode, currentRecord.p2Date,
                                                       TaxYearResolver.endOfCurrentTaxYear, currentRecord.employerName)
@@ -51,6 +52,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
     }
+  }
+
+  private val inYearOf = (year: TaxYear) => (record: TaxCodeRecord) => TaxYear(record.p2Date) == year
+
+  private val sortedByDate = (records: Seq[TaxCodeRecord]) => {
+    implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+
+    records.sortBy(_.p2Date)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {

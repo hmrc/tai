@@ -16,20 +16,14 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
-import play.api.libs.json.{JsPath, Json, Reads}
+import play.api.libs.json.Json
 
-case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord])
+case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
+  def operatedTaxCodeRecords = taxCodeRecord.filter(_.operatedTaxCode)
+}
 
 object TaxCodeHistory {
 
-//  implicit val format = Json.format[TaxCodeHistory]
-
-  implicit val reads: Reads[TaxCodeHistory] = (
-    (JsPath \ "nino").read[String] and
-      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]](minLength[Seq[TaxCodeRecord]](2))
-    )(TaxCodeHistory.apply _)
-
+  implicit val format = Json.format[TaxCodeHistory]
 
 }

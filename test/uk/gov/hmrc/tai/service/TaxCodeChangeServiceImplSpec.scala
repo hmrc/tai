@@ -37,7 +37,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
 
   "hasTaxCodeChanged" should {
     "return true" when {
-      "there has been a tax code change the year where the code has been operated" in {
+      "there has been a tax code change in the year where the code has been operated" in {
         val thisYear = LocalDate.now()
         val lastYear = LocalDate.now().minusYears(1)
         val testNino = randomNino
@@ -119,12 +119,13 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
 
     "return a domain TaxCodeRecord" when {
 
-      "there is only one tax code change in the current tax year" in {
+      "previous tax code started in the last tax year" in {
 
         val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
         val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
         val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
         val PreviousEndDate = currentStartDate.minusDays(1)
+        val previousStartDateInPrevYear = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
 
         val testNino = randomNino
 
@@ -132,7 +133,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
         val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 2")
 
         val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true,
-                                                  p2Date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1))
+                                                  p2Date = previousStartDateInPrevYear)
         val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true,
                                                   p2Date = currentStartDate)
 
@@ -151,7 +152,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
         Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
-      "there are two tax code change in the current tax year" in {
+      "previous tax code started in the current tax year" in {
 
         val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
         val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
@@ -163,10 +164,8 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
         val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, PreviousEndDate, "Employer 1")
         val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 2")
 
-        val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true,
-          p2Date = previousStartDate)
-        val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true,
-          p2Date = currentStartDate)
+        val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true, p2Date = previousStartDate)
+        val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true, p2Date = currentStartDate)
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
@@ -181,6 +180,39 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar {
         val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
 
         Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+      }
+
+      "most recent tax code is not operated and previous tax code changes are in the current year" in {
+        val nonOperatedStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(5)
+        val currentStartDate = nonOperatedStartDate.minusDays(3)
+        val previousStartDate = nonOperatedStartDate.minusDays(4)
+
+        val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
+        val PreviousEndDate = currentStartDate.minusDays(1)
+
+        val testNino = randomNino
+
+        val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, PreviousEndDate, "Employer 1")
+        val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 2")
+
+        val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true, p2Date = previousStartDate)
+        val currentTaxCodeRecord = TaxCodeRecord(taxCode = "1000L", employerName = "Employer 2", operatedTaxCode = true, p2Date = currentStartDate)
+        val nonOperatedCode = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = false, p2Date = nonOperatedStartDate)
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Seq(nonOperatedCode, previousTaxCodeRecord, currentTaxCodeRecord)
+        )
+
+        val mockConnector = mock[TaxCodeChangeConnector]
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+
+        val expectedResult = TaxCodeChange(expectedCurrentTaxCodeChange, expectedPreviousTaxCodeChange)
+
+        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+
       }
     }
   }

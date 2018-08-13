@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, JsResultException, JsValue, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 
 import scala.util.Random
@@ -42,20 +42,6 @@ class TaxCodeHistorySpec extends PlaySpec {
       )
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
-
-    }
-
-    "throw an error given invalid Json" in {
-
-      val nino = randomNino
-      val taxCodeHistory = TaxCodeHistory(nino, Seq.empty)
-
-      val invalidJson = Json.obj(
-        "nino" -> nino,
-        "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
-      )
-
-      a[JsResultException] should be thrownBy invalidJson.as[TaxCodeHistory]
 
     }
   }
