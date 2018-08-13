@@ -21,23 +21,47 @@ import org.joda.time.LocalDate
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.TaxCodeRecord
+import uk.gov.hmrc.tai.model.{AnnualCode, NonAnnualCode, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService with
+  TaxCodeRecordConstants {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
-
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
-      val records = taxCodeHistory.operatedTaxCodeRecords.count(inYearOf(currentYear)(_))
+      sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
+        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode)) => false
+        case Seq(TaxCodeRecord(_,_,_,_,AnnualCode)) => false
+        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,AnnualCode),_*) => true
+        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,NonAnnualCode),_*) => true
+      }
+  }
 
-      records > 1
-    }
+
+
+
+
+//    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
+//
+//
+//
+//      val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
+//      (currentRecord.codeType, previousRecord.codeType) match {
+//        case(currentRecord.)
+//      }
+//    }
+
+//    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
+//      val records = taxCodeHistory.operatedTaxCodeRecords.count(inYearOf(currentYear)(_))
+//
+//      records > 1
+//    }
   }
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {

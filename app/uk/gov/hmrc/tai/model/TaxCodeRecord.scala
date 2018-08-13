@@ -17,9 +17,33 @@
 package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json._
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
-case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, dateOfCalculation: LocalDate)
+sealed trait CodeType
+case object NonAnnualCode extends CodeType
+case object AnnualCode extends CodeType
+
+object CodeType extends CodeType with TaxCodeRecordConstants {
+
+  implicit val formatCodeType = new Format[CodeType] {
+
+    override def reads(json: JsValue): JsResult[CodeType] = {
+      json.as[String] match {
+        case DailyCoding => JsSuccess(NonAnnualCode)
+        case BudgetCoding => JsSuccess(NonAnnualCode)
+        case BudgetCodingNonIssued => JsSuccess(NonAnnualCode)
+        case BudgetCodingP9X => JsSuccess(NonAnnualCode)
+        case AnnualCoding => JsSuccess(AnnualCode)
+        case AnnualCodeP9X => JsSuccess(AnnualCode)
+      }
+    }
+
+    override def writes(o: CodeType): JsValue = ???
+  }
+}
+
+case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, dateOfCalculation: LocalDate, codeType: CodeType)
 
 object TaxCodeRecord {
   implicit val format = Json.format[TaxCodeRecord]

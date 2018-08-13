@@ -20,25 +20,28 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec {
+class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
 
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json" in {
 
-      val taxCodeRecordSequence = Seq(
-        TaxCodeRecord("tax code", "Employee 1", true, LocalDate.now()),
-        TaxCodeRecord("tax code", "Employee 1", true, LocalDate.now())
-      )
-
+      val now = LocalDate.now()
       val nino = randomNino
-      val taxCodeHistory = TaxCodeHistory(nino, taxCodeRecordSequence)
+      val taxCodeHistory = TaxCodeHistory(nino, Seq(
+        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode),
+        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode)
+      ))
 
       val validJson = Json.obj(
         "nino" -> nino,
-        "taxCodeRecord" -> taxCodeRecordSequence
+        "taxCodeRecord" -> Seq(
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding),
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding)
+        )
       )
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
