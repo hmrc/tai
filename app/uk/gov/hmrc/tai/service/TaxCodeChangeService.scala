@@ -33,7 +33,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val currentYear = TaxYear()
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map {
-      _.taxCodeRecord.exists(record => TaxYear(record.p2Date) == currentYear)
+      _.taxCodeRecord
+          .exists(record => record.operatedTaxCode && TaxYear(record.p2Date) == currentYear)
     }
   }
 
