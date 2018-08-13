@@ -26,7 +26,7 @@ class TaxCodeChangeRecordSpec extends PlaySpec with TaxCodeRecordConstants with 
 
   "TaxCodeRecord reads" should {
 
-    "return a TaxCodeRecord for valid non annual codes" in {
+    "return a TaxCodeRecord for valid codes" in {
       forAll (validCodeCombos) { (npsCode: String, codeType:CodeType) =>
         validJson(npsCode).as[TaxCodeRecord] mustEqual TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType)
       }
