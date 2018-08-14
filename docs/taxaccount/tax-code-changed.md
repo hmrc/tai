@@ -4,7 +4,7 @@ Tax Code Changed
 
 * **URL**
 
-  `/tai/:nino/tax-account/tax-code-change`
+  `/tai/:nino/tax-account/tax-code-changed`
 
 * **Method:**
 
@@ -13,7 +13,7 @@ Tax Code Changed
 * **Success Response:**
 
   * **Code:** 200 <br />
-    **Content:** true
+    **Content:** Boolean
 
 * **Error Response:**
 

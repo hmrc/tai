@@ -4,7 +4,7 @@ Tax Code History
 
 * **URL**
 
-  `/tai/:nino/tax-account/tax-code-history`
+  `/tai/:nino/tax-account/tax-code-change`
 
 * **Method:**
 
