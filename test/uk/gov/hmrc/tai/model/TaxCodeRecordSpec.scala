@@ -22,7 +22,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
-class TaxCodeChangeRecordSpec extends PlaySpec with TaxCodeRecordConstants with PropertyChecks{
+class TaxCodeRecordSpec extends PlaySpec with TaxCodeRecordConstants with PropertyChecks{
 
   "TaxCodeRecord reads" should {
 
