@@ -40,28 +40,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         case Seq(TaxCodeRecord(_,_,_,_,AnnualCode)) => false
         case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,AnnualCode),_*) => true
         case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,NonAnnualCode),_*) => true
+        case _ => false
       }
-  }
-
-
-
-
-
-//    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
-//
-//
-//
-//      val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
-//      (currentRecord.codeType, previousRecord.codeType) match {
-//        case(currentRecord.)
-//      }
-//    }
-
-//    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
-//      val records = taxCodeHistory.operatedTaxCodeRecords.count(inYearOf(currentYear)(_))
-//
-//      records > 1
-//    }
+    }
   }
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
