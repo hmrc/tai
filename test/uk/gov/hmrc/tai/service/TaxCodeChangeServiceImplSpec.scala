@@ -35,7 +35,7 @@ import scala.util.Random
 class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCodeRecordConstants {
 
   "hasTaxCodeChanged" should {
-    
+
     "return true" when {
 
       "the tax code has been operated" when {
@@ -148,6 +148,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val service = new TaxCodeChangeServiceImpl(mockConnector)
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
+
     }
   }
 
