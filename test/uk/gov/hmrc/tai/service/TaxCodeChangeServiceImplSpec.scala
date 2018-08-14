@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
@@ -24,8 +23,8 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.model._
+import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeRecordConstants}
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -36,6 +35,7 @@ import scala.util.Random
 class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCodeRecordConstants {
 
   "hasTaxCodeChanged" should {
+    
     "return true" when {
 
       "the tax code has been operated" when {
