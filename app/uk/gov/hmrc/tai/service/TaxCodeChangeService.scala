@@ -39,8 +39,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
       sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
-        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode)) => false
-        case Seq(TaxCodeRecord(_,_,_,_,AnnualCode)) => false
         case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,AnnualCode),_*) => true
         case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,NonAnnualCode),_*) => true
         case _ => false

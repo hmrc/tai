@@ -150,6 +150,17 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val service = new TaxCodeChangeServiceImpl(mockConnector)
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
+
+      "a JSExceptionResult is thrown by the connector" in {
+        val testNino = randomNino
+
+        val mockConnector = mock[TaxCodeChangeConnector]
+
+        when(mockConnector.taxCodeHistory(any(), any())).thenReturn(Future.failed(new JsResultException(Nil)))
+
+        val service = new TaxCodeChangeServiceImpl(mockConnector)
+        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+      }
     }
   }
 

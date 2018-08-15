@@ -47,18 +47,6 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
-
-    "throw a JsResultException when an invalid Json is returned" in {
-
-      val nino = randomNino
-
-      val invalidJson = Json.obj(
-        "nino" -> nino
-      )
-
-      a[JsResultException] should be thrownBy invalidJson.as[TaxCodeHistory]
-
-    }
   }
 
   private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
