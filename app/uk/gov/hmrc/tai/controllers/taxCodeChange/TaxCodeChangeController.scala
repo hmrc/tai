@@ -47,7 +47,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
   def taxCodeChange(nino: Nino) = authentication.async {
     implicit request =>
       taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
-        Ok(Json.toJson(ApiResponse(taxCodeChange, Nil)))
+        Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
       }
   }
 }
