@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json.Json
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
-  def operatedTaxCodeRecords = taxCodeRecord.filter(_.operatedTaxCode)
+  def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecord.filter(_.operatedTaxCode)
 }
 
 object TaxCodeHistory {

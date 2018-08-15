@@ -76,7 +76,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val testNino = ninoGenerator
 
-        val x = when(mockConfig.taxCodeChangeEnabled).thenReturn(false)
+        when(mockConfig.taxCodeChangeEnabled).thenReturn(false)
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
