@@ -23,7 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection}
-import uk.gov.hmrc.tai.model.domain.{AddEmployment, EndEmployment, IncorrectEmployment}
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -37,7 +37,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService,
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
 
-    employmentService.employments(nino, year).map { employments =>
+    employmentService.employments(nino, year).map { employments: Seq[Employment] =>
 
       Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
 

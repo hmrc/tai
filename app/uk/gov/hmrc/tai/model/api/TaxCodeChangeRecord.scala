@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.model.api
 
+import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
-case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
-  def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecord.filter(_.operatedTaxCode)
+case class TaxCodeChangeRecord(taxCode: String, startDate: LocalDate, endDate: LocalDate, employerName: String)
+
+object TaxCodeChangeRecord {
+  implicit val format = Json.format[TaxCodeChangeRecord]
 }
 
-object TaxCodeHistory {
+case class TaxCodeChange(current: TaxCodeChangeRecord, previous: TaxCodeChangeRecord)
 
-  implicit val format = Json.format[TaxCodeHistory]
-
+object TaxCodeChange {
+  implicit val format = Json.format[TaxCodeChange]
 }
+

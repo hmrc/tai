@@ -28,8 +28,8 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.ApiResponse
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.api
+import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
 import scala.concurrent.Future
@@ -87,32 +87,37 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
     }
   }
 
-  "taxCodeHistory" should {
+  "taxCodeChange" should {
     "return given nino's tax code history" in {
 
+      val date = LocalDate.now()
       val testNino = ninoGenerator
+      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1")
+      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2")
+      when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(currentRecord, previousRecord)))
 
-      val taxCodeHistory =
-        TaxCodeHistory(
-          testNino.nino,
-          Some(Seq(
-            TaxCodeRecord(taxCode="1185L", employerName="employer2", operatedTaxCode=true, p2Date=new LocalDate(2018, 7, 11)),
-            TaxCodeRecord(taxCode="1080L", employerName="employer1", operatedTaxCode=true, p2Date=new LocalDate(2018, 4, 11))
-          ))
-        )
+      val expectedResponse = Json.obj(
+        "data" -> Json.obj(
+          "current" -> Json.obj("taxCode" -> "b",
+                                "startDate" -> date.toString,
+                                "endDate" -> date.minusDays(1).toString,
+                                "employerName" -> "Employer 1"),
+          "previous" -> Json.obj("taxCode" -> "a",
+                                 "startDate" -> date.toString,
+                                 "endDate" -> date.minusDays(1).toString,
+                                 "employerName" -> "Employer 2")),
+        "links" -> Json.arr())
 
-      when(mockTaxCodeService.taxCodeHistory(testNino)).thenReturn(Future.successful(taxCodeHistory))
 
-      val response = controller.taxCodeHistory(testNino)(FakeRequest())
+      val response = controller.taxCodeChange(testNino)(FakeRequest())
 
-      contentAsJson(response) mustEqual Json.toJson(ApiResponse(taxCodeHistory, Nil))
-
+      contentAsJson(response) mustEqual expectedResponse
     }
   }
 
-  implicit val hc = HeaderCarrier()
-  val mockConfig = mock[FeatureTogglesConfig]
-  val mockTaxCodeService = mock[TaxCodeChangeService]
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
+  val mockTaxCodeService: TaxCodeChangeService = mock[TaxCodeChangeService]
 
   private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, mockTaxCodeService, mockConfig)
   private def ninoGenerator = new Generator(new Random).nextNino

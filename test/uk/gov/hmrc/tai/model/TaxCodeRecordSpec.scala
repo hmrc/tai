@@ -17,25 +17,43 @@
 package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
+import org.scalatest.prop.PropertyChecks
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
-class TaxCodeRecordSpec extends PlaySpec {
+class TaxCodeRecordSpec extends PlaySpec with TaxCodeRecordConstants with PropertyChecks{
 
   "TaxCodeRecord reads" should {
-    "return a TaxCodeRecord when given valid Json" in {
 
-      val taxCodeRecord = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2))
-
-      val validJson = Json.obj(
-        "taxCode" -> "testCode",
-        "employerName" -> "employerName",
-        "operatedTaxCode" -> true,
-        "p2Date" -> "2018-02-02"
-      )
-
-      validJson.as[TaxCodeRecord] mustEqual taxCodeRecord
+    "return a TaxCodeRecord for valid codes" in {
+      forAll (validCodeCombos) { (npsCode: String, codeType:CodeType) =>
+        validJson(npsCode).as[TaxCodeRecord] mustEqual TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType)
+      }
 
     }
   }
+
+  def validJson(codeType: String) = Json.obj(
+    "taxCode" -> "testCode",
+    "employerName" -> "employerName",
+    "operatedTaxCode" -> true,
+    "dateOfCalculation" -> "2018-02-02",
+    "codeType" -> codeType
+  )
+
+  def taxCodeRecord(codeType: CodeType) = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType)
+
+  val validCodeCombos =
+    Table(
+      ("npsCode", "codeType"),
+      (DailyCoding, NonAnnualCode),
+      (BudgetCoding, NonAnnualCode),
+      (BudgetCodingNonIssued, NonAnnualCode),
+      (BudgetCodingP9X, NonAnnualCode),
+      (AnnualCodeP9X, AnnualCode),
+      (AnnualCoding, AnnualCode)
+    )
 }
+
+

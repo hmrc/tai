@@ -18,61 +18,36 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, JsValue, Json}
+import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec {
+class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
 
   "TaxCodeHistory reads" should {
-    "return a TaxCodeHistory given valid Json missing the taxCodeRecord field" in {
+    "return a TaxCodeHistory given valid Json" in {
 
+      val now = LocalDate.now()
       val nino = randomNino
-      val taxCodeHistory = TaxCodeHistory(nino, None)
+      val taxCodeHistory = TaxCodeHistory(nino, Seq(
+        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode),
+        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode)
+      ))
 
       val validJson = Json.obj(
         "nino" -> nino,
-        "taxCodeRecord" -> JsNull
+        "taxCodeRecord" -> Seq(
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding),
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding)
+        )
       )
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
   }
-
-
-  "TaxCodeHistory writes" should {
-    "return a json representation of TaxCodeHistory given a taxCodeRecord" when {
-      "taxCodeRecord is present" in {
-        val nino = randomNino
-        val taxCodeHistory = TaxCodeHistory(nino, Some(Seq()))
-
-        val validJson = Json.obj(
-          "nino" -> nino,
-          "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
-        )
-
-        Json.toJson(taxCodeHistory) mustEqual validJson
-
-      }
-
-
-      "taxCodeRecord is not present" in {
-        val nino = randomNino
-        val taxCodeHistory = TaxCodeHistory(nino, None)
-
-        val validJson = Json.obj(
-          "nino" -> nino
-        )
-
-        Json.toJson(taxCodeHistory) mustEqual validJson
-
-      }
-
-    }
-  }
-
 
   private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
 

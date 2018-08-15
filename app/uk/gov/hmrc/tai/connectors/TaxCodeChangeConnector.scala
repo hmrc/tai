@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future

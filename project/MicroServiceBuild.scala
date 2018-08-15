@@ -15,8 +15,8 @@ object MicroServiceBuild extends Build with MicroService {
 
 private object AppDependencies {
   import play.sbt.PlayImport._
-  private val pegdownVersion = "1.4.2"
-  private val scalatestVersion = "2.2.2"
+  private val pegdownVersion = "1.6.0"
+  private val scalatestVersion = "2.2.6"
 
   val compile = Seq(
     filters,
@@ -40,7 +40,7 @@ private object AppDependencies {
         "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
         "org.pegdown" % "pegdown" % pegdownVersion % scope,
         "org.jsoup" % "jsoup" % "1.7.3" % scope,
-        "org.scalacheck" %% "scalacheck" % "1.13.4" % scope,
+        "org.scalacheck" %% "scalacheck" % "1.12.5" % scope,
         "org.mockito" % "mockito-core" % "1.9.5",
         "com.github.tomakehurst" % "wiremock" % "2.15.0" % scope
       )
