@@ -68,4 +68,4 @@ DELETE  /session-cache                                                          
 
 # Tax code change
 GET     /:nino/tax-account/tax-code-changed                                                   @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.hasTaxCodeChanged(nino: Nino)
-GET     /:nino/tax-account/tax-code-history                                                   @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeHistory(nino: Nino)
+GET     /:nino/tax-account/tax-code-change                                                   @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeChange(nino: Nino)

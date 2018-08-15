@@ -18,25 +18,36 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
+import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{AnnualCode, NonAnnualCode, TaxCodeRecord}
+import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService with
+  TaxCodeRecordConstants {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
-      val records = taxCodeHistory.operatedTaxCodeRecords.count(inYearOf(currentYear)(_))
-
-      records > 1
+      sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
+        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,AnnualCode),_*) => true
+        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode),TaxCodeRecord(_,_,_,_,NonAnnualCode),_*) => true
+        case _ => false
+      }
+    }recover {
+      case exception:JsResultException =>
+        Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
+        false
+      case ex => throw ex
     }
   }
 

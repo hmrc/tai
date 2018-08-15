@@ -30,16 +30,17 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.{NonAnnualCode, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.util.{TaxCodeRecordConstants, WireMockHelper}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
+class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with
+  TaxCodeRecordConstants{
 
 
   def config = injector.instanceOf[TaxCodeChangeUrl]
@@ -68,8 +69,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         config).taxCodeHistory(testNino, taxYear), 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23")),
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"))
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"),NonAnnualCode),
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"),NonAnnualCode)
       ))
     }
 
@@ -85,14 +86,16 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "employerName" -> "Employer 1",
         "operatedTaxCode" -> true,
         "p2Issued" -> true,
-        "dateOfCalculation" -> "2017-06-23"
+        "dateOfCalculation" -> "2017-06-23",
+        "codeType" -> DailyCoding
       ),
       Json.obj(
         "taxCode" -> "1185L",
         "employerName" -> "Employer 1",
         "operatedTaxCode" -> true,
         "p2Issued" -> true,
-        "dateOfCalculation" -> "2017-06-23"
+        "dateOfCalculation" -> "2017-06-23",
+        "codeType" -> DailyCoding
       )
     )
   )
