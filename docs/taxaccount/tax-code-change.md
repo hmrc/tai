@@ -1,4 +1,4 @@
-Tax Code History
+Tax Code Change
 -------------------
   The end point returns details of the current and previous operated tax codes for a given nino
 
@@ -38,4 +38,4 @@ Tax Code History
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
-    **Content:** `{"statusCode":401,"message":"Authorisation refused for access to GET /tai/$NINO/tax-account/tax-code-history"}`
+    **Content:** `{"statusCode":401,"message":"Authorisation refused for access to GET /tai/$NINO/tax-account/tax-code-change"}`

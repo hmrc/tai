@@ -21,8 +21,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.data.validation.ValidationError
-import play.api.libs.json.{JsPath, JsResultException}
+import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model._
@@ -172,12 +171,12 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
         val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
         val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
-        val PreviousEndDate = currentStartDate.minusDays(1)
+        val previousEndDate = currentStartDate.minusDays(1)
         val previousStartDateInPrevYear = TaxYearResolver.startOfCurrentTaxYear.minusDays(2)
 
         val testNino = randomNino
 
-        val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, PreviousEndDate, "Employer 1")
+        val expectedPreviousTaxCodeChange = api.TaxCodeChangeRecord("1185L", previousStartDate, previousEndDate, "Employer 1")
         val expectedCurrentTaxCodeChange = api.TaxCodeChangeRecord("1000L", currentStartDate, currentEndDate, "Employer 1")
 
         val previousTaxCodeRecord = TaxCodeRecord(taxCode = "1185L", employerName = "Employer 1", operatedTaxCode = true,

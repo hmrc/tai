@@ -56,7 +56,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
       val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
 
-      val perviousEndDate = currentRecord.dateOfCalculation.minusDays(1)
+      val previousEndDate = currentRecord.dateOfCalculation.minusDays(1)
 
       val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode,
                                                      currentRecord.dateOfCalculation,
@@ -65,14 +65,12 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode,
                                                       previousStartDate(previousRecord.dateOfCalculation),
-                                                      perviousEndDate,
+                                                      previousEndDate,
                                                       previousRecord.employerName)
 
       TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
     }
   }
-
-  private val inYearOf = (year: TaxYear) => (record: TaxCodeRecord) => TaxYear(record.dateOfCalculation) == year
 
   private val sortedByDate = (records: Seq[TaxCodeRecord]) => {
     implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
