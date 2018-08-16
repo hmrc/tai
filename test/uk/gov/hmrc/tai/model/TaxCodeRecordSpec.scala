@@ -22,27 +22,36 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
+import scala.util.Random
+
 class TaxCodeRecordSpec extends PlaySpec with TaxCodeRecordConstants with PropertyChecks{
 
   "TaxCodeRecord reads" should {
 
     "return a TaxCodeRecord for valid codes" in {
-      forAll (validCodeCombos) { (npsCode: String, codeType:CodeType) =>
-        validJson(npsCode).as[TaxCodeRecord] mustEqual TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType)
-      }
+      forAll (validCodeCombos) { (npsCode: String, codeType:CodeType) => {
+        val payrollNumber = randomInt().toString
+        val employmentId = randomInt()
 
+        validJson(npsCode, payrollNumber, employmentId).as[TaxCodeRecord] mustEqual taxCodeRecord(codeType, payrollNumber, employmentId)
+
+      }}
     }
   }
 
-  def validJson(codeType: String) = Json.obj(
+  def validJson(codeType: String, payrollNumber: String, employmentId: Int) = Json.obj(
     "taxCode" -> "testCode",
     "employerName" -> "employerName",
     "operatedTaxCode" -> true,
     "dateOfCalculation" -> "2018-02-02",
-    "codeType" -> codeType
+    "codeType" -> codeType,
+    "payrollNumber" -> payrollNumber,
+    "employmentId" -> employmentId,
+    "employmentType" -> "PRIMARY"
   )
 
-  def taxCodeRecord(codeType: CodeType) = TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType)
+  def taxCodeRecord(codeType: CodeType, payrollNumber: String, employmentId: Int) =
+    TaxCodeRecord("testCode", "employerName", true, new LocalDate(2018, 2, 2), codeType, payrollNumber, employmentId, "PRIMARY")
 
   val validCodeCombos =
     Table(
@@ -54,6 +63,12 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeRecordConstants with Proper
       (AnnualCodeP9X, AnnualCode),
       (AnnualCoding, AnnualCode)
     )
+
+  private def randomInt(maxDigits: Int = 5): Int = {
+    import scala.math.pow
+    val random = new Random
+    random.nextInt(pow(10,maxDigits).toInt)
+  }
 }
 
 

@@ -43,7 +43,15 @@ object CodeType extends CodeType with TaxCodeRecordConstants {
   }
 }
 
-case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, dateOfCalculation: LocalDate, codeType: CodeType)
+case class TaxCodeRecord(taxCode: String,
+                         employerName: String,
+                         operatedTaxCode: Boolean,
+                         dateOfCalculation: LocalDate,
+                         codeType: CodeType,
+                         payrollNumber: String,
+                         employmentId: Int,
+                         employmentType: String)
+
 
 object TaxCodeRecord {
   implicit val format = Json.format[TaxCodeRecord]
