@@ -92,20 +92,26 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1")
-      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2")
-      when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(currentRecord, previousRecord)))
+      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1", "12345", 1, primary = true)
+      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2", "67890", 2, primary = true)
+      when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.obj("taxCode" -> "b",
-                                "startDate" -> date.toString,
-                                "endDate" -> date.minusDays(1).toString,
-                                "employerName" -> "Employer 1"),
-          "previous" -> Json.obj("taxCode" -> "a",
-                                 "startDate" -> date.toString,
-                                 "endDate" -> date.minusDays(1).toString,
-                                 "employerName" -> "Employer 2")),
+          "current" -> Json.arr(Json.obj("taxCode" -> "b",
+                                  "startDate" -> date.toString,
+                                  "endDate" -> date.minusDays(1).toString,
+                                  "employerName" -> "Employer 1",
+                                  "payrollNumber" -> "12345",
+                                  "employmentId" -> 1,
+                                  "primary" -> true)),
+          "previous" -> Json.arr(Json.obj("taxCode" -> "a",
+                                  "startDate" -> date.toString,
+                                  "endDate" -> date.minusDays(1).toString,
+                                  "employerName" -> "Employer 2",
+                                  "payrollNumber" -> "67890",
+                                  "employmentId" -> 2,
+                                  "primary" -> true))),
         "links" -> Json.arr())
 
 

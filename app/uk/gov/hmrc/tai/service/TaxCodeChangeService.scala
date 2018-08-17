@@ -38,11 +38,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val currentYear = TaxYear()
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
-      sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
-        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,AnnualCode,_,_,_),_*) => true
-        case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),_*) => true
-        case _ => false
-      }
+
+      taxCodeHistory.operatedTaxCodeRecords.map(_.dateOfCalculation).distinct.length > 1
+//        sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
+//        case Seq(TaxCodeRecord(_,_,_,currentDate,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,previousDate,AnnualCode,_,_,_),_*) => true
+//        case Seq(TaxCodeRecord(_,_,_,currentDate,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,previousDate,NonAnnualCode,_,_,_),_*) => true
+//        case _ => false
+//      }
     }recover {
       case exception:JsResultException =>
         Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
@@ -59,16 +61,22 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val previousEndDate = currentRecord.dateOfCalculation.minusDays(1)
 
       val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode,
-                                                     currentRecord.dateOfCalculation,
-                                                     TaxYearResolver.endOfCurrentTaxYear,
-                                                     currentRecord.employerName)
+                                                      currentRecord.dateOfCalculation,
+                                                      TaxYearResolver.endOfCurrentTaxYear,
+                                                      currentRecord.employerName,
+                                                      currentRecord.payrollNumber,
+                                                      currentRecord.employmentId,
+                                                      primaryEmployment(currentRecord))
 
       val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode,
                                                       previousStartDate(previousRecord.dateOfCalculation),
                                                       previousEndDate,
-                                                      previousRecord.employerName)
+                                                      previousRecord.employerName,
+                                                      previousRecord.payrollNumber,
+                                                      previousRecord.employmentId,
+                                                      primaryEmployment(previousRecord))
 
-      TaxCodeChange(currentTaxCodeChange, previousTaxCodeChange)
+      TaxCodeChange(Seq(currentTaxCodeChange), Seq(previousTaxCodeChange))
     }
   }
 
@@ -84,6 +92,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     } else {
       date
     }
+  }
+
+  private def primaryEmployment(taxCodeRecord: TaxCodeRecord): Boolean = {
+    taxCodeRecord.employmentType == "PRIMARY"
   }
 }
 
