@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{AnnualCode, NonAnnualCode, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.{AnnualCode, NonAnnualCode, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -34,18 +34,16 @@ import scala.concurrent.Future
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService with
   TaxCodeRecordConstants {
 
+  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = taxCodeRecords.map(_.dateOfCalculation).distinct.length >= 2
+
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
 
     taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
 
-      taxCodeHistory.operatedTaxCodeRecords.map(_.dateOfCalculation).distinct.length > 1
-//        sortedByDate(taxCodeHistory.operatedTaxCodeRecords) match {
-//        case Seq(TaxCodeRecord(_,_,_,currentDate,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,previousDate,AnnualCode,_,_,_),_*) => true
-//        case Seq(TaxCodeRecord(_,_,_,currentDate,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,previousDate,NonAnnualCode,_,_,_),_*) => true
-//        case _ => false
-//      }
-    }recover {
+      validForService(taxCodeHistory.operatedTaxCodeRecords)
+
+    } recover {
       case exception:JsResultException =>
         Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
         false
@@ -56,34 +54,41 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
 
     taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
-      val currentRecord :: previousRecord :: _ = sortedByDate(taxCodeHistory.operatedTaxCodeRecords)
 
-      val previousEndDate = currentRecord.dateOfCalculation.minusDays(1)
+      if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
-      val currentTaxCodeChange = TaxCodeChangeRecord(currentRecord.taxCode,
-                                                      currentRecord.dateOfCalculation,
-                                                      TaxYearResolver.endOfCurrentTaxYear,
-                                                      currentRecord.employerName,
-                                                      currentRecord.payrollNumber,
-                                                      currentRecord.employmentId,
-                                                      primaryEmployment(currentRecord))
+        val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
+        val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+        val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted(dateTimeOrdering)
 
-      val previousTaxCodeChange = TaxCodeChangeRecord(previousRecord.taxCode,
-                                                      previousStartDate(previousRecord.dateOfCalculation),
-                                                      previousEndDate,
-                                                      previousRecord.employerName,
-                                                      previousRecord.payrollNumber,
-                                                      previousRecord.employmentId,
-                                                      primaryEmployment(previousRecord))
+        val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
 
-      TaxCodeChange(Seq(currentTaxCodeChange), Seq(previousTaxCodeChange))
+        val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
+
+        val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
+
+        val currentTaxCodeChanges: Seq[TaxCodeChangeRecord] = currentRecords.map( currentRecord =>  TaxCodeChangeRecord(currentRecord.taxCode,
+                                                        currentRecord.dateOfCalculation,
+                                                        TaxYearResolver.endOfCurrentTaxYear,
+                                                        currentRecord.employerName,
+                                                        currentRecord.payrollNumber,
+                                                        currentRecord.employmentId,
+                                                        primaryEmployment(currentRecord)))
+
+        val previousTaxCodeChanges: Seq[TaxCodeChangeRecord] = previousRecords.map( previousRecord =>  TaxCodeChangeRecord(previousRecord.taxCode,
+                                                        previousStartDate(previousRecord.dateOfCalculation),
+                                                        previousEndDate,
+                                                        previousRecord.employerName,
+                                                        previousRecord.payrollNumber,
+                                                        previousRecord.employmentId,
+                                                        primaryEmployment(previousRecord)))
+
+        TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
+
+      } else {
+        TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
+      }
     }
-  }
-
-  private val sortedByDate = (records: Seq[TaxCodeRecord]) => {
-    implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
-
-    records.sortBy(_.dateOfCalculation)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
@@ -107,3 +112,18 @@ trait TaxCodeChangeService {
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
 }
+
+//    val testForAChange = (taxCodes: Seq[TaxCodeRecord]) => taxCodes match {
+//      case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,AnnualCode,_,_,_),_*) => true
+//      case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),_*) => true
+//      case _ => false
+//    }
+
+
+//      taxCodeHistory
+//        .operatedTaxCodeRecords
+//        .groupBy(_.dateOfCalculation)
+//        .values
+//        .toSeq
+//        .map((sortedByDate andThen testForAChange)(_))
+//        .foldLeft(false)((a: Boolean, b: Boolean) => a || b)
