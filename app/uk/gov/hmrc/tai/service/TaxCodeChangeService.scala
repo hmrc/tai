@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
+import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
@@ -35,9 +36,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   TaxCodeRecordConstants {
 
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
-    val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
-    lazy val latestDate = calculationDates.min(dateTimeOrdering)
+    lazy val latestDate = calculationDates.min
 
     calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
   }
@@ -64,8 +64,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
-        val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
-        val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted(dateTimeOrdering)
+
+        val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted
 
         val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
 

@@ -27,4 +27,6 @@ object DateTimeHelper {
     dateTimeFormatter.parseLocalDate(date)
   }
 
+
+  implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
 }
