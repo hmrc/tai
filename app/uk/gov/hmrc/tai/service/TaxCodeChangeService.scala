@@ -23,9 +23,9 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{AnnualCode, NonAnnualCode, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -34,7 +34,13 @@ import scala.concurrent.Future
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService with
   TaxCodeRecordConstants {
 
-  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = taxCodeRecords.map(_.dateOfCalculation).distinct.length >= 2
+  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
+    val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
+    lazy val latestDate = calculationDates.min(dateTimeOrdering)
+
+    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
+  }
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val currentYear = TaxYear()
