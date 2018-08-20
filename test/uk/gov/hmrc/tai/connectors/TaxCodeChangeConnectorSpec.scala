@@ -31,16 +31,15 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{NonAnnualCode, TaxCodeHistory, TaxCodeRecord}
-import uk.gov.hmrc.tai.util.{TaxCodeRecordConstants, WireMockHelper}
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with
-  TaxCodeRecordConstants{
+class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
 
 
   def config = injector.instanceOf[TaxCodeChangeUrl]
@@ -68,7 +67,6 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                    "operatedTaxCode" -> true,
                    "p2Issued" -> true,
                    "dateOfCalculation" -> "2017-06-23",
-                   "codeType" -> DailyCoding,
                    "payrollNumber" -> payrollNumber1,
                    "employmentId" -> employmentId1,
                    "employmentType" -> "PRIMARY"),
@@ -78,7 +76,6 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                    "operatedTaxCode" -> true,
                    "p2Issued" -> true,
                    "dateOfCalculation" -> "2017-06-23",
-                   "codeType" -> DailyCoding,
                    "payrollNumber" -> payrollNumber2,
                    "employmentId" -> employmentId2,
                    "employmentType" -> "SECONDARY")))
@@ -92,8 +89,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       val result = Await.result(connector, 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), NonAnnualCode, payrollNumber1, employmentId1, "PRIMARY"),
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), NonAnnualCode, payrollNumber2, employmentId2, "SECONDARY")
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), payrollNumber1, employmentId1, "PRIMARY"),
+        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), payrollNumber2, employmentId2, "SECONDARY")
       ))
     }
 

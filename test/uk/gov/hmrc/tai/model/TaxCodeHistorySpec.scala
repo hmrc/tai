@@ -20,11 +20,10 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
+class TaxCodeHistorySpec extends PlaySpec {
 
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json" in {
@@ -37,15 +36,15 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
       val emplmentId2 = randomInt()
 
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode, payrollNumber1, emplmentId1, "PRIMARY"),
-        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode, payrollNumber2, emplmentId2, "PRIMARY")
+        TaxCodeRecord("tax code", "Employee 1", true, now, payrollNumber1, emplmentId1, "PRIMARY"),
+        TaxCodeRecord("tax code", "Employee 1", true, now, payrollNumber2, emplmentId2, "PRIMARY")
       ))
 
       val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq(
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding, "payrollNumber" -> payrollNumber1, "employmentId" -> emplmentId1, "employmentType" -> "PRIMARY"),
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding, "payrollNumber" -> payrollNumber2, "employmentId" -> emplmentId2, "employmentType" -> "PRIMARY")
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "payrollNumber" -> payrollNumber1, "employmentId" -> emplmentId1, "employmentType" -> "PRIMARY"),
+          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "payrollNumber" -> payrollNumber2, "employmentId" -> emplmentId2, "employmentType" -> "PRIMARY")
         )
       )
 

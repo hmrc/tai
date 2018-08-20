@@ -26,14 +26,12 @@ import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService with
-  TaxCodeRecordConstants {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
@@ -118,18 +116,3 @@ trait TaxCodeChangeService {
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
 }
-
-//    val testForAChange = (taxCodes: Seq[TaxCodeRecord]) => taxCodes match {
-//      case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,AnnualCode,_,_,_),_*) => true
-//      case Seq(TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),TaxCodeRecord(_,_,_,_,NonAnnualCode,_,_,_),_*) => true
-//      case _ => false
-//    }
-
-
-//      taxCodeHistory
-//        .operatedTaxCodeRecords
-//        .groupBy(_.dateOfCalculation)
-//        .values
-//        .toSeq
-//        .map((sortedByDate andThen testForAChange)(_))
-//        .foldLeft(false)((a: Boolean, b: Boolean) => a || b)
