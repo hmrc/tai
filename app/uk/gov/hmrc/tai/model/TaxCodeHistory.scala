@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.tai.model
 
+import org.joda.time.LocalDate
 import play.api.libs.json.Json
+import uk.gov.hmrc.time.TaxYearResolver
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
   def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecord.filter(_.operatedTaxCode)
@@ -25,5 +27,21 @@ case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 object TaxCodeHistory {
 
   implicit val format = Json.format[TaxCodeHistory]
+  implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+
+  def removeAnnualCodingDuplicates(taxCodeRecords: Seq[TaxCodeRecord]):Seq[TaxCodeRecord] = {
+    val currentYear = TaxYearResolver.startOfCurrentTaxYear
+
+    val (currentTaxYearRecords, preTaxYearRecords) = taxCodeRecords.sortBy(_.dateOfCalculation).partition(_.dateOfCalculation isAfter currentYear)
+
+    val latestTaxCodeRecord:TaxCodeRecord = preTaxYearRecords.size match {
+      case(1) => preTaxYearRecords(0)
+      case _ => preTaxYearRecords.sortBy(_.dateOfCalculation).head
+    }
+
+    Seq(latestTaxCodeRecord) ++ currentTaxYearRecords
+  }
 
 }
+
+
