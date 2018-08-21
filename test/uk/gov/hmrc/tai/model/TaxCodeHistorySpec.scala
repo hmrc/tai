@@ -32,19 +32,30 @@ class TaxCodeHistorySpec extends PlaySpec {
       val nino = randomNino
       val payrollNumber1 = randomInt().toString
       val payrollNumber2 = randomInt().toString
-      val emplmentId1 = randomInt()
-      val emplmentId2 = randomInt()
+
 
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", "Employee 1", true, now, payrollNumber1, emplmentId1, "PRIMARY"),
-        TaxCodeRecord("tax code", "Employee 1", true, now, payrollNumber2, emplmentId2, "PRIMARY")
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber1, pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber2, pensionIndicator = false, "PRIMARY")
       ))
 
       val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq(
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "payrollNumber" -> payrollNumber1, "employmentId" -> emplmentId1, "employmentType" -> "PRIMARY"),
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "payrollNumber" -> payrollNumber2, "employmentId" -> emplmentId2, "employmentType" -> "PRIMARY")
+          Json.obj("taxCode" -> "tax code",
+            "employerName" -> "Employee 1",
+            "operatedTaxCode" -> true,
+            "dateOfCalculation" -> now,
+            "payrollNumber" -> payrollNumber1,
+            "pensionIndicator" -> false,
+            "employmentType" -> "PRIMARY"),
+          Json.obj("taxCode" -> "tax code",
+            "employerName" -> "Employee 1",
+            "operatedTaxCode" -> true,
+            "dateOfCalculation" -> now,
+            "payrollNumber" -> payrollNumber2,
+            "pensionIndicator" -> false,
+            "employmentType" -> "PRIMARY")
         )
       )
 

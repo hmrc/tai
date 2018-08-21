@@ -76,7 +76,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                                         TaxYearResolver.endOfCurrentTaxYear,
                                                         currentRecord.employerName,
                                                         currentRecord.payrollNumber,
-                                                        currentRecord.employmentId,
+                                                        currentRecord.pensionIndicator,
                                                         primaryEmployment(currentRecord)))
 
         val previousTaxCodeChanges: Seq[TaxCodeChangeRecord] = previousRecords.map( previousRecord =>  TaxCodeChangeRecord(previousRecord.taxCode,
@@ -84,7 +84,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                                         previousEndDate,
                                                         previousRecord.employerName,
                                                         previousRecord.payrollNumber,
-                                                        previousRecord.employmentId,
+                                                        previousRecord.pensionIndicator,
                                                         primaryEmployment(previousRecord)))
 
         TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)

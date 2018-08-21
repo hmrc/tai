@@ -68,7 +68,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                    "p2Issued" -> true,
                    "dateOfCalculation" -> "2017-06-23",
                    "payrollNumber" -> payrollNumber1,
-                   "employmentId" -> employmentId1,
+                   "pensionIndicator" -> false,
                    "employmentType" -> "PRIMARY"),
 
           Json.obj("taxCode" -> "1185L",
@@ -77,7 +77,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                    "p2Issued" -> true,
                    "dateOfCalculation" -> "2017-06-23",
                    "payrollNumber" -> payrollNumber2,
-                   "employmentId" -> employmentId2,
+                   "pensionIndicator" -> false,
                    "employmentType" -> "SECONDARY")))
 
 
@@ -89,8 +89,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       val result = Await.result(connector, 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), payrollNumber1, employmentId1, "PRIMARY"),
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"), payrollNumber2, employmentId2, "SECONDARY")
+        TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber1, pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber2, pensionIndicator = false, "SECONDARY")
       ))
     }
 

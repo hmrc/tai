@@ -17,23 +17,23 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class TaxCodeChangeRecord(taxCode: String,
                                startDate: LocalDate,
                                endDate: LocalDate,
                                employerName: String,
                                payrollNumber: String,
-                               employmentId: Int,
+                               pensionIndicator: Boolean,
                                primary: Boolean)
 
 object TaxCodeChangeRecord {
-  implicit val format = Json.format[TaxCodeChangeRecord]
+  implicit val format: OFormat[TaxCodeChangeRecord] = Json.format[TaxCodeChangeRecord]
 }
 
 case class TaxCodeChange(current: Seq[TaxCodeChangeRecord], previous: Seq[TaxCodeChangeRecord])
 
 object TaxCodeChange {
-  implicit val format = Json.format[TaxCodeChange]
+  implicit val format: OFormat[TaxCodeChange] = Json.format[TaxCodeChange]
 }
 

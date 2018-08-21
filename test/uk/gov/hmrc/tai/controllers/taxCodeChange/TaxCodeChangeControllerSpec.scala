@@ -92,8 +92,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1", "12345", 1, primary = true)
-      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2", "67890", 2, primary = true)
+      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1", "12345", pensionIndicator = false, primary = true)
+      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2", "67890", pensionIndicator = false, primary = true)
       when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
@@ -103,14 +103,14 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
                                   "endDate" -> date.minusDays(1).toString,
                                   "employerName" -> "Employer 1",
                                   "payrollNumber" -> "12345",
-                                  "employmentId" -> 1,
+                                  "pensionIndicator" -> false,
                                   "primary" -> true)),
           "previous" -> Json.arr(Json.obj("taxCode" -> "a",
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
                                   "employerName" -> "Employer 2",
                                   "payrollNumber" -> "67890",
-                                  "employmentId" -> 2,
+                                  "pensionIndicator" -> false,
                                   "primary" -> true))),
         "links" -> Json.arr())
 
