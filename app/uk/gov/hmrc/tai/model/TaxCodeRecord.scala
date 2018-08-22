@@ -25,8 +25,12 @@ case class TaxCodeRecord(taxCode: String,
                          dateOfCalculation: LocalDate,
                          payrollNumber: String,
                          pensionIndicator: Boolean,
-                         employmentType: String)
+                         employmentType: String) {
 
+  val isPrimary: Boolean = {
+    employmentType == "PRIMARY"
+  }
+}
 
 object TaxCodeRecord {
   implicit val format: OFormat[TaxCodeRecord] = Json.format[TaxCodeRecord]

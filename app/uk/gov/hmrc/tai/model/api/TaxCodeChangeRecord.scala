@@ -36,4 +36,3 @@ case class TaxCodeChange(current: Seq[TaxCodeChangeRecord], previous: Seq[TaxCod
 object TaxCodeChange {
   implicit val format: OFormat[TaxCodeChange] = Json.format[TaxCodeChange]
 }
-
