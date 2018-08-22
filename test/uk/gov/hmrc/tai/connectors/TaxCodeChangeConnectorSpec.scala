@@ -25,7 +25,6 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -41,8 +40,6 @@ import scala.util.Random
 
 class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
 
-
-  def config = injector.instanceOf[TaxCodeChangeUrl]
   "tax code change API" must {
     "return tax code change response" in {
 
@@ -61,7 +58,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val path = new URL(config.taxCodeChangeUrl(testNino, taxYear, taxYear))
         s"${path.getPath}?${path.getQuery}"
       }
-println(url)
+
       val expectedJsonResponse = Json.obj(
         "nino" -> testNino.nino,
         "taxCodeRecord" -> Seq(
@@ -108,6 +105,8 @@ println(url)
     new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
 
   }
+
+  private def config = injector.instanceOf[TaxCodeChangeUrl]
 
   private def randomNino: Nino = new Generator(new Random).nextNino
 
