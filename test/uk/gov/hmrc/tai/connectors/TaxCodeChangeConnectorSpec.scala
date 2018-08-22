@@ -28,7 +28,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
@@ -49,7 +49,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       val metrics =  injector.instanceOf[Metrics]
       val httpClient =  injector.instanceOf[HttpClient]
       val auditor =  injector.instanceOf[Auditor]
-      val npsConfig =  injector.instanceOf[NpsJsonServiceConfig]
+      val desConfig =  injector.instanceOf[DesConfig]
       val testNino = randomNino
       val taxYear = TaxYear(2017)
       val payrollNumber1 = randomInt().toString()
@@ -57,8 +57,11 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       val employmentId1 = randomInt()
       val employmentId2 = randomInt()
 
-      val url = new URL(config.taxCodeChangeUrl(testNino, taxYear))
-
+      val url = {
+        val path = new URL(config.taxCodeChangeUrl(testNino, taxYear, taxYear))
+        s"${path.getPath}?${path.getQuery}"
+      }
+println(url)
       val expectedJsonResponse = Json.obj(
         "nino" -> testNino.nino,
         "taxCodeRecord" -> Seq(
@@ -82,11 +85,11 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
 
       server.stubFor(
-        get(urlEqualTo(url.getPath)).willReturn(ok(expectedJsonResponse.toString))
+        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
       )
 
-      val connector = createSut(metrics, httpClient, auditor,npsConfig, config).taxCodeHistory(testNino, taxYear)
-      val result = Await.result(connector, 10.seconds)
+      val connector = createSut(metrics, httpClient, auditor,desConfig, config)
+      val result = Await.result(connector.taxCodeHistory(testNino, taxYear), 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
         TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber1, pensionIndicator = false, "PRIMARY"),
@@ -96,13 +99,10 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
   }
 
-  implicit val headerCarrier: HeaderCarrier = mock[HeaderCarrier]
-
-
   private def createSut(metrics: Metrics,
                         httpClient: HttpClient,
                         auditor: Auditor,
-                        config: NpsJsonServiceConfig,
+                        config: DesConfig,
                         taxCodeChangeUrl: TaxCodeChangeUrl) = {
 
     new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
