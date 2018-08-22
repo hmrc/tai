@@ -67,5 +67,5 @@ DELETE  /journey-cache/:journey                                                 
 DELETE  /session-cache                                                                          @uk.gov.hmrc.tai.controllers.SessionController.invalidateCache()
 
 # Tax code change
-GET     /:nino/tax-account/tax-code-changed                                                   @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.hasTaxCodeChanged(nino: Nino)
-GET     /:nino/tax-account/tax-code-change                                                   @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeChange(nino: Nino)
+GET     /:nino/tax-account/tax-code-change/exists                                               @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.hasTaxCodeChanged(nino: Nino)
+GET     /:nino/tax-account/tax-code-change                                                      @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeChange(nino: Nino)
