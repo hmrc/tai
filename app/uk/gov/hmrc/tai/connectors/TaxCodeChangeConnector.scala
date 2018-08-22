@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
 
@@ -37,7 +38,14 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
 
   override val originatorId = config.originatorId
 
-  implicit val hc = HeaderCarrier()
+  implicit private val header: HeaderCarrier = {
+    val commonHeaderValues = Seq(
+      "Environment" -> config.environment,
+      "Authorization" -> config.authorization,
+      "Content-Type" -> TaiConstants.contentType)
+
+    HeaderCarrier(extraHeaders = commonHeaderValues)
+  }
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, taxYear, taxYear)
