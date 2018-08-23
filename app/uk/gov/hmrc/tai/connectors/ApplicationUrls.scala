@@ -91,11 +91,11 @@ class IabdUrls @Inject()(config: NpsConfig) {
     s"${iabdUrl(nino, taxYear)}/employment/$iabdType"
 }
 
-@Singleton
-class TaxCodeChangeUrl @Inject()(config: NpsJsonServiceConfig) {
+  @Singleton
+class TaxCodeChangeUrl @Inject()(config: DesConfig) {
 
-  def taxCodeChangeUrl(nino: Nino, taxYear: TaxYear): String = {
-    s"${config.baseURL}/personal-tax-account/tax-code/history/api/v1/${nino.withoutSuffix}/${taxYear.year}"
+  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String = {
+    s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
   }
-  
+
 }

@@ -18,33 +18,27 @@ package uk.gov.hmrc.tai.connectors
 
 import java.net.URL
 
-import org.joda.time.LocalDate
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
+import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{NonAnnualCode, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{TaxCodeRecordConstants, WireMockHelper}
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with
-  TaxCodeRecordConstants{
-
-
-  def config = injector.instanceOf[TaxCodeChangeUrl]
-  val testNino = randomNino
+class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
 
   "tax code change API" must {
     "return tax code change response" in {
@@ -52,65 +46,73 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       val metrics =  injector.instanceOf[Metrics]
       val httpClient =  injector.instanceOf[HttpClient]
       val auditor =  injector.instanceOf[Auditor]
-      val npsConfig =  injector.instanceOf[NpsJsonServiceConfig]
+      val desConfig =  injector.instanceOf[DesConfig]
+      val testNino = randomNino
       val taxYear = TaxYear(2017)
+      val payrollNumber1 = randomInt().toString()
+      val payrollNumber2 = randomInt().toString()
+      val employmentId1 = randomInt()
+      val employmentId2 = randomInt()
 
-      val url = new URL(config.taxCodeChangeUrl(testNino, taxYear))
+      val url = {
+        val path = new URL(config.taxCodeChangeUrl(testNino, taxYear, taxYear))
+        s"${path.getPath}?${path.getQuery}"
+      }
+
+      val expectedJsonResponse = Json.obj(
+        "nino" -> testNino.nino,
+        "taxCodeRecord" -> Seq(
+          Json.obj("taxCode" -> "1185L",
+                   "employerName" -> "Employer 1",
+                   "operatedTaxCode" -> true,
+                   "p2Issued" -> true,
+                   "dateOfCalculation" -> "2017-06-23",
+                   "payrollNumber" -> payrollNumber1,
+                   "pensionIndicator" -> false,
+                   "employmentType" -> "PRIMARY"),
+
+          Json.obj("taxCode" -> "1185L",
+                   "employerName" -> "Employer 1",
+                   "operatedTaxCode" -> true,
+                   "p2Issued" -> true,
+                   "dateOfCalculation" -> "2017-06-23",
+                   "payrollNumber" -> payrollNumber2,
+                   "pensionIndicator" -> false,
+                   "employmentType" -> "SECONDARY")))
+
 
       server.stubFor(
-        get(urlEqualTo(url.getPath())).willReturn(ok(jsonResponse.toString))
+        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
       )
 
-      val result = Await.result(createSut(
-        metrics,
-        httpClient,
-        auditor,
-        npsConfig,
-        config).taxCodeHistory(testNino, taxYear), 10.seconds)
+      val connector = createSut(metrics, httpClient, auditor,desConfig, config)
+      val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"),NonAnnualCode),
-        TaxCodeRecord("1185L", "Employer 1", true, LocalDate.parse("2017-06-23"),NonAnnualCode)
+        TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber1, pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber2, pensionIndicator = false, "SECONDARY")
       ))
     }
 
   }
 
+  private def createSut(metrics: Metrics,
+                        httpClient: HttpClient,
+                        auditor: Auditor,
+                        config: DesConfig,
+                        taxCodeChangeUrl: TaxCodeChangeUrl) = {
 
+    new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
 
-  private val jsonResponse = Json.obj(
-    "nino" -> testNino.nino,
-    "taxCodeRecord" -> Seq(
-      Json.obj(
-        "taxCode" -> "1185L",
-        "employerName" -> "Employer 1",
-        "operatedTaxCode" -> true,
-        "p2Issued" -> true,
-        "dateOfCalculation" -> "2017-06-23",
-        "codeType" -> DailyCoding
-      ),
-      Json.obj(
-        "taxCode" -> "1185L",
-        "employerName" -> "Employer 1",
-        "operatedTaxCode" -> true,
-        "p2Issued" -> true,
-        "dateOfCalculation" -> "2017-06-23",
-        "codeType" -> DailyCoding
-      )
-    )
-  )
+  }
 
-  implicit val headerCarrier: HeaderCarrier = mock[HeaderCarrier]
+  private def config = injector.instanceOf[TaxCodeChangeUrl]
 
   private def randomNino: Nino = new Generator(new Random).nextNino
 
-  private def createSut(
-                         metrics: Metrics,
-                         httpClient: HttpClient,
-                         auditor: Auditor,
-                         config: NpsJsonServiceConfig,
-                         taxCodeChangeUrl: TaxCodeChangeUrl) =
-    new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
-
-
+  private def randomInt(maxDigits: Int = 5): Int = {
+    import scala.math.pow
+    val random = new Random
+    random.nextInt(pow(10,maxDigits).toInt)
+  }
 }

@@ -35,12 +35,10 @@ class BbsiConnector @Inject()(httpHandler: HttpHandler,
                               urls: BbsiUrls,
                               config: DesConfig) {
 
-  def contentType: String = TaiConstants.contentType
-
   def createHeader: HeaderCarrier = HeaderCarrier(extraHeaders =
     Seq("Environment" -> config.environment,
       "Authorization" -> s"Bearer ${config.authorization}",
-      "Content-Type" -> contentType))
+      "Content-Type" -> TaiConstants.contentType))
 
   def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
     implicit val hc: HeaderCarrier = createHeader

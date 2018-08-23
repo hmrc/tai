@@ -14,7 +14,6 @@ import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Random
 
 class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with MongoFormatter with MockitoSugar {
 
@@ -148,7 +147,7 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
     }
 
   }
-  private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = new Generator().nextNino
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
   private val atMost = 5 seconds

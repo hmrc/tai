@@ -212,11 +212,6 @@ trait IabdTypeConstants {
   val NewEstimatedPay = 27
 }
 
-trait TaxCodeRecordConstants {
-  val DailyCoding = "Daily Coding"
-  val AnnualCodeP9X = "Annual Coding P9X"
-  val AnnualCoding = "Annual Coding"
-  val BudgetCoding = "Budget Coding"
-  val BudgetCodingNonIssued = "Budget Coding (Not Yet Issued)"
-  val BudgetCodingP9X = "Budget Coding P9X"
+trait TaxCodeHistoryConstants {
+  val Primary = "PRIMARY"
 }

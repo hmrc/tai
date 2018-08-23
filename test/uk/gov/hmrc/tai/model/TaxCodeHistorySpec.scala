@@ -20,35 +20,68 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec with TaxCodeRecordConstants {
+class TaxCodeHistorySpec extends PlaySpec {
 
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json" in {
 
       val now = LocalDate.now()
       val nino = randomNino
+      val payrollNumber1 = randomInt().toString
+      val payrollNumber2 = randomInt().toString
+
+
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode),
-        TaxCodeRecord("tax code", "Employee 1", true, now, NonAnnualCode)
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber1, pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber2, pensionIndicator = false, "PRIMARY")
       ))
 
       val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq(
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding),
-          Json.obj("taxCode" -> "tax code","employerName" -> "Employee 1", "operatedTaxCode" -> true, "dateOfCalculation" -> now, "codeType" -> DailyCoding)
+          Json.obj("taxCode" -> "tax code",
+            "employerName" -> "Employee 1",
+            "operatedTaxCode" -> true,
+            "dateOfCalculation" -> now,
+            "payrollNumber" -> payrollNumber1,
+            "pensionIndicator" -> false,
+            "employmentType" -> "PRIMARY"),
+          Json.obj("taxCode" -> "tax code",
+            "employerName" -> "Employee 1",
+            "operatedTaxCode" -> true,
+            "dateOfCalculation" -> now,
+            "payrollNumber" -> payrollNumber2,
+            "pensionIndicator" -> false,
+            "employmentType" -> "PRIMARY")
         )
       )
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
+
+    "throw an error given invalid Json" in {
+
+      val nino = randomNino
+
+      val invalidJson = Json.obj(
+        "nino" -> nino,
+        "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
+      )
+
+      a[JsResultException] should be thrownBy invalidJson.as[TaxCodeHistory]
+
+    }
   }
 
   private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
 
+  private def randomInt(maxDigits: Int = 5): Int = {
+    import scala.math.pow
+    val random = new Random
+    random.nextInt(pow(10,maxDigits).toInt)
+  }
 }

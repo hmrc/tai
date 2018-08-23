@@ -22,26 +22,35 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.NpsJsonServiceConfig
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
 
 class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
-                                       config: NpsJsonServiceConfig,
+                                       config: DesConfig,
                                        taxCodeChangeUrl: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = config.originatorId
 
-  implicit val hc = HeaderCarrier()
+  implicit private val header: HeaderCarrier = {
+    val commonHeaderValues = Seq(
+      "Environment" -> config.environment,
+      "Authorization" -> config.authorization,
+      "Content-Type" -> TaiConstants.contentType)
 
-  def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
-    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, taxYear)
-    httpClient.GET[TaxCodeHistory](url)
+    HeaderCarrier(extraHeaders = commonHeaderValues)
+  }
+
+  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
+    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
+    getFromDes[TaxCodeHistory](url,APITypes.TaxCodeChangeAPI).map(_._1)
   }
 }
 

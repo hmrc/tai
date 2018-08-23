@@ -18,33 +18,21 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import play.api.libs.json._
-import uk.gov.hmrc.tai.util.TaxCodeRecordConstants
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-sealed trait CodeType
-case object NonAnnualCode extends CodeType
-case object AnnualCode extends CodeType
+case class TaxCodeRecord(taxCode: String,
+                         employerName: String,
+                         operatedTaxCode: Boolean,
+                         dateOfCalculation: LocalDate,
+                         payrollNumber: String,
+                         pensionIndicator: Boolean,
+                         private val employmentType: String) extends TaxCodeHistoryConstants {
 
-object CodeType extends CodeType with TaxCodeRecordConstants {
-
-  implicit val formatCodeType = new Format[CodeType] {
-
-    override def reads(json: JsValue): JsResult[CodeType] = {
-      json.as[String] match {
-        case DailyCoding => JsSuccess(NonAnnualCode)
-        case BudgetCoding => JsSuccess(NonAnnualCode)
-        case BudgetCodingNonIssued => JsSuccess(NonAnnualCode)
-        case BudgetCodingP9X => JsSuccess(NonAnnualCode)
-        case AnnualCoding => JsSuccess(AnnualCode)
-        case AnnualCodeP9X => JsSuccess(AnnualCode)
-      }
-    }
-
-    override def writes(o: CodeType): JsValue = ???
+  val isPrimary: Boolean = {
+    employmentType == Primary
   }
 }
 
-case class TaxCodeRecord(taxCode: String, employerName: String, operatedTaxCode: Boolean, dateOfCalculation: LocalDate, codeType: CodeType)
-
 object TaxCodeRecord {
-  implicit val format = Json.format[TaxCodeRecord]
+  implicit val format: OFormat[TaxCodeRecord] = Json.format[TaxCodeRecord]
 }
