@@ -211,3 +211,7 @@ trait HodsSource {
 trait IabdTypeConstants {
   val NewEstimatedPay = 27
 }
+
+trait TaxCodeHistoryConstants {
+  val Primary = "PRIMARY"
+}

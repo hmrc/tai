@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import play.api.libs.json._
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 case class TaxCodeRecord(taxCode: String,
                          employerName: String,
@@ -25,10 +26,10 @@ case class TaxCodeRecord(taxCode: String,
                          dateOfCalculation: LocalDate,
                          payrollNumber: String,
                          pensionIndicator: Boolean,
-                         employmentType: String) {
+                         private val employmentType: String) extends TaxCodeHistoryConstants {
 
   val isPrimary: Boolean = {
-    employmentType == "PRIMARY"
+    employmentType == Primary
   }
 }
 
