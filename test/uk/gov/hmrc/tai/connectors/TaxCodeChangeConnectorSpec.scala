@@ -86,7 +86,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       )
 
       val connector = createSut(metrics, httpClient, auditor,desConfig, config)
-      val result = Await.result(connector.taxCodeHistory(testNino, taxYear), 10.seconds)
+      val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
       result mustEqual TaxCodeHistory(testNino.nino, Seq(
         TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), payrollNumber1, pensionIndicator = false, "PRIMARY"),

@@ -41,9 +41,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
-    val currentYear = TaxYear()
+    val fromYear = TaxYear()
+    val toYear = fromYear
 
-    taxCodeChangeConnector.taxCodeHistory(nino, currentYear) map { taxCodeHistory =>
+    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
       validForService(taxCodeHistory.operatedTaxCodeRecords)
 
@@ -56,8 +57,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
+    val fromYear = TaxYear()
+    val toYear = fromYear
 
-    taxCodeChangeConnector.taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
+    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 

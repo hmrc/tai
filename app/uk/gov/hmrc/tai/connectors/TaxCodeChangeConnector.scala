@@ -47,8 +47,8 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
     HeaderCarrier(extraHeaders = commonHeaderValues)
   }
 
-  def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
-    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, taxYear, taxYear)
+  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
+    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
     httpClient.GET[TaxCodeHistory](url)
   }
 }
