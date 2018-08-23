@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
@@ -49,7 +50,7 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
 
   def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
-    httpClient.GET[TaxCodeHistory](url)
+    getFromDes[TaxCodeHistory](url,APITypes.TaxCodeChangeAPI).map(_._1)
   }
 }
 

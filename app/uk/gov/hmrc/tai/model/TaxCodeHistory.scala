@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.{minLength, _}
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
 
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
@@ -31,6 +31,8 @@ object TaxCodeHistory {
       (JsPath \ "nino").read[String] and
       (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]](minLength[Seq[TaxCodeRecord]](1))
     )(TaxCodeHistory.apply _)
+
+  implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
 }
 
 
