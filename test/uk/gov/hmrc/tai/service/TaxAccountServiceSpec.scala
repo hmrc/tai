@@ -26,7 +26,7 @@ import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneAppPerSuite, PlaySpec}
+import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.OK
@@ -51,8 +51,7 @@ import scala.util.Random
 
 class TaxAccountServiceSpec extends PlaySpec
   with MockitoSugar
-  with MongoFormatter
-  with OneAppPerSuite {
+  with MongoFormatter {
 
   "taiData" must {
     "return a session data instance" when {
