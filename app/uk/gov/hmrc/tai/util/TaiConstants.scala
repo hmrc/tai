@@ -214,4 +214,5 @@ trait IabdTypeConstants {
 
 trait TaxCodeHistoryConstants {
   val Primary = "PRIMARY"
+  val Secondary = "SECONDARY"
 }

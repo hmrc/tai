@@ -24,7 +24,7 @@ case class TaxCodeRecord(taxCode: String,
                          employerName: String,
                          operatedTaxCode: Boolean,
                          dateOfCalculation: LocalDate,
-                         payrollNumber: String,
+                         payrollNumber: Option[String],
                          pensionIndicator: Boolean,
                          private val employmentType: String) extends TaxCodeHistoryConstants {
 
