@@ -20,20 +20,33 @@ Tax Code Change
   "data" : {
     "current": {
       "taxCode": "830L",
+      "employerName": "Employer Name",
+      "operatedTaxCode": true,
+      "p2Issued": true,
       "startDate": "2018-06-27",
       "endDate": "2019-04-05",
-      "employerName": "Employer Name"
+      "payrollNumber": "1",
+      "pensionIndicator": true,
+      "primary": true
     },
     "previous": {
       "taxCode": "1150L",
+      "employerName": "Employer Name",
+      "operatedTaxCode": true,
+      "p2Issued": true,
       "startDate": "2018-04-06",
       "endDate": "2018-06-26",
-      "employerName": "Employer Name"
+      "payrollNumber": "1",
+      "pensionIndicator": true,
+      "primary": true
     }
   },
   "links" : [ ]
 }
 ```
+
+Note:
+- "payrollNumber" is an optional field
 
 * **Error Response:**
 

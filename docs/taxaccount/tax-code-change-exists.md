@@ -1,10 +1,10 @@
-Tax Code Changed
+Tax Code Change Exists
 -------------------
   The end point returns a boolean which indicates if there has been a tax code change in the tax year
 
 * **URL**
 
-  `/tai/:nino/tax-account/tax-code-changed`
+  `/tai/:nino/tax-account/tax-code-change/exists`
 
 * **Method:**
 
