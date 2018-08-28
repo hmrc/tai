@@ -35,8 +35,8 @@ class TaxCodeHistorySpec extends PlaySpec {
 
 
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber1, pensionIndicator = false, "PRIMARY"),
-        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, payrollNumber2, pensionIndicator = false, "PRIMARY")
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
       ))
 
       val validJson = Json.obj(
@@ -63,7 +63,7 @@ class TaxCodeHistorySpec extends PlaySpec {
 
     }
 
-    "throw an error given invalid Json" in {
+    "throw an error when there are no tax code records" in {
 
       val nino = randomNino
 

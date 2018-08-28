@@ -23,7 +23,7 @@ case class TaxCodeChangeRecord(taxCode: String,
                                startDate: LocalDate,
                                endDate: LocalDate,
                                employerName: String,
-                               payrollNumber: String,
+                               payrollNumber: Option[String],
                                pensionIndicator: Boolean,
                                primary: Boolean)
 
