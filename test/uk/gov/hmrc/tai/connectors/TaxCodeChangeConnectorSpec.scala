@@ -31,14 +31,14 @@ import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar {
+class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with TaxCodeHistoryConstants {
 
   "taxCodeHistory" must {
     "return tax code change response" when {
@@ -67,8 +67,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
-          TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
-          TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber2), pensionIndicator = false, "SECONDARY")
+          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
+          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber2), pensionIndicator = false, "SECONDARY")
         ))
       }
 
@@ -96,8 +96,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
-          TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "PRIMARY"),
-          TaxCodeRecord("1185L", "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "SECONDARY")
+          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "PRIMARY"),
+          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "SECONDARY")
         ))
       }
 
@@ -105,6 +105,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
   }
 
   private def taxCodeHistoryJson(taxCode: String = "1185L",
+                                 basisOfOperation: String = Cumulative,
                                  employerName: String = "Employer 1",
                                  operatedTaxCode: Boolean = true,
                                  p2Issued: Boolean = true,
@@ -114,6 +115,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                                  employmentType: String = "SECONDARY"): JsValue = {
 
     val withOutPayroll = Json.obj("taxCode" -> taxCode,
+                                  "basisOfOperation" -> basisOfOperation,
                                   "employerName" -> employerName,
                                   "operatedTaxCode" -> operatedTaxCode,
                                   "p2Issued" -> p2Issued,

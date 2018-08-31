@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 
 case class TaxCodeChangeRecord(taxCode: String,
+                               basisOfOperation: String,
                                startDate: LocalDate,
                                employerName: String,
                                payrollNumber: Option[String],

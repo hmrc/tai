@@ -75,18 +75,20 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
         val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeChangeRecord(currentRecord.taxCode,
-                                                                                            currentRecord.dateOfCalculation,
-                                                                                            currentRecord.employerName,
-                                                                                            currentRecord.payrollNumber,
-                                                                                            currentRecord.pensionIndicator,
-                                                                                            currentRecord.isPrimary))
+          currentRecord.basisOfOperation,
+          currentRecord.dateOfCalculation,
+          currentRecord.employerName,
+          currentRecord.payrollNumber,
+          currentRecord.pensionIndicator,
+          currentRecord.isPrimary))
 
         val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeChangeRecord(previousRecord.taxCode,
-                                                                                               previousStartDate(previousRecord.dateOfCalculation),
-                                                                                               previousRecord.employerName,
-                                                                                               previousRecord.payrollNumber,
-                                                                                               previousRecord.pensionIndicator,
-                                                                                               previousRecord.isPrimary))
+          previousRecord.basisOfOperation,
+          previousStartDate(previousRecord.dateOfCalculation),
+          previousRecord.employerName,
+          previousRecord.payrollNumber,
+          previousRecord.pensionIndicator,
+          previousRecord.isPrimary))
 
         TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
 
