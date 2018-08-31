@@ -21,7 +21,6 @@ import play.api.libs.json.{Json, OFormat}
 
 case class TaxCodeChangeRecord(taxCode: String,
                                startDate: LocalDate,
-                               endDate: LocalDate,
                                employerName: String,
                                payrollNumber: Option[String],
                                pensionIndicator: Boolean,
