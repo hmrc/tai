@@ -24,7 +24,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
