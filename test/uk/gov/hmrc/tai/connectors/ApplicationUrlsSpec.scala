@@ -147,22 +147,29 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   "IabdUrls" must {
     "return the correct urls" when {
       "given argument values" in {
-        val mockConfig = mock[NpsConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
+        val mockConfigNps = mock[NpsConfig]
+        val mockConfigDes = mock[DesConfig]
 
-        val sut = new IabdUrls(mockConfig)
-        sut.iabdUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
+        when(mockConfigNps.baseURL).thenReturn("")
+        when(mockConfigDes.baseURL).thenReturn("")
+
+        val sut = new IabdUrls(mockConfigNps, mockConfigDes)
+
+        sut.iabdUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
+        sut.iabdUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017"
       }
     }
 
     "return the correct iabd employment url" when {
       "given argument values" in {
         val mockConfig = mock[NpsConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
+        val mockConfigDes = mock[DesConfig]
 
-        val sut = new IabdUrls(mockConfig)
+        when(mockConfig.baseURL).thenReturn("")
+        when(mockConfigDes.baseURL).thenReturn("")
+
+        val sut = new IabdUrls(mockConfig, mockConfigDes)
+
         sut.iabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
       }
     }

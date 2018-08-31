@@ -39,7 +39,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
       val mockHttpHandler = mock[HttpHandler]
       val mockConfig = mock[NpsConfig]
       val iabdUrls = mock[IabdUrls]
-      when(iabdUrls.iabdUrl(any(), any())).thenReturn("URL")
+      when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
       when(mockConfig.originatorId).thenReturn("TEST")
       when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
         eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
@@ -55,7 +55,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         val mockHttpHandler = mock[HttpHandler]
         val mockConfig = mock[NpsConfig]
         val iabdUrls = mock[IabdUrls]
-        when(iabdUrls.iabdUrl(any(), any())).thenReturn("URL")
+        when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
         when(mockConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
@@ -70,7 +70,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         val mockHttpHandler = mock[HttpHandler]
         val mockConfig = mock[NpsConfig]
         val iabdUrls = mock[IabdUrls]
-        when(iabdUrls.iabdUrl(any(), any())).thenReturn("URL")
+        when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
         when(mockConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))

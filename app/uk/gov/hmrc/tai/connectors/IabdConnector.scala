@@ -36,7 +36,7 @@ class IabdConnector @Inject()(config: NpsConfig,
       Future.successful(Json.arr())
     } else {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> config.originatorId)
-      val url = iabdUrls.iabdUrl(nino, taxYear)
+      val url = iabdUrls.iabdUrlNps(nino, taxYear)
       httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
     }
   }
