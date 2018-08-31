@@ -155,7 +155,6 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
         val sut = new IabdUrls(mockConfigNps, mockConfigDes)
 
-        sut.iabdUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
         sut.iabdUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017"
       }
     }

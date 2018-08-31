@@ -24,7 +24,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -36,13 +36,16 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
   "Iabd Connector" must {
     "return Iabd json" in {
+
       val mockHttpHandler = mock[HttpHandler]
-      val mockConfig = mock[NpsConfig]
+      val mockConfig = mock[DesConfig]
       val iabdUrls = mock[IabdUrls]
-      when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
+
+      when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
       when(mockConfig.originatorId).thenReturn("TEST")
-      when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
+      when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
         eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+
       val sut = createSUT(config = mockConfig, iabdUrls = iabdUrls, httpHandler = mockHttpHandler)
 
       val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
@@ -53,11 +56,11 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
     "return empty json" when {
       "looking for next tax year" in {
         val mockHttpHandler = mock[HttpHandler]
-        val mockConfig = mock[NpsConfig]
+        val mockConfig = mock[DesConfig]
         val iabdUrls = mock[IabdUrls]
-        when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
+        when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
         when(mockConfig.originatorId).thenReturn("TEST")
-        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
+        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
         val sut = createSUT(config = mockConfig, iabdUrls = iabdUrls, httpHandler = mockHttpHandler)
 
@@ -68,11 +71,11 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
       "looking for cy+2 year" in {
         val mockHttpHandler = mock[HttpHandler]
-        val mockConfig = mock[NpsConfig]
+        val mockConfig = mock[DesConfig]
         val iabdUrls = mock[IabdUrls]
-        when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
+        when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
         when(mockConfig.originatorId).thenReturn("TEST")
-        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
+        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
         val sut = createSUT(config = mockConfig, iabdUrls = iabdUrls, httpHandler = mockHttpHandler)
 
@@ -100,7 +103,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
   )
 
 
-  private def createSUT(config: NpsConfig = mock[NpsConfig],
+  private def createSUT(config: DesConfig = mock[DesConfig],
                         httpHandler: HttpHandler = mock[HttpHandler],
                         iabdUrls: IabdUrls = mock[IabdUrls]) = {
     new IabdConnector(config, httpHandler, iabdUrls)

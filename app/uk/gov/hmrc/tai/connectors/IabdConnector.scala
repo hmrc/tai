@@ -20,14 +20,14 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
 
 @Singleton
-class IabdConnector @Inject()(config: NpsConfig,
+class IabdConnector @Inject()(config: DesConfig,
                               httpHandler: HttpHandler,
                               iabdUrls: IabdUrls){
 
@@ -36,8 +36,8 @@ class IabdConnector @Inject()(config: NpsConfig,
       Future.successful(Json.arr())
     } else {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> config.originatorId)
-      val url = iabdUrls.iabdUrlNps(nino, taxYear)
-      httpHandler.getFromApi(url, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
+      val url = iabdUrls.iabdUrlDes(nino, taxYear)
+      httpHandler.getFromApi(url, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
     }
   }
 }
