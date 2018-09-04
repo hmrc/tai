@@ -23,7 +23,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{BaseConfig, DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdUpdateAmount, NpsIabdUpdateAmountFormats}
@@ -33,16 +33,18 @@ import uk.gov.hmrc.tai.util.TaiConstants
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountConnector @Inject()(config: DesConfig,
+class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
+                                    desConfig: DesConfig,
                                     taxAccountUrls: TaxAccountUrls,
                                     iabdUrls: IabdUrls,
                                     npsIabdUpdateAmountFormats: NpsIabdUpdateAmountFormats,
                                     httpHandler: HttpHandler){
 
-  def createHeader = HeaderCarrier(extraHeaders =
+
+  private def createHeader = HeaderCarrier(extraHeaders =
     Seq(
-      "Environment" -> config.environment,
-      "Authorization" -> config.authorization,
+      "Environment" -> desConfig.environment,
+      "Authorization" -> desConfig.authorization,
       "Content-Type" -> TaiConstants.contentType))
 
   def desTaxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
@@ -52,7 +54,7 @@ class TaxAccountConnector @Inject()(config: DesConfig,
   }
 
   def npsTaxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
-    val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> config.originatorId)
+    val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
     val url = taxAccountUrls.taxAccountUrlNps(nino, taxYear)
     httpHandler.getFromApi(url, APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
   }
@@ -66,7 +68,7 @@ class TaxAccountConnector @Inject()(config: DesConfig,
       url,
       List(NpsIabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(source))),
       APITypes.NpsIabdUpdateEstPayManualAPI
-    )(headersForUpdate(hc, version, sessionOrUUID, config.originatorId), npsIabdUpdateAmountFormats.formatList).map { _ =>
+    )(headersForUpdate(hc, version, sessionOrUUID, npsConfig.originatorId), npsIabdUpdateAmountFormats.formatList).map { _ =>
           HodUpdateSuccess
 
     }.recover{ case _ => HodUpdateFailure}

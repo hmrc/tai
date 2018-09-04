@@ -23,6 +23,7 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.mockito.{ArgumentCaptor, Matchers}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
@@ -45,6 +46,30 @@ import scala.util.Random
 class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar with MongoConstants {
 
     "Tax Account Connector" when {
+
+      "toggled to use NPS" must {
+
+        "return Tax Account as Json in the response" in {
+          val taxYear = TaxYear(2017)
+          val nino: Nino = new Generator(new Random).nextNino
+
+          val url = {
+            val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
+            s"${path.getPath}"
+          }
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
+          )
+
+          val connector = createSUT()
+          val result = Await.result(connector.npsTaxAccount(nino, taxYear), 5 seconds)
+
+          result mustBe jsonResponse
+        }
+
+      }
+
       "toggled to use DES" must {
 
         "return Tax Account as Json in the response" in {
@@ -67,24 +92,10 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         }
 
       }
+
     }
 
 
-//  "taxAccount" must{
-//    "return Tax Account as Json in the response" in {
-//      val taxYear = TaxYear(2017)
-//
-//      val mockHttpHandler = mock[HttpHandler]
-//      when(mockHttpHandler.getFromApi(any(), any())(any()))
-//        .thenReturn(Future.successful(jsonResponse))
-//
-//      val sut = createSUT(mock[NpsConfig], mock[TaxAccountUrls], mock[IabdUrls], mock[NpsIabdUpdateAmountFormats], mockHttpHandler)
-//      val result = Await.result(sut.npsTaxAccount(randomNino, taxYear), 5 seconds)
-//
-//      result mustBe jsonResponse
-//    }
-//  }
-//
 //  "updateTaxCodeIncome" must {
 //    "update nps with the new tax code income" in {
 //      val taxYear = TaxYear()
@@ -139,11 +150,12 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         "name" -> "Employer2",
         "basisOperation" -> 2)))
 
-  private def createSUT(config: DesConfig = injector.instanceOf[DesConfig],
+  private def createSUT(npsConfig: NpsConfig = injector.instanceOf[NpsConfig],
+                        desConfig: DesConfig = injector.instanceOf[DesConfig],
                         taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
                         iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
                         formats: NpsIabdUpdateAmountFormats = injector.instanceOf[NpsIabdUpdateAmountFormats],
                         httpHandler: HttpHandler = injector.instanceOf[HttpHandler]) =
 
-    new TaxAccountConnector(config, taxAccountUrls, iabdUrls, formats, httpHandler)
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler)
 }
