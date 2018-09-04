@@ -47,7 +47,7 @@ class TaxAccountRepositorySpec extends PlaySpec
   "updateTaxCodeAmount" should {
     "update tax code amount" when {
       "des is disabled" in {
-        val mockTaxAccountNpsConnector = mock[TaxAccountNpsConnector]
+        val mockTaxAccountNpsConnector = mock[TaxAccountConnector]
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockTaxAccountNpsConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), Matchers.eq(NpsSource), any())(any()))
           .thenReturn(Future.successful(HodUpdateSuccess))
@@ -65,7 +65,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
     "return an error status when amount can't be updated" when {
       "des is disabled" in {
-        val mockTaxAccountNpsConnector = mock[TaxAccountNpsConnector]
+        val mockTaxAccountNpsConnector = mock[TaxAccountConnector]
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockTaxAccountNpsConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), Matchers.eq(NpsSource), any())(any()))
           .thenReturn(Future.successful(HodUpdateFailure))
@@ -175,7 +175,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
         val nino = randomNino
 
-        val mockTaxAccountNpsConnector = mock[TaxAccountNpsConnector]
+        val mockTaxAccountNpsConnector = mock[TaxAccountConnector]
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         val mockCacheConnector = mock[CacheConnector]
 
@@ -186,7 +186,7 @@ class TaxAccountRepositorySpec extends PlaySpec
           Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
         ).thenReturn(Future.successful(None))
 
-        when(mockTaxAccountNpsConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
+        when(mockTaxAccountNpsConnector.npsTaxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
           .thenReturn(Future.successful(taxAccountJsonResponse))
 
         when(mockCacheConnector.createOrUpdateJson(
@@ -233,7 +233,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
   private def createSUT(
                          cacheConnector: CacheConnector = mock[CacheConnector],
-                         taxAccountNpsConnector: TaxAccountNpsConnector = mock[TaxAccountNpsConnector],
+                         taxAccountNpsConnector: TaxAccountConnector = mock[TaxAccountConnector],
                          taxAccountDesConnector: TaxAccountDesConnector = mock[TaxAccountDesConnector],
                          featureTogglesConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig],
                          desConnector: DesConnector = mock[DesConnector]) =

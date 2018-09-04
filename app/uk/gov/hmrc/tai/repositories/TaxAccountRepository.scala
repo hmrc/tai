@@ -30,7 +30,7 @@ import scala.concurrent.Future
 
 @Singleton
 class TaxAccountRepository @Inject()(override val cacheConnector: CacheConnector,
-                                     taxAccountNpsConnector: TaxAccountNpsConnector,
+                                     taxAccountNpsConnector: TaxAccountConnector,
                                      taxAccountDesConnector: TaxAccountDesConnector,
                                      featureTogglesConfig: FeatureTogglesConfig,
                                      desConnector: DesConnector) extends HodsSource with MongoConstants with Caching{
@@ -42,7 +42,7 @@ class TaxAccountRepository @Inject()(override val cacheConnector: CacheConnector
     if(featureTogglesConfig.desEnabled){
       taxAccountDesConnector.taxAccount(nino, taxYear)
     } else {
-      taxAccountNpsConnector.taxAccount(nino, taxYear)
+      taxAccountNpsConnector.npsTaxAccount(nino, taxYear)
     }
   }
 
