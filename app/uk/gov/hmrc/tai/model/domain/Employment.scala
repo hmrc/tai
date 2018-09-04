@@ -31,7 +31,8 @@ case class Employment(
                        payeNumber: String,
                        sequenceNumber: Int,
                        cessationPay: Option[BigDecimal],
-                       hasPayrolledBenefit: Boolean) {
+                       hasPayrolledBenefit: Boolean,
+                       receivingOccupationalPension: Boolean) {
 
   lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
 

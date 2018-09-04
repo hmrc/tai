@@ -85,7 +85,8 @@ class EmploymentsControllerSpec extends PlaySpec
                 "payeNumber" -> "",
                 "sequenceNumber" -> 2,
                 "cessationPay" -> 100,
-                "hasPayrolledBenefit" -> false))),
+                "hasPayrolledBenefit" -> false,
+                "receivingOccupationalPension" -> true))),
           "links" -> Json.arr())
 
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
@@ -158,7 +159,8 @@ class EmploymentsControllerSpec extends PlaySpec
               "payeNumber" -> "",
               "sequenceNumber" -> 2,
               "cessationPay" -> 100,
-              "hasPayrolledBenefit" -> false),
+              "hasPayrolledBenefit" -> false,
+              "receivingOccupationalPension" -> true),
             "links" -> Json.arr()
           )
 
@@ -339,7 +341,7 @@ class EmploymentsControllerSpec extends PlaySpec
 
   private def nextNino = new Generator(new Random).nextNino
 
-  private val emp = Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false)
+  private val emp = Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
 
   private implicit val hc = HeaderCarrier()
 }

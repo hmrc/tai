@@ -238,6 +238,6 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     ""
   )
 
-  private val existingEmployment = Employment("fake employer", Some("12345"), LocalDate.parse("2017-04-04"), None, Seq.empty[AnnualAccount], "33", "44", 1, Some(100), false)
+  private val existingEmployment = Employment("fake employer", Some("12345"), LocalDate.parse("2017-04-04"), None, Seq.empty[AnnualAccount], "33", "44", 1, Some(100), false, false)
 
 }
