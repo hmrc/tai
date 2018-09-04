@@ -44,7 +44,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         val iabdUrls = mock[IabdUrls]
         val featureTogglesConfig = mock[FeatureTogglesConfig]
 
-        when(iabdUrls.iabdUrlNps(any(), any())).thenReturn("URL")
+        when(iabdUrls.npsIabdUrl(any(), any())).thenReturn("URL")
         when(featureTogglesConfig.desEnabled).thenReturn(false)
         when(mockNpsConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
@@ -64,7 +64,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           val iabdUrls = mock[IabdUrls]
           val featureTogglesConfig = mock[FeatureTogglesConfig]
 
-          when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
+          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
@@ -83,7 +83,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           val iabdUrls = mock[IabdUrls]
           val featureTogglesConfig = mock[FeatureTogglesConfig]
 
-          when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
+          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
@@ -107,7 +107,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         val featureTogglesConfig = mock[FeatureTogglesConfig]
 
         when(featureTogglesConfig.desEnabled).thenReturn(true)
-        when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
+        when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
         when(mockDesConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
@@ -126,7 +126,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           val iabdUrls = mock[IabdUrls]
           val featureTogglesConfig = mock[FeatureTogglesConfig]
 
-          when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
+          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
@@ -145,7 +145,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           val iabdUrls = mock[IabdUrls]
           val featureTogglesConfig = mock[FeatureTogglesConfig]
 
-          when(iabdUrls.iabdUrlDes(any(), any())).thenReturn("URL")
+          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.

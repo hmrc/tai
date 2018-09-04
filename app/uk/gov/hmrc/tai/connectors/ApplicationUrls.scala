@@ -84,14 +84,17 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 @Singleton
 class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 
-  def iabdUrlNps(nino: Nino, taxYear: TaxYear): String =
+  def npsIabdUrl(nino: Nino, taxYear: TaxYear): String =
     s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}"
 
-  def iabdUrlDes(nino: Nino, taxYear: TaxYear): String =
+  def npsIabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
+    s"${npsIabdUrl(nino, taxYear)}/employment/$iabdType"
+
+  def desIabdUrl(nino: Nino, taxYear: TaxYear): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}"
 
-  def iabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
-    s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}/employment/$iabdType"
+  def desIabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
+    s"${desIabdUrl(nino, taxYear)}/employment/$iabdType"
 }
 
   @Singleton

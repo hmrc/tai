@@ -47,7 +47,7 @@ class TaxAccountNpsConnector @Inject()(config: NpsConfig,
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, source: Int, amount: Int)
                          (implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
 
-    val url = iabdUrls.iabdEmploymentUrl(nino, taxYear, iabdType)
+    val url = iabdUrls.desIabdEmploymentUrl(nino, taxYear, iabdType)
 
     httpHandler.postToApi[List[NpsIabdUpdateAmount]](
       url,
