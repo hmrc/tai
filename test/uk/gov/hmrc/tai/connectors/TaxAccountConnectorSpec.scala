@@ -51,7 +51,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           s"${path.getPath}"
         }
 
-        when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
+        when(featureTogglesConfig.desEnabled).thenReturn(false)
         server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
         val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
@@ -107,7 +107,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           s"${path.getPath}?${path.getQuery}"
         }
 
-        when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
+        when(featureTogglesConfig.desEnabled).thenReturn(true)
         server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
         val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
