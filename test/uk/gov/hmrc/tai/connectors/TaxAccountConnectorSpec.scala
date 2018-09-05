@@ -20,12 +20,14 @@ import java.net.URL
 
 import com.codahale.metrics.SharedMetricRegistries
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, post, urlEqualTo}
+import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
+import uk.gov.hmrc.tai.model.des.DesIabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps.NpsIabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
@@ -46,6 +48,9 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         "return Tax Account as Json in the response" in {
           val taxYear = TaxYear(2017)
           val nino: Nino = new Generator(new Random).nextNino
+          val featureTogglesConfig = mock[FeatureTogglesConfig]
+
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
 
           val url = {
             val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
@@ -56,12 +61,11 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
             get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
           )
 
-          val connector = createSUT()
-          val result = Await.result(connector.npsTaxAccount(nino, taxYear), 5 seconds)
+          val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
 
           result mustBe jsonResponse
 
-          SharedMetricRegistries.clear()
         }
 
         "updateTaxCodeIncome" must {
@@ -80,7 +84,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
             )
 
             val sut = createSUT()
-            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
+            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
 
             result mustBe HodUpdateSuccess
           }
@@ -99,7 +103,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
             )
 
             val sut = createSUT()
-            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
+            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
 
             result mustBe HodUpdateFailure
           }
@@ -113,6 +117,9 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         "return Tax Account as Json in the response" in {
           val taxYear = TaxYear(2017)
           val nino: Nino = new Generator(new Random).nextNino
+          val featureTogglesConfig = mock[FeatureTogglesConfig]
+
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
 
           val url = {
             val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
@@ -123,11 +130,10 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
             get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
           )
 
-          val connector = createSUT()
-          val result = Await.result(connector.desTaxAccount(nino, taxYear), 5 seconds)
+          val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
 
           result mustBe jsonResponse
-          SharedMetricRegistries.clear()
         }
 
 //        "updateTaxCodeIncome" must {
@@ -195,8 +201,10 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
                         desConfig: DesConfig = injector.instanceOf[DesConfig],
                         taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
                         iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
-                        formats: NpsIabdUpdateAmountFormats = injector.instanceOf[NpsIabdUpdateAmountFormats],
-                        httpHandler: HttpHandler = injector.instanceOf[HttpHandler]) =
+                        npsFormats: NpsIabdUpdateAmountFormats = injector.instanceOf[NpsIabdUpdateAmountFormats],
+                        desFormats: DesIabdUpdateAmountFormats = injector.instanceOf[DesIabdUpdateAmountFormats],
+                        httpHandler: HttpHandler = injector.instanceOf[HttpHandler],
+                        featureTogglesConfig: FeatureTogglesConfig = injector.instanceOf[FeatureTogglesConfig]) =
 
-    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler)
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, npsFormats, desFormats, httpHandler, featureTogglesConfig)
 }
