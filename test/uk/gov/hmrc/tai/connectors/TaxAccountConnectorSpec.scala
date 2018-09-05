@@ -50,34 +50,34 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxAccountConnectorSpec extends PlaySpec with MockitoSugar {
+class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
 
-//    "Tax Account Connector" when {
-//
-//      "toggled to use NPS" must {
-//
-//        "return Tax Account as Json in the response" in {
-//          val taxYear = TaxYear(2017)
-//          val nino: Nino = new Generator(new Random).nextNino
-//
-//          val url = {
-//            val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
-//            s"${path.getPath}"
-//          }
-//
-//          server.stubFor(
-//            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-//          )
-//
-//          val connector = createSUT()
-//          val result = Await.result(connector.npsTaxAccount(nino, taxYear), 5 seconds)
-//
-//          result mustBe jsonResponse
-//
-//          SharedMetricRegistries.clear()
-//        }
-//
-//      }
+    "Tax Account Connector" when {
+
+      "toggled to use NPS" must {
+
+        "return Tax Account as Json in the response" in {
+          val taxYear = TaxYear(2017)
+          val nino: Nino = new Generator(new Random).nextNino
+
+          val url = {
+            val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
+            s"${path.getPath}"
+          }
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
+          )
+
+          val connector = createSUT()
+          val result = Await.result(connector.npsTaxAccount(nino, taxYear), 5 seconds)
+
+          result mustBe jsonResponse
+
+          SharedMetricRegistries.clear()
+        }
+
+      }
 
 //
 //      "toggled to use DES" must {
@@ -133,39 +133,39 @@ class TaxAccountConnectorSpec extends PlaySpec with MockitoSugar {
 //
 //      result mustBe HodUpdateFailure
 //    }
-//  }
+  }
 
-//  private val originatorId = "testOriginatorId"
-//  private def randomNino: Nino = new Generator(new Random).nextNino
-//  private implicit val hc: HeaderCarrier = HeaderCarrier()
-//  lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
-//  lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
-//
-//
-//
-//  private val jsonResponse = Json.obj(
-//    "taxYear" -> 2017,
-//    "totalLiability" -> Json.obj(
-//      "untaxedInterest" -> Json.obj(
-//        "totalTaxableIncome" -> 123)),
-//    "incomeSources" -> Json.arr(
-//      Json.obj(
-//        "employmentId" -> 1,
-//        "taxCode" -> "1150L",
-//        "name" -> "Employer1",
-//        "basisOperation" -> 1),
-//      Json.obj(
-//        "employmentId" -> 2,
-//        "taxCode" -> "1100L",
-//        "name" -> "Employer2",
-//        "basisOperation" -> 2)))
-//
-//  private def createSUT(npsConfig: NpsConfig = injector.instanceOf[NpsConfig],
-//                        desConfig: DesConfig = injector.instanceOf[DesConfig],
-//                        taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
-//                        iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
-//                        formats: NpsIabdUpdateAmountFormats = injector.instanceOf[NpsIabdUpdateAmountFormats],
-//                        httpHandler: HttpHandler = injector.instanceOf[HttpHandler]) =
-//
-//    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler)
+  private val originatorId = "testOriginatorId"
+  private def randomNino: Nino = new Generator(new Random).nextNino
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
+  lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
+
+
+
+  private val jsonResponse = Json.obj(
+    "taxYear" -> 2017,
+    "totalLiability" -> Json.obj(
+      "untaxedInterest" -> Json.obj(
+        "totalTaxableIncome" -> 123)),
+    "incomeSources" -> Json.arr(
+      Json.obj(
+        "employmentId" -> 1,
+        "taxCode" -> "1150L",
+        "name" -> "Employer1",
+        "basisOperation" -> 1),
+      Json.obj(
+        "employmentId" -> 2,
+        "taxCode" -> "1100L",
+        "name" -> "Employer2",
+        "basisOperation" -> 2)))
+
+  private def createSUT(npsConfig: NpsConfig = injector.instanceOf[NpsConfig],
+                        desConfig: DesConfig = injector.instanceOf[DesConfig],
+                        taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
+                        iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
+                        formats: NpsIabdUpdateAmountFormats = injector.instanceOf[NpsIabdUpdateAmountFormats],
+                        httpHandler: HttpHandler = injector.instanceOf[HttpHandler]) =
+
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler)
 }
