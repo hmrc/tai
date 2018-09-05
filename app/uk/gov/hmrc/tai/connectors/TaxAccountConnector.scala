@@ -46,7 +46,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
   def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
 
     if(featureTogglesConfig.desUpdateEnabled) {
-      implicit val hc: HeaderCarrier = createHeader
+      implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
       val url = taxAccountUrls.taxAccountUrlDes(nino, taxYear)
       httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
     }
@@ -60,7 +60,6 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)
                          (implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
 
-    //set source based on toggle
     if(featureTogglesConfig.desUpdateEnabled) {
       val url = iabdUrls.desIabdEmploymentUrl(nino, taxYear, iabdType)
 
