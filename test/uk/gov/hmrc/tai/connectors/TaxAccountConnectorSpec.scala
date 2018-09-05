@@ -18,8 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import java.net.URL
 
-import com.codahale.metrics.SharedMetricRegistries
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -34,139 +33,139 @@ import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
 class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
 
-    "Tax Account Connector" when {
+  "Tax Account Connector" when {
 
-      "toggled to use NPS" must {
+    "toggled to use NPS" must {
 
-        "return Tax Account as Json in the response" in {
-          val taxYear = TaxYear(2017)
+      "return Tax Account as Json in the response" in {
+        val taxYear = TaxYear(2017)
+        val nino: Nino = new Generator(new Random).nextNino
+        val featureTogglesConfig = mock[FeatureTogglesConfig]
+        val url = {
+          val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
+          s"${path.getPath}"
+        }
+
+        when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
+        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+
+        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+
+        result mustBe jsonResponse
+      }
+
+      "updateTaxCodeIncome" must {
+
+        "update nps with the new tax code income" in {
+          val taxYear = TaxYear()
           val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
-
           val url = {
-            val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
+            val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
             s"${path.getPath}"
           }
 
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-          )
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
+          server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
 
-          result mustBe jsonResponse
-
+          result mustBe HodUpdateSuccess
         }
 
-        "updateTaxCodeIncome" must {
-
-          "update nps with the new tax code income" in {
-            val taxYear = TaxYear()
-            val nino: Nino = new Generator(new Random).nextNino
-
-            val url = {
-              val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              s"${path.getPath}"
-            }
-
-            server.stubFor(
-              post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-            )
-
-            val sut = createSUT()
-            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
-
-            result mustBe HodUpdateSuccess
-          }
-
-          "return a failure status if the update fails" in {
-            val taxYear = TaxYear()
-            val nino: Nino = new Generator(new Random).nextNino
-
-            val url = {
-              val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              s"${path.getPath}"
-            }
-
-            server.stubFor(
-              post(urlEqualTo(url)).willReturn(aResponse.withStatus(400))
-            )
-
-            val sut = createSUT()
-            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
-
-            result mustBe HodUpdateFailure
-          }
-        }
-
-      }
-
-
-      "toggled to use DES" must {
-
-        "return Tax Account as Json in the response" in {
-          val taxYear = TaxYear(2017)
+        "return a failure status if the update fails" in {
+          val taxYear = TaxYear()
           val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
-
           val url = {
-            val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
-            s"${path.getPath}?${path.getQuery}"
+            val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+            s"${path.getPath}"
           }
 
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-          )
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(false)
+          server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
 
-          result mustBe jsonResponse
+          result mustBe HodUpdateFailure
         }
-
-//        "updateTaxCodeIncome" must {
-//          "update nps with the new tax code income" in {
-//            val taxYear = TaxYear()
-//
-//            val mockHttpHandler = mock[HttpHandler]
-//            when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
-//              .thenReturn(Future.successful(HttpResponse(200)))
-//
-//            val sut = createSUT()
-//            val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-//
-//            result mustBe HodUpdateSuccess
-//          }
-//
-//          "return a failure status if the update fails" in {
-//            val taxYear = TaxYear()
-//
-//            val mockHttpHandler = mock[HttpHandler]
-//            when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
-//              .thenReturn(Future.failed(new RuntimeException))
-//
-//            val sut = createSUT()
-//            val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-//
-//            result mustBe HodUpdateFailure
-//          }
-//        }
-
       }
 
     }
+
+
+    "toggled to use DES" must {
+
+      "return Tax Account as Json in the response" in {
+        val taxYear = TaxYear(2017)
+        val nino: Nino = new Generator(new Random).nextNino
+        val featureTogglesConfig = mock[FeatureTogglesConfig]
+        val url = {
+          val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
+          s"${path.getPath}?${path.getQuery}"
+        }
+
+        when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
+        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+
+        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+
+        result mustBe jsonResponse
+      }
+
+      "updateTaxCodeIncome" must {
+
+        "update des with the new tax code income" in {
+          val taxYear = TaxYear()
+          val nino: Nino = new Generator(new Random).nextNino
+          val featureTogglesConfig = mock[FeatureTogglesConfig]
+          val url = {
+            val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+            s"${path.getPath}"
+          }
+
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
+          server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+
+          val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+
+          result mustBe HodUpdateSuccess
+        }
+
+        "return a failure status if the update fails" in {
+          val taxYear = TaxYear()
+          val nino: Nino = new Generator(new Random).nextNino
+          val featureTogglesConfig = mock[FeatureTogglesConfig]
+          val url = {
+            val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+            s"${path.getPath}"
+          }
+
+          when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
+          server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
+
+          val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+
+          result mustBe HodUpdateFailure
+        }
+      }
+
+    }
+
+  }
 
 
 
