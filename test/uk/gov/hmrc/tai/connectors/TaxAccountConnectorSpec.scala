@@ -19,34 +19,21 @@ package uk.gov.hmrc.tai.connectors
 import java.net.URL
 
 import com.codahale.metrics.SharedMetricRegistries
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
-import org.joda.time.LocalDate
-import org.mockito.Matchers.any
-import org.mockito.Mockito.when
-import org.mockito.{ArgumentCaptor, Matchers}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, BeforeAndAfterEach}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, post, urlEqualTo}
 import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.{OneAppPerSuite, OneAppPerTest, OneServerPerSuite, PlaySpec}
-import play.api.Application
-import play.api.inject.Injector
-import play.api.inject.guice.GuiceApplicationBuilder
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{MongoConstants, WireMockHelper}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -77,63 +64,107 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           SharedMetricRegistries.clear()
         }
 
+        "updateTaxCodeIncome" must {
+
+          "update nps with the new tax code income" in {
+            val taxYear = TaxYear()
+            val nino: Nino = new Generator(new Random).nextNino
+
+            val url = {
+              val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+              s"${path.getPath}"
+            }
+
+            server.stubFor(
+              post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
+            )
+
+            val sut = createSUT()
+            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
+
+            result mustBe HodUpdateSuccess
+          }
+
+          "return a failure status if the update fails" in {
+            val taxYear = TaxYear()
+            val nino: Nino = new Generator(new Random).nextNino
+
+            val url = {
+              val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+              s"${path.getPath}"
+            }
+
+            server.stubFor(
+              post(urlEqualTo(url)).willReturn(aResponse.withStatus(400))
+            )
+
+            val sut = createSUT()
+            val result = Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
+
+            result mustBe HodUpdateFailure
+          }
+        }
+
       }
 
+
+      "toggled to use DES" must {
+
+        "return Tax Account as Json in the response" in {
+          val taxYear = TaxYear(2017)
+          val nino: Nino = new Generator(new Random).nextNino
+
+          val url = {
+            val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
+            s"${path.getPath}?${path.getQuery}"
+          }
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
+          )
+
+          val connector = createSUT()
+          val result = Await.result(connector.desTaxAccount(nino, taxYear), 5 seconds)
+
+          result mustBe jsonResponse
+          SharedMetricRegistries.clear()
+        }
+
+//        "updateTaxCodeIncome" must {
+//          "update nps with the new tax code income" in {
+//            val taxYear = TaxYear()
 //
-//      "toggled to use DES" must {
+//            val mockHttpHandler = mock[HttpHandler]
+//            when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
+//              .thenReturn(Future.successful(HttpResponse(200)))
 //
-//        "return Tax Account as Json in the response" in {
-//          val taxYear = TaxYear(2017)
-//          val nino: Nino = new Generator(new Random).nextNino
+//            val sut = createSUT()
+//            val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
 //
-//          val url = {
-//            val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
-//            s"${path.getPath}?${path.getQuery}"
+//            result mustBe HodUpdateSuccess
 //          }
 //
-//          server.stubFor(
-//            get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString))
-//          )
+//          "return a failure status if the update fails" in {
+//            val taxYear = TaxYear()
 //
-//          val connector = createSUT()
-//          val result = Await.result(connector.desTaxAccount(nino, taxYear), 5 seconds)
+//            val mockHttpHandler = mock[HttpHandler]
+//            when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
+//              .thenReturn(Future.failed(new RuntimeException))
 //
-//          result mustBe jsonResponse
-//          SharedMetricRegistries.clear()
+//            val sut = createSUT()
+//            val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
+//
+//            result mustBe HodUpdateFailure
+//          }
 //        }
-//
-//      }
-//
-//    }
+
+      }
+
+    }
 
 
-//  "updateTaxCodeIncome" must {
-//    "update nps with the new tax code income" in {
-//      val taxYear = TaxYear()
-//
-//      val mockHttpHandler = mock[HttpHandler]
-//      when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
-//        .thenReturn(Future.successful(HttpResponse(200)))
-//
-//      val sut = createSUT(mock[NpsConfig], mock[TaxAccountUrls], mock[IabdUrls], mock[NpsIabdUpdateAmountFormats], mockHttpHandler)
-//      val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-//
-//      result mustBe HodUpdateSuccess
-//    }
-//
-//    "return a failure status if the update fails" in {
-//      val taxYear = TaxYear()
-//
-//      val mockHttpHandler = mock[HttpHandler]
-//      when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
-//        .thenReturn(Future.failed(new RuntimeException))
-//
-//      val sut = createSUT(mock[NpsConfig], mock[TaxAccountUrls], mock[IabdUrls], mock[NpsIabdUpdateAmountFormats], mockHttpHandler)
-//      val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-//
-//      result mustBe HodUpdateFailure
-//    }
-  }
+
+
 
   private val originatorId = "testOriginatorId"
   private def randomNino: Nino = new Generator(new Random).nextNino

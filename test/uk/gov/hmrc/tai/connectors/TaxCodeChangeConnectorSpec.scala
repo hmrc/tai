@@ -21,7 +21,6 @@ import java.net.URL
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
 import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
