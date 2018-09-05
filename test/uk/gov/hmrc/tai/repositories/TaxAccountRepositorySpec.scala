@@ -25,7 +25,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
@@ -74,109 +73,80 @@ class TaxAccountRepositorySpec extends PlaySpec
       result mustBe HodUpdateFailure
 
     }
-//
-//    "update income" when {
-//      val mockConnector = mock[TaxAccountConnector]
-//
-//      when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), Matchers.eq(DesSource), any())(any())).thenReturn(Future.successful(HodUpdateSuccess))
-//
-//      val SUT = createSUT(taxAccountConnector = mockConnector)
-//
-//      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
-//
-//      val result = Await.result(responseFuture, 5 seconds)
-//      result mustBe HodUpdateSuccess
-//    }
-//
-//    "return an error status when income can't be updated" when {
-//      val mockConnector = mock[TaxAccountConnector]
-//
-//      when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), Matchers.eq(DesSource), any())(any())).thenReturn(Future.successful(HodUpdateFailure))
-//
-//      val SUT = createSUT(taxAccountConnector = mockConnector)
-//
-//      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
-//
-//      val result = Await.result(responseFuture, 5 seconds)
-//      result mustBe HodUpdateFailure
-//    }
+
+    "update income" when {
+      val mockConnector = mock[TaxAccountConnector]
+
+      when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateSuccess))
+
+      val SUT = createSUT(taxAccountConnector = mockConnector)
+
+      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
+
+      val result = Await.result(responseFuture, 5 seconds)
+      result mustBe HodUpdateSuccess
+    }
+
+    "return an error status when income can't be updated" when {
+      val mockConnector = mock[TaxAccountConnector]
+
+      when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateFailure))
+
+      val SUT = createSUT(taxAccountConnector = mockConnector)
+
+      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
+
+      val result = Await.result(responseFuture, 5 seconds)
+      result mustBe HodUpdateFailure
+    }
   }
 
-//  "taxAccount" must {
-//    "return Tax Account as Json in the response" when {
-//      "tax account is in cache" in {
-//        val taxYear = TaxYear(2017)
-//
-//        val mockCacheConnector = mock[CacheConnector]
-//
-//        when(mockCacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
-//          .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
-//
-//        val sut = createSUT(cacheConnector = mockCacheConnector)
-//        val result = Await.result(sut.taxAccount(randomNino, taxYear), 5 seconds)
-//
-//        result mustBe taxAccountJsonResponse
-//      }
-//
-//      "tax account is NOT in cache and des flag is on" in {
-//        val taxYear = TaxYear(2017)
-//
-//        val nino = randomNino
-//
-//        val mockConnector = mock[TaxAccountConnector]
-//        val featureTogglesConfig = mock[FeatureTogglesConfig]
-//        val mockCacheConnector = mock[CacheConnector]
-//
-//        when(mockCacheConnector.findJson(
-//          Matchers.eq(sessionId),
-//          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-//        ).thenReturn(Future.successful(None))
-//
-//        when(mockConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
-//          .thenReturn(Future.successful(taxAccountJsonResponse))
-//
-//        when(mockCacheConnector.createOrUpdateJson(
-//          Matchers.eq(sessionId),
-//          Matchers.eq(taxAccountJsonResponse),
-//          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-//        ).thenReturn(Future.successful(taxAccountJsonResponse))
-//
-//        val sut = createSUT(taxAccountConnector = mockConnector, cacheConnector = mockCacheConnector)
-//        val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
-//
-//        result mustBe taxAccountJsonResponse
-//      }
-//
-//      "tax account is NOT in cache and des flag is off" in {
-//        val taxYear = TaxYear(2017)
-//
-//        val nino = randomNino
-//
-//        val mockConnector = mock[TaxAccountConnector]
-//        val featureTogglesConfig = mock[FeatureTogglesConfig]
-//        val mockCacheConnector = mock[CacheConnector]
-//
-//        when(mockCacheConnector.findJson(
-//          Matchers.eq(sessionId),
-//          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-//        ).thenReturn(Future.successful(None))
-//
-//        when(mockConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
-//          .thenReturn(Future.successful(taxAccountJsonResponse))
-//
-//        when(mockCacheConnector.createOrUpdateJson(
-//          Matchers.eq(sessionId),
-//          Matchers.eq(taxAccountJsonResponse),
-//          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-//        ).thenReturn(Future.successful(taxAccountJsonResponse))
-//
-//        val sut = createSUT(taxAccountConnector = mockConnector, cacheConnector = mockCacheConnector)
-//        val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
-//
-//        result mustBe taxAccountJsonResponse
-//      }
-//    }
-//  }
+  "taxAccount" must {
+    "return Tax Account as Json in the response" when {
+      "tax account is in cache" in {
+        val taxYear = TaxYear(2017)
+
+        val mockCacheConnector = mock[CacheConnector]
+
+        when(mockCacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+          .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
+
+        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val result = Await.result(sut.taxAccount(randomNino, taxYear), 5 seconds)
+
+        result mustBe taxAccountJsonResponse
+      }
+
+      "tax account is NOT in cache" in {
+        val taxYear = TaxYear(2017)
+
+        val nino = randomNino
+
+        val mockConnector = mock[TaxAccountConnector]
+
+        val mockCacheConnector = mock[CacheConnector]
+
+        when(mockCacheConnector.findJson(
+          Matchers.eq(sessionId),
+          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
+        ).thenReturn(Future.successful(None))
+
+        when(mockConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
+          .thenReturn(Future.successful(taxAccountJsonResponse))
+
+        when(mockCacheConnector.createOrUpdateJson(
+          Matchers.eq(sessionId),
+          Matchers.eq(taxAccountJsonResponse),
+          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
+        ).thenReturn(Future.successful(taxAccountJsonResponse))
+
+        val sut = createSUT(taxAccountConnector = mockConnector, cacheConnector = mockCacheConnector)
+        val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+
+        result mustBe taxAccountJsonResponse
+      }
+    }
+  }
 
   private def randomNino: Nino = new Generator(new Random).nextNino
 
