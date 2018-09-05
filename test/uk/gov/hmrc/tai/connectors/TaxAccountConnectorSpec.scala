@@ -45,8 +45,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
     "toggled to use NPS" must {
 
       "return Tax Account as Json in the response" in {
-        val taxYear = TaxYear(2017)
-        val nino: Nino = new Generator(new Random).nextNino
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         val url = {
           val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
@@ -65,8 +63,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
       "updateTaxCodeIncome" must {
 
         "update nps with the new tax code income" in {
-          val taxYear = TaxYear()
-          val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
@@ -83,8 +79,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         }
 
         "return a failure status if the update fails" in {
-          val taxYear = TaxYear()
-          val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
@@ -107,8 +101,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
     "toggled to use DES" must {
 
       "return Tax Account as Json in the response" in {
-        val taxYear = TaxYear(2017)
-        val nino: Nino = new Generator(new Random).nextNino
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         val url = {
           val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
@@ -127,8 +119,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
       "updateTaxCodeIncome" must {
 
         "update des with the new tax code income" in {
-          val taxYear = TaxYear()
-          val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
@@ -145,8 +135,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         }
 
         "return a failure status if the update fails" in {
-          val taxYear = TaxYear()
-          val nino: Nino = new Generator(new Random).nextNino
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
@@ -167,17 +155,12 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
 
   }
 
-
-
-
-
   private val originatorId = "testOriginatorId"
-  private def randomNino: Nino = new Generator(new Random).nextNino
   private implicit val hc: HeaderCarrier = HeaderCarrier()
   lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
   lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
-
-
+  val taxYear = TaxYear(2017)
+  val nino: Nino = new Generator(new Random).nextNino
 
   private val jsonResponse = Json.obj(
     "taxYear" -> 2017,
