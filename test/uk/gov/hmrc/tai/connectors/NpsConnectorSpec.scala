@@ -30,8 +30,8 @@ import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
-import uk.gov.hmrc.tai.model.GateKeeperRule
-import uk.gov.hmrc.tai.model.nps.{NpsEmployment, IabdUpdateAmount, IabdUpdateAmountFormats, NpsTaxAccount}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}

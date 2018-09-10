@@ -26,9 +26,8 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
-import uk.gov.hmrc.tai.model.des.DesIabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
-import uk.gov.hmrc.tai.model.nps.IabdUpdateAmountFormats
+import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
@@ -183,10 +182,9 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
                         desConfig: DesConfig = injector.instanceOf[DesConfig],
                         taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
                         iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
-                        npsFormats: IabdUpdateAmountFormats = injector.instanceOf[IabdUpdateAmountFormats],
-                        desFormats: DesIabdUpdateAmountFormats = injector.instanceOf[DesIabdUpdateAmountFormats],
+                        formats: IabdUpdateAmountFormats = injector.instanceOf[IabdUpdateAmountFormats],
                         httpHandler: HttpHandler = injector.instanceOf[HttpHandler],
                         featureTogglesConfig: FeatureTogglesConfig = injector.instanceOf[FeatureTogglesConfig]) =
 
-    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, npsFormats, desFormats, httpHandler, featureTogglesConfig)
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler, featureTogglesConfig)
 }

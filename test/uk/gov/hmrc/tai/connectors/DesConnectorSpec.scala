@@ -431,56 +431,6 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
   }
 
-  "updateTaxCodeIncome" must {
-    "update des with the new tax code income" in {
-      val taxYear = TaxYear()
-      val jsonResponse = Future.successful(HttpResponse(Status.OK))
-
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.POST[List[IabdUpdateAmount], HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(jsonResponse)
-
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
-
-      val sut = createSUT(mockHttpClient,
-        mockMetrics,
-        mock[Auditor],
-        mock[IabdUpdateAmountFormats],
-        mock[DesConfig])
-
-      val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-
-      result mustBe HodUpdateSuccess
-    }
-
-    "return a failure status if the update fails" in {
-      val taxYear = TaxYear()
-      val jsonResponse = Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR))
-
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.POST[List[IabdUpdateAmount], HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(jsonResponse)
-
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
-
-      val sut = createSUT(mockHttpClient,
-        mockMetrics,
-        mock[Auditor],
-        mock[IabdUpdateAmountFormats],
-        mock[DesConfig])
-
-      val result = Await.result(sut.updateTaxCodeAmount(randomNino, taxYear, 1, 1, NewEstimatedPay.code, 1, 12345), 5 seconds)
-
-      result mustBe HodUpdateFailure
-    }
-  }
-
   private def createSUT(httpClient: HttpClient,
                         metrics: Metrics,
                         audit: Auditor,

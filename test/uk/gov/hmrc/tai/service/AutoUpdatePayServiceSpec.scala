@@ -32,12 +32,13 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
 import uk.gov.hmrc.tai.model.RtiCalc
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot, IabdUpdateAmount}
+import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot}
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live}
 import uk.gov.hmrc.tai.model.nps2.{IabdType, Income}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment}
 import uk.gov.hmrc.tai.model.tai.{NINE_MONTHS, SIX_MONTHS, THREE_MONTHS, TaxYear}
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
+import uk.gov.hmrc.tai.model.IabdUpdateAmount
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.collection.JavaConversions._

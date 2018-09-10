@@ -50,7 +50,7 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
       "employmentSequenceNumber"
     }
 
-  def IabdUpdateAmountWrites: Writes[IabdUpdateAmount] = (
+  def iabdUpdateAmountWrites: Writes[IabdUpdateAmount] = (
     (JsPath \ empSeqNoFieldName).write[Int] and
       (JsPath \ "grossAmount").write[Int] and
       (JsPath \ "netAmount").writeNullable[Int] and
@@ -58,7 +58,7 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
       (JsPath \ "source").writeNullable[Int]
     )(unlift(IabdUpdateAmount.unapply))
 
-  implicit def formats = Format(Json.reads[IabdUpdateAmount], IabdUpdateAmountWrites)
+  implicit def formats = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
 
   implicit val formatList = new Writes[List[IabdUpdateAmount]] {
     def writes(updateAmounts: List[IabdUpdateAmount]) : JsValue = {

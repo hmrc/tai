@@ -21,6 +21,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsValue, Json}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
 
 class IabdUpdateAmountFormatspec extends PlaySpec
   with MockitoSugar {
