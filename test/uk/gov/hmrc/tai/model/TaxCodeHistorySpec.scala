@@ -20,10 +20,11 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec {
+class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
 
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json" in {
@@ -35,14 +36,15 @@ class TaxCodeHistorySpec extends PlaySpec {
 
 
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
-        TaxCodeRecord("tax code", "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
+        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
       ))
 
       val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq(
           Json.obj("taxCode" -> "tax code",
+            "basisOfOperation" -> Cumulative,
             "employerName" -> "Employee 1",
             "operatedTaxCode" -> true,
             "dateOfCalculation" -> now,
@@ -50,6 +52,7 @@ class TaxCodeHistorySpec extends PlaySpec {
             "pensionIndicator" -> false,
             "employmentType" -> "PRIMARY"),
           Json.obj("taxCode" -> "tax code",
+            "basisOfOperation" -> Cumulative,
             "employerName" -> "Employee 1",
             "operatedTaxCode" -> true,
             "dateOfCalculation" -> now,

@@ -31,11 +31,12 @@ import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api
 import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
 
   "hasTaxCodeChanged" should {
 
@@ -92,13 +93,14 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeChangeRecord("a", date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
+      val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
+      val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
       when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
           "current" -> Json.arr(Json.obj("taxCode" -> "b",
+                                  "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
                                   "employerName" -> "Employer 1",
@@ -106,6 +108,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
                                   "pensionIndicator" -> false,
                                   "primary" -> true)),
           "previous" -> Json.arr(Json.obj("taxCode" -> "a",
+                                  "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
                                   "employerName" -> "Employer 2",
