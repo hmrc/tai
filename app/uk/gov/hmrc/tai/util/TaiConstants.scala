@@ -215,4 +215,6 @@ trait IabdTypeConstants {
 trait TaxCodeHistoryConstants {
   val Primary = "PRIMARY"
   val Secondary = "SECONDARY"
+  val Cumulative = "Cumulative"
+  val Week1Month1 = "Week 1 Month 1"
 }

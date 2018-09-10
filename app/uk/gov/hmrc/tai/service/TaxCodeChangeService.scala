@@ -75,6 +75,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
         val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeChangeRecord(currentRecord.taxCode,
+          currentRecord.basisOfOperation,
           currentRecord.dateOfCalculation,
           TaxYearResolver.endOfCurrentTaxYear,
           currentRecord.employerName,
@@ -83,6 +84,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
           currentRecord.isPrimary))
 
         val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeChangeRecord(previousRecord.taxCode,
+          previousRecord.basisOfOperation,
           previousStartDate(previousRecord.dateOfCalculation),
           previousEndDate,
           previousRecord.employerName,
