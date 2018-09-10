@@ -32,7 +32,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
 import uk.gov.hmrc.tai.model.RtiCalc
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot, NpsIabdUpdateAmount}
+import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot, IabdUpdateAmount}
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live}
 import uk.gov.hmrc.tai.model.nps2.{IabdType, Income}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment}
@@ -255,7 +255,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(NpsIabdUpdateAmount(1, 100, None, None, Some(46)))
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(46)))
       }
     }
     "Set the update amount source to be internet calculated" when {
@@ -284,7 +284,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(NpsIabdUpdateAmount(1, 100, None, None, Some(46)))
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(46)))
       }
       "the des update flag is set to false" in {
       val employments = List(
@@ -311,7 +311,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(NpsIabdUpdateAmount(1, 100, None, None, Some(1)))
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(1)))
       }
     }
 
@@ -558,8 +558,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiData = RtiData("", TaxYear(CurrentYear), "", List(rtiEmp))
 
         sut.getRtiUpdateAmounts(nino, CurrentYear, List(employments), Some(rtiData))(HeaderCarrier()) mustBe ((
-          List(NpsIabdUpdateAmount(1, 104000, None, None, Some(46))),
-          List(NpsIabdUpdateAmount(1, 104000, None, None, Some(46))),
+          List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
+          List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
           List(RtiCalc(1, Some(new LocalDate(CurrentYear, 6, 20)), Some(PayFrequency.FourWeekly), 1, 1, "", 20000, Some(104000)))
         ))
       }
@@ -716,7 +716,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val cyExpected = NpsIabdUpdateAmount(
+        val cyExpected = IabdUpdateAmount(
           employmentSequenceNumber = 1,
           grossAmount = 1000,
           source = None
@@ -2161,7 +2161,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val taxYearCaptor = ArgumentCaptor.forClass(classOf[Int])
         val iadbTypeCaptor = ArgumentCaptor.forClass(classOf[Int])
         val versionCaptor = ArgumentCaptor.forClass(classOf[Int])
-        val updateAmountsCaptor = ArgumentCaptor.forClass(classOf[List[NpsIabdUpdateAmount]])
+        val updateAmountsCaptor = ArgumentCaptor.forClass(classOf[List[IabdUpdateAmount]])
         val apiTypesCaptor = ArgumentCaptor.forClass(classOf[APITypes])
 
         val npsUpdate2 = npsUpdateAmount.copy(grossAmount = 3000)
@@ -2189,7 +2189,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         taxYearCaptor.getAllValues.toList mustBe List(CurrentYear, NextYear)
         iadbTypeCaptor.getAllValues.toList mustBe List(IabdType.NewEstimatedPay.code, IabdType.NewEstimatedPay.code)
         versionCaptor.getAllValues.toList mustBe List(1, 2)
-        updateAmountsCaptor.getAllValues.toList mustBe List(List(NpsIabdUpdateAmount(1, 1000, None, None, Some(46))), List(NpsIabdUpdateAmount(1, 3000, None, None, Some(46))))
+        updateAmountsCaptor.getAllValues.toList mustBe List(List(IabdUpdateAmount(1, 1000, None, None, Some(46))), List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
         apiTypesCaptor.getAllValues.toList mustBe List(null, null)
 
       }
@@ -2329,7 +2329,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val taxYearCaptor = ArgumentCaptor.forClass(classOf[Int])
         val iadbTypeCaptor = ArgumentCaptor.forClass(classOf[Int])
         val versionCaptor = ArgumentCaptor.forClass(classOf[Int])
-        val updateAmountsCaptor = ArgumentCaptor.forClass(classOf[List[NpsIabdUpdateAmount]])
+        val updateAmountsCaptor = ArgumentCaptor.forClass(classOf[List[IabdUpdateAmount]])
         val apiTypesCaptor = ArgumentCaptor.forClass(classOf[APITypes])
 
         val npsUpdate2 = npsUpdateAmount.copy(grossAmount = 3000)
@@ -2355,7 +2355,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         taxYearCaptor.getAllValues.toList mustBe List(CurrentYear, NextYear)
         iadbTypeCaptor.getAllValues.toList mustBe List(IabdType.NewEstimatedPay.code, IabdType.NewEstimatedPay.code)
         versionCaptor.getAllValues.toList mustBe List(1, 2)
-        updateAmountsCaptor.getAllValues.toList mustBe List(List(NpsIabdUpdateAmount(1, 1000, None, None, Some(46))), List(NpsIabdUpdateAmount(1, 3000, None, None, Some(46))))
+        updateAmountsCaptor.getAllValues.toList mustBe List(List(IabdUpdateAmount(1, 1000, None, None, Some(46))), List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
         apiTypesCaptor.getAllValues.toList mustBe List(null, null)
 
       }
@@ -2605,7 +2605,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
   private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))
   private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))
 
-  private val npsUpdateAmount = NpsIabdUpdateAmount(
+  private val npsUpdateAmount = IabdUpdateAmount(
     employmentSequenceNumber = 1,
     grossAmount = 1000,
     source = Some(46))

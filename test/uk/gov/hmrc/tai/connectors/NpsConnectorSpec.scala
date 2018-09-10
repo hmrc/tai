@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
 import uk.gov.hmrc.tai.model.GateKeeperRule
-import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsIabdUpdateAmount, NpsIabdUpdateAmountFormats, NpsTaxAccount}
+import uk.gov.hmrc.tai.model.nps.{NpsEmployment, IabdUpdateAmount, IabdUpdateAmountFormats, NpsTaxAccount}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
@@ -49,7 +49,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = createSUT(mock[Metrics], mock[HttpClient], mock[Auditor], mock[NpsIabdUpdateAmountFormats], mockConfig)
+        val sut = createSUT(mock[Metrics], mock[HttpClient], mock[Auditor], mock[IabdUpdateAmountFormats], mockConfig)
         sut.npsPathUrl(SuccessTestNino, "path") mustBe s"/person/${SuccessTestNino}/path"
       }
     }
@@ -66,7 +66,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[NpsIabdUpdateAmountFormats], mock[NpsConfig])
+        val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
         Await.result(sut.getEmployments(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe expectedResult
       }
     }
@@ -81,7 +81,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[NpsIabdUpdateAmountFormats], mock[NpsConfig])
+        val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
         Await.result(sut.getEmploymentDetails(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe Json.parse("[]")
       }
     }
@@ -91,7 +91,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
@@ -105,7 +105,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         when(mockMetrics.startTimer(any()))
@@ -123,7 +123,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
@@ -140,7 +140,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
@@ -156,7 +156,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
@@ -173,7 +173,7 @@ class NpsConnectorSpec extends PlaySpec
         val mockMetrics = mock[Metrics]
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
-        val mockFormats = mock[NpsIabdUpdateAmountFormats]
+        val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
@@ -184,7 +184,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(NpsIabdUpdateAmount(1,200,Some(100),Some("10/4/2016"),Some(1))))(HeaderCarrier())
+        val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(IabdUpdateAmount(1,200,Some(100),Some("10/4/2016"),Some(1))))(HeaderCarrier())
         val result: HttpResponse = Await.result(resp, 5 seconds)
         result.status mustBe 200
       }
@@ -203,6 +203,6 @@ class NpsConnectorSpec extends PlaySpec
     responseString = Some("Success"))
 
   private val SuccesfulPostResponseWithObject: HttpResponse = HttpResponse(200)
-  private def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, formats: NpsIabdUpdateAmountFormats, config: NpsConfig) =
+  private def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, formats: IabdUpdateAmountFormats, config: NpsConfig) =
     new NpsConnector(metrics, httpClient, audit, formats, config)
 }

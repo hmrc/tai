@@ -22,7 +22,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsValue, Json}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
-class NpsIabdUpdateAmountFormatSpec extends PlaySpec
+class IabdUpdateAmountFormatspec extends PlaySpec
   with MockitoSugar {
 
   "Json writes to DES" must {
@@ -31,8 +31,8 @@ class NpsIabdUpdateAmountFormatSpec extends PlaySpec
         val mockConfig = mock[FeatureTogglesConfig]
         when(mockConfig.desUpdateEnabled).thenReturn(true)
 
-        val sut = new NpsIabdUpdateAmountFormats(mockConfig)
-        val j: JsValue = Json.toJson(NpsIabdUpdateAmount(12, 1000, Some(800), Some("2017-06-07"), Some(39)))(sut.formats)
+        val sut = new IabdUpdateAmountFormats(mockConfig)
+        val j: JsValue = Json.toJson(IabdUpdateAmount(12, 1000, Some(800), Some("2017-06-07"), Some(39)))(sut.formats)
 
         (j \ "employmentSeqNo").get mustBe JsNumber(12)
       }
@@ -45,8 +45,8 @@ class NpsIabdUpdateAmountFormatSpec extends PlaySpec
         val mockConfig = mock[FeatureTogglesConfig]
         when(mockConfig.desUpdateEnabled).thenReturn(false)
 
-        val sut = new NpsIabdUpdateAmountFormats(mockConfig)
-        val j: JsValue = Json.toJson(NpsIabdUpdateAmount(12, 1000, Some(800), Some("2017-06-07"), Some(39)))(sut.formats)
+        val sut = new IabdUpdateAmountFormats(mockConfig)
+        val j: JsValue = Json.toJson(IabdUpdateAmount(12, 1000, Some(800), Some("2017-06-07"), Some(39)))(sut.formats)
 
         (j \ "employmentSequenceNumber").get mustBe JsNumber(12)
       }

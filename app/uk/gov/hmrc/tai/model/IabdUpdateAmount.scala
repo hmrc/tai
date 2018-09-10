@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.tai.model
 
 import com.google.inject.Inject
@@ -34,7 +50,7 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
       "employmentSequenceNumber"
     }
 
-  def npsIabdUpdateAmountWrites: Writes[IabdUpdateAmount] = (
+  def IabdUpdateAmountWrites: Writes[IabdUpdateAmount] = (
     (JsPath \ empSeqNoFieldName).write[Int] and
       (JsPath \ "grossAmount").write[Int] and
       (JsPath \ "netAmount").writeNullable[Int] and
@@ -42,7 +58,7 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
       (JsPath \ "source").writeNullable[Int]
     )(unlift(IabdUpdateAmount.unapply))
 
-  implicit def formats = Format(Json.reads[IabdUpdateAmount], npsIabdUpdateAmountWrites)
+  implicit def formats = Format(Json.reads[IabdUpdateAmount], IabdUpdateAmountWrites)
 
   implicit val formatList = new Writes[List[IabdUpdateAmount]] {
     def writes(updateAmounts: List[IabdUpdateAmount]) : JsValue = {
