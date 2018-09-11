@@ -113,7 +113,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
         val employmentDetails = List(Employment("TEST", Some("12345"), new LocalDate("2017-05-26"), None,
           List(AnnualAccount("", TaxYear(2017), Available,
             List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly)),
-            List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10)))))), "", "", 2, Some(100), false))
+            List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10)))))), "", "", 2, Some(100), false, false))
 
         val json = Json.arr(
           Json.obj(
@@ -154,7 +154,8 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             "payeNumber" -> "",
             "sequenceNumber" -> 2,
             "cessationPay" -> 100,
-            "hasPayrolledBenefit" -> false
+            "hasPayrolledBenefit" -> false,
+            "receivingOccupationalPension" -> false
           )
         )
 

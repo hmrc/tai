@@ -146,7 +146,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
         val employment = Employment("TEST", Some("12345"), LocalDate.now(), None,
-          List(AnnualAccount("", TaxYear(TaxYearResolver.currentTaxYear), Available, Nil, Nil)), "", "", 2, Some(100), false)
+          List(AnnualAccount("", TaxYear(TaxYearResolver.currentTaxYear), Available, Nil, Nil)), "", "", 2, Some(100), false, false)
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))

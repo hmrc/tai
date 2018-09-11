@@ -254,9 +254,9 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  val sampleSingleEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false))
-  val sampleDualEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, None, true),
-    Employment("EMPLOYER2", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false)
+  val sampleSingleEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false, false))
+  val sampleDualEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, None, true, false),
+    Employment("EMPLOYER2", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false, false)
   )
 
   private def getJson(fileName: String):JsValue = {

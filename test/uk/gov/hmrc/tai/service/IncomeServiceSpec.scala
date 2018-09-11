@@ -110,7 +110,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockEmploymentSvc = mock[EmploymentService]
         when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false))))
+          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
 
         val mockTaxAccountSvc = mock[TaxAccountService]
         when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
@@ -150,7 +150,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockEmploymentSvc = mock[EmploymentService]
         when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false))))
+          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
 
         val mockIncomeRepository = mock[IncomeRepository]
         when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -184,7 +184,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockEmploymentSvc = mock[EmploymentService]
         when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false))))
+          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
 
         val mockTaxAccountSvc = mock[TaxAccountService]
         when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
@@ -262,7 +262,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val SUT = createSUT()
 
-        val result = SUT.retrieveEmploymentAmountYearToDate(nino, Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false)))
+        val result = SUT.retrieveEmploymentAmountYearToDate(nino, Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
 
         result mustBe 1234.56
       }
@@ -275,7 +275,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val SUT = createSUT()
 
-        val result = SUT.retrieveEmploymentAmountYearToDate(nino, Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false)))
+        val result = SUT.retrieveEmploymentAmountYearToDate(nino, Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
 
         result mustBe 0
       }

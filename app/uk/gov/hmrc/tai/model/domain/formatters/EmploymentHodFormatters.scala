@@ -62,7 +62,8 @@ trait EmploymentHodFormatters {
       val sequenceNumber = (json \ "sequenceNumber").as[Int]
       val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
       val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1").asOpt[Boolean].getOrElse(false)
-      JsSuccess(Employment(name, payrollNumber, startDate, endDate, Nil, taxDistrictNumber, payeNumber, sequenceNumber, cessationPay, payrolledBenefit))
+      val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+      JsSuccess(Employment(name, payrollNumber, startDate, endDate, Nil, taxDistrictNumber, payeNumber, sequenceNumber, cessationPay, payrolledBenefit, receivingOccupationalPension))
     }
   }
 
