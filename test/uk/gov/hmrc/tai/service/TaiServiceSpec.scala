@@ -1060,7 +1060,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   }
 
   "getIadbUpdateAmount" should {
-    "return NpsIabdUpdateAmount with Customer Entered source value" when {
+    "return IabdUpdateAmount with Customer Entered source value" when {
       "npsUpdateSourceEnabled is true" in {
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -1087,13 +1087,13 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
-        result mustBe NpsIabdUpdateAmount(
+        result mustBe IabdUpdateAmount(
           employmentSequenceNumber = employmentAmount.employmentId,
           grossAmount = employmentAmount.newAmount,
           source = Some(0))
       }
     }
-    "return NpsIabdUpdateAmount without Customer Entered source value" when {
+    "return IabdUpdateAmount without Customer Entered source value" when {
       "npsUpdateSourceEnabled is false" in {
         val mockRtiConnector = mock[RtiConnector]
 
@@ -1122,7 +1122,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
-        result mustBe NpsIabdUpdateAmount(
+        result mustBe IabdUpdateAmount(
           employmentSequenceNumber = employmentAmount.employmentId,
           grossAmount = employmentAmount.newAmount)
 
@@ -1152,7 +1152,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mockCyPlusOneConfig)
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
-        result mustBe NpsIabdUpdateAmount(
+        result mustBe IabdUpdateAmount(
           employmentSequenceNumber = employmentAmount.employmentId,
           grossAmount = employmentAmount.newAmount)
       }
@@ -1185,7 +1185,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
-        result mustBe NpsIabdUpdateAmount(
+        result mustBe IabdUpdateAmount(
           employmentSequenceNumber = employmentAmount.employmentId,
           grossAmount = employmentAmount.newAmount,
           source = Some(39))
@@ -1217,7 +1217,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mockCyPlusOneConfig)
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
-        result mustBe NpsIabdUpdateAmount(employmentSequenceNumber = employmentAmount.employmentId,
+        result mustBe IabdUpdateAmount(employmentSequenceNumber = employmentAmount.employmentId,
           grossAmount = employmentAmount.newAmount, source = Some(0))
       }
     }

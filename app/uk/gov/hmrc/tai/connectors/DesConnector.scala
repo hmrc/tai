@@ -28,12 +28,11 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
@@ -42,7 +41,7 @@ import scala.concurrent.Future
 class DesConnector @Inject()(httpClient: HttpClient,
                              metrics: Metrics,
                              auditor: Auditor,
-                             formats: NpsIabdUpdateAmountFormats,
+                             formats: IabdUpdateAmountFormats,
                              config: DesConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter  {
 
   override def originatorId = config.originatorId
@@ -85,25 +84,15 @@ class DesConnector @Inject()(httpClient: HttpClient,
   }
 
   def updateEmploymentDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
-                           updateAmounts: List[NpsIabdUpdateAmount],
+                           updateAmounts: List[IabdUpdateAmount],
                            apiType: APITypes = APITypes.DesIabdUpdateEstPayAutoAPI)
                           (implicit hc: HeaderCarrier): Future[HttpResponse] = {
     if (updateAmounts.nonEmpty) {
       val postUrl = desPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToDes[List[NpsIabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version), formats.formatList)
+      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version), formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }
-  }
-
-  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, source: Int, amount: Int)
-                          (implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
-    val postUrl = desPathUrl(nino, s"iabds/${taxYear.year}/employment/$iabdType")
-    postToDes[List[NpsIabdUpdateAmount]](postUrl, APITypes.DesIabdUpdateEstPayAutoAPI,
-      List(NpsIabdUpdateAmount(employmentSequenceNumber = employmentId,
-        grossAmount = amount, source = Some(source))))(headerForUpdate(version), formats.formatList).map(_ =>
-      HodUpdateSuccess
-    ).recover{ case _ => HodUpdateFailure}
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {

@@ -34,8 +34,8 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = new RtiUrls(mockConfig)
-        sut.paymentsForYearUrl(nino.nino, TaxYear(2017)) mustBe
+        val rtiUrls = new RtiUrls(mockConfig)
+        rtiUrls.paymentsForYearUrl(nino.nino, TaxYear(2017)) mustBe
           s"/rti/individual/payments/nino/${nino.nino}/tax-year/17-18"
       }
     }
@@ -47,9 +47,9 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
       when(mockConfig.baseURL)
         .thenReturn("")
 
-      val sut = new PdfUrls(mockConfig)
+      val pdfUrls = new PdfUrls(mockConfig)
 
-      sut.generatePdfUrl mustBe "/pdf-generator-service/generate"
+      pdfUrls.generatePdfUrl mustBe "/pdf-generator-service/generate"
     }
   }
 
@@ -60,11 +60,11 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = new PayeUrls(mockConfig)
+        val payeUrls = new PayeUrls(mockConfig)
 
-        sut.carBenefitsForYearUrl(nino, TaxYear(2017)) mustBe s"/paye/${nino.nino}/car-benefits/2017"
-        sut.ninoVersionUrl(nino) mustBe s"/paye/${nino.nino}/version"
-        sut.removeCarBenefitUrl(nino, TaxYear(2017), 1, 2) mustBe s"/paye/${nino.nino}/benefits/2017/1/car/2/remove"
+        payeUrls.carBenefitsForYearUrl(nino, TaxYear(2017)) mustBe s"/paye/${nino.nino}/car-benefits/2017"
+        payeUrls.ninoVersionUrl(nino) mustBe s"/paye/${nino.nino}/version"
+        payeUrls.removeCarBenefitUrl(nino, TaxYear(2017), 1, 2) mustBe s"/paye/${nino.nino}/benefits/2017/1/car/2/remove"
       }
     }
   }
@@ -76,10 +76,10 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = new FileUploadUrls(mockConfig)
+        val fileUploadUrls = new FileUploadUrls(mockConfig)
 
-        sut.envelopesUrl mustBe "/file-upload/envelopes"
-        sut.routingUrl mustBe "/file-routing/requests"
+        fileUploadUrls.envelopesUrl mustBe "/file-upload/envelopes"
+        fileUploadUrls.routingUrl mustBe "/file-routing/requests"
       }
 
       "given argument values" in {
@@ -89,9 +89,9 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.frontendBaseURL)
           .thenReturn("")
 
-        val sut = new FileUploadUrls(mockConfig)
+        val fileUploadUrls = new FileUploadUrls(mockConfig)
 
-        sut.fileUrl("123-123", "xml") mustBe "/file-upload/upload/envelopes/123-123/files/xml"
+        fileUploadUrls.fileUrl("123-123", "xml") mustBe "/file-upload/upload/envelopes/123-123/files/xml"
       }
     }
   }
@@ -103,9 +103,9 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = new CitizenDetailsUrls(mockConfig)
+        val citizenDetailsUrls = new CitizenDetailsUrls(mockConfig)
 
-        sut.designatoryDetailsUrl(nino) mustBe s"/citizen-details/${nino.nino}/designatory-details"
+        citizenDetailsUrls.designatoryDetailsUrl(nino) mustBe s"/citizen-details/${nino.nino}/designatory-details"
       }
     }
   }
@@ -117,9 +117,9 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfig.baseURL)
           .thenReturn("")
 
-        val sut = new BbsiUrls(mockConfig)
+        val bbsiUrls = new BbsiUrls(mockConfig)
 
-        sut.bbsiUrl(nino, TaxYear(2017)) mustBe
+        bbsiUrls.bbsiUrl(nino, TaxYear(2017)) mustBe
           s"/pre-population-of-investment-income/nino/${nino.nino.take(8)}/tax-year/2017"
       }
     }
@@ -136,10 +136,10 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         when(mockConfigDes.baseURL)
           .thenReturn("")
 
-        val sut = new TaxAccountUrls(mockConfigNps, mockConfigDes)
+        val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
 
-        sut.taxAccountUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
-        sut.taxAccountUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+        taxAccountUrls.taxAccountUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
+        taxAccountUrls.taxAccountUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
       }
     }
   }
@@ -147,23 +147,31 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   "IabdUrls" must {
     "return the correct urls" when {
       "given argument values" in {
-        val mockConfig = mock[NpsConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
+        val mockConfigNps = mock[NpsConfig]
+        val mockConfigDes = mock[DesConfig]
 
-        val sut = new IabdUrls(mockConfig)
-        sut.iabdUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
+        when(mockConfigNps.baseURL).thenReturn("")
+        when(mockConfigDes.baseURL).thenReturn("")
+
+        val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+
+        iabdUrls.npsIabdUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
+        iabdUrls.desIabdUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017"
       }
     }
 
     "return the correct iabd employment url" when {
       "given argument values" in {
-        val mockConfig = mock[NpsConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
+        val mockConfigNps = mock[NpsConfig]
+        val mockConfigDes = mock[DesConfig]
 
-        val sut = new IabdUrls(mockConfig)
-        sut.iabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
+        when(mockConfigNps.baseURL).thenReturn("")
+        when(mockConfigDes.baseURL).thenReturn("")
+
+        val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+
+        iabdUrls.npsIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
+        iabdUrls.desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
       }
     }
   }

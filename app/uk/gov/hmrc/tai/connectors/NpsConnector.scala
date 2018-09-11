@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
-import uk.gov.hmrc.tai.model.GateKeeperRule
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
@@ -41,7 +41,7 @@ import scala.concurrent.Future
 class NpsConnector @Inject()(metrics: Metrics,
                              httpClient: HttpClient,
                              auditor: Auditor,
-                             formats: NpsIabdUpdateAmountFormats,
+                             formats: IabdUpdateAmountFormats,
                              config: NpsConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
   override val originatorId = config.originatorId
@@ -82,12 +82,12 @@ class NpsConnector @Inject()(metrics: Metrics,
   }
 
   def updateEmploymentData(nino: Nino, year: Int, iabdType: Int, version: Int,
-                           updateAmounts: List[NpsIabdUpdateAmount],
+                           updateAmounts: List[IabdUpdateAmount],
                            apiType: APITypes = APITypes.NpsIabdUpdateEstPayAutoAPI)
                           (implicit hc: HeaderCarrier): Future[HttpResponse] = {
     if (updateAmounts.nonEmpty) {
       val postUrl = npsPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToNps[List[NpsIabdUpdateAmount]](postUrl, apiType, updateAmounts)(extraNpsHeaders(hc, version, sessionOrUUID), formats.formatList)
+      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(extraNpsHeaders(hc, version, sessionOrUUID), formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }

@@ -204,13 +204,13 @@ class TaiService @Inject()(rti: RtiConnector,
 
     val updatedEmployments = editEmployments.newAmounts.filter(x => x.newAmount != x.oldAmount)
 
-    val editedAmounts: List[NpsIabdUpdateAmount] = updatedEmployments.map(employment => getIadbUpdateAmount(employment))
+    val editedAmounts: List[IabdUpdateAmount] = updatedEmployments.map(employment => getIadbUpdateAmount(employment))
 
     if (editedAmounts.nonEmpty) {
       Logger.info("Manual Update for User: " + nino.nino)
       cid.getPersonDetails(nino).flatMap { personDetails =>
 
-        val editedAmounts: List[NpsIabdUpdateAmount] = updatedEmployments.map(employment => getIadbUpdateAmount(employment))
+        val editedAmounts: List[IabdUpdateAmount] = updatedEmployments.map(employment => getIadbUpdateAmount(employment))
         val refreshedVersion = personDetails.etag.toInt
 
         val updateEmpData = featureTogglesConfig.desUpdateEnabled match {
@@ -249,9 +249,9 @@ class TaiService @Inject()(rti: RtiConnector,
     }
   }
 
-  private[service] def getIadbUpdateAmount(employment: EmploymentAmount): NpsIabdUpdateAmount = {
+  private[service] def getIadbUpdateAmount(employment: EmploymentAmount): IabdUpdateAmount = {
     val source: Option[Int] =  npsConfig.autoUpdatePayEnabled.collect{case true => IabdUpdateSourceCustomerEntered}
-    NpsIabdUpdateAmount(employmentSequenceNumber = employment.employmentId, grossAmount = employment.newAmount, source = source)
+    IabdUpdateAmount(employmentSequenceNumber = employment.employmentId, grossAmount = employment.newAmount, source = source)
   }
 
 

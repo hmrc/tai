@@ -24,9 +24,9 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
-import uk.gov.hmrc.tai.model.RtiCalc
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, RtiCalc}
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot, NpsIabdUpdateAmount}
+import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot}
 import uk.gov.hmrc.tai.model.nps2.Income.Live
 import uk.gov.hmrc.tai.model.nps2.{IabdType, Income}
 import uk.gov.hmrc.tai.model.rti.PayFrequency._
@@ -113,7 +113,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
 
   }
 
-  private[service] def getCeasedIncomeFinalSalaries(employments: List[NpsEmployment], estimatedPays: List[NpsIabdRoot]): List[NpsIabdUpdateAmount] = {
+  private[service] def getCeasedIncomeFinalSalaries(employments: List[NpsEmployment], estimatedPays: List[NpsIabdRoot]): List[IabdUpdateAmount] = {
 
     def isCeasedEmploymentWithCessationPay(x: NpsEmployment): Boolean =
       !x.employmentStatus.contains(Live.code) &&
@@ -124,7 +124,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     employments
       .filter(isCeasedEmploymentWithCessationPay)
       .map { employment =>
-        NpsIabdUpdateAmount(
+        IabdUpdateAmount(
           employmentSequenceNumber = employment.sequenceNumber,
           source = Some(IabdUpdateSourceInternetCalculated),
           grossAmount = employment.cessationPayThisEmployment.map(_.intValue).getOrElse(0)
@@ -151,7 +151,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
                                           employments: List[NpsEmployment],
                                           rtiDataIn: Option[RtiData]
                                           )(implicit hc: HeaderCarrier):
-  (List[NpsIabdUpdateAmount], List[NpsIabdUpdateAmount], List[RtiCalc]) = {
+  (List[IabdUpdateAmount], List[IabdUpdateAmount], List[RtiCalc]) = {
 
     val rtiData = if (employments.isEmpty) {
       None
@@ -192,26 +192,26 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
   }
 
   private[service] def getUpdateAmounts(sequenceNo: Int, calEstPayCY: Option[BigDecimal], calcEstPayNY: Option[BigDecimal]):
-    (Option[NpsIabdUpdateAmount], Option[NpsIabdUpdateAmount]) = {
+    (Option[IabdUpdateAmount], Option[IabdUpdateAmount]) = {
 
     (npsConfig.updateSourceEnabled, calEstPayCY, calcEstPayNY) match {
       case (Some(true), Some(estPayCY), Some(estPayNY)) =>
-        (Some(NpsIabdUpdateAmount(
+        (Some(IabdUpdateAmount(
           employmentSequenceNumber = sequenceNo,
           grossAmount = estPayCY.intValue(),
           source = Some(IabdUpdateSourceInternetCalculated)
-        )), Some(NpsIabdUpdateAmount(
+        )), Some(IabdUpdateAmount(
           employmentSequenceNumber = sequenceNo,
           grossAmount = estPayNY.intValue(),
           source = Some(IabdUpdateSourceInternetCalculated)
         )))
 
       case (_, Some(estPayCY), Some(estPayNY)) =>
-        (Some(NpsIabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())),
-          Some(NpsIabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayNY.intValue())))
+        (Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())),
+          Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayNY.intValue())))
 
       case (_, Some(estPayCY), None) =>
-        (Some(NpsIabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())), None)
+        (Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())), None)
 
       case _ => (None, None)
     }
@@ -383,9 +383,9 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
   }
 
   def updateEmploymentData(nino: Nino, taxYear: Int,
-                           ceasedUpdated: List[NpsIabdUpdateAmount],
-                           currentYearUpdated: List[NpsIabdUpdateAmount],
-                           nextYearUpdated: List[NpsIabdUpdateAmount],
+                           ceasedUpdated: List[IabdUpdateAmount],
+                           currentYearUpdated: List[IabdUpdateAmount],
+                           nextYearUpdated: List[IabdUpdateAmount],
                            rtiCalcs: List[RtiCalc],
                            version: Int,
                            iabdPays: List[NpsIabdRoot])

@@ -59,7 +59,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.companyCarBenefits(nino), 5 seconds) mustBe Seq.empty[CompanyCarBenefit]
+        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe Seq.empty[CompanyCarBenefit]
       }
     }
 
@@ -83,7 +83,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector],mockCodingComponentService)
-        Await.result(sut.companyCarBenefits(nino), 5 seconds) mustBe  result
+        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe  result
 
       }
 
@@ -106,7 +106,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector], mockCodingComponentService)
-        Await.result(sut.companyCarBenefits(nino), 5 seconds) mustBe result
+        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe result
       }
     }
 
@@ -130,7 +130,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector],mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11), 5 seconds) mustBe None
+        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe None
       }
 
       "the repository returned sequence of companyCarBenefit with one matching employment sequence number" in {
@@ -152,7 +152,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector],mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 12), 5 seconds) mustBe Some(result.head)
+        Await.result(sut.companyCarBenefitForEmployment(nino, 12)(hc), 5 seconds) mustBe Some(result.head)
       }
 
       "the repository returned sequence of multiple companyCarBenefits with one matching employment sequence number" in {
@@ -177,7 +177,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector],mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11), 5 seconds) mustBe Some(result.last)
+        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe Some(result.last)
       }
 
       "the repository returned sequence of multiple companyCarBenefits with multiple matching employment sequence numbers" in {
@@ -205,7 +205,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(mock[TaxAccountService], mockCompanyCarBenefitRepository, mock[CompanyCarConnector],mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11), 5 seconds) mustBe Some(result.head)
+        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe Some(result.head)
       }
     }
   }
@@ -230,7 +230,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(expectedResult))
 
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
-        Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel), 5 seconds) mustBe expectedResult
+        Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
 
         verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
@@ -248,7 +248,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponentsWithoutBenefits))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).otherBenefits mustBe Seq.empty[GenericBenefit]
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).otherBenefits mustBe Seq.empty[GenericBenefit]
       }
     }
     "return all types of other benefits" when {
@@ -270,7 +270,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).otherBenefits mustBe
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).otherBenefits mustBe
           createGenericBenefitList(allBenefitTypesExceptCompanyCar)
       }
     }
@@ -287,7 +287,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           thenReturn(Future.successful(taxFreeAmountComponents))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).companyCarBenefits mustBe Seq.empty[CompanyCarBenefit]
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe Seq.empty[CompanyCarBenefit]
       }
     }
 
@@ -310,7 +310,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).companyCarBenefits mustBe
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
       }
 
@@ -333,7 +333,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).companyCarBenefits mustBe
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
       }
     }
@@ -373,7 +373,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear()), 5 seconds).companyCarBenefits mustBe
+        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
           Seq(
             CompanyCarBenefit(12, 200, Seq(
               CompanyCar(12, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")), None, None)),
@@ -405,7 +405,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .sendDataEvent(any(), any(), any(), any())(any())
 
         val sut = createSUT(mock[TaxAccountService], mock[CompanyCarBenefitRepository], mock[CompanyCarConnector], mock[CodingComponentService], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-        val result = Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit), 5 seconds)
+        val result = Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds)
 
         result mustBe "1"
       }
@@ -434,7 +434,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         .sendDataEvent(any(), any(), any(), any())(any())
 
       val sut = createSUT(mock[TaxAccountService], mock[CompanyCarBenefitRepository], mock[CompanyCarConnector], mock[CodingComponentService], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-      Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit), 5 seconds) mustBe "1"
+      Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.RemoveCompanyBenefitAuditTxnName), any(), any(),
         Matchers.eq(map))(any())
