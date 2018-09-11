@@ -95,7 +95,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
     hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
   }
 
-  private def createHeader = HeaderCarrier(extraHeaders =
+  val createHeader = HeaderCarrier(extraHeaders =
     Seq(
       "Environment" -> desConfig.environment,
       "Authorization" -> desConfig.authorization,

@@ -59,7 +59,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
     }
 
-    "return an error status when amount can't be updated" when {
+    "return an error status when amount can't be updated" in {
 
       val mockConnector = mock[TaxAccountConnector]
 
@@ -74,7 +74,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
     }
 
-    "update income" when {
+    "update income" in {
       val mockConnector = mock[TaxAccountConnector]
 
       when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateSuccess))
@@ -87,7 +87,7 @@ class TaxAccountRepositorySpec extends PlaySpec
       result mustBe HodUpdateSuccess
     }
 
-    "return an error status when income can't be updated" when {
+    "return an error status when income can't be updated" in {
       val mockConnector = mock[TaxAccountConnector]
 
       when(mockConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateFailure))
