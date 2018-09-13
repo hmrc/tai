@@ -18,7 +18,7 @@ Tax Code Change
 ```json
 {
   "data" : {
-    "current": {
+    "current": [{
       "taxCode": "830L",
       "employerName": "Employer Name",
       "operatedTaxCode": true,
@@ -28,8 +28,8 @@ Tax Code Change
       "payrollNumber": "1",
       "pensionIndicator": true,
       "primary": true
-    },
-    "previous": {
+    }],
+    "previous": [{
       "taxCode": "1150L",
       "employerName": "Employer Name",
       "operatedTaxCode": true,
@@ -39,7 +39,7 @@ Tax Code Change
       "payrollNumber": "1",
       "pensionIndicator": true,
       "primary": true
-    }
+    }]
   },
   "links" : [ ]
 }
