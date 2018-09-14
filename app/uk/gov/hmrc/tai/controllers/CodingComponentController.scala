@@ -17,10 +17,12 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
@@ -40,6 +42,12 @@ class CodingComponentController @Inject()(authentication: AuthenticationPredicat
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
         Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
+      } recover {
+        case e: BadRequestException ⇒
+          Logger.warn(s"BadRequestException on codingComponentsForYear: ${e.getMessage}")
+          BadRequest(Json.toJson(Map("reason" → e.getMessage)))
+        case e: Throwable ⇒
+          throw e
       }
     }
 }
