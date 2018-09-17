@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
@@ -88,6 +88,32 @@ class CodingComponentControllerSpec
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
+      }
+    }
+
+    "throw an exception" when {
+      "an exception is thrown by the handler which is not a BadRequestException" in {
+        val mockCodingComponentService = mock[CodingComponentService]
+        val sut = createSUT(mockCodingComponentService)
+        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new NotFoundException("")))
+
+        intercept[NotFoundException] {
+          await(sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()))
+        }
+      }
+    }
+
+    "return a bad request" when {
+      "a BadRequestException is thrown" in {
+        val mockCodingComponentService = mock[CodingComponentService]
+        val sut = createSUT(mockCodingComponentService)
+        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new BadRequestException("bad request exception")))
+        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe 400
+        val expectedJson = """{"reason":"bad request exception"}"""
+        contentAsString(result) mustBe expectedJson
       }
     }
   }
