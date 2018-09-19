@@ -4,15 +4,18 @@ import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+
 
 trait MicroService {
 
   import uk.gov.hmrc._
   import DefaultBuildSettings._
-  import TestPhases._
-  val appName: String
   import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
   import uk.gov.hmrc.SbtAutoBuildPlugin
+  import uk.gov.hmrc.SbtArtifactory
+
+  val appName: String
 
   lazy val appDependencies : Seq[ModuleID] = ???
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
@@ -38,7 +41,7 @@ trait MicroService {
   }
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+    .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
     .settings(playSettings ++ scoverageSettings : _*)
     .settings(publishingSettings: _*)
     .settings(
@@ -47,23 +50,24 @@ trait MicroService {
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       routesGenerator := InjectedRoutesGenerator
     )
-    .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
+    .settings(inConfig(ITTestPhases.TemplateTest)(Defaults.testSettings): _*)
     .configs(IntegrationTest)
-    .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
+    .settings(inConfig(ITTestPhases.TemplateItTest)(Defaults.itSettings): _*)
     .settings(
       Keys.fork in IntegrationTest := false,
       unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-      testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+      testGrouping in IntegrationTest := ITTestPhases.oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
     .settings(
       resolvers += Resolver.jcenterRepo,
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint"),
       routesImport += "scala.language.reflectiveCalls"
     )
+    .settings(majorVersion := 0)
 
 }
 
-private object TestPhases {
+private object ITTestPhases {
 
   val allPhases = "tt->test;test->test;test->compile;compile->compile"
   val allItPhases = "tit->it;it->it;it->compile;compile->compile"
