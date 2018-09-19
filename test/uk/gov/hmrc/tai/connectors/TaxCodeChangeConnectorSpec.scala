@@ -23,7 +23,7 @@ import org.joda.time.LocalDate
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.{JsNull, JsString, JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -55,8 +55,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
         val expectedJsonResponse =
           Json.obj("nino" -> testNino.nino,
-                   "taxCodeRecord" -> Seq(taxCodeHistoryJson(payrollNumber = Some(payrollNumber1), employmentType = "PRIMARY"),
-                                          taxCodeHistoryJson(payrollNumber = Some(payrollNumber2))))
+            "taxCodeRecord" -> Seq(taxCodeHistoryJson(payrollNumber = Some(payrollNumber1), employmentType = "PRIMARY"),
+              taxCodeHistoryJson(payrollNumber = Some(payrollNumber2))))
 
 
         server.stubFor(
@@ -112,19 +112,76 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         s"${path.getPath}"
       }
 
-      val expectedJsonResponse = Json.obj("nino" -> testNino.nino)
-
-
-      server.stubFor(
-        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+      val incomeSource1 = Json.obj(
+        "employmentId" -> 3,
+        "employmentType" -> 1,
+        "employmentStatus" -> 1,
+        "employmentTaxDistrictNumber" -> 754,
+        "employmentPayeRef" -> "employmentPayeRef",
+        "pensionIndicator" -> false,
+        "otherIncomeSourceIndicator" -> false,
+        "jsaIndicator" -> false,
+        "name" -> "incomeSourceName",
+        "taxCode" -> "1035L",
+        "basisOperation" -> 1,
+        "potentialUnderpayment" -> JsNull,
+        "totalInYearAdjustment" -> 0,
+        "inYearAdjustmentIntoCY" -> 0,
+        "inYearAdjustmentIntoCYPlusOne" -> 0,
+        "inYearAdjustmentFromPreviousYear" -> 0,
+        "actualPUPCodedInCYPlusOneTaxYear" -> 0,
+        "allowances" -> Json.arr(),
+        "deductions" -> Json.arr(),
+        "payAndTax" -> Json.obj()
       )
 
-      val result = Await.result(connector().iabdDetails(testNino, taxCodeId), 5.seconds)
 
-      result mustEqual expectedJsonResponse
+      val taxAccountHistory = Json.obj(
+        "taxAccountId" -> 7,
+        "date" -> "02/08/2018",
+        "nino" -> testNino.toString,
+        "noCYEmployment" -> false,
+        "taxYear" -> 2018,
+        "previousTaxAccountId" -> 6,
+        "previousYearTaxAccountId" -> 1,
+        "nextTaxAccountId" -> JsNull,
+        "nextYearTaxAccountId" -> JsNull,
+        "totalEstTax" -> 16956,
+        "inYearCalcResult" -> 1,
+        "inYearCalcAmount" -> 0,
+        "incomeSources" -> Json.arr(
+          incomeSource1
+        )
+      )
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(taxAccountHistory.toString))
+      )
+
+      val expectedResult = TaxAccountDetails(
+        7,
+        "02/08/2018",
+        testNino,
+        false,
+        TaxYear(2018),
+        6,
+        1,
+        None,
+        None,
+        16956,
+        1,
+        0,
+        Seq.empty
+      )
+
+
+      val result = Await.result(connector().taxAccountHistory(testNino, taxCodeId), 5.seconds)
+
+      result mustEqual expectedResult
     }
 
   }
+
   private def taxCodeHistoryJson(taxCode: String = "1185L",
                                  basisOfOperation: String = Cumulative,
                                  employerName: String = "Employer 1",
@@ -136,18 +193,18 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
                                  employmentType: String = "SECONDARY"): JsValue = {
 
     val withOutPayroll = Json.obj("taxCode" -> taxCode,
-                                  "basisOfOperation" -> basisOfOperation,
-                                  "employerName" -> employerName,
-                                  "operatedTaxCode" -> operatedTaxCode,
-                                  "p2Issued" -> p2Issued,
-                                  "dateOfCalculation" -> dateOfCalculation,
-                                  "pensionIndicator" -> pensionIndicator,
-                                  "employmentType" -> employmentType)
+      "basisOfOperation" -> basisOfOperation,
+      "employerName" -> employerName,
+      "operatedTaxCode" -> operatedTaxCode,
+      "p2Issued" -> p2Issued,
+      "dateOfCalculation" -> dateOfCalculation,
+      "pensionIndicator" -> pensionIndicator,
+      "employmentType" -> employmentType)
 
 
     if (payrollNumber.isDefined) {
       withOutPayroll + ("payrollNumber" -> JsString(payrollNumber.get))
-    } else{
+    } else {
       withOutPayroll
     }
   }
@@ -169,6 +226,6 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
   private def randomInt(maxDigits: Int = 5): Int = {
     import scala.math.pow
     val random = new Random
-    random.nextInt(pow(10,maxDigits).toInt)
+    random.nextInt(pow(10, maxDigits).toInt)
   }
 }
