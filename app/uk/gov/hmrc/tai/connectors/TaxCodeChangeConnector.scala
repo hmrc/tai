@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -51,6 +52,10 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
   def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
     getFromDes[TaxCodeHistory](url,APITypes.TaxCodeChangeAPI).map(_._1)
+  }
+
+  def iabdDetails(nino: Nino, taxCodeId: Int) = {
+    Future.successful(Json.obj())
   }
 }
 

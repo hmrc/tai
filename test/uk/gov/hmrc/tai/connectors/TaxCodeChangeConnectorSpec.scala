@@ -63,8 +63,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
           get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
         )
 
-        val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        val result = Await.result(connector().taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
           TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
@@ -92,8 +91,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
           get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
         )
 
-        val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        val result = Await.result(connector().taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
           TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "PRIMARY"),
@@ -104,6 +102,29 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
     }
   }
 
+  "iabdDetails" must {
+    "returns the json" in {
+      val testNino = randomNino
+      val taxCodeId = 1
+
+      val url = {
+        val path = new URL(urlConfig.taxAccountHistoricSnapshotUrl(testNino, taxCodeId))
+        s"${path.getPath}"
+      }
+
+      val expectedJsonResponse = Json.obj("nino" -> testNino.nino)
+
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+      )
+
+      val result = Await.result(connector().iabdDetails(testNino, taxCodeId), 5.seconds)
+
+      result mustEqual expectedJsonResponse
+    }
+
+  }
   private def taxCodeHistoryJson(taxCode: String = "1185L",
                                  basisOfOperation: String = Cumulative,
                                  employerName: String = "Employer 1",
@@ -133,7 +154,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
   lazy val urlConfig = injector.instanceOf[TaxCodeChangeUrl]
 
-  private def createSut(metrics: Metrics = injector.instanceOf[Metrics],
+  private def connector(metrics: Metrics = injector.instanceOf[Metrics],
                         httpClient: HttpClient = injector.instanceOf[HttpClient],
                         auditor: Auditor = injector.instanceOf[Auditor],
                         config: DesConfig = injector.instanceOf[DesConfig],
