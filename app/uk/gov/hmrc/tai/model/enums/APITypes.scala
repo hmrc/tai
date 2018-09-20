@@ -40,6 +40,7 @@ object APITypes extends Enumeration {
   val FusCloseEnvelope = Value
   val BbsiAPI = Value
   val TaxCodeChangeAPI = Value
+  val TaxAccountHistoryAPI = Value
 }
 
 object BasisOperation extends Enumeration {

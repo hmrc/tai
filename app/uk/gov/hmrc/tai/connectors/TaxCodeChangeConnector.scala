@@ -50,6 +50,8 @@ case class TaxAccountDetails(taxAccountId: Int,
                              // totalLiability: JsObject,
                              incomeSources: Seq[IncomeSources])
 
+
+
 case class IncomeSources(employmentId: Int,
                           employmentType: Int,
                           employmentStatus: Int,
@@ -76,7 +78,7 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
                                        config: DesConfig,
-                                       taxCodeChangeUrl: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
+                                       urlConfig: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = config.originatorId
 
@@ -90,12 +92,15 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
   }
 
   def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
-    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
+    val url = urlConfig.taxCodeChangeUrl(nino, from, to)
     getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI).map(_._1)
   }
 
   def taxAccountHistory(nino: Nino, taxCodeId: Int): Future[TaxAccountDetails] = {
-    Future.successful(???)
+    getFromDes[TaxAccountDetails](
+      urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId),
+      APITypes.TaxAccountHistoryAPI
+    )(header, ???)
   }
 }
 
