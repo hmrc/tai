@@ -112,6 +112,42 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         s"${path.getPath}"
       }
 
+      
+      
+      val allowance = Json.obj(
+        "npsDescription" -> "personal allowance",
+        "amount" -> 8105,
+        "type" -> 11,
+        "iabdSummaries" ->Json.arr(
+          Json.obj(
+            "amount" -> 8105,
+            "type" -> 118,
+            "npsDescription" -> "Personal Allowance (PA)",
+            "employmentId" -> 1,
+            "defaultEstimatedPay" -> JsNull,
+            "estimatedPaySource" -> JsNull
+          )
+        ),
+        "sourceAmount" -> 8105
+      )
+
+      val deduction = Json.obj(
+        "npsDescription" -> "personal allowance",
+        "amount" -> 105,
+        "type" -> 18,
+        "iabdSummaries" ->Json.arr(
+          Json.obj(
+            "amount" -> 105,
+            "type" -> 18,
+            "npsDescription" -> "deduction",
+            "employmentId" -> JsNull,
+            "defaultEstimatedPay" -> JsNull,
+            "estimatedPaySource" -> JsNull
+          )
+        ),
+        "sourceAmount" -> 105
+      )
+
       val incomeSource1 = Json.obj(
         "employmentId" -> 3,
         "employmentType" -> 1,
@@ -130,7 +166,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "inYearAdjustmentIntoCYPlusOne" -> 0,
         "inYearAdjustmentFromPreviousYear" -> 0,
         "actualPUPCodedInCYPlusOneTaxYear" -> 0,
-        "allowances" -> Json.arr(),
+        "allowances" -> Json.arr(allowance),
         "deductions" -> Json.arr(),
         "payAndTax" -> Json.obj()
       )
@@ -158,37 +194,13 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         get(urlEqualTo(url)).willReturn(ok(taxAccountHistory.toString))
       )
 
-      val expectedResult = TaxAccountDetails(
-        7,
-        "02/08/2018",
-        testNino,
-        false,
-        TaxYear(2018),
-        6,
-        1,
-        None,
-        None,
-        16956,
-        1,
-        0,
-        List(IncomeSources(3,1,1,754,
-          "employmentPayeRef",
-          false,
-          false,
-          false,
-          "incomeSourceName",
-          "1035L",
-          1,
-          None,
-          0,
-          0,
-          0,
-          0,
-          0,
-          List(),
-          List(),
-          Json.obj()))
-      )
+      val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+                                None, 0, 0, 0, 0, 0, List(),
+                        //        List(),
+                                Json.obj())
+
+      val expectedResult = TaxAccountDetails(7, "02/08/2018", testNino, false, TaxYear(2018),
+                                             6, 1, None, None, 16956, 1, 0, List(income))
 
 
       val result = Await.result(connector().taxAccountHistory(testNino, taxCodeId), 5.seconds)

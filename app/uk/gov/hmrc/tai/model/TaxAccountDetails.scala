@@ -40,4 +40,5 @@ case class TaxAccountDetails(taxAccountId: Int,
 object TaxAccountDetails {
 
   implicit val formats = Json.format[TaxAccountDetails]
+
 }
