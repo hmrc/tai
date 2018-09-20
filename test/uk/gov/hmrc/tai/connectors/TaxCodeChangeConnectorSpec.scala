@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.{IncomeSources, TaxAccountDetails, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
 
 import scala.concurrent.Await
@@ -171,7 +171,23 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         16956,
         1,
         0,
-        Seq.empty
+        List(IncomeSources(3,1,1,754,
+          "employmentPayeRef",
+          false,
+          false,
+          false,
+          "incomeSourceName",
+          "1035L",
+          1,
+          None,
+          0,
+          0,
+          0,
+          0,
+          0,
+          List(),
+          List(),
+          Json.obj()))
       )
 
 

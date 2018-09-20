@@ -18,61 +18,18 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.{TaxAccountDetails, TaxCodeHistory}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
-
-// TODO: Move to package for model (api?)
-case class TaxAccountDetails(taxAccountId: Int,
-                             date: String,
-                             nino: Nino,
-                             noCYEmployment: Boolean,
-                             taxYear: TaxYear,
-                             previousTaxAccountId: Int,
-                             previousYearTaxAccountId: Int,
-                             nextTaxAccountId: Option[Int],
-                             nextYearTaxAccountId: Option[Int],
-                             totalEstTax: Int,
-                             // totalEstPay: JsObject,
-                             inYearCalcResult: Int,
-                             inYearCalcAmount: Int,
-                             // adjustedNetIncome: JsObject,
-                             // totalLiability: JsObject,
-                             incomeSources: Seq[IncomeSources])
-
-
-
-case class IncomeSources(employmentId: Int,
-                          employmentType: Int,
-                          employmentStatus: Int,
-                          employmentTaxDistrictNumber: Int,
-                          employmentPayeRef: String,
-                          pensionIndicator: Boolean,
-                          otherIncomeSourceIndicator: Boolean,
-                          jsaIndicator: Boolean,
-                          name: String,
-                          taxCode: String,
-                          basisOperation: Int,
-                          potentialUnderpayment: Option[Int],
-                          totalInYearAdjustment: Int,
-                          inYearAdjustmentIntoCY: Int,
-                          inYearAdjustmentIntoCYPlusOne: Int,
-                          inYearAdjustmentFromPreviousYear: Int,
-                          actualPUPCodedInCYPlusOneTaxYear: Int,
-                          allowances: Seq[JsObject],
-                          deductions: Seq[JsObject],
-                          payAndTax: JsObject)
-
 
 class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
@@ -97,10 +54,8 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
   }
 
   def taxAccountHistory(nino: Nino, taxCodeId: Int): Future[TaxAccountDetails] = {
-    getFromDes[TaxAccountDetails](
-      urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId),
-      APITypes.TaxAccountHistoryAPI
-    )(header, ???)
+    val url = urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)
+    getFromDes[TaxAccountDetails](url, APITypes.TaxAccountHistoryAPI).map(_._1)
   }
 }
 
