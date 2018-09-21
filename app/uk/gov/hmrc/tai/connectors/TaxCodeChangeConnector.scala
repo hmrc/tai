@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.{Format, JsObject, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -30,6 +31,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
+import scala.util.Try
 
 class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
@@ -53,9 +55,10 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
     getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI).map(_._1)
   }
 
-  def taxAccountHistory(nino: Nino, taxCodeId: Int): Future[TaxAccountDetails] = {
+  def taxAccountHistory(nino: Nino, taxCodeId: Int): Future[Try[TaxAccountDetails]] = {
     val url = urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)
-    getFromDes[TaxAccountDetails](url, APITypes.TaxAccountHistoryAPI).map(_._1)
+
+    getFromDes[JsObject](url, APITypes.TaxAccountHistoryAPI).map(x => Try(x._1.as[TaxAccountDetails]))
   }
 }
 
