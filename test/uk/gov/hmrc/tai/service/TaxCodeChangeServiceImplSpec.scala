@@ -56,8 +56,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been a tax code change after Annual Coding where Annual coding was before start of tax year" in {
@@ -75,8 +74,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been a change in job with a different tax code after Annual Coding" in {
@@ -95,8 +93,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been more than one daily tax code change in the year" in {
@@ -117,8 +114,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
       }
 
@@ -144,8 +140,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been more than one daily tax code change in the year for 1 employment to 2 employments" in {
@@ -165,8 +160,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been more than one daily tax code change in the year for 2 employments to 1 employment" in {
@@ -186,8 +180,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
 
         "there has been a tax code change after Annual Coding for 2 employments to 2 employments" in {
@@ -208,8 +201,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual true
         }
       }
     }
@@ -229,8 +221,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
 
         "there has been one tax code change in the year but it has not been operated" in {
@@ -248,8 +239,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
 
         "there has not been a tax code change in the year" in {
@@ -263,8 +253,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
 
         "there has not been a tax code change in the year and annual coding was done before the start of the tax year" in {
@@ -278,8 +267,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
       }
 
@@ -299,7 +287,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
+        val service: TaxCodeChangeServiceImpl = createService()
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
 
@@ -319,8 +307,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
 
         "there has not been a tax code change in the year (2 employments at Annual Coding)" in {
@@ -337,8 +324,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-          val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-          Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+          Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
         }
       }
 
@@ -349,8 +335,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+        Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
 
       "a JSExceptionResult is thrown by the connector" in {
@@ -358,8 +343,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.failed(JsResultException(Nil)))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-        Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
+        Await.result(createService().hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
     }
   }
@@ -392,11 +376,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been more than one daily tax code change in the year" in {
@@ -422,11 +404,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been three tax code changes in the year but the most recent tax code is not operated" in {
@@ -456,11 +436,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
 
@@ -494,11 +472,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2), Seq(expectedPreviousTaxCodeChange1, expectedPreviousTaxCodeChange2))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been a tax code change after Annual Coding for 1 employment to 2 employments" in {
@@ -527,11 +503,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2), Seq(expectedPreviousTaxCodeChange1))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been a tax code change after Annual Coding for 2 employments to 1 employment" in {
@@ -560,11 +534,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1), Seq(expectedPreviousTaxCodeChange1, expectedPreviousTaxCodeChange2))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been more than one daily tax code change in the year for 2 employments to 2 employments" in {
@@ -595,12 +567,11 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2),
           Seq(expectedPreviousTaxCodeChange1, expectedPreviousTaxCodeChange2))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been more than one daily tax code change in the year for 1 employment to 2 employments" in {
@@ -629,11 +600,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2), Seq(expectedPreviousTaxCodeChange1))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "there has been more than one daily tax code change in the year for 2 employments to 1 employment" in {
@@ -662,11 +631,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange1), Seq(expectedPreviousTaxCodeChange1, expectedPreviousTaxCodeChange2))
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
 
@@ -688,11 +655,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "this is the first ever employment" in {
@@ -710,11 +675,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
 
@@ -737,11 +700,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
 
       "this is the first ever employment (2 employments starting together)" in {
@@ -761,11 +722,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector)
-
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
 
-        Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
+        Await.result(createService().taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
   }

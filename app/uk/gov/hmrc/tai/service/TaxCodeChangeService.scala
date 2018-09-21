@@ -33,13 +33,6 @@ import scala.concurrent.Future
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
-  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
-    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
-    lazy val latestDate = calculationDates.min
-
-    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
-  }
-
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
@@ -98,6 +91,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
       }
     }
+  }
+
+  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
+    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
+    lazy val latestDate = calculationDates.min
+
+    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
