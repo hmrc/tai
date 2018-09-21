@@ -29,8 +29,8 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IncomeSources, TaxAccountDetails, TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
 
 import scala.concurrent.Await
@@ -103,7 +103,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
   }
 
   "iabdDetails" must {
-    "returns the json" in {
+    "returns TaxAccountDetails" in {
       val testNino = randomNino
       val taxCodeId = 1
 
@@ -114,7 +114,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
       
       
-      val allowance = Json.obj(
+      val allowanceJson = Json.obj(
         "npsDescription" -> "personal allowance",
         "amount" -> 8105,
         "type" -> 11,
@@ -131,7 +131,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "sourceAmount" -> 8105
       )
 
-      val deduction = Json.obj(
+      val deductionJson = Json.obj(
         "npsDescription" -> "personal allowance",
         "amount" -> 105,
         "type" -> 18,
@@ -140,7 +140,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
             "amount" -> 105,
             "type" -> 18,
             "npsDescription" -> "deduction",
-            "employmentId" -> JsNull,
+            "employmentId" -> 2,
             "defaultEstimatedPay" -> JsNull,
             "estimatedPaySource" -> JsNull
           )
@@ -148,7 +148,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "sourceAmount" -> 105
       )
 
-      val incomeSource1 = Json.obj(
+      val incomeSourceJson = Json.obj(
         "employmentId" -> 3,
         "employmentType" -> 1,
         "employmentStatus" -> 1,
@@ -166,13 +166,13 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "inYearAdjustmentIntoCYPlusOne" -> 0,
         "inYearAdjustmentFromPreviousYear" -> 0,
         "actualPUPCodedInCYPlusOneTaxYear" -> 0,
-        "allowances" -> Json.arr(allowance),
-        "deductions" -> Json.arr(),
+        "allowances" -> Json.arr(allowanceJson),
+        "deductions" -> Json.arr(deductionJson),
         "payAndTax" -> Json.obj()
       )
 
 
-      val taxAccountHistory = Json.obj(
+      val taxAccountHistoryJson = Json.obj(
         "taxAccountId" -> 7,
         "date" -> "02/08/2018",
         "nino" -> testNino.toString,
@@ -186,18 +186,22 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "inYearCalcResult" -> 1,
         "inYearCalcAmount" -> 0,
         "incomeSources" -> Json.arr(
-          incomeSource1
+          incomeSourceJson
         )
       )
 
       server.stubFor(
-        get(urlEqualTo(url)).willReturn(ok(taxAccountHistory.toString))
+        get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
       )
 
+      val iabdSummaryAllowance = TAHIabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
+      val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
+
+      val iabdSummaryDeduction = TAHIabdSummary(105, 18,"deduction", 2, None, None)
+      val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
+
       val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
-                                None, 0, 0, 0, 0, 0, List(),
-                        //        List(),
-                                Json.obj())
+                                None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
 
       val expectedResult = TaxAccountDetails(7, "02/08/2018", testNino, false, TaxYear(2018),
                                              6, 1, None, None, 16956, 1, 0, List(income))

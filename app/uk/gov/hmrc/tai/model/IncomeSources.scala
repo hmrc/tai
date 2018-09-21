@@ -16,82 +16,55 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.json.{Json, Format, JsObject}
 
 case class TAHIabdSummary(amount: Double,
-                           iabdType: Int,
+                           `type`: Int,
                            npsDescription: String,
                            employmentId: Int,
                            defaultEstimatedPay: Option[Boolean],
-                           estimatedPaySource: Int)
+                           estimatedPaySource: Option[Int])
 
 object TAHIabdSummary {
 
-  implicit val formatsIabdSummary = (
-      (JsPath \ "amount").read[Double] and
-      (JsPath \ "type").read[Int] and
-      (JsPath \ "npsDescription").read[String] and
-      (JsPath \ "employmentId").read[Int] and
-      (JsPath \ "defaultEstimatedPay").readNullable[Boolean] and
-      (JsPath \ "estimatedPaySource").read[Int]
-    )(TAHIabdSummary.apply _)
-
-  implicit val formatSeq = Json.reads[Seq[TAHIabdSummary]]
+  implicit val formatSeq: Format[TAHIabdSummary] = Json.format[TAHIabdSummary]
 
 }
 
 trait Iabd {
 
   def amount: Double
-
-  def iabdType: Int
-
+  def `type`: Int
   def npsDescription: String
-
   def iabdSummaries: Seq[TAHIabdSummary]
-
   def sourceAmount: Double
 
 }
 
 case class Allowance(npsDescription: String,
                      amount: Double,
-                     iabdType: Int,
+                     `type`: Int,
                      iabdSummaries: Seq[TAHIabdSummary],
-                     sourceAmount: Double) //extends Iabd
+                     sourceAmount: Double) extends Iabd
 
 
 object Allowance {
 
-//  implicit val formats: Format[Allowance] = Json.format[Allowance]
-
-//  implicit val formats = new Reads[Allowance] {
-//    def reads(js: JsValue): JsSuccess[Allowance] = JsSuccess(Allowance(
-//      (js \ "npsDescription").as[String],
-//      (js \ "amount").as[Double],
-//      (js \ "type").as[Int],
-//      (js \ "iabdSummaries").as[Seq[TAHIabdSummary]],
-//      (js \ "sourceAmount").as[Double]
-//    ))
-
-    implicit val formats = (
-      (JsPath \ "npsDescription").read[String] and
-        (JsPath \ "amount").read[Double] and
-        (JsPath \ "type").read[Int] and
-        (JsPath \ "iabdSummaries").read[Seq[TAHIabdSummary]] and
-        (JsPath \ "sourceAmount").read[Double]
-      )(Allowance.apply _)
-
+  implicit val format: Format[Allowance] = Json.format[Allowance]
 
 }
 
 case class Deduction(npsDescription: String,
                      amount: Double,
-                     iabdType: Int,
+                     `type`: Int,
                      iabdSummaries: Seq[TAHIabdSummary],
                      sourceAmount: Double) extends Iabd
 
+object Deduction {
+
+  implicit val format: Format[Deduction] = Json.format[Deduction]
+
+}
 
 case class IncomeSources(employmentId: Int,
                          employmentType: Int,
@@ -111,7 +84,7 @@ case class IncomeSources(employmentId: Int,
                          inYearAdjustmentFromPreviousYear: Int,
                          actualPUPCodedInCYPlusOneTaxYear: Int,
                          allowances: Seq[Allowance],
-//                         deductions: Seq[Deduction],
+                         deductions: Seq[Deduction],
                          payAndTax: JsObject)
 
 object IncomeSources {
