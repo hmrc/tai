@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api
 import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{RandomInt, TaxCodeHistoryConstants}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -90,16 +90,17 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
   "taxCodeChange" should {
     "return given nino's tax code history" in {
-
+      val taxCodeId = RandomInt(3)
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
+      val currentRecord = api.TaxCodeChangeRecord("b", taxCodeId, Cumulative, date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
+      val previousRecord = api.TaxCodeChangeRecord("a", taxCodeId, Cumulative, date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
       when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
           "current" -> Json.arr(Json.obj("taxCode" -> "b",
+                                  "taxCodeId" -> taxCodeId,
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
@@ -108,6 +109,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
                                   "pensionIndicator" -> false,
                                   "primary" -> true)),
           "previous" -> Json.arr(Json.obj("taxCode" -> "a",
+                                  "taxCodeId" -> taxCodeId,
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,

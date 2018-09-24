@@ -33,6 +33,8 @@ import uk.gov.hmrc.tai.model.des._
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
+import uk.gov.hmrc.tai.util.RandomInt
+import uk.gov.hmrc.tai.util.factory.TaxCodeRecordFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -46,18 +48,24 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       "payroll number is returned" in {
         val testNino = randomNino
         val taxYear = TaxYear(2017)
-        val payrollNumber1 = randomInt().toString()
-        val payrollNumber2 = randomInt().toString()
+        val payrollNumber1 = RandomInt().toString()
+        val payrollNumber2 = RandomInt().toString()
+
+        val taxCodeId1 = RandomInt(3)
+        val taxCodeId2 = RandomInt(3)
 
         val url = {
           val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
           s"${path.getPath}?${path.getQuery}"
         }
 
-        val expectedJsonResponse =
-          Json.obj("nino" -> testNino.nino,
-            "taxCodeRecord" -> Seq(taxCodeHistoryJson(payrollNumber = Some(payrollNumber1), employmentType = "PRIMARY"),
-              taxCodeHistoryJson(payrollNumber = Some(payrollNumber2))))
+        val expectedJsonResponse = Json.obj(
+          "nino" -> testNino.nino,
+          "taxCodeRecord" -> Seq(
+            TaxCodeRecordFactory.createJson(payrollNumber = Some(payrollNumber1), employmentType = "PRIMARY", taxCodeId = taxCodeId1),
+            TaxCodeRecordFactory.createJson(payrollNumber = Some(payrollNumber2), taxCodeId = taxCodeId2)
+          )
+        )
 
 
         server.stubFor(
@@ -67,14 +75,16 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val result = Await.result(connector().taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
-          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
-          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber2), pensionIndicator = false, "SECONDARY")
+          TaxCodeRecord("1185L", taxCodeId1, Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
+          TaxCodeRecord("1185L", taxCodeId2, Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), Some(payrollNumber2), pensionIndicator = false, "SECONDARY")
         ))
       }
 
       "payroll number is not returned" in {
         val testNino = randomNino
         val taxYear = TaxYear(2017)
+        val taxCodeId1 = RandomInt(3)
+        val taxCodeId2 = RandomInt(3)
 
         val url = {
           val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
@@ -82,8 +92,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         }
 
         val taxCodeRecord = Seq(
-          taxCodeHistoryJson(employmentType = "PRIMARY"),
-          taxCodeHistoryJson()
+          TaxCodeRecordFactory.createJson(employmentType = "PRIMARY", taxCodeId = taxCodeId1),
+          TaxCodeRecordFactory.createJson(taxCodeId = taxCodeId2)
         )
         val expectedJsonResponse = Json.obj("nino" -> testNino.nino, "taxCodeRecord" -> taxCodeRecord)
 
@@ -95,8 +105,8 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val result = Await.result(connector().taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(testNino.nino, Seq(
-          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "PRIMARY"),
-          TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "SECONDARY")
+          TaxCodeRecord("1185L", taxCodeId1, Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "PRIMARY"),
+          TaxCodeRecord("1185L", taxCodeId2, Cumulative, "Employer 1", operatedTaxCode = true, LocalDate.parse("2017-06-23"), None, pensionIndicator = false, "SECONDARY")
         ))
       }
 
@@ -318,33 +328,6 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
 
   }
 
-  private def taxCodeHistoryJson(taxCode: String = "1185L",
-                                 basisOfOperation: String = Cumulative,
-                                 employerName: String = "Employer 1",
-                                 operatedTaxCode: Boolean = true,
-                                 p2Issued: Boolean = true,
-                                 dateOfCalculation: String = "2017-06-23",
-                                 payrollNumber: Option[String] = None,
-                                 pensionIndicator: Boolean = false,
-                                 employmentType: String = "SECONDARY"): JsValue = {
-
-    val withOutPayroll = Json.obj("taxCode" -> taxCode,
-      "basisOfOperation" -> basisOfOperation,
-      "employerName" -> employerName,
-      "operatedTaxCode" -> operatedTaxCode,
-      "p2Issued" -> p2Issued,
-      "dateOfCalculation" -> dateOfCalculation,
-      "pensionIndicator" -> pensionIndicator,
-      "employmentType" -> employmentType)
-
-
-    if (payrollNumber.isDefined) {
-      withOutPayroll + ("payrollNumber" -> JsString(payrollNumber.get))
-    } else {
-      withOutPayroll
-    }
-  }
-
   lazy val urlConfig = injector.instanceOf[TaxCodeChangeUrl]
 
   private def connector(metrics: Metrics = injector.instanceOf[Metrics],
@@ -358,10 +341,5 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
   }
 
   private def randomNino: Nino = new Generator(new Random).nextNino
-
-  private def randomInt(maxDigits: Int = 5): Int = {
-    import scala.math.pow
-    val random = new Random
-    random.nextInt(pow(10, maxDigits).toInt)
-  }
+  
 }

@@ -20,6 +20,7 @@ Tax Code Change
   "data" : {
     "current": [{
       "taxCode": "830L",
+      "taxCodeId": 1,
       "employerName": "Employer Name",
       "operatedTaxCode": true,
       "p2Issued": true,
@@ -31,6 +32,7 @@ Tax Code Change
     }],
     "previous": [{
       "taxCode": "1150L",
+      "taxCodeId": 2,
       "employerName": "Employer Name",
       "operatedTaxCode": true,
       "p2Issued": true,

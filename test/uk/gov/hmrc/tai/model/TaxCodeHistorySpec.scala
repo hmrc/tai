@@ -20,7 +20,7 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{RandomInt, TaxCodeHistoryConstants}
 
 import scala.util.Random
 
@@ -31,19 +31,23 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
 
       val now = LocalDate.now()
       val nino = randomNino
-      val payrollNumber1 = randomInt().toString
-      val payrollNumber2 = randomInt().toString
+      val payrollNumber1 = RandomInt().toString
+      val payrollNumber2 = RandomInt().toString
 
+      val taxCodeId1 = RandomInt(3)
+      val taxCodeId2 = RandomInt(3)
 
       val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
-        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
+        TaxCodeRecord("tax code", taxCodeId1, Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
+        TaxCodeRecord("tax code", taxCodeId2, Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
       ))
 
       val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq(
-          Json.obj("taxCode" -> "tax code",
+          Json.obj(
+            "taxCode" -> "tax code",
+            "taxCodeId" -> taxCodeId1,
             "basisOfOperation" -> Cumulative,
             "employerName" -> "Employee 1",
             "operatedTaxCode" -> true,
@@ -51,7 +55,9 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
             "payrollNumber" -> payrollNumber1,
             "pensionIndicator" -> false,
             "employmentType" -> "PRIMARY"),
-          Json.obj("taxCode" -> "tax code",
+          Json.obj(
+            "taxCode" -> "tax code",
+            "taxCodeId" -> taxCodeId2,
             "basisOfOperation" -> Cumulative,
             "employerName" -> "Employee 1",
             "operatedTaxCode" -> true,
@@ -82,9 +88,4 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
 
   private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
 
-  private def randomInt(maxDigits: Int = 5): Int = {
-    import scala.math.pow
-    val random = new Random
-    random.nextInt(pow(10,maxDigits).toInt)
-  }
 }

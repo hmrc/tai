@@ -69,6 +69,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
         val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeChangeRecord(currentRecord.taxCode,
+          currentRecord.taxCodeId,
           currentRecord.basisOfOperation,
           currentRecord.dateOfCalculation,
           TaxYearResolver.endOfCurrentTaxYear,
@@ -78,6 +79,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
           currentRecord.isPrimary))
 
         val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeChangeRecord(previousRecord.taxCode,
+          previousRecord.taxCodeId,
           previousRecord.basisOfOperation,
           previousStartDate(previousRecord.dateOfCalculation),
           previousEndDate,
@@ -92,6 +94,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
       }
     }
+  }
+
+  def doAllTheIabdThings(nino: Nino) = {
+
   }
 
   def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[(Seq[IabdSummary], Seq[IabdSummary])] = {

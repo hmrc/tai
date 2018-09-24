@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 case class TaxCodeRecord(taxCode: String,
+                         taxCodeId: Int,
                          basisOfOperation: String,
                          employerName: String,
                          operatedTaxCode: Boolean,
