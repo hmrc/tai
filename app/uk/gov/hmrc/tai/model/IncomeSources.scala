@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.{Json, Format, JsObject}
+import play.api.libs.json.{Format, JsObject, Json}
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 case class TAHIabdSummary(amount: Double,
-                           `type`: Int,
+                           iabdType: Int,
                            npsDescription: String,
                            employmentId: Int,
                            defaultEstimatedPay: Option[Boolean],
@@ -27,14 +29,22 @@ case class TAHIabdSummary(amount: Double,
 
 object TAHIabdSummary {
 
-  implicit val formatSeq: Format[TAHIabdSummary] = Json.format[TAHIabdSummary]
+  implicit val reads: Reads[TAHIabdSummary] = (
+    (JsPath \ "amount").read[Double] and
+      (JsPath \ "type").read[Int] and
+      (JsPath \ "npsDescription").read[String] and
+      (JsPath \ "employmentId").read[Int] and
+      (JsPath \ "defaultEstimatedPay").readNullable[Boolean] and
+      (JsPath \ "estimatedPaySource").readNullable[Int]
+    ) (TAHIabdSummary.apply _)
 
+  implicit val writes: Writes[TAHIabdSummary] = Json.writes[TAHIabdSummary]
 }
 
 trait Iabd {
 
   def amount: Double
-  def `type`: Int
+  def iabdType: Int
   def npsDescription: String
   def iabdSummaries: Seq[TAHIabdSummary]
   def sourceAmount: Double
@@ -43,27 +53,41 @@ trait Iabd {
 
 case class Allowance(npsDescription: String,
                      amount: Double,
-                     `type`: Int,
+                     iabdType: Int,
                      iabdSummaries: Seq[TAHIabdSummary],
                      sourceAmount: Double) extends Iabd
 
 
 object Allowance {
 
-  implicit val format: Format[Allowance] = Json.format[Allowance]
+  implicit val reads: Reads[Allowance] = (
+    (JsPath \ "npsDescription").read[String] and
+      (JsPath \ "amount").read[Double] and
+      (JsPath \ "type").read[Int] and
+      (JsPath \ "iabdSummaries").read[Seq[TAHIabdSummary]] and
+      (JsPath \ "sourceAmount").read[Double]
+    ) (Allowance.apply _)
 
+  implicit val writes: Writes[Allowance] = Json.writes[Allowance]
 }
 
 case class Deduction(npsDescription: String,
                      amount: Double,
-                     `type`: Int,
+                     iabdType: Int,
                      iabdSummaries: Seq[TAHIabdSummary],
                      sourceAmount: Double) extends Iabd
 
 object Deduction {
 
-  implicit val format: Format[Deduction] = Json.format[Deduction]
+  implicit val reads: Reads[Deduction] = (
+    (JsPath \ "npsDescription").read[String] and
+      (JsPath \ "amount").read[Double] and
+      (JsPath \ "type").read[Int] and
+      (JsPath \ "iabdSummaries").read[Seq[TAHIabdSummary]] and
+      (JsPath \ "sourceAmount").read[Double]
+    ) (Deduction.apply _)
 
+  implicit val writes: Writes[Deduction] = Json.writes[Deduction]
 }
 
 case class IncomeSources(employmentId: Int,
