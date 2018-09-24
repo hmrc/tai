@@ -29,14 +29,15 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model._
+import uk.gov.hmrc.tai.model.des._
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Failure, Random, Success}
+import scala.util.{Random, Success}
 
 class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with TaxCodeHistoryConstants {
 
@@ -192,10 +193,10 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
       )
 
-      val iabdSummaryAllowance = TAHIabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
+      val iabdSummaryAllowance = IabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
       val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
 
-      val iabdSummaryDeduction = TAHIabdSummary(105, 18,"deduction", 2, None, None)
+      val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
       val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
 
       val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
@@ -299,10 +300,10 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
       )
 
-      val iabdSummaryAllowance = TAHIabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
+      val iabdSummaryAllowance = IabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
       val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
 
-      val iabdSummaryDeduction = TAHIabdSummary(105, 18,"deduction", 2, None, None)
+      val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
       val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
 
       val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,

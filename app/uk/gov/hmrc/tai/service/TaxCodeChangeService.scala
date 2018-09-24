@@ -25,6 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.des.IabdSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
@@ -39,7 +40,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
-      validForService(taxCodeHistory.operatedTaxCodeRecords)
+      hasTaxCode(taxCodeHistory.operatedTaxCodeRecords)
 
     } recover {
       case exception: JsResultException =>
@@ -55,7 +56,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
-      if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+      if (hasTaxCode(taxCodeHistory.operatedTaxCodeRecords)) {
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
 
@@ -93,7 +94,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
+  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[Seq[IabdSummary]] = ???
+
+  private def hasTaxCode(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
     lazy val latestDate = calculationDates.min
 
@@ -115,5 +118,7 @@ trait TaxCodeChangeService {
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
+
+  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[Seq[IabdSummary]]
 
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.model.des
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino

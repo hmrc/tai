@@ -25,7 +25,8 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{TaxAccountDetails, TaxCodeHistory}
+import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.des.TaxAccountDetails
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants

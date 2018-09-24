@@ -14,31 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.model.des
 
-import play.api.libs.json.{Format, JsObject, Json}
 import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.json.{Format, JsObject, Json, _}
 
-case class TAHIabdSummary(amount: Double,
-                           iabdType: Int,
-                           npsDescription: String,
-                           employmentId: Int,
-                           defaultEstimatedPay: Option[Boolean],
-                           estimatedPaySource: Option[Int])
+case class IabdSummary(amount: Double,
+                       iabdType: Int,
+                       npsDescription: String,
+                       employmentId: Int,
+                       defaultEstimatedPay: Option[Boolean],
+                       estimatedPaySource: Option[Int])
 
-object TAHIabdSummary {
+object IabdSummary {
 
-  implicit val reads: Reads[TAHIabdSummary] = (
+  implicit val reads: Reads[IabdSummary] = (
     (JsPath \ "amount").read[Double] and
       (JsPath \ "type").read[Int] and
       (JsPath \ "npsDescription").read[String] and
       (JsPath \ "employmentId").read[Int] and
       (JsPath \ "defaultEstimatedPay").readNullable[Boolean] and
       (JsPath \ "estimatedPaySource").readNullable[Int]
-    ) (TAHIabdSummary.apply _)
+    ) (IabdSummary.apply _)
 
-  implicit val writes: Writes[TAHIabdSummary] = Json.writes[TAHIabdSummary]
+  implicit val writes: Writes[IabdSummary] = Json.writes[IabdSummary]
 }
 
 trait Iabd {
@@ -46,7 +45,7 @@ trait Iabd {
   def amount: Double
   def iabdType: Int
   def npsDescription: String
-  def iabdSummaries: Seq[TAHIabdSummary]
+  def iabdSummaries: Seq[IabdSummary]
   def sourceAmount: Double
 
 }
@@ -54,7 +53,7 @@ trait Iabd {
 case class Allowance(npsDescription: String,
                      amount: Double,
                      iabdType: Int,
-                     iabdSummaries: Seq[TAHIabdSummary],
+                     iabdSummaries: Seq[IabdSummary],
                      sourceAmount: Double) extends Iabd
 
 
@@ -64,7 +63,7 @@ object Allowance {
     (JsPath \ "npsDescription").read[String] and
       (JsPath \ "amount").read[Double] and
       (JsPath \ "type").read[Int] and
-      (JsPath \ "iabdSummaries").read[Seq[TAHIabdSummary]] and
+      (JsPath \ "iabdSummaries").read[Seq[IabdSummary]] and
       (JsPath \ "sourceAmount").read[Double]
     ) (Allowance.apply _)
 
@@ -74,7 +73,7 @@ object Allowance {
 case class Deduction(npsDescription: String,
                      amount: Double,
                      iabdType: Int,
-                     iabdSummaries: Seq[TAHIabdSummary],
+                     iabdSummaries: Seq[IabdSummary],
                      sourceAmount: Double) extends Iabd
 
 object Deduction {
@@ -83,7 +82,7 @@ object Deduction {
     (JsPath \ "npsDescription").read[String] and
       (JsPath \ "amount").read[Double] and
       (JsPath \ "type").read[Int] and
-      (JsPath \ "iabdSummaries").read[Seq[TAHIabdSummary]] and
+      (JsPath \ "iabdSummaries").read[Seq[IabdSummary]] and
       (JsPath \ "sourceAmount").read[Double]
     ) (Deduction.apply _)
 

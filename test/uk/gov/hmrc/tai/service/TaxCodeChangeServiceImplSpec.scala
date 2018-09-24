@@ -21,17 +21,19 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.JsResultException
+import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model._
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.des._
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
+import scala.util.{Random, Try}
 
 class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
 
@@ -729,6 +731,39 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     }
   }
 
+  "taxCodeChangeIabds" should {
+    "return a list of Iabd for a nino" in {
+      val testNino = randomNino
+      val taxAccountId = randomInt(3)
+
+      val typeId = randomInt(3)
+      val amount = randomInt()
+      val employmentId = randomInt()
+
+      val iabdSummaryAllowance = IabdSummary(amount, typeId,"Personal Allowance (PA)", employmentId, None, None)
+      val connectorResponse = {
+        val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
+
+        val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
+        val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
+
+        val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+          None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
+
+        TaxAccountDetails(taxAccountId, "02/08/2018", testNino, false, TaxYear(), randomInt(3), randomInt(3), None, None, randomInt(5), randomInt(1), randomInt(1), List(income))
+      }
+
+
+      when(defaultMockConnector.taxAccountHistory(testNino, taxAccountId)).thenReturn(Future.successful(Try(connectorResponse)))
+
+      val expectedIabds = Seq(
+        iabdSummaryAllowance
+      )
+
+      createService().taxCodeChangeIabds(testNino, taxAccountId) mustBe expectedIabds
+
+    }
+  }
 
   private def taxCodeRecord(taxCode: String = "1185L",
                             employerName: String = "Employer 1",
