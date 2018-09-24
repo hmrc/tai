@@ -25,7 +25,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
-import uk.gov.hmrc.tai.model.des.IabdSummary
+import uk.gov.hmrc.tai.model.des.{Iabd, IabdSummary, IncomeSource}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
@@ -94,7 +94,18 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[Seq[IabdSummary]] = ???
+  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[(Seq[IabdSummary], Seq[IabdSummary])] = {
+
+    def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource) = f(incomeSource).flatMap(_.iabdSummaries)
+
+    taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
+      taxAccountDetails => {
+        val incomeSources = taxAccountDetails.get.incomeSources
+
+        (incomeSources.flatMap(getIABDSummary(_.allowances)), incomeSources.flatMap(getIABDSummary(_.deductions)))
+      }
+    }
+  }
 
   private def hasTaxCode(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
@@ -119,6 +130,6 @@ trait TaxCodeChangeService {
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
-  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[Seq[IabdSummary]]
+  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[(Seq[IabdSummary], Seq[IabdSummary])]
 
 }

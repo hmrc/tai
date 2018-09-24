@@ -193,13 +193,13 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
       )
 
-      val iabdSummaryAllowance = IabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
+      val iabdSummaryAllowance = IabdSummary(8105, 118,Some("Personal Allowance (PA)"), Some(1), None, None)
       val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
 
-      val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
+      val iabdSummaryDeduction = IabdSummary(105, 18,Some("deduction"), Some(2), None, None)
       val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
 
-      val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+      val income = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
                                 None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
 
       val expectedResult = TaxAccountDetails(7, "02/08/2018", testNino, false, TaxYear(2018),
@@ -222,11 +222,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         "iabdSummaries" ->Json.arr(
           Json.obj(
             "amount" -> 8105,
-            "type" -> 118,
-            "npsDescription" -> "Personal Allowance (PA)",
-            "employmentId" -> JsNull,
-            "defaultEstimatedPay" -> JsNull,
-            "estimatedPaySource" -> JsNull
+            "type" -> JsNull
           )
         ),
         "sourceAmount" -> 8105
@@ -300,13 +296,13 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
       )
 
-      val iabdSummaryAllowance = IabdSummary(8105, 118,"Personal Allowance (PA)", 1, None, None)
+      val iabdSummaryAllowance = IabdSummary(8105, 118,Some("Personal Allowance (PA)"), Some(1), None, None)
       val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
 
-      val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
+      val iabdSummaryDeduction = IabdSummary(105, 18, Some("deduction"), Some(2), None, None)
       val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
 
-      val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+      val income = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
         None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
 
       val expectedResult = TaxAccountDetails(7, "02/08/2018", testNino, false, TaxYear(2018),

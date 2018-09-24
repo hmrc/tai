@@ -35,7 +35,7 @@ case class TaxAccountDetails(taxAccountId: Int,
                              inYearCalcAmount: Int,
                              // adjustedNetIncome: JsObject,
                              // totalLiability: JsObject,
-                             incomeSources: Seq[IncomeSources])
+                             incomeSources: Seq[IncomeSource])
 
 object TaxAccountDetails {
 

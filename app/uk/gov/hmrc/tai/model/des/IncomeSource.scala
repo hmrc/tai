@@ -21,8 +21,8 @@ import play.api.libs.json.{Format, JsObject, Json, _}
 
 case class IabdSummary(amount: Double,
                        iabdType: Int,
-                       npsDescription: String,
-                       employmentId: Int,
+                       npsDescription: Option[String],
+                       employmentId: Option[Int],
                        defaultEstimatedPay: Option[Boolean],
                        estimatedPaySource: Option[Int])
 
@@ -31,8 +31,8 @@ object IabdSummary {
   implicit val reads: Reads[IabdSummary] = (
     (JsPath \ "amount").read[Double] and
       (JsPath \ "type").read[Int] and
-      (JsPath \ "npsDescription").read[String] and
-      (JsPath \ "employmentId").read[Int] and
+      (JsPath \ "npsDescription").readNullable[String] and
+      (JsPath \ "employmentId").readNullable[Int] and
       (JsPath \ "defaultEstimatedPay").readNullable[Boolean] and
       (JsPath \ "estimatedPaySource").readNullable[Int]
     ) (IabdSummary.apply _)
@@ -89,30 +89,30 @@ object Deduction {
   implicit val writes: Writes[Deduction] = Json.writes[Deduction]
 }
 
-case class IncomeSources(employmentId: Int,
-                         employmentType: Int,
-                         employmentStatus: Int,
-                         employmentTaxDistrictNumber: Int,
-                         employmentPayeRef: String,
-                         pensionIndicator: Boolean,
-                         otherIncomeSourceIndicator: Boolean,
-                         jsaIndicator: Boolean,
-                         name: String,
-                         taxCode: String,
-                         basisOperation: Int,
-                         potentialUnderpayment: Option[Int],
-                         totalInYearAdjustment: Int,
-                         inYearAdjustmentIntoCY: Int,
-                         inYearAdjustmentIntoCYPlusOne: Int,
-                         inYearAdjustmentFromPreviousYear: Int,
-                         actualPUPCodedInCYPlusOneTaxYear: Int,
-                         allowances: Seq[Allowance],
-                         deductions: Seq[Deduction],
-                         payAndTax: JsObject)
+case class IncomeSource(employmentId: Int,
+                        employmentType: Int,
+                        employmentStatus: Int,
+                        employmentTaxDistrictNumber: Int,
+                        employmentPayeRef: String,
+                        pensionIndicator: Boolean,
+                        otherIncomeSourceIndicator: Boolean,
+                        jsaIndicator: Boolean,
+                        name: String,
+                        taxCode: String,
+                        basisOperation: Int,
+                        potentialUnderpayment: Option[Int],
+                        totalInYearAdjustment: Int,
+                        inYearAdjustmentIntoCY: Int,
+                        inYearAdjustmentIntoCYPlusOne: Int,
+                        inYearAdjustmentFromPreviousYear: Int,
+                        actualPUPCodedInCYPlusOneTaxYear: Int,
+                        allowances: Seq[Allowance],
+                        deductions: Seq[Deduction],
+                        payAndTax: JsObject)
 
-object IncomeSources {
+object IncomeSource {
 
-  implicit val formats: Format[IncomeSources] = Json.format[IncomeSources]
+  implicit val formats: Format[IncomeSource] = Json.format[IncomeSource]
 
 }
 

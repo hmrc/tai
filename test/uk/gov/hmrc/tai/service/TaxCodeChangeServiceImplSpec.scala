@@ -740,14 +740,15 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       val amount = randomInt()
       val employmentId = randomInt()
 
-      val iabdSummaryAllowance = IabdSummary(amount, typeId,"Personal Allowance (PA)", employmentId, None, None)
+      val iabdSummaryAllowance = IabdSummary(amount, typeId,Some("Personal Allowance (PA)"), Some(employmentId), None, None)
+      val iabdSummaryDeduction = IabdSummary(105, 18,Some("deduction"), Some(2), None, None)
       val connectorResponse = {
         val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
 
-        val iabdSummaryDeduction = IabdSummary(105, 18,"deduction", 2, None, None)
+
         val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
 
-        val income = IncomeSources(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+        val income = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
           None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
 
         TaxAccountDetails(taxAccountId, "02/08/2018", testNino, false, TaxYear(), randomInt(3), randomInt(3), None, None, randomInt(5), randomInt(1), randomInt(1), List(income))
@@ -756,11 +757,10 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
       when(defaultMockConnector.taxAccountHistory(testNino, taxAccountId)).thenReturn(Future.successful(Try(connectorResponse)))
 
-      val expectedIabds = Seq(
-        iabdSummaryAllowance
-      )
+      val expectedIabds: (Seq[IabdSummary], Seq[IabdSummary]) = (Seq(iabdSummaryAllowance), Seq(iabdSummaryDeduction))
 
-      createService().taxCodeChangeIabds(testNino, taxAccountId) mustBe expectedIabds
+
+      Await.result(createService().taxCodeChangeIabds(testNino, taxAccountId),5.seconds) mustBe expectedIabds
 
     }
   }
