@@ -107,9 +107,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def taxCodeChangeIabdComparison(nino: Nino): Future[TaxCodeComparison] //  :Future[Tuple2[Tuple2[Iabd, Iabd], Tuple2[Iabd, Iabd]]]
-  = {
-    taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) compose getTaxCodeIds)
+  def iabdComparison(nino: Nino): Future[TaxCodeComparison]  = {
+    //  :Future[Tuple2[Tuple2[Iabd, Iabd], Tuple2[Iabd, Iabd]]]
+    taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) _ compose getTaxCodeIds _)
   }
 
   private def getTaxCodeIds(taxCodeChangeObj: TaxCodeChange): (Seq[Int], Seq[Int]) = {
@@ -123,7 +123,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   private def getTaxCodeComparison(nino: Nino)(taxCodeIds: (Seq[Int], Seq[Int])): Future[TaxCodeComparison] = {
     def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[TaxCodeComponent] = {
 
-      def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource) = f(incomeSource).flatMap(_.iabdSummaries)
+      def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource): Seq[IabdSummary] = f(incomeSource).flatMap(_.iabdSummaries)
 
       taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
         taxAccountDetails => {

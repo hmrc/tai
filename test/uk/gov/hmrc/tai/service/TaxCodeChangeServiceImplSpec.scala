@@ -753,48 +753,72 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   "taxCodeChangeIabdComparison" should {
 
     "return a list of Iabd for a nino" in {
-
-      val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
-      val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
-      val previousStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(1)
-      val previousEndDate = currentStartDate.minusDays(1)
-      val payrollNumberPrev = RandomInt().toString
-      val payrollNumberCurr = RandomInt().toString
-      val taxCodeIdPrevious = RandomInt(3)
-      val taxCodeIdCurrent = RandomInt(3)
       val testNino = randomNino
 
 
-      val previousTaxCodeRecord = TaxCodeRecord("1185L", taxCodeIdPrevious, Cumulative, "Employer 1", operatedTaxCode = true,
-        previousStartDate, Some(payrollNumberPrev), pensionIndicator = false, Primary)
-      val currentTaxCodeRecord = TaxCodeRecord("1000L", taxCodeIdCurrent, Cumulative, "Employer 1", operatedTaxCode = true,
-        currentStartDate, Some(payrollNumberCurr), pensionIndicator = false, Primary)
+      // setup for API 1
+      val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
+      val previousStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(1)
+
+      val taxCodeIdPrevious = RandomInt(3)
+      val taxCodeIdCurrent = RandomInt(3)
 
       val taxCodeHistory = TaxCodeHistory(
         testNino.withoutSuffix,
-        Seq(previousTaxCodeRecord, currentTaxCodeRecord)
+        Seq(
+          TaxCodeRecordFactory.create(taxCodeId = taxCodeIdPrevious, dateOfCalculation = previousStartDate),
+          TaxCodeRecordFactory.create(taxCodeId = taxCodeIdCurrent, dateOfCalculation = currentStartDate)
+        )
       )
 
       when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-      val iabdSummaryAllowance = IabdSummary(8105, 118,Some("Personal Allowance (PA)"), Some(1), None, None)
-      val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
+      // setup for API 2 - first tax code id
+      val iabdSummaryAllowancePrev = IabdSummary(8105, 118,Some("Personal Allowance (PA)"), Some(1), None, None)
+      val allowancePrev = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowancePrev), 8105)
 
-      val iabdSummaryDeduction = IabdSummary(105, 18, Some("deduction"), Some(2), None, None)
-      val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
+      val iabdSummaryDeductionPrev = IabdSummary(105, 18, Some("deduction"), Some(2), None, None)
+      val deductionPrev = Deduction("personal allowance", 105, 18, List(iabdSummaryDeductionPrev), 105)
 
-      val income = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
-        None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
+      val incomePrev = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+        None, 0, 0, 0, 0, 0, List(allowancePrev), List(deductionPrev), Json.obj())
 
       val taxAccountHistoryResponsePrevious = TaxAccountDetails(RandomInt(), "02/08/2018", testNino, false, TaxYear(2018),
-        6, 1, None, None, 16956, 1, 0, List(income))
+        6, 1, None, None, 16956, 1, 0, List(incomePrev))
 
       when(defaultMockConnector.taxAccountHistory(testNino, taxCodeIdPrevious)).thenReturn(Future.successful(Try(taxAccountHistoryResponsePrevious)))
 
-      val expectedIabds: Future[TaxCodeComparison] = ???
+
+      // setup for API 2 - first tax code id
+      val iabdSummaryAllowanceCurr = IabdSummary(8105, 118,Some("Personal Allowance (PA)"), Some(1), None, None)
+      val allowanceCurr = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowanceCurr), 8105)
+
+      val iabdSummaryDeductionCurr = IabdSummary(105, 18, Some("deduction"), Some(2), None, None)
+      val deduction2 = Deduction("personal allowance", 105, 18, List(iabdSummaryDeductionCurr), 105)
+
+      val incomeCurr = IncomeSource(3,1,1,754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+        None, 0, 0, 0, 0, 0, List(allowanceCurr), List(deduction2), Json.obj())
+
+      val taxAccountHistoryResponseCurrent = TaxAccountDetails(RandomInt(), "02/08/2018", testNino, false, TaxYear(2018),
+        6, 1, None, None, 16956, 1, 0, List(incomeCurr))
+
+      when(defaultMockConnector.taxAccountHistory(testNino, taxCodeIdPrevious)).thenReturn(Future.successful(Try(taxAccountHistoryResponseCurrent)))
+
+      // Expected response
+
+      val expectedIabds: Future[TaxCodeComparison] = Future.successful(TaxCodeComparison(
+        previous = TaxCodeComponent(
+          allowances = Seq(iabdSummaryAllowancePrev),
+          deductions = Seq(iabdSummaryDeductionPrev)
+        ),
+        TaxCodeComponent(
+          allowances = Seq(iabdSummaryAllowanceCurr),
+          deductions = Seq(iabdSummaryDeductionCurr)
+        )
+      ))
 
 
-      Await.result(createService().taxCodeChangeIabdComparison(testNino),5.seconds) mustBe expectedIabds
+      Await.result(createService().iabdComparison(testNino),5.seconds) mustBe expectedIabds
 
     }
   }
