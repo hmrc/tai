@@ -32,6 +32,17 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
+case class TaxCodeComponent(allowances: Seq[IabdSummary], deductions: Seq[IabdSummary]) {
+
+  def merge(that: TaxCodeComponent): TaxCodeComponent = {
+    TaxCodeComponent(this.allowances ++ that.allowances, this.deductions ++ that.deductions)
+  }
+}
+
+case class TaxCodeComparison(previous: TaxCodeComponent, current: TaxCodeComponent)
+
+
+
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
@@ -96,22 +107,43 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def doAllTheIabdThings(nino: Nino) = {
-
+  def taxCodeChangeIabdComparison(nino: Nino): Future[TaxCodeComparison] //  :Future[Tuple2[Tuple2[Iabd, Iabd], Tuple2[Iabd, Iabd]]]
+  = {
+    taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) compose getTaxCodeIds)
   }
 
-  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[(Seq[IabdSummary], Seq[IabdSummary])] = {
+  private def getTaxCodeIds(taxCodeChangeObj: TaxCodeChange): (Seq[Int], Seq[Int]) = {
+    val previousTaxCodeIds = taxCodeChangeObj.previous.map(_.taxCodeId)
+    val currentTaxCodeIds = taxCodeChangeObj.current.map(_.taxCodeId)
 
-    def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource) = f(incomeSource).flatMap(_.iabdSummaries)
+    (previousTaxCodeIds, currentTaxCodeIds)
+  }
 
-    taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
-      taxAccountDetails => {
-        val incomeSources = taxAccountDetails.get.incomeSources
 
-        (incomeSources.flatMap(getIABDSummary(_.allowances)), incomeSources.flatMap(getIABDSummary(_.deductions)))
+  private def getTaxCodeComparison(nino: Nino)(taxCodeIds: (Seq[Int], Seq[Int])): Future[TaxCodeComparison] = {
+    def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[TaxCodeComponent] = {
+
+      def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource) = f(incomeSource).flatMap(_.iabdSummaries)
+
+      taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
+        taxAccountDetails => {
+          // TODO: Remove get and handle Failure
+          val incomeSources = taxAccountDetails.get.incomeSources
+
+          TaxCodeComponent(incomeSources.flatMap(getIABDSummary(_.allowances)), incomeSources.flatMap(getIABDSummary(_.deductions)))
+        }
       }
     }
+
+    val prev = Future.sequence(taxCodeIds._1.map(taxCodeChangeIabds(nino, _))).map(_.reduce((a,b) => a merge b))
+    val curr = Future.sequence(taxCodeIds._2.map(taxCodeChangeIabds(nino, _))).map(_.reduce((a,b) => a merge b))
+
+    prev zip curr map { x =>
+      TaxCodeComparison(x._1, x._2)
+    }
   }
+
+
 
   private def hasTaxCode(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
@@ -136,6 +168,6 @@ trait TaxCodeChangeService {
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
-  def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[(Seq[IabdSummary], Seq[IabdSummary])]
+//  def taxCodeChangeIabdComparison(nino: Nino, taxAccountId: Int): Any //Future[Tuple[Tuple[Iabd, Iabd], Tuple[Iabd, Iabd]]]
 
 }
