@@ -42,7 +42,6 @@ case class TaxCodeComponent(allowances: Seq[IabdSummary], deductions: Seq[IabdSu
 case class TaxCodeComparison(previous: TaxCodeComponent, current: TaxCodeComponent)
 
 
-
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
@@ -109,7 +108,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   def iabdComparison(nino: Nino): Future[TaxCodeComparison]  = {
     //  :Future[Tuple2[Tuple2[Iabd, Iabd], Tuple2[Iabd, Iabd]]]
-    taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) _ compose getTaxCodeIds _)
+    taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) _ compose getTaxCodeIds)
   }
 
   private def getTaxCodeIds(taxCodeChangeObj: TaxCodeChange): (Seq[Int], Seq[Int]) = {
@@ -128,7 +127,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
         taxAccountDetails => {
           // TODO: Remove get and handle Failure
-          val incomeSources = taxAccountDetails.get.incomeSources
+
+          val incomeSources = taxAccountDetails.map(_.incomeSources).get
 
           TaxCodeComponent(incomeSources.flatMap(getIABDSummary(_.allowances)), incomeSources.flatMap(getIABDSummary(_.deductions)))
         }
