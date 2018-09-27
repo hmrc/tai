@@ -20,7 +20,7 @@ import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsResultException
+import play.api.libs.json.{Format, JsResultException, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeRecord
@@ -37,6 +37,11 @@ case class TaxCodeComponent(allowances: Seq[IabdSummary], deductions: Seq[IabdSu
   def merge(that: TaxCodeComponent): TaxCodeComponent = {
     TaxCodeComponent(this.allowances ++ that.allowances, this.deductions ++ that.deductions)
   }
+}
+
+object TaxCodeComponent {
+
+  implicit val format: Format[TaxCodeComponent] = Json.format[TaxCodeComponent]
 }
 
 case class TaxCodeComparison(previous: TaxCodeComponent, current: TaxCodeComponent)
@@ -106,8 +111,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def iabdComparison(nino: Nino): Future[TaxCodeComparison]  = {
-    //  :Future[Tuple2[Tuple2[Iabd, Iabd], Tuple2[Iabd, Iabd]]]
+  def iabdComparison(nino: Nino): Future[TaxCodeComparison] = {
     taxCodeChange(nino).flatMap(getTaxCodeComparison(nino) _ compose getTaxCodeIds)
   }
 
@@ -118,31 +122,31 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     (previousTaxCodeIds, currentTaxCodeIds)
   }
 
+  private def makeCallForIabds(nino: Nino)(taxAccountId: Int): Future[TaxCodeComponent] = {
 
-  private def getTaxCodeComparison(nino: Nino)(taxCodeIds: (Seq[Int], Seq[Int])): Future[TaxCodeComparison] = {
-    def taxCodeChangeIabds(nino: Nino, taxAccountId: Int): Future[TaxCodeComponent] = {
+    def getIABDSummary(incomeSources: Seq[IncomeSource])(f: IncomeSource => Seq[Iabd]) = incomeSources.flatMap(f(_).flatMap(_.iabdSummaries))
 
-      def getIABDSummary(f: IncomeSource => Seq[Iabd])(incomeSource: IncomeSource): Seq[IabdSummary] = f(incomeSource).flatMap(_.iabdSummaries)
 
-      taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map {
-        taxAccountDetails => {
-          // TODO: Remove get and handle Failure
 
-          val incomeSources = taxAccountDetails.map(_.incomeSources).get
+    taxCodeChangeConnector.taxAccountHistory(nino, taxAccountId) map { taxAccountDetails => {
 
-          TaxCodeComponent(incomeSources.flatMap(getIABDSummary(_.allowances)), incomeSources.flatMap(getIABDSummary(_.deductions)))
-        }
-      }
-    }
+      val incomeSources = taxAccountDetails.map(_.incomeSources).getOrElse(throw new RuntimeException("test message"))
+      TaxCodeComponent(getIABDSummary(incomeSources)(_.allowances), getIABDSummary(incomeSources)(_.deductions))
 
-    val prev = Future.sequence(taxCodeIds._1.map(taxCodeChangeIabds(nino, _))).map(_.reduce((a,b) => a merge b))
-    val curr = Future.sequence(taxCodeIds._2.map(taxCodeChangeIabds(nino, _))).map(_.reduce((a,b) => a merge b))
-
-    prev zip curr map { x =>
-      TaxCodeComparison(x._1, x._2)
-    }
+    }}
   }
 
+  private def getTaxCodeComparison(nino: Nino)(taxCodeIds: (Seq[Int], Seq[Int])): Future[TaxCodeComparison] = {
+
+    def callsForTaxCodeIds(ids: Seq[Int])(callFn: Int => Future[TaxCodeComponent]): Future[TaxCodeComponent] = {
+      Future.sequence(ids.map(callFn)).map(_.reduce(_ merge _))
+    }
+
+    val prev: Future[TaxCodeComponent] = callsForTaxCodeIds(taxCodeIds._1)(makeCallForIabds(nino))
+    val curr: Future[TaxCodeComponent] = callsForTaxCodeIds(taxCodeIds._2)(makeCallForIabds(nino))
+
+    prev zip curr map TaxCodeComparison.tupled
+  }
 
 
   private def hasTaxCode(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
@@ -168,6 +172,6 @@ trait TaxCodeChangeService {
 
   def taxCodeChange(nino: Nino): Future[TaxCodeChange]
 
-//  def taxCodeChangeIabdComparison(nino: Nino, taxAccountId: Int): Any //Future[Tuple[Tuple[Iabd, Iabd], Tuple[Iabd, Iabd]]]
+  def iabdComparison(nino: Nino): Future[TaxCodeComparison]
 
 }
