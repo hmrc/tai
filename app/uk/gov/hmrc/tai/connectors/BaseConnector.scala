@@ -21,6 +21,7 @@ import play.api.http.Status
 import play.api.libs.json.{Format, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
@@ -128,9 +129,7 @@ abstract class BaseConnector(auditor: Auditor,
             if (reqNino != rtiData.nino) {
               Logger.warn(s"RTIAPI - Incorrect Payload returned from RTI HODS for $reqNino")
 
-              auditor.sendDataEvent(
-                transactionName = "RTI returned incorrect account",
-                detail = Map(
+              auditor.sendDataEvent("RTI returned incorrect account", Map(
                   "request Nino" -> reqNino,
                   "rti response Nino" -> rtiData.nino,
                   "tax year" -> rtiData.taxYear.twoDigitRange,

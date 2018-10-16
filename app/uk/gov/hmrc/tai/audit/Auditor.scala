@@ -18,24 +18,13 @@ package uk.gov.hmrc.tai.audit
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.AuditExtensions
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
-import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
-class Auditor @Inject()(audit: Audit)  {
+class Auditor @Inject()(audit: AuditConnector)  {
 
-  def sendDataEvent(transactionName: String,
-                    path: String = "N/A",
-                    tags: Map[String, String] = Map.empty[String, String],
-                    detail: Map[String, String])
-                   (implicit hc: HeaderCarrier): Unit =
-  
-    audit.sendDataEvent(DataEvent(
-      auditSource = TaiConstants.ApplicationName,
-      auditType = transactionName,
-      detail = detail,
-      tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails() ++
-        AuditExtensions.auditHeaderCarrier(hc).toAuditTags(transactionName, path)
-    ))
+  def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
+    audit.sendExplicitAudit(transactionName,detail)
 }

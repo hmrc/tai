@@ -129,13 +129,13 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing()
-          .when(mockAuditor).sendDataEvent(any(),any(),any(),any())(any())
+          .when(mockAuditor).sendDataEvent(any(),any())(any())
 
         val sut = createSUT(mock[FileUploadConnector], mockAuditor)
         Await.result(sut.fileUploadCallback(details), 5.seconds)
 
         verify(mockAuditor, times(1))
-          .sendDataEvent(Matchers.eq("FileUploadFailure"),any(),any(),any())(any())
+          .sendDataEvent(Matchers.eq("FileUploadFailure"),any())(any())
       }
 
       "file upload is success" in {
@@ -150,13 +150,13 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing()
-          .when(mockAuditor).sendDataEvent(any(),any(),any(),any())(any())
+          .when(mockAuditor).sendDataEvent(any(),any())(any())
 
         val sut = createSUT(mockFileUploadConnector, mockAuditor)
         Await.result(sut.fileUploadCallback(details), 5.seconds)
 
         verify(mockAuditor, times(1))
-          .sendDataEvent(Matchers.eq("FileUploadSuccess"),any(),any(),any())(any())
+          .sendDataEvent(Matchers.eq("FileUploadSuccess"),any())(any())
       }
     }
 

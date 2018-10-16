@@ -21,9 +21,9 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.Configuration
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.DataEvent
 
 class AuditorSpec extends PlaySpec with MockitoSugar {
 
@@ -36,15 +36,14 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
         when(func.apply(any()))
           .thenReturn(())
 
-        val mockAudit = mock[Audit]
-        when(mockAudit.sendDataEvent)
-          .thenReturn(func)
+        val mockAudit = mock[AuditConnector]
+        when(mockAudit.sendExplicitAudit(any(): String ,any(): Map[String,String])(any(), any())).thenReturn(func)
 
         val sut = createSut(mockAudit)
 
         sut.sendDataEvent("Test-tx", detail = Map.empty)
 
-        verify(mockAudit, times(1)).sendDataEvent
+        verify(mockAudit, times(1)).sendExplicitAudit(any(): String ,any(): Map[String,String])(any(), any())
       }
 
       "send data event method has called with custom values" in {
@@ -56,9 +55,8 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
         when(func.apply(any()))
           .thenReturn(())
 
-        val mockAudit = mock[Audit]
-        when(mockAudit.sendDataEvent)
-          .thenReturn(func)
+        val mockAudit = mock[AuditConnector]
+        when(mockAudit.sendExplicitAudit(any(): String ,any(): Map[String,String])(any(), any())).thenReturn(func)
 
         val sut = createSut(mockAudit)
 
@@ -68,7 +66,7 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
             "ABC" -> "XYZ",
             "PQR" -> "DEF"))
 
-        verify(mockAudit, times(1)).sendDataEvent
+        verify(mockAudit, times(1)).sendExplicitAudit(any(): String ,any(): Map[String,String])(any(), any())
         verify(func, times(1)).apply(captor.capture())
 
         val dataEvent = captor.getValue
@@ -78,6 +76,6 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private def createSut(audit: Audit) =
+  private def createSut(audit: AuditConnector) =
     new Auditor(audit)
 }

@@ -29,7 +29,7 @@ import uk.gov.hmrc.time.TaxYearResolver
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[Audit].toProvider[AuditProvider].in[Singleton],
+    //bind[Audit].toProvider[AuditProvider].in[Singleton],
     bind[IncomeHelper].toInstance(IncomeHelper).in[Singleton],
     bind[TaxYearResolver].toInstance(TaxYearResolver).in[Singleton],
     bind(classOf[AuthorisedFunctions]).to(classOf[MicroserviceAuthorisedFunctions]).eagerly()
