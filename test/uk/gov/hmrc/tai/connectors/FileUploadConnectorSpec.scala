@@ -45,6 +45,8 @@ import scala.language.postfixOps
 class FileUploadConnectorSpec extends PlaySpec
   with MockitoSugar {
 
+  implicit val hc = HeaderCarrier()
+
   "createEnvelope" must {
     "return an envelope id" in {
       val mockHttpClient = mock[HttpClient]
@@ -483,8 +485,6 @@ class FileUploadConnectorSpec extends PlaySpec
     when(wsResponseMock.json).thenReturn(json)
     wsResponseMock
   }
-
-  implicit val hc = HeaderCarrier()
 
   private val envelopeId: String = "4142477f-9242-4a98-9c8b-73295cfb170c"
 

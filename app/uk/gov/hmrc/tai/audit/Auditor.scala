@@ -26,5 +26,5 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class Auditor @Inject()(audit: AuditConnector)  {
 
   def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
-    audit.sendExplicitAudit(transactionName,detail)
+    audit.sendExplicitAudit(transactionName, detail)
 }
