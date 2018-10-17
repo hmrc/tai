@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.audit
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class Auditor @Inject()(audit: AuditConnector)  {

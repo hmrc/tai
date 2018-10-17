@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.tai.audit
 
+import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
-import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 class AuditorSpec extends PlaySpec with MockitoSugar {
 
@@ -43,7 +43,7 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
 
       "send data event method has called with custom values 2" in {
         implicit val hc = HeaderCarrier()
-        implicit val ec = ExecutionContext
+        implicit val ec = MdcLoggingExecutionContext.fromLoggingDetails
 
         val mockAudit = mock[AuditConnector]
 
@@ -56,7 +56,7 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
 
         auditor.sendDataEvent("Test-tx", detail)
 
-        verify(mockAudit, times(1)).sendExplicitAudit("Test-tx", detail)(hc, ec.global)
+        verify(mockAudit, times(1)).sendExplicitAudit(Matchers.eq("Test-tx"), Matchers.eq(detail))(any(),any())
       }
     }
   }

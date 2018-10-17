@@ -21,14 +21,13 @@ import play.api.http.Status
 import play.api.libs.json.{Format, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
-import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 import scala.concurrent.Future
 
