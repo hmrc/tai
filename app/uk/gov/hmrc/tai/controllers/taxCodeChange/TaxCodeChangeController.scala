@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import com.google.inject.Inject
-import play.Logger
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
