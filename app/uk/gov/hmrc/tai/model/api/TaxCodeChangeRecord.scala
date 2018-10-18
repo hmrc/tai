@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.api
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 case class TaxCodeChangeRecord(taxCode: String,
                                basisOfOperation: String,
@@ -32,7 +33,10 @@ object TaxCodeChangeRecord {
   implicit val format: OFormat[TaxCodeChangeRecord] = Json.format[TaxCodeChangeRecord]
 }
 
-case class TaxCodeChange(current: Seq[TaxCodeChangeRecord], previous: Seq[TaxCodeChangeRecord])
+case class TaxCodeChange(current: Seq[TaxCodeChangeRecord], previous: Seq[TaxCodeChangeRecord]) {
+  def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).max
+  def primaryCurrentTaxCode: String = current.filter(_.primary).head.taxCode
+}
 
 object TaxCodeChange {
   implicit val format: OFormat[TaxCodeChange] = Json.format[TaxCodeChange]

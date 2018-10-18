@@ -17,12 +17,15 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
+import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
@@ -34,6 +37,8 @@ import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
+
+  implicit val hc = HeaderCarrier()
 
   "hasTaxCodeChanged" should {
 
@@ -768,6 +773,58 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
     }
+
+    "audit the TaxCodeChange" when {
+      "there has been a valid tax code change" in {
+        val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
+        val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
+        val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
+        val previousEndDate = currentStartDate.minusDays(1)
+        val previousStartDateInPrevYear = TaxYearResolver.startOfCurrentTaxYear.minusDays(2)
+        val payrollNumberPrev = randomInt().toString
+        val payrollNumberCurr = randomInt().toString
+
+        val testNino = randomNino
+
+        val expectedPreviousTaxCodeChange = TaxCodeChangeRecord("1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true)
+        val expectedCurrentTaxCodeChange1 = TaxCodeChangeRecord("1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true)
+        val expectedCurrentTaxCodeChange2 = TaxCodeChangeRecord("1001L", Cumulative, currentStartDate.minusDays(1), currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
+
+        val previousTaxCodeRecord = TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, previousStartDateInPrevYear, Some(payrollNumberPrev), pensionIndicator = false, Primary)
+        val currentTaxCodeRecord1 = TaxCodeRecord("1000L", Cumulative, "Employer 1", operatedTaxCode = true, currentStartDate, Some(payrollNumberCurr), pensionIndicator = false, Primary)
+        val currentTaxCodeRecord2 = TaxCodeRecord("1001L", Cumulative, "Employer 2", operatedTaxCode = true, currentStartDate.minusDays(1), Some(payrollNumberCurr), pensionIndicator = false, Secondary)
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Seq(previousTaxCodeRecord, currentTaxCodeRecord1, currentTaxCodeRecord2)
+        )
+
+        when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val mockAudit = mock[Auditor]
+
+        val service: TaxCodeChangeServiceImpl = createService(defaultMockConnector, mockAudit)
+
+        Await.result(service.taxCodeChange(testNino), 5.seconds)
+
+        val expectedDetailMap = Map(
+          "nino" -> testNino.nino,
+          "numberOfCurrentTaxCodes" -> "2",
+          "numberOfPreviousTaxCodes" -> "1",
+          "dataOfTaxCodeChange" -> currentStartDate.toString,
+          "primaryCurrentTaxCode" -> "1000L",
+          "secondaryCurrentTaxCodes" -> "1001L",
+          "primaryPreviousTaxCode" -> "1185L",
+          "secondaryPreviousTaxCodes" -> "",
+          "primaryCurrentPayrollNumber" -> payrollNumberCurr,
+          "secondaryCurrentPayrollNumbers" -> payrollNumberCurr,
+          "primaryPreviousPayrollNumber" -> payrollNumberPrev,
+          "secondaryPreviousPayrollNumbers" -> ""
+        )
+
+        verify(mockAudit, times(1)).sendDataEvent(Matchers.eq("TaxCodeChange"), Matchers.eq(expectedDetailMap))(Matchers.any())
+      }
+    }
   }
 
 
@@ -783,9 +840,10 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   }
 
   val defaultMockConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
+  val defaultMockAudit = mock[Auditor]
 
-  private def createService(mockConnector: TaxCodeChangeConnector = defaultMockConnector) = {
-    new TaxCodeChangeServiceImpl(mockConnector)
+  private def createService(mockConnector: TaxCodeChangeConnector = defaultMockConnector, mockAuditor: Auditor = defaultMockAudit) = {
+    new TaxCodeChangeServiceImpl(mockConnector, mockAuditor)
   }
 
   private def randomNino: Nino = new Generator(new Random).nextNino
