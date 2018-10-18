@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model._
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord, TaxCodeChangeSpec}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -777,26 +777,21 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     "audit the TaxCodeChange" when {
       "there has been a valid tax code change" in {
         val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
-        val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
-        val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
-        val previousEndDate = currentStartDate.minusDays(1)
         val previousStartDateInPrevYear = TaxYearResolver.startOfCurrentTaxYear.minusDays(2)
         val payrollNumberPrev = randomInt().toString
         val payrollNumberCurr = randomInt().toString
+        val payrollNumberCurr2 = randomInt().toString
 
         val testNino = randomNino
 
-        val expectedPreviousTaxCodeChange = TaxCodeChangeRecord("1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true)
-        val expectedCurrentTaxCodeChange1 = TaxCodeChangeRecord("1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true)
-        val expectedCurrentTaxCodeChange2 = TaxCodeChangeRecord("1001L", Cumulative, currentStartDate.minusDays(1), currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
-
         val previousTaxCodeRecord = TaxCodeRecord("1185L", Cumulative, "Employer 1", operatedTaxCode = true, previousStartDateInPrevYear, Some(payrollNumberPrev), pensionIndicator = false, Primary)
-        val currentTaxCodeRecord1 = TaxCodeRecord("1000L", Cumulative, "Employer 1", operatedTaxCode = true, currentStartDate, Some(payrollNumberCurr), pensionIndicator = false, Primary)
-        val currentTaxCodeRecord2 = TaxCodeRecord("1001L", Cumulative, "Employer 2", operatedTaxCode = true, currentStartDate.minusDays(1), Some(payrollNumberCurr), pensionIndicator = false, Secondary)
+        val currentTaxCodeRecordPrimary = TaxCodeRecord("1000L", Cumulative, "Employer 1", operatedTaxCode = true, currentStartDate, Some(payrollNumberCurr), pensionIndicator = false, Primary)
+        val currentTaxCodeRecordSecondary = TaxCodeRecord("1001L", Cumulative, "Employer 2", operatedTaxCode = true, currentStartDate, Some(payrollNumberCurr), pensionIndicator = false, Secondary)
+        val currentTaxCodeRecordSecondary2 = TaxCodeRecord("1002L", Cumulative, "Employer 2", operatedTaxCode = true, currentStartDate, Some(payrollNumberCurr2), pensionIndicator = false, Secondary)
 
         val taxCodeHistory = TaxCodeHistory(
           testNino.withoutSuffix,
-          Seq(previousTaxCodeRecord, currentTaxCodeRecord1, currentTaxCodeRecord2)
+          Seq(previousTaxCodeRecord, currentTaxCodeRecordPrimary, currentTaxCodeRecordSecondary, currentTaxCodeRecordSecondary2)
         )
 
         when(defaultMockConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
@@ -809,15 +804,15 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val expectedDetailMap = Map(
           "nino" -> testNino.nino,
-          "numberOfCurrentTaxCodes" -> "2",
+          "numberOfCurrentTaxCodes" -> "3",
           "numberOfPreviousTaxCodes" -> "1",
           "dataOfTaxCodeChange" -> currentStartDate.toString,
           "primaryCurrentTaxCode" -> "1000L",
-          "secondaryCurrentTaxCodes" -> "1001L",
+          "secondaryCurrentTaxCodes" -> "1001L,1002L",
           "primaryPreviousTaxCode" -> "1185L",
           "secondaryPreviousTaxCodes" -> "",
           "primaryCurrentPayrollNumber" -> payrollNumberCurr,
-          "secondaryCurrentPayrollNumbers" -> payrollNumberCurr,
+          "secondaryCurrentPayrollNumbers" -> s"$payrollNumberCurr,$payrollNumberCurr2",
           "primaryPreviousPayrollNumber" -> payrollNumberPrev,
           "secondaryPreviousPayrollNumbers" -> ""
         )

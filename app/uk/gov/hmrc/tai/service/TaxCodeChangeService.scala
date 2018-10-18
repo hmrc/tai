@@ -35,16 +35,6 @@ import scala.concurrent.Future
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector, auditor: Auditor) extends TaxCodeChangeService {
 
-  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
-    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
-    lazy val latestDate = calculationDates.min
-
-    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
-  }
-
-//  private def latestDateOfChange(taxCodeRecords: Seq[TaxCodeRecord]): LocalDate = {
-//    taxCodeRecords.map(_.dateOfCalculation).min
-//  }
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
@@ -125,11 +115,23 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       "numberOfPreviousTaxCodes" -> taxCodeChange.previous.size.toString,
       "dataOfTaxCodeChange" -> taxCodeChange.latestTaxCodeChangeDate.toString,
       "primaryCurrentTaxCode" -> taxCodeChange.primaryCurrentTaxCode,
-      "secondaryCurrentTaxCodes" -> taxCodeChange.secondaryCurrentTaxCodes,
-
+      "secondaryCurrentTaxCodes" -> taxCodeChange.secondaryCurrentTaxCodes.mkString(","),
+      "primaryPreviousTaxCode" -> taxCodeChange.primaryPreviousTaxCode,
+      "secondaryPreviousTaxCodes" -> taxCodeChange.secondaryPreviousTaxCodes.mkString(","),
+      "primaryCurrentPayrollNumber" -> taxCodeChange.primaryCurrentPayrollNumber.getOrElse(""),
+      "secondaryCurrentPayrollNumbers" -> taxCodeChange.secondaryCurrentPayrollNumbers.mkString(","),
+      "primaryPreviousPayrollNumber" -> taxCodeChange.primaryPreviousPayrollNumber.getOrElse(""),
+      "secondaryPreviousPayrollNumbers" -> taxCodeChange.secondaryPreviousPayrollNumbers.mkString(",")
     )
 
     auditor.sendDataEvent("TaxCodeChange", detail)
+  }
+
+  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
+    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
+    lazy val latestDate = calculationDates.min
+
+    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
   }
 }
 

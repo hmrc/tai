@@ -34,8 +34,27 @@ object TaxCodeChangeRecord {
 }
 
 case class TaxCodeChange(current: Seq[TaxCodeChangeRecord], previous: Seq[TaxCodeChangeRecord]) {
-  def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).max
-  def primaryCurrentTaxCode: String = current.filter(_.primary).head.taxCode
+  def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
+
+  def primaryCurrentTaxCode: String = primaryTaxCode(current)
+  def secondaryCurrentTaxCodes: Seq[String] = secondaryTaxCode(current)
+  def primaryPreviousTaxCode: String = primaryTaxCode(previous)
+  def secondaryPreviousTaxCodes: Seq[String] = secondaryTaxCode(previous)
+
+  def primaryCurrentPayrollNumber: Option[String] = primaryPayrollNumber(current)
+  def secondaryCurrentPayrollNumbers: Seq[String] = secondaryPayrollNumbers(current)
+  def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
+  def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
+
+  private def primaryPayrollNumber(records: Seq[TaxCodeChangeRecord]) = primaryRecord(records).payrollNumber
+  private def secondaryPayrollNumbers(records: Seq[TaxCodeChangeRecord]) = secondaryRecords(records).flatMap(_.payrollNumber)
+  private def primaryTaxCode(records: Seq[TaxCodeChangeRecord]) = primaryRecord(records).taxCode
+  private def secondaryTaxCode(records: Seq[TaxCodeChangeRecord]) = secondaryRecords(records).map(_.taxCode)
+
+  private def primaryRecord(records: Seq[TaxCodeChangeRecord]) =
+    records.find(_.primary).getOrElse(throw new RuntimeException("No primary tax code record found"))
+
+  private def secondaryRecords(records: Seq[TaxCodeChangeRecord]) = records.filterNot(_.primary)
 }
 
 object TaxCodeChange {
