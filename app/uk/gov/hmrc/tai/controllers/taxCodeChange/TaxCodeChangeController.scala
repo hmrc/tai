@@ -38,7 +38,10 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
     implicit request =>
         if (toggleConfig.taxCodeChangeEnabled) {
           taxCodeChangeService.hasTaxCodeChanged(nino).map{
-            taxCodeChanged => Ok(Json.toJson(taxCodeChanged))
+            taxCodeChanged => {
+              Logger.debug("[TaxCodeChangeController.hasTaxCodeChange]: " + taxCodeChanged)
+              Ok(Json.toJson(taxCodeChanged))
+            }
           }
         }
         else{

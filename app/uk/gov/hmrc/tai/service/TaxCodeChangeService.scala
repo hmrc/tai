@@ -46,6 +46,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
+      Logger.debug("[TaxCodeChangeService.hasTaxCodeChanged]: " + taxCodeHistory.toString)
+
       validForService(taxCodeHistory.operatedTaxCodeRecords)
 
     } recover {
