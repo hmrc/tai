@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeSpec}
+import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
