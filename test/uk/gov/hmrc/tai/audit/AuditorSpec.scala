@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.tai.audit
 
-import org.mockito.ArgumentCaptor
+import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.Configuration
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 class AuditorSpec extends PlaySpec with MockitoSugar {
 
@@ -32,52 +32,35 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
       "send data event method has called with default value" in {
         implicit val hc = HeaderCarrier()
 
-        val func: (DataEvent) => Unit = mock[(DataEvent) => Unit]
-        when(func.apply(any()))
-          .thenReturn(())
+        val mockAudit = mock[AuditConnector]
 
-        val mockAudit = mock[Audit]
-        when(mockAudit.sendDataEvent)
-          .thenReturn(func)
+        val auditor = createSut(mockAudit)
 
-        val sut = createSut(mockAudit)
+        auditor.sendDataEvent("Test-tx", detail = Map.empty)
 
-        sut.sendDataEvent("Test-tx", detail = Map.empty)
-
-        verify(mockAudit, times(1)).sendDataEvent
+        verify(mockAudit, times(1)).sendExplicitAudit(any(): String, any(): Map[String, String])(any(), any())
       }
 
-      "send data event method has called with custom values" in {
+      "send data event method has called with custom values 2" in {
         implicit val hc = HeaderCarrier()
+        implicit val ec = MdcLoggingExecutionContext.fromLoggingDetails
 
-        val captor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+        val mockAudit = mock[AuditConnector]
 
-        val func: (DataEvent) => Unit = mock[(DataEvent) => Unit]
-        when(func.apply(any()))
-          .thenReturn(())
+        val auditor = createSut(mockAudit)
 
-        val mockAudit = mock[Audit]
-        when(mockAudit.sendDataEvent)
-          .thenReturn(func)
+        val detail = Map(
+          "ABC" -> "XYZ",
+          "PQR" -> "DEF"
+        )
 
-        val sut = createSut(mockAudit)
+        auditor.sendDataEvent("Test-tx", detail)
 
-        sut.sendDataEvent(
-          "Test-tx",
-          detail = Map(
-            "ABC" -> "XYZ",
-            "PQR" -> "DEF"))
-
-        verify(mockAudit, times(1)).sendDataEvent
-        verify(func, times(1)).apply(captor.capture())
-
-        val dataEvent = captor.getValue
-        dataEvent.detail("ABC") mustBe "XYZ"
-        dataEvent.detail("PQR") mustBe "DEF"
+        verify(mockAudit, times(1)).sendExplicitAudit(Matchers.eq("Test-tx"), Matchers.eq(detail))(any(),any())
       }
     }
   }
 
-  private def createSut(audit: Audit) =
+  private def createSut(audit: AuditConnector) =
     new Auditor(audit)
 }

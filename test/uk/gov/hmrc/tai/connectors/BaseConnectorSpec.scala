@@ -17,27 +17,27 @@
 package uk.gov.hmrc.tai.connectors
 
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.http.Status
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
-import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import play.api.http.Status
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 import scala.util.Random
 
 
@@ -253,7 +253,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         Await.result(resp, 5 seconds)
 
         verify(mockAuditor, times(1))
-          .sendDataEvent(Matchers.eq("RTI returned incorrect account"), any(), any(), any())(any())
+          .sendDataEvent(Matchers.eq("RTI returned incorrect account"), any())(any())
       }
     }
     "return a success response from NPS" when {
@@ -813,6 +813,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
   private val NotFoundHttpResponse: HttpResponse = HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
   private val InternalServerErrorHttpResponse: HttpResponse = HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
   private val nino: Nino = new Generator(new Random).nextNino
+
   private def createSUT(auditor: Auditor, metrics: Metrics, httpClient: HttpClient) =
     new BaseConnector(auditor, metrics, httpClient) {
       

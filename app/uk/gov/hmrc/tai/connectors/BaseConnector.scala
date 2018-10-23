@@ -25,9 +25,9 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
-import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 import scala.concurrent.Future
 
@@ -128,9 +128,7 @@ abstract class BaseConnector(auditor: Auditor,
             if (reqNino != rtiData.nino) {
               Logger.warn(s"RTIAPI - Incorrect Payload returned from RTI HODS for $reqNino")
 
-              auditor.sendDataEvent(
-                transactionName = "RTI returned incorrect account",
-                detail = Map(
+              auditor.sendDataEvent("RTI returned incorrect account", Map(
                   "request Nino" -> reqNino,
                   "rti response Nino" -> rtiData.nino,
                   "tax year" -> rtiData.taxYear.twoDigitRange,

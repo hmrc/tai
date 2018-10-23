@@ -22,6 +22,8 @@ import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
@@ -31,14 +33,8 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector) extends TaxCodeChangeService {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector, auditor: Auditor) extends TaxCodeChangeService {
 
-  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
-    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
-    lazy val latestDate = calculationDates.min
-
-    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
-  }
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
@@ -58,7 +54,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def taxCodeChange(nino: Nino): Future[TaxCodeChange] = {
+  def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
     val fromYear = TaxYear()
     val toYear = fromYear
 
@@ -94,7 +90,11 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
           previousRecord.pensionIndicator,
           previousRecord.isPrimary))
 
-        TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
+        val taxCodeChange = TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
+
+        auditTaxCodeChange(nino, taxCodeChange)
+
+        taxCodeChange
 
       } else {
         TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
@@ -109,6 +109,32 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       date
     }
   }
+
+  private def auditTaxCodeChange(nino: Nino, taxCodeChange: TaxCodeChange)(implicit hc: HeaderCarrier): Unit = {
+    val detail: Map[String, String] = Map(
+      "nino" -> nino.nino,
+      "numberOfCurrentTaxCodes" -> taxCodeChange.current.size.toString,
+      "numberOfPreviousTaxCodes" -> taxCodeChange.previous.size.toString,
+      "dataOfTaxCodeChange" -> taxCodeChange.latestTaxCodeChangeDate.toString,
+      "primaryCurrentTaxCode" -> taxCodeChange.primaryCurrentTaxCode,
+      "secondaryCurrentTaxCodes" -> taxCodeChange.secondaryCurrentTaxCodes.mkString(","),
+      "primaryPreviousTaxCode" -> taxCodeChange.primaryPreviousTaxCode,
+      "secondaryPreviousTaxCodes" -> taxCodeChange.secondaryPreviousTaxCodes.mkString(","),
+      "primaryCurrentPayrollNumber" -> taxCodeChange.primaryCurrentPayrollNumber.getOrElse(""),
+      "secondaryCurrentPayrollNumbers" -> taxCodeChange.secondaryCurrentPayrollNumbers.mkString(","),
+      "primaryPreviousPayrollNumber" -> taxCodeChange.primaryPreviousPayrollNumber.getOrElse(""),
+      "secondaryPreviousPayrollNumbers" -> taxCodeChange.secondaryPreviousPayrollNumbers.mkString(",")
+    )
+
+    auditor.sendDataEvent("TaxCodeChange", detail)
+  }
+
+  private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
+    val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
+    lazy val latestDate = calculationDates.min
+
+    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
+  }
 }
 
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
@@ -116,6 +142,6 @@ trait TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
-  def taxCodeChange(nino: Nino): Future[TaxCodeChange]
+  def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 
 }
