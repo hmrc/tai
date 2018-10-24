@@ -103,7 +103,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         val featureTogglesConfig = mock[FeatureTogglesConfig]
         val url = {
           val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
-          s"${path.getPath}?${path.getQuery}"
+          path.getPath
         }
 
         when(featureTogglesConfig.desEnabled).thenReturn(true)
@@ -121,7 +121,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-            s"${path.getPath}"
+            path.getPath
           }
 
           when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
@@ -137,7 +137,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           val featureTogglesConfig = mock[FeatureTogglesConfig]
           val url = {
             val path = new URL(iabdUrlConfig.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-            s"${path.getPath}"
+            path.getPath
           }
 
           when(featureTogglesConfig.desUpdateEnabled).thenReturn(true)
