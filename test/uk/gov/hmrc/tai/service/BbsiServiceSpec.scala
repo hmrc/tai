@@ -17,9 +17,9 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{doNothing, verify, when}
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
@@ -37,6 +37,8 @@ import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class BbsiServiceSpec extends PlaySpec with MockitoSugar {
+
+  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
   "Bbsi Service" must {
     "return bank accounts" in {
@@ -75,14 +77,14 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing().when(mockAuditor)
-          .sendDataEvent(any(), any(), any(),any())(any())
+          .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
         val result = Await.result(sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017,6,20), Some(0))), 5.seconds)
 
         result mustBe "1"
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq("CloseBankAccountRequest"), any(), any(),any())(any())
+          .sendDataEvent(Matchers.eq("CloseBankAccountRequest"), any())(any())
       }
     }
 
@@ -112,7 +114,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing().when(mockAuditor)
-          .sendDataEvent(any(), any(), any(),any())(any())
+          .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
         val result = Await.result(sut.removeIncorrectBankAccount(nino, 1), 5.seconds)
@@ -120,7 +122,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
         result mustBe "1"
 
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq(IFormConstants.RemoveBankAccountRequest), any(), any(),any())(any())
+          .sendDataEvent(Matchers.eq(IFormConstants.RemoveBankAccountRequest), any())(any())
       }
     }
     "return exception" when {
@@ -149,14 +151,14 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing().when(mockAuditor)
-          .sendDataEvent(any(), any(), any(),any())(any())
+          .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
         val result = Await.result(sut.updateBankAccountInterest(nino, 1, 1000), 5.seconds)
 
         result mustBe "1"
         verify(mockAuditor)
-            .sendDataEvent(Matchers.eq(IFormConstants.UpdateBankAccountRequest), any(), any(),any())(any())
+            .sendDataEvent(Matchers.eq(IFormConstants.UpdateBankAccountRequest), any())(any())
       }
     }
 
@@ -186,7 +188,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockAuditor = mock[Auditor]
       doNothing().when(mockAuditor)
-        .sendDataEvent(any(), any(), any(),any())(any())
+        .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
       Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
@@ -205,8 +207,6 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
   private val bankAccount = BankAccount(1, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
   private val nino = new Generator(new Random).nextNino
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private def createSUT(bbsiRepository: BbsiRepository, iFormSubmissionService: IFormSubmissionService, auditor: Auditor) =
     new BbsiService(bbsiRepository, iFormSubmissionService, auditor)
 }

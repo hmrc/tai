@@ -124,7 +124,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditor = mock[Auditor]
         doNothing().when(mockAuditor)
-          .sendDataEvent(any(), any(), any(),any())(any())
+          .sendDataEvent(any(), any())(any())
 
         val SUT = createSUT(
           employmentService = mockEmploymentSvc,
@@ -138,7 +138,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
         result mustBe IncomeUpdateSuccess
         verify(mockTaxAccountSvc, times(1)).invalidateTaiCacheData()(any())
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any(), any(),any())(any())
+          .sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
       }
     }
 

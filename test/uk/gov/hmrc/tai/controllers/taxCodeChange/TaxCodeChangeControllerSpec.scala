@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import org.joda.time.LocalDate
+import org.mockito.Matchers
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -37,6 +38,8 @@ import scala.concurrent.Future
 import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "hasTaxCodeChanged" should {
 
@@ -95,7 +98,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
       val testNino = ninoGenerator
       val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
       val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
-      when(mockTaxCodeService.taxCodeChange(testNino)).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
+      when(mockTaxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
@@ -124,7 +127,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
     }
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
   val mockTaxCodeService: TaxCodeChangeService = mock[TaxCodeChangeService]
 
