@@ -103,7 +103,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChangeAnalytics(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    ???
+    Future.successful(true)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
