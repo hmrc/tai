@@ -102,6 +102,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
+  def taxCodeChangeAnalytics(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    ???
+  }
+
   private def previousStartDate(date: LocalDate): LocalDate = {
     if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
       TaxYearResolver.startOfCurrentTaxYear
@@ -143,5 +147,7 @@ trait TaxCodeChangeService {
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
+
+  def taxCodeChangeAnalytics(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
 }

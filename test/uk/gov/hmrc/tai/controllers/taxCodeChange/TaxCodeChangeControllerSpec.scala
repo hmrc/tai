@@ -21,7 +21,7 @@ import org.mockito.Matchers
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsBoolean, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
@@ -124,6 +124,17 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
       val response = controller.taxCodeChange(testNino)(FakeRequest())
 
       contentAsJson(response) mustEqual expectedResponse
+    }
+  }
+
+  "taxCodeChangeAnalytics" should {
+    "return true if there has been a tax code change" in {
+
+      val nino = ninoGenerator
+      val result = controller.taxCodeChangeAnalytics(nino)(FakeRequest())
+
+      contentAsJson(result) mustEqual JsBoolean(true)
+
     }
   }
 
