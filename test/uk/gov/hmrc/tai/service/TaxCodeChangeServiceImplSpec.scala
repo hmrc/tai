@@ -825,15 +825,28 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   "taxCodeChangeAnalytics" should {
 
     "return true" when {
-
       "there has been a tax code change" in {
 
-        val result = Await.result(createService(taxCodeChangeConnector).taxCodeChangeAnalytics(any()), 5.seconds)
-        result mustEqual true
+        val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
+        val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
+        val nino = randomNino
+
+        val taxCodeHistory = TaxCodeHistory(
+          nino = nino.withoutSuffix,
+          taxCodeRecord = Seq(
+            taxCodeRecord(dateOfCalculation = newCodeDate),
+            taxCodeRecord(dateOfCalculation = previousCodeDate)
+          )
+        )
+
+        when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+        Await.result(service.hasTaxCodeChanged(nino), 5.seconds) mustEqual true
 
       }
-
     }
+
   }
 
 

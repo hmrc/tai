@@ -41,11 +41,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val toYear = fromYear
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
-
-      Logger.debug("[TaxCodeChangeService.hasTaxCodeChanged]: " + taxCodeHistory.toString)
-
       validForService(taxCodeHistory.operatedTaxCodeRecords)
-
     } recover {
       case exception: JsResultException =>
         Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
@@ -103,7 +99,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChangeAnalytics(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    Future.successful(true)
+    hasTaxCodeChanged(nino)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
