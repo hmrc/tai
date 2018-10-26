@@ -826,7 +826,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
   "taxCodeMismatch" should {
 
-    "return true" when {
+    "return false and list of confirmed and unconfirmed tax codes" when {
 
       "tax code returned from tax account record, matches the one returned from tax code list" in {
 
@@ -845,10 +845,39 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1185L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
 
+        when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+        when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val expectedResult = TaxCodeMismatch(false, Seq("1185L"), Seq("1185L"))
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+        Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
+      }
+    }
+
+    "return true and list of confirmed and unconfirmed tax codes" when {
+
+      "tax code returned from tax account record, does not match the one returned from tax code list" in {
+
+        val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
+        val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
+        val nino = randomNino
+
+        // Confirmed tax codes
+        val taxCodeHistory = TaxCodeHistory(
+          nino = nino.withoutSuffix,
+          taxCodeRecord = Seq(
+            taxCodeRecord(dateOfCalculation = newCodeDate),
+            taxCodeRecord(dateOfCalculation = previousCodeDate)))
+
+        // Unconfirmed tax codes
+        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
+          "EmploymentIncome", "1000L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
         when(incomeService.taxCodeIncomes(any(),any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(false, Seq("1185L"),Seq("1185L"))
+        val expectedResult = TaxCodeMismatch(true, taxCodeIncomes.map(_.taxCode), Seq("1185L"))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
