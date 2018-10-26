@@ -43,12 +43,16 @@ class TaxCodeChangeServiceImpl @Inject()(
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
+    implicit val hc = HeaderCarrier()
 
-    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
-      validForService(taxCodeHistory.operatedTaxCodeRecords)
-    } recover {
+    (for{
+       taxCodeHistory <- taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear)
+       taxCodeMismatch <- taxCodeMismatch(nino)
+     } yield {
+       validForService(taxCodeHistory.operatedTaxCodeRecords) && !taxCodeMismatch.mismatch
+     }) recover {
       case exception: JsResultException =>
-        Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
+        Logger.warn(s"Failed to retrieve TaxCodeRecord or Match for $nino with exception:${exception.getMessage}")
         false
       case ex => throw ex
     }
@@ -104,7 +108,7 @@ class TaxCodeChangeServiceImpl @Inject()(
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
 
-    for {
+    (for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
@@ -114,6 +118,10 @@ class TaxCodeChangeServiceImpl @Inject()(
       val mismatchOfTaxCodes = unconfirmedTaxCodeList != confirmedTaxCodeList
 
       TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
+    }) recover {
+      case exception =>
+        Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
+        TaxCodeMismatch(true, Seq(), Seq())
     }
 
   }
