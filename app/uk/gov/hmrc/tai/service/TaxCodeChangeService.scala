@@ -54,8 +54,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
-    val fromYear = TaxYear()
+  def taxCodeChange(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
+    val fromYear = year
     val toYear = fromYear
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
@@ -142,6 +142,6 @@ trait TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino): Future[Boolean]
 
-  def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
+  def taxCodeChange(nino: Nino, year: TaxYear = TaxYear())(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 
 }
