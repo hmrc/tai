@@ -826,17 +826,18 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
   "taxCodeMismatch" should {
 
-    "return false and list of confirmed and unconfirmed tax codes" when {
+    val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
+    val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
+    val payrollNumber1 = randomInt().toString
+    val payrollNumber2 = randomInt().toString
+    val nino = randomNino
+    val baseTaxCodeIncome = TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
+      "EmploymentIncome", "1185L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0))
 
-      val nino = randomNino
-      val baseTaxCodeIncome = TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-        "EmploymentIncome", "1185L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0))
+    "return false and list of confirmed and unconfirmed tax codes" when {
 
       "tax code returned from tax account record, matches the one returned from tax code list" in {
 
-        val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
-        val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
-        val nino = randomNino
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
@@ -857,11 +858,6 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
 
       "tax codes returned from tax account record, match the ones returned from tax code list" in {
-
-        val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
-        val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
-        val payrollNumber1 = randomInt().toString
-        val payrollNumber2 = randomInt().toString
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
@@ -900,18 +896,12 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
       "tax code returned from tax account record, does not match the one returned from tax code list" in {
 
-        val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
-        val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
-        val nino = randomNino
-
-        // Confirmed tax codes
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
           taxCodeRecord = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate),
             taxCodeRecord(dateOfCalculation = previousCodeDate)))
 
-        // Unconfirmed tax codes
         val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1000L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
 
