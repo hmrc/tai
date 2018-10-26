@@ -45,7 +45,8 @@ class IncomeController @Inject()(incomeService: IncomeService,
     implicit request =>
 
       incomeService.untaxedInterest(nino).map {
-        case Some(untaxedInterest) => Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
+        case Some(untaxedInterest) =>
+          Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
         case None => NotFound
       } recoverWith taxAccountErrorHandler
   }
@@ -54,14 +55,16 @@ class IncomeController @Inject()(incomeService: IncomeService,
     implicit request =>
       incomeService.taxCodeIncomes(nino, year).map {
         case Seq() => NotFound
-        case taxCodeIncomes => Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes)(Writes.seq(taxCodeIncomeSourceWrites)), Nil)))
+        case taxCodeIncomes =>
+          Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes)(Writes.seq(taxCodeIncomeSourceWrites)), Nil)))
       }recoverWith taxAccountErrorHandler
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.incomes(nino, year).map{
-        income => Ok(Json.toJson(ApiResponse(income, Seq.empty[ApiLink])))
+        income =>
+          Ok(Json.toJson(ApiResponse(income, Seq.empty[ApiLink])))
       } recoverWith taxAccountErrorHandler
   }
 
@@ -79,5 +82,4 @@ class IncomeController @Inject()(incomeService: IncomeService,
           case _ => InternalServerError
         }
     }
-
 }

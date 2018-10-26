@@ -29,6 +29,8 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.domain.EmploymentIncome
+import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -822,29 +824,36 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     }
   }
 
-  "taxCodeChangeAnalytics" should {
+  "taxCodeMismatch" should {
 
     "return true" when {
-      "there has been a tax code change" in {
+
+      "tax code returned from tax account record, matches the one returned from tax code list" in {
 
         val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
         val previousCodeDate = TaxYearResolver.startOfCurrentTaxYear
         val nino = randomNino
 
+        // Confirmed tax codes
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
           taxCodeRecord = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate),
-            taxCodeRecord(dateOfCalculation = previousCodeDate)
-          )
-        )
+            taxCodeRecord(dateOfCalculation = previousCodeDate)))
 
+        // Unconfirmed tax codes
+        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
+          "EmploymentIncome", "1185L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
+        when(incomeService.taxCodeIncomes(any(),any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
-        Await.result(service.hasTaxCodeChanged(nino), 5.seconds) mustEqual true
+        val expectedResult = TaxCodeMismatch(false, Seq("1185L"),Seq("1185L"))
 
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+        Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
       }
+
     }
 
   }
@@ -863,9 +872,14 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
   val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
   val defaultMockAudit = mock[Auditor]
+  val incomeService: IncomeService = mock[IncomeService]
 
-  private def createService(mockConnector: TaxCodeChangeConnector = taxCodeChangeConnector, mockAuditor: Auditor = defaultMockAudit) = {
-    new TaxCodeChangeServiceImpl(mockConnector, mockAuditor)
+  private def createService(
+                             mockConnector: TaxCodeChangeConnector = taxCodeChangeConnector,
+                             mockAuditor: Auditor = defaultMockAudit,
+                             incomeService: IncomeService = incomeService) = {
+
+    new TaxCodeChangeServiceImpl(mockConnector, mockAuditor, incomeService)
   }
 
   private def randomNino: Nino = new Generator(new Random).nextNino
