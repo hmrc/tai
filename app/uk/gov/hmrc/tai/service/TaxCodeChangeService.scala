@@ -109,14 +109,11 @@ class TaxCodeChangeServiceImpl @Inject()(
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
 
-
       val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
       val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
-
       val mismatchOfTaxCodes = unconfirmedTaxCodeList != confirmedTaxCodeList
 
-      val result = TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
-      result
+      TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }
 
   }

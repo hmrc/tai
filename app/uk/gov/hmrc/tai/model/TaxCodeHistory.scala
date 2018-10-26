@@ -28,7 +28,7 @@ case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 object TaxCodeHistory {
 
   implicit val reads: Reads[TaxCodeHistory] = (
-      (JsPath \ "nino").read[String] and
+    (JsPath \ "nino").read[String] and
       (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]](minLength[Seq[TaxCodeRecord]](1))
     )(TaxCodeHistory.apply _)
 
