@@ -54,8 +54,10 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       }
   }
 
-  def taxCodeChangeAnalytics(nino: Nino): Action[AnyContent] = authentication.async {
+  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
-      Future.successful(Ok(Json.toJson(true)))
+      taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
+        Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+      }
   }
 }

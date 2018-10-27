@@ -123,7 +123,6 @@ class TaxCodeChangeServiceImpl @Inject()(
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
         TaxCodeMismatch(true, Seq(), Seq())
     }
-
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
