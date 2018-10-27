@@ -854,11 +854,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     val payrollNumber2 = randomInt().toString
     val nino = randomNino
 
-
     "return false and list of confirmed and unconfirmed tax codes" when {
 
       "tax code returned from tax account record, matches the one returned from tax code list" in {
-
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
@@ -934,7 +932,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
       }
 
-      "tax codes returned from tax account record, match the ones returned from tax code list" in {
+      "tax codes returned from tax account record, do not match the ones returned from tax code list" in {
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,

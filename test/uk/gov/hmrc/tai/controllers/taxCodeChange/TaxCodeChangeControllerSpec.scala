@@ -131,26 +131,48 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
   }
 
   "taxCodeMismatch" should {
+
+    val nino = ninoGenerator
+
     "return true and list of tax code changes" when {
+
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        val nino = ninoGenerator
-
         when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
-          Future.successful(TaxCodeMismatch(true, Seq(""), Seq(""))))
+          Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
             "mismatch" -> true,
-            "unconfirmedTaxCodes" -> Json.arr(""),
-            "confirmedTaxCodes" -> Json.arr("")
+            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
+            "confirmedTaxCodes" -> Json.arr("1185L")
           ),
           "links" -> Json.arr())
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
         contentAsJson(result) mustEqual expectedResponse
+      }
+    }
 
+    "return false and list of tax code changes" when {
+
+      "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
+
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
+          Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L","BR"))))
+
+        val expectedResponse = Json.obj(
+          "data" -> Json.obj(
+            "mismatch" -> true,
+            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
+            "confirmedTaxCodes" -> Json.arr("1185L","BR")
+          ),
+          "links" -> Json.arr())
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        contentAsJson(result) mustEqual expectedResponse
       }
     }
 
