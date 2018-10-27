@@ -33,13 +33,10 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(
-                                          taxCodeChangeConnector: TaxCodeChangeConnector,
-                                          auditor: Auditor,
-                                          incomeService: IncomeService
-                                        ) extends TaxCodeChangeService {
-
-
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
+                                         auditor: Auditor,
+                                         incomeService: IncomeService) extends TaxCodeChangeService {
+  
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
