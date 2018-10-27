@@ -36,7 +36,7 @@ import scala.concurrent.Future
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
                                          auditor: Auditor,
                                          incomeService: IncomeService) extends TaxCodeChangeService {
-  
+
   def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
@@ -109,11 +109,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
-
       val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
       val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
       val mismatchOfTaxCodes = unconfirmedTaxCodeList != confirmedTaxCodeList
-
       TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }) recover {
       case exception =>
