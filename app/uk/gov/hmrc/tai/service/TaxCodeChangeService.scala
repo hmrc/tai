@@ -60,7 +60,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
 
-      if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+      if (atLeast2RecordsInGivenYear(taxCodeHistory.operatedTaxCodeRecords, year)) {
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
 
@@ -127,6 +127,21 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     )
 
     auditor.sendDataEvent("TaxCodeChange", detail)
+  }
+
+  def atLeast2RecordsInGivenYear(taxCodeRecords: Seq[TaxCodeRecord], year: TaxYear) = {
+
+    val recordsInOrBeforeYear = taxCodeRecords.filter( record =>
+      record.dateOfCalculation.isBefore(year.end)
+    )
+
+    val calculationDates = recordsInOrBeforeYear.map(_.dateOfCalculation).distinct
+    lazy val latestDate = calculationDates.min
+
+    lazy val dateInGivenYear = latestDate.isAfter(year.start) || latestDate.isEqual(year.start)
+
+    calculationDates.length >= 2 && dateInGivenYear
+
   }
 
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
