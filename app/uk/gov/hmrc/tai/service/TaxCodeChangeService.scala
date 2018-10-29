@@ -42,17 +42,21 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val toYear = fromYear
     implicit val hc = HeaderCarrier()
 
-    (for{
-       taxCodeHistory <- taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear)
-       taxCodeMismatch <- taxCodeMismatch(nino)
-     } yield {
-       validForService(taxCodeHistory.operatedTaxCodeRecords) && !taxCodeMismatch.mismatch
-     }) recover {
-      case exception: JsResultException =>
-        Logger.warn(s"Failed to retrieve TaxCodeRecord or Match for $nino with exception:${exception.getMessage}")
+    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear).flatMap { taxCodeHistory =>
+      if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+        taxCodeMismatch(nino).map{ taxCodeMismatch =>
+          !taxCodeMismatch.mismatch
+        }
+      }
+      else {
+        Future.successful(false)
+      }
+    }.recover {
+      case exception: Exception =>
+        Logger.debug("Could not resolve if tax code has been changed")
         false
-      case ex => throw ex
     }
+
   }
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
@@ -104,7 +108,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-
     (for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
