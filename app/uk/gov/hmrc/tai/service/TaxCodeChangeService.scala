@@ -20,12 +20,11 @@ import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.TaxCodeRecord
+import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
@@ -33,25 +32,29 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
 
-class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector, auditor: Auditor) extends TaxCodeChangeService {
+class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
+                                         auditor: Auditor,
+                                         incomeService: IncomeService) extends TaxCodeChangeService {
 
-
-  def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
 
-    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
-
-      Logger.debug("[TaxCodeChangeService.hasTaxCodeChanged]: " + taxCodeHistory.toString)
-
-      validForService(taxCodeHistory.operatedTaxCodeRecords)
-
-    } recover {
-      case exception: JsResultException =>
-        Logger.warn(s"Failed to retrieve TaxCodeRecord for $nino with exception:${exception.getMessage}")
+    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear).flatMap { taxCodeHistory =>
+      if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+        taxCodeMismatch(nino).map{ taxCodeMismatch =>
+          !taxCodeMismatch.mismatch
+        }
+      }
+      else {
+        Future.successful(false)
+      }
+    }.recover {
+      case exception: Exception =>
+        Logger.debug("Could not evaluate tax code history")
         false
-      case ex => throw ex
     }
+
   }
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
@@ -102,6 +105,23 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
+  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
+    (for {
+      unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
+      confirmedTaxCodes <- taxCodeChange(nino)
+    } yield {
+      val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
+      val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
+      val mismatchOfTaxCodes = unconfirmedTaxCodeList != confirmedTaxCodeList
+
+      TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
+    }) recover {
+      case exception =>
+        Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
+        TaxCodeMismatch(true, Seq(), Seq())
+    }
+  }
+
   private def previousStartDate(date: LocalDate): LocalDate = {
     if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
       TaxYearResolver.startOfCurrentTaxYear
@@ -140,8 +160,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Future[Boolean]
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
+
+  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
 
 }

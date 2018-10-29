@@ -21,7 +21,7 @@ import org.mockito.Matchers
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{JsBoolean, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
@@ -29,12 +29,12 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.api
+import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
 import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
@@ -49,7 +49,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val testNino = ninoGenerator
 
         when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
-        when(mockTaxCodeService.hasTaxCodeChanged(testNino)).thenReturn(Future.successful(true))
+        when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -65,7 +65,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val testNino = ninoGenerator
 
         when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
-        when(mockTaxCodeService.hasTaxCodeChanged(testNino)).thenReturn(Future.successful(false))
+        when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -96,9 +96,12 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1", Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2", Some("67890"), pensionIndicator = false, primary = true)
-      when(mockTaxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
+      val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1",
+        Some("12345"), pensionIndicator = false, primary = true)
+      val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2",
+        Some("67890"), pensionIndicator = false, primary = true)
+      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
+        Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
@@ -127,9 +130,56 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
     }
   }
 
-  val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
-  val mockTaxCodeService: TaxCodeChangeService = mock[TaxCodeChangeService]
+  "taxCodeMismatch" should {
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, mockTaxCodeService, mockConfig)
+    val nino = ninoGenerator
+
+    "return true and list of tax code changes" when {
+
+      "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
+
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L"))))
+
+        val expectedResponse = Json.obj(
+          "data" -> Json.obj(
+            "mismatch" -> true,
+            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
+            "confirmedTaxCodes" -> Json.arr("1185L")
+          ),
+          "links" -> Json.arr())
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        contentAsJson(result) mustEqual expectedResponse
+      }
+    }
+
+    "return false and list of tax code changes" when {
+
+      "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
+
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
+          Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L","BR"))))
+
+        val expectedResponse = Json.obj(
+          "data" -> Json.obj(
+            "mismatch" -> true,
+            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
+            "confirmedTaxCodes" -> Json.arr("1185L","BR")
+          ),
+          "links" -> Json.arr())
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        contentAsJson(result) mustEqual expectedResponse
+      }
+    }
+
+  }
+
+  val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
+  val taxCodeService: TaxCodeChangeService = mock[TaxCodeChangeService]
+
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, mockConfig)
   private def ninoGenerator = new Generator(new Random).nextNino
 }
