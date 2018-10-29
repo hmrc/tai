@@ -20,7 +20,6 @@ import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsResultException
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -37,10 +36,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                          auditor: Auditor,
                                          incomeService: IncomeService) extends TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Future[Boolean] = {
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
-    implicit val hc = HeaderCarrier()
 
     taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear).flatMap { taxCodeHistory =>
       if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
@@ -53,7 +51,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       }
     }.recover {
       case exception: Exception =>
-        Logger.debug("Could not resolve if tax code has been changed")
+        Logger.debug("Could not evaluate tax code history")
         false
     }
 
@@ -115,6 +113,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
       val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
       val mismatchOfTaxCodes = unconfirmedTaxCodeList != confirmedTaxCodeList
+
       TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }) recover {
       case exception =>
@@ -161,7 +160,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino): Future[Boolean]
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 

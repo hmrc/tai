@@ -49,7 +49,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val testNino = ninoGenerator
 
         when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
-        when(taxCodeService.hasTaxCodeChanged(testNino)).thenReturn(Future.successful(true))
+        when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -65,7 +65,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val testNino = ninoGenerator
 
         when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
-        when(taxCodeService.hasTaxCodeChanged(testNino)).thenReturn(Future.successful(false))
+        when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -138,8 +138,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
-          Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L"))))
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
