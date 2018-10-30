@@ -34,7 +34,7 @@ import uk.gov.hmrc.tai.model.api.TaxCodeChange
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
