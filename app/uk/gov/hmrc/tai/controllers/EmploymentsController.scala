@@ -36,11 +36,8 @@ class EmploymentsController @Inject()(employmentService: EmploymentService,
   with ApiFormats {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
-
     employmentService.employments(nino, year).map { employments: Seq[Employment] =>
-
       Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
-
     }.recover {
       case _: NotFoundException => NotFound
       case ex:BadRequestException => BadRequest(ex.getMessage)
@@ -97,4 +94,6 @@ class EmploymentsController @Inject()(employmentService: EmploymentService,
           })
       }
   }
+
 }
+

@@ -43,7 +43,6 @@ class IncomeController @Inject()(incomeService: IncomeService,
 
   def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
-
       incomeService.untaxedInterest(nino).map {
         case Some(untaxedInterest) => Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
         case None => NotFound
@@ -79,5 +78,4 @@ class IncomeController @Inject()(incomeService: IncomeService,
           case _ => InternalServerError
         }
     }
-
 }
