@@ -856,6 +856,24 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
     "return false and list of confirmed and unconfirmed tax codes" when {
 
+      "tax code change returns an empty sequence" in {
+
+        val taxCodeHistory = TaxCodeHistory(
+          nino = nino.withoutSuffix,
+          taxCodeRecord = Seq(taxCodeRecord(dateOfCalculation = previousCodeDate))
+        )
+
+        val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
+
+        when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+        when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+        val expectedResult = TaxCodeMismatch(false, Seq("1185L"), Seq())
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
+        Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
+      }
+
       "tax code returned from tax account record, matches the one returned from tax code list" in {
 
         val taxCodeHistory = TaxCodeHistory(
