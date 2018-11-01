@@ -21,7 +21,7 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord}
@@ -118,7 +118,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }) recover {
       case exception =>
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
-        TaxCodeMismatch(true, Seq(), Seq())
+        throw new BadRequestException(exception.getMessage)
     }
   }
 

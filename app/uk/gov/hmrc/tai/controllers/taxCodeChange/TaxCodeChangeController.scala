@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
@@ -58,6 +59,8 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
     implicit request =>
       taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
         Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+      } recover {
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
       }
   }
 }
