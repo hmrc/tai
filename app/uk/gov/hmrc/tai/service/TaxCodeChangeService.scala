@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord}
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
@@ -37,10 +37,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                          incomeService: IncomeService) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
-    val fromYear = TaxYear()
-    val toYear = fromYear.next
-
-    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear).flatMap { taxCodeHistory =>
+    taxCodeHistory(nino, TaxYear()).flatMap { taxCodeHistory =>
       if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
         taxCodeMismatch(nino).map{ taxCodeMismatch =>
           !taxCodeMismatch.mismatch
@@ -58,10 +55,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
-    val fromYear = TaxYear()
-    val toYear = fromYear.next
-
-    taxCodeChangeConnector.taxCodeHistory(nino, fromYear, toYear) map { taxCodeHistory =>
+    taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
@@ -120,6 +114,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
         throw new BadRequestException(exception.getMessage)
     }
+  }
+
+  private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
