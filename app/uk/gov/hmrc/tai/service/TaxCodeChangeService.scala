@@ -36,6 +36,11 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                          auditor: Auditor,
                                          incomeService: IncomeService) extends TaxCodeChangeService {
 
+  def taxCodeHistory(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeRecord]] = {
+
+  }
+
+
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val fromYear = TaxYear()
     val toYear = fromYear
@@ -159,6 +164,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
+
+  def taxCodeHistory(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeRecord]]
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
 

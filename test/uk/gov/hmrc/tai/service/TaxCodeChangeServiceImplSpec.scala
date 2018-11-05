@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -796,6 +797,26 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         Await.result(service.taxCodeChange(testNino), 5.seconds) mustEqual expectedResult
       }
+    }
+
+    "return single tax code in list of current tax " when {
+
+      "a single tax code is returned" in {
+        val nino = randomNino
+        val from = TaxYear(TaxYearResolver.currentTaxYear)
+        val to = TaxYear(TaxYearResolver.currentTaxYear + 1)
+
+        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusDays(2)
+        val taxCodeRecord = TaxCodeRecord("1185L", Cumulative, "Employer 1", true, dateOfCalculation, Some(randomInt().toString), false, Primary)
+        val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq(taxCodeRecord))
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino, from , to)).thenReturn(Future.successful(taxCodeHistory))
+
+        val service = createService(taxCodeChangeConnector)
+
+        Await.result(service.taxCodeHistory(nino), 5.seconds) mustEqual Seq(taxCodeRecord)
+      }
+
     }
 
     "audit the TaxCodeChange" when {
