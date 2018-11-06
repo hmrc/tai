@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
@@ -69,7 +69,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
-        val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeChangeRecord(currentRecord.taxCode,
+        val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeRecordWithEndDate(currentRecord.taxCode,
           currentRecord.basisOfOperation,
           currentRecord.dateOfCalculation,
           TaxYearResolver.endOfCurrentTaxYear,
@@ -78,7 +78,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
           currentRecord.pensionIndicator,
           currentRecord.isPrimary))
 
-        val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeChangeRecord(previousRecord.taxCode,
+        val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeRecordWithEndDate(previousRecord.taxCode,
           previousRecord.basisOfOperation,
           previousStartDate(previousRecord.dateOfCalculation),
           previousEndDate,
@@ -96,14 +96,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       } else if(taxCodeRecordList.size == 1) {
 
         val taxCodeRecord = taxCodeRecordList.head
-        val taxCodeChangeRecord = TaxCodeChangeRecord(taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation,
+        val taxCodeChangeRecord = TaxCodeRecordWithEndDate(taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation,
           taxCodeRecord.dateOfCalculation, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName, taxCodeRecord.payrollNumber,
           taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary)
 
         TaxCodeChange(Seq(taxCodeChangeRecord),Seq())
 
       } else {
-        TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
+        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       }
     }
   }
