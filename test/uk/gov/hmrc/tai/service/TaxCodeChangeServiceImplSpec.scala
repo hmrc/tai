@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, TaxCodeIncome, Week1Month1BasisOperation}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -1012,6 +1013,28 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
   }
 
+  "latestTaxCodes" should {
+    "return a list of latest tax codes" when {
+      "there is a single employer" in {
+        val nino = randomNino
+        val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
+        val endYear = TaxYear(TaxYearResolver.currentTaxYear)
+        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
+
+        val taxCodeRecord = TaxCodeRecord("1185L", "", "", true, dateOfCalculation,Some(""),false,"primary")
+        val taxCodeRecordList = Seq(taxCodeRecord)
+
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+        
+        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+
+      }
+
+      "there is multiple employers" in{
+
+      }
+    }
+  }
 
   private def taxCodeRecord(taxCode: String = "1185L",
                             employerName: String = "Employer 1",
