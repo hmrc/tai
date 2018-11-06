@@ -1025,7 +1025,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordList = Seq(taxCodeRecord)
 
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-        
+
         when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
 
       }
