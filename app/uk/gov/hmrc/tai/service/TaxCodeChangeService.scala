@@ -57,6 +57,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
+
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
 
       val taxCodeRecordList = taxCodeHistory.taxCodeRecord
@@ -69,23 +70,18 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
-        val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeRecordWithEndDate(currentRecord.taxCode,
-          currentRecord.basisOfOperation,
-          currentRecord.dateOfCalculation,
-          TaxYearResolver.endOfCurrentTaxYear,
-          currentRecord.employerName,
-          currentRecord.payrollNumber,
-          currentRecord.pensionIndicator,
-          currentRecord.isPrimary))
+        val currentTaxCodeChanges = currentRecords.map(
+          currentRecord =>
+            addEndDate(TaxYearResolver.endOfCurrentTaxYear, currentRecord)
+        )
 
-        val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeRecordWithEndDate(previousRecord.taxCode,
-          previousRecord.basisOfOperation,
-          previousStartDate(previousRecord.dateOfCalculation),
-          previousEndDate,
-          previousRecord.employerName,
-          previousRecord.payrollNumber,
-          previousRecord.pensionIndicator,
-          previousRecord.isPrimary))
+        val previousTaxCodeChanges = previousRecords.map(
+          taxCodeRecord =>
+            addEndDate(
+              previousEndDate,
+              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation))
+            )
+        )
 
         val taxCodeChange = TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
 
@@ -94,14 +90,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         taxCodeChange
 
       } else if(taxCodeRecordList.size == 1) {
-
-        val taxCodeRecord = taxCodeRecordList.head
-        val taxCodeChangeRecord = TaxCodeRecordWithEndDate(taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation,
-          taxCodeRecord.dateOfCalculation, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName, taxCodeRecord.payrollNumber,
-          taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary)
-
-        TaxCodeChange(Seq(taxCodeChangeRecord),Seq())
-
+        TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
       } else {
         TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       }
@@ -123,6 +112,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
         throw new BadRequestException(exception.getMessage)
     }
+  }
+
+  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate ={
+    TaxCodeRecordWithEndDate(
+      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
+      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
+    )
   }
 
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]] = {
