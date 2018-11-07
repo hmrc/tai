@@ -60,7 +60,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
 
-      val taxCodeRecordList = taxCodeHistory.taxCodeRecord
+      val taxCodeRecordList = taxCodeHistory.taxCodeRecords
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
@@ -122,9 +122,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]] = {
-    taxCodeHistory(nino, taxYear) map { taxCodeHistory =>
-      taxCodeHistory.taxCodeRecord
-    }
+      mostRecentTaxCodeRecordInYear(nino, taxYear)
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
@@ -133,15 +131,19 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   def mostRecentTaxCodeRecordInYear(nino: Nino, year: TaxYear): Future[Seq[TaxCodeRecord]] = {
 
-    taxCodeChangeConnector.taxCodeHistory(nino, year, year).map { taxCodeHistoryFull =>
+    taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
-      val employmentRecords = taxCodeHistoryFull.taxCodeRecord.filter(!_.pensionIndicator)
-      val employmentRecordsMostRecent = getMostRecentRecordInSequence(employmentRecords)
+      val taxCodeRecords = taxCodeHistory.taxCodeRecords
 
-      val pensionRecords = taxCodeHistoryFull.taxCodeRecord.filter(_.pensionIndicator)
-      val pensionRecordsMostRecent = getMostRecentRecordInSequence(pensionRecords)
+      taxCodeRecords
 
-      employmentRecordsMostRecent ++ pensionRecordsMostRecent
+//      val employmentRecords = taxCodeHistoryFull.taxCodeRecord.filter(!_.pensionIndicator)
+//      val employmentRecordsMostRecent = getMostRecentRecordInSequence(employmentRecords)
+//
+//      val pensionRecords = taxCodeHistoryFull.taxCodeRecord.filter(_.pensionIndicator)
+//      val pensionRecordsMostRecent = getMostRecentRecordInSequence(pensionRecords)
+//
+//      employmentRecordsMostRecent ++ pensionRecordsMostRecent
     }
   }
 

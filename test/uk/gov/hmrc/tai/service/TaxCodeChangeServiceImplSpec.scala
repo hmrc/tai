@@ -58,7 +58,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(dateOfCalculation = newCodeDate),
               taxCodeRecord(dateOfCalculation = previousCodeDate)
             )
@@ -79,7 +79,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(dateOfCalculation = newCodeDate),
               taxCodeRecord(taxCode = "1080L", dateOfCalculation = previousCodeDate)
             )
@@ -102,7 +102,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(taxCode ="1180L", dateOfCalculation = newCodeDate),
               taxCodeRecord(taxCode = "1080L", dateOfCalculation = previousCodeDate)
             )
@@ -125,7 +125,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(taxCode ="1180L", dateOfCalculation = newCodeDate),
               taxCodeRecord(taxCode ="1080L", dateOfCalculation = previousCodeDate),
               taxCodeRecord(taxCode ="1000L", dateOfCalculation = annualCodeDate)
@@ -153,7 +153,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1)),
               taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber2), employmentType = Secondary),
               taxCodeRecord(dateOfCalculation = previousCodeDate, payrollNumber = Some(payrollNumber1)),
@@ -183,7 +183,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
             taxCodeRecord(dateOfCalculation = previousCodeDate, payrollNumber = Some(payrollNumber1))
           )
 
-          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecord = taxCodeRecords)
+          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecords = taxCodeRecords)
 
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
@@ -207,7 +207,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
             taxCodeRecord(dateOfCalculation = previousCodeDate, payrollNumber = Some(payrollNumber2), employmentType = Secondary)
           )
 
-          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecord = taxCodeRecords)
+          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecords = taxCodeRecords)
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -231,7 +231,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
             taxCodeRecord(dateOfCalculation = previousCodeDate, payrollNumber = Some(payrollNumber2), employmentType = Secondary)
           )
 
-          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecord = taxCodeRecords)
+          val taxCodeHistory = TaxCodeHistory(nino = testNino.withoutSuffix, taxCodeRecords = taxCodeRecords)
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -269,7 +269,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
           val taxCodeHistory = TaxCodeHistory(
             nino = testNino.withoutSuffix,
-            taxCodeRecord = Seq(
+            taxCodeRecords = Seq(
               taxCodeRecord(dateOfCalculation = newCodeDate, operatedTaxCode = false),
               taxCodeRecord(dateOfCalculation = previousCodeDate)
             )
@@ -839,188 +839,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
     }
   }
-
-  "mostRecentTaxCodeRecordInYear" should {
-    "return a single TaxCodeRecord" when {
-      "there is a single employment with no pension, asking for CY-1 data" in {
-
-        val cyMinus1 = TaxYear().prev
-
-        val mostRecentStartDate = cyMinus1.start.plusDays(2)
-        val mostRecentEndDate = cyMinus1.end
-        val previousStartDate = cyMinus1.start
-        val previousEndDate = mostRecentStartDate.minusDays(1)
-        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
-        val payrollNumberPrev = randomInt().toString
-        val payrollNumberCurr = randomInt().toString
-
-        val testNino = randomNino
-
-        val olderTaxCodeRecord = TaxCodeRecord(
-          "1185L",
-          Cumulative,
-          "Employer 1",
-          operatedTaxCode = true,
-          previousStartDateInPrevYear,
-          Some(payrollNumberPrev),
-          pensionIndicator = false,
-          Primary
-        )
-
-        val mostRecentTaxCodeRecord = TaxCodeRecord(
-          "1000L",
-          Cumulative,
-          "Employer 1",
-          operatedTaxCode = true,
-          mostRecentStartDate,
-          Some(payrollNumberCurr),
-          pensionIndicator = false,
-          Primary
-        )
-
-        val taxCodeHistory = TaxCodeHistory(
-          testNino.withoutSuffix,
-          Seq(olderTaxCodeRecord, mostRecentTaxCodeRecord)
-        )
-
-        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
-
-        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
-
-        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(mostRecentTaxCodeRecord)
-      }
-    }
-
-    "return two TaxCodeRecords" when {
-      "there is a single employment and a single pension, asking for CY-1 data" in {
-
-        val cyMinus1 = TaxYear().prev
-
-        val mostRecentStartDate = cyMinus1.start.plusDays(2)
-        val mostRecentEndDate = cyMinus1.end
-        val previousStartDate = cyMinus1.start
-        val previousEndDate = mostRecentStartDate.minusDays(1)
-        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
-        val payrollNumberPrev = randomInt().toString
-        val payrollNumberCurr = randomInt().toString
-
-        val testNino = randomNino
-
-        val employmentTaxCodeRecordOlder = TaxCodeRecord(
-          "1185L",
-          Cumulative,
-          "Employer 1",
-          operatedTaxCode = true,
-          previousStartDateInPrevYear,
-          Some(payrollNumberPrev),
-          pensionIndicator = false,
-          Primary
-        )
-
-        val employmentTaxCodeRecordMostRecent = TaxCodeRecord(
-          "1000L",
-          Cumulative,
-          "Employer 1",
-          operatedTaxCode = true,
-          mostRecentStartDate,
-          Some(payrollNumberCurr),
-          pensionIndicator = false,
-          Primary
-        )
-
-        val pensionTaxCodeRecordOlder = TaxCodeRecord(
-          "1185L",
-          Cumulative,
-          "Pension 1",
-          operatedTaxCode = true,
-          previousStartDateInPrevYear,
-          Some(payrollNumberPrev),
-          pensionIndicator = true,
-          Primary
-        )
-
-        val pensionTaxCodeRecordMostRecent = TaxCodeRecord(
-          "1000L",
-          Cumulative,
-          "Pension 1",
-          operatedTaxCode = true,
-          mostRecentStartDate,
-          Some(payrollNumberCurr),
-          pensionIndicator = true,
-          Primary
-        )
-
-        val taxCodeHistory = TaxCodeHistory(
-          testNino.withoutSuffix,
-          Seq(
-            employmentTaxCodeRecordOlder,
-            employmentTaxCodeRecordMostRecent,
-            pensionTaxCodeRecordOlder,
-            pensionTaxCodeRecordMostRecent
-          )
-        )
-
-        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
-
-        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
-
-        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(
-          employmentTaxCodeRecordMostRecent, pensionTaxCodeRecordMostRecent
-        )
-
-      }
-    }
-
-    "return a single TaxCodeRecord" when {
-      "there is a single pension with no employment, asking for CY-1 data" in {
-
-        val cyMinus1 = TaxYear().prev
-
-        val mostRecentStartDate = cyMinus1.start.plusDays(2)
-        val mostRecentEndDate = cyMinus1.end
-        val previousStartDate = cyMinus1.start
-        val previousEndDate = mostRecentStartDate.minusDays(1)
-        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
-        val payrollNumberPrev = randomInt().toString
-        val payrollNumberCurr = randomInt().toString
-
-        val testNino = randomNino
-
-        val pensionTaxCodeRecordOlder = TaxCodeRecord(
-          "1185L",
-          Cumulative,
-          "Pension 1",
-          operatedTaxCode = true,
-          previousStartDateInPrevYear,
-          Some(payrollNumberPrev),
-          pensionIndicator = true,
-          Primary
-        )
-
-        val pensionTaxCodeRecordMostRecent = TaxCodeRecord(
-          "1000L",
-          Cumulative,
-          "Pension 1",
-          operatedTaxCode = true,
-          mostRecentStartDate,
-          Some(payrollNumberCurr),
-          pensionIndicator = true,
-          Primary
-        )
-
-        val taxCodeHistory = TaxCodeHistory(
-          testNino.withoutSuffix,
-          Seq(pensionTaxCodeRecordOlder, pensionTaxCodeRecordMostRecent)
-        )
-
-        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
-
-        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
-
-        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(pensionTaxCodeRecordMostRecent)
-      }
-    }
-  }
+  
   "taxCodeMismatch" should {
 
     val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
@@ -1035,7 +854,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
-          taxCodeRecord = Seq(taxCodeRecord(dateOfCalculation = previousCodeDate))
+          taxCodeRecords = Seq(taxCodeRecord(dateOfCalculation = previousCodeDate))
         )
 
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
@@ -1053,7 +872,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
-          taxCodeRecord = Seq(
+          taxCodeRecords = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate),
             taxCodeRecord(dateOfCalculation = previousCodeDate))
         )
@@ -1073,7 +892,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
-          taxCodeRecord = Seq(
+          taxCodeRecords = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1155L"),
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1175L"),
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1195L"),
@@ -1109,7 +928,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
-          taxCodeRecord = Seq(
+          taxCodeRecords = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate),
             taxCodeRecord(dateOfCalculation = previousCodeDate)))
 
@@ -1129,7 +948,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val taxCodeHistory = TaxCodeHistory(
           nino = nino.withoutSuffix,
-          taxCodeRecord = Seq(
+          taxCodeRecords = Seq(
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1155L"),
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1175L"),
             taxCodeRecord(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), taxCode = "1195L"),
@@ -1179,7 +998,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
       val taxCodeHistory = TaxCodeHistory(
         nino = nino.withoutSuffix,
-        taxCodeRecord = Seq(
+        taxCodeRecords = Seq(
           taxCodeRecord(dateOfCalculation = newCodeDate),
           taxCodeRecord(dateOfCalculation = previousCodeDate)))
 
@@ -1197,15 +1016,17 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   "latestTaxCodes" should {
 
     val nino = randomNino
+    val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
+    val endYear = TaxYear(TaxYearResolver.currentTaxYear)
+    val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
+    val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,"primary")
+    val taxCodeRecord2 = TaxCodeRecord("1085L", "", "Employer 1", true, dateOfCalculation,Some("321"),false,"secondary")
 
     "return a list of latest tax codes" when {
 
-      "there is a single employer" in {
-        val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
-        val endYear = TaxYear(TaxYearResolver.currentTaxYear)
-        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
-        val taxCodeRecord = TaxCodeRecord("1185L", "", "", true, dateOfCalculation,Some(""),false,"primary")
-        val taxCodeRecordList = Seq(taxCodeRecord)
+      "there is a single primary employment under a single employer for a specified tax year" in {
+
+        val taxCodeRecordList = Seq(taxCodeRecord1)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
         when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
@@ -1216,12 +1037,8 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         latestTaxCodes mustEqual expectedResult
       }
 
-      "there are multiple employments" in {
-        val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
-        val endYear = TaxYear(TaxYearResolver.currentTaxYear)
-        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
-        val taxCodeRecord1 = TaxCodeRecord("1185L", "", "", true, dateOfCalculation,Some(""),false,"primary")
-        val taxCodeRecord2 = TaxCodeRecord("1085L", "", "", true, dateOfCalculation,Some(""),false,"primary")
+      "there are multiple employments under a single employer" in {
+
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
