@@ -125,12 +125,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]] = {
-    taxCodeHistory(nino, taxYear) map { taxCodeHistory =>
-      taxCodeHistory.taxCodeRecord
-    }
-  }
-
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
   }
@@ -153,7 +147,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     if(records.nonEmpty) {
       Seq(TaxCodeRecord.mostRecentTaxCodeRecord(records))
     }
-    else{
+    else {
       Seq.empty
     }
   }
@@ -203,6 +197,6 @@ trait TaxCodeChangeService {
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]]
+  def mostRecentTaxCodeRecordInYear(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]]
 
 }
