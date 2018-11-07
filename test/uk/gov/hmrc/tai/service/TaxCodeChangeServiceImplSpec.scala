@@ -1014,9 +1014,12 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   }
 
   "latestTaxCodes" should {
+
+    val nino = randomNino
+
     "return a list of latest tax codes" when {
+
       "there is a single employer" in {
-        val nino = randomNino
         val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
         val endYear = TaxYear(TaxYearResolver.currentTaxYear)
         val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
@@ -1027,7 +1030,24 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
 
         val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-        val expectedResult = Seq(taxCodeRecord)
+        val expectedResult = taxCodeRecordList
+
+        latestTaxCodes mustEqual expectedResult
+      }
+
+      "there are multiple employments" in {
+        val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
+        val endYear = TaxYear(TaxYearResolver.currentTaxYear)
+        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
+        val taxCodeRecord1 = TaxCodeRecord("1185L", "", "", true, dateOfCalculation,Some(""),false,"primary")
+        val taxCodeRecord2 = TaxCodeRecord("1085L", "", "", true, dateOfCalculation,Some(""),false,"primary")
+        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+        val expectedResult = taxCodeRecordList
 
         latestTaxCodes mustEqual expectedResult
       }
