@@ -32,6 +32,8 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -840,6 +842,187 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     }
   }
 
+  "mostRecentTaxCodeRecordInYear" should {
+    "return a single TaxCodeRecord" when {
+      "there is a single employment with no pension, asking for CY-1 data" in {
+
+        val cyMinus1 = TaxYear().prev
+
+        val mostRecentStartDate = cyMinus1.start.plusDays(2)
+        val mostRecentEndDate = cyMinus1.end
+        val previousStartDate = cyMinus1.start
+        val previousEndDate = mostRecentStartDate.minusDays(1)
+        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
+        val payrollNumberPrev = randomInt().toString
+        val payrollNumberCurr = randomInt().toString
+
+        val testNino = randomNino
+
+        val olderTaxCodeRecord = TaxCodeRecord(
+          "1185L",
+          Cumulative,
+          "Employer 1",
+          operatedTaxCode = true,
+          previousStartDateInPrevYear,
+          Some(payrollNumberPrev),
+          pensionIndicator = false,
+          Primary
+        )
+
+        val mostRecentTaxCodeRecord = TaxCodeRecord(
+          "1000L",
+          Cumulative,
+          "Employer 1",
+          operatedTaxCode = true,
+          mostRecentStartDate,
+          Some(payrollNumberCurr),
+          pensionIndicator = false,
+          Primary
+        )
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Seq(olderTaxCodeRecord, mostRecentTaxCodeRecord)
+        )
+
+        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+
+        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(mostRecentTaxCodeRecord)
+      }
+    }
+
+    "return two TaxCodeRecords" when {
+      "there is a single employment and a single pension, asking for CY-1 data" in {
+
+        val cyMinus1 = TaxYear().prev
+
+        val mostRecentStartDate = cyMinus1.start.plusDays(2)
+        val mostRecentEndDate = cyMinus1.end
+        val previousStartDate = cyMinus1.start
+        val previousEndDate = mostRecentStartDate.minusDays(1)
+        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
+        val payrollNumberPrev = randomInt().toString
+        val payrollNumberCurr = randomInt().toString
+
+        val testNino = randomNino
+
+        val employmentTaxCodeRecordOlder = TaxCodeRecord(
+          "1185L",
+          Cumulative,
+          "Employer 1",
+          operatedTaxCode = true,
+          previousStartDateInPrevYear,
+          Some(payrollNumberPrev),
+          pensionIndicator = false,
+          Primary
+        )
+
+        val employmentTaxCodeRecordMostRecent = TaxCodeRecord(
+          "1000L",
+          Cumulative,
+          "Employer 1",
+          operatedTaxCode = true,
+          mostRecentStartDate,
+          Some(payrollNumberCurr),
+          pensionIndicator = false,
+          Primary
+        )
+
+        val pensionTaxCodeRecordOlder = TaxCodeRecord(
+          "1185L",
+          Cumulative,
+          "Pension 1",
+          operatedTaxCode = true,
+          previousStartDateInPrevYear,
+          Some(payrollNumberPrev),
+          pensionIndicator = true,
+          Primary
+        )
+
+        val pensionTaxCodeRecordMostRecent = TaxCodeRecord(
+          "1000L",
+          Cumulative,
+          "Pension 1",
+          operatedTaxCode = true,
+          mostRecentStartDate,
+          Some(payrollNumberCurr),
+          pensionIndicator = true,
+          Primary
+        )
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Seq(
+            employmentTaxCodeRecordOlder,
+            employmentTaxCodeRecordMostRecent,
+            pensionTaxCodeRecordOlder,
+            pensionTaxCodeRecordMostRecent
+          )
+        )
+
+        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+
+        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(
+          employmentTaxCodeRecordMostRecent, pensionTaxCodeRecordMostRecent
+        )
+
+      }
+    }
+
+    "return a single TaxCodeRecord" when {
+      "there is a single pension with no employment, asking for CY-1 data" in {
+
+        val cyMinus1 = TaxYear().prev
+
+        val mostRecentStartDate = cyMinus1.start.plusDays(2)
+        val mostRecentEndDate = cyMinus1.end
+        val previousStartDate = cyMinus1.start
+        val previousEndDate = mostRecentStartDate.minusDays(1)
+        val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
+        val payrollNumberPrev = randomInt().toString
+        val payrollNumberCurr = randomInt().toString
+
+        val testNino = randomNino
+
+        val pensionTaxCodeRecordOlder = TaxCodeRecord(
+          "1185L",
+          Cumulative,
+          "Pension 1",
+          operatedTaxCode = true,
+          previousStartDateInPrevYear,
+          Some(payrollNumberPrev),
+          pensionIndicator = true,
+          Primary
+        )
+
+        val pensionTaxCodeRecordMostRecent = TaxCodeRecord(
+          "1000L",
+          Cumulative,
+          "Pension 1",
+          operatedTaxCode = true,
+          mostRecentStartDate,
+          Some(payrollNumberCurr),
+          pensionIndicator = true,
+          Primary
+        )
+
+        val taxCodeHistory = TaxCodeHistory(
+          testNino.withoutSuffix,
+          Seq(pensionTaxCodeRecordOlder, pensionTaxCodeRecordMostRecent)
+        )
+
+        when(taxCodeChangeConnector.taxCodeHistory(testNino, cyMinus1, cyMinus1)).thenReturn(Future.successful(taxCodeHistory))
+
+        val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+
+        Await.result(service.mostRecentTaxCodeRecordInYear(testNino, cyMinus1), 5.seconds) mustEqual Seq(pensionTaxCodeRecordMostRecent)
+      }
+    }
+  }
   "taxCodeMismatch" should {
 
     val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)

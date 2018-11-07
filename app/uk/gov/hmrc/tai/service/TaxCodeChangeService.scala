@@ -27,8 +27,8 @@ import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
@@ -134,6 +134,30 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
   }
+
+  def mostRecentTaxCodeRecordInYear(nino: Nino, year: TaxYear): Future[Seq[TaxCodeRecord]] = {
+
+    taxCodeChangeConnector.taxCodeHistory(nino, year, year).map { taxCodeHistoryFull =>
+
+      val employmentRecords = taxCodeHistoryFull.taxCodeRecord.filter(!_.pensionIndicator)
+      val employmentRecordsMostRecent = getMostRecentRecordInSequence(employmentRecords)
+
+      val pensionRecords = taxCodeHistoryFull.taxCodeRecord.filter(_.pensionIndicator)
+      val pensionRecordsMostRecent = getMostRecentRecordInSequence(pensionRecords)
+
+      employmentRecordsMostRecent ++ pensionRecordsMostRecent
+    }
+  }
+
+  private def getMostRecentRecordInSequence(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
+    if(records.nonEmpty) {
+      Seq(TaxCodeRecord.mostRecentTaxCodeRecord(records))
+    }
+    else{
+      Seq.empty
+    }
+  }
+
 
   private def previousStartDate(date: LocalDate): LocalDate = {
     if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
