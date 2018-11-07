@@ -1020,14 +1020,16 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val startYear = TaxYear(TaxYearResolver.startOfCurrentTaxYear.minusYears(1))
         val endYear = TaxYear(TaxYearResolver.currentTaxYear)
         val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
-
         val taxCodeRecord = TaxCodeRecord("1185L", "", "", true, dateOfCalculation,Some(""),false,"primary")
         val taxCodeRecordList = Seq(taxCodeRecord)
-
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
         when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
 
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+        val expectedResult = Seq(taxCodeRecord)
+
+        latestTaxCodes mustEqual expectedResult
       }
 
       "there is multiple employers" in{
