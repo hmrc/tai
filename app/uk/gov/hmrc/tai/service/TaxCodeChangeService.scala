@@ -135,15 +135,12 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val taxCodeRecords = taxCodeHistory.taxCodeRecords
 
-      taxCodeRecords
+      val grouped = taxCodeRecords.groupBy(x => x.employerName)
 
-//      val employmentRecords = taxCodeHistoryFull.taxCodeRecord.filter(!_.pensionIndicator)
-//      val employmentRecordsMostRecent = getMostRecentRecordInSequence(employmentRecords)
-//
-//      val pensionRecords = taxCodeHistoryFull.taxCodeRecord.filter(_.pensionIndicator)
-//      val pensionRecordsMostRecent = getMostRecentRecordInSequence(pensionRecords)
-//
-//      employmentRecordsMostRecent ++ pensionRecordsMostRecent
+      grouped.map(y => y)
+      
+      getMostRecentRecordInSequence(taxCodeRecords)
+
     }
   }
 

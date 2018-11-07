@@ -839,7 +839,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
     }
   }
-  
+
   "taxCodeMismatch" should {
 
     val newCodeDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
