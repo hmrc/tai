@@ -1024,42 +1024,42 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
     "return a list of most recent tax codes" when {
 
-//      "there is a single tax code under a single employer CY-1" in {
-//        val taxCodeRecordList = Seq(taxCodeRecord1)
-//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-//
-//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
-//
-//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-//        val expectedResult = taxCodeRecordList
-//
-//        latestTaxCodes mustEqual expectedResult
-//      }
-//
-//      "there are multiple tax codes with the same date of calculation under a single employer CY-1" in {
-//        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
-//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-//
-//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
-//
-//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-//        val expectedResult = taxCodeRecordList
-//
-//        latestTaxCodes mustEqual expectedResult
-//      }
-//
-//      "there are multiple tax codes with different date of calculation under a single employer" in {
-//        val date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(3)
-//        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2.copy(dateOfCalculation=date))
-//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-//
-//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
-//
-//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-//        val expectedResult = Seq(taxCodeRecord1)
-//
-//        latestTaxCodes mustEqual expectedResult
-//      }
+      "there is a single tax code under a single employer CY-1" in {
+        val taxCodeRecordList = Seq(taxCodeRecord1)
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+        val expectedResult = taxCodeRecordList
+
+        latestTaxCodes mustEqual expectedResult
+      }
+
+      "there are multiple tax codes with the same date of calculation under a single employer CY-1" in {
+        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+        val expectedResult = taxCodeRecordList
+
+        latestTaxCodes mustEqual expectedResult
+      }
+
+      "there are multiple tax codes with different date of calculation under a single employer" in {
+        val date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(3)
+        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2.copy(dateOfCalculation=date))
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+        val expectedResult = Seq(taxCodeRecord1)
+
+        latestTaxCodes mustEqual expectedResult
+      }
 
       "there are multiple tax codes with different date of calculation under multiple employers" in {
 
