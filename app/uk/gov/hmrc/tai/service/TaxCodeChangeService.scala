@@ -135,12 +135,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val groupedTaxCodeRecords = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
-      groupedTaxCodeRecords.values.map {
+      groupedTaxCodeRecords.values.flatMap {
         taxCodeRecords =>
           val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
           sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
-      }.toSeq.flatten
+      }.toSeq
     }
+
   }
 
   private def getMostRecentRecordInSequence(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
