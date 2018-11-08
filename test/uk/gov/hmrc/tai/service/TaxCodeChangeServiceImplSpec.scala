@@ -1024,41 +1024,62 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
     "return a list of most recent tax codes" when {
 
-      "there is a single tax code under a single employer CY-1" in {
-        val taxCodeRecordList = Seq(taxCodeRecord1)
+//      "there is a single tax code under a single employer CY-1" in {
+//        val taxCodeRecordList = Seq(taxCodeRecord1)
+//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+//
+//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+//
+//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+//        val expectedResult = taxCodeRecordList
+//
+//        latestTaxCodes mustEqual expectedResult
+//      }
+//
+//      "there are multiple tax codes with the same date of calculation under a single employer CY-1" in {
+//        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
+//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+//
+//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+//
+//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+//        val expectedResult = taxCodeRecordList
+//
+//        latestTaxCodes mustEqual expectedResult
+//      }
+//
+//      "there are multiple tax codes with different date of calculation under a single employer" in {
+//        val date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(3)
+//        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2.copy(dateOfCalculation=date))
+//        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+//
+//        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
+//
+//        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
+//        val expectedResult = Seq(taxCodeRecord1)
+//
+//        latestTaxCodes mustEqual expectedResult
+//      }
+
+      "there are multiple tax codes with different date of calculation under multiple employers" in {
+
+        val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
+        val taxCodeRecord1 = TaxCodeRecord("1L", "", "Employer 1", true, dateOfCalculation.minusMonths(2),Some("123"),false,"primary")
+        val taxCodeRecord2 = TaxCodeRecord("2L", "", "Employer 1", true, dateOfCalculation.minusMonths(3),Some("321"),false,"secondary")
+        val taxCodeRecord3 = TaxCodeRecord("3L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,"secondary")
+        val taxCodeRecord4 = TaxCodeRecord("4L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,"secondary")
+        val taxCodeRecord5 = TaxCodeRecord("5L", "", "Employer 3", true, dateOfCalculation.minusMonths(5),Some("321"),false,"secondary")
+        val taxCodeRecord6 = TaxCodeRecord("6L", "", "Employer 3", true, dateOfCalculation.minusDays(4),Some("321"),false,"secondary")
+
+        val taxCodeRecordList = Seq(taxCodeRecord1,taxCodeRecord2,taxCodeRecord3,taxCodeRecord4,taxCodeRecord5,taxCodeRecord6)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
         when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
 
         val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-        val expectedResult = taxCodeRecordList
+        val expectedResult = Seq(taxCodeRecord1, taxCodeRecord3, taxCodeRecord4, taxCodeRecord6)
 
-        latestTaxCodes mustEqual expectedResult
-      }
-
-      "there are multiple tax codes with the same date of calculation under a single employer CY-1" in {
-        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
-        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-
-        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
-
-        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-        val expectedResult = taxCodeRecordList
-
-        latestTaxCodes mustEqual expectedResult
-      }
-
-      "there are multiple tax codes with different date of calculation under a single employer" in {
-        val date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(3)
-        val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2.copy(dateOfCalculation=date))
-        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
-
-        when(taxCodeChangeConnector.taxCodeHistory(nino,startYear,endYear)) thenReturn(Future.successful(taxCodeHistory))
-
-        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,startYear),5.seconds)
-        val expectedResult = Seq(taxCodeRecord1)
-
-        latestTaxCodes mustEqual expectedResult
+        latestTaxCodes.sortBy(_.employerName) mustEqual expectedResult.sortBy(_.employerName)
       }
     }
   }

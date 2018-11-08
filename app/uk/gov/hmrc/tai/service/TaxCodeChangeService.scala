@@ -133,9 +133,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
-      val sortedTaxCodeRecords = taxCodeHistory.taxCodeRecords.sortBy(taxCodeeRecord => taxCodeeRecord.dateOfCalculation)
-      sortedTaxCodeRecords.filter(_.dateOfCalculation.isEqual(sortedTaxCodeRecords.head.dateOfCalculation))
-      
+      val groupedTaxCodeRecords = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
+
+      groupedTaxCodeRecords.values.map {
+        taxCodeRecords =>
+          val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
+          sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
+      }.toSeq.flatten
     }
   }
 
