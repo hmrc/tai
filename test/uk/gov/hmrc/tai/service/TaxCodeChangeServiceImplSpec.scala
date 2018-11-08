@@ -1024,7 +1024,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
     "return a list of latest tax codes" when {
 
-      "there is a single primary employment under a single employer for a specified tax year" in {
+      "there is a single tax code under a single employer" in {
 
         val taxCodeRecordList = Seq(taxCodeRecord1)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
@@ -1037,7 +1037,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         latestTaxCodes mustEqual expectedResult
       }
 
-      "there are multiple employments under a single employer" in {
+      "there are multiple tax codes with the same date of calculation under a single employer" in {
 
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)

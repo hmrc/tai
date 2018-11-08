@@ -133,14 +133,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
-      val taxCodeRecords = taxCodeHistory.taxCodeRecords
-
-      val grouped = taxCodeRecords.groupBy(x => x.employerName)
-
-      grouped.map(y => y)
+      taxCodeHistory.taxCodeRecords
       
-      getMostRecentRecordInSequence(taxCodeRecords)
-
     }
   }
 
