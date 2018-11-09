@@ -31,8 +31,9 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
-import uk.gov.hmrc.tai.model.api.TaxCodeChange
+import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord, api}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
@@ -183,11 +184,53 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
-        status(result) mustEqual 400
+        status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
 
+  }
+
+  "mostRecentTaxCodeRecords" should {
+    val nino = ninoGenerator
+
+    "respond with OK" when {
+      "given valid nino and year" in {
+
+        when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(Seq(
+            TaxCodeRecordWithEndDate(
+              "code",
+              "Cumulative",
+              LocalDate.now(),
+              LocalDate.now().plusDays(1),
+              "Employer 1",
+              Some("1234"),
+              false,
+              true
+            )
+          )))
+
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
+
+        val json = Json.arr(
+          Json.obj(
+            "taxCode" -> "code",
+            "basisOfOperation" -> "Cumulative",
+            "startDate" -> LocalDate.now(),
+            "endDate" -> LocalDate.now().plusDays(1),
+            "employerName" -> "Employer 1",
+            "payrollNumber" -> "1234",
+            "pensionIndicator" -> false,
+            "primary" -> true
+          )
+        )
+
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual json
+
+      }
+    }
   }
 
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]

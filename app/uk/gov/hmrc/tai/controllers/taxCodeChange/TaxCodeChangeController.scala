@@ -26,6 +26,7 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
 import scala.concurrent.Future
@@ -63,4 +64,16 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
         case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
       }
   }
+
+  def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
+    implicit request =>
+
+      val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
+
+      latestTaxCodeRecords.map { records => Ok(Json.toJson(records))}
+
+//      Future.successful(Ok("blah"))
+  }
+
+
 }

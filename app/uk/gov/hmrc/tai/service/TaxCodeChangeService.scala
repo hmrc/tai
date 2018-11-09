@@ -121,7 +121,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     )
   }
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]] = {
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
       mostRecentTaxCodeRecordInYear(nino, taxYear)
   }
 
@@ -129,17 +129,20 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
   }
 
-  def mostRecentTaxCodeRecordInYear(nino: Nino, year: TaxYear): Future[Seq[TaxCodeRecord]] = {
+  def mostRecentTaxCodeRecordInYear(nino: Nino, year: TaxYear): Future[Seq[TaxCodeRecordWithEndDate]] = {
 
     taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
-      val groupedTaxCodeRecords = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
+      val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
-      groupedTaxCodeRecords.values.flatMap {
+      val thing = groupedTaxCodeRecords.values.flatMap {
         taxCodeRecords =>
           val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
           sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
+
       }.toSeq
+
+      thing.map(addEndDate(year.end, _))
     }
 
   }
@@ -198,6 +201,6 @@ trait TaxCodeChangeService {
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecord]]
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]]
 
 }

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.MustMatchers
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-class TaxCodeRecordSpec extends UnitSpec with TaxCodeHistoryConstants {
+class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustMatchers {
 
   "mostRecentTaxCodeRecord" should {
 
@@ -28,7 +29,7 @@ class TaxCodeRecordSpec extends UnitSpec with TaxCodeHistoryConstants {
 
       val records = Seq(mostRecentTaxCodeRecord)
 
-      TaxCodeRecord.mostRecentTaxCodeRecord(records) shouldBe mostRecentTaxCodeRecord
+      TaxCodeRecord.mostRecentTaxCodeRecord(records) mustEqual mostRecentTaxCodeRecord
 
     }
 
@@ -36,10 +37,11 @@ class TaxCodeRecordSpec extends UnitSpec with TaxCodeHistoryConstants {
 
       val records = Seq(olderTaxCodeRecord, mostRecentTaxCodeRecord)
 
-      TaxCodeRecord.mostRecentTaxCodeRecord(records) shouldBe mostRecentTaxCodeRecord
+      TaxCodeRecord.mostRecentTaxCodeRecord(records) mustEqual mostRecentTaxCodeRecord
 
     }
   }
+
 
   val cyMinus1 = TaxYear().prev
 
@@ -71,4 +73,11 @@ class TaxCodeRecordSpec extends UnitSpec with TaxCodeHistoryConstants {
     pensionIndicator = false,
     Primary
   )
+
+  private val payrollNumber2 = "999"
+
+  val recordEmployer2 = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
+
+  val recordNoPayrollPrimary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
+  val recordNoPayrollSecondary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
 }
