@@ -133,7 +133,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
-      println("****** Service " + taxCodeHistory)
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
       val thing = groupedTaxCodeRecords.values.flatMap {

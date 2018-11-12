@@ -73,7 +73,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage))) // test
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
       }
 
   }
