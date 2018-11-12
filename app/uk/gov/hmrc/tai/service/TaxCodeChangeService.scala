@@ -114,7 +114,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate ={
+  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
     TaxCodeRecordWithEndDate(
       taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
       taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
@@ -133,6 +133,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
 
+      println("****** Service " + taxCodeHistory)
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
       val thing = groupedTaxCodeRecords.values.flatMap {

@@ -70,9 +70,12 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
 
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
-      latestTaxCodeRecords.map { records => Ok(Json.toJson(records))}
+      latestTaxCodeRecords.map { records =>
+        Ok(Json.toJson(ApiResponse(records, Seq.empty)))
+      } recover {
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage))) // test
+      }
 
-//      Future.successful(Ok("blah"))
   }
 
 

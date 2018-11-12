@@ -192,6 +192,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
   }
 
   "mostRecentTaxCodeRecords" should {
+
     val nino = ninoGenerator
 
     "respond with OK" when {
@@ -213,22 +214,36 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
-        val json = Json.arr(
-          Json.obj(
-            "taxCode" -> "code",
-            "basisOfOperation" -> "Cumulative",
-            "startDate" -> LocalDate.now(),
-            "endDate" -> LocalDate.now().plusDays(1),
-            "employerName" -> "Employer 1",
-            "payrollNumber" -> "1234",
-            "pensionIndicator" -> false,
-            "primary" -> true
-          )
+        val json = Json.obj(
+          "data" -> Json.arr(
+            Json.obj(
+              "taxCode" -> "code",
+              "basisOfOperation" -> "Cumulative",
+              "startDate" -> LocalDate.now(),
+              "endDate" -> LocalDate.now().plusDays(1),
+              "employerName" -> "Employer 1",
+              "payrollNumber" -> "1234",
+              "pensionIndicator" -> false,
+              "primary" -> true
+            )
+          ),
+          "links" -> Json.arr()
         )
 
         status(result) mustEqual OK
         contentAsJson(result) mustEqual json
 
+      }
+    }
+    "respond with BAD_REQUEST" when {
+      "a bad request exception has occurred" in {
+        when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn(Future.failed(new BadRequestException("Error")))
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        status(result) mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
   }
