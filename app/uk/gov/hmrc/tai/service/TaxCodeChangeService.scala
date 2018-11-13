@@ -90,8 +90,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         taxCodeChange
 
       } else if(taxCodeRecordList.size == 1) {
+        Logger.warn(s"Only one tax code record returned for $nino")
         TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
       } else {
+        Logger.warn(s"No tax code records returned for $nino")
         TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       }
     }
@@ -104,9 +106,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     } yield {
       val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
       val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
-      val mismatchOfTaxCodes = confirmedTaxCodeList.nonEmpty && unconfirmedTaxCodeList != confirmedTaxCodeList
+      val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
-      TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
+      TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }) recover {
       case exception =>
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
