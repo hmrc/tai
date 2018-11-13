@@ -98,9 +98,9 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeChangeRecord("b", Cumulative, date, date.minusDays(1), "Employer 1",
+      val currentRecord = api.TaxCodeRecordWithEndDate("b", Cumulative, date, date.minusDays(1), "Employer 1",
         Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeChangeRecord("a", Cumulative, date, date.minusDays(1), "Employer 2",
+      val previousRecord = api.TaxCodeRecordWithEndDate("a", Cumulative, date, date.minusDays(1), "Employer 2",
         Some("67890"), pensionIndicator = false, primary = true)
       when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
         Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))

@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeChangeRecord}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
@@ -37,7 +37,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
                                          incomeService: IncomeService) extends TaxCodeChangeService {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
+
     taxCodeHistory(nino, TaxYear()).flatMap { taxCodeHistory =>
+
       if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
         taxCodeMismatch(nino).map{ taxCodeMismatch =>
           !taxCodeMismatch.mismatch
@@ -55,37 +57,31 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] = {
+
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
+
+      val taxCodeRecordList = taxCodeHistory.taxCodeRecord
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
-
         val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted
-
         val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
-
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
-
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
-        val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeChangeRecord(currentRecord.taxCode,
-          currentRecord.basisOfOperation,
-          currentRecord.dateOfCalculation,
-          TaxYearResolver.endOfCurrentTaxYear,
-          currentRecord.employerName,
-          currentRecord.payrollNumber,
-          currentRecord.pensionIndicator,
-          currentRecord.isPrimary))
+        val currentTaxCodeChanges = currentRecords.map(
+          currentRecord =>
+            addEndDate(TaxYearResolver.endOfCurrentTaxYear, currentRecord)
+        )
 
-        val previousTaxCodeChanges = previousRecords.map(previousRecord => TaxCodeChangeRecord(previousRecord.taxCode,
-          previousRecord.basisOfOperation,
-          previousStartDate(previousRecord.dateOfCalculation),
-          previousEndDate,
-          previousRecord.employerName,
-          previousRecord.payrollNumber,
-          previousRecord.pensionIndicator,
-          previousRecord.isPrimary))
+        val previousTaxCodeChanges = previousRecords.map(
+          taxCodeRecord =>
+            addEndDate(
+              previousEndDate,
+              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation))
+            )
+        )
 
         val taxCodeChange = TaxCodeChange(currentTaxCodeChanges, previousTaxCodeChanges)
 
@@ -93,8 +89,12 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
         taxCodeChange
 
+      } else if(taxCodeRecordList.size == 1) {
+        Logger.warn(s"Only one tax code record returned for $nino")
+        TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
       } else {
-        TaxCodeChange(Seq.empty[TaxCodeChangeRecord], Seq.empty[TaxCodeChangeRecord])
+        Logger.warn(s"No tax code records returned for $nino")
+        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       }
     }
   }
@@ -106,14 +106,21 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     } yield {
       val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
       val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
-      val mismatchOfTaxCodes = confirmedTaxCodeList.nonEmpty && unconfirmedTaxCodeList != confirmedTaxCodeList
+      val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
-      TaxCodeMismatch(mismatchOfTaxCodes, unconfirmedTaxCodeList , confirmedTaxCodeList)
+      TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }) recover {
       case exception =>
         Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
         throw new BadRequestException(exception.getMessage)
     }
+  }
+
+  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate ={
+    TaxCodeRecordWithEndDate(
+      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
+      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
+    )
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
