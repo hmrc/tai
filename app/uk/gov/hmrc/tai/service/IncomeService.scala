@@ -69,33 +69,30 @@ class IncomeService @Inject()(employmentService: EmploymentService,
       if (year == TaxYear().next) {
         updateTaxCodeIncomeCYPlusOne(nino, year, root.version + 1, taxCodeAmountUpdater, auditEventForIncomeUpdate)
       } else {
-        updateTaxCodeIncomeCY(nino, year, root.version, taxCodeAmountUpdater, auditEventForIncomeUpdate)
+        updateYearAndYearPlusOneTaxCodeIncome(nino, year, root.version, taxCodeAmountUpdater, auditEventForIncomeUpdate) map { response =>
+          auditEventForIncomeUpdate(year)
+          response
+        }
       }
     }
 
 
   }
 
-  private def updateTaxCodeIncomeCY(nino: Nino,
-                                    year: TaxYear,
-                                    rootVersion: Int,
-                                    taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
-                                    auditEvent: TaxYear => Unit)
-                                   (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+  private def updateYearAndYearPlusOneTaxCodeIncome(nino: Nino,
+                                                    year: TaxYear,
+                                                    rootVersion: Int,
+                                                    taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
+                                                    auditEvent: TaxYear => Unit)
+                                                   (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
-      taxCodeAmountUpdater(year, rootVersion) flatMap { cyResponse => {
-        auditEvent(year)
-
-        cyResponse match {
-          case HodUpdateSuccess => {
-            taxAccountService.invalidateTaiCacheData()
-
-            updateTaxCodeIncomeCYPlusOne(nino, year.next, rootVersion + 1, taxCodeAmountUpdater, _ => Unit)
-          }
-          case HodUpdateFailure => Future.successful(IncomeUpdateFailed("Hod update failed for CY update"))
+      taxCodeAmountUpdater(year, rootVersion) flatMap {
+        case HodUpdateSuccess => {
+          taxAccountService.invalidateTaiCacheData()
+          updateTaxCodeIncomeCYPlusOne(nino, year.next, rootVersion + 1, taxCodeAmountUpdater, _ => ())
         }
+        case HodUpdateFailure => Future.successful(IncomeUpdateFailed("Hod update failed for CY update"))
       }
-    }
   }
 
   private def updateTaxCodeIncomeCYPlusOne(nino: Nino,
