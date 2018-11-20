@@ -21,14 +21,12 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain.income.{Incomes, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
@@ -69,9 +67,9 @@ class IncomeService @Inject()(employmentService: EmploymentService,
 
     taxAccountService.personDetails(nino) flatMap { root =>
       if (year == TaxYear().next) {
-        updateTaxCodeIncomeCYPlusOne(nino, year, root, taxCodeAmountUpdater, auditEventForIncomeUpdate)
+        updateTaxCodeIncomeCYPlusOne(nino, year, root.version + 1, taxCodeAmountUpdater, auditEventForIncomeUpdate)
       } else {
-        updateTaxCodeIncomeCY(nino, year, root, taxCodeAmountUpdater, auditEventForIncomeUpdate)
+        updateTaxCodeIncomeCY(nino, year, root.version, taxCodeAmountUpdater, auditEventForIncomeUpdate)
       }
     }
 
@@ -80,22 +78,19 @@ class IncomeService @Inject()(employmentService: EmploymentService,
 
   private def updateTaxCodeIncomeCY(nino: Nino,
                                     year: TaxYear,
-                                    root: TaiRoot,
+                                    rootVersion: Int,
                                     taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
                                     auditEvent: TaxYear => Unit)
                                    (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
-      taxCodeAmountUpdater(year, root.version) flatMap { cyResponse => {
+      taxCodeAmountUpdater(year, rootVersion) flatMap { cyResponse => {
         auditEvent(year)
 
         cyResponse match {
           case HodUpdateSuccess => {
             taxAccountService.invalidateTaiCacheData()
 
-            taxCodeAmountUpdater(year.next, root.version + 1) map {
-              case HodUpdateSuccess => IncomeUpdateSuccess
-              case HodUpdateFailure => IncomeUpdateFailed("Hod update failed for CY+1 update")
-            }
+            updateTaxCodeIncomeCYPlusOne(nino, year.next, rootVersion + 1, taxCodeAmountUpdater, _ => Unit)
           }
           case HodUpdateFailure => Future.successful(IncomeUpdateFailed("Hod update failed for CY update"))
         }
@@ -103,16 +98,14 @@ class IncomeService @Inject()(employmentService: EmploymentService,
     }
   }
 
-  def updateTaxCodeIncomeCYPlusOne(nino: Nino,
-                                   year: TaxYear,
-                                   root: TaiRoot,
-                                   taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
-                                   auditEvent: TaxYear => Unit)
-                                  (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+  private def updateTaxCodeIncomeCYPlusOne(nino: Nino,
+                                           year: TaxYear,
+                                           version: Int,
+                                           taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
+                                           auditEvent: TaxYear => Unit)
+                                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
-    for {
-      updateResponse <- taxCodeAmountUpdater(year, root.version + 1)
-    } yield updateResponse match {
+    taxCodeAmountUpdater(year, version) map {
       case HodUpdateSuccess => {
         auditEvent(year)
         IncomeUpdateSuccess
