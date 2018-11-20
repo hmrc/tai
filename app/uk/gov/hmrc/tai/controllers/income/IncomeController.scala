@@ -28,9 +28,11 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
-import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
+import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
+
+import scala.concurrent.Future
 
 @Singleton
 class IncomeController @Inject()(incomeService: IncomeService,
@@ -68,8 +70,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
     authentication.async(parse.json) {
       implicit request =>
         withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
-          incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId,
-            updateTaxCodeIncomeRequest.amount) map {
+          incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId, updateTaxCodeIncomeRequest.amount) map {
             case IncomeUpdateSuccess => Ok
             case InvalidAmount(message) => BadRequest(message)
             case IncomeUpdateFailed(message) => InternalServerError(message)
