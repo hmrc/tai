@@ -64,7 +64,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
         val result = controller().updateFlatRateExpensesAmount(nino,TaxYear())(fakeRequest)
 
-        status(result) mustBe OK
+        status(result) mustBe NO_CONTENT
       }
     }
 

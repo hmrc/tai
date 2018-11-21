@@ -46,7 +46,7 @@ class FlatRateExpensesController @Inject()(
       withJsonBody[IabdEditDataRequest] {
         iabdEditDataRequest =>
           flatRateExpensesService.updateFlatRateExpensesAmount(nino, year, iabdEditDataRequest.version, iabdEditDataRequest.newAmount) map {
-            case ExpensesUpdateSuccess => Ok
+            case ExpensesUpdateSuccess => NoContent
             case ExpensesUpdateFailure => InternalServerError
           }
       }.recover {

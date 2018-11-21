@@ -20,8 +20,7 @@ import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
-import play.api.libs.json.{JsValue, Json, Writes}
-import Writes.IntWrites
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
