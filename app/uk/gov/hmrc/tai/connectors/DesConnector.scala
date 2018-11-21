@@ -20,7 +20,8 @@ import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json, Writes}
+import Writes.IntWrites
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -28,11 +29,12 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.domain.response.{ExpensesUpdateFailure, ExpensesUpdateResponse, ExpensesUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesAmount, IabdUpdateExpensesAmountFormats}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
@@ -92,6 +94,24 @@ class DesConnector @Inject()(httpClient: HttpClient,
       postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version), formats.formatList)
     } else {
       Future(HttpResponse(OK))
+    }
+  }
+
+  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int, updateAmount: IabdUpdateExpensesAmount,
+                                apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
+                               (implicit hc: HeaderCarrier): Future[ExpensesUpdateResponse] = {
+
+    val expensesFormat = new IabdUpdateExpensesAmountFormats
+
+    val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
+    postToDes[IabdUpdateExpensesAmount](
+      url = postUrl,
+      api = apiType,
+      postData = updateAmount
+    )(headerForUpdate(version), expensesFormat.iabdUpdateExpensesAmountWrites).map {
+      _ => ExpensesUpdateSuccess
+    }.recover{
+      case _ => ExpensesUpdateFailure
     }
   }
 

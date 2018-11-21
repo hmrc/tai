@@ -45,6 +45,7 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
     APITypes.DesIabdSpecificAPI -> "des-iabd-specific",
     APITypes.DesIabdUpdateEstPayManualAPI -> "des-iabd-estPay-manual",
     APITypes.DesIabdUpdateEstPayAutoAPI -> "des-iabd-estPay-auto",
+    APITypes.DesIabdUpdateFlatRateExpensesAPI -> "des-iabd-flat-rate-expenses",
     APITypes.PdfServiceAPI -> "pdf-service",
     APITypes.CompanyCarAPI -> "company-car",
     APITypes.FusCreateEnvelope -> "create-envelope",
