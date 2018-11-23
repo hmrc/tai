@@ -27,6 +27,9 @@ import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.des.TaxAccountDetails
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
+import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
@@ -38,7 +41,7 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
                                        config: DesConfig,
-                                       urlConfig: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
+                                       urlConfig: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) with TaxAccountHodFormatters {
 
   override val originatorId = config.originatorId
 
@@ -60,6 +63,12 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
     val url = urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)
 
     getFromDes[JsObject](url, APITypes.TaxAccountHistoryAPI).map(x => Try(x._1.as[TaxAccountDetails]))
+  }
+
+  def taxAccountHistory2(nino: Nino, taxCodeId: Int): Future[Try[Seq[CodingComponent]]] = {
+    val url = urlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)
+
+    getFromDes[JsObject](url, APITypes.TaxAccountHistoryAPI).map(x => Try(x._1.as[Seq[CodingComponent]](codingComponentReads)))
   }
 }
 

@@ -324,9 +324,125 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       assert(result.isFailure)
       a[JsResultException] mustBe thrownBy(result.get)
     }
-
-
   }
+
+
+
+
+  "Tax Account History 2" must {
+    "returns a Success[Seq[CodingComponent]] for valid json" in {
+      val testNino = randomNino
+      val taxCodeId = 1
+
+      val allowanceJson = Json.obj(
+        "npsDescription" -> "personal allowance",
+        "amount" -> 8105,
+        "type" -> 11,
+        "iabdSummaries" -> Json.arr(
+          Json.obj(
+            "amount" -> 8105,
+            "type" -> 118,
+            "npsDescription" -> "Personal Allowance (PA)",
+            "employmentId" -> 1,
+            "defaultEstimatedPay" -> JsNull,
+            "estimatedPaySource" -> JsNull
+          )
+        ),
+        "sourceAmount" -> 8105
+      )
+
+      val deductionJson = Json.obj(
+        "npsDescription" -> "personal allowance",
+        "amount" -> 105,
+        "type" -> 18,
+        "iabdSummaries" -> Json.arr(
+          Json.obj(
+            "amount" -> 105,
+            "type" -> 18,
+            "npsDescription" -> "deduction",
+            "employmentId" -> 2,
+            "defaultEstimatedPay" -> JsNull,
+            "estimatedPaySource" -> JsNull
+          )
+        ),
+        "sourceAmount" -> 105
+      )
+
+      val incomeSourceJson = Json.obj(
+        "employmentId" -> 3,
+        "employmentType" -> 1,
+        "employmentStatus" -> 1,
+        "employmentTaxDistrictNumber" -> 754,
+        "employmentPayeRef" -> "employmentPayeRef",
+        "pensionIndicator" -> false,
+        "otherIncomeSourceIndicator" -> false,
+        "jsaIndicator" -> false,
+        "name" -> "incomeSourceName",
+        "taxCode" -> "1035L",
+        "basisOperation" -> 1,
+        "potentialUnderpayment" -> JsNull,
+        "totalInYearAdjustment" -> 0,
+        "inYearAdjustmentIntoCY" -> 0,
+        "inYearAdjustmentIntoCYPlusOne" -> 0,
+        "inYearAdjustmentFromPreviousYear" -> 0,
+        "actualPUPCodedInCYPlusOneTaxYear" -> 0,
+        "allowances" -> Json.arr(allowanceJson),
+        "deductions" -> Json.arr(deductionJson),
+        "payAndTax" -> Json.obj()
+      )
+
+
+      val taxAccountHistoryJson = Json.obj(
+        "taxAccountId" -> 7,
+        "date" -> "02/08/2018",
+        "nino" -> testNino.toString,
+        "noCYEmployment" -> false,
+        "taxYear" -> 2018,
+        "previousTaxAccountId" -> 6,
+        "previousYearTaxAccountId" -> 1,
+        "nextTaxAccountId" -> JsNull,
+        "nextYearTaxAccountId" -> JsNull,
+        "totalEstTax" -> 16956,
+        "inYearCalcResult" -> 1,
+        "inYearCalcAmount" -> 0,
+        "incomeSources" -> Json.arr(
+          incomeSourceJson
+        )
+      )
+
+      val url = {
+        val path = new URL(urlConfig.taxAccountHistoricSnapshotUrl(testNino, taxCodeId))
+        s"${path.getPath}"
+      }
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(taxAccountHistoryJson.toString))
+      )
+
+      val iabdSummaryAllowance = IabdSummary(8105, 118, Some("Personal Allowance (PA)"), Some(1), None, None)
+      val allowance = Allowance("personal allowance", 8105, 11, List(iabdSummaryAllowance), 8105)
+
+      val iabdSummaryDeduction = IabdSummary(105, 18, Some("deduction"), Some(2), None, None)
+      val deduction = Deduction("personal allowance", 105, 18, List(iabdSummaryDeduction), 105)
+
+      val income = IncomeSource(3, 1, 1, 754, "employmentPayeRef", false, false, false, "incomeSourceName", "1035L", 1,
+        None, 0, 0, 0, 0, 0, List(allowance), List(deduction), Json.obj())
+
+      val expectedResult = TaxAccountDetails(7, "02/08/2018", testNino, false, TaxYear(2018),
+        6, 1, None, None, 16956, 1, 0, List(income))
+
+
+      val result = Await.result(connector().taxAccountHistory2(testNino, taxCodeId), 5.seconds)
+
+      result mustEqual Success(expectedResult)
+    }
+  }
+
+
+
+
+
+
 
   lazy val urlConfig = injector.instanceOf[TaxCodeChangeUrl]
 
