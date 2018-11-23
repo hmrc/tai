@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.audit
+package uk.gov.hmrc.tai.model
 
-import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import play.api.libs.json.Json
 
 
-@Singleton
-class Auditor @Inject()(audit: AuditConnector)  {
+case class TaxCodeMismatch(mismatch: Boolean, unconfirmedTaxCodes: Seq[String], confirmedTaxCodes: Seq[String])
 
-  def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
-    audit.sendExplicitAudit(transactionName, detail)
+object TaxCodeMismatch {
+  implicit val formats = Json.format[TaxCodeMismatch]
 }

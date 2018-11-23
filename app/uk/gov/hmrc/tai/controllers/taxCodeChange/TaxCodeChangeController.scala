@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
@@ -37,7 +38,9 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
     implicit request =>
         if (toggleConfig.taxCodeChangeEnabled) {
           taxCodeChangeService.hasTaxCodeChanged(nino).map{
-            taxCodeChanged => Ok(Json.toJson(taxCodeChanged))
+            taxCodeChanged => {
+              Ok(Json.toJson(taxCodeChanged))
+            }
           }
         }
         else{
@@ -49,6 +52,15 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
     implicit request =>
       taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
         Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+      }
+  }
+
+  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.async {
+    implicit request =>
+      taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
+        Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+      } recover {
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
       }
   }
 }

@@ -16,27 +16,18 @@
 
 package uk.gov.hmrc.tai.modules
 
-import com.google.inject.{Inject, Provider, Singleton}
+import com.google.inject.Singleton
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.util.TaiConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[Audit].toProvider[AuditProvider].in[Singleton],
     bind[IncomeHelper].toInstance(IncomeHelper).in[Singleton],
     bind[TaxYearResolver].toInstance(TaxYearResolver).in[Singleton],
     bind(classOf[AuthorisedFunctions]).to(classOf[MicroserviceAuthorisedFunctions]).eagerly()
   )
-}
-
-@Singleton
-class AuditProvider @Inject()(connector: AuditConnector)extends Provider[Audit]{
-  override def get(): Audit = new Audit(TaiConstants.ApplicationName, connector)
 }

@@ -33,11 +33,8 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
-import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
-import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
-import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.duration._

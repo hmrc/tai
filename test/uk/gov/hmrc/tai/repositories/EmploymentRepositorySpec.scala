@@ -43,6 +43,8 @@ import scala.util.Random
 
 class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
+  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TESTING")))
+
   "stubAccounts" should {
 
     "generate a stubbed AnnualAccount instance with appropriate status, for each known Employment" when {
@@ -794,8 +796,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TESTING")))
-
   private val nino: Nino = new Generator(new Random).nextNino
 
   private val nonGatekeeperTaiRoot = TaiRoot(
@@ -812,9 +812,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   private def createSUT(rtiConnector: RtiConnector,
                         cacheConnector: CacheConnector,
                         npsConnector: NpsConnector,
-                        Auditor: Auditor) =
+                        auditor: Auditor) =
 
-    new EmploymentRepository(rtiConnector, cacheConnector, npsConnector, Auditor)
+    new EmploymentRepository(rtiConnector, cacheConnector, npsConnector, auditor)
 
   private def getJson(fileName: String):JsValue = {
     val jsonFilePath = "test/resources/data/EmploymentRepositoryTesting/" + fileName + ".json"

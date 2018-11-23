@@ -402,7 +402,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockAuditable = mock[Auditor]
         doNothing().when(mockAuditable)
-          .sendDataEvent(any(), any(), any(), any())(any())
+          .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mock[TaxAccountService], mock[CompanyCarBenefitRepository], mock[CompanyCarConnector], mock[CodingComponentService], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
         val result = Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds)
@@ -431,12 +431,12 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockAuditable = mock[Auditor]
       doNothing().when(mockAuditable)
-        .sendDataEvent(any(), any(), any(), any())(any())
+        .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(mock[TaxAccountService], mock[CompanyCarBenefitRepository], mock[CompanyCarConnector], mock[CodingComponentService], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
       Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
 
-      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.RemoveCompanyBenefitAuditTxnName), any(), any(),
+      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.RemoveCompanyBenefitAuditTxnName),
         Matchers.eq(map))(any())
     }
   }
