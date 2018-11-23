@@ -21,11 +21,10 @@ import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.connectors.DesConnector
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.domain.response.{ExpensesUpdateFailure, ExpensesUpdateSuccess}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
@@ -47,21 +46,21 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
   "updateFlatRateExpensesAmount" must {
 
-    "return ExpensesUpdateSuccess" when {
+    "return 200" when {
       "success response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
-          .thenReturn(Future.successful(ExpensesUpdateSuccess))
+          .thenReturn(Future.successful(HttpResponse(200)))
 
-        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds) mustBe ExpensesUpdateSuccess
+        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds).status mustBe 200
       }
     }
 
-    "return ExpensesUpdateFailure" when {
+    "return 500" when {
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
-          .thenReturn(Future.successful(ExpensesUpdateFailure))
+          .thenReturn(Future.successful(HttpResponse(500)))
 
-        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds) mustBe ExpensesUpdateFailure
+        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds).status mustBe 500
       }
     }
   }

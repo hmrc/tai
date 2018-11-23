@@ -33,7 +33,6 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.domain.response.{ExpensesUpdateFailure, ExpensesUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesAmount}
 import uk.gov.hmrc.tai.util.TaiConstants
@@ -430,9 +429,10 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "updateExpensesDataToDes" should {
 
-      "return a ExpensesUpdateSuccess" when {
+      "return a OK" when {
         "updating expenses data to des" in {
           val mockHttpClient = mock[HttpClient]
+
           when(mockHttpClient.POST[IabdUpdateExpensesAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
             .thenReturn(Future.successful(HttpResponse(Status.OK)))
 
@@ -450,31 +450,33 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             updateAmount = IabdUpdateExpensesAmount(100)
           )(hc), 5 seconds)
 
-          result mustBe ExpensesUpdateSuccess
+          result.status mustBe Status.OK
         }
       }
 
-      "return a ExpensesUpdateFailure" when {
+      "return a Internal Server Error" when {
         "updating expenses data to des" in {
           val mockHttpClient = mock[HttpClient]
+
           when(mockHttpClient.POST[IabdUpdateExpensesAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-            .thenReturn(Future.successful(HttpResponse(Status.BAD_REQUEST)))
+            .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR)))
 
           val mockMetrics = mock[Metrics]
-          when(mockMetrics.startTimer(any()))
-            .thenReturn(mock[Timer.Context])
+          when(mockMetrics.startTimer(any())).thenReturn(mock[Timer.Context])
 
           val sut: DesConnector = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-          val result = Await.result(sut.updateExpensesDataToDes(
+          val result = sut.updateExpensesDataToDes(
             nino = Nino(nino),
             year = taxYear,
             iabdType = iabdType,
             version = 1,
             updateAmount = IabdUpdateExpensesAmount(100)
-          )(hc), 5 seconds)
+          )(hc)
 
-          result mustBe ExpensesUpdateFailure
+          val ex: HttpException = the[HttpException] thrownBy Await.result(result, 5 seconds)
+          ex.responseCode mustBe Status.INTERNAL_SERVER_ERROR
+
         }
       }
 

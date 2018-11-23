@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.model
 
-import com.google.inject.Inject
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /**
@@ -33,13 +31,6 @@ case class IabdUpdateExpensesAmount (
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
 }
 
-class IabdUpdateExpensesAmountFormats @Inject()() {
-
-  def iabdUpdateExpensesAmountWrites: Writes[IabdUpdateExpensesAmount] = (
-      (JsPath \ "grossAmount").write[Int] and
-      (JsPath \ "receiptDate").writeNullable[String]
-    )(unlift(IabdUpdateExpensesAmount.unapply))
-
-  implicit def formats = Format(Json.reads[IabdUpdateExpensesAmount], iabdUpdateExpensesAmountWrites)
-
+object IabdUpdateExpensesAmount {
+  implicit val formats: Format[IabdUpdateExpensesAmount] = Json.format[IabdUpdateExpensesAmount]
 }

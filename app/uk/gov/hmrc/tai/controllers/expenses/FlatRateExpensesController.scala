@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc.Action
 import uk.gov.hmrc.domain.Nino
@@ -26,7 +25,6 @@ import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.IabdEditDataRequest
 import uk.gov.hmrc.tai.model.api.ApiFormats
-import uk.gov.hmrc.tai.model.domain.response.{ExpensesUpdateFailure, ExpensesUpdateSuccess}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
@@ -45,15 +43,13 @@ class FlatRateExpensesController @Inject()(
     implicit request =>
       withJsonBody[IabdEditDataRequest] {
         iabdEditDataRequest =>
-          flatRateExpensesService.updateFlatRateExpensesAmount(nino, year, iabdEditDataRequest.version, iabdEditDataRequest.newAmount) map {
-            case ExpensesUpdateSuccess => NoContent
-            case ExpensesUpdateFailure => InternalServerError
+          flatRateExpensesService.updateFlatRateExpensesAmount(nino, year, iabdEditDataRequest.version, iabdEditDataRequest.newAmount).map {
+            value =>
+              value.status match {
+                case OK => NoContent
+                case _ => InternalServerError
+              }
           }
-      }.recover {
-        case e =>
-          Logger.error("[FlatRateExpensesController][UpdateFlatRateExpensesAmount]Failed with exception", e)
-          InternalServerError
       }
   }
-
 }
