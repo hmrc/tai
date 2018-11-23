@@ -90,10 +90,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         taxCodeChange
 
       } else if(taxCodeRecordList.size == 1) {
-        Logger.warn(s"Only one tax code record returned for $nino")
+        Logger.warn(s"Only one tax code record returned for $nino" )
         TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
       } else {
-        Logger.warn(s"No tax code records returned for $nino")
+        Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
         TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       }
     }
@@ -111,7 +111,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }) recover {
       case exception =>
-        Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
+        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}")
         throw new BadRequestException(exception.getMessage)
     }
   }
