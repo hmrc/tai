@@ -33,6 +33,7 @@ object APITypes extends Enumeration {
   val DesIabdSpecificAPI = Value
   val DesIabdUpdateEstPayAutoAPI = Value
   val DesIabdUpdateEstPayManualAPI = Value
+  val DesIabdUpdateFlatRateExpensesAPI = Value
   val PdfServiceAPI = Value
   val CompanyCarAPI = Value
   val FusCreateEnvelope = Value
