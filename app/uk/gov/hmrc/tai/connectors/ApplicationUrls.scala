@@ -105,3 +105,11 @@ class TaxCodeChangeUrl @Inject()(config: DesConfig) {
   }
 
 }
+
+@Singleton
+class TaxAccountHistoryUrl @Inject()(config: DesConfig) {
+
+  def taxAccountHistoricSnapshotUrl(nino: Nino, taxCodeId: Int): String = {
+    s"${config.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$taxCodeId"
+  }
+}
