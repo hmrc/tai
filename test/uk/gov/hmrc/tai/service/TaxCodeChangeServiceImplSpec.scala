@@ -1021,11 +1021,24 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate("1185L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, true)
     val taxCodeRecordWithEndDate2 = TaxCodeRecordWithEndDate("1085L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, false)
 
+    "return an empty sequence" when {
+      "no tax code records are returned" in {
+
+        val taxCodeRecordList = Seq.empty
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino, startYear, endYear)) thenReturn (Future.successful(taxCodeHistory))
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino, startYear), 5.seconds)
+        val expectedResult = Seq.empty
+
+        latestTaxCodes mustEqual expectedResult
+      }
+    }
+
     "return a list of most recent tax codes" when {
 
       "there is a single tax code under a single employer CY-1" in {
-
-        // change this Primary to be sealed trait
 
         val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary)
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(

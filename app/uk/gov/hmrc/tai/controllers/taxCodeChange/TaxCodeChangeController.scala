@@ -38,7 +38,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
         if (toggleConfig.taxCodeChangeEnabled) {
-          taxCodeChangeService.hasTaxCodeChanged(nino).map{
+          taxCodeChangeService.hasTaxCodeChanged(nino).map {
             taxCodeChanged => {
               Ok(Json.toJson(taxCodeChanged))
             }
@@ -61,7 +61,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
         Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
       } recover {
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
       }
   }
 
@@ -73,7 +73,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
       }
 
   }

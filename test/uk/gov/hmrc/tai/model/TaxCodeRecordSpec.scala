@@ -29,7 +29,7 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
 
       val records = Seq(mostRecentTaxCodeRecord)
 
-      TaxCodeRecord.mostRecentTaxCodeRecord(records) mustEqual mostRecentTaxCodeRecord
+      TaxCodeRecord.mostRecent(records) mustEqual mostRecentTaxCodeRecord
 
     }
 
@@ -37,7 +37,7 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
 
       val records = Seq(olderTaxCodeRecord, mostRecentTaxCodeRecord)
 
-      TaxCodeRecord.mostRecentTaxCodeRecord(records) mustEqual mostRecentTaxCodeRecord
+      TaxCodeRecord.mostRecent(records) mustEqual mostRecentTaxCodeRecord
 
     }
   }

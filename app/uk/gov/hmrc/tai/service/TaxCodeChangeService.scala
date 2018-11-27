@@ -124,40 +124,24 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
-      mostRecentTaxCodeRecordInYear(nino, taxYear)
-  }
-
-  private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
-    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
-  }
-
-  def mostRecentTaxCodeRecordInYear(nino: Nino, year: TaxYear): Future[Seq[TaxCodeRecordWithEndDate]] = {
-
-    taxCodeChangeConnector.taxCodeHistory(nino, year, year.next).map { taxCodeHistory =>
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next).map { taxCodeHistory =>
 
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
-      val thing = groupedTaxCodeRecords.values.flatMap {
+      val records = groupedTaxCodeRecords.values.flatMap {
         taxCodeRecords =>
           val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
           sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
 
       }.toSeq
 
-      thing.map(addEndDate(year.end, _))
-    }
-
-  }
-
-  private def getMostRecentRecordInSequence(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
-    if(records.nonEmpty) {
-      Seq(TaxCodeRecord.mostRecentTaxCodeRecord(records))
-    }
-    else {
-      Seq.empty
+      records.map(addEndDate(taxYear.end, _))
     }
   }
 
+  private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next)
+  }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
     if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
