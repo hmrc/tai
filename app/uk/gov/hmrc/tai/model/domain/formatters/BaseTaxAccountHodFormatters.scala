@@ -32,6 +32,7 @@ trait BaseTaxAccountHodFormatters {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
     }
+
     iabdJsArray.flatMap (_.value) collect { case json if (json \ "type").asOpt[Int].isDefined =>
       val componentType = (json \ "type").as[Int]
       val employmentId = (json \ "employmentId").asOpt[Int]
