@@ -23,21 +23,24 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
 
-  def createPrimaryEmployment(taxCode: String = "1185L",
+  def createPrimaryEmployment(taxCodeId: Int = 1,
+                              taxCode: String = "1185L",
                               basisOfOperation: String = Cumulative,
                               employerName: String = "Employer 1",
                               dateOfCalculation: LocalDate = LocalDate.now,
                               payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    createEmployment(taxCode, basisOfOperation, employerName, operatedTaxCode = true, dateOfCalculation, payrollNumber, Primary)
+    createEmployment(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = true, dateOfCalculation, payrollNumber, Primary)
   }
 
-  def createPrimaryEmploymentJson(taxCode: String = "1185L",
+  def createPrimaryEmploymentJson(taxCodeId: Int = 1,
+                                  taxCode: String = "1185L",
                                   basisOfOperation: String = Cumulative,
                                   employerName: String = "Employer 1",
                                   dateOfCalculation: LocalDate = LocalDate.now,
                                   payrollNumber: String = "123"): JsObject = {
     Json.obj(
+      "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
       "employerName" -> employerName,
@@ -49,21 +52,24 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     )
   }
 
-  def createSecondaryEmployment(taxCode: String = "1185L",
+  def createSecondaryEmployment(taxCodeId: Int = 1,
+                                taxCode: String = "1185L",
                                 basisOfOperation: String = Cumulative,
                                 employerName: String = "Employer 1",
                                 dateOfCalculation: LocalDate = LocalDate.now,
                                 payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    createEmployment(taxCode, basisOfOperation, employerName, true, dateOfCalculation, payrollNumber, Secondary)
+    createEmployment(taxCodeId, taxCode, basisOfOperation, employerName, true, dateOfCalculation, payrollNumber, Secondary)
   }
 
-  def createSecondaryEmploymentJson(taxCode: String = "1185L",
-                                  basisOfOperation: String = Cumulative,
-                                  employerName: String = "Employer 1",
-                                  dateOfCalculation: LocalDate = LocalDate.now,
-                                  payrollNumber: String = "123"): JsObject = {
+  def createSecondaryEmploymentJson(taxCodeId: Int = 1,
+                                    taxCode: String = "1185L",
+                                    basisOfOperation: String = Cumulative,
+                                    employerName: String = "Employer 1",
+                                    dateOfCalculation: LocalDate = LocalDate.now,
+                                    payrollNumber: String = "123"): JsObject = {
     Json.obj(
+      "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
       "employerName" -> employerName,
@@ -75,12 +81,14 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     )
   }
 
-  def createNoPayrollNumberJson(taxCode: String = "1185L",
+  def createNoPayrollNumberJson(taxCodeId: Int = 1,
+                                taxCode: String = "1185L",
                                 basisOfOperation: String = Cumulative,
                                 employerName: String = "Employer 1",
                                 dateOfCalculation: LocalDate = LocalDate.now,
                                 employmentType: String = Primary): JsObject = {
     Json.obj(
+      "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
       "employerName" -> employerName,
@@ -92,17 +100,19 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     )
   }
 
-  def createNonOperatedEmployment(taxCode: String = "1185L",
+  def createNonOperatedEmployment(taxCodeId: Int = 1,
+                                  taxCode: String = "1185L",
                                   basisOfOperation: String = Cumulative,
                                   employerName: String = "Employer 1",
                                   dateOfCalculation: LocalDate = LocalDate.now,
                                   payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    TaxCodeRecord(taxCode, basisOfOperation, employerName, operatedTaxCode = false, dateOfCalculation, payrollNumber, pensionIndicator = false, Primary)
+    TaxCodeRecord(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = false, dateOfCalculation, payrollNumber, pensionIndicator = false, Primary)
   }
 
 
-  private def createEmployment(taxCode: String,
+  private def createEmployment(taxCodeId: Int,
+                               taxCode: String,
                                basisOfOperation: String,
                                employerName: String,
                                operatedTaxCode: Boolean,
@@ -110,6 +120,6 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
                                payrollNumber: Option[String],
                                employmentType: String): TaxCodeRecord = {
 
-    TaxCodeRecord(taxCode, basisOfOperation, employerName, operatedTaxCode, dateOfCalculation, payrollNumber, pensionIndicator = false, employmentType)
+    TaxCodeRecord(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode, dateOfCalculation, payrollNumber, pensionIndicator = false, employmentType)
   }
 }
