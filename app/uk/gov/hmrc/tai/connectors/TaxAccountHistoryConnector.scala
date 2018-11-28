@@ -29,12 +29,10 @@ import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormat
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.util.TaiConstants
 
-// TODO: Execution Context
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
-
 import scala.concurrent.Future
 import scala.util.Try
+
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 class TaxAccountHistoryConnector @Inject()(metrics: Metrics,
                                            httpClient: HttpClient,
