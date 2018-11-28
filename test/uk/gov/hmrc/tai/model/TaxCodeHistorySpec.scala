@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.util.Random
@@ -28,48 +28,13 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
 
   "TaxCodeHistory reads" should {
     "return a TaxCodeHistory given valid Json" in {
-
-      val now = LocalDate.now()
-      val nino = randomNino
-      val payrollNumber1 = randomInt().toString
-      val payrollNumber2 = randomInt().toString
-
-
-      val taxCodeHistory = TaxCodeHistory(nino, Seq(
-        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber1), pensionIndicator = false, "PRIMARY"),
-        TaxCodeRecord("tax code", Cumulative, "Employee 1", operatedTaxCode = true, now, Some(payrollNumber2), pensionIndicator = false, "PRIMARY")
-      ))
-
-      val validJson = Json.obj(
-        "nino" -> nino,
-        "taxCodeRecord" -> Seq(
-          Json.obj("taxCode" -> "tax code",
-            "basisOfOperation" -> Cumulative,
-            "employerName" -> "Employee 1",
-            "operatedTaxCode" -> true,
-            "dateOfCalculation" -> now,
-            "payrollNumber" -> payrollNumber1,
-            "pensionIndicator" -> false,
-            "employmentType" -> "PRIMARY"),
-          Json.obj("taxCode" -> "tax code",
-            "basisOfOperation" -> Cumulative,
-            "employerName" -> "Employee 1",
-            "operatedTaxCode" -> true,
-            "dateOfCalculation" -> now,
-            "payrollNumber" -> payrollNumber2,
-            "pensionIndicator" -> false,
-            "employmentType" -> "PRIMARY")
-        )
-      )
+      val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+      val validJson = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
 
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
-
     }
 
     "throw an error when there are no tax code records" in {
-
-      val nino = randomNino
-
       val invalidJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
@@ -80,11 +45,5 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
     }
   }
 
-  private def randomNino: String = new Generator(new Random).nextNino.toString().slice(0, -1)
-
-  private def randomInt(maxDigits: Int = 5): Int = {
-    import scala.math.pow
-    val random = new Random
-    random.nextInt(pow(10,maxDigits).toInt)
-  }
+  private val nino: Nino = new Generator(new Random).nextNino
 }
