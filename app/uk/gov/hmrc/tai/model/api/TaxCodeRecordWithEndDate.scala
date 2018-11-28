@@ -20,7 +20,8 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
-case class TaxCodeRecordWithEndDate(taxCode: String,
+case class TaxCodeRecordWithEndDate(taxCodeId: Int,
+                                    taxCode: String,
                                     basisOfOperation: String,
                                     startDate: LocalDate,
                                     endDate: LocalDate,

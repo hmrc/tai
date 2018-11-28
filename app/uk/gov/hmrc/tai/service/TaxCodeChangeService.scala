@@ -118,7 +118,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
     TaxCodeRecordWithEndDate(
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
+      taxCodeRecord.taxCodeId, taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
       taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
     )
   }

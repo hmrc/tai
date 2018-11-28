@@ -95,13 +95,13 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     val payrollNumberCurr = "456"
 
     val currentTaxCodeRecords: Seq[TaxCodeRecordWithEndDate] = Seq(
-      TaxCodeRecordWithEndDate("1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true),
-      TaxCodeRecordWithEndDate("185L", Cumulative, currentStartDate, currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
+      TaxCodeRecordWithEndDate(3, "1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true),
+      TaxCodeRecordWithEndDate(4, "185L", Cumulative, currentStartDate, currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
     )
 
     val previousTaxCodeRecords: Seq[TaxCodeRecordWithEndDate] = Seq(
-      TaxCodeRecordWithEndDate("1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
-      TaxCodeRecordWithEndDate("BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
+      TaxCodeRecordWithEndDate(1, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
+      TaxCodeRecordWithEndDate(2, "BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
     )
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)

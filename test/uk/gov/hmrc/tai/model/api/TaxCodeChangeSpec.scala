@@ -112,16 +112,16 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants  {
   val payrollNumberPrev = "11111"
   val payrollNumberCurr = "22222"
 
-  val previousTaxCodeChangeRecordPrimary = TaxCodeRecordWithEndDate("1185L", Cumulative, previousStartDate, previousEndDate,
+  val previousTaxCodeChangeRecordPrimary = TaxCodeRecordWithEndDate(1, "1185L", Cumulative, previousStartDate, previousEndDate,
     "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true)
 
-  val previousTaxCodeChangeRecordSecondary = TaxCodeRecordWithEndDate("D0", Cumulative, previousStartDate, previousEndDate,
+  val previousTaxCodeChangeRecordSecondary = TaxCodeRecordWithEndDate(2, "D0", Cumulative, previousStartDate, previousEndDate,
     "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
 
-  val currentTaxCodeChangeRecordPrimary = TaxCodeRecordWithEndDate("1000L", Cumulative, currentStartDate, currentEndDate,
+  val currentTaxCodeChangeRecordPrimary = TaxCodeRecordWithEndDate(3, "1000L", Cumulative, currentStartDate, currentEndDate,
     "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true)
 
-  val currentTaxCodeChangeRecordSecondary = TaxCodeRecordWithEndDate("1001L", Cumulative, currentStartDate.minusDays(1), currentEndDate,
+  val currentTaxCodeChangeRecordSecondary = TaxCodeRecordWithEndDate(4, "1001L", Cumulative, currentStartDate.minusDays(1), currentEndDate,
     "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
 
 }

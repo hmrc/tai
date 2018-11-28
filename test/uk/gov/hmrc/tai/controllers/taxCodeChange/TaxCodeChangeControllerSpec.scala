@@ -99,16 +99,17 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeRecordWithEndDate("b", Cumulative, date, date.minusDays(1), "Employer 1",
+      val currentRecord = api.TaxCodeRecordWithEndDate(1, "b", Cumulative, date, date.minusDays(1), "Employer 1",
         Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeRecordWithEndDate("a", Cumulative, date, date.minusDays(1), "Employer 2",
+      val previousRecord = api.TaxCodeRecordWithEndDate(2, "a", Cumulative, date, date.minusDays(1), "Employer 2",
         Some("67890"), pensionIndicator = false, primary = true)
       when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
         Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.arr(Json.obj("taxCode" -> "b",
+          "current" -> Json.arr(Json.obj("taxCodeId" -> 1,
+                                  "taxCode" -> "b",
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
@@ -116,7 +117,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
                                   "payrollNumber" -> "12345",
                                   "pensionIndicator" -> false,
                                   "primary" -> true)),
-          "previous" -> Json.arr(Json.obj("taxCode" -> "a",
+          "previous" -> Json.arr(Json.obj("taxCodeId" -> 2,
+                                  "taxCode" -> "a",
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
