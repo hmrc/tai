@@ -23,6 +23,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.connectors.TaxAccountHistoryConnector
+import uk.gov.hmrc.tai.model.api.TaxCodeChange
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -35,19 +36,23 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc:HeaderCarrier): Future[TaxFreeAmountComparison] = {
 
-    val currentComponents = codingComponentService.codingComponents(nino, TaxYear())
-
+    val currentComponents: Future[Seq[CodingComponent]] = codingComponentService.codingComponents(nino, TaxYear())
+    val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
       current <- currentComponents
+      previous <- previousComponents
     } yield {
-      TaxFreeAmountComparison(Seq.empty, current)
+      TaxFreeAmountComparison(previous, current)
     }
   }
 
+  def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+    previousTaxCodeChangeIds(nino).flatMap(ids => buildPreviousCodingComponentsFromIds(nino, ids))
+  }
+
   def previousTaxCodeChangeIds(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[Int]] = {
-    val taxCodeChange = taxCodeChangeService.taxCodeChange(nino)
-    taxCodeChange.map(_.previous.map(_.taxCodeId))
+    taxCodeChangeService.taxCodeChange(nino).map(_.previous.map(_.taxCodeId))
   }
 
   def buildPreviousCodingComponentsFromIds(nino: Nino, taxCodeIds: Seq[Int])(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {

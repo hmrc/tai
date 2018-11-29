@@ -50,6 +50,11 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
           CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
         )
 
+        val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
+
+        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+          .thenReturn(Future.successful(taxCodeChange))
+
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(currentCodingComponents))
 
@@ -64,20 +69,31 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     }
 
     "return a sequence of previous coding components" when {
-      "called with a valid nino" ignore {
+      "called with a valid nino" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
         val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
-        val taxCodeChange = stubTaxCodeChange
+        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
+        val codingComponent2 = CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
-          .thenReturn(Future.successful(Seq.empty))
+        val previousCodingComponents = Seq[CodingComponent](codingComponent1, codingComponent2)
+
+        val taxCodeChange = stubTaxCodeChange
 
         when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        val expected = TaxFreeAmountComparison(Seq.empty, Seq.empty)
+        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+          .thenReturn(Future.successful(Seq.empty))
+
+        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
+          .thenReturn(Future.successful(Success(Seq(codingComponent1))))
+
+        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(2)))
+          .thenReturn(Future.successful(Success(Seq(codingComponent2))))
+
+        val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
 
         val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
 
