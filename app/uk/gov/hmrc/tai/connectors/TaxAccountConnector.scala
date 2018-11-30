@@ -37,6 +37,7 @@ import scala.concurrent.Future
 class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
                                     desConfig: DesConfig,
                                     taxAccountUrls: TaxAccountUrls,
+                                    taxAccountHistoryUrls: TaxAccountHistoryUrl,
                                     iabdUrls: IabdUrls,
                                     IabdUpdateAmountFormats: IabdUpdateAmountFormats,
                                     httpHandler: HttpHandler,
@@ -54,6 +55,12 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
       val url = taxAccountUrls.taxAccountUrlNps(nino, taxYear)
       httpHandler.getFromApi(url, APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
     }
+  }
+
+  def taxAccountHistory(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
+    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+    val url = taxAccountHistoryUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)

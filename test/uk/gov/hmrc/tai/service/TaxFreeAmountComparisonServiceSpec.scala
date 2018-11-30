@@ -25,7 +25,6 @@ import org.mockito.Matchers.any
 import org.mockito.Matchers
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
-import uk.gov.hmrc.tai.connectors.TaxAccountHistoryConnector
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 
 import scala.concurrent.duration._
@@ -43,7 +42,6 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       "called with a valid nino" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
         val currentCodingComponents = Seq[CodingComponent](
           CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
@@ -60,7 +58,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
         val expected = TaxFreeAmountComparison(Seq.empty, currentCodingComponents)
 
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+        val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val result: TaxFreeAmountComparison = Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
@@ -68,11 +66,37 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       }
     }
 
+    "return a Future Failed" when {
+      "one of the service calls fails" in {
+
+        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val codingComponentService = mock[CodingComponentService]
+
+        val currentCodingComponents = Seq[CodingComponent](
+          CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
+          CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
+        )
+
+        val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
+
+        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+          .thenReturn(Future.failed(new RuntimeException("Error")))
+
+        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+          .thenReturn(Future.successful(currentCodingComponents))
+
+        val service = createTestService(taxCodeChangeService, codingComponentService)
+
+        val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+
+        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
+      }
+    }
+
     "return a sequence of previous coding components" when {
       "called with a valid nino" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
         val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
         val codingComponent2 = CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
@@ -87,15 +111,15 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
-          .thenReturn(Future.successful(Success(Seq(codingComponent1))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent1)))
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(2)))
-          .thenReturn(Future.successful(Success(Seq(codingComponent2))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent2)))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
 
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+        val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val result: TaxFreeAmountComparison = Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
@@ -108,14 +132,13 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     "return a sequence of tax code ids relating to the previous tax codes" in {
       val taxCodeChangeService = mock[TaxCodeChangeService]
       val codingComponentService = mock[CodingComponentService]
-      val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
       val taxCodeChange = stubTaxCodeChange
 
       when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
         .thenReturn(Future.successful(taxCodeChange))
 
-      val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+      val service = createTestService(taxCodeChangeService, codingComponentService)
 
       val result = Await.result(service.previousTaxCodeChangeIds(nino), 5.seconds)
 
@@ -128,20 +151,19 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       "all request return successfully" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
         val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
         val codingComponent2 = CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
 
         val currentCodingComponents = Seq[CodingComponent](codingComponent1, codingComponent2)
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
-          .thenReturn(Future.successful(Success(Seq(codingComponent1))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent1)))
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(2)))
-          .thenReturn(Future.successful(Success(Seq(codingComponent2))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent2)))
 
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+        val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val result = Await.result(service.buildPreviousCodingComponentsFromIds(nino, Seq(1, 2)), 5.seconds)
 
@@ -153,17 +175,16 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       "one of the requests fails" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
 
         val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
-          .thenReturn(Future.successful(Success(Seq(codingComponent1))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent1)))
 
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(2)))
-          .thenReturn(Future.successful(Failure(new BadRequestException("Error"))))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
+          .thenReturn(Future.failed(new BadRequestException("Error")))
 
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+        val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val exception = the[RuntimeException] thrownBy Await.result(service.buildPreviousCodingComponentsFromIds(nino, Seq(1, 2)), 5.seconds)
 
@@ -172,43 +193,6 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     }
   }
 
-  "codingComponentsForId" should {
-    "return a Success seq of coding components for a taxCodeId" when {
-      "a successful response is returned" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
-        val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
-
-        val expected = Seq(CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"))
-
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
-          .thenReturn(Future.successful(Success(expected)))
-
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
-
-        val result = Await.result(service.codingComponentsForId(nino, 1), 5.seconds)
-
-        result mustBe expected
-      }
-    }
-
-    "return a Failure for a taxCodeId" when {
-      "a failure response is returned" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
-        val codingComponentService = mock[CodingComponentService]
-        val taxAccountHistoryConnector = mock[TaxAccountHistoryConnector]
-
-        when(taxAccountHistoryConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(1)))
-          .thenReturn(Future.successful(Failure(new BadRequestException("Error"))))
-
-        val service = createTestService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
-
-        val exception = the[BadRequestException] thrownBy Await.result(service.codingComponentsForId(nino, 1), 5.seconds)
-
-        exception.getMessage mustBe "Error"
-      }
-    }
-  }
 
   // TODO: Move to Factory
   private def stubTaxCodeChange: TaxCodeChange = {
@@ -237,9 +221,8 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
   private val nino: Nino = new Generator(new Random).nextNino
 
   private def createTestService(taxCodeChangeService: TaxCodeChangeService,
-                                codingComponentService: CodingComponentService,
-                                taxAccountHistoryConnector: TaxAccountHistoryConnector): TaxFreeAmountComparisonService = {
-    new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService, taxAccountHistoryConnector)
+                                codingComponentService: CodingComponentService): TaxFreeAmountComparisonService = {
+    new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
   }
 
 }

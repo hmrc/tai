@@ -24,8 +24,9 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
+import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
@@ -93,9 +94,26 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           result mustBe HodUpdateFailure
         }
       }
-
     }
 
+    "Tax Account History" must {
+      "return a Success[JsValue] for valid json" in {
+        val taxCodeId = 1
+
+        val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
+
+        val url = new URL(taxAccountHistoryUrlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(ok(json.toString))
+        )
+
+        val connector = createSUT()
+        val result = Await.result(connector.taxAccountHistory(nino, taxCodeId), 5.seconds)
+
+        result mustEqual json
+      }
+    }
 
     "toggled to use DES" must {
 
@@ -157,6 +175,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
   private val originatorId = "testOriginatorId"
   private implicit val hc: HeaderCarrier = HeaderCarrier()
   lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
+  lazy val taxAccountHistoryUrlConfig = injector.instanceOf[TaxAccountHistoryUrl]
   lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
   val taxYear = TaxYear(2017)
   val nino: Nino = new Generator(new Random).nextNino
@@ -181,10 +200,11 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
   private def createSUT(npsConfig: NpsConfig = injector.instanceOf[NpsConfig],
                         desConfig: DesConfig = injector.instanceOf[DesConfig],
                         taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
+                        taxAccountHistoryUrlConfig: TaxAccountHistoryUrl = injector.instanceOf[TaxAccountHistoryUrl],
                         iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
                         formats: IabdUpdateAmountFormats = injector.instanceOf[IabdUpdateAmountFormats],
                         httpHandler: HttpHandler = injector.instanceOf[HttpHandler],
                         featureTogglesConfig: FeatureTogglesConfig = injector.instanceOf[FeatureTogglesConfig]) =
 
-    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler, featureTogglesConfig)
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, taxAccountHistoryUrlConfig, iabdUrls, formats, httpHandler, featureTogglesConfig)
 }
