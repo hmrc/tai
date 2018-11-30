@@ -27,8 +27,8 @@ import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.time.TaxYearResolver
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
@@ -60,7 +60,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
 
-      val taxCodeRecordList = taxCodeHistory.taxCodeRecord
+      val taxCodeRecordList = taxCodeHistory.taxCodeRecords
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
@@ -116,11 +116,27 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     }
   }
 
-  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate ={
+  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
     TaxCodeRecordWithEndDate(
       taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
       taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
     )
+  }
+
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next).map { taxCodeHistory =>
+
+      val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
+
+      val records = groupedTaxCodeRecords.values.flatMap {
+        taxCodeRecords =>
+          val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
+          sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
+
+      }.toSeq
+
+      records.map(addEndDate(taxYear.end, _))
+    }
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
@@ -170,5 +186,7 @@ trait TaxCodeChangeService {
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
+
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]]
 
 }

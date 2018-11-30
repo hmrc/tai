@@ -36,4 +36,11 @@ case class TaxCodeRecord(taxCode: String,
 
 object TaxCodeRecord {
   implicit val format: OFormat[TaxCodeRecord] = Json.format[TaxCodeRecord]
+
+  def mostRecent(taxCodeRecords: Seq[TaxCodeRecord]): TaxCodeRecord = {
+    taxCodeRecords.reduceLeft((record1, record2) =>
+      if(record1.dateOfCalculation.isAfter(record2.dateOfCalculation)) record1 else record2
+    )
+  }
+
 }
