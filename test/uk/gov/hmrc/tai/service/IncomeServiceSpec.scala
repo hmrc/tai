@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
 import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -102,115 +102,174 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
   }
 
   "updateTaxCodeIncome" must {
-    "return an income success" when {
-      "a valid update amount is provided" in {
+    "for current year" must {
+      "return an income success" when {
+        "a valid update amount is provided" in {
+          val taxYear = TaxYear()
 
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
-          "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+          val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
+            "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
 
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employment(any(), any())(any()))
+            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
 
-        val mockTaxAccountSvc = mock[TaxAccountService]
-        when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val mockTaxAccountSvc = mock[TaxAccountService]
+          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
 
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockIncomeRepository = mock[IncomeRepository]
+          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HodUpdateSuccess))
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(any())
+          ).thenReturn(
+            Future.successful(HodUpdateSuccess)
+          )
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear.next), any(), any(), any(), any())(any())
+          ).thenReturn(
+            Future.successful(HodUpdateSuccess)
+          )
 
-        val mockAuditor = mock[Auditor]
-        doNothing().when(mockAuditor)
-          .sendDataEvent(any(), any())(any())
+          val mockAuditor = mock[Auditor]
+          doNothing().when(mockAuditor)
+            .sendDataEvent(any(), any())(any())
 
-        val SUT = createSUT(
-          employmentService = mockEmploymentSvc,
-          taxAccountService = mockTaxAccountSvc,
-          incomeRepository = mockIncomeRepository,
-          taxAccountRepository = mockTaxAccountRepository,
-          auditor = mockAuditor)
+          val SUT = createSUT(
+            employmentService = mockEmploymentSvc,
+            taxAccountService = mockTaxAccountSvc,
+            incomeRepository = mockIncomeRepository,
+            taxAccountRepository = mockTaxAccountRepository,
+            auditor = mockAuditor)
 
-        val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
 
-        result mustBe IncomeUpdateSuccess
-        verify(mockTaxAccountSvc, times(1)).invalidateTaiCacheData()(any())
-        verify(mockAuditor)
-          .sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
+          result mustBe IncomeUpdateSuccess
+          verify(mockTaxAccountSvc, times(1)).invalidateTaiCacheData()(any())
+          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
+        }
+      }
+
+      "return an error indicating a CY update failure" when {
+        "the hod update fails for a CY update" in {
+          val taxYear = TaxYear()
+
+          val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
+            "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employment(any(), any())(any()))
+            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+
+          val mockIncomeRepository = mock[IncomeRepository]
+          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(any())
+          ).thenReturn(
+            Future.successful(HodUpdateFailure)
+          )
+
+          val mockTaxAccountSvc = mock[TaxAccountService]
+          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+
+          val SUT = createSUT(employmentService = mockEmploymentSvc,
+            incomeRepository = mockIncomeRepository,
+            taxAccountRepository = mockTaxAccountRepository,
+            taxAccountService = mockTaxAccountSvc)
+
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+
+          result mustBe IncomeUpdateFailed("Hod update failed for CY update")
+        }
+      }
+
+      "return an error indicating a CY+1 update failure" when {
+        "the hod update fails for a CY+1 update" in {
+
+          val cyTaxYear = TaxYear()
+          val cyPlusOneTaxYear = TaxYear().next
+
+          val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
+            "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employment(any(), any())(any()))
+            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+
+          val mockTaxAccountSvc = mock[TaxAccountService]
+          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+
+          val mockIncomeRepository = mock[IncomeRepository]
+          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyTaxYear), any(), any(), any(), any())(any())
+          ).thenReturn(Future.successful(HodUpdateSuccess))
+
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyPlusOneTaxYear), any(), any(), any(), any())(any())
+          ).thenReturn(Future.successful(HodUpdateFailure))
+
+          val SUT = createSUT(employmentService = mockEmploymentSvc,
+            taxAccountService = mockTaxAccountSvc,
+            incomeRepository = mockIncomeRepository,
+            taxAccountRepository = mockTaxAccountRepository)
+
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5.seconds)
+
+          result mustBe IncomeUpdateFailed("Hod update failed for CY+1 update")
+        }
       }
     }
 
-    "return an error indicating a CY update failure" when {
-      "the hod update fails for a CY update" in {
+    "for next year" must {
+      "return an income success" when {
+        "anM update amount is provided" in {
+          val taxYear = TaxYear().next
 
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
-          "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+          val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
+            "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
 
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employment(any(), any())(any()))
+            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
 
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockTaxAccountSvc = mock[TaxAccountService]
+          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
 
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HodUpdateFailure))
+          val mockIncomeRepository = mock[IncomeRepository]
+          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-        val mockTaxAccountSvc = mock[TaxAccountService]
-        when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(any())
+          ).thenReturn(
+            Future.successful(HodUpdateSuccess)
+          )
 
-        val SUT = createSUT(employmentService = mockEmploymentSvc,
-          incomeRepository = mockIncomeRepository,
-          taxAccountRepository = mockTaxAccountRepository,
-          taxAccountService = mockTaxAccountSvc)
+          val mockAuditor = mock[Auditor]
+          doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
 
-        val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5 seconds)
+          val SUT = createSUT(
+            employmentService = mockEmploymentSvc,
+            taxAccountService = mockTaxAccountSvc,
+            incomeRepository = mockIncomeRepository,
+            taxAccountRepository = mockTaxAccountRepository,
+            auditor = mockAuditor)
 
-        result mustBe IncomeUpdateFailed("Hod update failed for CY update")
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
+
+          result mustBe IncomeUpdateSuccess
+          verify(mockTaxAccountRepository, times(1)).updateTaxCodeAmount(Meq(nino), Meq(taxYear), any(), Meq(1), any(), Meq(1234))(any())
+          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
+        }
       }
+
     }
-
-    "return an error indicating a CY+1 update failure" when {
-      "the hod update fails for a CY+1 update" in {
-
-        val cyTaxYear = TaxYear()
-        val cyPlusOneTaxYear = TaxYear().next
-
-        val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
-          "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
-        val mockEmploymentSvc = mock[EmploymentService]
-        when(mockEmploymentSvc.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
-
-        val mockTaxAccountSvc = mock[TaxAccountService]
-        when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
-
-        val mockIncomeRepository = mock[IncomeRepository]
-        when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
-
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyTaxYear), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HodUpdateSuccess))
-
-        when(mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyPlusOneTaxYear), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HodUpdateFailure))
-
-        val SUT = createSUT(employmentService = mockEmploymentSvc,
-                            taxAccountService = mockTaxAccountSvc,
-                            incomeRepository = mockIncomeRepository,
-                            taxAccountRepository = mockTaxAccountRepository)
-
-        val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5 seconds)
-
-        result mustBe IncomeUpdateFailed("Hod update failed for CY+1 update")
-      }
-    }
-
   }
 
   "retrieveTaxCodeIncomeAmount" must {

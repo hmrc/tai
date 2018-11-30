@@ -46,6 +46,9 @@ GET     /:nino/tax-account/:year/income/tax-code-incomes                        
 GET     /:nino/tax-account/:year/income                                                                  @uk.gov.hmrc.tai.controllers.income.IncomeController.income(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay    @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)
 
+#Expenses
+POST    /:nino/tax-account/:year/expenses/flat-rate-expenses                                   @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.updateFlatRateExpensesAmount(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
 #Coding Components
 GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
