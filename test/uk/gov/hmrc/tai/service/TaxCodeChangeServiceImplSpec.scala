@@ -1203,6 +1203,18 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
     }
   }
+  
+  private def taxCodeRecord(taxCode: String = "1185L",		
+		employerName: String = "Employer 1",
+		operatedTaxCode: Boolean = true,
+		dateOfCalculation: LocalDate,
+		payrollNumber: Option[String] = Some(randomInt().toString),
+		pensionIndicator: Boolean = false,
+		employmentType: String = Primary): TaxCodeRecord = {
+		
+		TaxCodeRecord(taxCode, Cumulative, employerName, operatedTaxCode, dateOfCalculation, payrollNumber, pensionIndicator, employmentType)
+		}
+
 
   val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
   val auditor = mock[Auditor]
