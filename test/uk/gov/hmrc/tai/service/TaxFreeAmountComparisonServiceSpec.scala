@@ -34,7 +34,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Random, Success}
+import scala.util.Random
 
 class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
 
@@ -68,7 +68,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     }
 
     "return a Future Failed" when {
-      "one of the service calls fails" in {
+      "the service call for taxCodeChange fails" in {
 
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
@@ -91,6 +91,35 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
         exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
+      }
+
+      "one of the service call for the coding components fails" in {
+        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val codingComponentService = mock[CodingComponentService]
+
+        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
+
+        val taxCodeChange = stubTaxCodeChange
+
+        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+          .thenReturn(Future.successful(taxCodeChange))
+
+        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+          .thenReturn(Future.successful(Seq.empty))
+
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
+          .thenReturn(Future.successful(Seq(codingComponent1)))
+
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
+          .thenReturn(Future.failed(new BadRequestException("Error")))
+
+
+        // What do we want
+        val service = createTestService(taxCodeChangeService, codingComponentService)
+
+        val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+
+        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Could not retrieve all previous coding components - Error"
       }
     }
 
@@ -128,72 +157,6 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       }
     }
   }
-
-  "previousTaxCodeChangeIds" should {
-    "return a sequence of tax code ids relating to the previous tax codes" in {
-      val taxCodeChangeService = mock[TaxCodeChangeService]
-      val codingComponentService = mock[CodingComponentService]
-
-      val taxCodeChange = stubTaxCodeChange
-
-      when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
-        .thenReturn(Future.successful(taxCodeChange))
-
-      val service = createTestService(taxCodeChangeService, codingComponentService)
-
-      val result = Await.result(service.previousTaxCodeChangeIds(nino), 5.seconds)
-
-      result mustBe Seq(1,2)
-    }
-  }
-
-  "buildPreviousCodingComponentsFromIds" should {
-    "return a seq of coding components given a set of taxCodeIds" when {
-      "all request return successfully" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
-        val codingComponentService = mock[CodingComponentService]
-
-        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
-        val codingComponent2 = CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
-
-        val currentCodingComponents = Seq[CodingComponent](codingComponent1, codingComponent2)
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent1)))
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent2)))
-
-        val service = createTestService(taxCodeChangeService, codingComponentService)
-
-        val result = Await.result(service.buildPreviousCodingComponentsFromIds(nino, Seq(1, 2)), 5.seconds)
-
-        result mustBe currentCodingComponents
-      }
-    }
-
-    "return a Future.failed" when {
-      "one of the requests fails" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
-        val codingComponentService = mock[CodingComponentService]
-
-        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent1)))
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
-          .thenReturn(Future.failed(new BadRequestException("Error")))
-
-        val service = createTestService(taxCodeChangeService, codingComponentService)
-
-        val exception = the[RuntimeException] thrownBy Await.result(service.buildPreviousCodingComponentsFromIds(nino, Seq(1, 2)), 5.seconds)
-
-        exception.getMessage mustBe "Could not retrieve all previous coding components - Error"
-      }
-    }
-  }
-
 
   // TODO: Move to Factory
   private def stubTaxCodeChange: TaxCodeChange = {

@@ -45,15 +45,15 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
     }
   }
 
-  def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
     previousTaxCodeChangeIds(nino).flatMap(ids => buildPreviousCodingComponentsFromIds(nino, ids))
   }
 
-  def previousTaxCodeChangeIds(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[Int]] = {
+  private def previousTaxCodeChangeIds(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[Int]] = {
     taxCodeChangeService.taxCodeChange(nino).map(_.previous.map(_.taxCodeId))
   }
 
-  def buildPreviousCodingComponentsFromIds(nino: Nino, taxCodeIds: Seq[Int])(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def buildPreviousCodingComponentsFromIds(nino: Nino, taxCodeIds: Seq[Int])(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
     Future.sequence(taxCodeIds.map(taxCodeId => {
       val response: Future[Seq[CodingComponent]] = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
 
