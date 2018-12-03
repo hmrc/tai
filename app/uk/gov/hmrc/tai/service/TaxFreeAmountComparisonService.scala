@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.tai.service
 
-import com.google.inject.Inject
+import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
 
-final case class TaxFreeAmountComparison(previous: Seq[CodingComponent], next: Seq[CodingComponent])
-
+@Singleton
 class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeService,
                                                codingComponentService: CodingComponentService) {
 

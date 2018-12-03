@@ -40,7 +40,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
+class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 

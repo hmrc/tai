@@ -25,6 +25,7 @@ import org.mockito.Matchers.any
 import org.mockito.Matchers
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
 
 import scala.concurrent.duration._

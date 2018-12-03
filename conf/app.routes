@@ -74,3 +74,4 @@ GET     /:nino/tax-account/tax-code-change/exists                               
 GET     /:nino/tax-account/tax-code-change                                                      @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeChange(nino: Nino)
 GET     /:nino/tax-account/tax-code-mismatch                                                    @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeMismatch(nino: Nino)
 GET     /:nino/tax-account/:year/tax-code/latest                                                @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.mostRecentTaxCodeRecords(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/tax-account/tax-free-amount-comparison                                           @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeIabdComparisonController.taxCodeChangeIabdComparison(nino: Nino)
