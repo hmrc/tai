@@ -17,9 +17,8 @@
 package uk.gov.hmrc.tai.model
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsPath, Json}
-import uk.gov.hmrc.tai.model.domain.CarBenefit
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import play.api.libs.json.Json
+import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 
 class TaxFreeAmountComparisonSpec extends PlaySpec {
 
@@ -27,33 +26,9 @@ class TaxFreeAmountComparisonSpec extends PlaySpec {
     "write the previous and current coding component sequences" when {
       "previous and current are non empty" in {
 
-        val codingComponent = CodingComponent(CarBenefit, Some(1), 1, "test", Some(1))
+        val model = TaxFreeAmountComparisonFactory.create
 
-        val model = TaxFreeAmountComparison(Seq(codingComponent), Seq(codingComponent))
-
-        val expectedJson = Json.obj(
-          "previous" -> Json.arr(
-            Json.obj(
-              "componentType" -> "CarBenefit",
-              "employmentId" -> 1,
-              "amount" -> 1,
-              "description" -> "test",
-              "iabdCategory" -> "Benefit",
-              "inputAmount" -> 1
-            )
-          ),
-          "current" -> Json.arr(
-            Json.obj(
-              "componentType" -> "CarBenefit",
-              "employmentId" -> 1,
-              "amount" -> 1,
-              "description" -> "test",
-              "iabdCategory" -> "Benefit",
-              "inputAmount" -> 1
-            )
-          )
-        )
-
+        val expectedJson = TaxFreeAmountComparisonFactory.createJson
         Json.toJson(model) mustEqual expectedJson
       }
 

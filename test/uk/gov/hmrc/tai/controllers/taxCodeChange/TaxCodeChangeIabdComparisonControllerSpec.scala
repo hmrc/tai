@@ -30,6 +30,7 @@ import uk.gov.hmrc.tai.model.domain.{CarBenefit, TaxComponentType}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import org.mockito.Mockito.when
+import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -41,34 +42,11 @@ class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthen
       "when given a valid Nino" in {
         val nino = ninoGenerator
 
-        val codingComponent = CodingComponent(CarBenefit, Some(1), 1, "test", Some(1))
-        val model = TaxFreeAmountComparison(Seq(codingComponent), Seq(codingComponent))
+        val model = TaxFreeAmountComparisonFactory.create
+        val expectedJson = TaxFreeAmountComparisonFactory.createJson
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(Matchers.eq(nino))(Matchers.any()))
           .thenReturn(Future.successful(model))
-
-        val expectedJson = Json.obj(
-          "previous" -> Json.arr(
-            Json.obj(
-              "componentType" -> "CarBenefit",
-              "employmentId" -> 1,
-              "amount" -> 1,
-              "description" -> "test",
-              "iabdCategory" -> "Benefit",
-              "inputAmount" -> 1
-            )
-          ),
-          "current" ->  Json.arr(
-            Json.obj(
-              "componentType" -> "CarBenefit",
-              "employmentId" -> 1,
-              "amount" -> 1,
-              "description" -> "test",
-              "iabdCategory" -> "Benefit",
-              "inputAmount" -> 1
-            )
-          )
-        )
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 

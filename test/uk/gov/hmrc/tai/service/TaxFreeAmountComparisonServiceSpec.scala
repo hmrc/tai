@@ -113,8 +113,6 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
-
-        // What do we want
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
@@ -158,7 +156,6 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     }
   }
 
-  // TODO: Move to Factory
   private def stubTaxCodeChange: TaxCodeChange = {
     val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
     val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
