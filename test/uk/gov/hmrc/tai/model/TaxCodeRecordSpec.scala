@@ -53,6 +53,7 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
   val payrollNumber = "12345"
 
   val olderTaxCodeRecord = TaxCodeRecord(
+    1,
     "1185L",
     Cumulative,
     "Employer 1",
@@ -64,6 +65,7 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
   )
 
   val mostRecentTaxCodeRecord = TaxCodeRecord(
+    2,
     "1000L",
     Cumulative,
     "Employer 1",

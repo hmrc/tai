@@ -203,6 +203,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Seq(
             TaxCodeRecordWithEndDate(
+              1,
               "code",
               "Cumulative",
               LocalDate.now(),
@@ -219,6 +220,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val json = Json.obj(
           "data" -> Json.arr(
             Json.obj(
+              "taxCodeId" -> 1,
               "taxCode" -> "code",
               "basisOfOperation" -> "Cumulative",
               "startDate" -> LocalDate.now(),

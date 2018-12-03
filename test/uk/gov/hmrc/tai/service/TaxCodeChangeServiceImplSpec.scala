@@ -1029,10 +1029,14 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     val endYear = TaxYear(TaxYearResolver.currentTaxYear)
     val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
     val endOfTaxCode = TaxYear().prev.end
-    val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary)
-    val taxCodeRecord2 = TaxCodeRecord("1085L", "", "Employer 1", true, dateOfCalculation,Some("321"),false,Primary)
-    val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate("1185L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, true)
-    val taxCodeRecordWithEndDate2 = TaxCodeRecordWithEndDate("1085L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, false)
+    val taxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = dateOfCalculation)
+    val taxCodeRecord2 = TaxCodeRecordFactory.createPrimaryEmployment(
+      taxCodeId = 2,
+      taxCode = "1085L",
+      dateOfCalculation = dateOfCalculation,
+      payrollNumber = Some("321"))
+    val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(1, "1185L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, true)
+    val taxCodeRecordWithEndDate2 = TaxCodeRecordWithEndDate(2, "1085L", "",dateOfCalculation,dateOfCalculation, "Employer 1",Some("123"), true, false)
 
     "return an empty sequence" when {
       "no tax code records are returned" in {
@@ -1053,10 +1057,11 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
       "there is a single tax code under a single employer CY-1" in {
 
-        val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary)
+        val taxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = dateOfCalculation)
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
+          1,
           "1185L",
-          "",
+          "Cumulative",
           dateOfCalculation,
           endOfTaxCode,
           "Employer 1",
@@ -1078,12 +1083,17 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
       "there are multiple tax codes with the same date of calculation under a single employer" in {
 
-        val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary)
-        val taxCodeRecord2 = TaxCodeRecord("1085L", "", "Employer 1", true, dateOfCalculation,Some("321"),false,Secondary)
+        val taxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = dateOfCalculation)
+        val taxCodeRecord2 = TaxCodeRecordFactory.createSecondaryEmployment(
+          taxCodeId = 2,
+          taxCode = "1085L",
+          dateOfCalculation = dateOfCalculation,
+          payrollNumber = Some("321"))
 
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
+          1,
           "1185L",
-          "",
+          "Cumulative",
           dateOfCalculation,
           endOfTaxCode,
           "Employer 1",
@@ -1092,8 +1102,9 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
           true
         )
         val taxCodeRecordWithEndDate2 = TaxCodeRecordWithEndDate(
+          2,
           "1085L",
-          "",
+          "Cumulative",
           dateOfCalculation,
           endOfTaxCode,
           "Employer 1",
@@ -1117,12 +1128,17 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
         val date = TaxYearResolver.startOfCurrentTaxYear.minusMonths(3)
 
-        val taxCodeRecord1 = TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary)
-        val taxCodeRecord2 = TaxCodeRecord("1085L", "", "Employer 1", true, date,Some("321"),false,Secondary)
+        val taxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = dateOfCalculation)
+        val taxCodeRecord2 = TaxCodeRecordFactory.createSecondaryEmployment(
+          taxCodeId = 2,
+          taxCode = "1085L",
+          dateOfCalculation = date,
+          payrollNumber = Some("321"))
 
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
+          1,
           "1185L",
-          "",
+          "Cumulative",
           dateOfCalculation,
           endOfTaxCode,
           "Employer 1",
@@ -1145,14 +1161,15 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       "there are multiple tax codes with different date of calculation under multiple employers" in {
 
         val dateOfCalculation = TaxYearResolver.startOfCurrentTaxYear.minusMonths(1)
-        val taxCodeRecord1 = TaxCodeRecord("1L", "", "Employer 1", true, dateOfCalculation.minusMonths(2),Some("123"),false,Primary)
-        val taxCodeRecord2 = TaxCodeRecord("2L", "", "Employer 1", true, dateOfCalculation.minusMonths(3),Some("321"),false,Secondary)
-        val taxCodeRecord3 = TaxCodeRecord("3L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
-        val taxCodeRecord4 = TaxCodeRecord("4L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
-        val taxCodeRecord5 = TaxCodeRecord("5L", "", "Employer 3", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
-        val taxCodeRecord6 = TaxCodeRecord("6L", "", "Employer 3", true, dateOfCalculation.minusDays(4),Some("321"),false,Secondary)
+        val taxCodeRecord1 = TaxCodeRecord(1, "1L", "", "Employer 1", true, dateOfCalculation.minusMonths(2),Some("123"),false,Primary)
+        val taxCodeRecord2 = TaxCodeRecord(2, "2L", "", "Employer 1", true, dateOfCalculation.minusMonths(3),Some("321"),false,Secondary)
+        val taxCodeRecord3 = TaxCodeRecord(3, "3L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
+        val taxCodeRecord4 = TaxCodeRecord(4, "4L", "", "Employer 2", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
+        val taxCodeRecord5 = TaxCodeRecord(5, "5L", "", "Employer 3", true, dateOfCalculation.minusMonths(5),Some("321"),false,Secondary)
+        val taxCodeRecord6 = TaxCodeRecord(6, "6L", "", "Employer 3", true, dateOfCalculation.minusDays(4),Some("321"),false,Secondary)
 
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
+          1,
           "1L",
           "",
           dateOfCalculation.minusMonths(2),
@@ -1163,6 +1180,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
           true
         )
         val taxCodeRecordWithEndDate3 = TaxCodeRecordWithEndDate(
+          3,
           "3L",
           "",
           dateOfCalculation.minusMonths(5),
@@ -1173,6 +1191,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
           false
         )
         val taxCodeRecordWithEndDate4 = TaxCodeRecordWithEndDate(
+          4,
           "4L",
           "",
           dateOfCalculation.minusMonths(5),
@@ -1183,6 +1202,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
           false
         )
         val taxCodeRecordWithEndDate6 = TaxCodeRecordWithEndDate(
+          6,
           "6L",
           "",
           dateOfCalculation.minusDays(4),
