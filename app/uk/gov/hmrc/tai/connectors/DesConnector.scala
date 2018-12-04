@@ -96,13 +96,14 @@ class DesConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int, updateAmount: IabdUpdateExpensesAmount,
-                                apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
+  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
+                              updateAmount: List[IabdUpdateExpensesAmount],
+                              apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
                              (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[IabdUpdateExpensesAmount](postUrl, apiType, updateAmount)(headerForUpdate(version), IabdUpdateExpensesAmount.formats)
+    postToDes[List[IabdUpdateExpensesAmount]](postUrl, apiType, updateAmount)(headerForUpdate(version), IabdUpdateExpensesAmount.writesList)
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {

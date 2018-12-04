@@ -20,17 +20,25 @@ import play.api.libs.json._
 
 /**
   * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*
-  * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
+  * sequenceNumber:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999999*
   * @param grossAmount
   */
 case class IabdUpdateExpensesAmount (
-                              grossAmount : Int,
-                              receiptDate : Option[String] = None
-                            ) {
+                                      sequenceNumber: Int,
+                                      grossAmount : Int
+                                    ) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
+  require(sequenceNumber >= 0, "sequenceNumber cannot be less than 0")
+  require(sequenceNumber <= 999999999, "sequenceNumber cannot be greater than 999999999")
 }
 
 object IabdUpdateExpensesAmount {
-  implicit val formats: Format[IabdUpdateExpensesAmount] = Json.format[IabdUpdateExpensesAmount]
+  implicit val format: Format[IabdUpdateExpensesAmount] = Json.format[IabdUpdateExpensesAmount]
+
+  implicit val writesList: Writes[List[IabdUpdateExpensesAmount]] = new Writes[List[IabdUpdateExpensesAmount]] {
+   def writes(updateAmount: List[IabdUpdateExpensesAmount]) : JsValue = {
+     Json.toJson(updateAmount)
+   }
+  }
 }

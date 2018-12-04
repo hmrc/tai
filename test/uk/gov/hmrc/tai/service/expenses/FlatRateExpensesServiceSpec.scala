@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.connectors.DesConnector
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.model.IabdUpdateExpensesAmount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
@@ -43,6 +44,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
   private val service = new FlatRateExpensesService(desConnector = mockDesConnector)
 
   private val nino = new Generator(new Random).nextNino
+  private val iabdUpdateExpensesAmount = IabdUpdateExpensesAmount(201800001, 100)
 
   "updateFlatRateExpensesAmount" must {
 
@@ -51,7 +53,8 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds).status mustBe 200
+        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, iabdUpdateExpensesAmount), 5 seconds)
+          .status mustBe 200
       }
     }
 
@@ -60,7 +63,8 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
-        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, 100), 5 seconds).status mustBe 500
+        Await.result(service.updateFlatRateExpensesAmount(nino, TaxYear(), 1, iabdUpdateExpensesAmount), 5 seconds)
+          .status mustBe 500
       }
     }
   }

@@ -23,7 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.IabdEditDataRequest
+import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
@@ -41,9 +41,14 @@ class FlatRateExpensesController @Inject()(
 
   def updateFlatRateExpensesAmount(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
-      withJsonBody[IabdEditDataRequest] {
-        iabdEditDataRequest =>
-          flatRateExpensesService.updateFlatRateExpensesAmount(nino, year, iabdEditDataRequest.version, iabdEditDataRequest.newAmount).map {
+      withJsonBody[IabdUpdateExpensesRequest] {
+        iabdUpdateExpensesRequest =>
+          flatRateExpensesService.updateFlatRateExpensesAmount(
+            nino = nino,
+            taxYear = year,
+            version = iabdUpdateExpensesRequest.version,
+            newAmount = iabdUpdateExpensesRequest.newAmount
+          ).map {
             value =>
               value.status match {
                 case OK => NoContent

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class IabdUpdateExpensesAmountSpec extends UnitSpec {
@@ -25,35 +25,38 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
       val employeeExpenseJson = Json.parse(
         """
           | {
-          |   "grossAmount": 1234,
-          |   "receiptDate": "01/01/2018"
-          | }
-        """.stripMargin)
-
-      val employeeExpense: IabdUpdateExpensesAmount = employeeExpenseJson.as[IabdUpdateExpensesAmount]
-
-      employeeExpense.grossAmount shouldBe 1234
-      employeeExpense.receiptDate shouldBe Some("01/01/2018")
-    }
-
-    "parse json correctly when optional field is not present" in {
-      val employeeExpenseJson = Json.parse(
-        """
-          | {
+          |   "sequenceNumber": 201800001,
           |   "grossAmount": 1234
           | }
         """.stripMargin)
 
       val employeeExpense: IabdUpdateExpensesAmount = employeeExpenseJson.as[IabdUpdateExpensesAmount]
 
+      employeeExpense.sequenceNumber shouldBe 201800001
       employeeExpense.grossAmount shouldBe 1234
-      employeeExpense.receiptDate shouldBe None
+    }
+
+    "give error when grossAmount field is empty" in {
+      val employeeExpenseJson = Json.parse(
+        """
+          | {
+          |   "sequenceNumber": 201800001
+          | }
+        """.stripMargin)
+
+      val parseError: JsResultException = intercept[JsResultException] {
+        employeeExpenseJson.as[IabdUpdateExpensesAmount].grossAmount
+      }
+
+      parseError shouldBe an[JsResultException]
+
     }
 
     "give error when grossAmount field is less than 0" in {
       val employeeExpenseJson = Json.parse(
         """
           | {
+          |   "sequenceNumber": 201800001,
           |   "grossAmount": -1
           | }
         """.stripMargin)
@@ -70,6 +73,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
       val employeeExpenseJson = Json.parse(
         """
           | {
+          |   "sequenceNumber": 201800001,
           |   "grossAmount": 1000000
           | }
         """.stripMargin)
@@ -79,6 +83,55 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
       }
 
       parseError.getMessage shouldBe "requirement failed: grossAmount cannot be greater than 999999"
+    }
+
+    "give error when sequenceNumber field is empty" in {
+      val employeeExpenseJson = Json.parse(
+        """
+          | {
+          |   "grossAmount": 1234
+          | }
+        """.stripMargin)
+
+      val parseError: JsResultException = intercept[JsResultException] {
+        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+      }
+
+      parseError shouldBe an[JsResultException]
+
+    }
+
+    "give error when sequenceNumber field is less than 0" in {
+      val employeeExpenseJson = Json.parse(
+        """
+          | {
+          |   "sequenceNumber": -1,
+          |   "grossAmount": 1234
+          | }
+        """.stripMargin)
+
+      val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
+        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+      }
+
+      parseError.getMessage shouldBe "requirement failed: sequenceNumber cannot be less than 0"
+
+    }
+
+    "give error when sequenceNumber field is greater than 999999999" in {
+      val employeeExpenseJson = Json.parse(
+        """
+          | {
+          |   "sequenceNumber": 1111111111,
+          |   "grossAmount": 1234
+          | }
+        """.stripMargin)
+
+      val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
+        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+      }
+
+      parseError.getMessage shouldBe "requirement failed: sequenceNumber cannot be greater than 999999999"
     }
   }
 }

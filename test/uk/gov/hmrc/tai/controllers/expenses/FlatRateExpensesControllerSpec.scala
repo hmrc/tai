@@ -26,12 +26,12 @@ import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.IabdEditDataRequest
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesAmount, IabdUpdateExpensesRequest}
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.Future
@@ -49,13 +49,15 @@ class FlatRateExpensesControllerSpec extends PlaySpec
     new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdEditDataRequest = IabdEditDataRequest(version = 1, newAmount = 100)
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest( 1,
+    IabdUpdateExpensesAmount(sequenceNumber = 201800001, grossAmount = 100)
+  )
 
   "updateFlatRateExpensesAmount" must {
 
     "return OK" when {
       "a valid update amount is provided" in {
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdEditDataRequest))
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
         when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))
@@ -99,7 +101,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
     "return INTERNAL SERVER ERROR" when {
       "flat rate expenses update exception has been thrown" in {
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdEditDataRequest))
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
         when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))

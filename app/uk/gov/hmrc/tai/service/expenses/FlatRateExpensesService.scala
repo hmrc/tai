@@ -31,7 +31,7 @@ import scala.concurrent.Future
 @Singleton
 class FlatRateExpensesService @Inject()(desConnector: DesConnector){
 
-  def updateFlatRateExpensesAmount(nino: Nino, taxYear: TaxYear, version: Int, newAmount: Int)
+  def updateFlatRateExpensesAmount(nino: Nino, taxYear: TaxYear, version: Int, newAmount: IabdUpdateExpensesAmount)
                                   (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     desConnector.updateExpensesDataToDes(
@@ -39,10 +39,7 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector){
       year = taxYear.year,
       iabdType = IabdType.FlatRateJobExpenses.code,
       version = version,
-      updateAmount = IabdUpdateExpensesAmount(
-        newAmount,
-        Some(DateTime.now().toString("dd/MM/yyyy"))
-      ),
+      updateAmount = List(newAmount),
       apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
     )
   }
