@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.tai.model.api.ApiResponse
 
 class TaxCodeChangeIabdComparisonController @Inject()(taxFreeAmountComparisonService: TaxFreeAmountComparisonService,
                                                        authentication: AuthenticationPredicate
@@ -34,7 +35,7 @@ class TaxCodeChangeIabdComparisonController @Inject()(taxFreeAmountComparisonSer
     implicit request =>
 
       taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
-        Ok(Json.toJson(comparison))
+        Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
       } recover {
         case ex: Exception => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
       }
