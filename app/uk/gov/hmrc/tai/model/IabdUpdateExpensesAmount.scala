@@ -35,10 +35,4 @@ case class IabdUpdateExpensesAmount (
 
 object IabdUpdateExpensesAmount {
   implicit val format: Format[IabdUpdateExpensesAmount] = Json.format[IabdUpdateExpensesAmount]
-
-  implicit val writesList: Writes[List[IabdUpdateExpensesAmount]] = new Writes[List[IabdUpdateExpensesAmount]] {
-   def writes(updateAmount: List[IabdUpdateExpensesAmount]) : JsValue = {
-     Json.toJson(updateAmount)
-   }
-  }
 }

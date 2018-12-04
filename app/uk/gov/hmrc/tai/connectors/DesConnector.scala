@@ -19,9 +19,8 @@ package uk.gov.hmrc.tai.connectors
 import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
-
 import play.api.http.Status.OK
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -103,7 +102,7 @@ class DesConnector @Inject()(httpClient: HttpClient,
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[List[IabdUpdateExpensesAmount]](postUrl, apiType, updateAmount)(headerForUpdate(version), IabdUpdateExpensesAmount.writesList)
+    postToDes[List[IabdUpdateExpensesAmount]](postUrl, apiType, updateAmount)(headerForUpdate(version), Writes.list[IabdUpdateExpensesAmount])
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {
