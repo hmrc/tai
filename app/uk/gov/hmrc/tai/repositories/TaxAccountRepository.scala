@@ -36,7 +36,7 @@ class TaxAccountRepository @Inject()(override val cacheConnector: CacheConnector
     cache(s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))
 
   def taxAccountForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
-    taxAccountConnector.taxAccountHistory(nino, taxCodeId)
+    taxAccountConnector.taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
   }
 
   private def taxAccountFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {

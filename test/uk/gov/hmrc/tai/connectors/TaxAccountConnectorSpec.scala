@@ -102,7 +102,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
 
         val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
 
-        val url = new URL(taxAccountHistoryUrlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+        val url = new URL(taxAccountUrlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
         server.stubFor(
           get(urlEqualTo(url)).willReturn(ok(json.toString))
@@ -175,7 +175,6 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
   private val originatorId = "testOriginatorId"
   private implicit val hc: HeaderCarrier = HeaderCarrier()
   lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
-  lazy val taxAccountHistoryUrlConfig = injector.instanceOf[TaxAccountHistoryUrl]
   lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
   val taxYear = TaxYear(2017)
   val nino: Nino = new Generator(new Random).nextNino
@@ -200,11 +199,10 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
   private def createSUT(npsConfig: NpsConfig = injector.instanceOf[NpsConfig],
                         desConfig: DesConfig = injector.instanceOf[DesConfig],
                         taxAccountUrls: TaxAccountUrls = injector.instanceOf[TaxAccountUrls],
-                        taxAccountHistoryUrlConfig: TaxAccountHistoryUrl = injector.instanceOf[TaxAccountHistoryUrl],
                         iabdUrls: IabdUrls = injector.instanceOf[IabdUrls],
                         formats: IabdUpdateAmountFormats = injector.instanceOf[IabdUpdateAmountFormats],
                         httpHandler: HttpHandler = injector.instanceOf[HttpHandler],
                         featureTogglesConfig: FeatureTogglesConfig = injector.instanceOf[FeatureTogglesConfig]) =
 
-    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, taxAccountHistoryUrlConfig, iabdUrls, formats, httpHandler, featureTogglesConfig)
+    new TaxAccountConnector(npsConfig, desConfig, taxAccountUrls, iabdUrls, formats, httpHandler, featureTogglesConfig)
 }

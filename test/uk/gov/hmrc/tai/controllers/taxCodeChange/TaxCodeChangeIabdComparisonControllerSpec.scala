@@ -17,20 +17,17 @@
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import org.mockito.Matchers
+import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
-import uk.gov.hmrc.tai.model.domain.{CarBenefit, TaxComponentType}
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
-import org.mockito.Mockito.when
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 
 import scala.concurrent.Future
 import scala.util.Random
