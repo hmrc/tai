@@ -39,15 +39,15 @@ class FlatRateExpensesController @Inject()(
     with ApiFormats
     with ControllerErrorHandler {
 
-  def updateFlatRateExpensesAmount(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
+  def updateFlatRateExpensesData(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IabdUpdateExpensesRequest] {
         iabdUpdateExpensesRequest =>
-          flatRateExpensesService.updateFlatRateExpensesAmount(
+          flatRateExpensesService.updateFlatRateExpensesData(
             nino = nino,
             taxYear = year,
             version = iabdUpdateExpensesRequest.version,
-            newAmount = iabdUpdateExpensesRequest.newAmount
+            expensesData = iabdUpdateExpensesRequest.expensesData
           ).map {
             value =>
               value.status match {

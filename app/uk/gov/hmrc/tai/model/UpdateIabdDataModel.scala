@@ -85,7 +85,7 @@ object PayAnnualisationResponse {
   implicit val format = Json.format[PayAnnualisationResponse]
 }
 
-case class IabdUpdateExpensesRequest(version: Int, newAmount: IabdUpdateExpensesAmount)
+case class IabdUpdateExpensesRequest(version: Int, expensesData: IabdUpdateExpensesData)
 
 object IabdUpdateExpensesRequest {
   implicit val format = Json.format[IabdUpdateExpensesRequest]

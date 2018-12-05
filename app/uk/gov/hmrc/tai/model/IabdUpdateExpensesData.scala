@@ -23,7 +23,7 @@ import play.api.libs.json._
   * sequenceNumber:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999999*
   * @param grossAmount
   */
-case class IabdUpdateExpensesAmount (
+case class IabdUpdateExpensesData(
                                       sequenceNumber: Int,
                                       grossAmount : Int
                                     ) {
@@ -33,6 +33,6 @@ case class IabdUpdateExpensesAmount (
   require(sequenceNumber <= 999999999, "sequenceNumber cannot be greater than 999999999")
 }
 
-object IabdUpdateExpensesAmount {
-  implicit val format: Format[IabdUpdateExpensesAmount] = Json.format[IabdUpdateExpensesAmount]
+object IabdUpdateExpensesData {
+  implicit val format: Format[IabdUpdateExpensesData] = Json.format[IabdUpdateExpensesData]
 }

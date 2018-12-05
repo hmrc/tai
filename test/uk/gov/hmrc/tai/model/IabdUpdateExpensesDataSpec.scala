@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.play.test.UnitSpec
 
-class IabdUpdateExpensesAmountSpec extends UnitSpec {
+class IabdUpdateExpensesDataSpec extends UnitSpec {
   "IabdUpdateExpensesAmount" should {
     "parse json correctly" in {
       val employeeExpenseJson = Json.parse(
@@ -30,7 +30,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
           | }
         """.stripMargin)
 
-      val employeeExpense: IabdUpdateExpensesAmount = employeeExpenseJson.as[IabdUpdateExpensesAmount]
+      val employeeExpense: IabdUpdateExpensesData = employeeExpenseJson.as[IabdUpdateExpensesData]
 
       employeeExpense.sequenceNumber shouldBe 201800001
       employeeExpense.grossAmount shouldBe 1234
@@ -45,7 +45,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: JsResultException = intercept[JsResultException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].grossAmount
+        employeeExpenseJson.as[IabdUpdateExpensesData].grossAmount
       }
 
       parseError shouldBe an[JsResultException]
@@ -62,7 +62,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].grossAmount
+        employeeExpenseJson.as[IabdUpdateExpensesData].grossAmount
       }
 
       parseError.getMessage shouldBe "requirement failed: grossAmount cannot be less than 0"
@@ -79,7 +79,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].grossAmount
+        employeeExpenseJson.as[IabdUpdateExpensesData].grossAmount
       }
 
       parseError.getMessage shouldBe "requirement failed: grossAmount cannot be greater than 999999"
@@ -94,7 +94,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: JsResultException = intercept[JsResultException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+        employeeExpenseJson.as[IabdUpdateExpensesData].sequenceNumber
       }
 
       parseError shouldBe an[JsResultException]
@@ -111,7 +111,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+        employeeExpenseJson.as[IabdUpdateExpensesData].sequenceNumber
       }
 
       parseError.getMessage shouldBe "requirement failed: sequenceNumber cannot be less than 0"
@@ -128,7 +128,7 @@ class IabdUpdateExpensesAmountSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[IabdUpdateExpensesAmount].sequenceNumber
+        employeeExpenseJson.as[IabdUpdateExpensesData].sequenceNumber
       }
 
       parseError.getMessage shouldBe "requirement failed: sequenceNumber cannot be greater than 999999999"

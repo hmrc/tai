@@ -21,7 +21,7 @@ import org.joda.time.DateTime
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.connectors.DesConnector
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesAmount
+import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -31,15 +31,15 @@ import scala.concurrent.Future
 @Singleton
 class FlatRateExpensesService @Inject()(desConnector: DesConnector){
 
-  def updateFlatRateExpensesAmount(nino: Nino, taxYear: TaxYear, version: Int, newAmount: IabdUpdateExpensesAmount)
-                                  (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
+                                (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     desConnector.updateExpensesDataToDes(
       nino = nino,
       year = taxYear.year,
       iabdType = IabdType.FlatRateJobExpenses.code,
       version = version,
-      updateAmount = List(newAmount),
+      expensesData = List(expensesData),
       apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
     )
   }

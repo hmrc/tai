@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateExpensesAmount, IabdUpdateExpensesRequest}
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesData, IabdUpdateExpensesRequest}
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.Future
@@ -50,20 +50,20 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
   private val nino = new Generator(new Random).nextNino
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest( 1,
-    IabdUpdateExpensesAmount(sequenceNumber = 201800001, grossAmount = 100)
+    IabdUpdateExpensesData(sequenceNumber = 201800001, grossAmount = 100)
   )
 
-  "updateFlatRateExpensesAmount" must {
+  "updateFlatRateExpensesData" must {
 
     "return OK" when {
       "a valid update amount is provided" in {
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller().updateFlatRateExpensesAmount(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
 
         status(result) mustBe NO_CONTENT
       }
@@ -74,10 +74,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(""))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller().updateFlatRateExpensesAmount(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
 
         status(result) mustBe BAD_REQUEST
       }
@@ -88,10 +88,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), JsNull)
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller(notLoggedInAuthenticationPredicate).updateFlatRateExpensesAmount(nino,TaxYear())(fakeRequest)
+        val result = controller(notLoggedInAuthenticationPredicate).updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
 
         whenReady(result.failed) {
           e => e mustBe a[MissingBearerToken]
@@ -104,10 +104,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesAmount(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
-        val result = controller().updateFlatRateExpensesAmount(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }

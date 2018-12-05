@@ -34,7 +34,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesAmount}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesData}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.duration._
@@ -433,7 +433,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "updating expenses data to des" in {
           val mockHttpClient = mock[HttpClient]
 
-          when(mockHttpClient.POST[IabdUpdateExpensesAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
             .thenReturn(Future.successful(HttpResponse(Status.OK)))
 
           val mockMetrics = mock[Metrics]
@@ -447,8 +447,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            updateAmount = List(
-              IabdUpdateExpensesAmount(
+            expensesData = List(
+              IabdUpdateExpensesData(
                 201800001,
                 100
               )
@@ -463,7 +463,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "updating expenses data to des" in {
           val mockHttpClient = mock[HttpClient]
 
-          when(mockHttpClient.POST[IabdUpdateExpensesAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
             .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR)))
 
           val mockMetrics = mock[Metrics]
@@ -476,8 +476,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            updateAmount = List(
-              IabdUpdateExpensesAmount(
+            expensesData = List(
+              IabdUpdateExpensesData(
                 201800001,
                 100
               )
