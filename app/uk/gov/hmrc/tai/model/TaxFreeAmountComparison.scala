@@ -27,8 +27,8 @@ object TaxFreeAmountComparison extends CodingComponentAPIFormatters {
 
   implicit val writes: Writes[TaxFreeAmountComparison] = (
 
-    (JsPath \ "previous").lazyWrite(Writes.seq[CodingComponent](codingComponentWrites)) and
-    (JsPath \ "current").lazyWrite(Writes.seq[CodingComponent](codingComponentWrites))
+    (JsPath \ "previous").write(Writes.seq[CodingComponent](codingComponentWrites)) and
+    (JsPath \ "current").write(Writes.seq[CodingComponent](codingComponentWrites))
 
     )(unlift(TaxFreeAmountComparison.unapply))
 
