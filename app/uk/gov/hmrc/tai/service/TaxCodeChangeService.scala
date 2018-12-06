@@ -139,10 +139,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       }.toSeq
 
       records.map(addEndDate(taxYear.end, _))
-    }.recover {
-      case exception: Exception =>
-        Logger.debug("Could not evaluate tax code history")
-        ???
     }
   }
 
