@@ -19,9 +19,8 @@ package uk.gov.hmrc.tai.connectors
 import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
-
 import play.api.http.Status.OK
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -33,7 +32,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesAmount}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesData}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
@@ -96,13 +95,14 @@ class DesConnector @Inject()(httpClient: HttpClient,
     }
   }
 
-  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int, updateAmount: IabdUpdateExpensesAmount,
-                                apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
+  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
+                              expensesData: List[IabdUpdateExpensesData],
+                              apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
                              (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[IabdUpdateExpensesAmount](postUrl, apiType, updateAmount)(headerForUpdate(version), IabdUpdateExpensesAmount.formats)
+    postToDes[List[IabdUpdateExpensesData]](postUrl, apiType, expensesData)(headerForUpdate(version), Writes.list[IabdUpdateExpensesData])
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {
