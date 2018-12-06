@@ -1002,7 +1002,33 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
 
     }
 
-    "return a bad request exception response and empty model when tax code history fails" in {
+    "return true and an empty list of confirmed tax codes in the model when there are no tax code records" in {
+
+
+      val taxCodeHistory = TaxCodeHistory(
+        nino = nino.withoutSuffix,
+        taxCodeRecords = Seq.empty
+      )
+
+      val taxCodeIncomes = Seq(
+        baseTaxCodeIncome.copy(taxCode = "1155L"),
+        baseTaxCodeIncome.copy(taxCode = "1175L"),
+        baseTaxCodeIncome.copy(taxCode = "1195L")
+      )
+
+      when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+      val unconfirmedTaxCodes = taxCodeIncomes.map(_.taxCode).sorted
+
+      val expectedResult = TaxCodeMismatch(true, unconfirmedTaxCodes , Seq.empty)
+
+      val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+      Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
+
+    }
+
+    "return a bad request exception response when tax code history fails" in {
 
       val taxCodeIncomes = Seq(
         baseTaxCodeIncome.copy(taxCode = "1155L"),
