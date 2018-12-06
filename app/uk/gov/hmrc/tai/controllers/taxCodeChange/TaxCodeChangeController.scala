@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeChange}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
@@ -52,7 +52,12 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
       taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
-        Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+
+        if (hasZeroTaxCodeRecords(taxCodeChange)) {
+          NotFound
+        } else {
+          Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+        }
       }
   }
 
@@ -77,6 +82,8 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       }
 
   }
+
+  private def hasZeroTaxCodeRecords(taxCodeChange: TaxCodeChange) = taxCodeChange.current.isEmpty && taxCodeChange.previous.isEmpty
 
 
 }

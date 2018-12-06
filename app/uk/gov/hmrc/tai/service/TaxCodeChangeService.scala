@@ -92,6 +92,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       } else if(taxCodeRecordList.size == 1) {
         Logger.warn(s"Only one tax code record returned for $nino" )
         TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
+      } else if(taxCodeRecordList.size == 0) {
+        Logger.warn(s"Zero tax code records returned for $nino" )
+        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       } else {
         Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
         TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
@@ -136,6 +139,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       }.toSeq
 
       records.map(addEndDate(taxYear.end, _))
+    }.recover {
+      case exception: Exception =>
+        Logger.debug("Could not evaluate tax code history")
+        ???
     }
   }
 

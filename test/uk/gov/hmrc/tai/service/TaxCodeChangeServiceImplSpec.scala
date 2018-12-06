@@ -750,6 +750,24 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
     }
 
+    "return empty sequences when no tax code records are found" in {
+
+      val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusMonths(2)
+
+      val nino = randomNino
+
+      val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq.empty)
+
+      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+
+      val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+
+      val expectedResult = TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
+
+      Await.result(service.taxCodeChange(nino), 5.seconds) mustEqual expectedResult
+
+    }
+
     "return an empty TaxCodeChange for multiple employments" when {
 
       "there has not been a tax code change in the year" in {
