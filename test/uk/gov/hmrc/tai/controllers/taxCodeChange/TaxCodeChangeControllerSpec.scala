@@ -132,7 +132,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
       contentAsJson(response) mustEqual expectedResponse
     }
 
-    "respond with NOT_FOUND when no tax code records are found" in {
+    "respond with OK and give an empty sequence of taxCodeRecords when no tax code records are found" in {
 
       val testNino = ninoGenerator
 
@@ -141,8 +141,16 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val response = controller.taxCodeChange(testNino)(FakeRequest())
 
-      status(response) mustBe NOT_FOUND
+      val expectedResponse = Json.obj(
+        "data" -> Json.obj(
+          "current" -> Json.arr(),
+          "previous" -> Json.arr()
+        ),
+        "links" -> Json.arr()
+      )
 
+      status(response) mustBe OK
+      contentAsJson(response) mustEqual expectedResponse
     }
   }
 

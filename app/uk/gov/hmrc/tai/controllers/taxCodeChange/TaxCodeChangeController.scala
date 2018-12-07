@@ -52,12 +52,7 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
       taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
-
-        if (hasZeroTaxCodeRecords(taxCodeChange)) {
-          NotFound
-        } else {
           Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
-        }
       }
   }
 
