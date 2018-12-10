@@ -929,12 +929,12 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
       }
+
     }
 
     "return true and list of confirmed and unconfirmed tax codes" when {
 
-      "tax code change returns an empty current tax code " +
-        "(tax code history will never return empty since an exception is thrown at trying to parse the api response)" in {
+      "there are no taxCodeRecords in the taxCodeHistory" in {
 
         val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq())
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
