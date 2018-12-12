@@ -126,6 +126,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next).map { taxCodeHistory =>
 
+      val datesOutside = logThis(taxYear, taxCodeHistory)
+
+      Logger.info(s"Records outside the $taxYear are $datesOutside")
+
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
       val records = groupedTaxCodeRecords.values.flatMap {
@@ -136,7 +140,15 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       }.toSeq
 
       records.map(addEndDate(taxYear.end, _))
+
     }
+  }
+
+  def logThis(taxYear: TaxYear, taxCodeHistory: TaxCodeHistory) = {
+    taxCodeHistory.taxCodeRecords.filter(taxCodeRecord =>
+      taxCodeRecord.dateOfCalculation.isBefore(taxYear.start) || taxCodeRecord.dateOfCalculation.isAfter(taxYear.end)).map(
+      _.dateOfCalculation
+    )
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
