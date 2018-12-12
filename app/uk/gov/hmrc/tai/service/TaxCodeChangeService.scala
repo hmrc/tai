@@ -128,7 +128,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val datesOutside = logThis(taxYear, taxCodeHistory)
 
-      Logger.info(s"Records outside the $taxYear are $datesOutside")
+      Logger.warn(s"Records outside the $taxYear are $datesOutside")
 
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
