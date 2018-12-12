@@ -388,12 +388,13 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
 
-      "a JSExceptionResult is thrown by the connector" in {
+      "a JsResultException is thrown by the connector" in {
         val testNino = randomNino
 
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.failed(JsResultException(Nil)))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
+
         Await.result(service.hasTaxCodeChanged(testNino), 5.seconds) mustEqual false
       }
     }
@@ -1035,13 +1036,15 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         baseTaxCodeIncome.copy(taxCode = "1175L"),
         baseTaxCodeIncome.copy(taxCode = "1195L")
       )
-      when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
-      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.failed(new RuntimeException("Mismatch Problem")))
+      when(incomeService.taxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any()))
+        .thenReturn(Future.failed(new RuntimeException("Runtime")))
 
       val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
 
-      val ex = the[BadRequestException] thrownBy Await.result(service.taxCodeMismatch(nino), 5.seconds)
-      ex.getMessage must include("Mismatch Problem")
+      val ex = the[RuntimeException] thrownBy Await.result(service.taxCodeMismatch(nino), 5.seconds)
+      ex.getMessage must include("Runtime")
     }
 
     "return default error response and empty model when tax code income fails" in {
@@ -1052,12 +1055,14 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
           TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = newCodeDate),
           TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = previousCodeDate)))
 
-      when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.failed(new RuntimeException("Runtime")))
-      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
+      when(incomeService.taxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.failed(new RuntimeException("Runtime")))
+      when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any()))
+        .thenReturn(Future.successful(taxCodeHistory))
 
       val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
 
-      val ex = the[BadRequestException] thrownBy Await.result(service.taxCodeMismatch(nino), 5.seconds)
+      val ex = the[RuntimeException] thrownBy Await.result(service.taxCodeMismatch(nino), 5.seconds)
       ex.getMessage must include("Runtime")
     }
 

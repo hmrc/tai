@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
                                          auditor: Auditor,
@@ -49,8 +50,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Future.successful(false)
       }
     }.recover {
-      case exception: Exception =>
-        Logger.debug("Could not evaluate tax code history")
+      case NonFatal(_) =>
+        Logger.warn("Could not evaluate tax code history")
         false
     }
 
@@ -103,7 +104,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-    (for {
+    val f = for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
@@ -112,11 +113,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
       TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
-    }) recover {
-      case exception =>
-        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}")
-        throw new BadRequestException(exception.getMessage)
     }
+
+    f.onFailure {
+      case NonFatal(exception) =>
+        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+    }
+
+    f
   }
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
