@@ -46,6 +46,25 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
   val baseTaxCodeIncome = TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
     "EmploymentIncome", "1185L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0))
 
+  "log this should return a list of dates outside the given tax year" in {
+    val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
+
+    val taxYear = TaxYear(2017)
+
+    val dateBefore = taxYear.start.minusDays(3)
+    val dateDuring = taxYear.start.plusDays(3)
+    val dateAfter = taxYear.end.plusDays(3)
+
+    val recordBefore = TaxCodeRecord("","","",true,dateBefore,None,false,"")
+    val recordDuring = TaxCodeRecord("","","",true,dateDuring,None,false,"")
+    val recordAfter = TaxCodeRecord("","","",true,dateAfter,None,false,"")
+
+    val records = Seq(recordBefore, recordAfter)
+    val tch = TaxCodeHistory("nino", records)
+
+    service.logThis(TaxYear(2017), tch) mustEqual Seq(dateBefore, dateAfter)
+  }
+
   "hasTaxCodeChanged" should {
 
     "return true" when {
