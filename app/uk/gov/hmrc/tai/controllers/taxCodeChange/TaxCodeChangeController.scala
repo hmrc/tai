@@ -78,7 +78,4 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
 
   }
 
-  private def hasZeroTaxCodeRecords(taxCodeChange: TaxCodeChange) = taxCodeChange.current.isEmpty && taxCodeChange.previous.isEmpty
-
-
 }
