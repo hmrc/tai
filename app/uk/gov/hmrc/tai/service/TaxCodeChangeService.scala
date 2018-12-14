@@ -50,8 +50,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Future.successful(false)
       }
     }.recover {
-      case NonFatal(_) =>
-        Logger.warn("Could not evaluate tax code history")
+      case NonFatal(e) =>
+        Logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
         false
     }
 
