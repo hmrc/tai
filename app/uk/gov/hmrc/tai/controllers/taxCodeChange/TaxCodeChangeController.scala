@@ -33,20 +33,20 @@ import scala.concurrent.Future
 
 class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
                                         taxCodeChangeService: TaxCodeChangeService,
-                                        toggleConfig: FeatureTogglesConfig) extends BaseController  {
+                                        toggleConfig: FeatureTogglesConfig) extends BaseController {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
-        if (toggleConfig.taxCodeChangeEnabled) {
-          taxCodeChangeService.hasTaxCodeChanged(nino).map {
-            taxCodeChanged => {
-              Ok(Json.toJson(taxCodeChanged))
-            }
+      if (toggleConfig.taxCodeChangeEnabled) {
+        taxCodeChangeService.hasTaxCodeChanged(nino).map {
+          taxCodeChanged => {
+            Ok(Json.toJson(taxCodeChanged))
           }
         }
-        else{
-          Future.successful(Ok(Json.toJson(false)))
-        }
+      }
+      else {
+        Future.successful(Ok(Json.toJson(false)))
+      }
   }
 
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async {
@@ -77,6 +77,5 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       }
 
   }
-
 
 }

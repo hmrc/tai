@@ -29,10 +29,8 @@ object TaxCodeHistory {
 
   implicit val reads: Reads[TaxCodeHistory] = (
     (JsPath \ "nino").read[String] and
-      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]](minLength[Seq[TaxCodeRecord]](1))
+      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
     )(TaxCodeHistory.apply _)
 
   implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
 }
-
-

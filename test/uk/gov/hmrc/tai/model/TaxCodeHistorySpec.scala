@@ -34,13 +34,16 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
       validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
     }
 
-    "throw an error when there are no tax code records" in {
-      val invalidJson = Json.obj(
+    "return a TaxCodeHistory when there are no tax code records" in {
+
+      val validJson = Json.obj(
         "nino" -> nino,
         "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
       )
 
-      a[JsResultException] should be thrownBy invalidJson.as[TaxCodeHistory]
+      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
+
+      validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
 
     }
   }

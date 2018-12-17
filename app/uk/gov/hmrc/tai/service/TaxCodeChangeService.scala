@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
                                          auditor: Auditor,
@@ -49,8 +50,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Future.successful(false)
       }
     }.recover {
-      case exception: Exception =>
-        Logger.debug("Could not evaluate tax code history")
+      case NonFatal(e) =>
+        Logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
         false
     }
 
@@ -92,6 +93,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       } else if(taxCodeRecordList.size == 1) {
         Logger.warn(s"Only one tax code record returned for $nino" )
         TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
+      } else if(taxCodeRecordList.size == 0) {
+        Logger.warn(s"Zero tax code records returned for $nino" )
+        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
       } else {
         Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
         TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
@@ -100,7 +104,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-    (for {
+    val futureMismatch = for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
@@ -109,11 +113,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
       TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
-    }) recover {
-      case exception =>
-        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}")
-        throw new BadRequestException(exception.getMessage)
     }
+
+    futureMismatch.onFailure {
+      case NonFatal(exception) =>
+        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+    }
+
+    futureMismatch
   }
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
