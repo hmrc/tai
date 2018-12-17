@@ -104,7 +104,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-    val f = for {
+    val futureMismatch = for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
@@ -115,12 +115,12 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
     }
 
-    f.onFailure {
+    futureMismatch.onFailure {
       case NonFatal(exception) =>
         Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
     }
 
-    f
+    futureMismatch
   }
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
