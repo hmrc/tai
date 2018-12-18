@@ -131,7 +131,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
-    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear.next).map { taxCodeHistory =>
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear).map { taxCodeHistory =>
 
       val datesOutside = logThis(taxYear, taxCodeHistory)
 
