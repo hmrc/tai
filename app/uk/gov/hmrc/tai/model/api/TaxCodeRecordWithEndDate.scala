@@ -36,9 +36,9 @@ object TaxCodeRecordWithEndDate {
 case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[TaxCodeRecordWithEndDate]) {
   def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
 
-  def primaryCurrentTaxCode: String = primaryTaxCode(current)
+  def primaryCurrentTaxCode: Option[String] = primaryTaxCode(current)
   def secondaryCurrentTaxCodes: Seq[String] = secondaryTaxCode(current)
-  def primaryPreviousTaxCode: String = primaryTaxCode(previous)
+  def primaryPreviousTaxCode: Option[String] = primaryTaxCode(previous)
   def secondaryPreviousTaxCodes: Seq[String] = secondaryTaxCode(previous)
 
   def primaryCurrentPayrollNumber: Option[String] = primaryPayrollNumber(current)
@@ -46,13 +46,23 @@ case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[T
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
-  private def primaryPayrollNumber(records: Seq[TaxCodeRecordWithEndDate]) = primaryRecord(records).payrollNumber
+  private def primaryPayrollNumber(records: Seq[TaxCodeRecordWithEndDate]): Option[String] = {
+    primaryRecord(records) match {
+      case Some(record) => record.payrollNumber
+      case None => None
+    }
+  }
   private def secondaryPayrollNumbers(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).flatMap(_.payrollNumber)
-  private def primaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]) = primaryRecord(records).taxCode
+  private def primaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]): Option[String] = {
+    primaryRecord(records) match {
+      case Some(record) => Some(record.taxCode)
+      case None => None
+    }
+  }
   private def secondaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).map(_.taxCode)
 
-  private def primaryRecord(records: Seq[TaxCodeRecordWithEndDate]) =
-    records.find(_.primary).getOrElse(throw new RuntimeException("No primary tax code record found"))
+  private def primaryRecord(records: Seq[TaxCodeRecordWithEndDate]): Option[TaxCodeRecordWithEndDate] =
+    records.find(_.primary)
 
   private def secondaryRecords(records: Seq[TaxCodeRecordWithEndDate]) = records.filterNot(_.primary)
 }

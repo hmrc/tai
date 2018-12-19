@@ -30,38 +30,28 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants  {
 
     "return the primary current tax code" in {
       val taxCodeChange = createTaxCodeChange()
-      taxCodeChange.primaryCurrentTaxCode mustEqual currentTaxCodeChangeRecordPrimary.taxCode
+      taxCodeChange.primaryCurrentTaxCode mustBe Some(currentTaxCodeChangeRecordPrimary.taxCode)
     }
 
-    "throw an exception when no primary current tax code is found" in {
+    "returns None when no primary current tax code is found" in {
       val taxCodeChange = createTaxCodeChange(Seq(currentTaxCodeChangeRecordSecondary))
-      val caught =
-        intercept[RuntimeException] {
-          taxCodeChange.primaryCurrentTaxCode
-        }
-
-      assert(caught.getMessage == "No primary tax code record found")
+      taxCodeChange.primaryCurrentTaxCode mustBe None
     }
 
     "return the secondary current tax code" in {
       val taxCodeChange = createTaxCodeChange()
       val expectedCurrentTaxCodes = Seq(currentTaxCodeChangeRecordSecondary.taxCode)
-      taxCodeChange.secondaryCurrentTaxCodes mustEqual expectedCurrentTaxCodes
+      taxCodeChange.secondaryCurrentTaxCodes mustBe expectedCurrentTaxCodes
     }
 
-    "throw an exception when no primary previous tax code is found" in {
+    "return None when no primary previous tax code is found" in {
       val taxCodeChange = createTaxCodeChange(previousTaxCodeChangeRecords = Seq.empty)
-      val caught =
-        intercept[RuntimeException] {
-          taxCodeChange.primaryPreviousTaxCode
-        }
-
-      assert(caught.getMessage == "No primary tax code record found")
+      taxCodeChange.primaryPreviousTaxCode mustBe None
     }
 
     "return the primary previous tax code" in {
       val taxCodeChange = createTaxCodeChange()
-      taxCodeChange.primaryPreviousTaxCode mustEqual previousTaxCodeChangeRecordPrimary.taxCode
+      taxCodeChange.primaryPreviousTaxCode mustBe Some(previousTaxCodeChangeRecordPrimary.taxCode)
     }
 
     "return the secondary previous tax code" in {
