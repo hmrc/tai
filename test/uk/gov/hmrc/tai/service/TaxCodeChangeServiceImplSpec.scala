@@ -740,7 +740,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
 
         val taxCodeChangeRecord = TaxCodeRecordWithEndDate(
-          taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, previousStartDateInPrevYear, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName,
+          taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, TaxYearResolver.startOfCurrentTaxYear, TaxYearResolver.endOfCurrentTaxYear, taxCodeRecord.employerName,
           taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary)
 
         val expectedResult = TaxCodeChange(Seq(taxCodeChangeRecord), Seq.empty[TaxCodeRecordWithEndDate])
@@ -1110,6 +1110,21 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
       }
     }
 
+    "return the most recent tax code defaulting the date of calculation to the start of tax year" when {
+      "the date of calculation is before the start of the same tax year" in {
+
+        val taxCodeRecords = Seq(TaxCodeRecord("1185L", "", "Employer 1", true, dateOfCalculation,Some("123"),false,Primary))
+        val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecords)
+
+        when(taxCodeChangeConnector.taxCodeHistory(nino,taxYear,taxYear)) thenReturn Future.successful(taxCodeHistory)
+
+        val latestTaxCodes = Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino,taxYear),5.seconds)
+        val expectedResult = Seq(TaxCodeRecordWithEndDate("1185L", "", TaxYearResolver.startOfCurrentTaxYear, endOfTaxCode, "Employer 1", Some("123"), false, true))
+
+        latestTaxCodes mustEqual expectedResult
+      }
+    }
+
     "return a list of most recent tax codes" when {
 
       "there is a single tax code under a single employer CY-1" in {
@@ -1118,7 +1133,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
           "1185L",
           "",
-          dateOfCalculation,
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 1",
           Some("123"),
@@ -1145,7 +1160,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
           "1185L",
           "",
-          dateOfCalculation,
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 1",
           Some("123"),
@@ -1155,7 +1170,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate2 = TaxCodeRecordWithEndDate(
           "1085L",
           "",
-          dateOfCalculation,
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 1",
           Some("321"),
@@ -1184,7 +1199,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
           "1185L",
           "",
-          dateOfCalculation,
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 1",
           Some("123"),
@@ -1216,7 +1231,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate1 = TaxCodeRecordWithEndDate(
           "1L",
           "",
-          dateOfCalculation.minusMonths(2),
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 1",
           Some("123"),
@@ -1226,7 +1241,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate3 = TaxCodeRecordWithEndDate(
           "3L",
           "",
-          dateOfCalculation.minusMonths(5),
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 2",
           Some("321"),
@@ -1236,7 +1251,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate4 = TaxCodeRecordWithEndDate(
           "4L",
           "",
-          dateOfCalculation.minusMonths(5),
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 2",
           Some("321"),
@@ -1246,7 +1261,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
         val taxCodeRecordWithEndDate6 = TaxCodeRecordWithEndDate(
           "6L",
           "",
-          dateOfCalculation.minusDays(4),
+          TaxYearResolver.startOfCurrentTaxYear,
           endOfTaxCode,
           "Employer 3",
           Some("321"),

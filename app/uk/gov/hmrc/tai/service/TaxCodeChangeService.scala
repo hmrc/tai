@@ -124,18 +124,26 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
+
+    val startDate =
+      if (taxCodeRecord.dateOfCalculation.isBefore(TaxYearResolver.startOfCurrentTaxYear)) {
+        TaxYearResolver.startOfCurrentTaxYear
+      }
+      else {
+        taxCodeRecord.dateOfCalculation
+      }
+
     TaxCodeRecordWithEndDate(
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
+      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, startDate , date,
       taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
     )
   }
 
   def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
+
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear).map { taxCodeHistory =>
 
       val datesOutside = logThis(taxYear, taxCodeHistory)
-
-      Logger.warn(s"Records outside the tax year $taxYear are $datesOutside")
 
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
