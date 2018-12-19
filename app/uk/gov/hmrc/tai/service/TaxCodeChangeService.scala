@@ -125,9 +125,11 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
 
+    val taxYear = TaxYear(TaxYearResolver.taxYearFor(date))
+
     val startDate =
-      if (taxCodeRecord.dateOfCalculation.isBefore(TaxYearResolver.startOfCurrentTaxYear)) {
-        TaxYearResolver.startOfCurrentTaxYear
+      if (taxCodeRecord.dateOfCalculation.isBefore(taxYear.start)) {
+        taxYear.start
       }
       else {
         taxCodeRecord.dateOfCalculation
