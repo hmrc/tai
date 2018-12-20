@@ -32,7 +32,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord, api}
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
@@ -99,9 +99,9 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeRecordWithEndDate("b", Cumulative, date, date.minusDays(1), "Employer 1",
+      val currentRecord = api.TaxCodeSummary("b", Cumulative, date, date.minusDays(1), "Employer 1",
         Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeRecordWithEndDate("a", Cumulative, date, date.minusDays(1), "Employer 2",
+      val previousRecord = api.TaxCodeSummary("a", Cumulative, date, date.minusDays(1), "Employer 2",
         Some("67890"), pensionIndicator = false, primary = true)
       when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
         Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
@@ -221,7 +221,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.successful(Seq(
-            TaxCodeRecordWithEndDate(
+            TaxCodeSummary(
               "code",
               "Cumulative",
               LocalDate.now(),

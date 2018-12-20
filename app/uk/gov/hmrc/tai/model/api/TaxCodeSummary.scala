@@ -20,20 +20,20 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
-case class TaxCodeRecordWithEndDate(taxCode: String,
-                                    basisOfOperation: String,
-                                    startDate: LocalDate,
-                                    endDate: LocalDate,
-                                    employerName: String,
-                                    payrollNumber: Option[String],
-                                    pensionIndicator: Boolean,
-                                    primary: Boolean)
+case class TaxCodeSummary(taxCode: String,
+                          basisOfOperation: String,
+                          startDate: LocalDate,
+                          endDate: LocalDate,
+                          employerName: String,
+                          payrollNumber: Option[String],
+                          pensionIndicator: Boolean,
+                          primary: Boolean)
 
-object TaxCodeRecordWithEndDate {
-  implicit val format: OFormat[TaxCodeRecordWithEndDate] = Json.format[TaxCodeRecordWithEndDate]
+object TaxCodeSummary {
+  implicit val format: OFormat[TaxCodeSummary] = Json.format[TaxCodeSummary]
 }
 
-case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[TaxCodeRecordWithEndDate]) {
+case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {
   def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
 
   def primaryCurrentTaxCode: String = primaryTaxCode(current)
@@ -46,15 +46,15 @@ case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[T
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
-  private def primaryPayrollNumber(records: Seq[TaxCodeRecordWithEndDate]) = primaryRecord(records).payrollNumber
-  private def secondaryPayrollNumbers(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).flatMap(_.payrollNumber)
-  private def primaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]) = primaryRecord(records).taxCode
-  private def secondaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).map(_.taxCode)
+  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]) = primaryRecord(records).payrollNumber
+  private def secondaryPayrollNumbers(records: Seq[TaxCodeSummary]) = secondaryRecords(records).flatMap(_.payrollNumber)
+  private def primaryTaxCode(records: Seq[TaxCodeSummary]) = primaryRecord(records).taxCode
+  private def secondaryTaxCode(records: Seq[TaxCodeSummary]) = secondaryRecords(records).map(_.taxCode)
 
-  private def primaryRecord(records: Seq[TaxCodeRecordWithEndDate]) =
+  private def primaryRecord(records: Seq[TaxCodeSummary]) =
     records.find(_.primary).getOrElse(throw new RuntimeException("No primary tax code record found"))
 
-  private def secondaryRecords(records: Seq[TaxCodeRecordWithEndDate]) = records.filterNot(_.primary)
+  private def secondaryRecords(records: Seq[TaxCodeSummary]) = records.filterNot(_.primary)
 }
 
 object TaxCodeChange {
