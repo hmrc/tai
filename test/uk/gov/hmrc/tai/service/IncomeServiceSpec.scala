@@ -126,11 +126,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
-          when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear.next), any(), any(), any(), any())(any())
-          ).thenReturn(
-            Future.successful(HodUpdateSuccess)
-          )
 
           val mockAuditor = mock[Auditor]
           doNothing().when(mockAuditor)
@@ -146,7 +141,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateSuccess
-          verify(mockTaxAccountSvc, times(1)).invalidateTaiCacheData()(any())
           verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
         }
       }
@@ -182,46 +176,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
 
-          result mustBe IncomeUpdateFailed("Hod update failed for CY update")
-        }
-      }
-
-      "return an error indicating a CY+1 update failure" when {
-        "the hod update fails for a CY+1 update" in {
-
-          val cyTaxYear = TaxYear()
-          val cyPlusOneTaxYear = TaxYear().next
-
-          val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
-            "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
-          val mockEmploymentSvc = mock[EmploymentService]
-          when(mockEmploymentSvc.employment(any(), any())(any()))
-            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
-
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
-
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
-
-          val mockTaxAccountRepository = mock[TaxAccountRepository]
-          when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyTaxYear), any(), any(), any(), any())(any())
-          ).thenReturn(Future.successful(HodUpdateSuccess))
-
-          when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Matchers.eq(cyPlusOneTaxYear), any(), any(), any(), any())(any())
-          ).thenReturn(Future.successful(HodUpdateFailure))
-
-          val SUT = createSUT(employmentService = mockEmploymentSvc,
-            taxAccountService = mockTaxAccountSvc,
-            incomeRepository = mockIncomeRepository,
-            taxAccountRepository = mockTaxAccountRepository)
-
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, TaxYear(),1,1234)(HeaderCarrier()), 5.seconds)
-
-          result mustBe IncomeUpdateFailed("Hod update failed for CY+1 update")
+          result mustBe IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
         }
       }
     }
