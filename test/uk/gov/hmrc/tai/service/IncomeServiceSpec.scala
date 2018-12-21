@@ -246,7 +246,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(any())
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
