@@ -18,7 +18,10 @@ package uk.gov.hmrc.tai.model.api
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.tai.model.TaxCodeRecord
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.time.TaxYearResolver
 
 case class TaxCodeSummary(taxCode: String,
                           basisOfOperation: String,
@@ -30,7 +33,26 @@ case class TaxCodeSummary(taxCode: String,
                           primary: Boolean)
 
 object TaxCodeSummary {
+
   implicit val format: OFormat[TaxCodeSummary] = Json.format[TaxCodeSummary]
+
+  def apply(taxCodeRecord: TaxCodeRecord, date:LocalDate): TaxCodeSummary = {
+
+    val taxYear = TaxYear(TaxYearResolver.taxYearFor(date))
+    val startDate =
+      if (taxCodeRecord.dateOfCalculation.isBefore(taxYear.start)) {
+        taxYear.start
+      }
+      else {
+        taxCodeRecord.dateOfCalculation
+      }
+
+    TaxCodeSummary(
+      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, startDate , date,
+      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
+    )
+  }
+
 }
 
 case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {

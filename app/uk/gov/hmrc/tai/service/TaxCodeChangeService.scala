@@ -73,14 +73,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
         val currentTaxCodeChanges = currentRecords.map(
           currentRecord =>
-            taxCodeRecordToTaxCodeSummary(TaxYearResolver.endOfCurrentTaxYear, currentRecord)
+            TaxCodeSummary(currentRecord, TaxYearResolver.endOfCurrentTaxYear)
         )
 
         val previousTaxCodeChanges = previousRecords.map(
           taxCodeRecord =>
-            taxCodeRecordToTaxCodeSummary(
-              previousEndDate,
-              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation))
+            TaxCodeSummary(
+              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation)),
+              previousEndDate
             )
         )
 
@@ -92,7 +92,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       } else if(taxCodeRecordList.size == 1) {
         Logger.warn(s"Only one tax code record returned for $nino" )
-        TaxCodeChange(Seq(taxCodeRecordToTaxCodeSummary(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
+        TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYearResolver.endOfCurrentTaxYear)),Seq())
       } else if(taxCodeRecordList.size == 0) {
         Logger.warn(s"Zero tax code records returned for $nino" )
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -129,33 +129,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
-      val records = groupedTaxCodeRecords.values.flatMap {
+      groupedTaxCodeRecords.values.flatMap {
         taxCodeRecords =>
-          val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
-          sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
+          val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)
+          val latestTaxCodeRecords = sortedTaxCodeRecords.filter(_.dateOfCalculation.isEqual(sortedTaxCodeRecords.head.dateOfCalculation))
+          latestTaxCodeRecords.map(TaxCodeSummary(_, taxYear.end))
       }.toSeq
 
-      records.map(taxCodeRecordToTaxCodeSummary(taxYear.end, _))
-
     }
-  }
-
-  private def taxCodeRecordToTaxCodeSummary(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeSummary = {
-
-    val taxYear = TaxYear(TaxYearResolver.taxYearFor(date))
-
-    val startDate =
-      if (taxCodeRecord.dateOfCalculation.isBefore(taxYear.start)) {
-        taxYear.start
-      }
-      else {
-        taxCodeRecord.dateOfCalculation
-      }
-
-    TaxCodeSummary(
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, startDate , date,
-      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
-    )
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
