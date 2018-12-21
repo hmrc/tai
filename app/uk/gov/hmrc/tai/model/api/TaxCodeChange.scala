@@ -24,9 +24,9 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {
   def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
 
-  def primaryCurrentTaxCode: String = primaryTaxCode(current)
+  def primaryCurrentTaxCode: Option[String] = primaryTaxCode(current)
   def secondaryCurrentTaxCodes: Seq[String] = secondaryTaxCode(current)
-  def primaryPreviousTaxCode: String = primaryTaxCode(previous)
+  def primaryPreviousTaxCode: Option[String] = primaryTaxCode(previous)
   def secondaryPreviousTaxCodes: Seq[String] = secondaryTaxCode(previous)
 
   def primaryCurrentPayrollNumber: Option[String] = primaryPayrollNumber(current)
@@ -34,13 +34,23 @@ case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSumm
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
-  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]) = primaryRecord(records).payrollNumber
+  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]): Option[String] = {
+    primaryRecord(records) match {
+      case Some(record) => record.payrollNumber
+      case None => None
+    }
+  }
   private def secondaryPayrollNumbers(records: Seq[TaxCodeSummary]) = secondaryRecords(records).flatMap(_.payrollNumber)
-  private def primaryTaxCode(records: Seq[TaxCodeSummary]) = primaryRecord(records).taxCode
+  private def primaryTaxCode(records: Seq[TaxCodeSummary]): Option[String] = {
+    primaryRecord(records) match {
+      case Some(record) => Some(record.taxCode)
+      case None => None
+    }
+  }
   private def secondaryTaxCode(records: Seq[TaxCodeSummary]) = secondaryRecords(records).map(_.taxCode)
 
-  private def primaryRecord(records: Seq[TaxCodeSummary]) =
-    records.find(_.primary).getOrElse(throw new RuntimeException("No primary tax code record found"))
+  private def primaryRecord(records: Seq[TaxCodeSummary]): Option[TaxCodeSummary] =
+    records.find(_.primary)
 
   private def secondaryRecords(records: Seq[TaxCodeSummary]) = records.filterNot(_.primary)
 }
