@@ -21,12 +21,12 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.time.TaxYearResolver
 
@@ -73,14 +73,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
         val currentTaxCodeChanges = currentRecords.map(
           currentRecord =>
-            addEndDate(TaxYearResolver.endOfCurrentTaxYear, currentRecord)
+            TaxCodeSummary(currentRecord, TaxYearResolver.endOfCurrentTaxYear)
         )
 
         val previousTaxCodeChanges = previousRecords.map(
           taxCodeRecord =>
-            addEndDate(
-              previousEndDate,
-              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation))
+            TaxCodeSummary(
+              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation)),
+              previousEndDate
             )
         )
 
@@ -92,13 +92,13 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       } else if(taxCodeRecordList.size == 1) {
         Logger.warn(s"Only one tax code record returned for $nino" )
-        TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
+        TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYearResolver.endOfCurrentTaxYear)),Seq())
       } else if(taxCodeRecordList.size == 0) {
         Logger.warn(s"Zero tax code records returned for $nino" )
-        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
+        TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {
         Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
-        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
+        TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       }
     }
   }
@@ -123,39 +123,20 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     futureMismatch
   }
 
-  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate = {
-    TaxCodeRecordWithEndDate(
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
-      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
-    )
-  }
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeSummary]] = {
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]] = {
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear).map { taxCodeHistory =>
-
-      val datesOutside = logThis(taxYear, taxCodeHistory)
-
-      Logger.warn(s"Records outside the tax year $taxYear are $datesOutside")
 
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
-      val records = groupedTaxCodeRecords.values.flatMap {
+      groupedTaxCodeRecords.values.flatMap {
         taxCodeRecords =>
-          val sorted = taxCodeRecords.sortBy(_.dateOfCalculation)
-          sorted.filter(_.dateOfCalculation.isEqual(sorted.head.dateOfCalculation))
-
+          val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)
+          val latestTaxCodeRecords = sortedTaxCodeRecords.filter(_.dateOfCalculation.isEqual(sortedTaxCodeRecords.head.dateOfCalculation))
+          latestTaxCodeRecords.map(TaxCodeSummary(_, taxYear.end))
       }.toSeq
 
-      records.map(addEndDate(taxYear.end, _))
-
     }
-  }
-
-  def logThis(taxYear: TaxYear, taxCodeHistory: TaxCodeHistory) = {
-    taxCodeHistory.taxCodeRecords.filter(taxCodeRecord =>
-      taxCodeRecord.dateOfCalculation.isBefore(taxYear.start) || taxCodeRecord.dateOfCalculation.isAfter(taxYear.end)).map(
-      _.dateOfCalculation
-    )
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
@@ -206,6 +187,6 @@ trait TaxCodeChangeService {
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
 
-  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeRecordWithEndDate]]
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeSummary]]
 
 }

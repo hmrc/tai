@@ -20,20 +20,8 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
-case class TaxCodeRecordWithEndDate(taxCode: String,
-                                    basisOfOperation: String,
-                                    startDate: LocalDate,
-                                    endDate: LocalDate,
-                                    employerName: String,
-                                    payrollNumber: Option[String],
-                                    pensionIndicator: Boolean,
-                                    primary: Boolean)
 
-object TaxCodeRecordWithEndDate {
-  implicit val format: OFormat[TaxCodeRecordWithEndDate] = Json.format[TaxCodeRecordWithEndDate]
-}
-
-case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[TaxCodeRecordWithEndDate]) {
+case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {
   def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
 
   def primaryCurrentTaxCode: Option[String] = primaryTaxCode(current)
@@ -46,25 +34,25 @@ case class TaxCodeChange(current: Seq[TaxCodeRecordWithEndDate], previous: Seq[T
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
-  private def primaryPayrollNumber(records: Seq[TaxCodeRecordWithEndDate]): Option[String] = {
+  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]): Option[String] = {
     primaryRecord(records) match {
       case Some(record) => record.payrollNumber
       case None => None
     }
   }
-  private def secondaryPayrollNumbers(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).flatMap(_.payrollNumber)
-  private def primaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]): Option[String] = {
+  private def secondaryPayrollNumbers(records: Seq[TaxCodeSummary]) = secondaryRecords(records).flatMap(_.payrollNumber)
+  private def primaryTaxCode(records: Seq[TaxCodeSummary]): Option[String] = {
     primaryRecord(records) match {
       case Some(record) => Some(record.taxCode)
       case None => None
     }
   }
-  private def secondaryTaxCode(records: Seq[TaxCodeRecordWithEndDate]) = secondaryRecords(records).map(_.taxCode)
+  private def secondaryTaxCode(records: Seq[TaxCodeSummary]) = secondaryRecords(records).map(_.taxCode)
 
-  private def primaryRecord(records: Seq[TaxCodeRecordWithEndDate]): Option[TaxCodeRecordWithEndDate] =
+  private def primaryRecord(records: Seq[TaxCodeSummary]): Option[TaxCodeSummary] =
     records.find(_.primary)
 
-  private def secondaryRecords(records: Seq[TaxCodeRecordWithEndDate]) = records.filterNot(_.primary)
+  private def secondaryRecords(records: Seq[TaxCodeSummary]) = records.filterNot(_.primary)
 }
 
 object TaxCodeChange {
