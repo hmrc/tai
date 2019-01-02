@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
       }
 
-      "one of the service call for the coding components fails" in {
+      "service call for the previous coding components fails" in {
         val taxCodeChangeService = mock[TaxCodeChangeService]
         val codingComponentService = mock[CodingComponentService]
 
@@ -107,17 +107,14 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent1)))
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
         val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
-        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Could not retrieve all previous coding components - Error"
+        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
       }
     }
 
@@ -139,11 +136,8 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent1)))
-
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(2))(Matchers.any()))
-          .thenReturn(Future.successful(Seq(codingComponent2)))
+        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+          .thenReturn(Future.successful(previousCodingComponents))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
 
@@ -156,6 +150,8 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     }
   }
 
+  val PRIMARY_PREVIOUS_TAX_CODE_ID = 1
+
   private def stubTaxCodeChange: TaxCodeChange = {
     val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
     val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
@@ -165,7 +161,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     val payrollNumberCurr = "456"
 
     val previousTaxCodeRecords: Seq[TaxCodeRecordWithEndDate] = Seq(
-      TaxCodeRecordWithEndDate(1, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
+      TaxCodeRecordWithEndDate(PRIMARY_PREVIOUS_TAX_CODE_ID, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
       TaxCodeRecordWithEndDate(2, "BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
     )
 

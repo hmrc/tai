@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
+import uk.gov.hmrc.tai.model.api.TaxCodeRecordWithEndDate
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -45,21 +46,24 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
     }
   }
 
+
   private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
-    previousTaxCodeChangeIds(nino).flatMap(ids => buildPreviousCodingComponentsFromIds(nino, ids))
+    previousPrimaryTaxCodeRecord(nino).flatMap((id: Option[TaxCodeRecordWithEndDate]) => {
+      id match {
+        case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
+        case None => Future.successful(Seq.empty[CodingComponent])
+      }
+    })
   }
 
-  private def previousTaxCodeChangeIds(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[Int]] = {
-    taxCodeChangeService.taxCodeChange(nino).map(_.previous.map(_.taxCodeId))
+  private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeRecordWithEndDate]] = {
+    taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => {
+      taxCodeChange.previous.find(taxCodeRecord => taxCodeRecord.primary)
+    })
   }
 
-  private def buildPreviousCodingComponentsFromIds(nino: Nino, taxCodeIds: Seq[Int])(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
-    Future.sequence(taxCodeIds.map(taxCodeId => {
-      val response: Future[Seq[CodingComponent]] = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
-
-      response
-    })).map(_.flatten).recoverWith {
-      case e: Exception => Future.failed(new RuntimeException("Could not retrieve all previous coding components - " + e.getMessage))
-    }
+  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+    codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
   }
+
 }
