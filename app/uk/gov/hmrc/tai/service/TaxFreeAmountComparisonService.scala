@@ -49,17 +49,16 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
 
 
   private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
-    previousPrimaryTaxCodeRecord(nino).flatMap((id: Option[TaxCodeSummary]) => {
-      id match {
-        case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
-        case None => Future.successful(Seq.empty[CodingComponent])
-      }
-    })
+    previousPrimaryTaxCodeRecord(nino).flatMap {
+      case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
+      case None => Future.successful(Seq.empty[CodingComponent])
+    }
   }
+
 
   private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeSummary]] = {
     taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => {
-      taxCodeChange.previous.find(taxCodeRecord => taxCodeRecord.primary)
+      taxCodeChange.primaryPreviousRecord
     })
   }
 

@@ -34,6 +34,8 @@ case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSumm
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
+  def primaryPreviousRecord : Option[TaxCodeSummary] = primaryRecord(previous)
+
   private def primaryPayrollNumber(records: Seq[TaxCodeSummary]): Option[String] = {
     primaryRecord(records) match {
       case Some(record) => record.payrollNumber
