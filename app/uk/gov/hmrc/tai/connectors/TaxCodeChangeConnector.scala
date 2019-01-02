@@ -54,5 +54,3 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
     getFromDes[TaxCodeHistory](url,APITypes.TaxCodeChangeAPI).map(_._1)
   }
 }
-
-

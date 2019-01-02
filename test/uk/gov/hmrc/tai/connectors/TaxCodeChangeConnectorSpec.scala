@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -90,6 +91,29 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
           TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
         ))
       }
+    }
+
+    "respond with a JsResultException when given invalid json" in {
+
+      val testNino = randomNino
+      val taxYear = TaxYear(2017)
+
+      val url = {
+        val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
+        s"${path.getPath}?${path.getQuery}"
+      }
+
+      val expectedJsonResponse = Json.obj(
+        "invalid" -> "invalidjson"
+      )
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+      )
+
+      val connector = createSut()
+      val ex = the[JsResultException] thrownBy Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+      ex.getMessage must include("ValidationError")
     }
   }
 

@@ -21,14 +21,15 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
-import uk.gov.hmrc.tai.model.api.TaxCodeRecordWithEndDate
+import uk.gov.hmrc.tai.model.api.TaxCodeSummary
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
 
 import scala.concurrent.Future
 
 @Singleton
-class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeService,
+class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeServiceImpl,
                                                codingComponentService: CodingComponentService) {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc:HeaderCarrier): Future[TaxFreeAmountComparison] = {
@@ -48,7 +49,7 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
 
 
   private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
-    previousPrimaryTaxCodeRecord(nino).flatMap((id: Option[TaxCodeRecordWithEndDate]) => {
+    previousPrimaryTaxCodeRecord(nino).flatMap((id: Option[TaxCodeSummary]) => {
       id match {
         case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
         case None => Future.successful(Seq.empty[CodingComponent])
@@ -56,7 +57,7 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
     })
   }
 
-  private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeRecordWithEndDate]] = {
+  private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeSummary]] = {
     taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => {
       taxCodeChange.previous.find(taxCodeRecord => taxCodeRecord.primary)
     })

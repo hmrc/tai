@@ -26,7 +26,7 @@ import org.mockito.Matchers
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 
 import scala.concurrent.duration._
 import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
@@ -41,7 +41,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
   "taxFreeAmountComparison" should {
     "return a sequence of current coding components" when {
       "called with a valid nino" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
         val codingComponentService = mock[CodingComponentService]
 
         val currentCodingComponents = Seq[CodingComponent](
@@ -70,7 +70,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     "return a Future Failed" when {
       "the service call for taxCodeChange fails" in {
 
-        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
         val codingComponentService = mock[CodingComponentService]
 
         val currentCodingComponents = Seq[CodingComponent](
@@ -94,7 +94,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
       }
 
       "service call for the previous coding components fails" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
         val codingComponentService = mock[CodingComponentService]
 
         val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
@@ -120,7 +120,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
     "return a sequence of previous coding components" when {
       "called with a valid nino" in {
-        val taxCodeChangeService = mock[TaxCodeChangeService]
+        val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
         val codingComponentService = mock[CodingComponentService]
 
         val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
@@ -160,14 +160,14 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     val payrollNumberPrev = "123"
     val payrollNumberCurr = "456"
 
-    val previousTaxCodeRecords: Seq[TaxCodeRecordWithEndDate] = Seq(
-      TaxCodeRecordWithEndDate(PRIMARY_PREVIOUS_TAX_CODE_ID, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
-      TaxCodeRecordWithEndDate(2, "BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
+    val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
+      TaxCodeSummary(PRIMARY_PREVIOUS_TAX_CODE_ID, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
+      TaxCodeSummary(2, "BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
     )
 
-    val currentTaxCodeRecords: Seq[TaxCodeRecordWithEndDate] = Seq(
-      TaxCodeRecordWithEndDate(3, "1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true),
-      TaxCodeRecordWithEndDate(4, "185L", Cumulative, currentStartDate, currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
+    val currentTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
+      TaxCodeSummary(3, "1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true),
+      TaxCodeSummary(4, "185L", Cumulative, currentStartDate, currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
     )
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
@@ -177,7 +177,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private def createTestService(taxCodeChangeService: TaxCodeChangeService,
+  private def createTestService(taxCodeChangeService: TaxCodeChangeServiceImpl,
                                 codingComponentService: CodingComponentService): TaxFreeAmountComparisonService = {
     new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
   }
