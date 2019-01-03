@@ -90,7 +90,7 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
         val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
-        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
+        exception.getMessage mustBe "Error"
       }
 
       "service call for the previous coding components fails" in {
@@ -112,9 +112,9 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
-        val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+        val exception = the[BadRequestException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
 
-        exception.getMessage mustBe "Could not generate TaxFreeAmountComparison - Error"
+        exception.getMessage mustBe "Error"
       }
     }
 

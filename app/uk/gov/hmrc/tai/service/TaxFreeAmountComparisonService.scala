@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
@@ -25,7 +26,6 @@ import uk.gov.hmrc.tai.model.api.TaxCodeSummary
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
 import scala.concurrent.Future
 
 @Singleton
@@ -33,20 +33,26 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
                                                codingComponentService: CodingComponentService) {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc:HeaderCarrier): Future[TaxFreeAmountComparison] = {
-
-    val currentComponents: Future[Seq[CodingComponent]] = codingComponentService.codingComponents(nino, TaxYear())
+    val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
     val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
-    (for {
+    for {
       current <- currentComponents
       previous <- previousComponents
     } yield {
       TaxFreeAmountComparison(previous, current)
-    }).recoverWith {
-      case e: Exception => Future.failed(new RuntimeException("Could not generate TaxFreeAmountComparison - " + e.getMessage))
     }
   }
 
+  private def getCurrentComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+    val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
+
+    currentCodingComponentFuture.onFailure {
+      case e: Exception => Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
+    }
+
+    currentCodingComponentFuture
+  }
 
   private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
     previousPrimaryTaxCodeRecord(nino).flatMap {
@@ -55,15 +61,19 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
     }
   }
 
-
   private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeSummary]] = {
-    taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => {
-      taxCodeChange.primaryPreviousRecord
-    })
+    taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => taxCodeChange.primaryPreviousRecord)
   }
 
   private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
-    codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
+    val previousCodingComponentsFuture = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
+
+
+    previousCodingComponentsFuture.onFailure {
+      case e: Exception => Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
+    }
+
+    previousCodingComponentsFuture
   }
 
 }
