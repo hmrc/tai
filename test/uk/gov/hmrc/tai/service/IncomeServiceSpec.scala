@@ -141,7 +141,58 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateSuccess
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
+
+          val auditMap = Map("nino" -> nino.value,
+            "year" -> taxYear.toString,
+            "employmentId" -> "1",
+            "newAmount" -> "1234",
+            "currentAmount" -> "123.45")
+          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(any())
+        }
+
+        "the current amount can't be retrieved" in {
+
+          val taxYear = TaxYear()
+
+          val mockEmploymentSvc = mock[EmploymentService]
+          when(mockEmploymentSvc.employment(any(), any())(any()))
+            .thenReturn(Future.successful(Some(Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+
+          val mockTaxAccountSvc = mock[TaxAccountService]
+          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+
+          val mockIncomeRepository = mock[IncomeRepository]
+          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(Seq.empty))
+
+          val mockTaxAccountRepository = mock[TaxAccountRepository]
+          when(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(any())
+          ).thenReturn(
+            Future.successful(HodUpdateSuccess)
+          )
+
+          val mockAuditor = mock[Auditor]
+          doNothing().when(mockAuditor)
+            .sendDataEvent(any(), any())(any())
+
+          val SUT = createSUT(
+            employmentService = mockEmploymentSvc,
+            taxAccountService = mockTaxAccountSvc,
+            incomeRepository = mockIncomeRepository,
+            taxAccountRepository = mockTaxAccountRepository,
+            auditor = mockAuditor)
+
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+
+          result mustBe IncomeUpdateSuccess
+
+          val auditMap = Map("nino" -> nino.value,
+            "year" -> taxYear.toString,
+            "employmentId" -> "1",
+            "newAmount" -> "1234",
+            "currentAmount" -> "Unknown")
+          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(any())
+
         }
       }
 
