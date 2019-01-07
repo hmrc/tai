@@ -27,6 +27,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 @Singleton
 class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeServiceImpl,
@@ -48,7 +49,7 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
     val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
 
     currentCodingComponentFuture.onFailure {
-      case e: Exception => Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case NonFatal(e) => Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
     }
 
     currentCodingComponentFuture
@@ -70,7 +71,7 @@ class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChan
 
 
     previousCodingComponentsFuture.onFailure {
-      case e: Exception => Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case NonFatal(e) => Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
     }
 
     previousCodingComponentsFuture
