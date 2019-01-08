@@ -66,24 +66,32 @@ class IncomeService @Inject()(employmentService: EmploymentService,
     for {
       incomeAmount <- incomeAmountForEmploymentId(nino, year, employmentId)
       root <- taxAccountService.personDetails(nino)
-      updateResult <- taxAccountRepository.updateTaxCodeAmount(nino, year, root.version, employmentId, NewEstimatedPay.code, amount)
+      incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, root.version, amount)
     } yield {
-      updateResult match {
-        case HodUpdateSuccess => {
-          auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
-          IncomeUpdateSuccess
-        }
-        case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
-      }
+
+      if(incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+      incomeUpdateResponse
     }
   }
 
-  def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
+  private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
                                  (implicit hc: HeaderCarrier): Future[Option[String]] = {
     taxCodeIncomes(nino, year) map { taxCodeIncomes =>
       taxCodeIncomes.find(_.employmentId.contains(employmentId)) match {
         case Some(taxCodeIncome) => Some(taxCodeIncome.amount.toString())
         case _ => None
+      }
+    }
+  }
+
+  private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)
+                                 (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+    for {
+      updateAmountResult <- taxAccountRepository.updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
+    } yield {
+      updateAmountResult match {
+        case HodUpdateSuccess => IncomeUpdateSuccess
+        case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
       }
     }
   }
