@@ -77,10 +77,7 @@ class IncomeService @Inject()(employmentService: EmploymentService,
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
                                  (implicit hc: HeaderCarrier): Future[Option[String]] = {
     taxCodeIncomes(nino, year) map { taxCodeIncomes =>
-      taxCodeIncomes.find(_.employmentId.contains(employmentId)) match {
-        case Some(taxCodeIncome) => Some(taxCodeIncome.amount.toString())
-        case _ => None
-      }
+      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
     }
   }
 
