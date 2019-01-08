@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.EmploymentUpdate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
+import uk.gov.hmrc.tai.model.domain.income.IncomeSource
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 
@@ -80,5 +81,7 @@ trait ApiFormats {
   implicit val addressFormat: Format[Address] = Json.format[Address]
 
   implicit val personFormat: Format[Person] = Json.format[Person]
+
+  implicit val incomeSourceFormat: Format[IncomeSource] = Json.format[IncomeSource]
 
 }

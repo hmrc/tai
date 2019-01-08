@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.rti
+package uk.gov.hmrc.tai.model.domain.income
 
-import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.domain.Employment
 
-/**
-  * The top-level successful response record from the Real Time Information
-  * (RTI) Head of Duty (HoD)
-  *
-  * @param nino national insurance number of the individual, together with the
-  *   [[taxYear]] this uniquely identifies a record
-  */
-case class RtiData(
-  nino: String,
-  taxYear: TaxYear,
-  requestId: String,
-  employments: List[RtiEmployment] = Nil
-)
+case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
+import org.joda.time.LocalDate
 
 case class EndOfTaxYearUpdate(date: LocalDate, adjustments: Seq[Adjustment])
     extends Ordered[EndOfTaxYearUpdate] {

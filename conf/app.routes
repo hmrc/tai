@@ -27,7 +27,6 @@ POST /:nino/employments/:id/reason                                              
 POST /:nino/pensionProvider                                                                         @uk.gov.hmrc.tai.controllers.PensionProviderController.addPensionProvider(nino: Nino)
 POST /:nino/pensionProvider/:id/reason                                                              @uk.gov.hmrc.tai.controllers.PensionProviderController.incorrectPensionProvider(nino: Nino, id: Int)
 
-
 #Benefits
 GET  /:nino/tax-account/:year/benefits                                                              @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.benefits(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 GET  /:nino/tax-account/tax-components/employments/:id/benefits/company-car                         @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.companyCarBenefitForEmployment(nino: Nino, id: Int)
@@ -45,7 +44,10 @@ PUT     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-acco
 GET     /:nino/tax-account/:year/income/tax-code-incomes                                                 @uk.gov.hmrc.tai.controllers.income.IncomeController.taxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 GET     /:nino/tax-account/:year/income                                                                  @uk.gov.hmrc.tai.controllers.income.IncomeController.income(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay    @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)
+# New endpoints - Luke
 GET     /:nino/tax-account/:year/income/:incomeType/live                                                 @uk.gov.hmrc.tai.controllers.income.IncomeController.liveMatchedTaxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, incomeType: String)
+GET     /:nino/tax-account/:year/income/employments/ceased                                               @uk.gov.hmrc.tai.controllers.income.IncomeController.ceasedMatchingIncomeSourcesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/employments/years/:year/ceased                                                            @uk.gov.hmrc.tai.controllers.income.IncomeController.nonMatchingCeasedEmployments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
 #Coding Components
 GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
@@ -46,7 +47,8 @@ import scala.util.Random
 class IncomeControllerSpec extends PlaySpec
   with MockitoSugar
   with TaxCodeIncomeSourceAPIFormatters
-  with MockAuthenticationPredicate {
+  with MockAuthenticationPredicate
+  with ApiFormats {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   private val nino = new Generator(new Random).nextNino
@@ -223,7 +225,7 @@ class IncomeControllerSpec extends PlaySpec
       None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
     val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-    "return list of live and matched employment TaxCodeIncomes for a given year" in {
+    "return list of live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -237,23 +239,16 @@ class IncomeControllerSpec extends PlaySpec
 
       status(result) mustBe OK
 
-      val expectedJson = Json.obj(
-        "data" -> Json.arr(
-          Json.obj(
-            "componentType" -> "EmploymentIncome",
-            "employmentId" -> 2,
-            "amount" -> 0,
-            "description" -> "EmploymentIncome",
-            "taxCode" -> "1100L",
-            "name" -> "Employer2",
-            "basisOperation" -> "OtherBasisOperation",
-            "status" -> "Live",
-            "inYearAdjustmentIntoCY" -> 321.12,
-            "totalInYearAdjustment" -> 0,
-            "inYearAdjustmentIntoCYPlusOne" -> 0)
-        ),
+      val expectedIncomeSource = Json.toJson(IncomeSource(TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+        "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)),
+        employment
+      ))
+
+      val expectedJson = Json.arr(
+        "data" -> Json.arr(expectedIncomeSource),
         "links" -> Json.arr()
       )
+
       contentAsJson(result) mustBe expectedJson
     }
 
@@ -398,7 +393,7 @@ class IncomeControllerSpec extends PlaySpec
     }
   }
 
-  "ceasedTaxCodeIncomesForYear" must {
+  "ceasedMatchingIncomeSourcesForYear" must {
 
     val taxCodeIncomes = Seq(TaxCodeIncome(PensionIncome, Some(1), BigDecimal(1100),
       "PensionIncome", "1150L", "Employer1", Week1Month1BasisOperation, PotentiallyCeased, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
@@ -421,7 +416,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe OK
 
@@ -467,7 +462,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe NOT_FOUND
     }
@@ -482,7 +477,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.successful(Seq(employment.copy(sequenceNumber = 2))))
 
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe NOT_FOUND
     }
@@ -497,7 +492,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.successful(Seq(employment.copy(sequenceNumber = 3))))
 
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe NOT_FOUND
     }
@@ -512,14 +507,14 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe NOT_FOUND
     }
 
     "return NotAuthorized when the user is not logged in" in {
       val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-      val result = sut.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = sut.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
       ScalaFutures.whenReady(result.failed) { e =>
         e mustBe a[MissingBearerToken]
       }
@@ -531,7 +526,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = SUT.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe NOT_FOUND
     }
@@ -542,7 +537,7 @@ class IncomeControllerSpec extends PlaySpec
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
       val SUT = createSUT(mockIncomeService)
-      val result = SUT.ceasedTaxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
+      val result = SUT.ceasedMatchingIncomeSourcesForYear(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe BAD_REQUEST
     }
