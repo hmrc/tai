@@ -150,7 +150,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(any())
         }
 
-        "the current amount can't be retrieved" in {
+        "the current amount is not provided" in {
 
           val taxYear = TaxYear()
 
@@ -191,6 +191,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             "employmentId" -> "1",
             "newAmount" -> "1234",
             "currentAmount" -> "Unknown")
+
           verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(any())
 
         }
@@ -234,7 +235,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
     "for next year" must {
       "return an income success" when {
-        "anM update amount is provided" in {
+        "an update amount is provided" in {
           val taxYear = TaxYear().next
 
           val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(123.45),
@@ -271,7 +272,14 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           result mustBe IncomeUpdateSuccess
           verify(mockTaxAccountRepository, times(1)).updateTaxCodeAmount(Meq(nino), Meq(taxYear), any(), Meq(1), any(), Meq(1234))(any())
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), any())(any())
+
+          val auditMap = Map("nino" -> nino.value,
+            "year" -> taxYear.toString,
+            "employmentId" -> "1",
+            "newAmount" -> "1234",
+            "currentAmount" -> "123.45")
+
+          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(any())
         }
       }
 

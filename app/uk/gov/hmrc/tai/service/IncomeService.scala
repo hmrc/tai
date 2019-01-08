@@ -65,8 +65,8 @@ class IncomeService @Inject()(employmentService: EmploymentService,
 
     for {
       incomeAmount <- incomeAmountForEmploymentId(nino, year, employmentId)
-      root <- taxAccountService.personDetails(nino)
-      incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, root.version, amount)
+      personDetails <- taxAccountService.personDetails(nino)
+      incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, personDetails.version, amount)
     } yield {
 
       if(incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
