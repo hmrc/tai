@@ -22,7 +22,8 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsNull, Json}
+import play.api.libs.json.{JsArray, JsNull, JsValue, Json}
+import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -35,7 +36,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
-import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
+import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
 
@@ -266,21 +267,12 @@ class IncomeControllerSpec extends PlaySpec
       "a valid update amount is provided" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(IncomeUpdateSuccess))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateSuccess))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe OK
       }
@@ -290,46 +282,30 @@ class IncomeControllerSpec extends PlaySpec
       "a valid update amount is provided" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(IncomeUpdateSuccess))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateSuccess))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
 
       }
     }
 
+
+
     "do not invalidate the cache" when {
       "an invalid update amount is provided" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(InvalidAmount("")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(InvalidAmount("")))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
 
@@ -338,21 +314,12 @@ class IncomeControllerSpec extends PlaySpec
       "income update exception has been thrown" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(IncomeUpdateFailed("Failed")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateFailed("Failed")))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
 
@@ -361,21 +328,12 @@ class IncomeControllerSpec extends PlaySpec
       "any exception has been thrown" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.failed(new RuntimeException("Error")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.failed(new RuntimeException))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
 
@@ -386,21 +344,12 @@ class IncomeControllerSpec extends PlaySpec
       "an invalid update amount is provided" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(InvalidAmount("")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(InvalidAmount("")))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
       }
@@ -411,21 +360,12 @@ class IncomeControllerSpec extends PlaySpec
       "income update exception has been thrown" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.successful(IncomeUpdateFailed("Failed")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateFailed("Failed")))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
 
@@ -434,21 +374,12 @@ class IncomeControllerSpec extends PlaySpec
       "any exception has been thrown" in {
 
         val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(Future.failed(new RuntimeException("Error")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.failed(new RuntimeException("Error")))
+        val mockTaxAccountService = generateMockAccountServiceWithResponse
 
         val SUT = createSUT(mockIncomeService, mockTaxAccountService)
 
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
 
@@ -465,4 +396,28 @@ class IncomeControllerSpec extends PlaySpec
                         taxAccountService: TaxAccountService = mock[TaxAccountService],
                         authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
                         new IncomeController(incomeService, taxAccountService, authentication)
+
+  private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
+    val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
+
+    FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
+      .withHeaders(("content-type", "application/json"))
+  }
+
+  private def generateMockIncomeServiceWithResponse(response: Future[IncomeUpdateResponse]): IncomeService = {
+    val mockIncomeService = mock[IncomeService]
+
+    when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(response)
+
+    mockIncomeService
+  }
+
+  private def generateMockAccountServiceWithResponse: TaxAccountService = {
+    val mockTaxAccountService = mock[TaxAccountService]
+
+    when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
+
+    mockTaxAccountService
+  }
+
 }
