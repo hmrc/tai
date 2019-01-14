@@ -23,7 +23,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, JsValue, Json}
-import play.api.mvc.Result
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -39,7 +38,6 @@ import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{IncomeService, TaxAccountService}
-
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -48,6 +46,8 @@ class IncomeControllerSpec extends PlaySpec
     with TaxCodeIncomeSourceAPIFormatters
     with MockAuthenticationPredicate{
 
+  val employmentId = 1
+  val mockTaxAccountService = generateMockAccountServiceWithAnyResponse
   "untaxedInterest" must {
 
     "return NOT AUTHORISED" when {
@@ -263,126 +263,48 @@ class IncomeControllerSpec extends PlaySpec
       }
     }
 
-    "return Ok" when {
+    "return Ok and invalidate the cache" when {
       "a valid update amount is provided" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateSuccess))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
+        val wantedNumberOfInvocations = 1
+        val mockTaxAccountService = generateMockAccountServiceWithAnyResponse
+        val SUT = setup(Future.successful(IncomeUpdateSuccess), mockTaxAccountService)
 
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe OK
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
 
-    "invalidate the cache" when {
-      "a valid update amount is provided" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateSuccess))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
-
-        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
-
-      }
-    }
-
-
-
-    "do not invalidate the cache" when {
+    "return a bad request and do not invalidate the cache" when {
       "an invalid update amount is provided" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(InvalidAmount("")))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
-
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
-
-      }
-
-      "income update exception has been thrown" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateFailed("Failed")))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
-
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
-
-      }
-
-      "any exception has been thrown" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.failed(new RuntimeException))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
-
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
-
-      }
-    }
-
-    "return a bad request" when {
-      "an invalid update amount is provided" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(InvalidAmount("")))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.successful(InvalidAmount("")), mockTaxAccountService)
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
 
-    "return internal server error" when {
+    "return internal server error and do not invalidate the cache" when {
 
       "income update exception has been thrown" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.successful(IncomeUpdateFailed("Failed")))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.successful(IncomeUpdateFailed("Failed")), mockTaxAccountService)
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
 
       "any exception has been thrown" in {
-
-        val employmentId = 1
-        val mockIncomeService = generateMockIncomeServiceWithResponse(Future.failed(new RuntimeException("Error")))
-        val mockTaxAccountService = generateMockAccountServiceWithResponse
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.failed(new RuntimeException("Error")), mockTaxAccountService)
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
   }
@@ -399,25 +321,22 @@ class IncomeControllerSpec extends PlaySpec
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
     FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
       .withHeaders(("content-type", "application/json"))
   }
 
-  private def generateMockIncomeServiceWithResponse(response: Future[IncomeUpdateResponse]): IncomeService = {
-    val mockIncomeService = mock[IncomeService]
-
-    when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(response)
-
-    mockIncomeService
-  }
-
-  private def generateMockAccountServiceWithResponse: TaxAccountService = {
+  private def generateMockAccountServiceWithAnyResponse: TaxAccountService = {
     val mockTaxAccountService = mock[TaxAccountService]
-
     when(mockTaxAccountService.version(any(),any())(any())).thenReturn(Future.successful(Some(1)))
-
     mockTaxAccountService
   }
 
+  private def setup(response: Future[IncomeUpdateResponse], mockTaxAccountService: TaxAccountService): IncomeController = {
+    val mockIncomeService: IncomeService = {
+      val mockIncomeService: IncomeService = mock[IncomeService]
+      when(mockIncomeService.updateTaxCodeIncome(any(),any(),any(),any())(any())).thenReturn(response)
+      mockIncomeService
+    }
+    createSUT(mockIncomeService, mockTaxAccountService)
+  }
 }
