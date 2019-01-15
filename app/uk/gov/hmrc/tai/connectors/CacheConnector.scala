@@ -168,9 +168,10 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
     for {
       writeResult <- cacheRepository.removeById(id)
     } yield {
-      if (writeResult.hasErrors) {
-        writeResult.errmsg.foreach(Logger.error)
-        throw new RuntimeException(writeResult.errmsg.getOrElse("Error while removing the session data"))
+      if (writeResult.writeErrors.nonEmpty) {
+        val errorMessages = writeResult.writeErrors.map(_.errmsg)
+        errorMessages.foreach(Logger.error)
+        throw new RuntimeException(errorMessages.head)
       } else {
         writeResult.ok
       }
