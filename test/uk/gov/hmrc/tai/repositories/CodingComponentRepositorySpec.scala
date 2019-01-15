@@ -25,6 +25,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -41,10 +42,11 @@ class CodingComponentRepositorySpec extends PlaySpec
     "return empty list of coding components" when {
       "iabd connector returns empty list and tax account connector returns json with no NpsComponents of interest" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
+
         when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
-        val sut = createSUT(mockTaxAccountRepository)
+        val sut = testCodingComponentRepository(mockTaxAccountRepository)
         val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
 
         result mustBe Nil
@@ -54,10 +56,11 @@ class CodingComponentRepositorySpec extends PlaySpec
     "return coding components sourced from nps iabd list, nps tax account and tax code income source" when {
       "income source has pension available" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
+
         when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(primaryIncomeDeductionsNpsJson))
 
-        val sut = createSUT(mockTaxAccountRepository)
+        val sut = testCodingComponentRepository(mockTaxAccountRepository)
         val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
 
         result mustBe Seq(
@@ -66,6 +69,72 @@ class CodingComponentRepositorySpec extends PlaySpec
           CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction")
         )
       }
+    }
+  }
+
+  "codingComponentsForTaxCodeId" should {
+    "returns a Success[Seq[CodingComponent]] for valid json of income sources" in {
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+
+      val taxCodeId = 1
+
+      val expected = List[CodingComponent](
+        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850))
+      )
+
+      val json = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
+
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        .thenReturn(Future.successful(json))
+
+      val repository = testCodingComponentRepository(mockTaxAccountRepository)
+
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+
+      result mustBe expected
+    }
+
+    "returns a Success[Seq[CodingComponent]] for valid json of total liabilities" in {
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+
+      val taxCodeId = 1
+
+      val expected = List[CodingComponent](
+        CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
+      )
+
+      val json = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
+
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        .thenReturn(Future.successful(json))
+
+      val repository = testCodingComponentRepository(mockTaxAccountRepository)
+
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+
+      result mustBe expected
+    }
+
+    "returns a Success[Seq[CodingComponent]] for valid json of total liabilities and income sources" in {
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+
+      val taxCodeId = 1
+
+      val expected = List[CodingComponent](
+        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
+        CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
+      )
+
+      val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
+
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        .thenReturn(Future.successful(json))
+
+      val repository = testCodingComponentRepository(mockTaxAccountRepository)
+
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+
+      result mustBe expected
     }
   }
 
@@ -106,6 +175,6 @@ class CodingComponentRepositorySpec extends PlaySpec
     )))
   )
 
-  private def createSUT(taxAccountRepository: TaxAccountRepository) =
+  private def testCodingComponentRepository(taxAccountRepository: TaxAccountRepository) =
     new CodingComponentRepository(taxAccountRepository)
 }

@@ -52,7 +52,9 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
     APITypes.FusUploadFile -> "file-upload",
     APITypes.FusCloseEnvelope -> "close-envelope",
     APITypes.BbsiAPI -> "bbsi",
-    APITypes.TaxCodeChangeAPI -> "tax-code-change")
+    APITypes.TaxCodeChangeAPI -> "tax-code-change",
+    APITypes.TaxAccountHistoryAPI -> "tax-account-history"
+  )
 
 
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()

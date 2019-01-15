@@ -22,7 +22,8 @@ import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.time.TaxYearResolver
 
-case class TaxCodeSummary(taxCode: String,
+case class TaxCodeSummary(taxCodeId: Int,
+                          taxCode: String,
                           basisOfOperation: String,
                           startDate: LocalDate,
                           endDate: LocalDate,
@@ -47,6 +48,7 @@ object TaxCodeSummary {
       }
 
     TaxCodeSummary(
+      taxCodeRecord.taxCodeId,
       taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, startDate , date,
       taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
     )

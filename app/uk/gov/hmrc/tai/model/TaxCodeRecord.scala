@@ -20,7 +20,8 @@ import org.joda.time.LocalDate
 import play.api.libs.json._
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-case class TaxCodeRecord(taxCode: String,
+case class TaxCodeRecord(taxCodeId: Int,
+                         taxCode: String,
                          basisOfOperation: String,
                          employerName: String,
                          operatedTaxCode: Boolean,

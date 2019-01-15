@@ -79,6 +79,9 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 
   def taxAccountUrlDes(nino: Nino, taxYear: TaxYear): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}?calculation=true"
+
+  def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
+    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 }
 
 @Singleton
@@ -103,5 +106,4 @@ class TaxCodeChangeUrl @Inject()(config: DesConfig) {
   def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String = {
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
   }
-
 }
