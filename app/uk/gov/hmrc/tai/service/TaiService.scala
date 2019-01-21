@@ -49,6 +49,7 @@ class TaiService @Inject()(rti: RtiConnector,
                            autoUpdatePayService: AutoUpdatePayService,
                            nextYearComparisonService: NextYearComparisonService,
                            auditor: Auditor,
+                           taxYear: TaxYear,
                            featureTogglesConfig: FeatureTogglesConfig,
                            npsConfig: NpsConfig,
                            cyPlusOneConfig: CyPlusOneConfig) extends NpsFormatter {
@@ -101,7 +102,7 @@ class TaiService @Inject()(rti: RtiConnector,
   private[service] def isNotCeasedOrCurrentYearCeasedEmployment(employments: List[NpsEmployment]): Future[Boolean] = {
     val checkCeasedEmployment = (endDate: Option[NpsDate]) => endDate match {
       case None => true
-      case Some(npsDate) if (npsDate.localDate.isAfter(TaxYear().start) && npsDate.localDate.isBefore(TaxYear().next.start)) => true
+      case Some(npsDate) if (npsDate.localDate.isAfter(taxYear.start) && npsDate.localDate.isBefore(taxYear.next.start)) => true
       case _ => false
     }
 
@@ -184,8 +185,8 @@ class TaiService @Inject()(rti: RtiConnector,
   }
 
   private[service] def invokeCYPlusOne(currentDate: LocalDate): Boolean = {
-    val taxYear =  TaxYear(currentDate).year + 1
-    val enabledDate = cyPlusOneConfig.cyPlusOneEnableDate.getOrElse(DEFAULT_CY_PLUS_ONE_ENABLED_DATE) + "/" + taxYear
+    val taxYear1 = taxYear.taxYearFor(currentDate) + 1
+    val enabledDate = cyPlusOneConfig.cyPlusOneEnableDate.getOrElse(DEFAULT_CY_PLUS_ONE_ENABLED_DATE) + "/" + taxYear1
     val CYEnabledDate = DateTimeHelper.convertToLocalDate(STANDARD_DATE_FORMAT, enabledDate)
 
     val isDateEnabled: Boolean = (cyPlusOneConfig.cyPlusOneEnableDate.isDefined, currentDate.isBefore(CYEnabledDate)) match {

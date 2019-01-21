@@ -53,6 +53,16 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
     val earliestDateForCurrentTaxYear = start
     earliestDateForCurrentTaxYear.isBefore(currentDate) || earliestDateForCurrentTaxYear.isEqual(currentDate)
   }
+
+  def taxYearFor(dateToResolve: LocalDate): Int = {
+    val year = dateToResolve.year.get
+
+    if (dateToResolve.isBefore(new LocalDate(year, 4, 6)))
+      year - 1
+    else
+      year
+  }
+
 }
 
 object TaxYear {

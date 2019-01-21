@@ -96,7 +96,7 @@ class TaxYearSpec extends PlaySpec {
 
     val SUT = TaxYear("2017")
 
-    "expoose tax year start and end dates" in {
+    "expose tax year start and end dates" in {
       SUT.start mustBe LocalDate.parse("2017-04-06")
       SUT.end mustBe LocalDate.parse("2018-04-05")
     }
