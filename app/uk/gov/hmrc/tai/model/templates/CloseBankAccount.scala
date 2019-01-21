@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.templates
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.time.TaxYearResolver
 
 case class CloseBankAccount(
                            personDetails: Person,
@@ -33,5 +32,5 @@ case class CloseBankAccount(
   val displayableTaxYearRange: String =
     s"${taxYear.start.toString(dateFormat)} to ${taxYear.end.toString(dateFormat)}"
 
-  val bankAccountClosedInCurrentTaxYear: Boolean = TaxYearResolver.fallsInThisTaxYear(endDate)
+  val bankAccountClosedInCurrentTaxYear: Boolean = TaxYear().withinTaxYear(endDate)
 }

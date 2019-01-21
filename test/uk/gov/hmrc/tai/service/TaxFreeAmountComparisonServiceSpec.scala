@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import scala.concurrent.duration._
 import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.{Await, Future}
 import scala.util.Random
@@ -153,9 +152,9 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
   val PRIMARY_PREVIOUS_TAX_CODE_ID = 1
 
   private def stubTaxCodeChange: TaxCodeChange = {
-    val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
-    val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
-    val previousStartDate = TaxYearResolver.startOfCurrentTaxYear
+    val currentStartDate = TaxYear().start.plusDays(2)
+    val currentEndDate = TaxYear().end
+    val previousStartDate = TaxYear().start
     val previousEndDate = currentStartDate.minusDays(1)
     val payrollNumberPrev = "123"
     val payrollNumberCurr = "456"

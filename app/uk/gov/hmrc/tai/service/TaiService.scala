@@ -37,7 +37,6 @@ import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.util.TaiConstants._
 import uk.gov.hmrc.tai.util.{DateTimeHelper, TaiConstants}
-import uk.gov.hmrc.time.TaxYearResolver
 
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent._
@@ -50,7 +49,6 @@ class TaiService @Inject()(rti: RtiConnector,
                            autoUpdatePayService: AutoUpdatePayService,
                            nextYearComparisonService: NextYearComparisonService,
                            auditor: Auditor,
-                           taxYearResolver: TaxYearResolver,
                            featureTogglesConfig: FeatureTogglesConfig,
                            npsConfig: NpsConfig,
                            cyPlusOneConfig: CyPlusOneConfig) extends NpsFormatter {
@@ -103,7 +101,7 @@ class TaiService @Inject()(rti: RtiConnector,
   private[service] def isNotCeasedOrCurrentYearCeasedEmployment(employments: List[NpsEmployment]): Future[Boolean] = {
     val checkCeasedEmployment = (endDate: Option[NpsDate]) => endDate match {
       case None => true
-      case Some(npsDate) if (npsDate.localDate.isAfter(taxYearResolver.startOfCurrentTaxYear) && npsDate.localDate.isBefore(taxYearResolver.startOfNextTaxYear)) => true
+      case Some(npsDate) if (npsDate.localDate.isAfter(TaxYear().start) && npsDate.localDate.isBefore(TaxYear().next.start)) => true
       case _ => false
     }
 
@@ -186,7 +184,7 @@ class TaiService @Inject()(rti: RtiConnector,
   }
 
   private[service] def invokeCYPlusOne(currentDate: LocalDate): Boolean = {
-    val taxYear = taxYearResolver.taxYearFor(currentDate) + 1
+    val taxYear =  TaxYear(currentDate).year + 1
     val enabledDate = cyPlusOneConfig.cyPlusOneEnableDate.getOrElse(DEFAULT_CY_PLUS_ONE_ENABLED_DATE) + "/" + taxYear
     val CYEnabledDate = DateTimeHelper.convertToLocalDate(STANDARD_DATE_FORMAT, enabledDate)
 
