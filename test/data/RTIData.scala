@@ -22,6 +22,7 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiEmployment}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.io.Source
 import scala.util.Random
@@ -60,7 +61,7 @@ object RTIData {
       employment.copy(payments = employment.payments.map{ inYear =>
         //We can finally try to change the value for the payment data
         inYear.copy(paidOn = new LocalDate(
-          uk.gov.hmrc.time.TaxYearResolver.currentTaxYear,
+          TaxYear().year,
           inYear.paidOn.getMonthOfYear,
           inYear.paidOn.getDayOfWeek
         ))

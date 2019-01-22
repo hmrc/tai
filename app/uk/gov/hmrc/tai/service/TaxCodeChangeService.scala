@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -73,7 +72,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
         val currentTaxCodeChanges = currentRecords.map(
           currentRecord =>
-            TaxCodeSummary(currentRecord, TaxYearResolver.endOfCurrentTaxYear)
+            TaxCodeSummary(currentRecord, TaxYear().end)
         )
 
         val previousTaxCodeChanges = previousRecords.map(
@@ -92,7 +91,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       } else if(taxCodeRecordList.size == 1) {
         Logger.warn(s"Only one tax code record returned for $nino" )
-        TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYearResolver.endOfCurrentTaxYear)),Seq())
+
+        TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)),Seq())
       } else if(taxCodeRecordList.size == 0) {
         Logger.warn(s"Zero tax code records returned for $nino" )
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -144,8 +144,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
-    if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
-      TaxYearResolver.startOfCurrentTaxYear
+    val startOfCurrentTaxYear = TaxYear().start
+
+    if (date isBefore startOfCurrentTaxYear) {
+      startOfCurrentTaxYear
     } else {
       date
     }
@@ -174,7 +176,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
     lazy val latestDate = calculationDates.min
 
-    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
+    calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
   }
 }
 

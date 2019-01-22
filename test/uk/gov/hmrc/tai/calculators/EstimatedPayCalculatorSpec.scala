@@ -17,10 +17,9 @@
 package uk.gov.hmrc.tai.calculators
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.model.enums.PayFreq
-import uk.gov.hmrc.time.TaxYearResolver
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.math.BigDecimal.RoundingMode
 
@@ -29,7 +28,6 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
   "Estimated Pay Calculator" should {
 
     "calculate the correct gross and net amount" when {
-
       "monthly amount is entered" in {
         val payDetails = PayDetails(paymentFrequency = PayFreq.monthly, pay = Some(12), taxablePay = Some(10))
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
@@ -97,7 +95,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
     "calculate net and gross pay amounts which are apportioned for the current year" when {
 
       "an employment start date is supplied which falls in the current tax year" in {
-        val startDateHalfThroughYear = TaxYearResolver.endOfCurrentTaxYear.minusDays(182)
+        val startDateHalfThroughYear = TaxYear().end.minusDays(182)
         val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(100),
           taxablePay = Some(80), bonus = None, startDate = Some(startDateHalfThroughYear))
 
@@ -112,7 +110,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
       "an employment start date is supplied which falls in the current tax year and the annual amount is 0" in {
         val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(0),
-          taxablePay = Some(0), bonus = None, startDate = Some(TaxYearResolver.startOfCurrentTaxYear))
+          taxablePay = Some(0), bonus = None, startDate = Some(TaxYear().start))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -121,7 +119,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
       }
 
       "an employment start date is supplied which falls in the next tax year" in {
-        val startDateInNextTaxYear = TaxYearResolver.startOfNextTaxYear
+        val startDateInNextTaxYear = TaxYear().next.start
         val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(100),
         taxablePay = Some(80), bonus = None, startDate = Some(startDateInNextTaxYear))
 
@@ -133,7 +131,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
       "no annual pay or taxablePay amounts are supplied, but an employment start date is supplied" in {
         val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = None,
-          taxablePay = None, bonus = None, startDate = Some(TaxYearResolver.startOfCurrentTaxYear))
+          taxablePay = None, bonus = None, startDate = Some(TaxYear().start))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 

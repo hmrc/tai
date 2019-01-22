@@ -20,7 +20,6 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.time.TaxYearResolver
 
 case class TaxCodeSummary(taxCodeId: Int,
                           taxCode: String,
@@ -38,7 +37,7 @@ object TaxCodeSummary {
 
   def apply(taxCodeRecord: TaxCodeRecord, date:LocalDate): TaxCodeSummary = {
 
-    val taxYear = TaxYear(TaxYearResolver.taxYearFor(date))
+    val taxYear = TaxYear(date)
     val startDate =
       if (taxCodeRecord.dateOfCalculation.isBefore(taxYear.start)) {
         taxYear.start

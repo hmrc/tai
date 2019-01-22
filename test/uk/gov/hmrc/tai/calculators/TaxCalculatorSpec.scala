@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.model.{MarriageAllowance, Tax, TaxBand, TaxCodeComponent}
-import data.NpsData
 import org.joda.time.LocalDate
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsTax}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{Tax, TaxBand}
 import uk.gov.hmrc.tai.util.TaiConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 class TaxCalculatorSpec extends PlaySpec {
 
@@ -266,7 +265,7 @@ class TaxCalculatorSpec extends PlaySpec {
 
   "getStartDateInCurrentFinancialYear" should {
     "return financial year" when {
-      val startDateCY = TaxYearResolver.startOfCurrentTaxYear
+      val startDateCY = TaxYear().start
 
       "last year date is provided" in {
         val sut = SUT
