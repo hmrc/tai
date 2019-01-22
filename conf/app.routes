@@ -44,7 +44,6 @@ PUT     /:nino/tax-account/income/savings-investments/untaxed-interest/bank-acco
 GET     /:nino/tax-account/:year/income/tax-code-incomes                                                 @uk.gov.hmrc.tai.controllers.income.IncomeController.taxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 GET     /:nino/tax-account/:year/income                                                                  @uk.gov.hmrc.tai.controllers.income.IncomeController.income(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay    @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)
-# New endpoints - Luke
 GET     /:nino/tax-account/:year/income/:incomeType/status/:status                                       @uk.gov.hmrc.tai.controllers.income.IncomeController.matchedTaxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, incomeType: String, status: String)
 GET     /:nino/employments/years/:year/ceased                                                            @uk.gov.hmrc.tai.controllers.income.IncomeController.nonMatchingCeasedEmployments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
