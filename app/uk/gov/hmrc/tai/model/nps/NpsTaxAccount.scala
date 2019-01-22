@@ -101,7 +101,7 @@ case class NpsTaxAccount(nino: Option[String],
   private[nps] def getEmploymentCeasedDetail(npsEmployments : List[NpsEmployment]) = {
 
 
-    val minusOneDay = TaxYear().start.minusDays(1)
+    val minusOneDay = TaxYear().prev.end
     val minusOneYearAndOneDay = TaxYear().start.minusYears(1).minusDays(1)
     val minusTwoYearsAndOneDay = TaxYear().start.minusYears(2).minusDays(1)
 
