@@ -21,6 +21,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.Play
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
@@ -495,7 +496,7 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
   }
 
 
-  lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = ApplicationCrypto.JsonCrypto
+  lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(Play.current.configuration.underlying).JsonCrypto
   private val nino = new Generator(new Random).nextNino
   private val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)

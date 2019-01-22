@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
+import play.api.Play
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 import play.modules.reactivemongo.MongoDbConnection
@@ -36,7 +37,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
     with TimeToLive
     with MongoFormatter {
 
-  implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = ApplicationCrypto.JsonCrypto
+  implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(Play.current.configuration.underlying).JsonCrypto
 
   private val expireAfter: Long = defaultExpireAfter
   private val defaultKey = "TAI-DATA"

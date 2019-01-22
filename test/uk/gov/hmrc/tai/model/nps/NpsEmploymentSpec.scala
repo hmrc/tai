@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.model.nps
 
 import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
-import uk.gov.hmrc.time.TaxYearResolver
 
 class NpsEmploymentSpec extends PlaySpec {
 
@@ -48,8 +48,8 @@ class NpsEmploymentSpec extends PlaySpec {
   }
 
   val createSUT = NpsEmployment(
-    sequenceNumber = 1, startDate = NpsDate(TaxYearResolver.startOfCurrentTaxYear.minusDays(1)),
-    endDate = Some(NpsDate(TaxYearResolver.startOfNextTaxYear)),
+    sequenceNumber = 1, startDate = NpsDate(TaxYear().start.minusDays(1)),
+    endDate = Some(NpsDate(TaxYear().next.start)),
     taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAA"),
     employmentType = 1, employmentStatus = Some(1), worksNumber = Some("0000"),
     receivingJobseekersAllowance = Some(false),

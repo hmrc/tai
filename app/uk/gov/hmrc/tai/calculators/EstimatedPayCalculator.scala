@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.calculators
 import org.joda.time.{Days, LocalDate}
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.enums.PayFreq.PayFreq
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.util.TaiConstants
 
@@ -33,8 +34,8 @@ object EstimatedPayCalculator {
         days = payDetails.days.getOrElse(0)) + payDetails.bonus.getOrElse(BigDecimal(0)))
     val gross = payDetails.pay.map(amount => calculatePay(frequency = payDetails.paymentFrequency, pay = amount,
         days = payDetails.days.getOrElse(0)) + payDetails.bonus.getOrElse(BigDecimal(0)))
-    val inYear = payDetails.startDate.exists(uk.gov.hmrc.time.TaxYearResolver.fallsInThisTaxYear)
 
+    val inYear = payDetails.startDate.fold(false)(TaxYear().fallsInThisTaxYear(_))
 
     if(payDetails.startDate.isDefined && inYear){
       val apportioned = payDetails.startDate.map { startDate =>
@@ -66,7 +67,7 @@ object EstimatedPayCalculator {
   }
 
   def apportion(annualAmount : BigDecimal, startDate : LocalDate): BigDecimal = {
-    val startDateCY = uk.gov.hmrc.time.TaxYearResolver.startOfCurrentTaxYear
+    val startDateCY = TaxYear().start
     val startDateNY = startDateCY.plusDays(TaiConstants.DAYS_IN_YEAR)
     val workingStartDate = TaxCalculator.getStartDateInCurrentFinancialYear(startDate)
 

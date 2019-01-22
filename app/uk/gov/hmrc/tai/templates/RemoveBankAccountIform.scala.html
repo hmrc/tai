@@ -93,7 +93,7 @@
 
                 @if(viewmodel.bankAccountClosedInCurrentTaxYear) {
                 <tr>
-                    <td>Interest earned since 6 April @uk.gov.hmrc.time.TaxYearResolver.currentTaxYear</td>
+                    <td>Interest earned since 6 April @uk.gov.hmrc.tai.model.tai.TaxYear().year</td>
                     <td>@viewmodel.interestEarnedThisTaxYear.map(interest => s"£$interest").getOrElse("I do not know")</td>
                 </tr>
                 }

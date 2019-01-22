@@ -23,7 +23,6 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.CloseBankAccount
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.util.Random
 
@@ -91,7 +90,7 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYearResolver.currentTaxYear}"
+      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "£123.45"
     }
 
@@ -104,7 +103,7 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYearResolver.currentTaxYear}"
+      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "I do not know"
     }
 
@@ -125,14 +124,14 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
     "display ended section with interest not supplied and after current tax year" in {
 
-      val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, TaxYearResolver.endOfCurrentTaxYear.plusDays(1), None)
+      val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, TaxYear().end, None)
 
       val sut = uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(closeBankAccount)
       val doc = Jsoup.parse(sut.toString)
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYearResolver.currentTaxYear}"
+      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "I do not know"
     }
   }
@@ -142,7 +141,7 @@ class RemoveBankAccountIformSpec extends PlaySpec{
   private val personDetails = Person(Nino(nino.nino), "test", "tester", Some(dateOfBirth),
     Address("line1", "line2", "line3", "postcode", "country"))
 
-  private val startOfTaxYearCloseDate = TaxYearResolver.startOfCurrentTaxYear
+  private val startOfTaxYearCloseDate = TaxYear().start
 
   private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
   private val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, None)
