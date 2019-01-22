@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.benefits.GenericBenefit
 
 sealed trait TaxComponentType
 

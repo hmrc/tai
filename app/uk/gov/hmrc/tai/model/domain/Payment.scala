@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import com.github.nscala_time.time.Imports._
 import org.joda.time.LocalDate
+import com.github.nscala_time.time.Imports._
 
 case class Payment(
                     date: LocalDate,
@@ -27,7 +27,7 @@ case class Payment(
                     amount: BigDecimal,
                     taxAmount: BigDecimal,
                     nationalInsuranceAmount: BigDecimal,
-                    payFrequency: PaymentFrequency
+                    payFrequency : PaymentFrequency
                   ) extends Ordered[Payment] {
 
   def compare(that: Payment): Int = this.date compare that.date
