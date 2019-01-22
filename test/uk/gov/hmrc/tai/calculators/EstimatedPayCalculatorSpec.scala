@@ -27,8 +27,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
   "Estimated Pay Calculator" should {
 
-    "calculate the correct gross and net amount" ignore {
-
+    "calculate the correct gross and net amount" when {
       "monthly amount is entered" in {
         val payDetails = PayDetails(paymentFrequency = PayFreq.monthly, pay = Some(12), taxablePay = Some(10))
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
