@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model.{TaxBand, TaxCodeComponent, _}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.util.Random
 
@@ -137,7 +136,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val dateCYMinus2 = TaxYearResolver.startOfCurrentTaxYear
+        val dateCYMinus2 = TaxYear().start
 
         val npsEmployment = NpsEmployment(0, NpsDate(dateCYMinus2), Some(NpsDate(dateCYMinus2)), "", "", None, 0,
           receivingOccupationalPension = None, employmentStatus = None)
@@ -202,7 +201,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val dateCYMinus2 = TaxYearResolver.startOfCurrentTaxYear.minusYears(2)
+        val dateCYMinus2 = TaxYear().start.minusYears(2)
 
         val npsEmployment = NpsEmployment(0, NpsDate(dateCYMinus2), Some(NpsDate(dateCYMinus2)), "", "", None, 0,
           receivingOccupationalPension = Some(true), employmentStatus = Some(123))
@@ -220,7 +219,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val dateCYMinus2 = TaxYearResolver.startOfCurrentTaxYear.minusYears(1)
+        val dateCYMinus2 = TaxYear().start.minusYears(1)
 
         val npsEmployment = NpsEmployment(0, NpsDate(dateCYMinus2), Some(NpsDate(dateCYMinus2)), "", "", None, 0,
           receivingOccupationalPension = Some(true), employmentStatus = Some(123))
@@ -238,7 +237,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val dateCYMinus2 = TaxYearResolver.startOfCurrentTaxYear
+        val dateCYMinus2 = TaxYear().start
 
         val npsEmployment = NpsEmployment(0, NpsDate(dateCYMinus2), Some(NpsDate(dateCYMinus2)), "", "", None, 0,
           receivingOccupationalPension = Some(true), employmentStatus = Some(123))
@@ -255,7 +254,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val dateCYMinus3 = TaxYearResolver.startOfCurrentTaxYear.minusYears(3)
+        val dateCYMinus3 = TaxYear().start.minusYears(3)
 
         val npsEmployment = NpsEmployment(0, NpsDate(dateCYMinus3), Some(NpsDate(dateCYMinus3)), "", "", None, 0,
           receivingOccupationalPension = Some(true), employmentStatus = Some(123))

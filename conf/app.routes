@@ -47,6 +47,9 @@ PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:emplo
 GET     /:nino/tax-account/:year/income/:incomeType/status/:status                                       @uk.gov.hmrc.tai.controllers.income.IncomeController.matchedTaxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, incomeType: String, status: String)
 GET     /:nino/employments/years/:year/ceased                                                            @uk.gov.hmrc.tai.controllers.income.IncomeController.nonMatchingCeasedEmployments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
+#Expenses
+POST    /:nino/tax-account/:year/expenses/flat-rate-expenses                                   @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.updateFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
 #Coding Components
 GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
@@ -71,3 +74,5 @@ DELETE  /session-cache                                                          
 GET     /:nino/tax-account/tax-code-change/exists                                               @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.hasTaxCodeChanged(nino: Nino)
 GET     /:nino/tax-account/tax-code-change                                                      @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeChange(nino: Nino)
 GET     /:nino/tax-account/tax-code-mismatch                                                    @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.taxCodeMismatch(nino: Nino)
+GET     /:nino/tax-account/:year/tax-code/latest                                                @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeController.mostRecentTaxCodeRecords(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/tax-account/tax-free-amount-comparison                                           @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeIabdComparisonController.taxCodeChangeIabdComparison(nino: Nino)

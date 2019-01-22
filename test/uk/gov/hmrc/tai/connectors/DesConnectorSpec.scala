@@ -34,7 +34,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesData}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.duration._
@@ -426,6 +426,71 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       }
     }
 
+
+    "updateExpensesDataToDes" should {
+
+      "return a OK" when {
+        "updating expenses data to des" in {
+          val mockHttpClient = mock[HttpClient]
+
+          when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+            .thenReturn(Future.successful(HttpResponse(Status.OK)))
+
+          val mockMetrics = mock[Metrics]
+          when(mockMetrics.startTimer(any()))
+            .thenReturn(mock[Timer.Context])
+
+          val sut: DesConnector = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+
+          val result = Await.result(sut.updateExpensesDataToDes(
+            nino = Nino(nino),
+            year = taxYear,
+            iabdType = iabdType,
+            version = 1,
+            expensesData = List(
+              IabdUpdateExpensesData(
+                201800001,
+                100
+              )
+            )
+          )(hc), 5 seconds)
+
+          result.status mustBe Status.OK
+        }
+      }
+
+      "return a Internal Server Error" when {
+        "updating expenses data to des" in {
+          val mockHttpClient = mock[HttpClient]
+
+          when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+            .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR)))
+
+          val mockMetrics = mock[Metrics]
+          when(mockMetrics.startTimer(any())).thenReturn(mock[Timer.Context])
+
+          val sut: DesConnector = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+
+          val result = sut.updateExpensesDataToDes(
+            nino = Nino(nino),
+            year = taxYear,
+            iabdType = iabdType,
+            version = 1,
+            expensesData = List(
+              IabdUpdateExpensesData(
+                201800001,
+                100
+              )
+            )
+          )(hc)
+
+          val ex: HttpException = the[HttpException] thrownBy Await.result(result, 5 seconds)
+          ex.responseCode mustBe Status.INTERNAL_SERVER_ERROR
+
+        }
+      }
+
+    }
   }
 
   private def createSUT(httpClient: HttpClient,

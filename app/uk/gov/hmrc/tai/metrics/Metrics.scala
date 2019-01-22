@@ -45,13 +45,16 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
     APITypes.DesIabdSpecificAPI -> "des-iabd-specific",
     APITypes.DesIabdUpdateEstPayManualAPI -> "des-iabd-estPay-manual",
     APITypes.DesIabdUpdateEstPayAutoAPI -> "des-iabd-estPay-auto",
+    APITypes.DesIabdUpdateFlatRateExpensesAPI -> "des-iabd-flat-rate-expenses",
     APITypes.PdfServiceAPI -> "pdf-service",
     APITypes.CompanyCarAPI -> "company-car",
     APITypes.FusCreateEnvelope -> "create-envelope",
     APITypes.FusUploadFile -> "file-upload",
     APITypes.FusCloseEnvelope -> "close-envelope",
     APITypes.BbsiAPI -> "bbsi",
-    APITypes.TaxCodeChangeAPI -> "tax-code-change")
+    APITypes.TaxCodeChangeAPI -> "tax-code-change",
+    APITypes.TaxAccountHistoryAPI -> "tax-account-history"
+  )
 
 
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()

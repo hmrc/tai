@@ -26,26 +26,27 @@ import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
 import scala.concurrent.Future
 
 class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
                                         taxCodeChangeService: TaxCodeChangeService,
-                                        toggleConfig: FeatureTogglesConfig) extends BaseController  {
+                                        toggleConfig: FeatureTogglesConfig) extends BaseController {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
-        if (toggleConfig.taxCodeChangeEnabled) {
-          taxCodeChangeService.hasTaxCodeChanged(nino).map{
-            taxCodeChanged => {
-              Ok(Json.toJson(taxCodeChanged))
-            }
+      if (toggleConfig.taxCodeChangeEnabled) {
+        taxCodeChangeService.hasTaxCodeChanged(nino).map {
+          taxCodeChanged => {
+            Ok(Json.toJson(taxCodeChanged))
           }
         }
-        else{
-          Future.successful(Ok(Json.toJson(false)))
-        }
+      }
+      else {
+        Future.successful(Ok(Json.toJson(false)))
+      }
   }
 
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async {
@@ -60,7 +61,21 @@ class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
       taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
         Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
       } recover {
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" → ex.getMessage)))
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
       }
   }
+
+  def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
+    implicit request =>
+
+      val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
+
+      latestTaxCodeRecords.map { records =>
+        Ok(Json.toJson(ApiResponse(records, Seq.empty)))
+      } recover {
+        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+
+  }
+
 }

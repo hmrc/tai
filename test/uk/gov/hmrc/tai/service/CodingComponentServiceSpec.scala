@@ -44,15 +44,32 @@ class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
         when(mockIabdRepository.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(codingComponentList))
 
-        val sut = createSUT(mockIabdRepository)
+        val service = testCodingComponentService(mockIabdRepository)
 
-        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = Await.result(service.codingComponents(nino, TaxYear()), 5 seconds)
         result mustBe codingComponentList
       }
     }
   }
 
-  val codingComponentList = Seq[CodingComponent](
+  "codingComponentsForId" should {
+    "return Sequence of Coding Components from the coding component repository" in {
+      val mockIabdRepository = mock[CodingComponentRepository]
+
+      val expected = Seq(CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"))
+
+      when(mockIabdRepository.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(any()))
+        .thenReturn(Future.successful(expected))
+
+      val service = testCodingComponentService(mockIabdRepository)
+
+      val result = Await.result(service.codingComponentsForTaxCodeId(nino, 1), 5.seconds)
+
+      result mustBe expected
+    }
+  }
+
+  private val codingComponentList = Seq[CodingComponent](
     CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
     CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description"),
     CodingComponent(Commission, Some(125), 777, "some other description"),
@@ -64,5 +81,5 @@ class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
-  private def createSUT(iabdRepository: CodingComponentRepository) = new CodingComponentService(iabdRepository)
+  private def testCodingComponentService(iabdRepository: CodingComponentRepository) = new CodingComponentService(iabdRepository)
 }

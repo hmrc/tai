@@ -21,6 +21,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain.income.{Incomes, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, income}
@@ -50,64 +51,45 @@ class IncomeService @Inject()(employmentService: EmploymentService,
   }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
-                         (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
-    type IncomeUpdateForYear = (TaxYear, Int) => Future[HodUpdateResponse]
-    val taxCodeAmountUpdater: IncomeUpdateForYear = taxAccountRepository.updateTaxCodeAmount(nino, _, _, employmentId, NewEstimatedPay.code, amount)
-
-    val auditEventForIncomeUpdate: TaxYear => Unit = (taxYear: TaxYear) => {
+    val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) => {
       auditor.sendDataEvent(
         transactionName = "Update Multiple Employments Data",
         detail = Map("nino" -> nino.value,
-                     "year" -> taxYear.toString,
-                     "employmentId" -> employmentId.toString,
-                     "newAmount" -> amount.toString))
+          "year" -> year.toString,
+          "employmentId" -> employmentId.toString,
+          "newAmount" -> amount.toString,
+        "currentAmount" -> currentAmount))
     }
 
+    for {
+      incomeAmount <- incomeAmountForEmploymentId(nino, year, employmentId)
+      personDetails <- taxAccountService.personDetails(nino)
+      incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, personDetails.version, amount)
+    } yield {
 
-    taxAccountService.personDetails(nino) flatMap { root =>
-      if (year == TaxYear().next) {
-        updateTaxCodeIncomeCYPlusOne(nino, year, root.version + 1, taxCodeAmountUpdater, auditEventForIncomeUpdate)
-      } else {
-        updateYearAndYearPlusOneTaxCodeIncome(nino, year, root.version, taxCodeAmountUpdater, auditEventForIncomeUpdate) map { response =>
-          auditEventForIncomeUpdate(year)
-          response
-        }
-      }
+      if(incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+      incomeUpdateResponse
     }
-
-
   }
 
-  private def updateYearAndYearPlusOneTaxCodeIncome(nino: Nino,
-                                                    year: TaxYear,
-                                                    rootVersion: Int,
-                                                    taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
-                                                    auditEvent: TaxYear => Unit)
-                                                   (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
-
-      taxCodeAmountUpdater(year, rootVersion) flatMap {
-        case HodUpdateSuccess => {
-          taxAccountService.invalidateTaiCacheData()
-          updateTaxCodeIncomeCYPlusOne(nino, year.next, rootVersion + 1, taxCodeAmountUpdater, _ => ())
-        }
-        case HodUpdateFailure => Future.successful(IncomeUpdateFailed("Hod update failed for CY update"))
-      }
+  private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
+                                 (implicit hc: HeaderCarrier): Future[Option[String]] = {
+    taxCodeIncomes(nino, year) map { taxCodeIncomes =>
+      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
+    }
   }
 
-  private def updateTaxCodeIncomeCYPlusOne(nino: Nino,
-                                           year: TaxYear,
-                                           version: Int,
-                                           taxCodeAmountUpdater: (TaxYear, Int) => Future[HodUpdateResponse],
-                                           auditEvent: TaxYear => Unit)
-                                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
-
-    taxCodeAmountUpdater(year, version) map {
-      case HodUpdateSuccess => {
-        auditEvent(year)
-        IncomeUpdateSuccess
+  private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)
+                                 (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+    for {
+      updateAmountResult <- taxAccountRepository.updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
+    } yield {
+      updateAmountResult match {
+        case HodUpdateSuccess => IncomeUpdateSuccess
+        case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
       }
-      case HodUpdateFailure => IncomeUpdateFailed("Hod update failed for CY+1 update")
     }
   }
 

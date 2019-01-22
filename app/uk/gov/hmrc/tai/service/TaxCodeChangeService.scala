@@ -21,16 +21,16 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
-import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeRecordWithEndDate}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.time.TaxYearResolver
+import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
                                          auditor: Auditor,
@@ -49,8 +49,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         Future.successful(false)
       }
     }.recover {
-      case exception: Exception =>
-        Logger.debug("Could not evaluate tax code history")
+      case NonFatal(e) =>
+        Logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
         false
     }
 
@@ -60,7 +60,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
 
-      val taxCodeRecordList = taxCodeHistory.taxCodeRecord
+      val taxCodeRecordList = taxCodeHistory.taxCodeRecords
 
       if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
 
@@ -72,14 +72,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
         val currentTaxCodeChanges = currentRecords.map(
           currentRecord =>
-            addEndDate(TaxYearResolver.endOfCurrentTaxYear, currentRecord)
+            TaxCodeSummary(currentRecord, TaxYear().end)
         )
 
         val previousTaxCodeChanges = previousRecords.map(
           taxCodeRecord =>
-            addEndDate(
-              previousEndDate,
-              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation))
+            TaxCodeSummary(
+              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation)),
+              previousEndDate
             )
         )
 
@@ -90,17 +90,21 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         taxCodeChange
 
       } else if(taxCodeRecordList.size == 1) {
-        Logger.warn(s"Only one tax code record returned for $nino")
-        TaxCodeChange(Seq(addEndDate(TaxYearResolver.endOfCurrentTaxYear, taxCodeRecordList.head)),Seq())
+        Logger.warn(s"Only one tax code record returned for $nino" )
+
+        TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)),Seq())
+      } else if(taxCodeRecordList.size == 0) {
+        Logger.warn(s"Zero tax code records returned for $nino" )
+        TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {
-        Logger.warn(s"No tax code records returned for $nino")
-        TaxCodeChange(Seq.empty[TaxCodeRecordWithEndDate], Seq.empty[TaxCodeRecordWithEndDate])
+        Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
+        TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       }
     }
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-    (for {
+    val futureMismatch = for {
       unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes <- taxCodeChange(nino)
     } yield {
@@ -109,18 +113,30 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
       TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
-    }) recover {
-      case exception =>
-        Logger.warn(s"Failed to Match for $nino with exception:${exception.getMessage}")
-        throw new BadRequestException(exception.getMessage)
     }
+
+    futureMismatch.onFailure {
+      case NonFatal(exception) =>
+        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+    }
+
+    futureMismatch
   }
 
-  private def addEndDate(date: LocalDate, taxCodeRecord: TaxCodeRecord): TaxCodeRecordWithEndDate ={
-    TaxCodeRecordWithEndDate(
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, taxCodeRecord.dateOfCalculation, date,
-      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
-    )
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeSummary]] = {
+
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear).map { taxCodeHistory =>
+
+      val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
+
+      groupedTaxCodeRecords.values.flatMap {
+        taxCodeRecords =>
+          val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)
+          val latestTaxCodeRecords = sortedTaxCodeRecords.filter(_.dateOfCalculation.isEqual(sortedTaxCodeRecords.head.dateOfCalculation))
+          latestTaxCodeRecords.map(TaxCodeSummary(_, taxYear.end))
+      }.toSeq
+
+    }
   }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear): Future[TaxCodeHistory] = {
@@ -128,8 +144,10 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   private def previousStartDate(date: LocalDate): LocalDate = {
-    if (date isBefore TaxYearResolver.startOfCurrentTaxYear) {
-      TaxYearResolver.startOfCurrentTaxYear
+    val startOfCurrentTaxYear = TaxYear().start
+
+    if (date isBefore startOfCurrentTaxYear) {
+      startOfCurrentTaxYear
     } else {
       date
     }
@@ -141,9 +159,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       "numberOfCurrentTaxCodes" -> taxCodeChange.current.size.toString,
       "numberOfPreviousTaxCodes" -> taxCodeChange.previous.size.toString,
       "dataOfTaxCodeChange" -> taxCodeChange.latestTaxCodeChangeDate.toString,
-      "primaryCurrentTaxCode" -> taxCodeChange.primaryCurrentTaxCode,
+      "primaryCurrentTaxCode" -> taxCodeChange.primaryCurrentTaxCode.getOrElse(""),
       "secondaryCurrentTaxCodes" -> taxCodeChange.secondaryCurrentTaxCodes.mkString(","),
-      "primaryPreviousTaxCode" -> taxCodeChange.primaryPreviousTaxCode,
+      "primaryPreviousTaxCode" -> taxCodeChange.primaryPreviousTaxCode.getOrElse(""),
       "secondaryPreviousTaxCodes" -> taxCodeChange.secondaryPreviousTaxCodes.mkString(","),
       "primaryCurrentPayrollNumber" -> taxCodeChange.primaryCurrentPayrollNumber.getOrElse(""),
       "secondaryCurrentPayrollNumbers" -> taxCodeChange.secondaryCurrentPayrollNumbers.mkString(","),
@@ -158,7 +176,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
     lazy val latestDate = calculationDates.min
 
-    calculationDates.length >= 2 && TaxYearResolver.fallsInThisTaxYear(latestDate)
+    calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
   }
 }
 
@@ -170,5 +188,7 @@ trait TaxCodeChangeService {
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
+
+  def latestTaxCodes(nino:Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[TaxCodeSummary]]
 
 }

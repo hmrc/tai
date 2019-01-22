@@ -22,12 +22,10 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.time.TaxYearResolver
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[IncomeHelper].toInstance(IncomeHelper).in[Singleton],
-    bind[TaxYearResolver].toInstance(TaxYearResolver).in[Singleton],
     bind(classOf[AuthorisedFunctions]).to(classOf[MicroserviceAuthorisedFunctions]).eagerly()
   )
 }

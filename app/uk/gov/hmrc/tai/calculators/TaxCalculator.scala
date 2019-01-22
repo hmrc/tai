@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.calculators
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsTax}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.math.BigDecimal.RoundingMode
@@ -91,9 +92,9 @@ trait TaxCalculator {
   }
 
   def getStartDateInCurrentFinancialYear(startDate: LocalDate): LocalDate = {
-    val startDateCY = uk.gov.hmrc.time.TaxYearResolver.startOfCurrentTaxYear
+    val startDateCY = TaxYear().start
 
-    if (uk.gov.hmrc.time.TaxYearResolver.fallsInThisTaxYear(startDate)) {
+    if (TaxYear().fallsInThisTaxYear(startDate)) {
       startDate
     } else {
       startDateCY

@@ -31,4 +31,8 @@ class CodingComponentService @Inject()(codingComponentRepository: CodingComponen
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     codingComponentRepository.codingComponents(nino, year)
   }
+
+  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
+    codingComponentRepository.codingComponentsForTaxCodeId(nino, taxCodeId)
+  }
 }

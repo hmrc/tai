@@ -26,8 +26,9 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
-import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
+import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
+import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
@@ -93,9 +94,26 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           result mustBe HodUpdateFailure
         }
       }
-
     }
 
+    "Tax Account History" must {
+      "return a Success[JsValue] for valid json" in {
+        val taxCodeId = 1
+
+        val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
+
+        val url = new URL(taxAccountUrlConfig.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(ok(json.toString))
+        )
+
+        val connector = createSUT()
+        val result = Await.result(connector.taxAccountHistory(nino, taxCodeId), 5.seconds)
+
+        result mustEqual json
+      }
+    }
 
     "toggled to use DES" must {
 

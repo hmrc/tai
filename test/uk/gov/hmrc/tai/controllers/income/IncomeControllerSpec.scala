@@ -19,11 +19,11 @@ package uk.gov.hmrc.tai.controllers.income
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsNull, Json}
+import play.api.libs.json.{JsArray, JsNull, JsValue, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -37,7 +37,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
-import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
+import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
@@ -50,17 +50,8 @@ class IncomeControllerSpec extends PlaySpec
   with MockAuthenticationPredicate
   with ApiFormats {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  private val nino = new Generator(new Random).nextNino
-
-  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
-
-  private def createSUT(incomeService: IncomeService = mock[IncomeService],
-                        taxAccountService: TaxAccountService = mock[TaxAccountService],
-                        employmentService: EmploymentService = mock[EmploymentService],
-                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, taxAccountService, employmentService, authentication)
-
+  val employmentId = 1
+  val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
   "untaxedInterest" must {
 
     "return NOT AUTHORISED" when {
@@ -345,44 +336,45 @@ class IncomeControllerSpec extends PlaySpec
       status(result) mustBe OK
 
       val expectedJson =
-        Json.parse("""
-          |{
-          |    "data":[
-          |       {
-          |          "taxCodeIncome":{
-          |             "componentType":"PensionIncome",
-          |             "employmentId":1,
-          |             "amount":1100,
-          |             "description":"PensionIncome",
-          |             "taxCode":"1150L",
-          |             "name":"Employer1",
-          |             "basisOperation":"Week1Month1BasisOperation",
-          |             "status":"Live",
-          |             "inYearAdjustmentIntoCY":0,
-          |             "totalInYearAdjustment":0,
-          |             "inYearAdjustmentIntoCYPlusOne":0
-          |          },
-          |          "employment":{
-          |             "name":"company name",
-          |             "payrollNumber":"888",
-          |             "startDate":"2019-05-26",
-          |             "annualAccounts":[
-          |
-          |             ],
-          |             "taxDistrictNumber":"",
-          |             "payeNumber":"",
-          |             "sequenceNumber":1,
-          |             "cessationPay":100,
-          |             "hasPayrolledBenefit":false,
-          |             "receivingOccupationalPension":true
-          |          }
-          |       }
-          |    ],
-          |    "links":[
-          |
-          |    ]
-          | }
-        """.stripMargin)
+        Json.parse(
+          """
+            |{
+            |    "data":[
+            |       {
+            |          "taxCodeIncome":{
+            |             "componentType":"PensionIncome",
+            |             "employmentId":1,
+            |             "amount":1100,
+            |             "description":"PensionIncome",
+            |             "taxCode":"1150L",
+            |             "name":"Employer1",
+            |             "basisOperation":"Week1Month1BasisOperation",
+            |             "status":"Live",
+            |             "inYearAdjustmentIntoCY":0,
+            |             "totalInYearAdjustment":0,
+            |             "inYearAdjustmentIntoCYPlusOne":0
+            |          },
+            |          "employment":{
+            |             "name":"company name",
+            |             "payrollNumber":"888",
+            |             "startDate":"2019-05-26",
+            |             "annualAccounts":[
+            |
+            |             ],
+            |             "taxDistrictNumber":"",
+            |             "payeNumber":"",
+            |             "sequenceNumber":1,
+            |             "cessationPay":100,
+            |             "hasPayrolledBenefit":false,
+            |             "receivingOccupationalPension":true
+            |          }
+            |       }
+            |    ],
+            |    "links":[
+            |
+            |    ]
+            | }
+          """.stripMargin)
 
       contentAsJson(result) mustBe expectedJson
     }
@@ -506,7 +498,7 @@ class IncomeControllerSpec extends PlaySpec
       None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
 
     "return list of non matching ceased employments when some employments do have an end date" in {
-      val employments = Seq(employment, employment.copy(sequenceNumber = 1, endDate =  Some(new LocalDate(TaxYear().next.year, 8, 10))))
+      val employments = Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
@@ -523,7 +515,7 @@ class IncomeControllerSpec extends PlaySpec
       status(result) mustBe OK
 
       val expectedJson = Json.obj(
-        "data" -> Json.arr(employment.copy(sequenceNumber = 1, endDate =  Some(new LocalDate(TaxYear().next.year, 8, 10)))),
+        "data" -> Json.arr(employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10)))),
         "links" -> Json.arr()
       )
 
@@ -700,101 +692,83 @@ class IncomeControllerSpec extends PlaySpec
       }
     }
 
-    "return Ok" when {
+    "return Ok and invalidate the cache" when {
       "a valid update amount is provided" in {
+        val wantedNumberOfInvocations = 1
+        val mockTaxAccountService = generateMockAccountServiceWithAnyResponse
+        val SUT = setup(Future.successful(IncomeUpdateSuccess), mockTaxAccountService)
 
-        val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(Future.successful(IncomeUpdateSuccess))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe OK
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
 
-    "return a bad request" when {
+    "return a bad request and do not invalidate the cache" when {
       "an invalid update amount is provided" in {
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.successful(InvalidAmount("")), mockTaxAccountService)
 
-        val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(Future.successful(InvalidAmount("")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
 
-    "return internal server error" when {
+    "return internal server error and do not invalidate the cache" when {
 
       "income update exception has been thrown" in {
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.successful(IncomeUpdateFailed("Failed")), mockTaxAccountService)
 
-        val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(Future.successful(IncomeUpdateFailed("Failed")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeRequest)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
 
       "any exception has been thrown" in {
-
-        val employmentId = 1
-
-        val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-          .withHeaders(("content-type", "application/json"))
-
-        val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(Future.failed(new RuntimeException("Error")))
-
-        val mockTaxAccountService = mock[TaxAccountService]
-        when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
-
-        val SUT = createSUT(mockIncomeService, mockTaxAccountService)
-
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeRequest)
+        val wantedNumberOfInvocations = 0
+        val SUT = setup(Future.failed(new RuntimeException("Error")), mockTaxAccountService)
+        val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-
+        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
+  }
+
+  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+  private val nino = new Generator(new Random).nextNino
+
+  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
+
+  private def createSUT(incomeService: IncomeService = mock[IncomeService],
+                        taxAccountService: TaxAccountService = mock[TaxAccountService],
+                        employmentService: EmploymentService = mock[EmploymentService],
+                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new IncomeController(incomeService, taxAccountService, employmentService, authentication)
+
+  private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
+    val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
+    FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
+      .withHeaders(("content-type", "application/json"))
+  }
+
+  private def generateMockAccountServiceWithAnyResponse: TaxAccountService = {
+    val mockTaxAccountService = mock[TaxAccountService]
+    when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
+    mockTaxAccountService
+  }
+
+  private def setup(response: Future[IncomeUpdateResponse], mockTaxAccountService: TaxAccountService): IncomeController = {
+    val mockIncomeService: IncomeService = {
+      val mockIncomeService: IncomeService = mock[IncomeService]
+      when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)
+      mockIncomeService
+    }
+    createSUT(mockIncomeService, mockTaxAccountService)
   }
 }

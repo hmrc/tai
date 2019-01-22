@@ -24,14 +24,14 @@ import uk.gov.hmrc.domain.Nino
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.SessionData
+import uk.gov.hmrc.tai.model.{SessionData, Tax}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
 class TaiController @Inject()(taxAccountService: TaxAccountService,
@@ -49,8 +49,9 @@ class TaiController @Inject()(taxAccountService: TaxAccountService,
 
   def taiData(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request => {
+
       for {
-        sessionData <- taxAccountService.taiData(nino, TaxYearResolver.currentTaxYear)
+        sessionData <- taxAccountService.taiData(nino, TaxYear().start.getYear())
       } yield Ok(Json.toJson(sessionData))
     }recoverWith {
       case NpsError(body, NOT_FOUND) =>

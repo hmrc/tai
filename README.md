@@ -39,6 +39,7 @@ API
 | ```/tai/:nino/tax-account/:year/total-tax ```  | GET | The end point fetches the total tax values for annual tax account [More...](docs/taxaccount/total-tax.md) |
 | ```/tai/:nino/tax-account/tax-code-change/exists ```  | GET | The end point returns a boolean which indicates if there has been a tax code change in the tax year [More...](docs/taxaccount/tax-code-change-exists.md) |
 | ```/tai/:nino/tax-account/tax-code-change ```  | GET | The end point returns details of the current and previous operated tax codes for a given nino [More...](docs/taxaccount/tax-code-change.md) |
+| ```/tai/:nino/tax-account/tax-free-amount-comparison ```  | GET | The end point returns the current and previous IABD information relating to Income Sources and Total Liabilities for a given nino [More...](docs/taxaccount/tax-free-amount-comparison.md) |
 
 Deprecated API Endpoints (Not advised to use)
 ---

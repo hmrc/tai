@@ -148,6 +148,25 @@ class TaxAccountRepositorySpec extends PlaySpec
     }
   }
 
+  "taxAccountForTaxCodeId" should {
+    "return json from the taxAccountHistoryConnector" in {
+      val taxAccountConnector = mock[TaxAccountConnector]
+
+      val taxCodeId = 1
+
+      val repository = createSUT(taxAccountConnector = taxAccountConnector)
+
+      val jsonResponse = Future.successful(Json.obj())
+
+      when(taxAccountConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        .thenReturn(jsonResponse)
+
+      val result = repository.taxAccountForTaxCodeId(nino, taxCodeId)
+
+      result mustEqual jsonResponse
+    }
+  }
+
   private def randomNino: Nino = new Generator(new Random).nextNino
 
   private val taxAccountJsonResponse = Json.obj(

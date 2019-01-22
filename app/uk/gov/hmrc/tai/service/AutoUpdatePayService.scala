@@ -34,7 +34,6 @@ import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai._
 import uk.gov.hmrc.tai.util.TaiConstants
 import uk.gov.hmrc.tai.util.TaiConstants._
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -118,8 +117,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     def isCeasedEmploymentWithCessationPay(x: NpsEmployment): Boolean =
       !x.employmentStatus.contains(Live.code) &&
       x.cessationPayThisEmployment.exists(_ > 0) &&
-      x.endDate.exists(i => TaxYearResolver.fallsInThisTaxYear(i.localDate)) &&
-      ceaseEmploymentAmountDifferent(x, estimatedPays)
+      x.endDate.exists(i => TaxYear().withinTaxYear(i.localDate)) && ceaseEmploymentAmountDifferent(x, estimatedPays)
 
     employments
       .filter(isCeasedEmploymentWithCessationPay)

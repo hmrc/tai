@@ -31,15 +31,16 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
-import uk.gov.hmrc.tai.model.api.TaxCodeChange
-import uk.gov.hmrc.tai.service.TaxCodeChangeService
+import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord, api}
+import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.TaxCodeChangeServiceImpl
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants{
+class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -94,20 +95,21 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
   }
 
   "taxCodeChange" should {
-    "return given nino's tax code history" in {
+    "respond with OK and return given nino's tax code history" in {
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeRecordWithEndDate("b", Cumulative, date, date.minusDays(1), "Employer 1",
+      val currentRecord = api.TaxCodeSummary(1, "b", Cumulative, date, date.minusDays(1), "Employer 1",
         Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeRecordWithEndDate("a", Cumulative, date, date.minusDays(1), "Employer 2",
+      val previousRecord = api.TaxCodeSummary(2, "a", Cumulative, date, date.minusDays(1), "Employer 2",
         Some("67890"), pensionIndicator = false, primary = true)
       when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
         Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.arr(Json.obj("taxCode" -> "b",
+          "current" -> Json.arr(Json.obj("taxCodeId" -> 1,
+                                  "taxCode" -> "b",
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
@@ -115,7 +117,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
                                   "payrollNumber" -> "12345",
                                   "pensionIndicator" -> false,
                                   "primary" -> true)),
-          "previous" -> Json.arr(Json.obj("taxCode" -> "a",
+          "previous" -> Json.arr(Json.obj("taxCodeId" -> 2,
+                                  "taxCode" -> "a",
                                   "basisOfOperation" -> Cumulative,
                                   "startDate" -> date.toString,
                                   "endDate" -> date.minusDays(1).toString,
@@ -128,6 +131,27 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val response = controller.taxCodeChange(testNino)(FakeRequest())
 
+      contentAsJson(response) mustEqual expectedResponse
+    }
+
+    "respond with OK and give an empty sequence of taxCodeRecords when no tax code records are found" in {
+
+      val testNino = ninoGenerator
+
+      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
+        Future.successful(TaxCodeChange(Seq.empty, Seq.empty)))
+
+      val response = controller.taxCodeChange(testNino)(FakeRequest())
+
+      val expectedResponse = Json.obj(
+        "data" -> Json.obj(
+          "current" -> Json.arr(),
+          "previous" -> Json.arr()
+        ),
+        "links" -> Json.arr()
+      )
+
+      status(response) mustBe OK
       contentAsJson(response) mustEqual expectedResponse
     }
   }
@@ -183,15 +207,74 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
-        status(result) mustEqual 400
+        status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
 
   }
 
+  "mostRecentTaxCodeRecords" should {
+
+    val nino = ninoGenerator
+
+    "respond with OK" when {
+      "given valid nino and year" in {
+
+        when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(Seq(
+            TaxCodeSummary(
+              1,
+              "code",
+              "Cumulative",
+              LocalDate.now(),
+              LocalDate.now().plusDays(1),
+              "Employer 1",
+              Some("1234"),
+              false,
+              true
+            )
+          )))
+
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
+
+        val json = Json.obj(
+          "data" -> Json.arr(
+            Json.obj(
+              "taxCodeId" -> 1,
+              "taxCode" -> "code",
+              "basisOfOperation" -> "Cumulative",
+              "startDate" -> LocalDate.now(),
+              "endDate" -> LocalDate.now().plusDays(1),
+              "employerName" -> "Employer 1",
+              "payrollNumber" -> "1234",
+              "pensionIndicator" -> false,
+              "primary" -> true
+            )
+          ),
+          "links" -> Json.arr()
+        )
+
+        status(result) mustEqual OK
+        contentAsJson(result) mustEqual json
+
+      }
+    }
+    "respond with BAD_REQUEST" when {
+      "a bad request exception has occurred" in {
+        when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
+          .thenReturn(Future.failed(new BadRequestException("Error")))
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        status(result) mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual """{"reason":"Error"}"""
+      }
+    }
+  }
+
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
-  val taxCodeService: TaxCodeChangeService = mock[TaxCodeChangeService]
+  val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
 
   private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, mockConfig)
   private def ninoGenerator = new Generator(new Random).nextNino

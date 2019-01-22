@@ -21,18 +21,16 @@ import play.api.libs.json.Reads.{minLength, _}
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
 
 
-case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
-  def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecord.filter(_.operatedTaxCode)
+case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
+  def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecords.filter(_.operatedTaxCode)
 }
 
 object TaxCodeHistory {
 
   implicit val reads: Reads[TaxCodeHistory] = (
     (JsPath \ "nino").read[String] and
-      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]](minLength[Seq[TaxCodeRecord]](1))
+      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
     )(TaxCodeHistory.apply _)
 
   implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
 }
-
-
