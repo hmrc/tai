@@ -61,36 +61,26 @@ class IncomeController @Inject()(incomeService: IncomeService,
       } recoverWith taxAccountErrorHandler
   }
 
-  def liveMatchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: String): Action[AnyContent] = authentication.async {
+  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: String, status: String): Action[AnyContent] = authentication.async {
     implicit request =>
-      (for {
-        taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
-        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = taxCodeIncomes.filter(income => income.status == Live && income.componentType.toString == incomeType)
-        employments: Seq[Employment] <-
-          if (filteredTaxCodeIncomes.isEmpty) { Future.successful(Seq.empty[Employment]) }
-          else { employmentService.employments(nino, year) }
-        result: Seq[IncomeSource] = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
-      } yield (result: Seq[IncomeSource]) match {
-        case Seq() => NotFound
-        case _ => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-      }) recoverWith taxAccountErrorHandler
-  }
 
-  private def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
-    employments.flatMap { emp =>
-      filteredTaxCodeIncomes.flatMap(income =>
-        income.employmentId.fold(Seq.empty[IncomeSource]) {
-          id => if(id == emp.sequenceNumber) Seq(IncomeSource(income, emp)) else Seq.empty[IncomeSource]
+      def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
+        employments.flatMap { emp =>
+          filteredTaxCodeIncomes.flatMap(income =>
+            income.employmentId.fold(Seq.empty[IncomeSource]) {
+              id => if (id == emp.sequenceNumber) Seq(IncomeSource(income, emp)) else Seq.empty[IncomeSource]
+            }
+          )
         }
-      )
-    }
 
-  def ceasedMatchingIncomeSourcesForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
-    implicit request =>
+      def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] = {
+        if (incomeStatus == Live.toString) { taxCodeIncomes.filter(income => income.status == Live && income.componentType.toString == incomeType) }
+        else { taxCodeIncomes.filter(income => income.status != Live && income.componentType.toString == incomeType) }
+      }
 
       (for {
         taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
-        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = taxCodeIncomes.filter(income => income.status != Live && income.componentType == EmploymentIncome)
+        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = filterTaxCodeIncomes(taxCodeIncomes, status)
         employments: Seq[Employment] <-
           if (filteredTaxCodeIncomes.isEmpty) { Future.successful(Seq.empty[Employment]) }
           else { employmentService.employments(nino, year) }
@@ -106,7 +96,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
 
       def filterNonMatchingCeasedEmploymentsWithEndDate(employments: Seq[Employment], taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
         employments
-          .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.isDefined && tci.employmentId.get == emp.sequenceNumber))
+          .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
           .filter(_.endDate.isDefined)
 
       (for {
