@@ -25,16 +25,18 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
+import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeConnector,
                                          auditor: Auditor,
-                                         incomeService: IncomeService) extends TaxCodeChangeService {
+                                         incomeService: IncomeService) extends TaxCodeChangeService with TaxCodeHistoryConstants {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] = {
 
@@ -104,15 +106,45 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
   }
 
   def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
-    val futureMismatch = for {
-      unconfirmedTaxCodes <- incomeService.taxCodeIncomes(nino, TaxYear())
-      confirmedTaxCodes <- taxCodeChange(nino)
-    } yield {
-      val unconfirmedTaxCodeList = unconfirmedTaxCodes.map(taxCodeIncome => taxCodeIncome.taxCode).sorted
-      val confirmedTaxCodeList = confirmedTaxCodes.current.map(_.taxCode).sorted
-      val mismatch = unconfirmedTaxCodeList != confirmedTaxCodeList
 
-      TaxCodeMismatch(mismatch, unconfirmedTaxCodeList , confirmedTaxCodeList)
+    val futureMismatch = for {
+      unconfirmedTaxCodes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, TaxYear())
+      confirmedTaxCodes: TaxCodeChange <- taxCodeChange(nino)
+    } yield {
+
+      val unconfirmedTaxCodeList: Seq[String] = unconfirmedTaxCodes.map(taxCodeIncome => {
+        val taxCode = taxCodeIncome.taxCode
+        val basis = taxCodeIncome.basisOperation
+
+        if (basis == Week1Month1BasisOperation) {
+          taxCode + "X"
+        } else {
+          taxCode
+        }
+      })
+
+      val unconfirmedTaxCodeListSorted = unconfirmedTaxCodeList.sorted
+
+      val confirmedTaxCodeList: Seq[String] = confirmedTaxCodes.current.map(taxCodeSummary => {
+        val taxCode = taxCodeSummary.taxCode
+        val basis = taxCodeSummary.basisOfOperation
+
+        if (basis == Week1Month1) {
+          taxCode + "X"
+        } else {
+          taxCode
+        }
+      })
+
+      val confirmedTaxCodeListSorted = confirmedTaxCodeList.sorted
+
+
+      println(unconfirmedTaxCodeListSorted)
+      println(confirmedTaxCodeListSorted)
+
+      val mismatch = unconfirmedTaxCodeListSorted != confirmedTaxCodeListSorted
+
+      TaxCodeMismatch(mismatch, unconfirmedTaxCodeListSorted , confirmedTaxCodeListSorted)
     }
 
     futureMismatch.onFailure {
