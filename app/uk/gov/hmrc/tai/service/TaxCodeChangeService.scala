@@ -116,11 +116,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val taxCode = taxCodeIncome.taxCode
         val basis = taxCodeIncome.basisOperation
 
-        if (basis == Week1Month1BasisOperation) {
-          taxCode + "X"
-        } else {
-          taxCode
-        }
+        sanitizeCode(taxCode, basis)
       })
 
       val unconfirmedTaxCodeListSorted = unconfirmedTaxCodeList.sorted
@@ -129,11 +125,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
         val taxCode = taxCodeSummary.taxCode
         val basis = taxCodeSummary.basisOfOperation
 
-        if (basis == Week1Month1) {
-          taxCode + "X"
-        } else {
-          taxCode
-        }
+        sanitizeCode(taxCode, basis)
       })
 
       val confirmedTaxCodeListSorted = confirmedTaxCodeList.sorted
@@ -209,6 +201,30 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     lazy val latestDate = calculationDates.min
 
     calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
+  }
+
+  private def sanitizeCode(code: String, basis: BasisOperation): String = {
+    if (emergencyCode(basis)) {
+      code + "X"
+    } else {
+      code
+    }
+  }
+
+  private def sanitizeCode(code: String, basis: String): String = {
+    if (emergencyCode(basis)) {
+      code + "X"
+    } else {
+      code
+    }
+  }
+
+  private def emergencyCode(basis: BasisOperation): Boolean = {
+    basis == Week1Month1BasisOperation
+  }
+
+  private def emergencyCode(basis: String): Boolean = {
+    basis == Week1Month1
   }
 }
 

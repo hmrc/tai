@@ -25,6 +25,11 @@ case object Week1Month1BasisOperation extends BasisOperation
 case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation {
+
+  def fromTaxCodeHistoryConstants(constant: String) = {
+
+  }
+
   implicit val formatBasisOperationType = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = ???
 
