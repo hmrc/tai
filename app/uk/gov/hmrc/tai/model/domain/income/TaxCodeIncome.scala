@@ -19,15 +19,18 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model.domain.TaxComponentType
 import play.api.libs.json._
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
 case object OtherBasisOperation extends BasisOperation
 
-object BasisOperation extends BasisOperation {
-
-  def fromTaxCodeHistoryConstants(constant: String) = {
-
+object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
+  def apply(constant: String): BasisOperation = {
+    if (constant == Week1Month1)
+      Week1Month1BasisOperation
+    else
+      OtherBasisOperation
   }
 
   implicit val formatBasisOperationType = new Format[BasisOperation] {
