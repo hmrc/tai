@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -110,11 +110,11 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       unconfirmedTaxCodes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes: TaxCodeChange <- taxCodeChange(nino)
     } yield {
-      val unconfirmedTaxCodeList: Seq[String] = unconfirmedTaxCodes.map(x =>
-        sanitizeCode(x.taxCode, x.basisOperation))
+      val unconfirmedTaxCodeList: Seq[String] = unconfirmedTaxCodes.map(income =>
+        sanitizeCode(income.taxCode, income.basisOperation))
 
-      val confirmedTaxCodeList: Seq[String] = confirmedTaxCodes.current.map(x =>
-        sanitizeCode(x.taxCode, BasisOperation(x.basisOfOperation)))
+      val confirmedTaxCodeList: Seq[String] = confirmedTaxCodes.current.map(income =>
+        sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation)))
 
       TaxCodeMismatch(unconfirmedTaxCodeList, confirmedTaxCodeList)
     }
@@ -129,7 +129,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   private def sanitizeCode(code: String, basis: BasisOperation): String = {
     if (basis == Week1Month1BasisOperation) {
-      code + "X"
+      code + TaiConstants.EmergencyTaxCode
     } else {
       code
     }
