@@ -19,27 +19,31 @@ package uk.gov.hmrc.tai.factory
 import org.joda.time.LocalDate
 import play.api.libs.json.{JsNull, JsObject, Json}
 import uk.gov.hmrc.tai.model.TaxCodeRecord
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
 
-  def createPrimaryEmployment(taxCodeId: Int = 1,
+  def createPrimaryEmployment(taxYear: TaxYear = TaxYear(),
+                              taxCodeId: Int = 1,
                               taxCode: String = "1185L",
                               basisOfOperation: String = Cumulative,
                               employerName: String = "Employer 1",
                               dateOfCalculation: LocalDate = LocalDate.now,
                               payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    createEmployment(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = true, dateOfCalculation, payrollNumber, Primary)
+    createEmployment(taxYear, taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = true, dateOfCalculation, payrollNumber, Primary)
   }
 
-  def createPrimaryEmploymentJson(taxCodeId: Int = 1,
+  def createPrimaryEmploymentJson(taxYear: TaxYear = TaxYear(),
+                                  taxCodeId: Int = 1,
                                   taxCode: String = "1185L",
                                   basisOfOperation: String = Cumulative,
                                   employerName: String = "Employer 1",
                                   dateOfCalculation: LocalDate = LocalDate.now,
                                   payrollNumber: String = "123"): JsObject = {
     Json.obj(
+      "taxYear" -> taxYear.year,
       "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
@@ -52,14 +56,15 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     )
   }
 
-  def createSecondaryEmployment(taxCodeId: Int = 1,
+  def createSecondaryEmployment(taxYear: TaxYear = TaxYear(),
+                                taxCodeId: Int = 1,
                                 taxCode: String = "1185L",
                                 basisOfOperation: String = Cumulative,
                                 employerName: String = "Employer 1",
                                 dateOfCalculation: LocalDate = LocalDate.now,
                                 payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    createEmployment(taxCodeId, taxCode, basisOfOperation, employerName, true, dateOfCalculation, payrollNumber, Secondary)
+    createEmployment(taxYear, taxCodeId, taxCode, basisOfOperation, employerName, true, dateOfCalculation, payrollNumber, Secondary)
   }
 
   def createSecondaryEmploymentJson(taxCodeId: Int = 1,
@@ -69,6 +74,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
                                     dateOfCalculation: LocalDate = LocalDate.now,
                                     payrollNumber: String = "123"): JsObject = {
     Json.obj(
+      "taxYear" -> TaxYear().year,
       "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
@@ -88,6 +94,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
                                 dateOfCalculation: LocalDate = LocalDate.now,
                                 employmentType: String = Primary): JsObject = {
     Json.obj(
+      "taxYear" -> TaxYear().year,
       "taxCodeId" -> taxCodeId,
       "taxCode" -> taxCode,
       "basisOfOperation" -> basisOfOperation,
@@ -107,11 +114,12 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
                                   dateOfCalculation: LocalDate = LocalDate.now,
                                   payrollNumber: Option[String] = Some("123")): TaxCodeRecord = {
 
-    TaxCodeRecord(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = false, dateOfCalculation, payrollNumber, pensionIndicator = false, Primary)
+    TaxCodeRecord(TaxYear(), taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode = false, dateOfCalculation, payrollNumber, pensionIndicator = false, Primary)
   }
 
 
-  private def createEmployment(taxCodeId: Int,
+  private def createEmployment(taxYear: TaxYear,
+                               taxCodeId: Int,
                                taxCode: String,
                                basisOfOperation: String,
                                employerName: String,
@@ -120,6 +128,6 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
                                payrollNumber: Option[String],
                                employmentType: String): TaxCodeRecord = {
 
-    TaxCodeRecord(taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode, dateOfCalculation, payrollNumber, pensionIndicator = false, employmentType)
+    TaxCodeRecord(taxYear, taxCodeId, taxCode, basisOfOperation, employerName, operatedTaxCode, dateOfCalculation, payrollNumber, pensionIndicator = false, employmentType)
   }
 }

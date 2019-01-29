@@ -41,7 +41,7 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
     taxCodeHistory(nino, TaxYear()).flatMap { taxCodeHistory =>
 
-      if(validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+      if(validForService(taxCodeHistory.applicableTaxCodeRecords)) {
         taxCodeMismatch(nino).map{ taxCodeMismatch =>
           !taxCodeMismatch.mismatch
         }
@@ -63,9 +63,9 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
       val taxCodeRecordList = taxCodeHistory.taxCodeRecords
 
-      if (validForService(taxCodeHistory.operatedTaxCodeRecords)) {
+      if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
 
-        val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.operatedTaxCodeRecords.groupBy(_.dateOfCalculation)
+        val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] = taxCodeHistory.applicableTaxCodeRecords.groupBy(_.dateOfCalculation)
         val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted
         val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
