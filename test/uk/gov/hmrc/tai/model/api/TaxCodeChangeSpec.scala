@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants  {
 
@@ -107,9 +107,9 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants  {
     TaxCodeChange(currentTaxCodeChangeRecords,previousTaxCodeChangeRecords)
   }
 
-  val currentStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(2)
-  val currentEndDate = TaxYearResolver.endOfCurrentTaxYear
-  val previousStartDate = TaxYearResolver.startOfCurrentTaxYear.plusDays(1)
+  val currentStartDate = TaxYear().start.plusDays(2)
+  val currentEndDate = TaxYear().end
+  val previousStartDate = TaxYear().start.plusDays(1)
   val previousEndDate = currentStartDate.minusDays(1)
   val payrollNumberPrev = "11111"
   val payrollNumberCurr = "22222"

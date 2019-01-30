@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.nps
 
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.IabdSummary
-import uk.gov.hmrc.time.TaxYearResolver
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class NpsIabdSummarySpec extends PlaySpec {
 
@@ -65,8 +65,8 @@ class NpsIabdSummarySpec extends PlaySpec {
 
         val mockIncomeSources = Some(List(NpsIncomeSource(name = Some("AAA"), employmentId = Some(2))))
         val mockNpsEmployments = Some(List(NpsEmployment(
-          sequenceNumber = 1, startDate = NpsDate(TaxYearResolver.startOfCurrentTaxYear.minusDays(1)),
-          endDate = Some(NpsDate(TaxYearResolver.startOfNextTaxYear)),
+          sequenceNumber = 1, startDate = NpsDate(TaxYear().start.minusDays(1)),
+          endDate = Some(NpsDate(TaxYear().next.start)),
           taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAAA"), employmentType = 1)))
 
         mockIabdSummary.toIadbSummary(mockIncomeSources, mockNpsEmployments) mustBe
@@ -77,8 +77,8 @@ class NpsIabdSummarySpec extends PlaySpec {
       "given none incomeSource and npsEmployments value" in {
 
         val mockNpsEmployments = Some(List(NpsEmployment(
-          sequenceNumber = 2, startDate = NpsDate(TaxYearResolver.startOfCurrentTaxYear.minusDays(1)),
-          endDate = Some(NpsDate(TaxYearResolver.startOfNextTaxYear)),
+          sequenceNumber = 2, startDate = NpsDate(TaxYear().start.minusDays(1)),
+          endDate = Some(NpsDate(TaxYear().next.start)),
           taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAAA"), employmentType = 1)))
         val noneAmountIabdSummary = mockIabdSummary.copy(amount = None)
 

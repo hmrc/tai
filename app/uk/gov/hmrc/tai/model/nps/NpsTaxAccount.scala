@@ -21,12 +21,11 @@ import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.enums.IncomeType.{IncomeTypeESA, IncomeTypeIB, IncomeTypeJSA, IncomeTypeStatePensionLumpSum}
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxModelFactory}
 import uk.gov.hmrc.tai.model.nps2.AllowanceType
-import uk.gov.hmrc.tai.model.tai.AnnualAccount
+import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 
 case class NpsTaxAccount(nino: Option[String],
@@ -101,15 +100,20 @@ case class NpsTaxAccount(nino: Option[String],
 
   private[nps] def getEmploymentCeasedDetail(npsEmployments : List[NpsEmployment]) = {
 
+
+    val minusOneDay = TaxYear().prev.end
+    val minusOneYearAndOneDay = TaxYear().start.minusYears(1).minusDays(1)
+    val minusTwoYearsAndOneDay = TaxYear().start.minusYears(2).minusDays(1)
+
     if(npsEmployments.isEmpty){
       CeasedEmploymentDetails(None, None, None, None)
     } else {
       val ceasedEmploymentDetails = npsEmployments.map(employment => CeasedEmploymentDetails(toLocalDate(employment.endDate), employment.receivingOccupationalPension, None, employment.employmentStatus)).reduceLeft(findCeasedEmploymentDetails)
       ceasedEmploymentDetails match {
         case CeasedEmploymentDetails(None, isPension, _, Some(status)) => CeasedEmploymentDetails(None, isPension, None, Some(status))
-        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(TaxYearResolver.startOfCurrentTaxYear.minusDays(1)) => CeasedEmploymentDetails(Some(date), isPension, None, Some(status))
-        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(TaxYearResolver.startOfCurrentTaxYear.minusYears(1).minusDays(1)) => CeasedEmploymentDetails(Some(date), isPension, Some(TaiConstants.CEASED_MINUS_ONE), Some(status))
-        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(TaxYearResolver.startOfCurrentTaxYear.minusYears(2).minusDays(1)) => CeasedEmploymentDetails(Some(date), isPension, Some(TaiConstants.CEASED_MINUS_TWO), Some(status))
+        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(minusOneDay) => CeasedEmploymentDetails(Some(date), isPension, None, Some(status))
+        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(minusOneYearAndOneDay) => CeasedEmploymentDetails(Some(date), isPension, Some(TaiConstants.CEASED_MINUS_ONE), Some(status))
+        case CeasedEmploymentDetails(Some(date), isPension, _, Some(status)) if date.isAfter(minusTwoYearsAndOneDay) => CeasedEmploymentDetails(Some(date), isPension, Some(TaiConstants.CEASED_MINUS_TWO), Some(status))
         case CeasedEmploymentDetails(date, isPension, _, Some(status)) => CeasedEmploymentDetails(date, isPension, Some(TaiConstants.CEASED_MINUS_THREE), Some(status))
         case CeasedEmploymentDetails(_, isPension, _, None) => CeasedEmploymentDetails(None, isPension, None, None)
       }

@@ -34,8 +34,6 @@ import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.{IabdType, NpsFormatter, TaxAccount}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
-import uk.gov.hmrc.time.TaxYearResolver
-import uk.gov.hmrc.time.TaxYearResolver.{startOfCurrentTaxYear, startOfNextTaxYear}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -46,7 +44,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   private val nino: Nino = new Generator(new Random).nextNino
   "getTaiRoot" should {
     val version = "101"
-    val fakeCidPerson = Person(None, None, None, None, None, None, None, None, Nino(nino.nino), None , None)
+    val fakeCidPerson = Person(None, None, None, None, None, None, None, None, Nino(nino.nino), None, None)
     val fakePersonDetails = PersonDetails(version, fakeCidPerson)
 
     val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -71,7 +69,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[AutoUpdatePayService],
       mock[NextYearComparisonService],
       mock[Auditor],
-      mock[TaxYearResolver],
       mockFeatureTogglesConfig,
       mockNpsConfig,
       mockCyPlusOneConfig)
@@ -116,7 +113,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
@@ -174,7 +170,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
@@ -235,7 +230,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mockAutoUpdatePayService,
       mock[NextYearComparisonService],
       mock[Auditor],
-      mock[TaxYearResolver],
       mockFeatureTogglesConfig,
       mockNpsConfig,
       mockCyPlusOneConfig)
@@ -247,7 +241,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         AnnualAccount(TaxYear().prev, None, Some(rtiDataPY), Some(rtiStatus)),
         AnnualAccount(TaxYear(), None, Some(rtiDataCY), Some(rtiStatus)))
 
-      val expectedResult:(List[NpsEmployment], List[RtiCalc], List[nps2.NpsEmployment], List[GateKeeperRule], Seq[AnnualAccount]) =
+      val expectedResult: (List[NpsEmployment], List[RtiCalc], List[nps2.NpsEmployment], List[GateKeeperRule], Seq[AnnualAccount]) =
         (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts)
 
       result mustBe expectedResult
@@ -278,11 +272,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
     when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-
-    val mockTaxYearResolver = mock[TaxYearResolver]
-    when(mockTaxYearResolver.startOfCurrentTaxYear).thenReturn(new LocalDate(taxYear, 4, 6))
-    when(mockTaxYearResolver.startOfNextTaxYear).thenReturn(new LocalDate(taxYear+1, 4, 6))
-
     val sut = createSUT(
       mock[RtiConnector],
       mock[NpsConnector],
@@ -291,7 +280,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[AutoUpdatePayService],
       mock[NextYearComparisonService],
       mock[Auditor],
-      mockTaxYearResolver,
       mockFeatureTogglesConfig,
       mockNpsConfig,
       mockCyPlusOneConfig)
@@ -303,14 +291,16 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       }
 
       "there is one employment with end date as start Of Current Tax Year" in {
-        val endDate = Some(NpsDate(startOfCurrentTaxYear.withYear(taxYear)))
+        val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
+
+        println(sut)
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe false
       }
 
       "there is one employment with end date as start Of Next Tax Year" in {
-        val endDate = Some(NpsDate(startOfNextTaxYear.withYear(taxYear + 1)))
+        val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear + 1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe false
@@ -323,13 +313,13 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         result mustBe true
       }
       "there is one employment with end date as one day after start Of Next Tax Year" in {
-        val endDate = Some(NpsDate(startOfCurrentTaxYear.withYear(taxYear).plusDays(1)))
+        val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear).plusDays(1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe true
       }
       "there is one employment with end date as one day before start Of Next Tax Year" in {
-        val endDate = Some(NpsDate(startOfNextTaxYear.withYear(taxYear + 1).minusDays(1)))
+        val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear + 1).minusDays(1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe true
@@ -364,7 +354,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -404,7 +393,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
             mock[AutoUpdatePayService],
             mock[NextYearComparisonService],
             mock[Auditor],
-            mock[TaxYearResolver],
             mockFeatureTogglesConfig,
             mockNpsConfig,
             mockCyPlusOneConfig)
@@ -444,7 +432,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
             mock[AutoUpdatePayService],
             mock[NextYearComparisonService],
             mock[Auditor],
-            mock[TaxYearResolver],
             mockFeatureTogglesConfig,
             mockNpsConfig,
             mockCyPlusOneConfig)
@@ -481,7 +468,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -516,7 +502,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -554,7 +539,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
@@ -588,7 +572,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
@@ -624,7 +607,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
@@ -658,13 +640,12 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mock[NextYearComparisonService],
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
 
       val result = Await.result(sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear), timeoutDuration)
-      val expectedResult:(NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
+      val expectedResult: (NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
 
       result mustBe expectedResult
       verify(mockDesConnector, times(1))
@@ -696,7 +677,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -734,7 +714,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
         val mockNextYearComparisonService = mock[NextYearComparisonService]
         val mockAuditor = mock[Auditor]
-        val mockTaxYearResolver = mock[TaxYearResolver]
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -754,7 +733,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mockAutoUpdatePayService,
           mockNextYearComparisonService,
           mockAuditor,
-          mockTaxYearResolver,
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -812,13 +790,12 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[AutoUpdatePayService],
         mockNextYearComparisonService,
         mock[Auditor],
-        mock[TaxYearResolver],
         mockFeatureTogglesConfig,
         mockNpsConfig,
         mockCyPlusOneConfig)
 
 
-      val result = Await.result(sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails), timeoutDuration  )
+      val result = Await.result(sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails), timeoutDuration)
       val expectedAccounts = List(
         AnnualAccount(TaxYear(taxYear + 1), Some(TaxAccount(None, None, 0, Map.empty, Nil, Nil)), None, None))
 
@@ -832,10 +809,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   }
 
   "invokeCYPlusOne" should {
-
-    val mockYearResolver = mock[TaxYearResolver]
-    when(mockYearResolver.taxYearFor(any())).thenReturn(2017)
-
     val mockRtiConnector = mock[RtiConnector]
     val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
     when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -856,7 +829,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[AutoUpdatePayService],
       mock[NextYearComparisonService],
       mock[Auditor],
-      mockYearResolver,
       mockFeatureTogglesConfig,
       mockNpsConfig,
       mockCyPlusOneConfig)
@@ -868,12 +840,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val result: Boolean = sut.invokeCYPlusOne(new LocalDate("2018-10-09"))
         result mustBe false
       }
-      "return true when cyPlusOneEnableDate is defined, and current date is after this date" in {
-        when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(true))
 
-        val result: Boolean = sut.invokeCYPlusOne(new LocalDate("2018-10-11"))
-        result mustBe true
-      }
       "return true when cyPlusOneEnableDate is not defined" in {
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(None)
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(true))
@@ -941,7 +908,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -994,7 +960,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1038,7 +1003,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1080,7 +1044,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1115,7 +1078,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1146,7 +1108,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1178,7 +1139,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1211,7 +1171,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1247,7 +1206,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1279,7 +1237,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[AutoUpdatePayService],
           mock[NextYearComparisonService],
           mock[Auditor],
-          mock[TaxYearResolver],
           mockFeatureTogglesConfig,
           mockNpsConfig,
           mockCyPlusOneConfig)
@@ -1298,13 +1255,13 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
                         autoUpdatePayService: AutoUpdatePayService,
                         nextYearComparisonService: NextYearComparisonService,
                         Auditor: Auditor,
-                        taxYearResolver: TaxYearResolver,
                         featureTogglesConfig: FeatureTogglesConfig,
                         npsConfig: NpsConfig,
                         cyPlusOneConfig: CyPlusOneConfig) =
 
-    new TaiService(rti, nps, des, cid, autoUpdatePayService, nextYearComparisonService, Auditor,
-      taxYearResolver, featureTogglesConfig, npsConfig, cyPlusOneConfig)
+    new TaiService(rti, nps, des, cid, autoUpdatePayService, nextYearComparisonService, Auditor, featureTogglesConfig,
+      npsConfig,
+      cyPlusOneConfig)
 
   private val employmentAmount = EmploymentAmount("", "", 1, 20, 20)
   private lazy val timeoutDuration: Duration = 5 seconds

@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -145,8 +144,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         val pensionProvider = IncorrectPensionProvider("whatYouToldUs", "No", None)
         val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+        val currentTaxYear = TaxYear()
         val employment = Employment("TEST", Some("12345"), LocalDate.now(), None,
-          List(AnnualAccount("", TaxYear(TaxYearResolver.currentTaxYear), Available, Nil, Nil)), "", "", 2, Some(100), false, false)
+          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)), "", "", 2, Some(100), false, false)
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))

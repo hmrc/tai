@@ -16,19 +16,25 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.Json
+import org.scalatestplus.play.PlaySpec
 
+class TaxCodeMismatchSpec extends PlaySpec {
+  "apply" must {
+    "sort inputs" in {
+      val input = Seq("222", "111")
+      val sortedList = Seq("111", "222")
 
-case class TaxCodeMismatch(mismatch: Boolean, unconfirmedTaxCodes: Seq[String], confirmedTaxCodes: Seq[String])
+      val expected = TaxCodeMismatch(false, sortedList, sortedList)
+      TaxCodeMismatch(input, input) mustBe expected
+    }
 
-object TaxCodeMismatch {
-  def apply(unconfirmedTaxCodes: Seq[String], confirmedTaxCodes: Seq[String]): TaxCodeMismatch = {
-    val unconfirmedTaxCodeListSorted = unconfirmedTaxCodes.sorted
-    val confirmedTaxCodeListSorted = confirmedTaxCodes.sorted
+    "not be a mismatch if lists are different" in {
+      val input1 = Seq("123", "456")
+      val input2 = Seq("123", "789")
 
-    val mismatch = unconfirmedTaxCodeListSorted != confirmedTaxCodeListSorted
-    TaxCodeMismatch (mismatch, unconfirmedTaxCodeListSorted, confirmedTaxCodeListSorted)
+      val expected = TaxCodeMismatch(true, input1.sorted, input2.sorted)
+      TaxCodeMismatch(input1, input2) mustBe expected
+    }
   }
 
-  implicit val formats = Json.format[TaxCodeMismatch]
 }

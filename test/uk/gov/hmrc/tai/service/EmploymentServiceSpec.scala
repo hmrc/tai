@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.util.IFormConstants
-import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -49,7 +48,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(employmentsForYear))
 
       val sut = createSut(mockEmploymentRepository, mock[PersonRepository], mock[IFormSubmissionService], mock[FileUploadService], mock[PdfService], mock[Auditor])
-      val employments = Await.result(sut.employments(nino, TaxYear(TaxYearResolver.currentTaxYear))(HeaderCarrier()), 5.seconds)
+      val employments = Await.result(sut.employments(nino, TaxYear())(HeaderCarrier()), 5.seconds)
 
       employments mustBe employmentsForYear
     }
@@ -314,7 +313,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
   private val person = Person(nino, "", "", None, Address("","","","",""))
 
   private val employment = Employment("TEST", Some("12345"), LocalDate.now(), None,
-    List(AnnualAccount("", TaxYear(TaxYearResolver.currentTaxYear), Available, Nil, Nil)), "", "", 2, Some(100), false, false)
+    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)), "", "", 2, Some(100), false, false)
 
   private def createSut(employmentRepository: EmploymentRepository,
                         personRepository: PersonRepository,
