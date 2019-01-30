@@ -18,9 +18,11 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-case class TaxCodeRecord(taxCodeId: Int,
+case class TaxCodeRecord(taxYear: TaxYear,
+                         taxCodeId: Int,
                          taxCode: String,
                          basisOfOperation: String,
                          employerName: String,
