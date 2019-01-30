@@ -32,20 +32,14 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.Future
 
 class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
-                                        taxCodeChangeService: TaxCodeChangeService,
-                                        toggleConfig: FeatureTogglesConfig) extends BaseController {
+                                        taxCodeChangeService: TaxCodeChangeService) extends BaseController {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async {
     implicit request =>
-      if (toggleConfig.taxCodeChangeEnabled) {
-        taxCodeChangeService.hasTaxCodeChanged(nino).map {
-          taxCodeChanged => {
-            Ok(Json.toJson(taxCodeChanged))
-          }
+      taxCodeChangeService.hasTaxCodeChanged(nino).map {
+        taxCodeChanged => {
+          Ok(Json.toJson(taxCodeChanged))
         }
-      }
-      else {
-        Future.successful(Ok(Json.toJson(false)))
       }
   }
 
