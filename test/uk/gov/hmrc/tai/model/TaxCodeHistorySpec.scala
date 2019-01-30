@@ -68,16 +68,18 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
   "TaxCodeHistory applicableTaxCodeRecords" should {
     "filter out operated tax code records" in {
       val nonOperatedRecord = TaxCodeRecordFactory.createNonOperatedEmployment()
-      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(nonOperatedRecord))
+      val primaryEmployment = TaxCodeRecordFactory.createPrimaryEmployment()
+      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(nonOperatedRecord, primaryEmployment))
 
-      taxCodeHistory.applicableTaxCodeRecords mustBe Seq.empty
+      taxCodeHistory.applicableTaxCodeRecords mustBe Seq(primaryEmployment)
     }
 
     "filter out tax code that are not in current year" in {
-      val nonOperatedRecord = TaxCodeRecordFactory.createPrimaryEmployment(taxYear = TaxYear().next)
-      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(nonOperatedRecord))
+      val primaryEmployment = TaxCodeRecordFactory.createPrimaryEmployment()
+      val nextYearTaxCodeRecord = TaxCodeRecordFactory.createPrimaryEmployment(taxYear = TaxYear().next)
+      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(primaryEmployment, nextYearTaxCodeRecord))
 
-      taxCodeHistory.applicableTaxCodeRecords mustBe Seq.empty
+      taxCodeHistory.applicableTaxCodeRecords mustBe Seq(primaryEmployment)
     }
   }
 
