@@ -43,11 +43,16 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     taxCodeHistory(nino, TaxYear()).flatMap { taxCodeHistory =>
 
       if(validForService(taxCodeHistory.applicableTaxCodeRecords)) {
+
+        Logger.debug("change is valid for service")
+
         taxCodeMismatch(nino).map{ taxCodeMismatch =>
+
           !taxCodeMismatch.mismatch
         }
       }
       else {
+        Logger.debug("change is not valid for service")
         Future.successful(false)
       }
     }.recover {
@@ -116,7 +121,14 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
       val confirmedTaxCodeList: Seq[String] = confirmedTaxCodes.current.map(income =>
         sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation)))
 
-      TaxCodeMismatch(unconfirmedTaxCodeList, confirmedTaxCodeList)
+      Logger.debug(s"Unconfirmed tax codes \n $unconfirmedTaxCodeList")
+      Logger.debug(s"Confirmed tax codes \n $confirmedTaxCodeList")
+
+      val taxCodeMismatch = TaxCodeMismatch(unconfirmedTaxCodeList, confirmedTaxCodeList)
+
+      Logger.debug(s"taxCodeMismatch? $taxCodeMismatch")
+
+      taxCodeMismatch
     }
 
     futureMismatch.onFailure {
@@ -186,8 +198,8 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
 
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
+    Logger.debug(s"calculation dates $calculationDates")
     lazy val latestDate = calculationDates.min
-
     calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
   }
 
