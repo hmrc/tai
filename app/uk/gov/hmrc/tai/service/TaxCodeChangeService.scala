@@ -200,7 +200,6 @@ class TaxCodeChangeServiceImpl @Inject()(taxCodeChangeConnector: TaxCodeChangeCo
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
     Logger.debug(s"calculation dates $calculationDates")
     lazy val latestDate = calculationDates.min
-    Logger.debug(s"latest dates $latestDate")
     calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
   }
 
