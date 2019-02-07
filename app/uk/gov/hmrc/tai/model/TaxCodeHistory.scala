@@ -16,13 +16,28 @@
 
 package uk.gov.hmrc.tai.model
 
+import play.api.Logger
 import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads.{minLength, _}
+import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 
 case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
-  def operatedTaxCodeRecords: Seq[TaxCodeRecord] = taxCodeRecords.filter(_.operatedTaxCode)
+
+  def applicableTaxCodeRecords: Seq[TaxCodeRecord] = {
+    val applicableRecords = inYearTaxCodeRecords(operatedTaxCodeRecords(taxCodeRecords))
+    Logger.debug(s"applicableRecords are \n $applicableRecords")
+    applicableRecords
+  }
+
+  private def operatedTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
+    records.filter(_.operatedTaxCode)
+  }
+
+  private def inYearTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
+    records.filter(_.taxYear.compare(TaxYear()) == 0)
+  }
 }
 
 object TaxCodeHistory {

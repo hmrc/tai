@@ -166,6 +166,8 @@ object TaiConstants {
   val DEFAULT_PRIMARY_PAY = 15000
   val DEFAULT_SECONDARY_PAY = 5000
   val contentType: String = "application/json"
+
+  val EmergencyTaxCode = "X"
 }
 
 trait MongoConstants {

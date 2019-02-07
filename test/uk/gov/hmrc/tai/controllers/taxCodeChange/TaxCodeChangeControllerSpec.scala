@@ -51,7 +51,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val testNino = ninoGenerator
 
-        when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
         when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(true))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
@@ -67,23 +66,7 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
         val testNino = ninoGenerator
 
-        when(mockConfig.taxCodeChangeEnabled).thenReturn(true)
         when(taxCodeService.hasTaxCodeChanged(Matchers.any())(Matchers.any())).thenReturn(Future.successful(false))
-
-        val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
-
-        status(response) mustBe OK
-
-        contentAsJson(response) mustEqual Json.toJson(false)
-      }
-    }
-
-    "return false" when {
-      "taxCodeChanged endpoint is toggled off" in {
-
-        val testNino = ninoGenerator
-
-        when(mockConfig.taxCodeChangeEnabled).thenReturn(false)
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -276,6 +259,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
   val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, mockConfig)
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService)
   private def ninoGenerator = new Generator(new Random).nextNino
 }
