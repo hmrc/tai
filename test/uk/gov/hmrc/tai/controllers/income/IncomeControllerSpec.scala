@@ -263,31 +263,17 @@ class IncomeControllerSpec extends PlaySpec
       }
     }
 
-    "return Ok and invalidate the cache" when {
-      "a valid update amount is provided" in {
-        val wantedNumberOfInvocations = 1
-        val mockTaxAccountService = generateMockAccountServiceWithAnyResponse
-        val SUT = setup(Future.successful(IncomeUpdateSuccess), mockTaxAccountService)
-
-        val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
-
-        status(result) mustBe OK
-        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
-      }
-    }
-
-    "return a bad request and do not invalidate the cache" when {
+    "return a bad request" when {
       "an invalid update amount is provided" in {
         val wantedNumberOfInvocations = 0
         val SUT = setup(Future.successful(InvalidAmount("")), mockTaxAccountService)
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
-        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
     }
 
-    "return internal server error and do not invalidate the cache" when {
+    "return internal server error" when {
 
       "income update exception has been thrown" in {
         val wantedNumberOfInvocations = 0
@@ -295,7 +281,6 @@ class IncomeControllerSpec extends PlaySpec
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(),employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(wantedNumberOfInvocations)).invalidateTaiCacheData()(any())
       }
 
       "any exception has been thrown" in {
