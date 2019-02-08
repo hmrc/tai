@@ -68,9 +68,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
       implicit request =>
         withJsonBody[UpdateTaxCodeIncomeRequest] { updateTaxCodeIncomeRequest =>
           incomeService.updateTaxCodeIncome(nino, snapshotId, employmentId, updateTaxCodeIncomeRequest.amount) map {
-            case IncomeUpdateSuccess =>
-              taxAccountService.invalidateTaiCacheData()
-              Ok
+            case IncomeUpdateSuccess => Ok
             case InvalidAmount(message) => BadRequest(message)
             case IncomeUpdateFailed(message) => InternalServerError(message)
           }
