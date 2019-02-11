@@ -256,7 +256,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val response = Await.result(sut.getCalculatedTaxAccountFromDes(Nino(nino), taxYear)(hc), 5 seconds)
 
         response mustBe expectedResult
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
+        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear"
       }
     }
 
@@ -316,7 +316,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(Nino(nino), taxYear)(hc), 5 seconds)
 
         response.json mustBe jsonData
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
+        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear"
       }
     }
 

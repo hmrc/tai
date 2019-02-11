@@ -139,7 +139,7 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
 
         taxAccountUrls.taxAccountUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
-        taxAccountUrls.taxAccountUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+        taxAccountUrls.taxAccountUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
       }
     }
   }
