@@ -102,9 +102,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
       (for {
         taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
         filteredTaxCodeIncomes: Seq[TaxCodeIncome] = taxCodeIncomes.filter(income => income.status != Live && income.componentType == EmploymentIncome)
-        employments: Seq[Employment] <-
-          if (filteredTaxCodeIncomes.isEmpty) { Future.successful(Seq.empty[Employment]) }
-          else { employmentService.employments(nino, year) }
+        employments: Seq[Employment] <- employmentService.employments(nino, year)
         result: Seq[Employment] = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
       } yield (result: Seq[Employment]) match {
         case Seq() => NotFound
