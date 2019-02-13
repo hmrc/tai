@@ -22,6 +22,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
@@ -49,5 +50,11 @@ class IabdConnector @Inject()(npsConfig: NpsConfig,
         httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
     }
 
+  }
+
+  def iabdByType(nino: Nino, taxYear: TaxYear, iabdType: IabdType)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+    val urlDes = iabdUrls.desIabdByTypeUrl(nino, taxYear, iabdType)
+    httpHandler.getFromApi(urlDes, APITypes.DesIabdGetFlatRateExpensesAPI)(hcWithHodHeaders)
   }
 }

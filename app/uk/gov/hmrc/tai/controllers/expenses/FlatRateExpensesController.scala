@@ -25,6 +25,8 @@ import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.model.api.ApiFormats
+import uk.gov.hmrc.tai.model.nps2.IabdType
+import uk.gov.hmrc.tai.model.nps2.IabdType.FlatRateJobExpenses
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
@@ -56,5 +58,15 @@ class FlatRateExpensesController @Inject()(
               }
           }
       }
+  }
+
+  def getFlatRateExpensesData(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
+    implicit request =>
+      val iabdType: IabdType = FlatRateJobExpenses
+
+      flatRateExpensesService.getFlatRateExpenses(nino, year, iabdType).map {
+        iabdData =>
+          Ok(iabdData)
+      } recoverWith taxAccountErrorHandler
   }
 }

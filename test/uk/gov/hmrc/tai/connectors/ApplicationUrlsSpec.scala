@@ -23,6 +23,7 @@ import org.scalatestplus.play.PlaySpec
 import scala.util.Random
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.config._
+import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
@@ -174,7 +175,24 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
         iabdUrls.desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
       }
     }
+
+    "IabdByTypeUrls" must {
+      "return the correct urls" when {
+        "given argument values" in {
+          val mockConfigNps = mock[NpsConfig]
+          val mockConfigDes = mock[DesConfig]
+
+          when(mockConfigNps.baseURL).thenReturn("")
+          when(mockConfigDes.baseURL).thenReturn("")
+
+          val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+
+          iabdUrls.desIabdByTypeUrl(nino, TaxYear(2017), IabdType.FlatRateJobExpenses) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017?type=56"
+        }
+      }
+    }
   }
+
 
   private val nino: Nino = new Generator(new Random).nextNino
 }
