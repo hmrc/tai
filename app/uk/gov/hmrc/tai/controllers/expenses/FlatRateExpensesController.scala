@@ -60,7 +60,7 @@ class FlatRateExpensesController @Inject()(
       }
   }
 
-  def getFlatRateExpensesData(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
+  def getFlatRateExpensesData(nino: Nino, year: TaxYear) = authentication.async {
     implicit request =>
       val iabdType: IabdType = FlatRateJobExpenses
 
