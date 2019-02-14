@@ -65,8 +65,8 @@ class IncomeController @Inject()(incomeService: IncomeService,
     implicit request =>
 
       def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
-        employments.flatMap { emp =>
-          filteredTaxCodeIncomes.flatMap(income =>
+        filteredTaxCodeIncomes.flatMap { income =>
+          employments.flatMap(emp =>
             income.employmentId.fold(Seq.empty[IncomeSource]) {
               id => if (id == emp.sequenceNumber) Seq(IncomeSource(income, emp)) else Seq.empty[IncomeSource]
             }
@@ -74,16 +74,24 @@ class IncomeController @Inject()(incomeService: IncomeService,
         }
 
       def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] = {
-        if (incomeStatus == Live.toString) { taxCodeIncomes.filter(income => income.status == Live && income.componentType.toString == incomeType) }
-        else { taxCodeIncomes.filter(income => income.status != Live && income.componentType.toString == incomeType) }
+        if (incomeStatus == Live.toString) {
+          taxCodeIncomes.filter(income => income.status == Live && income.componentType.toString == incomeType)
+        }
+        else {
+          taxCodeIncomes.filter(income => income.status != Live && income.componentType.toString == incomeType)
+        }
       }
 
       (for {
         taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
         filteredTaxCodeIncomes: Seq[TaxCodeIncome] = filterTaxCodeIncomes(taxCodeIncomes, status)
         employments: Seq[Employment] <-
-          if (filteredTaxCodeIncomes.isEmpty) { Future.successful(Seq.empty[Employment]) }
-          else { employmentService.employments(nino, year) }
+          if (filteredTaxCodeIncomes.isEmpty) {
+            Future.successful(Seq.empty[Employment])
+          }
+          else {
+            employmentService.employments(nino, year)
+          }
         result: Seq[IncomeSource] = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
       } yield (result: Seq[IncomeSource]) match {
         case Seq() => NotFound
