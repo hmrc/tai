@@ -27,7 +27,7 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -38,8 +38,8 @@ import scala.concurrent.Future
 import scala.util.Random
 
 class FlatRateExpensesControllerSpec extends PlaySpec
-    with MockitoSugar
-    with MockAuthenticationPredicate {
+  with MockitoSugar
+  with MockAuthenticationPredicate {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
@@ -49,8 +49,21 @@ class FlatRateExpensesControllerSpec extends PlaySpec
     new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest( 1,
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1,
     IabdUpdateExpensesData(sequenceNumber = 201800001, grossAmount = 100)
+  )
+  private val validJson = Json.arr(
+    Json.obj(
+      "nino" -> nino.withoutSuffix,
+      "taxYear" -> 2017,
+      "type" -> 10,
+      "source" -> 15,
+      "grossAmount" -> JsNull,
+      "receiptDate" -> JsNull,
+      "captureDate" -> "10/04/2017",
+      "typeDescription" -> "Total gift aid Payments",
+      "netAmount" -> 100
+    )
   )
 
   "updateFlatRateExpensesData" must {
@@ -60,10 +73,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 
         status(result) mustBe NO_CONTENT
       }
@@ -74,10 +87,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(""))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 
         status(result) mustBe BAD_REQUEST
       }
@@ -88,10 +101,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), JsNull)
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller(notLoggedInAuthenticationPredicate).updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
+        val result = controller(notLoggedInAuthenticationPredicate).updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 
         whenReady(result.failed) {
           e => e mustBe a[MissingBearerToken]
@@ -104,10 +117,10 @@ class FlatRateExpensesControllerSpec extends PlaySpec
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(),any(),any(),any())(any()))
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
-        val result = controller().updateFlatRateExpensesData(nino,TaxYear())(fakeRequest)
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
@@ -115,4 +128,54 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
   }
 
+  "getFlatRateExpensesData" must {
+
+    "return OK and valid json" in {
+      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+
+      when(mockFlatRateExpensesService.getFlatRateExpenses(any(), any(), any()))
+        .thenReturn(Future.successful(validJson))
+
+      val result = controller().getFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+      status(result) mustBe OK
+
+      contentAsJson(result) mustBe validJson
+    }
+
+    "return BadRequest when bad request exception thrown" in {
+      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+
+      when(mockFlatRateExpensesService.getFlatRateExpenses(any(), any(), any()))
+        .thenReturn(Future.failed(new BadRequestException("")))
+
+      val result = controller().getFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+      status(result) mustBe BAD_REQUEST
+    }
+
+    "return NotFound when not found exception thrown" in {
+      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+
+      when(mockFlatRateExpensesService.getFlatRateExpenses(any(), any(), any()))
+        .thenReturn(Future.failed(new NotFoundException("")))
+
+      val result = controller().getFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+      status(result) mustBe NOT_FOUND
+    }
+
+    "return an Exception when an exception thrown" in {
+      val fakeRequest = FakeRequest("GET", "/", FakeHeaders(), any())
+
+      when(mockFlatRateExpensesService.getFlatRateExpenses(any(), any(), any()))
+        .thenReturn(Future.failed(new Exception("")))
+
+      val result = controller().getFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+      intercept[Exception] {
+        result mustBe an[Exception]
+      }
+    }
+  }
 }

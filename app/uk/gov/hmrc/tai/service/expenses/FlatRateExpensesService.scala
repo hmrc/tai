@@ -17,10 +17,10 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import com.google.inject.{Inject, Singleton}
-import org.joda.time.DateTime
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tai.connectors.DesConnector
+import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector}
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class FlatRateExpensesService @Inject()(desConnector: DesConnector){
+class FlatRateExpensesService @Inject()(desConnector: DesConnector, iabdConnector: IabdConnector) {
 
   def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -42,5 +42,10 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector){
       expensesData = List(expensesData),
       apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
     )
+  }
+
+  def getFlatRateExpenses(nino: Nino, taxYear: TaxYear, iabdType: IabdType)
+                         (implicit hc: HeaderCarrier): Future[JsValue] = {
+    iabdConnector.iabdByType(nino, taxYear, iabdType)
   }
 }

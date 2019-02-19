@@ -49,7 +49,8 @@ GET     /:nino/tax-account/year/:year/income/:incomeType/status/:status         
 GET     /:nino/employments/year/:year/status/ceased                                                      @uk.gov.hmrc.tai.controllers.income.IncomeController.nonMatchingCeasedEmployments(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
 #Expenses
-POST    /:nino/tax-account/:year/expenses/flat-rate-expenses                                   @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.updateFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+POST    /:nino/tax-account/:year/expenses/flat-rate-expenses                                    @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.updateFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/tax-account/:year/expenses/flat-rate-expenses                                    @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.getFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 
 #Coding Components
 GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
