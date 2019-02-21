@@ -21,7 +21,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.EmploymentUpdate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
-import uk.gov.hmrc.tai.model.domain.income.IncomeSource
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 
@@ -81,7 +80,5 @@ trait ApiFormats {
   implicit val addressFormat: Format[Address] = Json.format[Address]
 
   implicit val personFormat: Format[Person] = Json.format[Person]
-
-  implicit val incomeSourceFormat: Format[IncomeSource] = Json.format[IncomeSource]
 
 }
