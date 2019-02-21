@@ -93,6 +93,7 @@ class EmploymentRepository @Inject()(rtiConnector: RtiConnector,
     implicit val ty = taxYear
     val employmentsFuture: Future[JsValue] = npsConnector.getEmploymentDetails(nino, taxYear.year)
     val accountsFuture: Future[JsValue] = rtiConnector.getRTIDetails(nino, taxYear)
+
     for {
       employments <- employmentsFuture map {
         _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
@@ -104,6 +105,11 @@ class EmploymentRepository @Inject()(rtiConnector: RtiConnector,
       }
       employmentDomainResult <- checkAndUpdateCache(unifiedEmployments(employments, accounts, nino, taxYear))
     } yield {
+
+      Logger.warn(s"employments size for $nino for $taxYear is [${employments.size}]")
+      Logger.warn(s"accounts size for $nino for $taxYear is [${accounts.size}]")
+      Logger.warn(s"employmentDomainResult size for $nino for $taxYear is [${employmentDomainResult.size}]")
+
       employmentDomainResult
     }
   }
@@ -138,14 +144,20 @@ class EmploymentRepository @Inject()(rtiConnector: RtiConnector,
     (implicit hc: HeaderCarrier): Option[Employment] = {
 
     employments.filter(emp => emp.employerDesignation == account.employerDesignation) match {
-      case Seq(single) => Some(single.copy(annualAccounts = Seq(account)))
-      case Nil => monitorAndAuditAssociatedEmployment(
+      case Seq(single) =>
+        Logger.warn(s"single match found for $nino for $taxYear")
+        Some(single.copy(annualAccounts = Seq(account)))
+      case Nil =>
+        Logger.warn(s"no match found for $nino for $taxYear")
+        monitorAndAuditAssociatedEmployment(
         None,
         account,
         employments,
         nino.nino,
         taxYear.twoDigitRange)
-      case many => monitorAndAuditAssociatedEmployment(
+      case many =>
+        Logger.warn(s"multiple matches found for $nino for $taxYear")
+        monitorAndAuditAssociatedEmployment(
         many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account))),
         account,
         employments,
