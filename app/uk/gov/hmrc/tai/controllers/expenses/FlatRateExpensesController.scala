@@ -17,16 +17,14 @@
 package uk.gov.hmrc.tai.controllers.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
-import play.api.mvc.Action
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.model.api.ApiFormats
-import uk.gov.hmrc.tai.model.nps2.IabdType
-import uk.gov.hmrc.tai.model.nps2.IabdType.FlatRateJobExpenses
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
@@ -60,13 +58,11 @@ class FlatRateExpensesController @Inject()(
       }
   }
 
-  def getFlatRateExpensesData(nino: Nino, year: TaxYear) = authentication.async {
+  def getFlatRateExpensesData(nino: Nino, year: Int): Action[AnyContent] = authentication.async {
     implicit request =>
-      val iabdType: IabdType = FlatRateJobExpenses
-
-      flatRateExpensesService.getFlatRateExpenses(nino, year, iabdType).map {
+      flatRateExpensesService.getFlatRateExpenses(nino, year).map {
         iabdData =>
-          Ok(iabdData)
+          Ok(Json.toJson(iabdData))
       } recoverWith taxAccountErrorHandler
   }
 }

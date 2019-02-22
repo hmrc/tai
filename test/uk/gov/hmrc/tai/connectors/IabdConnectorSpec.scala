@@ -159,28 +159,6 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         }
       }
     }
-
-    "iabdByType" must {
-
-      "return valid Json" in {
-        val mockHttpHandler = mock[HttpHandler]
-        val mockNpsConfig = mock[NpsConfig]
-        val mockDesConfig = mock[DesConfig]
-        val iabdUrls = mock[IabdUrls]
-        val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-        when(iabdUrls.desIabdByTypeUrl(any(), any(), any())).thenReturn("URL")
-        when(mockDesConfig.originatorId).thenReturn("TEST")
-        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdGetFlatRateExpensesAPI))(Matchers.
-          eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-        val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-        val result = Await.result(sut.iabdByType(nino, TaxYear(), IabdType.FlatRateJobExpenses), 5.seconds)
-
-        result mustBe json
-      }
-
-    }
   }
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()

@@ -51,10 +51,4 @@ class IabdConnector @Inject()(npsConfig: NpsConfig,
     }
 
   }
-
-  def iabdByType(nino: Nino, taxYear: TaxYear, iabdType: IabdType)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
-    val urlDes = iabdUrls.desIabdByTypeUrl(nino, taxYear, iabdType)
-    httpHandler.getFromApi(urlDes, APITypes.DesIabdGetFlatRateExpensesAPI)(hcWithHodHeaders)
-  }
 }

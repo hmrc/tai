@@ -17,19 +17,23 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector}
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
+import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector, NpsConnector}
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
 
 @Singleton
-class FlatRateExpensesService @Inject()(desConnector: DesConnector, iabdConnector: IabdConnector) {
+class FlatRateExpensesService @Inject()(desConnector: DesConnector,
+                                        npsConnector: NpsConnector,
+                                        iabdConnector: IabdConnector,
+                                        featureTogglesConfig: FeatureTogglesConfig) {
 
   def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
@@ -44,8 +48,12 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector, iabdConnecto
     )
   }
 
-  def getFlatRateExpenses(nino: Nino, taxYear: TaxYear, iabdType: IabdType)
-                         (implicit hc: HeaderCarrier): Future[JsValue] = {
-    iabdConnector.iabdByType(nino, taxYear, iabdType)
+  def getFlatRateExpenses(nino: Nino, taxYear: Int)
+                         (implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+    if (featureTogglesConfig.desEnabled) {
+      desConnector.getIabdsForTypeFromDes(nino, taxYear, IabdType.FlatRateJobExpenses.code)
+    } else {
+      npsConnector.getIabdsForType(nino, taxYear, IabdType.FlatRateJobExpenses.code)
+    }
   }
 }

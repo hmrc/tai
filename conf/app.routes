@@ -48,7 +48,7 @@ PUT     /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:emplo
 
 #Expenses
 POST    /:nino/tax-account/:year/expenses/flat-rate-expenses                                    @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.updateFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
-GET     /:nino/tax-account/:year/expenses/flat-rate-expenses                                    @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.getFlatRateExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET     /:nino/tax-account/:year/expenses/flat-rate-expenses                                    @uk.gov.hmrc.tai.controllers.expenses.FlatRateExpensesController.getFlatRateExpensesData(nino: Nino, year: Int)
 
 #Coding Components
 GET  /:nino/tax-account/:year/tax-components                                                             @uk.gov.hmrc.tai.controllers.CodingComponentController.codingComponentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
