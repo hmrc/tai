@@ -17,17 +17,18 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -43,32 +44,37 @@ class FlatRateExpensesServiceSpec extends PlaySpec
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
   private val mockDesConnector = mock[DesConnector]
+  private val mockNpsConnector = mock[NpsConnector]
   private val mockIabdConnector = mock[IabdConnector]
+  private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
-  private val service = new FlatRateExpensesService(desConnector = mockDesConnector, iabdConnector = mockIabdConnector)
+  private val service = new FlatRateExpensesService(
+    desConnector = mockDesConnector,
+    npsConnector = mockNpsConnector,
+    iabdConnector = mockIabdConnector,
+    featureTogglesConfig = mockFeaturesToggle)
 
   private val nino = new Generator(new Random).nextNino
   private val iabdUpdateExpensesData = IabdUpdateExpensesData(201800001, 100)
   private val iabd = IabdType.FlatRateJobExpenses
-  private val validJson = Json.arr(
-    Json.obj(
-      "nino" -> nino.withoutSuffix,
-      "taxYear" -> 2017,
-      "type" -> 10,
-      "source" -> 15,
-      "grossAmount" -> JsNull,
-      "receiptDate" -> JsNull,
-      "captureDate" -> "10/04/2017",
-      "typeDescription" -> "Total gift aid Payments",
-      "netAmount" -> 100
+
+  private val validNpsIabd: List[NpsIabdRoot] = List(
+    NpsIabdRoot(
+      nino = nino.withoutSuffix,
+      `type` = 56,
+      grossAmount = Some(100.00)
     )
   )
+
+  private val taxYear = 2017
+
+  private lazy val timeoutDuration: Duration = 5 seconds
 
   "updateFlatRateExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
+        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
         Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
@@ -78,7 +84,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockDesConnector.updateExpensesDataToDes(any(),any(),any(),any(),any(),any())(any()))
+        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
         Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
@@ -89,32 +95,87 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
   "getFlatRateExpensesData" must {
 
-    "return JsValue" when {
-      "success response from iabd connector" in {
-        when(mockIabdConnector.iabdByType(any(),any(),any())(any()))
-          .thenReturn(Future.successful(validJson))
+    "return a list of NpsIabds" when {
+      "success response from nps connector when desEnabled is false" in {
+        val mockNpsConnector = mock[NpsConnector]
+        when(mockNpsConnector.getIabdsForType(any(), any(), any())(any()))
+          .thenReturn(Future.successful(validNpsIabd))
 
-        val result = service.getFlatRateExpenses(nino, TaxYear(), iabd)
+        val mockFeaturesToggle = mock[FeatureTogglesConfig]
+        when(mockFeaturesToggle.desEnabled).thenReturn(false)
 
-        whenReady(result){
-          _ mustBe validJson
+        val mockDesConnector = mock[DesConnector]
+        val mockIabdConnector = mock[IabdConnector]
+
+        val service = new FlatRateExpensesService(
+          desConnector = mockDesConnector,
+          npsConnector = mockNpsConnector,
+          iabdConnector = mockIabdConnector,
+          featureTogglesConfig = mockFeaturesToggle)
+
+        val result = service.getFlatRateExpenses(nino, taxYear)
+
+        whenReady(result) {
+          result =>
+
+            result mustBe validNpsIabd
+
+            verify(mockNpsConnector, times(1))
+              .getIabdsForType(nino, taxYear, 56)
+
+            verify(mockDesConnector, times(0))
+              .getIabdsForTypeFromDes(nino, taxYear, 56)
         }
       }
-    }
 
-    "return exception" when {
-      "failed response from iabd connector" in {
-        when(mockIabdConnector.iabdByType(any(),any(),any())(any()))
-          .thenReturn(Future.failed(new Exception))
+      "success response from des connector when desEnabled is true" in {
+        val mockDesConnector = mock[DesConnector]
+        when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
+          .thenReturn(Future.successful(validNpsIabd))
 
-        val result = service.getFlatRateExpenses(nino, TaxYear(), iabd)
+        val mockFeaturesToggle = mock[FeatureTogglesConfig]
+        when(mockFeaturesToggle.desEnabled).thenReturn(true)
 
-        intercept[Exception] {
-          whenReady(result) {
-            _ mustBe an[Exception]
+        val mockNpsConnector = mock[NpsConnector]
+        val mockIabdConnector = mock[IabdConnector]
+
+        val service = new FlatRateExpensesService(
+          desConnector = mockDesConnector,
+          npsConnector = mockNpsConnector,
+          iabdConnector = mockIabdConnector,
+          featureTogglesConfig = mockFeaturesToggle)
+
+        val result = service.getFlatRateExpenses(nino, taxYear)
+
+        whenReady(result) {
+          result =>
+
+            result mustBe validNpsIabd
+
+            verify(mockNpsConnector, times(0))
+              .getIabdsForType(nino, taxYear, 56)
+
+            verify(mockDesConnector, times(1))
+              .getIabdsForTypeFromDes(nino, taxYear, 56)
+        }
+      }
+
+      "return exception" when {
+        "failed response from des connector" in {
+          when(mockFeaturesToggle.desEnabled).thenReturn(true)
+          when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
+            .thenReturn(Future.failed(new BadRequestException("")))
+
+          val result = service.getFlatRateExpenses(nino, taxYear)
+
+          intercept[Exception] {
+            whenReady(result) {
+              _ mustBe an[Exception]
+            }
           }
         }
       }
     }
   }
+
 }
