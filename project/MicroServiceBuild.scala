@@ -21,10 +21,10 @@ private object AppDependencies {
   val compile = Seq(
     filters,
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "4.8.0",
+    "uk.gov.hmrc" %% "bootstrap-play-25" % "4.9.0",
     "uk.gov.hmrc" %% "domain" % "5.3.0",
     "uk.gov.hmrc" %% "json-encryption" % "3.2.0",
-    "uk.gov.hmrc" %% "mongo-caching" % "5.6.0" exclude("uk.gov.hmrc","time_2.11")
+    "uk.gov.hmrc" %% "mongo-caching" % "5.7.0" exclude("uk.gov.hmrc","time_2.11")
   )
 
   trait TestDependencies {
@@ -35,7 +35,7 @@ private object AppDependencies {
   object Test {
     def apply() = new TestDependencies {
       override lazy val test = Seq(
-        "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "3.5.0-play-25" % scope,
         "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % scope,
         "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
         "org.pegdown" % "pegdown" % pegdownVersion % scope,
