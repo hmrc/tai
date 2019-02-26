@@ -94,7 +94,6 @@ class IncomeController @Inject()(incomeService: IncomeService,
           }
         result: Seq[IncomeSource] = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
       } yield (result: Seq[IncomeSource]) match {
-        case Seq() => NotFound
         case _ => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
       }) recoverWith taxAccountErrorHandler
   }
@@ -113,7 +112,6 @@ class IncomeController @Inject()(incomeService: IncomeService,
         employments: Seq[Employment] <- employmentService.employments(nino, year)
         result: Seq[Employment] = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
       } yield (result: Seq[Employment]) match {
-        case Seq() => NotFound
         case _ => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
       }) recoverWith taxAccountErrorHandler
   }

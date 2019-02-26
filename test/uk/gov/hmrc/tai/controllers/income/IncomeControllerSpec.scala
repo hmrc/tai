@@ -52,6 +52,12 @@ class IncomeControllerSpec extends PlaySpec
 
   val employmentId = 1
   val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
+  val expectedJsonEmpty = Json.obj(
+    "data" -> Json.arr(),
+    "links" -> Json.arr()
+  )
+
+
   "untaxedInterest" must {
 
     "return NOT AUTHORISED" when {
@@ -303,7 +309,7 @@ class IncomeControllerSpec extends PlaySpec
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return Not Found when no records match" in {
+    "return empty JSON when no records match" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
@@ -318,7 +324,9 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "EmploymentIncome", "PotentiallyCeased")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
+
     }
 
     "return list of live and matched pension TaxCodeIncomes for a given year" in {
@@ -379,7 +387,7 @@ class IncomeControllerSpec extends PlaySpec
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return NotFound when there are no matching live employments" in {
+    "return empty json when there are no matching live employments" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -391,10 +399,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "EmploymentIncome", "Live")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when there are no matching live pensions" in {
+    "return empty json when there are no matching live pensions" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -406,10 +415,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "PensionIncome", "Live")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when there are no TaxCodeIncome records for a given nino" in {
+    "return empty json when there are no TaxCodeIncome records for a given nino" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
@@ -421,10 +431,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "PensionIncome", "Live")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when there are no employment records for a given nino" in {
+    "return empty json when there are no employment records for a given nino" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -436,10 +447,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "PensionIncome", "Live")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when given an invalid or non-existent income type" in {
+    "return empty json when given an invalid or non-existent income type" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -451,7 +463,8 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, "BananaIncome", "Live")(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
     "return NotAuthorized when the user is not logged in" in {
@@ -522,7 +535,7 @@ class IncomeControllerSpec extends PlaySpec
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return Not Found when no employments have an end date" in {
+    "return empty json when no employments have an end date" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
       val mockIncomeService = mock[IncomeService]
@@ -537,10 +550,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, ty)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return Not Found when TaxCodeIncomes do not have an Id" in {
+    "return empty json when TaxCodeIncomes do not have an Id" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
       val mockIncomeService = mock[IncomeService]
@@ -558,10 +572,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, ty)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when there are no TaxCodeIncome records for a given nino" in {
+    "return empty Json when there are no TaxCodeIncome records for a given nino" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
       val mockIncomeService = mock[IncomeService]
@@ -576,10 +591,11 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, ty)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
-    "return NotFound when there are no employment records for a given nino" in {
+    "return empty json when there are no employment records for a given nino" in {
       val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
@@ -595,7 +611,8 @@ class IncomeControllerSpec extends PlaySpec
       val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, ty)(FakeRequest())
 
-      status(result) mustBe NOT_FOUND
+      status(result) mustBe OK
+      contentAsJson(result) mustBe expectedJsonEmpty
     }
 
     "return NotAuthorized when the user is not logged in" in {
