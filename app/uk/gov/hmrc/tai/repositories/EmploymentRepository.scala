@@ -105,11 +105,6 @@ class EmploymentRepository @Inject()(rtiConnector: RtiConnector,
       }
       employmentDomainResult <- checkAndUpdateCache(unifiedEmployments(employments, accounts, nino, taxYear))
     } yield {
-
-      Logger.warn(s"employments size for $nino for $taxYear is [${employments.size}]")
-      Logger.warn(s"accounts size for $nino for $taxYear is [${accounts.size}]")
-      Logger.warn(s"employmentDomainResult size for $nino for $taxYear is [${employmentDomainResult.size}]")
-
       employmentDomainResult
     }
   }
