@@ -79,7 +79,7 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
     s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}/calculation"
 
   def taxAccountUrlDes(nino: Nino, taxYear: TaxYear): String =
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}?calculation=true"
+    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}"
 
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
