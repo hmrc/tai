@@ -52,11 +52,16 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
     def npsURL(url: String) = taxAccountURL(url, npsConfig.originatorId)
     def desURL(url: String) = taxAccountURL(url, desConfig.originatorId)
 
+    val desWithConfirmedAPI = (true, true)
+    val desWithNonConfirmedAPI = (true, false)
+    val npsWithConfirmedAPI = (false, true)
+    val npsWithNonConfirmedAPI = (false, false)
+
     (featureTogglesConfig.desEnabled, featureTogglesConfig.confirmedAPIEnabled) match {
-      case(false, false) => npsURL(taxAccountUrls.taxAccountUrlNpsCalculation(nino, taxYear))
-      case(false, true) => npsURL(taxAccountUrls.taxAccountUrlNpsConfirmed(nino, taxYear))
-      case(true, true) => desURL(taxAccountUrls.taxAccountUrlDesConfirmed(nino, taxYear))
-      case(true, false) => desURL(taxAccountUrls.taxAccountUrlDesCalculation(nino, taxYear))
+      case `desWithConfirmedAPI` => desURL(taxAccountUrls.taxAccountUrlDesConfirmed(nino, taxYear))
+      case `desWithNonConfirmedAPI` => desURL(taxAccountUrls.taxAccountUrlDesCalculation(nino, taxYear))
+      case `npsWithConfirmedAPI` => npsURL(taxAccountUrls.taxAccountUrlNpsConfirmed(nino, taxYear))
+      case `npsWithNonConfirmedAPI` => npsURL(taxAccountUrls.taxAccountUrlNpsCalculation(nino, taxYear))
     }
   }
 
