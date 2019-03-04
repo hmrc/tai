@@ -44,7 +44,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
 
   def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
 
-    def taxAccountURL(url: String, originatorId: String) = {
+    val taxAccountURL = (url: String, originatorId: String) => {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> originatorId)
       httpHandler.getFromApi(url, APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
     }
