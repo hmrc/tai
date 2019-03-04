@@ -44,21 +44,21 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
 
     "toggled to use NPS" must {
 
-      "return Tax Account as Json in the response" in {
-        val featureTogglesConfig = mock[FeatureTogglesConfig]
-        val url = {
-          val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
-          s"${path.getPath}"
-        }
-
-        when(featureTogglesConfig.desEnabled).thenReturn(false)
-        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
-
-        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
-
-        result mustBe jsonResponse
-      }
+//      "return Tax Account as Json in the response" in {
+//        val featureTogglesConfig = mock[FeatureTogglesConfig]
+//        val url = {
+//          val path = new URL(taxAccountUrlConfig.taxAccountUrlNps(nino, taxYear))
+//          s"${path.getPath}"
+//        }
+//
+//        when(featureTogglesConfig.desEnabled).thenReturn(false)
+//        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+//
+//        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+//        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+//
+//        result mustBe jsonResponse
+//      }
 
       "updateTaxCodeIncome" must {
 
@@ -117,21 +117,21 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
 
     "toggled to use DES" must {
 
-      "return Tax Account as Json in the response" in {
-        val featureTogglesConfig = mock[FeatureTogglesConfig]
-        val url = {
-          val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
-          s"${path.getPath}?${path.getQuery}"
-        }
-
-        when(featureTogglesConfig.desEnabled).thenReturn(true)
-        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
-
-        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
-
-        result mustBe jsonResponse
-      }
+//      "return Tax Account as Json in the response" in {
+//        val featureTogglesConfig = mock[FeatureTogglesConfig]
+//        val url = {
+//          val path = new URL(taxAccountUrlConfig.taxAccountUrlDes(nino, taxYear))
+//          s"${path.getPath}?${path.getQuery}"
+//        }
+//
+//        when(featureTogglesConfig.desEnabled).thenReturn(true)
+//        server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+//
+//        val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
+//        val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+//
+//        result mustBe jsonResponse
+//      }
 
       "updateTaxCodeIncome" must {
 

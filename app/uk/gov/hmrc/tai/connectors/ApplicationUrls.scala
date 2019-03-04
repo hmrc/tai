@@ -75,11 +75,17 @@ class BbsiUrls @Inject()(config: DesConfig) {
 @Singleton
 class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 
-  def taxAccountUrlNps(nino: Nino, taxYear: TaxYear): String =
-    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}/calculation"
+  def taxAccountUrlNpsConfirmed(nino: Nino, taxYear: TaxYear): String =
+    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
 
-  def taxAccountUrlDes(nino: Nino, taxYear: TaxYear): String =
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}?calculation=true"
+  def taxAccountUrlNpsCalculation(nino: Nino, taxYear: TaxYear): String =
+    s"${taxAccountUrlNpsConfirmed(nino, taxYear)}/calculation"
+
+  def taxAccountUrlDesConfirmed(nino: Nino, taxYear: TaxYear): String =
+    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}"
+
+  def taxAccountUrlDesCalculation(nino: Nino, taxYear: TaxYear): String =
+    s"${taxAccountUrlDesConfirmed(nino, taxYear)}?calculation=true"
 
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
