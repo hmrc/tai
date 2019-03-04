@@ -52,7 +52,6 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
     def npsURL(url: String) = taxAccountURL(url, npsConfig.originatorId)
     def desURL(url: String) = taxAccountURL(url, desConfig.originatorId)
 
-
     (featureTogglesConfig.desEnabled, featureTogglesConfig.confirmedAPIEnabled) match {
       case(false, false) => npsURL(taxAccountUrls.taxAccountUrlNpsCalculation(nino, taxYear))
       case(false, true) => npsURL(taxAccountUrls.taxAccountUrlNpsConfirmed(nino, taxYear))
