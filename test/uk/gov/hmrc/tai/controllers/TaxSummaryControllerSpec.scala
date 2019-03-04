@@ -78,7 +78,7 @@ class TaxSummaryControllerSpec
         "message" -> "Cannot complete a Coding Calculation without a Primary Employment",
         "statusCode" -> 400,
         "appStatusMessage" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -97,7 +97,7 @@ class TaxSummaryControllerSpec
         "message" -> "Not Found Exception",
         "statusCode" -> 404,
         "appStatusMessage" -> "Not Found Exception",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -115,7 +115,7 @@ class TaxSummaryControllerSpec
         "message" -> "Service Unavailable",
         "statusCode" -> 503,
         "appStatusMessage" -> "Service Unavailable",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -133,7 +133,7 @@ class TaxSummaryControllerSpec
         "message" -> "Internal Server error",
         "statusCode" -> 500,
         "appStatusMessage" -> "Internal Server error",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))

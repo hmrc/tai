@@ -112,7 +112,7 @@ class TaiControllerTest extends PlaySpec
         "message" -> "Cannot complete a Coding Calculation without a Primary Employment",
         "statusCode" -> 400,
         "appStatusMessage" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -131,7 +131,7 @@ class TaiControllerTest extends PlaySpec
         "message" -> "Not Found Exception",
         "statusCode" -> 404,
         "appStatusMessage" -> "Not Found Exception",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -149,7 +149,7 @@ class TaiControllerTest extends PlaySpec
         "message" -> "Service Unavailable",
         "statusCode" -> 503,
         "appStatusMessage" -> "Service Unavailable",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -167,7 +167,7 @@ class TaiControllerTest extends PlaySpec
         "message" -> "Internal Server error",
         "statusCode" ->  500,
         "appStatusMessage" -> "Internal Server error",
-        "requestUri" ->  s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri" ->  s"nps/person/${nino.nino}/tax-account/2014")
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))

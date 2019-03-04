@@ -71,12 +71,12 @@ class NpsConnector @Inject()(metrics: Metrics,
   }
 
   def getCalculatedTaxAccount(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
-    val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
+    val urlToRead = npsPathUrl(nino, s"tax-account/$year")
     getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
   }
 
   def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
+    val urlToRead = npsPathUrl(nino, s"tax-account/$year")
     implicit val hc = basicNpsHeaders(HeaderCarrier())
     httpClient.GET[HttpResponse](urlToRead)
   }

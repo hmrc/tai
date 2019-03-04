@@ -632,7 +632,7 @@ class TaxAccountServiceSpec extends PlaySpec
           "message" -> "Service Unavailable",
           "statusCode" -> 503,
           "appStatusMessage" -> "Service Unavailable",
-          "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+          "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014")
 
         val mockTaiService = mock[TaiService]
         when(mockTaiService.getAutoUpdateResults(any(), any())(any()))

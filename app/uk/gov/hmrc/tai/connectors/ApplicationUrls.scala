@@ -76,7 +76,7 @@ class BbsiUrls @Inject()(config: DesConfig) {
 class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 
   def taxAccountUrlNps(nino: Nino, taxYear: TaxYear): String =
-    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}/calculation"
+    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
 
   def taxAccountUrlDes(nino: Nino, taxYear: TaxYear): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}"
