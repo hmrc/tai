@@ -42,34 +42,20 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
                                     httpHandler: HttpHandler,
                                     featureTogglesConfig: FeatureTogglesConfig) extends HodsSource {
 
+  def hcWithHodHeaders(implicit hc:HeaderCarrier) =
+    if(featureTogglesConfig.desEnabled){
+      createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+    } else {
+      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+    }
+
   def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
-
-    def taxAccountURL = (url: String, originatorId: String) => {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> originatorId)
-      httpHandler.getFromApi(url, APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
-    }
-
-    def npsURL(url: String) = taxAccountURL(url, npsConfig.originatorId)
-    def desURL(url: String) = taxAccountURL(url, desConfig.originatorId)
-
-    val desWithConfirmedAPI = (true, true)
-    val desWithNonConfirmedAPI = (true, false)
-    val npsWithConfirmedAPI = (false, true)
-    val npsWithNonConfirmedAPI = (false, false)
-
-    (featureTogglesConfig.desEnabled, featureTogglesConfig.confirmedAPIEnabled) match {
-      case `desWithConfirmedAPI` => desURL(taxAccountUrls.taxAccountUrlDesConfirmed(nino, taxYear))
-      case `desWithNonConfirmedAPI` => desURL(taxAccountUrls.taxAccountUrlDesCalculation(nino, taxYear))
-      case `npsWithConfirmedAPI` => npsURL(taxAccountUrls.taxAccountUrlNpsConfirmed(nino, taxYear))
-      case `npsWithNonConfirmedAPI` => npsURL(taxAccountUrls.taxAccountUrlNpsCalculation(nino, taxYear))
-    }
+    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
   }
 
-
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
-    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)(hcWithHodHeaders)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)

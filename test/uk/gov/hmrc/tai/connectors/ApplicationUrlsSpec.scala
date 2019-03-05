@@ -32,13 +32,19 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   val mockConfigNps = mock[NpsConfig]
   val mockConfigDes = mock[DesConfig]
   val mockConfigFileUpload = mock[FileUploadConfig]
+  val mockFeatureToggleConfig = mock[FeatureTogglesConfig]
 
   when(mockConfigNps.baseURL).thenReturn("")
   when(mockConfigDes.baseURL).thenReturn("")
   when(mockConfigFileUpload.baseURL).thenReturn("")
 
-  val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
+  val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes, mockFeatureToggleConfig)
   val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+
+  def featureToggle(desEnabled: Boolean, confirmedAPIEnabled: Boolean) = {
+    when(mockFeatureToggleConfig.desEnabled).thenReturn(desEnabled)
+    when(mockFeatureToggleConfig.confirmedAPIEnabled).thenReturn(confirmedAPIEnabled)
+  }
 
   private val nino: Nino = new Generator(new Random).nextNino
 
@@ -130,13 +136,15 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     "toggled for calculation" must {
       "return the correct DES url" when {
         "given argument values" in {
-          taxAccountUrls.taxAccountUrlDesCalculation(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+          featureToggle(true, false)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
         }
       }
 
       "return the correct NPS url" when {
         "given argument values" in {
-          taxAccountUrls.taxAccountUrlNpsCalculation(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
+          featureToggle(false, false)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
         }
       }
     }
@@ -144,12 +152,14 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     "toggled for confirmed" must {
       "return the correct DES url" when {
         "given argument values" in {
-          taxAccountUrls.taxAccountUrlDesConfirmed(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
+          featureToggle(true, true)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
         }
       }
       "return the correct NPS url" when {
         "given argument values" in {
-          taxAccountUrls.taxAccountUrlNpsConfirmed(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
+          featureToggle(false, true)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
         }
       }
     }

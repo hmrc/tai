@@ -73,22 +73,20 @@ class BbsiUrls @Inject()(config: DesConfig) {
 }
 
 @Singleton
-class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
+class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featureTogglesConfig: FeatureTogglesConfig) {
 
-  def taxAccountUrlNpsConfirmed(nino: Nino, taxYear: TaxYear): String =
-    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
+  private val desTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
+    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}${if(!featureTogglesConfig.confirmedAPIEnabled)"?calculation=true" else ""}"
 
-  def taxAccountUrlNpsCalculation(nino: Nino, taxYear: TaxYear): String =
-    s"${taxAccountUrlNpsConfirmed(nino, taxYear)}/calculation"
-
-  def taxAccountUrlDesConfirmed(nino: Nino, taxYear: TaxYear): String =
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}"
-
-  def taxAccountUrlDesCalculation(nino: Nino, taxYear: TaxYear): String =
-    s"${taxAccountUrlDesConfirmed(nino, taxYear)}?calculation=true"
+  private val npsTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
+    s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}${if(!featureTogglesConfig.confirmedAPIEnabled)"/calculation" else ""}"
 
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
+
+  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = {
+    if (featureTogglesConfig.desEnabled) desTaxAccountURL(nino, taxYear) else npsTaxAccountURL(nino, taxYear)
+  }
 }
 
 @Singleton
