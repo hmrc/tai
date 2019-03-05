@@ -76,7 +76,8 @@ class BbsiUrls @Inject()(config: DesConfig) {
 class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featureTogglesConfig: FeatureTogglesConfig) {
 
   private val desTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}${if(!featureTogglesConfig.confirmedAPIEnabled)"?calculation=true" else ""}"
+    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year" +
+      s"/${taxYear.year}${if(!featureTogglesConfig.confirmedAPIEnabled)"?calculation=true" else ""}"
 
   private val npsTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
     s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}${if(!featureTogglesConfig.confirmedAPIEnabled)"/calculation" else ""}"
