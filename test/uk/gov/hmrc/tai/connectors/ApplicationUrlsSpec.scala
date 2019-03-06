@@ -19,23 +19,40 @@ package uk.gov.hmrc.tai.connectors
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-
-import scala.util.Random
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.util.Random
+
+
 class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
+
+  val mockConfigNps = mock[NpsConfig]
+  val mockConfigDes = mock[DesConfig]
+  val mockConfigFileUpload = mock[FileUploadConfig]
+  val mockFeatureToggleConfig = mock[FeatureTogglesConfig]
+
+  when(mockConfigNps.baseURL).thenReturn("")
+  when(mockConfigDes.baseURL).thenReturn("")
+  when(mockConfigFileUpload.baseURL).thenReturn("")
+
+  val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes, mockFeatureToggleConfig)
+  val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+
+  def featureToggle(desEnabled: Boolean, confirmedAPIEnabled: Boolean) = {
+    when(mockFeatureToggleConfig.desEnabled).thenReturn(desEnabled)
+    when(mockFeatureToggleConfig.confirmedAPIEnabled).thenReturn(confirmedAPIEnabled)
+  }
+
+  private val nino: Nino = new Generator(new Random).nextNino
+
 
   "RtiUrls" must {
     "return the correct urls" when {
       "given argument values" in {
-        val mockConfig = mock[DesConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
-
-        val rtiUrls = new RtiUrls(mockConfig)
+        val rtiUrls = new RtiUrls(mockConfigDes)
         rtiUrls.paymentsForYearUrl(nino.nino, TaxYear(2017)) mustBe
           s"/rti/individual/payments/nino/${nino.nino}/tax-year/17-18"
       }
@@ -73,24 +90,17 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   "FileUploadUrls" must {
     "return the correct urls" when {
       "no arguments are given" in {
-        val mockConfig = mock[FileUploadConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
-
-        val fileUploadUrls = new FileUploadUrls(mockConfig)
+        val fileUploadUrls = new FileUploadUrls(mockConfigFileUpload)
 
         fileUploadUrls.envelopesUrl mustBe "/file-upload/envelopes"
         fileUploadUrls.routingUrl mustBe "/file-routing/requests"
       }
 
       "given argument values" in {
-        val mockConfig = mock[FileUploadConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
-        when(mockConfig.frontendBaseURL)
-          .thenReturn("")
 
-        val fileUploadUrls = new FileUploadUrls(mockConfig)
+        when(mockConfigFileUpload.frontendBaseURL).thenReturn("")
+
+        val fileUploadUrls = new FileUploadUrls(mockConfigFileUpload)
 
         fileUploadUrls.fileUrl("123-123", "xml") mustBe "/file-upload/upload/envelopes/123-123/files/xml"
       }
@@ -114,11 +124,7 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   "BbsiUrls" must {
     "return the correct urls" when {
       "given argument values" in {
-        val mockConfig = mock[DesConfig]
-        when(mockConfig.baseURL)
-          .thenReturn("")
-
-        val bbsiUrls = new BbsiUrls(mockConfig)
+        val bbsiUrls = new BbsiUrls(mockConfigDes)
 
         bbsiUrls.bbsiUrl(nino, TaxYear(2017)) mustBe
           s"/pre-population-of-investment-income/nino/${nino.nino.take(8)}/tax-year/2017"
@@ -126,36 +132,45 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  "TaxAccountUrls" must {
-    "return the correct urls" when {
-      "given argument values" in {
-        val mockConfigNps = mock[NpsConfig]
-        when(mockConfigNps.baseURL)
-          .thenReturn("")
+  "TaxAccountUrls" when {
+    "toggled for calculation" must {
+      "return the correct DES url" when {
+        "given argument values" in {
+          featureToggle(true, false)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+        }
+      }
 
-        val mockConfigDes = mock[DesConfig]
-        when(mockConfigDes.baseURL)
-          .thenReturn("")
-
-        val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
-
-        taxAccountUrls.taxAccountUrlNps(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
-        taxAccountUrls.taxAccountUrlDes(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+      "return the correct NPS url" when {
+        "given argument values" in {
+          featureToggle(false, false)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
+        }
       }
     }
+
+    "toggled for confirmed" must {
+      "return the correct DES url" when {
+        "given argument values" in {
+          featureToggle(true, true)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
+        }
+      }
+      "return the correct NPS url" when {
+        "given argument values" in {
+          featureToggle(false, true)
+          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
+        }
+      }
+    }
+
   }
+
+
 
   "IabdUrls" must {
     "return the correct urls" when {
       "given argument values" in {
-        val mockConfigNps = mock[NpsConfig]
-        val mockConfigDes = mock[DesConfig]
-
-        when(mockConfigNps.baseURL).thenReturn("")
-        when(mockConfigDes.baseURL).thenReturn("")
-
-        val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
-
         iabdUrls.npsIabdUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
         iabdUrls.desIabdUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017"
       }
@@ -163,14 +178,6 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
     "return the correct iabd employment url" when {
       "given argument values" in {
-        val mockConfigNps = mock[NpsConfig]
-        val mockConfigDes = mock[DesConfig]
-
-        when(mockConfigNps.baseURL).thenReturn("")
-        when(mockConfigDes.baseURL).thenReturn("")
-
-        val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
-
         iabdUrls.npsIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
         iabdUrls.desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
       }
@@ -179,20 +186,10 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     "IabdByTypeUrls" must {
       "return the correct urls" when {
         "given argument values" in {
-          val mockConfigNps = mock[NpsConfig]
-          val mockConfigDes = mock[DesConfig]
-
-          when(mockConfigNps.baseURL).thenReturn("")
-          when(mockConfigDes.baseURL).thenReturn("")
-
-          val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
-
           iabdUrls.desIabdByTypeUrl(nino, TaxYear(2017), IabdType.FlatRateJobExpenses) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017?type=56"
         }
       }
     }
   }
 
-
-  private val nino: Nino = new Generator(new Random).nextNino
 }

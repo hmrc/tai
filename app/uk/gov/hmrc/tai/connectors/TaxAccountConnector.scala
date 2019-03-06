@@ -42,24 +42,20 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
                                     httpHandler: HttpHandler,
                                     featureTogglesConfig: FeatureTogglesConfig) extends HodsSource {
 
-  def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
+  def hcWithHodHeaders(implicit hc:HeaderCarrier): HeaderCarrier =
+    if(featureTogglesConfig.desEnabled){
+      createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+    } else {
+      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+    }
 
-    if(featureTogglesConfig.desEnabled) {
-      implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
-      val url = taxAccountUrls.taxAccountUrlDes(nino, taxYear)
-      httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
-    }
-    else{
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
-      val url = taxAccountUrls.taxAccountUrlNps(nino, taxYear)
-      httpHandler.getFromApi(url, APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
-    }
+  def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
+    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
   }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
-    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)(hcWithHodHeaders)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)
