@@ -42,7 +42,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
                                     httpHandler: HttpHandler,
                                     featureTogglesConfig: FeatureTogglesConfig) extends HodsSource {
 
-  def hcWithHodHeaders(implicit hc:HeaderCarrier) =
+  def hcWithHodHeaders(implicit hc:HeaderCarrier): HeaderCarrier =
     if(featureTogglesConfig.desEnabled){
       createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     } else {
