@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
@@ -86,6 +87,8 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featu
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 
   def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = {
+    Logger.warn("confiredAPIEnabled: " + featureTogglesConfig.confirmedAPIEnabled.toString)
+    Logger.warn("featureTogglesConfig:" + featureTogglesConfig.desEnabled.toString)
     if (featureTogglesConfig.desEnabled) desTaxAccountURL(nino, taxYear) else npsTaxAccountURL(nino, taxYear)
   }
 }
