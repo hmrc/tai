@@ -19,7 +19,8 @@ package uk.gov.hmrc.tai.connectors
 import java.net.URL
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.Matchers
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
@@ -29,11 +30,12 @@ import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
+import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
@@ -142,6 +144,19 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
         val result = Await.result(connector.taxAccountHistory(nino, taxCodeId), 5.seconds)
 
         result mustEqual json
+      }
+
+      "call DES API" in {
+        val taxCodeId = 1
+
+        val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
+        val httpHandlerMock = mock[HttpHandler]
+
+        when(httpHandlerMock.getFromApi(Matchers.any(), Matchers.eq(APITypes.DesTaxAccountAPI))(Matchers.any())).thenReturn(Future.successful(json))
+        val connector = createSUT(httpHandler = httpHandlerMock)
+        Await.result(connector.taxAccountHistory(nino, taxCodeId), 5.seconds)
+
+        verify(httpHandlerMock, times(1)).getFromApi(Matchers.any(), Matchers.eq(APITypes.DesTaxAccountAPI))(Matchers.any())
       }
     }
 
