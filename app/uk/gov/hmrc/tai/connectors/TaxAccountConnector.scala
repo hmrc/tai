@@ -54,8 +54,9 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
   }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
+    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)(hcWithHodHeaders)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)
