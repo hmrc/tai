@@ -20,7 +20,7 @@ import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -33,7 +33,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesData}
 
 import scala.concurrent.Future
 
@@ -91,6 +91,16 @@ class NpsConnector @Inject()(metrics: Metrics,
     } else {
       Future(HttpResponse(OK))
     }
+  }
+
+  def updateExpensesData(nino: Nino, year: Int, iabdType: Int, version: Int,
+                              expensesData: List[IabdUpdateExpensesData],
+                              apiType: APITypes = APITypes.NpsIabdUpdateFlatRateExpensesAPI)
+                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+
+    val postUrl = npsPathUrl(nino, s"iabds/$year/$iabdType")
+
+    postToNps[List[IabdUpdateExpensesData]](postUrl, apiType, expensesData)(extraNpsHeaders(hc, version, sessionOrUUID), Writes.list[IabdUpdateExpensesData])
   }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String = {

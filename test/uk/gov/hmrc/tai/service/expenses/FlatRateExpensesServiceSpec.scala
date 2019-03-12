@@ -77,6 +77,8 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
+        when(mockFeaturesToggle.desEnabled).thenReturn(true)
+
         Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
           .status mustBe 200
       }
@@ -86,6 +88,32 @@ class FlatRateExpensesServiceSpec extends PlaySpec
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
+
+        when(mockFeaturesToggle.desEnabled).thenReturn(true)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
+          .status mustBe 500
+      }
+    }
+
+    "return 200" when {
+      "success response from nps connector" in {
+        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
+
+        when(mockFeaturesToggle.desEnabled).thenReturn(false)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
+          .status mustBe 200
+      }
+    }
+
+    "return 500" when {
+      "failure response from nps connector" in {
+        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(500)))
+
+        when(mockFeaturesToggle.desEnabled).thenReturn(false)
 
         Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
           .status mustBe 500
