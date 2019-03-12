@@ -213,7 +213,6 @@ class NpsConnectorSpec extends PlaySpec
             version = 1,
             expensesData = List(
               IabdUpdateExpensesData(
-                201800001,
                 100
               )
             )
