@@ -193,8 +193,8 @@ class NpsConnectorSpec extends PlaySpec
     }
 
 
-    "return a OK" when {
-        "updating expenses data to des" in {
+    "update expenses data" when {
+        "given valid data return OK" in {
           val mockHttpClient = mock[HttpClient]
 
           when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
