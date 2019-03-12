@@ -55,7 +55,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
     featureTogglesConfig = mockFeaturesToggle)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesData = IabdUpdateExpensesData(201800001, 100)
+  private val iabdUpdateExpensesData = IabdUpdateExpensesData(100)
   private val iabd = IabdType.FlatRateJobExpenses
 
   private val validNpsIabd: List[NpsIabdRoot] = List(

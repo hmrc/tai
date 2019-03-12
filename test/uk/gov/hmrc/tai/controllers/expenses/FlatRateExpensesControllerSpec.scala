@@ -51,7 +51,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
   private val nino = new Generator(new Random).nextNino
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1,
-    IabdUpdateExpensesData(sequenceNumber = 201800001, grossAmount = 100)
+    IabdUpdateExpensesData(grossAmount = 100)
   )
 
   private val taxYear = 2017

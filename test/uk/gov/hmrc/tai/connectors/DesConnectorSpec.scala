@@ -449,7 +449,6 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             version = 1,
             expensesData = List(
               IabdUpdateExpensesData(
-                201800001,
                 100
               )
             )
@@ -478,7 +477,6 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             version = 1,
             expensesData = List(
               IabdUpdateExpensesData(
-                201800001,
                 100
               )
             )
