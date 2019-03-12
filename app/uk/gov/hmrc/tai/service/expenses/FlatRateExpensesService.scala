@@ -38,14 +38,25 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
   def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    desConnector.updateExpensesDataToDes(
-      nino = nino,
-      year = taxYear.year,
-      iabdType = IabdType.FlatRateJobExpenses.code,
-      version = version,
-      expensesData = List(expensesData),
-      apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-    )
+    if(featureTogglesConfig.desUpdateEnabled || featureTogglesConfig.desEnabled) {
+      desConnector.updateExpensesDataToDes(
+        nino = nino,
+        year = taxYear.year,
+        iabdType = IabdType.FlatRateJobExpenses.code,
+        version = version,
+        expensesData = List(expensesData),
+        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+      )
+    } else {
+      npsConnector.updateExpensesData(
+        nino = nino,
+        year = taxYear.year,
+        iabdType = IabdType.FlatRateJobExpenses.code,
+        version = version,
+        expensesData = List(expensesData),
+        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+      )
+    }
   }
 
   def getFlatRateExpenses(nino: Nino, taxYear: Int)
