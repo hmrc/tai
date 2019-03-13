@@ -24,7 +24,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -32,8 +32,8 @@ import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, IabdUpdateExpensesData}
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
@@ -197,7 +197,7 @@ class NpsConnectorSpec extends PlaySpec
         "given valid data return OK" in {
           val mockHttpClient = mock[HttpClient]
 
-          when(mockHttpClient.POST[IabdUpdateExpensesData, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          when(mockHttpClient.POST[IabdUpdateAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
             .thenReturn(Future.successful(HttpResponse(Status.OK)))
 
           val mockMetrics = mock[Metrics]
@@ -212,7 +212,8 @@ class NpsConnectorSpec extends PlaySpec
             iabdType = 56,
             version = 1,
             expensesData = List(
-              IabdUpdateExpensesData(
+              IabdUpdateAmount(
+                201800001,
                 100
               )
             )

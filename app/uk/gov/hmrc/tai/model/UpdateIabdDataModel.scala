@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
+import play.api.libs.functional.syntax.unlift
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class TransactionId(oid: String)
@@ -85,7 +87,7 @@ object PayAnnualisationResponse {
   implicit val format = Json.format[PayAnnualisationResponse]
 }
 
-case class IabdUpdateExpensesRequest(version: Int, expensesData: IabdUpdateExpensesData)
+case class IabdUpdateExpensesRequest(version: Int, employmentSequenceNumber: Int, grossAmount: Int)
 
 object IabdUpdateExpensesRequest {
   implicit val format = Json.format[IabdUpdateExpensesRequest]

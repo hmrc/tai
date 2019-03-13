@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateExpensesData, IabdUpdateExpensesRequest}
+import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.Future
@@ -50,9 +50,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
     new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1,
-    IabdUpdateExpensesData(grossAmount = 100)
-  )
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, employmentSequenceNumber = 201800001, grossAmount = 100)
 
   private val taxYear = 2017
 
