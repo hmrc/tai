@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector, NpsConnector}
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
+import uk.gov.hmrc.tai.model.IabdUpdateAmount
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType
@@ -35,10 +35,10 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
                                         iabdConnector: IabdConnector,
                                         featureTogglesConfig: FeatureTogglesConfig) {
 
-  def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
+  def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateAmount)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    if(featureTogglesConfig.desUpdateEnabled || featureTogglesConfig.desEnabled) {
+    if(featureTogglesConfig.desUpdateEnabled) {
       desConnector.updateExpensesDataToDes(
         nino = nino,
         year = taxYear.year,
