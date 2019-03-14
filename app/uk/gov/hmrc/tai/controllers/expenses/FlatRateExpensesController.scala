@@ -51,7 +51,7 @@ class FlatRateExpensesController @Inject()(
           ).map {
             value =>
               value.status match {
-                case OK => NoContent
+                case OK | NO_CONTENT | ACCEPTED => NoContent
                 case _ => InternalServerError
               }
           }

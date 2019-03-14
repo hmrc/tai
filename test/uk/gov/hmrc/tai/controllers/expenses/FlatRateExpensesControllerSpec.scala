@@ -66,13 +66,37 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
   "updateFlatRateExpensesData" must {
 
-    "return OK" when {
-      "a valid update amount is provided" in {
+    "return NO CONTENT" when {
+      "a valid update amount is provided and a OK response is returned" in {
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
         when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
+
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a NO CONTENT response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(204)))
+
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a ACCEPTED response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(202)))
 
         val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 
