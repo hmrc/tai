@@ -53,7 +53,7 @@ trait TaxCodeIncomeHodFormatters {
       val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(TaxCodeIncome(incomeSourceType, employmentId, amount, description, taxCode, name, basisOperation, status, iyaCy, totalIya, iyaCyPlusOne))
+      JsSuccess(TaxCodeIncome(incomeSourceType, employmentId, amount, description, taxCode, name, basisOperation, status, iyaCy,totalIya,iyaCyPlusOne))
     }
   }
 
@@ -85,9 +85,7 @@ trait TaxCodeIncomeHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case _ =>
-        Logger.warn(json.toString())
-        throw new RuntimeException("Invalid employment status")
+      case _ => throw new RuntimeException("Invalid employment status")
     }
   }
 
