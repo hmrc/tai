@@ -33,7 +33,7 @@ import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdFlatRateExpense}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
@@ -197,7 +197,7 @@ class NpsConnectorSpec extends PlaySpec
         "given valid data return OK" in {
           val mockHttpClient = mock[HttpClient]
 
-          when(mockHttpClient.POST[IabdUpdateAmount, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          when(mockHttpClient.POST[UpdateIabdFlatRateExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
             .thenReturn(Future.successful(HttpResponse(Status.OK)))
 
           val mockMetrics = mock[Metrics]
@@ -211,12 +211,7 @@ class NpsConnectorSpec extends PlaySpec
             year = DateTime.now().getYear,
             iabdType = 56,
             version = 1,
-            expensesData = List(
-              IabdUpdateAmount(
-                201800001,
-                100
-              )
-            )
+            expensesData = UpdateIabdFlatRateExpense(100)
           )(HeaderCarrier()), 5 seconds)
 
           result.status mustBe Status.OK
