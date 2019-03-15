@@ -44,7 +44,7 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
         year = taxYear.year,
         iabdType = IabdType.FlatRateJobExpenses.code,
         version = version,
-        expensesData = expensesData,
+        expensesData = List(expensesData),
         apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
       )
     } else {
