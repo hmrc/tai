@@ -27,6 +27,7 @@ object APITypes extends Enumeration {
   val NpsEmploymentAPI = Value
   val NpsIabdUpdateEstPayAutoAPI = Value
   val NpsIabdUpdateEstPayManualAPI = Value
+  val NpsIabdUpdateFlatRateExpensesAPI = Value
   val RTIAPI = Value
   val DesTaxAccountAPI = Value
   val DesIabdAllAPI = Value

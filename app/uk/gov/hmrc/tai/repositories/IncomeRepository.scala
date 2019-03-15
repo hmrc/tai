@@ -17,9 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
@@ -67,9 +65,6 @@ class IncomeRepository @Inject()(taxAccountRepository: TaxAccountRepository,
       taxCodeIncomes <- taxCodeIncomeFuture
       iabdDetails <- iabdDetailsFuture
     } yield {
-
-      Logger.warn(s"taxCodeIncomes size for $nino for $year is [${taxCodeIncomes.size}]")
-      Logger.warn(s"iabdDetails size for $nino for $year is [${iabdDetails.size}]")
 
       taxCodeIncomes.map { taxCodeIncome =>
         addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)

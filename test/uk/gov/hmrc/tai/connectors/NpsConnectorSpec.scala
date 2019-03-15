@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
+import org.joda.time.DateTime
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -30,8 +32,8 @@ import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdFlatRateExpense}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
@@ -189,7 +191,34 @@ class NpsConnectorSpec extends PlaySpec
         result.status mustBe 200
       }
     }
-  }
+
+
+    "update expenses data" when {
+        "given valid data return OK" in {
+          val mockHttpClient = mock[HttpClient]
+
+          when(mockHttpClient.POST[UpdateIabdFlatRateExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+            .thenReturn(Future.successful(HttpResponse(Status.OK)))
+
+          val mockMetrics = mock[Metrics]
+          when(mockMetrics.startTimer(any()))
+            .thenReturn(mock[Timer.Context])
+
+          val sut: NpsConnector = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
+
+          val result = Await.result(sut.updateExpensesData(
+            nino = SuccessTestNino,
+            year = DateTime.now().getYear,
+            iabdType = 56,
+            version = 1,
+            expensesData = UpdateIabdFlatRateExpense(100)
+          )(HeaderCarrier()), 5 seconds)
+
+          result.status mustBe Status.OK
+        }
+      }
+
+    }
 
   private case class ResponseObject(name: String, age: Int)
   private val SuccessTestNino = new Generator(new Random).nextNino

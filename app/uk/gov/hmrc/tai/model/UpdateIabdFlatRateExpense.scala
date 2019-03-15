@@ -19,20 +19,15 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json._
 
 /**
-  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*
-  * sequenceNumber:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999999*
+  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*	
+  *
   * @param grossAmount
   */
-case class IabdUpdateExpensesData(
-                                      sequenceNumber: Int,
-                                      grossAmount : Int
-                                    ) {
+case class UpdateIabdFlatRateExpense(grossAmount: Int) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
-  require(sequenceNumber >= 0, "sequenceNumber cannot be less than 0")
-  require(sequenceNumber <= 999999999, "sequenceNumber cannot be greater than 999999999")
 }
 
-object IabdUpdateExpensesData {
-  implicit val format: Format[IabdUpdateExpensesData] = Json.format[IabdUpdateExpensesData]
+object UpdateIabdFlatRateExpense {
+  implicit val format: Format[UpdateIabdFlatRateExpense] = Json.format[UpdateIabdFlatRateExpense]
 }

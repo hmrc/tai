@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateExpensesData, IabdUpdateExpensesRequest}
+import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.Future
@@ -50,9 +50,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
     new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1,
-    IabdUpdateExpensesData(sequenceNumber = 201800001, grossAmount = 100)
-  )
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount = 100)
 
   private val taxYear = 2017
 
@@ -68,13 +66,37 @@ class FlatRateExpensesControllerSpec extends PlaySpec
 
   "updateFlatRateExpensesData" must {
 
-    "return OK" when {
-      "a valid update amount is provided" in {
+    "return NO CONTENT" when {
+      "a valid update amount is provided and a OK response is returned" in {
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
         when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
+
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a NO CONTENT response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(204)))
+
+        val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a ACCEPTED response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(mockFlatRateExpensesService.updateFlatRateExpensesData(any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(202)))
 
         val result = controller().updateFlatRateExpensesData(nino, TaxYear())(fakeRequest)
 

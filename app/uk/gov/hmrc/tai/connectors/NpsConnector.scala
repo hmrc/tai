@@ -33,7 +33,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdFlatRateExpense}
 
 import scala.concurrent.Future
 
@@ -91,6 +91,16 @@ class NpsConnector @Inject()(metrics: Metrics,
     } else {
       Future(HttpResponse(OK))
     }
+  }
+
+  def updateExpensesData(nino: Nino, year: Int, iabdType: Int, version: Int,
+                         expensesData: UpdateIabdFlatRateExpense,
+                         apiType: APITypes = APITypes.NpsIabdUpdateFlatRateExpensesAPI)
+                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+
+    val postUrl = npsPathUrl(nino, s"iabds/$year/$iabdType")
+
+    postToNps[UpdateIabdFlatRateExpense](postUrl, apiType, expensesData)(extraNpsHeaders(hc, version, sessionOrUUID), implicitly)
   }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String = {

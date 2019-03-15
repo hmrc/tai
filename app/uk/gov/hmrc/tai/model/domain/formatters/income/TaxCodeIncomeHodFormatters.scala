@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters.income
 
+import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -103,7 +104,12 @@ trait TaxCodeIncomeHodFormatters {
       _.find(iabd => newEstimatedPayTypeFilter(iabd) &&
         employmentFilter(iabd, employmentId))
     }
-    iabdSummary.map(_.amount)
+    iabdSummary.map(_.amount) match {
+      case Some(amount) => Some(amount)
+      case _ =>
+        Logger.warn("TotalTaxableIncome is 0")
+        None
+    }
   }
 
   private[formatters] def newEstimatedPayTypeFilter(iabdSummary: IabdSummary): Boolean = {

@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector, NpsConnector}
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
+import uk.gov.hmrc.tai.model.UpdateIabdFlatRateExpense
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType
@@ -35,17 +35,28 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
                                         iabdConnector: IabdConnector,
                                         featureTogglesConfig: FeatureTogglesConfig) {
 
-  def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: IabdUpdateExpensesData)
+  def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: UpdateIabdFlatRateExpense)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    desConnector.updateExpensesDataToDes(
-      nino = nino,
-      year = taxYear.year,
-      iabdType = IabdType.FlatRateJobExpenses.code,
-      version = version,
-      expensesData = List(expensesData),
-      apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-    )
+    if (featureTogglesConfig.desUpdateEnabled) {
+      desConnector.updateExpensesDataToDes(
+        nino = nino,
+        year = taxYear.year,
+        iabdType = IabdType.FlatRateJobExpenses.code,
+        version = version,
+        expensesData = expensesData,
+        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+      )
+    } else {
+      npsConnector.updateExpensesData(
+        nino = nino,
+        year = taxYear.year,
+        iabdType = IabdType.FlatRateJobExpenses.code,
+        version = version,
+        expensesData = expensesData,
+        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+      )
+    }
   }
 
   def getFlatRateExpenses(nino: Nino, taxYear: Int)

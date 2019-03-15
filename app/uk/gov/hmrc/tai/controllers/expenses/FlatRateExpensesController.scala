@@ -23,9 +23,9 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdFlatRateExpense}
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,11 +47,11 @@ class FlatRateExpensesController @Inject()(
             nino = nino,
             taxYear = year,
             version = iabdUpdateExpensesRequest.version,
-            expensesData = iabdUpdateExpensesRequest.expensesData
+            expensesData = UpdateIabdFlatRateExpense(iabdUpdateExpensesRequest.grossAmount)
           ).map {
             value =>
               value.status match {
-                case OK => NoContent
+                case OK | NO_CONTENT | ACCEPTED => NoContent
                 case _ => InternalServerError
               }
           }

@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesData
+import uk.gov.hmrc.tai.model.UpdateIabdFlatRateExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -55,7 +55,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
     featureTogglesConfig = mockFeaturesToggle)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesData = IabdUpdateExpensesData(201800001, 100)
+  private val updateIabdFlatRateExpense = UpdateIabdFlatRateExpense(100)
   private val iabd = IabdType.FlatRateJobExpenses
 
   private val validNpsIabd: List[NpsIabdRoot] = List(
@@ -77,7 +77,9 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
           .status mustBe 200
       }
     }
@@ -87,7 +89,33 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, iabdUpdateExpensesData), 5 seconds)
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+          .status mustBe 500
+      }
+    }
+
+    "return 200" when {
+      "success response from nps connector" in {
+        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
+
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(false)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+          .status mustBe 200
+      }
+    }
+
+    "return 500" when {
+      "failure response from nps connector" in {
+        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(500)))
+
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(false)
+
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
           .status mustBe 500
       }
     }
