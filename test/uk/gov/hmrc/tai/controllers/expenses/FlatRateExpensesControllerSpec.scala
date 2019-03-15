@@ -50,7 +50,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
     new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
 
   private val nino = new Generator(new Random).nextNino
-  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, employmentSequenceNumber = 201800001, grossAmount = 100)
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount = 100)
 
   private val taxYear = 2017
 
