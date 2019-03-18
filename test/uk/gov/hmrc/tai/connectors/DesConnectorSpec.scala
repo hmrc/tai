@@ -447,7 +447,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            expensesData = UpdateIabdFlatRateExpense(100)
+            expensesData = List(UpdateIabdFlatRateExpense(100))
           )(hc), 5 seconds)
 
           result.status mustBe Status.OK
@@ -471,7 +471,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            expensesData = UpdateIabdFlatRateExpense(100)
+            expensesData = List(UpdateIabdFlatRateExpense(100))
           )(hc)
 
           val ex: HttpException = the[HttpException] thrownBy Await.result(result, 5 seconds)
