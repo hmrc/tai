@@ -85,7 +85,9 @@ trait TaxCodeIncomeHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case _ => throw new RuntimeException("Invalid employment status")
+      case default =>
+        Logger.warn(s"Invalid Employment Status -> ${default.toString()}")
+        throw new RuntimeException("Invalid employment status")
     }
   }
 
