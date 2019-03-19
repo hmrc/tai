@@ -85,9 +85,11 @@ trait TaxCodeIncomeHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case default =>
-        Logger.warn(s"Invalid Employment Status -> ${default.toString()}")
+      case default => {
+        Logger.warn(s"Invalid Employment Status -> $default")
+        Logger.warn(s"Json -> $json")
         throw new RuntimeException("Invalid employment status")
+      }
     }
   }
 
