@@ -45,7 +45,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", testCache), 5 seconds) mustBe testCache
+        Await.result(sut.cached("testJourney", testCache)(hc), 5 seconds) mustBe testCache
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](any(),  Matchers.eq(testCache), Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
       }
 
@@ -57,7 +57,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", testCache), 5 seconds) mustBe
+        Await.result(sut.cached("testJourney", testCache)(hc), 5 seconds) mustBe
           Map("key1" -> "value1", "key2" -> "value2", "key3" -> "value3")
       }
 
@@ -70,7 +70,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", newCache), 5 seconds) mustBe
+        Await.result(sut.cached("testJourney", newCache)(hc), 5 seconds) mustBe
           Map("key1" -> "value1", "key3" -> "revised")
       }
     }
@@ -85,7 +85,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", "key3", "value3"), 5 seconds) mustBe expectedMap
+        Await.result(sut.cached("testJourney", "key3", "value3")(hc), 5 seconds) mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(), Matchers.eq(expectedMap), Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
@@ -100,7 +100,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", "key5", "value5"), 5 seconds) mustBe expectedMap
+        Await.result(sut.cached("testJourney", "key5", "value5")(hc), 5 seconds) mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(), Matchers.eq(expectedMap), Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
@@ -115,7 +115,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached("testJourney", "key4", "updated"), 5 seconds) mustBe expectedMap
+        Await.result(sut.cached("testJourney", "key4", "updated")(hc), 5 seconds) mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(), Matchers.eq(expectedMap), Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
@@ -132,8 +132,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.currentCache("exists"), 5 seconds) mustBe Some(existingCache)
-      Await.result(sut.currentCache("doesntexist"), 5 seconds) mustBe None
+      Await.result(sut.currentCache("exists")(hc), 5 seconds) mustBe Some(existingCache)
+      Await.result(sut.currentCache("doesntexist")(hc), 5 seconds) mustBe None
     }
 
     "retrive an individual cached value, by journey name and key" in {
@@ -146,9 +146,9 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.currentCache("exists", "key3"), 5 seconds) mustBe Some("value3")
-      Await.result(sut.currentCache("exists", "key5"), 5 seconds) mustBe None
-      Await.result(sut.currentCache("doesntexist", "nochance"), 5 seconds) mustBe None
+      Await.result(sut.currentCache("exists", "key3")(hc), 5 seconds) mustBe Some("value3")
+      Await.result(sut.currentCache("exists", "key5")(hc), 5 seconds) mustBe None
+      Await.result(sut.currentCache("doesntexist", "nochance")(hc), 5 seconds) mustBe None
     }
 
     "delete a named journey cache" in {
@@ -157,7 +157,7 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
         .thenReturn(Future.successful(Map.empty[String, String]))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.flush("testJourney"), 5 seconds)
+      Await.result(sut.flush("testJourney")(hc), 5 seconds)
 
       verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
         any(), Matchers.eq(Map.empty[String, String]), Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())

@@ -79,6 +79,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           .thenReturn("testEnvironment")
         when(mockDesConfig.authorization)
           .thenReturn("testAuthorization")
+        when(mockDesConfig.da2PtaOriginatorId)
+          .thenReturn("testOriginatorId")
 
         val sut = createSUT(mock[HttpClient],
           mock[Metrics],
@@ -86,7 +88,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           mock[IabdUpdateAmountFormats],
           mockDesConfig)
 
-        val result = sut.headerForUpdate(1)
+        val result = sut.headerForUpdate(1, mockDesConfig.da2PtaOriginatorId)
 
         result.extraHeaders mustBe extraHeaders
       }
@@ -490,7 +492,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
                         config: DesConfig) =
 
     new DesConnector(httpClient, metrics, audit, formats, config) {
-    override val originatorId: String = "testOriginatorId"
+    override val da2PtaOriginatorId: String = "testOriginatorId"
+    override val daPtaOriginatorId: String = "testOriginatorId"
   }
 
   private implicit val hc = HeaderCarrier()

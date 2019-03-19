@@ -817,7 +817,8 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
   private def createSUT(auditor: Auditor, metrics: Metrics, httpClient: HttpClient) =
     new BaseConnector(auditor, metrics, httpClient) {
       
-    override val originatorId: String = "testOriginatorId"
+    override val da2PtaOriginatorId: String = "testOriginatorId"
+    override val daPtaOriginatorId: String = "testOriginatorId"
 
   }
 

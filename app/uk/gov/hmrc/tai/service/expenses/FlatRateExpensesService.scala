@@ -38,7 +38,7 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
   def updateFlatRateExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: UpdateIabdFlatRateExpense)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    if (featureTogglesConfig.desUpdateEnabled) {
+//    if (featureTogglesConfig.desUpdateEnabled) {
       desConnector.updateExpensesDataToDes(
         nino = nino,
         year = taxYear.year,
@@ -47,24 +47,24 @@ class FlatRateExpensesService @Inject()(desConnector: DesConnector,
         expensesData = List(expensesData),
         apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
       )
-    } else {
-      npsConnector.updateExpensesData(
-        nino = nino,
-        year = taxYear.year,
-        iabdType = IabdType.FlatRateJobExpenses.code,
-        version = version,
-        expensesData = expensesData,
-        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-      )
-    }
+//    } else {
+//      npsConnector.updateExpensesData(
+//        nino = nino,
+//        year = taxYear.year,
+//        iabdType = IabdType.FlatRateJobExpenses.code,
+//        version = version,
+//        expensesData = expensesData,
+//        apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+//      )
+//    }
   }
 
   def getFlatRateExpenses(nino: Nino, taxYear: Int)
                          (implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
-    if (featureTogglesConfig.desEnabled) {
+//    if (featureTogglesConfig.desEnabled) {
       desConnector.getIabdsForTypeFromDes(nino, taxYear, IabdType.FlatRateJobExpenses.code)
-    } else {
-      npsConnector.getIabdsForType(nino, taxYear, IabdType.FlatRateJobExpenses.code)
-    }
+//    } else {
+//      npsConnector.getIabdsForType(nino, taxYear, IabdType.FlatRateJobExpenses.code)
+//    }
   }
 }

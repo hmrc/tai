@@ -37,7 +37,8 @@ class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        config: DesConfig,
                                        taxCodeChangeUrl: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
 
-  override val originatorId = config.originatorId
+  override val da2PtaOriginatorId = config.da2PtaOriginatorId
+  override val daPtaOriginatorId = config.daPtaOriginatorId
 
   implicit private val header: HeaderCarrier = {
     val commonHeaderValues = Seq(

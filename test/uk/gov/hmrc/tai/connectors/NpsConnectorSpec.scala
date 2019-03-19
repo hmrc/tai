@@ -193,30 +193,30 @@ class NpsConnectorSpec extends PlaySpec
     }
 
 
-    "update expenses data" when {
-        "given valid data return OK" in {
-          val mockHttpClient = mock[HttpClient]
-
-          when(mockHttpClient.POST[UpdateIabdFlatRateExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-            .thenReturn(Future.successful(HttpResponse(Status.OK)))
-
-          val mockMetrics = mock[Metrics]
-          when(mockMetrics.startTimer(any()))
-            .thenReturn(mock[Timer.Context])
-
-          val sut: NpsConnector = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
-
-          val result = Await.result(sut.updateExpensesData(
-            nino = SuccessTestNino,
-            year = DateTime.now().getYear,
-            iabdType = 56,
-            version = 1,
-            expensesData = UpdateIabdFlatRateExpense(100)
-          )(HeaderCarrier()), 5 seconds)
-
-          result.status mustBe Status.OK
-        }
-      }
+//    "update expenses data" when {
+//        "given valid data return OK" in {
+//          val mockHttpClient = mock[HttpClient]
+//
+//          when(mockHttpClient.POST[UpdateIabdFlatRateExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+//            .thenReturn(Future.successful(HttpResponse(Status.OK)))
+//
+//          val mockMetrics = mock[Metrics]
+//          when(mockMetrics.startTimer(any()))
+//            .thenReturn(mock[Timer.Context])
+//
+//          val sut: NpsConnector = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
+//
+//          val result = Await.result(sut.updateExpensesData(
+//            nino = SuccessTestNino,
+//            year = DateTime.now().getYear,
+//            iabdType = 56,
+//            version = 1,
+//            expensesData = UpdateIabdFlatRateExpense(100)
+//          )(HeaderCarrier()), 5 seconds)
+//
+//          result.status mustBe Status.OK
+//        }
+//      }
 
     }
 

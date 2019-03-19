@@ -44,7 +44,9 @@ class DesConnector @Inject()(httpClient: HttpClient,
                              formats: IabdUpdateAmountFormats,
                              config: DesConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter  {
 
-  override def originatorId = config.originatorId
+  override def da2PtaOriginatorId = config.da2PtaOriginatorId
+
+  override def daPtaOriginatorId = config.daPtaOriginatorId
 
   def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
@@ -55,9 +57,8 @@ class DesConnector @Inject()(httpClient: HttpClient,
 
   def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
 
-  def headerValuesForUpdate(version: Int) = Seq("Originator-Id" -> originatorId, "ETag" -> version.toString)
-
-  def headerForUpdate(version: Int): HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues ++ headerValuesForUpdate(version))
+  def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
+    HeaderCarrier(extraHeaders = commonHeaderValues ++ Seq("Originator-Id" -> originatorId, "ETag" -> version.toString))
 
   def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year?type=$iabdType")
@@ -89,7 +90,7 @@ class DesConnector @Inject()(httpClient: HttpClient,
                           (implicit hc: HeaderCarrier): Future[HttpResponse] = {
     if (updateAmounts.nonEmpty) {
       val postUrl = desPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version), formats.formatList)
+      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version, da2PtaOriginatorId), formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }
@@ -102,7 +103,7 @@ class DesConnector @Inject()(httpClient: HttpClient,
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[List[UpdateIabdFlatRateExpense]](postUrl, apiType, expensesData)(headerForUpdate(version), implicitly)
+    postToDes[List[UpdateIabdFlatRateExpense]](postUrl, apiType, expensesData)(headerForUpdate(version, daPtaOriginatorId), implicitly)
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {

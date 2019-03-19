@@ -44,9 +44,9 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
 
   def hcWithHodHeaders(implicit hc:HeaderCarrier): HeaderCarrier =
     if(featureTogglesConfig.desEnabled){
-      createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+      createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.da2PtaOriginatorId)
     } else {
-      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.da2PtaOriginatorId)
     }
 
   def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
@@ -54,7 +54,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
   }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
-    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.da2PtaOriginatorId)
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
     httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
   }
@@ -67,7 +67,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
       val amountList =  List(
         IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(DesSource))
       )
-      val requestHeader = headersForUpdate(hc, version, sessionOrUUID, desConfig.originatorId)
+      val requestHeader = headersForUpdate(hc, version, sessionOrUUID, desConfig.da2PtaOriginatorId)
 
       httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI)(
         requestHeader, IabdUpdateAmountFormats.formatList
@@ -78,7 +78,7 @@ class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
       val amountList = List(
           IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
       )
-      val requestHeader = headersForUpdate(hc, version, sessionOrUUID, npsConfig.originatorId)
+      val requestHeader = headersForUpdate(hc, version, sessionOrUUID, npsConfig.da2PtaOriginatorId)
 
       httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI)(
         requestHeader, IabdUpdateAmountFormats.formatList

@@ -44,7 +44,8 @@ class NpsConnector @Inject()(metrics: Metrics,
                              formats: IabdUpdateAmountFormats,
                              config: NpsConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override val originatorId = config.originatorId
+  override val da2PtaOriginatorId = config.da2PtaOriginatorId
+  override val daPtaOriginatorId = config.daPtaOriginatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
@@ -93,15 +94,15 @@ class NpsConnector @Inject()(metrics: Metrics,
     }
   }
 
-  def updateExpensesData(nino: Nino, year: Int, iabdType: Int, version: Int,
-                         expensesData: UpdateIabdFlatRateExpense,
-                         apiType: APITypes = APITypes.NpsIabdUpdateFlatRateExpensesAPI)
-                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
-
-    val postUrl = npsPathUrl(nino, s"iabds/$year/$iabdType")
-
-    postToNps[UpdateIabdFlatRateExpense](postUrl, apiType, expensesData)(extraNpsHeaders(hc, version, sessionOrUUID), implicitly)
-  }
+//  def updateExpensesData(nino: Nino, year: Int, iabdType: Int, version: Int,
+//                         expensesData: UpdateIabdFlatRateExpense,
+//                         apiType: APITypes = APITypes.NpsIabdUpdateFlatRateExpensesAPI)
+//                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+//
+//    val postUrl = npsPathUrl(nino, s"iabds/$year/$iabdType")
+//
+//    postToNps[UpdateIabdFlatRateExpense](postUrl, apiType, expensesData)(extraNpsHeaders(hc, version, sessionOrUUID), implicitly)
+//  }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String = {
     hc.sessionId match {

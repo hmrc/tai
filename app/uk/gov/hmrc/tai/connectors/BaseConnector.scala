@@ -35,7 +35,9 @@ abstract class BaseConnector(auditor: Auditor,
                              metrics: Metrics,
                              httpClient: HttpClient) extends RawResponseReads {
 
-  def originatorId: String
+  def da2PtaOriginatorId: String
+
+  def daPtaOriginatorId: String
 
   val defaultVersion: Int = -1
 
@@ -45,11 +47,11 @@ abstract class BaseConnector(auditor: Auditor,
   }
 
   def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String): HeaderCarrier = {
-    hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
+    hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> da2PtaOriginatorId)
   }
 
   def basicNpsHeaders(hc: HeaderCarrier): HeaderCarrier = {
-    hc.withExtraHeaders("Gov-Uk-Originator-Id" -> originatorId)
+    hc.withExtraHeaders("Gov-Uk-Originator-Id" -> da2PtaOriginatorId)
   }
 
   def getFromNps[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {

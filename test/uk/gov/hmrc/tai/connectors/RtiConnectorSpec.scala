@@ -71,7 +71,7 @@ class RtiConnectorSpec extends PlaySpec
         .thenReturn("auth")
       when(mockConfig.environment)
         .thenReturn("env")
-      when(mockConfig.originatorId)
+      when(mockConfig.da2PtaOriginatorId)
         .thenReturn("orgId")
 
       val sut = createSUT(mock[HttpClient], mockMetrics, mock[Auditor], mockConfig, mock[RtiUrls])
@@ -272,6 +272,7 @@ class RtiConnectorSpec extends PlaySpec
                         rtiUrls: RtiUrls) =
 
     new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls) {
-      override val originatorId: String = "orgId"
+      override val da2PtaOriginatorId: String = "orgId"
+      override val daPtaOriginatorId: String = "orgId"
     }
 }
