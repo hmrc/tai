@@ -94,16 +94,6 @@ class NpsConnector @Inject()(metrics: Metrics,
     }
   }
 
-//  def updateExpensesData(nino: Nino, year: Int, iabdType: Int, version: Int,
-//                         expensesData: UpdateIabdFlatRateExpense,
-//                         apiType: APITypes = APITypes.NpsIabdUpdateFlatRateExpensesAPI)
-//                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
-//
-//    val postUrl = npsPathUrl(nino, s"iabds/$year/$iabdType")
-//
-//    postToNps[UpdateIabdFlatRateExpense](postUrl, apiType, expensesData)(extraNpsHeaders(hc, version, sessionOrUUID), implicitly)
-//  }
-
   private def sessionOrUUID(implicit hc: HeaderCarrier): String = {
     hc.sessionId match {
       case Some(sessionId) => sessionId.value

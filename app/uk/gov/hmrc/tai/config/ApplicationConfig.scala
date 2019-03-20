@@ -72,8 +72,8 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
   override lazy val environment = ""
   override lazy val authorization = ""
 
-  lazy val daPtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.da-pta.originatorId").getOrElse("")
-  lazy val da2PtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.da2-pta.originatorId").getOrElse("")
+  lazy val daPtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.da-pta.originatorId").getOrElse("")
+  lazy val da2PtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.da2-pta.originatorId").getOrElse("")
   lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
   lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
   lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")
