@@ -132,8 +132,8 @@ class NpsConnectorSpec extends PlaySpec
         when(mockMetrics.startTimer(any())).thenReturn((new Timer).time)
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-        val expectedResult:(NpsTaxAccount, Int, JsValue) =
-          (NpsTaxAccount(None,None,None,None,None,None,None,None,None,None,None,None,None), 0, Json.parse("[]"))
+        val expectedResult: (NpsTaxAccount, Int, JsValue) =
+          (NpsTaxAccount(None, None, None, None, None, None, None, None, None, None, None, None, None), 0, Json.parse("[]"))
 
         Await.result(sut.getCalculatedTaxAccount(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe expectedResult
       }
@@ -186,41 +186,16 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(IabdUpdateAmount(1,200,Some(100),Some("10/4/2016"),Some(1))))(HeaderCarrier())
+        val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(IabdUpdateAmount(1, 200, Some(100), Some("10/4/2016"), Some(1))))(HeaderCarrier())
         val result: HttpResponse = Await.result(resp, 5 seconds)
         result.status mustBe 200
       }
     }
 
-
-//    "update expenses data" when {
-//        "given valid data return OK" in {
-//          val mockHttpClient = mock[HttpClient]
-//
-//          when(mockHttpClient.POST[UpdateIabdFlatRateExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-//            .thenReturn(Future.successful(HttpResponse(Status.OK)))
-//
-//          val mockMetrics = mock[Metrics]
-//          when(mockMetrics.startTimer(any()))
-//            .thenReturn(mock[Timer.Context])
-//
-//          val sut: NpsConnector = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
-//
-//          val result = Await.result(sut.updateExpensesData(
-//            nino = SuccessTestNino,
-//            year = DateTime.now().getYear,
-//            iabdType = 56,
-//            version = 1,
-//            expensesData = UpdateIabdFlatRateExpense(100)
-//          )(HeaderCarrier()), 5 seconds)
-//
-//          result.status mustBe Status.OK
-//        }
-//      }
-
-    }
+  }
 
   private case class ResponseObject(name: String, age: Int)
+
   private val SuccessTestNino = new Generator(new Random).nextNino
   private implicit val responseObjectFormat = Json.format[ResponseObject]
 
@@ -232,6 +207,7 @@ class NpsConnectorSpec extends PlaySpec
     responseString = Some("Success"))
 
   private val SuccesfulPostResponseWithObject: HttpResponse = HttpResponse(200)
+
   private def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, formats: IabdUpdateAmountFormats, config: NpsConfig) =
     new NpsConnector(metrics, httpClient, audit, formats, config)
 }
