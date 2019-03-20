@@ -818,7 +818,6 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
     new BaseConnector(auditor, metrics, httpClient) {
       
     override val originatorId: String = "testOriginatorId"
-
   }
 
 }
