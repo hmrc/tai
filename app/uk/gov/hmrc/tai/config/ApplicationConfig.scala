@@ -70,8 +70,7 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
   override lazy val baseURL: String = s"${baseUrl("nps-hod")}$path"
   override lazy val environment = ""
   override lazy val authorization = ""
-
-  lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("")
+  override lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("local")
   lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
   lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
   lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")
