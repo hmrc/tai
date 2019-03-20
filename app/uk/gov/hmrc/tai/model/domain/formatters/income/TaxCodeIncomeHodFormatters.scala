@@ -87,7 +87,6 @@ trait TaxCodeIncomeHodFormatters {
       case Some(3) => Ceased
       case default => {
         Logger.warn(s"Invalid Employment Status -> $default")
-        Logger.warn(s"Json -> $json")
         throw new RuntimeException("Invalid employment status")
       }
     }
