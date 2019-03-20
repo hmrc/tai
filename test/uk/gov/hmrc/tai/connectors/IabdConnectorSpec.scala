@@ -47,7 +47,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
         when(iabdUrls.npsIabdUrl(any(), any())).thenReturn("URL")
         when(featureTogglesConfig.desEnabled).thenReturn(false)
-        when(mockNpsConfig.da2PtaOriginatorId).thenReturn("TEST")
+        when(mockNpsConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
@@ -67,7 +67,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
-          when(mockNpsConfig.da2PtaOriginatorId).thenReturn("TEST")
+          when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
             eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
@@ -86,7 +86,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
-          when(mockNpsConfig.da2PtaOriginatorId).thenReturn("TEST")
+          when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
             eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
@@ -109,7 +109,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
         when(featureTogglesConfig.desEnabled).thenReturn(true)
         when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-        when(mockDesConfig.da2PtaOriginatorId).thenReturn("TEST")
+        when(mockDesConfig.originatorId).thenReturn("TEST")
         when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
           eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
@@ -129,7 +129,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
-          when(mockDesConfig.da2PtaOriginatorId).thenReturn("TEST")
+          when(mockDesConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
             eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
@@ -148,7 +148,7 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
 
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
-          when(mockDesConfig.da2PtaOriginatorId).thenReturn("TEST")
+          when(mockDesConfig.originatorId).thenReturn("TEST")
           when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
             eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 

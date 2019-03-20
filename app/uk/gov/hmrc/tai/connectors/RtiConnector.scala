@@ -41,8 +41,7 @@ class RtiConnector @Inject()(httpClient: HttpClient,
                              urls: RtiUrls) extends BaseConnector(auditor, metrics, httpClient) {
 
 
-  override val da2PtaOriginatorId = rtiConfig.da2PtaOriginatorId
-  override val daPtaOriginatorId = rtiConfig.daPtaOriginatorId
+  override val originatorId = rtiConfig.originatorId
 
   def withoutSuffix(nino: Nino): String = {
     val BASIC_NINO_LENGTH = 8
@@ -52,7 +51,7 @@ class RtiConnector @Inject()(httpClient: HttpClient,
   def createHeader: HeaderCarrier = HeaderCarrier(extraHeaders =
     Seq("Environment" -> rtiConfig.environment,
       "Authorization" -> rtiConfig.authorization,
-      "Gov-Uk-Originator-Id" -> da2PtaOriginatorId))
+      "Gov-Uk-Originator-Id" -> originatorId))
 
   def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {
     implicit val hc: HeaderCarrier = createHeader

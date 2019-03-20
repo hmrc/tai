@@ -44,9 +44,9 @@ class DesConnector @Inject()(httpClient: HttpClient,
                              formats: IabdUpdateAmountFormats,
                              config: DesConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter  {
 
-  override def da2PtaOriginatorId = config.da2PtaOriginatorId
+  override def originatorId = config.originatorId
 
-  override def daPtaOriginatorId = config.daPtaOriginatorId
+  def daPtaOriginatorId = config.daPtaOriginatorId
 
   def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
@@ -90,7 +90,7 @@ class DesConnector @Inject()(httpClient: HttpClient,
                           (implicit hc: HeaderCarrier): Future[HttpResponse] = {
     if (updateAmounts.nonEmpty) {
       val postUrl = desPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version, da2PtaOriginatorId), formats.formatList)
+      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version, originatorId), formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }

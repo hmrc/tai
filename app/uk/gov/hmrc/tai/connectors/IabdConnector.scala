@@ -40,12 +40,12 @@ class IabdConnector @Inject()(npsConfig: NpsConfig,
       Future.successful(Json.arr())
     }
     else if (featureTogglesConfig.desEnabled){
-        val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.da2PtaOriginatorId)
+        val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
         val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
         httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
     }
     else {
-        val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.da2PtaOriginatorId)
+        val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
         val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
         httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
     }

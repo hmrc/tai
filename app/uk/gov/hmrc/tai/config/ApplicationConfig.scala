@@ -24,8 +24,7 @@ trait HodConfig {
   val baseURL: String
   val environment: String
   val authorization: String
-  val da2PtaOriginatorId: String
-  val daPtaOriginatorId: String
+  val originatorId: String
 }
 
 abstract class BaseConfig(playEnv: Environment) extends ServicesConfig {
@@ -60,7 +59,7 @@ class DesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
   lazy val environment: String = runModeConfiguration.getString(s"$rootServices.des-hod.env").getOrElse("local")
   lazy val authorization: String = "Bearer " + runModeConfiguration.getString(s"$rootServices.des-hod.authorizationToken").getOrElse("local")
   lazy val daPtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.da-pta.originatorId").getOrElse("")
-  lazy val da2PtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.da2-pta.originatorId").getOrElse("")
+  lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.originatorId").getOrElse("")
 }
 
 @Singleton
@@ -72,8 +71,7 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Envi
   override lazy val environment = ""
   override lazy val authorization = ""
 
-  lazy val daPtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.da-pta.originatorId").getOrElse("")
-  lazy val da2PtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.da2-pta.originatorId").getOrElse("")
+  lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("")
   lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
   lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
   lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")

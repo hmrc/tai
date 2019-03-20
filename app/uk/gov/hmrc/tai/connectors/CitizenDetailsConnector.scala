@@ -34,8 +34,7 @@ class CitizenDetailsConnector @Inject()(metrics: Metrics,
                                         auditor: Auditor,
                                         urls: CitizenDetailsUrls) extends BaseConnector(auditor, metrics, httpClient) {
 
-  override val da2PtaOriginatorId: String = ""
-  override val daPtaOriginatorId: String = ""
+  override val originatorId: String = ""
 
   def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] = {
     getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)

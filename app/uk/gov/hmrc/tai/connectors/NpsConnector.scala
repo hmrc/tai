@@ -44,8 +44,7 @@ class NpsConnector @Inject()(metrics: Metrics,
                              formats: IabdUpdateAmountFormats,
                              config: NpsConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override val da2PtaOriginatorId = config.da2PtaOriginatorId
-  override val daPtaOriginatorId = config.daPtaOriginatorId
+  override val originatorId = config.originatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
