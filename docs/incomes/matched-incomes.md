@@ -62,15 +62,13 @@ Matched Incomes
    ]
 }
 ```
+> When no record is found it will return an empty body. It will not return a 404
+ 
  
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
     **Content:** `{"statusCode":401,"message":"Authorisation refused for access to GET /$NINO/tax-account/year/2018/income/EmploymentIncome/status/Live"}`
-
-  OR when there is no tax code incomes are found
-
-  * **Code:** 404 NOT_FOUND <br />
   
   OR anything else
   

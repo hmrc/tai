@@ -26,10 +26,10 @@ import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
-import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome}
+import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome, TaxCodeIncomeStatus}
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome}
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
@@ -61,7 +61,8 @@ class IncomeController @Inject()(incomeService: IncomeService,
       } recoverWith taxAccountErrorHandler
   }
 
-  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: String, status: String): Action[AnyContent] = authentication.async {
+  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus):
+  Action[AnyContent] = authentication.async {
     implicit request =>
 
       def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
@@ -73,28 +74,16 @@ class IncomeController @Inject()(incomeService: IncomeService,
           )
         }
 
-      def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] = {
-        if (incomeStatus == Live.toString) {
-          taxCodeIncomes.filter(income => income.status == Live && income.componentType.toString == incomeType)
-        }
-        else {
-          taxCodeIncomes.filter(income => income.status != Live && income.componentType.toString == incomeType)
-        }
-      }
+      def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] =
+          taxCodeIncomes.filter(income => income.componentType.toString == incomeType.toString)
 
       (for {
-        taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
-        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = filterTaxCodeIncomes(taxCodeIncomes, status)
-        employments: Seq[Employment] <-
-          if (filteredTaxCodeIncomes.isEmpty) {
-            Future.successful(Seq.empty[Employment])
-          }
-          else {
-            employmentService.employments(nino, year)
-          }
+        taxCodeIncomes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, year)
+        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = filterTaxCodeIncomes(taxCodeIncomes, status.toString)
+        employments: Seq[Employment] <- incomeService.employments(filteredTaxCodeIncomes, nino, year)
         result: Seq[IncomeSource] = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
-      } yield (result: Seq[IncomeSource]) match {
-        case _ => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
+      } yield {
+        Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
       }) recoverWith taxAccountErrorHandler
   }
 
@@ -111,8 +100,8 @@ class IncomeController @Inject()(incomeService: IncomeService,
         filteredTaxCodeIncomes: Seq[TaxCodeIncome] = taxCodeIncomes.filter(income => income.status != Live && income.componentType == EmploymentIncome)
         employments: Seq[Employment] <- employmentService.employments(nino, year)
         result: Seq[Employment] = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
-      } yield (result: Seq[Employment]) match {
-        case _ => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
+      } yield {
+        Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
       }) recoverWith taxAccountErrorHandler
   }
 

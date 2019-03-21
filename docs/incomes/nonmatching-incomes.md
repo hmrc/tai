@@ -63,16 +63,13 @@ Matched Incomes
    }
 }
 ```
- 
+ > When no record is found it will return an empty body. It will not return a 404
+
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
     **Content:** `{"statusCode":401,"message":"Authorisation refused for access to GET /%nino/employments/year/2018/status/ceased"}`
 
-  OR when there is no tax code incomes are found
-
-  * **Code:** 404 NOT_FOUND <br />
-  
   OR anything else
   
   * **Code:** 500 INTERNAL_SERVER_ERROR <br />

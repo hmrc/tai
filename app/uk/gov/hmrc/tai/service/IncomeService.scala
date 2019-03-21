@@ -50,6 +50,14 @@ class IncomeService @Inject()(employmentService: EmploymentService,
     incomeRepository.incomes(nino, year)
   }
 
+  def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit headerCarrier: HeaderCarrier): Future[Seq[Employment]] ={
+    if (filteredTaxCodeIncomes.isEmpty) {
+      Future.successful(Seq.empty[Employment])
+    } else {
+      employmentService.employments(nino, year)
+    }
+  }
+
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
                           (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 

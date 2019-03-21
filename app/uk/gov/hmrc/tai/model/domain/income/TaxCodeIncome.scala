@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import org.joda.time.LocalDate
-import uk.gov.hmrc.tai.model.domain.TaxComponentType
+import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
@@ -45,8 +45,15 @@ case object Live extends TaxCodeIncomeStatus
 case object PotentiallyCeased extends TaxCodeIncomeStatus
 case object Ceased extends TaxCodeIncomeStatus
 
-object TaxCodeIncomeStatus extends TaxCodeIncomeStatus {
-  implicit val formatTaxCodeIncomeSourceStatusType = new Format[TaxCodeIncomeStatus] {
+object TaxCodeIncomeStatus {
+
+  def apply(value: String): TaxCodeIncomeStatus = value match {
+    case "Live" => Live
+    case "PotentiallyCeased" => PotentiallyCeased
+    case "Ceased" => Ceased
+  }
+
+  implicit val formatTaxCodeIncomeSourceStatusType: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
     override def reads(json: JsValue): JsSuccess[TaxCodeIncomeStatus] = ???
 
     override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)

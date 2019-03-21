@@ -61,7 +61,7 @@ trait MicroService {
     .settings(
       resolvers += Resolver.jcenterRepo,
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint"),
-      routesImport += "scala.language.reflectiveCalls"
+      routesImport ++= Seq("scala.language.reflectiveCalls", "uk.gov.hmrc.tai.model.domain.income._", "uk.gov.hmrc.tai.model.domain._")
     )
     .settings(majorVersion := 0)
 
