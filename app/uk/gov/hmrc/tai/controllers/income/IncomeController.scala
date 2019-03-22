@@ -68,8 +68,9 @@ class IncomeController @Inject()(incomeService: IncomeService,
       def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
         filteredTaxCodeIncomes.flatMap { income =>
           employments.flatMap(emp =>
-            income.employmentId.fold(Seq.empty[IncomeSource]) {
-              id => if (id == emp.sequenceNumber) Seq(IncomeSource(income, emp)) else Seq.empty[IncomeSource]
+            income.employmentId match {
+              case Some(id) if id == emp.sequenceNumber =>  Seq(IncomeSource(income, emp))
+              case _ => Seq.empty[IncomeSource]
             }
           )
         }

@@ -20,17 +20,18 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.controllers.EmploymentsController
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.repositories.{EmploymentRepository, IncomeRepository, TaxAccountRepository}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -101,6 +102,36 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
     }
   }
 
+  "Employments" must {
+    "return sequence of employments when taxCodeIncomes is not empty" in {
+      val mockEmploymentService = mock[EmploymentService]
+      val emp = Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
+      val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
+        "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
+        TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+          "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+
+      when(mockEmploymentService.employments(any(), any())(any()))
+        .thenReturn(Future.successful(Seq(emp)))
+
+      val sut = createSUT(employmentService = mockEmploymentService)
+
+      val result = Await.result(sut.employments(taxCodeIncomes, nino, TaxYear().next), 5.seconds)
+
+      result mustBe Seq(emp)
+    }
+
+    "return empty sequence of when taxCodeIncomes is  empty" in {
+      val taxCodeIncomes = Seq.empty[TaxCodeIncome]
+
+      val sut = createSUT()
+
+      val result = Await.result(sut.employments(taxCodeIncomes, nino, TaxYear()), 5.seconds)
+
+      result mustBe Seq.empty[Employment]
+    }
+  }
+
   "updateTaxCodeIncome" must {
     "for current year" must {
       "return an income success" when {
@@ -138,7 +169,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -182,7 +213,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -231,7 +262,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -275,7 +306,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             taxAccountService = mockTaxAccountSvc)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear,1,1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
 
           result mustBe IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
         }
@@ -345,7 +376,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(employmentId), BigDecimal(12300.45),
           "", "", "", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
-
 
 
         val SUT = createSUT()
@@ -424,5 +454,5 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                         incomeRepository: IncomeRepository = mock[IncomeRepository],
                         taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
                         auditor: Auditor = mock[Auditor]) =
-    new IncomeService(employmentService, taxAccountService, incomeRepository, taxAccountRepository,auditor)
+    new IncomeService(employmentService, taxAccountService, incomeRepository, taxAccountRepository, auditor)
 }
