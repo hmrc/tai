@@ -186,7 +186,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
 
       "toggled to use non confirmedAPI" must {
 
-        "return Tax Account as Json in the response" ignore {
+        "return Tax Account as Json in the response" in {
 
           when(featureTogglesConfig.confirmedAPIEnabled).thenReturn(false)
           when(featureTogglesConfig.desEnabled).thenReturn(true)
