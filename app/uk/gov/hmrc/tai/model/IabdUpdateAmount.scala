@@ -23,8 +23,7 @@ import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
 
 /**
-  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*
-  * netAmount:1000    THIS IS OPTIONAL - IF POPULATED MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*
+  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
   * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
   * @param grossAmount
   */
@@ -36,8 +35,6 @@ case class IabdUpdateAmount (
                                  source : Option[Int]=None
                                ) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
-  require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
-  require(netAmount.forall(_ <= 999999))
 }
 
 class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
