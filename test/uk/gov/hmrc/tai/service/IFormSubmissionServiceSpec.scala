@@ -46,14 +46,14 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(pdfBytes))
 
       val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.createEnvelope())
+      when(mockFileUploadService.createEnvelope()(hc))
         .thenReturn(Future.successful("1"))
       when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
       val messageId = Await.result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
-        Future("")}), 5.seconds)
+        Future("")})(hc), 5.seconds)
 
       messageId mustBe "1"
 
@@ -76,7 +76,7 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
       the[RuntimeException] thrownBy Await.result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
-        Future("")}), 5.seconds)
+        Future("")})(hc), 5.seconds)
 
       verify(mockFileUploadService, never()).uploadFile(any(), any(),
         Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())

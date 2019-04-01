@@ -95,66 +95,11 @@ class FlatRateExpensesServiceSpec extends PlaySpec
           .status mustBe 500
       }
     }
-
-    "return 200" when {
-      "success response from nps connector" in {
-        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
-
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(false)
-
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
-          .status mustBe 200
-      }
-    }
-
-    "return 500" when {
-      "failure response from nps connector" in {
-        when(mockNpsConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(500)))
-
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(false)
-
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
-          .status mustBe 500
-      }
-    }
   }
 
   "getFlatRateExpensesData" must {
 
     "return a list of NpsIabds" when {
-      "success response from nps connector when desEnabled is false" in {
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getIabdsForType(any(), any(), any())(any()))
-          .thenReturn(Future.successful(validNpsIabd))
-
-        val mockFeaturesToggle = mock[FeatureTogglesConfig]
-        when(mockFeaturesToggle.desEnabled).thenReturn(false)
-
-        val mockDesConnector = mock[DesConnector]
-        val mockIabdConnector = mock[IabdConnector]
-
-        val service = new FlatRateExpensesService(
-          desConnector = mockDesConnector,
-          npsConnector = mockNpsConnector,
-          iabdConnector = mockIabdConnector,
-          featureTogglesConfig = mockFeaturesToggle)
-
-        val result = service.getFlatRateExpenses(nino, taxYear)
-
-        whenReady(result) {
-          result =>
-
-            result mustBe validNpsIabd
-
-            verify(mockNpsConnector, times(1))
-              .getIabdsForType(nino, taxYear, 56)
-
-            verify(mockDesConnector, times(0))
-              .getIabdsForTypeFromDes(nino, taxYear, 56)
-        }
-      }
 
       "success response from des connector when desEnabled is true" in {
         val mockDesConnector = mock[DesConnector]
