@@ -42,36 +42,27 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
         response.status match {
           case Status.OK => Try(response) match {
-            case Success(data) =>
-              metrics.incrementSuccessCounter(api)
-              data
-            case Failure(e) =>
-              metrics.incrementFailedCounter(api)
-              throw new RuntimeException("Unable to parse response")
+            case Success(data) => data
+            case Failure(e) => throw new RuntimeException("Unable to parse response")
           }
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api")
-            metrics.incrementFailedCounter(api)
             throw new NotFoundException(response.body)
           }
           case Status.INTERNAL_SERVER_ERROR => {
             Logger.warn(s"HttpHandler - Internal Server error returned from $api")
-            metrics.incrementFailedCounter(api)
             throw new InternalServerException(response.body)
           }
           case Status.BAD_REQUEST => {
             Logger.warn(s"HttpHandler - Bad request exception returned from $api")
-            metrics.incrementFailedCounter(api)
             throw new BadRequestException(response.body)
           }
           case Status.LOCKED => {
             Logger.warn(s"HttpHandler - Locked response returned from $api")
-            metrics.incrementSuccessCounter(api)
             throw new LockedException(response.body)
           }
           case _ => {
             Logger.warn(s"HttpHandler - A Server error returned from $api")
-            metrics.incrementFailedCounter(api)
             throw new HttpException(response.body, response.status)
           }
         }
