@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 
-import org.joda.time.LocalDate
+import org.joda.time.{Days, LocalDate}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers._
 import org.mockito.Mockito.{never, times, verify, when}
@@ -1609,7 +1609,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(CurrentYear, 10, 6), new LocalDate(CurrentYear, 4, 20),
+        val payment = RtiPayment(PayFrequency.Monthly, midPointofTaxYearPlusOneDay, new LocalDate(CurrentYear, 4, 20),
           BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
 
         sut.getRemainingBiAnnual(payment) mustBe 0
@@ -2608,6 +2608,15 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
     else
       Some(200625)
 
+  val midPointofTaxYearPlusOneDay = if (new LocalDate(TaxYear().year + 1,1,1).year().isLeap) {
+    new LocalDate(CurrentYear, 10, 7)
+  } else {
+    new LocalDate(CurrentYear, 10, 6)
+  }
+
+  val daysInHalfYear : Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() /2
+
+  val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear+1)
 
   private val npsUpdateAmount = IabdUpdateAmount(
     employmentSequenceNumber = 1,

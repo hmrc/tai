@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.calculators
 
+import org.joda.time.{Days, LocalDate}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.model.enums.PayFreq
@@ -95,7 +96,11 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
     "calculate net and gross pay amounts which are apportioned for the current year" when {
 
       "an employment start date is supplied which falls in the current tax year" in {
-        val startDateHalfThroughYear = TaxYear().end.minusDays(182)
+
+        val daysInHalfYear : Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() /2
+
+        val startDateHalfThroughYear = TaxYear().end.minusDays(daysInHalfYear)
+
         val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(100),
           taxablePay = Some(80), bonus = None, startDate = Some(startDateHalfThroughYear))
 
