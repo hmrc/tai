@@ -1609,7 +1609,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(CurrentYear, 10, 6), new LocalDate(CurrentYear, 4, 20),
+        val payment = RtiPayment(PayFrequency.Monthly, midPointofTaxYearPlusOneDay, new LocalDate(CurrentYear, 4, 20),
           BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
 
         sut.getRemainingBiAnnual(payment) mustBe 0
@@ -2608,6 +2608,11 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
     else
       Some(200625)
 
+  val midPointofTaxYearPlusOneDay = if (new LocalDate(TaxYear().year + 1,1,1).year().isLeap) {
+    new LocalDate(CurrentYear, 10, 7)
+  } else {
+    new LocalDate(CurrentYear, 10, 6)
+  }
 
   private val npsUpdateAmount = IabdUpdateAmount(
     employmentSequenceNumber = 1,
