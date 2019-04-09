@@ -822,20 +822,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockDesConnector = mock[DesConnector]
 
         val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+        when(mockNpsConfig.autoUpdatePayEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.updateSourceEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.postCalcEnabled).thenReturn(Some(true))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
-        when(mockFeatureTogglesConfig.desEnabled)
-          .thenReturn(true)
+        when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Weekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(200625), Some(228125)))
+
+        sut.getMidYearEstimatedPay(PayFrequency.Weekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Fortnightly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -855,19 +852,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Fortnightly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(200625), Some(228125)))
+        sut.getMidYearEstimatedPay(PayFrequency.Fortnightly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is FourWeekly" in {
+
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
         val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+        when(mockNpsConfig.autoUpdatePayEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.updateSourceEnabled).thenReturn(Some(true))
+        when(mockNpsConfig.postCalcEnabled).thenReturn(Some(true))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled)
@@ -875,9 +870,10 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.FourWeekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(200625), Some(228125)))
+        sut.getMidYearEstimatedPay(PayFrequency.FourWeekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Monthly" in {
+
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -895,7 +891,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val mockIncomeHelper = mock[IncomeHelper]
 
         val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Monthly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(200625), Some(228125)))
+        sut.getMidYearEstimatedPay(PayFrequency.Monthly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Quarterly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2605,6 +2601,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
   private val NextYear: Int = CurrentYear + 1
   private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))
   private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))
+
+  val expectedPay =
+    if (new LocalDate(TaxYear().year + 1,1,1).year().isLeap)
+      Some(201250)
+    else
+      Some(200625)
+
 
   private val npsUpdateAmount = IabdUpdateAmount(
     employmentSequenceNumber = 1,
