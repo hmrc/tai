@@ -2608,12 +2608,6 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
     else
       Some(200625)
 
-  val midPointofTaxYearPlusOneDay = if (new LocalDate(TaxYear().year + 1,1,1).year().isLeap) {
-    new LocalDate(CurrentYear, 10, 7)
-  } else {
-    new LocalDate(CurrentYear, 10, 6)
-  }
-
   val daysInHalfYear : Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() /2
 
   val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear+1)
