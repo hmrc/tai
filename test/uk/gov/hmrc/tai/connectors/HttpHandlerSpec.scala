@@ -24,11 +24,11 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.http._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -51,7 +51,7 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+          .thenReturn(Future.successful(SuccessfulGetResponseWithObject))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val response = Await.result(SUT.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
@@ -77,12 +77,12 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(BadRequestHttpResponse))
+          .thenReturn(Future.failed(new BadRequestException("bad request")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val ex = the[BadRequestException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
 
-        ex.message mustBe "\"bad request\""
+        ex.message mustBe "bad request"
 
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementSuccessCounter(any())
@@ -102,12 +102,12 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(NotFoundHttpResponse))
+          .thenReturn(Future.failed(new NotFoundException("not found")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val ex = the[NotFoundException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
 
-        ex.message mustBe "\"not found\""
+        ex.message mustBe "not found"
 
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementSuccessCounter(any())
@@ -127,12 +127,12 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(InternalServerErrorHttpResponse))
+          .thenReturn(Future.failed(new InternalServerException("internal server error")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val ex = the[InternalServerException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
 
-        ex.message mustBe "\"internal server error\""
+        ex.message mustBe "internal server error"
 
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementSuccessCounter(any())
@@ -152,12 +152,12 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(LockedHttpResponse))
+          .thenReturn(Future.failed(new LockedException("locked")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val ex = the[LockedException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
 
-        ex.message mustBe "\"locked\""
+        ex.message mustBe "locked"
 
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics,times(1)).incrementSuccessCounter(any())
@@ -177,60 +177,17 @@ class HttpHandlerSpec extends PlaySpec
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+          .thenReturn(Future.failed(new HttpException("unknown response", responseCode = 418)))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val ex = the[HttpException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
 
-        ex.message mustBe "\"unknown response\""
+        ex.message mustBe "unknown response"
 
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementSuccessCounter(any())
         verify(mockMetrics, times(1)).incrementFailedCounter(APITypes.RTIAPI)
         verify(mockTimerContext, times(1)).stop()
-      }
-    }
-
-    "return a valid version number" when {
-
-      "a response header is supplied which contains an etag entry with a version number" in {
-        val SUT = createSUT(mock[Metrics], mock[HttpClient])
-        val response = SUT.getVersionFromHttpHeader(SuccesfulGetResponseWithObject)
-
-        response mustBe 34
-      }
-    }
-
-    "return a valid version number" when {
-
-      "a response header is supplied which contains an etag entry with multiple version numbers" in {
-        val httpResponse = HttpResponse(responseStatus = 0, responseHeaders = Map("ETag" -> Seq("1", "2")))
-
-        val SUT = createSUT(mock[Metrics], mock[HttpClient])
-        val response = SUT.getVersionFromHttpHeader(httpResponse)
-
-        response mustBe 1
-      }
-    }
-
-    "return the default version number" when {
-
-      "a response header is supplied without a version number" in {
-        val httpResponse = HttpResponse(responseStatus = 0)
-
-        val SUT = createSUT(mock[Metrics], mock[HttpClient])
-        val response = SUT.getVersionFromHttpHeader(httpResponse)
-
-        response mustBe SUT.defaultVersion
-      }
-
-      "a response header is supplied with a Nil entry" in {
-        val SUT = createSUT(mock[Metrics], mock[HttpClient])
-
-        val httpResponse = HttpResponse(responseStatus = 0, responseHeaders = Map("ETag" -> Nil))
-        val response = SUT.getVersionFromHttpHeader(httpResponse)
-
-        response mustBe SUT.defaultVersion
       }
     }
   }
@@ -302,7 +259,7 @@ class HttpHandlerSpec extends PlaySpec
   private implicit val responseObjectFormat = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
 
-  private val SuccesfulGetResponseWithObject: HttpResponse = HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag" -> Seq("34")))
+  private val SuccessfulGetResponseWithObject: HttpResponse = HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag" -> Seq("34")))
   private val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
   private val NotFoundHttpResponse: HttpResponse = HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
   private val LockedHttpResponse: HttpResponse = HttpResponse(423, Some(JsString("locked")), Map("ETag" -> Seq("34")))
