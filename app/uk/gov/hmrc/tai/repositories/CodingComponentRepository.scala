@@ -35,6 +35,7 @@ class CodingComponentRepository @Inject()(taxAccountRepository: TaxAccountReposi
     taxAccountRepository.taxAccount(nino, year)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
 
+
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     taxAccountRepository.taxAccountForTaxCodeId(nino, taxCodeId)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
