@@ -34,19 +34,17 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper with BeforeAndAfterAll {
+class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper{
 
-  val testNino = randomNino
   val taxYear = TaxYear(2017)
   val json = Json.obj()
+  val nino = new Generator(new Random).nextNino
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   lazy val handler = injector.instanceOf[HttpHandler]
   lazy val urlConfig = injector.instanceOf[TaxAccountUrls]
 
-  def randomNino: Nino = new Generator(new Random).nextNino
-
-  def url = new URL(urlConfig.taxAccountUrl(testNino, taxYear))
+  def url = new URL(urlConfig.taxAccountUrl(nino, taxYear))
 
   def getResponse = Await.result(handler.getFromApi(url.toString, APITypes.NpsTaxAccountAPI), 5 seconds)
 
