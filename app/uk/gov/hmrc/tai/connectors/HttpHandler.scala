@@ -86,7 +86,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
     httpClient.GET[HttpResponse](url).map(_.json)
   }
 
-  def handleFailure(timerContext:Timer.Context, api:APITypes) = {
+ private def handleFailure(timerContext:Timer.Context, api:APITypes) = {
     timerContext.stop()
     metrics.incrementFailedCounter(api)
   }
@@ -94,21 +94,23 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
   def postToApi[I](url: String, data: I, api: APITypes)(implicit hc: HeaderCarrier, writes: Writes[I]): Future[HttpResponse] = {
 
     val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
+
+      override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
+          response status match {
+            case OK | CREATED | ACCEPTED | NO_CONTENT => {
+              metrics.incrementSuccessCounter(api)
+              response
+            }
+            case _ => {
+              Logger.warn(s"HttpHandler - Error received with status: ${response.status} and body: ${response.body}")
+              metrics.incrementFailedCounter(api)
+              throw new HttpException(response.body, response.status)
+            }
+          }
+      }
+
     }
 
-    httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, fromLoggingDetails) map { httpResponse =>
-      httpResponse status match {
-        case OK | CREATED | ACCEPTED | NO_CONTENT => {
-          metrics.incrementSuccessCounter(api)
-          httpResponse
-        }
-        case _ => {
-          Logger.warn(s"HttpHandler - Error received with status: ${httpResponse.status} and body: ${httpResponse.body}")
-          metrics.incrementFailedCounter(api)
-          throw new HttpException(httpResponse.body, httpResponse.status)
-        }
-      }
-    }
+    httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, fromLoggingDetails)
   }
 }
