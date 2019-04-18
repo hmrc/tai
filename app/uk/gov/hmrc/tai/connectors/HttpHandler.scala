@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.codahale.metrics.Timer
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status
@@ -42,48 +43,52 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
         response.status match {
           case Status.OK => Try(response) match {
-            case Success(data) => data
-            case Failure(e) => throw new RuntimeException("Unable to parse response")
+            case Success(data) => {
+              timerContext.stop()
+              metrics.incrementSuccessCounter(api)
+              data
+            }
+            case Failure(e) => {
+              handleFailure(timerContext, api)
+              throw new RuntimeException("Unable to parse response")
+            }
           }
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api")
+            handleFailure(timerContext, api)
             throw new NotFoundException(response.body)
           }
           case Status.INTERNAL_SERVER_ERROR => {
             Logger.warn(s"HttpHandler - Internal Server error returned from $api")
+            handleFailure(timerContext, api)
             throw new InternalServerException(response.body)
           }
           case Status.BAD_REQUEST => {
             Logger.warn(s"HttpHandler - Bad request exception returned from $api")
+            handleFailure(timerContext, api)
             throw new BadRequestException(response.body)
           }
           case Status.LOCKED => {
             Logger.warn(s"HttpHandler - Locked response returned from $api")
+            timerContext.stop()
+            metrics.incrementSuccessCounter(api)
             throw new LockedException(response.body)
           }
           case _ => {
             Logger.warn(s"HttpHandler - A Server error returned from $api")
+            handleFailure(timerContext, api)
             throw new HttpException(response.body, response.status)
           }
         }
       }
     }
 
-    (for {
-      response <- httpClient.GET[HttpResponse](url)
-      _ <- Future.successful(timerContext.stop())
-      _ <- Future.successful(metrics.incrementSuccessCounter(api))
-    } yield response.json) recover {
-      case lockedException: LockedException =>
-        timerContext.stop()
-        metrics.incrementSuccessCounter(api)
-        throw lockedException
-      case ex: Exception =>
-        timerContext.stop()
-        metrics.incrementFailedCounter(api)
-        throw ex
-    }
+    httpClient.GET[HttpResponse](url).map(_.json)
+  }
 
+  def handleFailure(timerContext:Timer.Context, api:APITypes) = {
+    timerContext.stop()
+    metrics.incrementFailedCounter(api)
   }
 
   def postToApi[I](url: String, data: I, api: APITypes)(implicit hc: HeaderCarrier, writes: Writes[I]): Future[HttpResponse] = {
