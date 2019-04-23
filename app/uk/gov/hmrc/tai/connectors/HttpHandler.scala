@@ -29,60 +29,61 @@ import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.Future
 import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
-
-  val defaultVersion: Int = -1
-
-  def getVersionFromHttpHeader(httpResponse: HttpResponse): Int = {
-    httpResponse.header("ETag").map(_.toInt).getOrElse(defaultVersion)
-  }
 
   def getFromApi(url: String, api: APITypes)(implicit hc: HeaderCarrier): Future[JsValue] = {
 
     val timerContext = metrics.startTimer(api)
 
-    val futureResponse = httpClient.GET[HttpResponse](url)
-
-    futureResponse.flatMap {
-      httpResponse =>
-        timerContext.stop()
-        httpResponse.status match {
-          case Status.OK => {
-            metrics.incrementSuccessCounter(api)
-            Future.successful((httpResponse.json))
+    implicit val responseHandler = new HttpReads[HttpResponse] {
+      override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
+        response.status match {
+          case Status.OK => Try(response) match {
+            case Success(data) => data
+            case Failure(e) => throw new RuntimeException("Unable to parse response")
           }
-
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api")
-            metrics.incrementFailedCounter(api)
-            Future.failed(new NotFoundException(httpResponse.body))
+            throw new NotFoundException(response.body)
           }
-
           case Status.INTERNAL_SERVER_ERROR => {
             Logger.warn(s"HttpHandler - Internal Server error returned from $api")
-            metrics.incrementFailedCounter(api)
-            Future.failed(new InternalServerException(httpResponse.body))
+            throw new InternalServerException(response.body)
           }
-
           case Status.BAD_REQUEST => {
             Logger.warn(s"HttpHandler - Bad request exception returned from $api")
-            metrics.incrementFailedCounter(api)
-            Future.failed(new BadRequestException(httpResponse.body))
+            throw new BadRequestException(response.body)
           }
           case Status.LOCKED => {
             Logger.warn(s"HttpHandler - Locked response returned from $api")
-            metrics.incrementSuccessCounter(api)
-            Future.failed(new LockedException(httpResponse.body))
+            throw new LockedException(response.body)
           }
           case _ => {
             Logger.warn(s"HttpHandler - A Server error returned from $api")
-            metrics.incrementFailedCounter(api)
-            Future.failed(new HttpException(httpResponse.body, httpResponse.status))
+            throw new HttpException(response.body, response.status)
           }
         }
+      }
     }
+
+    (for {
+      response <- httpClient.GET[HttpResponse](url)
+      _ <- Future.successful(timerContext.stop())
+      _ <- Future.successful(metrics.incrementSuccessCounter(api))
+    } yield response.json) recover {
+      case lockedException: LockedException =>
+        timerContext.stop()
+        metrics.incrementSuccessCounter(api)
+        throw lockedException
+      case ex: Exception =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        throw ex
+    }
+
   }
 
   def postToApi[I](url: String, data: I, api: APITypes)(implicit hc: HeaderCarrier, writes: Writes[I]): Future[HttpResponse] = {
