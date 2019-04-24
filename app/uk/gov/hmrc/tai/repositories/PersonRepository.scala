@@ -35,7 +35,7 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector,
 
   def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
 
-    getPersonFromStorage(nino).flatMap { person: Option[Person] =>
+    getPersonFromStorage().flatMap { person: Option[Person] =>
       person match {
         case Some(personalDetails) => Future.successful(personalDetails)
         case _ => getPersonFromAPI(nino)
@@ -43,8 +43,8 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector,
     }
   }
 
-  private[repositories] def getPersonFromStorage(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[Person]] = {
-    cacheConnector.find(nino.nino, PersonMongoKey)(PersonFormatter.personMongoFormat)
+  private[repositories] def getPersonFromStorage()(implicit hc: HeaderCarrier): Future[Option[Person]] = {
+    cacheConnector.find(fetchSessionId(hc), PersonMongoKey)(PersonFormatter.personMongoFormat)
   }
 
   private[repositories] def getPersonFromAPI(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
