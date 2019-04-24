@@ -44,7 +44,7 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector,
   }
 
   private[repositories] def getPersonFromStorage(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[Person]] = {
-    cacheConnector.find(nino.nino, PersonMongoKey)(PersonFormatter.personMongoFormat)
+    cacheConnector.find(fetchSessionId(hc), PersonMongoKey)(PersonFormatter.personMongoFormat)
   }
 
   private[repositories] def getPersonFromAPI(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
