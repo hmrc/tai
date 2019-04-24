@@ -50,7 +50,7 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(nino.nino), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(Some(person)))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(Some(person)))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
@@ -59,7 +59,7 @@ class PersonRepositorySpec extends PlaySpec
         result mustBe person
 
         verify(mockCacheConnector, times(1))
-          .find[Person](Matchers.eq(nino.nino), Matchers.eq(personMongoKey))(any())
+          .find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())
 
         verify(mockHttpHandler, never())
           .getFromApi(any(), any())(any())
@@ -76,7 +76,7 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(nino.nino), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(person))
         when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
 
@@ -113,7 +113,7 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(nino.nino), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(expectedPersonFromPartialJson))
         when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(jsonWithMissingFields))
 
@@ -127,6 +127,7 @@ class PersonRepositorySpec extends PlaySpec
     }
   }
 
+  val sessionId = "testSession"
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
   private val nino: Nino = new Generator(new Random).nextNino
   private val address: Address = Address("line1", "line2", "line3", "postcode", "country")
