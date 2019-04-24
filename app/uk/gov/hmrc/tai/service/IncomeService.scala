@@ -21,7 +21,6 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain.income.{Incomes, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, income}
@@ -59,7 +58,7 @@ class IncomeService @Inject()(employmentService: EmploymentService,
   }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
-                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+                         (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) => {
       auditor.sendDataEvent(
@@ -68,7 +67,7 @@ class IncomeService @Inject()(employmentService: EmploymentService,
           "year" -> year.toString,
           "employmentId" -> employmentId.toString,
           "newAmount" -> amount.toString,
-        "currentAmount" -> currentAmount))
+          "currentAmount" -> currentAmount))
     }
 
     for {
@@ -77,13 +76,13 @@ class IncomeService @Inject()(employmentService: EmploymentService,
       incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, personDetails.version, amount)
     } yield {
 
-      if(incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+      if (incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
       incomeUpdateResponse
     }
   }
 
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
-                                 (implicit hc: HeaderCarrier): Future[Option[String]] = {
+                                         (implicit hc: HeaderCarrier): Future[Option[String]] = {
     taxCodeIncomes(nino, year) map { taxCodeIncomes =>
       taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
     }

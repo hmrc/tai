@@ -76,7 +76,7 @@ class IncomeController @Inject()(incomeService: IncomeService,
         }
 
       def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] =
-          taxCodeIncomes.filter(income => income.componentType.toString == incomeType.toString)
+          taxCodeIncomes.filter(income => income.componentType == incomeType)
 
       (for {
         taxCodeIncomes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, year)

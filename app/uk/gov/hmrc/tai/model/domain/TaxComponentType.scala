@@ -33,6 +33,7 @@ object TaxCodeIncomeComponentType{
     case "PensionIncome" => PensionIncome
     case "JobSeekerAllowanceIncome" => JobSeekerAllowanceIncome
     case "OtherIncome" => OtherIncome
+    case _ => throw new IllegalArgumentException("Invalid Tax component type")
   }
 }
 

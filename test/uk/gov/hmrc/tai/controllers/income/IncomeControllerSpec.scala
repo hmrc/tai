@@ -56,6 +56,10 @@ class IncomeControllerSpec extends PlaySpec
     "data" -> Json.arr(),
     "links" -> Json.arr()
   )
+
+  val mockIncomeService = mock[IncomeService]
+  val mockEmploymentService = mock[EmploymentService]
+
   val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(TaxCodeIncome(PensionIncome, Some(1), BigDecimal(1100),
     PensionIncome.toString, "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
     TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
@@ -76,7 +80,6 @@ class IncomeControllerSpec extends PlaySpec
 
     "return OK with untaxed interest" when {
       "untaxed interest is returned by income service" in {
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.untaxedInterest(any())(any()))
           .thenReturn(Future.successful(Some(untaxedInterest)))
 
@@ -100,7 +103,6 @@ class IncomeControllerSpec extends PlaySpec
 
     "return Not Found" when {
       "None is returned by income service" in {
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.untaxedInterest(any())(any()))
           .thenReturn(Future.successful(None))
 
@@ -111,7 +113,6 @@ class IncomeControllerSpec extends PlaySpec
       }
 
       "a Not Found Exception occurs" in {
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.untaxedInterest(any())(any()))
           .thenReturn(Future.failed(new NotFoundException("Error")))
 
@@ -137,7 +138,6 @@ class IncomeControllerSpec extends PlaySpec
 
     "return Not Found" when {
       "Nil is returned by income service" in {
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
@@ -148,7 +148,6 @@ class IncomeControllerSpec extends PlaySpec
       }
 
       "a Not Found Exception occurs" in {
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new NotFoundException("Error")))
 
@@ -166,7 +165,6 @@ class IncomeControllerSpec extends PlaySpec
           TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)))
 
-        val mockIncomeService = mock[IncomeService]
         when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxCodeIncomesNoPension))
 
@@ -217,11 +215,9 @@ class IncomeControllerSpec extends PlaySpec
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return list of live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -240,14 +236,13 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return list of ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
           TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
         )))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -266,14 +261,13 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return list of potentially ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
           TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
         )))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -293,14 +287,13 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty JSON when no records match" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
           TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
         )))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -315,11 +308,10 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return list of live and matched pension TaxCodeIncomes for a given year" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -331,7 +323,7 @@ class IncomeControllerSpec extends PlaySpec
 
       val expectedJson =
         Json.parse(
-          """
+          s"""
             |{
             |    "data":[
             |       {
@@ -351,7 +343,7 @@ class IncomeControllerSpec extends PlaySpec
             |          "employment":{
             |             "name":"company name",
             |             "payrollNumber":"888",
-            |             "startDate":"2019-05-26",
+            |             "startDate":"${TaxYear().next.year}-05-26",
             |             "annualAccounts":[
             |
             |             ],
@@ -374,12 +366,9 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty json when there are no matching live employments" in {
-
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
 
@@ -393,11 +382,9 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty json when there are no matching live pensions" in {
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
 
@@ -411,11 +398,9 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty json when there are no TaxCodeIncome records for a given nino" in {
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq(employment)))
 
@@ -429,11 +414,9 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty json when there are no employment records for a given nino" in {
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty[Employment]))
 
@@ -455,7 +438,7 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return NotFound when a NotFoundException occurs" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
@@ -466,7 +449,7 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return BadRequest when a BadRequestException occurs" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
@@ -484,11 +467,11 @@ class IncomeControllerSpec extends PlaySpec
     "return list of non matching ceased employments when some employments do have an end date" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
+
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -508,11 +491,9 @@ class IncomeControllerSpec extends PlaySpec
     "return empty json when no employments have an end date" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      val mockIncomeService = mock[IncomeService]
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockEmploymentService = mock[EmploymentService]
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -526,14 +507,14 @@ class IncomeControllerSpec extends PlaySpec
     "return empty json when TaxCodeIncomes do not have an Id" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
           TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
         )))
 
-      val mockEmploymentService = mock[EmploymentService]
+
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -547,11 +528,11 @@ class IncomeControllerSpec extends PlaySpec
     "return empty Json when there are no TaxCodeIncome records for a given nino" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-      val mockEmploymentService = mock[EmploymentService]
+
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
@@ -563,14 +544,14 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return empty json when there are no employment records for a given nino" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(
           TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
             EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
         )))
 
-      val mockEmploymentService = mock[EmploymentService]
+
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty[Employment]))
 
@@ -590,7 +571,7 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return NotFound when a NotFoundException occurs" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
@@ -601,7 +582,7 @@ class IncomeControllerSpec extends PlaySpec
     }
 
     "return BadRequest when a BadRequestException occurs" in {
-      val mockIncomeService = mock[IncomeService]
+
       when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
@@ -625,7 +606,7 @@ class IncomeControllerSpec extends PlaySpec
 
     "return Ok with income" when {
       "income returned by IncomeService" in {
-        val mockIncomeService = mock[IncomeService]
+
         val income = uk.gov.hmrc.tai.model.domain.income.Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, Seq(
           OtherNonTaxCodeIncome(Profit, None, 100, "Profit")
         )))
