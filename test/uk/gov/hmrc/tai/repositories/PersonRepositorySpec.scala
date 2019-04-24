@@ -127,8 +127,8 @@ class PersonRepositorySpec extends PlaySpec
     }
   }
 
-  val sessionId = "testSession"
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
+  private val sessionId = "testSession"
   private val nino: Nino = new Generator(new Random).nextNino
   private val address: Address = Address("line1", "line2", "line3", "postcode", "country")
   private val personMongoKey = "PersonData"
