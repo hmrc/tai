@@ -23,6 +23,7 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.APITypes
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.Matchers.any
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 
 class MetricsSpec extends PlaySpec with MockitoSugar {
 
@@ -36,8 +37,8 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
         val mockMetrics = mock[com.kenshoo.play.metrics.Metrics]
         when(mockMetrics.defaultRegistry)
           .thenReturn(mockMetricRegistry)
-
-        val sut = new Metrics(mockMetrics)
+        val mockCacheMetricsConfig =  mock[CacheMetricsConfig]
+        val sut = new Metrics(mockMetrics, mockCacheMetricsConfig)
 
         val timer: Timer.Context = sut.startTimer(APITypes.BbsiAPI)
         timer.stop()
@@ -59,7 +60,8 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
       when(mockMetrics.defaultRegistry)
         .thenReturn(mockMetricRegistry)
 
-      val sut = new Metrics(mockMetrics)
+      val mockCacheMetricsConfig =  mock[CacheMetricsConfig]
+      val sut = new Metrics(mockMetrics, mockCacheMetricsConfig)
 
       sut.incrementSuccessCounter(APITypes.CompanyCarAPI)
 

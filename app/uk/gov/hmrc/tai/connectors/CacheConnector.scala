@@ -28,12 +28,13 @@ import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.Future
 
 @Singleton
-class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnection
+class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) extends MongoDbConnection
     with TimeToLive
     with MongoFormatter {
 
@@ -83,24 +84,34 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[T]](jsonDecryptor).isSuccess) {
+              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[T]](jsonDecryptor).decryptedValue)
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
         }
-        case None => None
+        case None => {
+          metrics.incrementCacheMissCounter()
+          None
+        }
       }
     } else {
       cacheRepository.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[T].isSuccess) {
+              metrics.incrementCacheHitCounter()
               Some((json \ key).as[T])
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
         }
-        case None => None
+        case None => {
+          metrics.incrementCacheMissCounter()
+          None
+        }
       }
     }
   }
@@ -114,24 +125,40 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
+              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue)
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
-        } getOrElse Nil
-        case None => Nil
+        } getOrElse {
+          metrics.incrementCacheMissCounter()
+          Nil
+        }
+        case None => {
+          metrics.incrementCacheMissCounter()
+          Nil
+        }
       }
     } else {
       cacheRepository.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
+              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Seq[T]])
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
-        } getOrElse Nil
-        case None => Nil
+        } getOrElse {
+          metrics.incrementCacheMissCounter()
+          Nil
+        }
+        case None => {
+          metrics.incrementCacheMissCounter()
+          Nil
+        }
       }
     }
   }
@@ -143,12 +170,17 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
+              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue)
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
         }
-        case None => None
+        case None => {
+          metrics.incrementCacheMissCounter()
+          None
+        }
       }
     } else {
       cacheRepository.findById(id) map {
@@ -157,10 +189,14 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
             if ((json \ key).validate[Seq[T]].isSuccess) {
               Some((json \ key).as[Seq[T]])
             } else {
+              metrics.incrementCacheMissCounter()
               None
             }
         }
-        case None => None
+        case None => {
+          metrics.incrementCacheMissCounter()
+          None
+        }
       }
     }
   }

@@ -19,16 +19,19 @@ package uk.gov.hmrc.tai.metrics
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.Timer.Context
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 @Singleton
-class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
+class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics, cacheMetricsConfig: CacheMetricsConfig) {
 
   private val registry: MetricRegistry = metrics.defaultRegistry
 
   val SuccessCounterSuffix = "-success-counter"
   val FailureCounterSuffix = "-failed-counter"
+  val CacheHitCounter = "cache-hit-counter"
+  val CacheMissCounter = "cache-miss-counter"
   val TimerSuffix = "-timer"
 
   val metricDescriptions = Map(
@@ -61,4 +64,11 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()
   def incrementSuccessCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + SuccessCounterSuffix).inc()
   def incrementFailedCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + FailureCounterSuffix).inc()
+
+  def incrementCacheHitCounter(): Unit = {
+    if (cacheMetricsConfig.cacheMetricsEnabled) registry.counter(CacheHitCounter).inc()
+  }
+  def incrementCacheMissCounter(): Unit = {
+    if (cacheMetricsConfig.cacheMetricsEnabled) registry.counter(CacheMissCounter).inc()
+  }
 }
