@@ -30,8 +30,8 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics, cacheMetricsC
 
   val SuccessCounterSuffix = "-success-counter"
   val FailureCounterSuffix = "-failed-counter"
-  val CacheHitCounter = "cache-hit-counter"
-  val CacheMissCounter = "cache-miss-counter"
+  val CacheHitCounter = "tai-cache-hit-counter"
+  val CacheMissCounter = "tai-cache-miss-counter"
   val TimerSuffix = "-timer"
 
   val metricDescriptions = Map(
