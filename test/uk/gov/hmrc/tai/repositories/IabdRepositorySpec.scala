@@ -25,7 +25,9 @@ import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, IabdConnector}
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
@@ -54,7 +56,7 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
         when(cacheConnector.createOrUpdateJson(any(), any(), any())).
           thenReturn(Future.successful(jsonAfterFormat))
         when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
-        val sut = createSUT(cacheConnector, iabdConnector)
+        val sut = createSUT(cacheConnector, iabdConnector = iabdConnector)
 
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
 
@@ -101,10 +103,12 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
     )
   )
 
-  private def createSUT(
-                         cacheConnector: CacheConnector = mock[CacheConnector],
-                         iabdConnector: IabdConnector = mock[IabdConnector]) = {
-    new IabdRepository(cacheConnector, iabdConnector)
+  val metrics = mock[Metrics]
+
+  private def createSUT(cacheConnector: CacheConnector = mock[CacheConnector],
+                        iabdConnector: IabdConnector = mock[IabdConnector]) = {
+    val cacheMetricsConfig = mock[CacheMetricsConfig]
+    new IabdRepository(cacheConnector, metrics, cacheMetricsConfig, iabdConnector)
   }
 
 }

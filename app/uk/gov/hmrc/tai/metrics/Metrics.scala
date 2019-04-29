@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 @Singleton
-class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics, cacheMetricsConfig: CacheMetricsConfig) {
+class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
 
   private val registry: MetricRegistry = metrics.defaultRegistry
 
@@ -60,15 +60,10 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics, cacheMetricsC
     APITypes.TaxAccountHistoryAPI -> "tax-account-history"
   )
 
-
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()
   def incrementSuccessCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + SuccessCounterSuffix).inc()
   def incrementFailedCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + FailureCounterSuffix).inc()
 
-  def incrementCacheHitCounter(): Unit = {
-    if (cacheMetricsConfig.cacheMetricsEnabled) registry.counter(CacheHitCounter).inc()
-  }
-  def incrementCacheMissCounter(): Unit = {
-    if (cacheMetricsConfig.cacheMetricsEnabled) registry.counter(CacheMissCounter).inc()
-  }
+  def incrementCacheHitCounter(): Unit = registry.counter(CacheHitCounter).inc()
+  def incrementCacheMissCounter(): Unit = registry.counter(CacheMissCounter).inc()
 }

@@ -18,18 +18,32 @@ package uk.gov.hmrc.tai.connectors
 
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HeaderCarrier
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
+import uk.gov.hmrc.tai.metrics.Metrics
+
 import scala.concurrent.Future
 
 trait Caching {
   def cacheConnector: CacheConnector
+  def metrics: Metrics
+  def cacheMetricsConfig: CacheMetricsConfig
 
   def cache(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
     val sessionId = fetchSessionId(hc)
     cacheConnector.findJson(sessionId, mongoKey).flatMap {
-      case Some(jsonFromCache) => Future.successful(jsonFromCache)
-      case _ => jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(sessionId, _, mongoKey))
+      case Some(jsonFromCache) => {
+        if(cacheMetricsConfig.cacheMetricsEnabled)
+          metrics.incrementCacheHitCounter()
+
+        Future.successful(jsonFromCache)
+      }
+      case _ => {
+        if(cacheMetricsConfig.cacheMetricsEnabled)
+          metrics.incrementCacheMissCounter()
+
+        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(sessionId, _, mongoKey))
+      }
     }
   }
 

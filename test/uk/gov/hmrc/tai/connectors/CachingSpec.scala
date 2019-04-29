@@ -18,27 +18,29 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.Matchers
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
+import uk.gov.hmrc.tai.metrics.Metrics
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 import scala.language.postfixOps
 
-class CachingSpec extends PlaySpec with MockitoSugar{
+class CachingSpec extends PlaySpec with MockitoSugar {
   "cache" must{
     "return the json from cache" when{
-      "the key is present in the cache" in{
+      "the key is present in the cache" in {
         val sut = createSUT
         val jsonFromCache = Json.obj("aaa" -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
         when(sut.cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(Some(jsonFromCache)))
         val result = Await.result(sut.cache(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromCache
+
+        verify(sut.metrics, times(1)).incrementCacheHitCounter()
       }
     }
 
@@ -51,20 +53,25 @@ class CachingSpec extends PlaySpec with MockitoSugar{
           thenReturn(Future.successful(jsonFromFunction))
         val result = Await.result(sut.cache(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromFunction
+
+        verify(sut.metrics, times(1)).incrementCacheMissCounter()
       }
     }
   }
 
-  private val sessionId = "123"
-  private val mongoKey = "mongoKey1"
-  private val nino: Nino = new Generator(new Random).nextNino
+  val sessionId = "123"
+  val mongoKey = "mongoKey1"
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private def createSUT = new CachingTest
+  def createSUT = new CachingTest
 
-  private class CachingTest extends Caching {
+  class CachingTest extends Caching {
     override val cacheConnector: CacheConnector = mock[CacheConnector]
+    override val metrics = mock[Metrics]
+    override val cacheMetricsConfig = mock[CacheMetricsConfig]
+    when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
+
     override def fetchSessionId(headerCarrier: HeaderCarrier): String = sessionId
   }
 }

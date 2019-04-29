@@ -20,7 +20,9 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, Caching, IabdConnector}
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
@@ -30,7 +32,9 @@ import scala.concurrent.Future
 
 @Singleton
 class IabdRepository @Inject()(override val cacheConnector: CacheConnector,
-                              iabdConnector: IabdConnector) extends Caching with MongoConstants with IabdHodFormatters {
+                               override val metrics: Metrics,
+                               override val cacheMetricsConfig: CacheMetricsConfig,
+                               iabdConnector: IabdConnector) extends Caching with MongoConstants with IabdHodFormatters {
 
   def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
     cache(s"$IabdMongoKey${taxYear.year}", iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)))

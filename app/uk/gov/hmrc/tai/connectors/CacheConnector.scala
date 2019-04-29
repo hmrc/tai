@@ -34,7 +34,7 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import scala.concurrent.Future
 
 @Singleton
-class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) extends MongoDbConnection
+class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnection
     with TimeToLive
     with MongoFormatter {
 
@@ -84,15 +84,12 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[T]](jsonDecryptor).isSuccess) {
-              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[T]](jsonDecryptor).decryptedValue)
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           None
         }
       }
@@ -101,15 +98,12 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[T].isSuccess) {
-              metrics.incrementCacheHitCounter()
               Some((json \ key).as[T])
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           None
         }
       }
@@ -125,18 +119,14 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
-              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue)
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         } getOrElse {
-          metrics.incrementCacheMissCounter()
           Nil
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           Nil
         }
       }
@@ -145,18 +135,14 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
-              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Seq[T]])
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         } getOrElse {
-          metrics.incrementCacheMissCounter()
           Nil
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           Nil
         }
       }
@@ -170,15 +156,12 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
-              metrics.incrementCacheHitCounter()
               Some((json \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue)
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           None
         }
       }
@@ -189,12 +172,10 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig, metrics: Metrics) exten
             if ((json \ key).validate[Seq[T]].isSuccess) {
               Some((json \ key).as[Seq[T]])
             } else {
-              metrics.incrementCacheMissCounter()
               None
             }
         }
         case None => {
-          metrics.incrementCacheMissCounter()
           None
         }
       }

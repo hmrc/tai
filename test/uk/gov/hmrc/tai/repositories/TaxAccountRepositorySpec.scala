@@ -25,8 +25,10 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -186,16 +188,18 @@ class TaxAccountRepositorySpec extends PlaySpec
         "name" -> "Employer2",
         "basisOperation" -> 2)))
 
-  private val sessionId = "1212"
+  val sessionId = "1212"
 
-  private val nino: Nino = new Generator(new Random).nextNino
+  val nino: Nino = new Generator(new Random).nextNino
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
-  private def createSUT(
-                         cacheConnector: CacheConnector = mock[CacheConnector],
-                         taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]) =
-    new TaxAccountRepository(cacheConnector, taxAccountConnector) {
+  val metrics = mock[Metrics]
+
+  def createSUT(cacheConnector: CacheConnector = mock[CacheConnector],
+                cacheMetricsConfig: CacheMetricsConfig = mock[CacheMetricsConfig],
+                taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]) =
+    new TaxAccountRepository(cacheConnector, metrics, cacheMetricsConfig, taxAccountConnector) {
       override def fetchSessionId(headerCarrier: HeaderCarrier): String = sessionId
     }
 }
