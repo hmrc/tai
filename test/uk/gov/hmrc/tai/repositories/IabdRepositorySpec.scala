@@ -26,37 +26,47 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
-import uk.gov.hmrc.tai.connectors.{CacheConnector, IabdConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, Caching, IabdConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants {
 
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
+  val nino = new Generator(new Random).nextNino
+  val cacheConnector = mock[CacheConnector]
+  val metrics = mock[Metrics]
+  val cacheConfig = mock[CacheMetricsConfig]
+  val iabdConnector = mock[IabdConnector]
+
+
   "IABD repository" must {
     "return json" when {
       "data is present in cache" in {
-        val cacheConnector = mock[CacheConnector]
+
+        val cache = new Caching(cacheConnector, metrics, cacheConfig)
+        when(iabdConnector.iabds(Matchers.eq(nino), Matchers.eq(TaxYear()))(any())).thenReturn(Future.successful(jsonAfterFormat))
         when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}"))).thenReturn(Future.successful(Some(jsonAfterFormat)))
-        val sut = createSUT(cacheConnector)
+
+        val sut = createTestCache(cache, iabdConnector)
 
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
-
         result mustBe jsonAfterFormat
       }
 
       "data is not present in cache" in {
-        val cacheConnector = mock[CacheConnector]
-        val iabdConnector = mock[IabdConnector]
+        val cache = new Caching(cacheConnector, metrics, cacheConfig)
+
         when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}"))).thenReturn(Future.successful(None))
         when(cacheConnector.createOrUpdateJson(any(), any(), any())).
           thenReturn(Future.successful(jsonAfterFormat))
         when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
-        val sut = createSUT(cacheConnector, iabdConnector = iabdConnector)
+
+        val sut = createTestCache(cache, iabdConnector)
 
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
 
@@ -65,8 +75,7 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
     }
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-  private val nino = new Generator(new Random).nextNino
+
 
   private val jsonFromIabdApi = Json.arr(
     Json.obj(
@@ -103,12 +112,6 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
     )
   )
 
-  val metrics = mock[Metrics]
-
-  private def createSUT(cacheConnector: CacheConnector = mock[CacheConnector],
-                        iabdConnector: IabdConnector = mock[IabdConnector]) = {
-    val cacheMetricsConfig = mock[CacheMetricsConfig]
-    new IabdRepository(cacheConnector, metrics, cacheMetricsConfig, iabdConnector)
-  }
+  def createTestCache(cache: Caching, iabdConnector: IabdConnector) = new IabdRepository(cache, iabdConnector)
 
 }

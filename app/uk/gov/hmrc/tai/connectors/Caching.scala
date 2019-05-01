@@ -21,15 +21,15 @@ import uk.gov.hmrc.http.HeaderCarrier
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-
+import com.google.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
-trait Caching {
-  def cacheConnector: CacheConnector
-  def metrics: Metrics
-  def cacheMetricsConfig: CacheMetricsConfig
+@Singleton
+class Caching @Inject()(cacheConnector: CacheConnector,
+                        metrics: Metrics,
+                        cacheMetricsConfig: CacheMetricsConfig) {
 
-  def cache(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def cacheFromApi(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
     val sessionId = fetchSessionId(hc)
     cacheConnector.findJson(sessionId, mongoKey).flatMap {
       case Some(jsonFromCache) => {

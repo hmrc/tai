@@ -30,31 +30,32 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class CachingSpec extends PlaySpec with MockitoSugar {
+
   "cache" must{
     "return the json from cache" when{
       "the key is present in the cache" in {
-        val sut = createSUT
+        val sut = cacheTest
         val jsonFromCache = Json.obj("aaa" -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
-        when(sut.cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(Some(jsonFromCache)))
-        val result = Await.result(sut.cache(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(Some(jsonFromCache)))
+        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromCache
 
-        verify(sut.metrics, times(1)).incrementCacheHitCounter()
+        verify(metrics, times(1)).incrementCacheHitCounter()
       }
     }
 
     "return the json from the supplied function" when{
       "the key is not present in the cache" in{
-        val sut = createSUT
+        val sut = cacheTest
         val jsonFromFunction = Json.obj("c" -> "d")
-        when(sut.cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(None))
-        when(sut.cacheConnector.createOrUpdateJson(Matchers.eq(sessionId), Matchers.eq(jsonFromFunction),Matchers.eq(mongoKey))).
+        when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(None))
+        when(cacheConnector.createOrUpdateJson(Matchers.eq(sessionId), Matchers.eq(jsonFromFunction),Matchers.eq(mongoKey))).
           thenReturn(Future.successful(jsonFromFunction))
-        val result = Await.result(sut.cache(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromFunction
 
-        verify(sut.metrics, times(1)).incrementCacheMissCounter()
+        verify(metrics, times(1)).incrementCacheMissCounter()
       }
     }
   }
@@ -64,14 +65,14 @@ class CachingSpec extends PlaySpec with MockitoSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  def createSUT = new CachingTest
+  def cacheTest = new CachingTest
+  val cacheConnector = mock[CacheConnector]
+  val metrics = mock[Metrics]
+  val cacheMetricsConfig = mock[CacheMetricsConfig]
 
-  class CachingTest extends Caching {
-    override val cacheConnector: CacheConnector = mock[CacheConnector]
-    override val metrics = mock[Metrics]
-    override val cacheMetricsConfig = mock[CacheMetricsConfig]
-    when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
+  when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
 
+  class CachingTest extends Caching(cacheConnector, metrics, cacheMetricsConfig) {
     override def fetchSessionId(headerCarrier: HeaderCarrier): String = sessionId
   }
 }

@@ -20,9 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
@@ -30,14 +28,10 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountRepository @Inject()(override val cacheConnector: CacheConnector,
-                                     override val metrics: Metrics,
-                                     override val cacheMetricsConfig: CacheMetricsConfig,
-                                     taxAccountConnector: TaxAccountConnector) extends MongoConstants
-  with Caching {
+class TaxAccountRepository @Inject()(cache: Caching, taxAccountConnector: TaxAccountConnector) extends MongoConstants {
 
   def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] =
-    cache(s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))
+    cache.cacheFromApi(s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))
 
   def taxAccountForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
     taxAccountConnector.taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
