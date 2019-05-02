@@ -94,3 +94,8 @@ class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, pl
   def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
   def confirmedAPIEnabled: Boolean = runModeConfiguration.getBoolean("tai.confirmedAPI.enabled").getOrElse(false)
 }
+
+@Singleton
+class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+  def cacheMetricsEnabled: Boolean = runModeConfiguration.getBoolean("tai.cacheMetrics.enabled").getOrElse(false)
+}

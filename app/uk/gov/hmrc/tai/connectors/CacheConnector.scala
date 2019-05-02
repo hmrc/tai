@@ -28,6 +28,7 @@ import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.Future
@@ -88,7 +89,9 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
               None
             }
         }
-        case None => None
+        case None => {
+          None
+        }
       }
     } else {
       cacheRepository.findById(id) map {
@@ -100,7 +103,9 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
               None
             }
         }
-        case None => None
+        case None => {
+          None
+        }
       }
     }
   }
@@ -118,8 +123,12 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
             } else {
               None
             }
-        } getOrElse Nil
-        case None => Nil
+        } getOrElse {
+          Nil
+        }
+        case None => {
+          Nil
+        }
       }
     } else {
       cacheRepository.findById(id) map {
@@ -130,8 +139,12 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
             } else {
               None
             }
-        } getOrElse Nil
-        case None => Nil
+        } getOrElse {
+          Nil
+        }
+        case None => {
+          Nil
+        }
       }
     }
   }
@@ -148,7 +161,9 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
               None
             }
         }
-        case None => None
+        case None => {
+          None
+        }
       }
     } else {
       cacheRepository.findById(id) map {
@@ -160,7 +175,9 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
               None
             }
         }
-        case None => None
+        case None => {
+          None
+        }
       }
     }
   }

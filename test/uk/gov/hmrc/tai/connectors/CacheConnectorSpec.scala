@@ -32,6 +32,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.mongo.DatabaseUpdate
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
@@ -493,7 +494,7 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
   private val mongoKey = "key1"
   private val atMost = 5 seconds
 
-  private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig]) = new CacheConnector(mongoConfig) {
+  private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = new CacheConnector(mongoConfig) {
     override val cacheRepository: CacheMongoRepository = mock[CacheMongoRepository]
   }
 }

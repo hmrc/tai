@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.metrics
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.Timer.Context
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
@@ -29,6 +30,8 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
 
   val SuccessCounterSuffix = "-success-counter"
   val FailureCounterSuffix = "-failed-counter"
+  val CacheHitCounter = "tai-cache-hit-counter"
+  val CacheMissCounter = "tai-cache-miss-counter"
   val TimerSuffix = "-timer"
 
   val metricDescriptions = Map(
@@ -57,8 +60,10 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
     APITypes.TaxAccountHistoryAPI -> "tax-account-history"
   )
 
-
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()
   def incrementSuccessCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + SuccessCounterSuffix).inc()
   def incrementFailedCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + FailureCounterSuffix).inc()
+
+  def incrementCacheHitCounter(): Unit = registry.counter(CacheHitCounter).inc()
+  def incrementCacheMissCounter(): Unit = registry.counter(CacheMissCounter).inc()
 }
