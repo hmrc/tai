@@ -24,7 +24,7 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
     "uk.gov.hmrc" %% "json-encryption" % "3.2.0",
-    "uk.gov.hmrc" %% "mongo-caching" % "6.4.0-play-25" exclude("uk.gov.hmrc","time_2.11")
+    "uk.gov.hmrc" %% "mongo-caching" % "5.7.0" exclude("uk.gov.hmrc","time_2.11")
   )
 
   trait TestDependencies {
