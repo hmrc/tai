@@ -25,7 +25,7 @@ import play.api.Play
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
-import uk.gov.hmrc.cache.repository.CacheMongoRepository
+import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.domain.Generator
@@ -495,6 +495,6 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
   private val atMost = 5 seconds
 
   private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = new CacheConnector(mongoConfig) {
-    override val cacheRepository: CacheMongoRepository = mock[CacheMongoRepository]
+    override val cacheRepository: CacheRepository = mock[CacheRepository]
   }
 }
