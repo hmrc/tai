@@ -22,16 +22,15 @@ import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.controllers.EmploymentsController
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{EmploymentRepository, IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -84,6 +83,303 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       val result = Await.result(SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()), 5 seconds)
 
       result mustBe taxCodeIncomes
+    }
+  }
+
+  "matchedTaxCodeIncomesForYear" must {
+    val mockIncomeRepository = mock[IncomeRepository]
+    val mockEmploymentService = mock[EmploymentService]
+
+    val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(TaxCodeIncome(PensionIncome, Some(1), BigDecimal(1100),
+      PensionIncome.toString, "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
+      TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+        EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)),
+      TaxCodeIncome(EmploymentIncome, Some(3), BigDecimal(0),
+        EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)))
+
+    val employment = Employment("company name", Some("888"), new LocalDate(TaxYear().next.year, 5, 26),
+      None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
+    val employments = Seq(employment, employment.copy(sequenceNumber = 1))
+    val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
+
+    "return list of live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      val expectedResult =
+        Seq(IncomeSource(
+          taxCodeIncomes(1),
+          employment
+        ))
+
+      result mustBe expectedResult
+    }
+
+    "return list of ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq(
+          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
+        )))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Ceased)(HeaderCarrier()), 5.seconds)
+
+      val expectedResult =
+        Seq(IncomeSource(
+          taxCodeIncomes(1).copy(status = Ceased), employment)
+        )
+
+      result mustBe expectedResult
+    }
+
+    "return list of potentially ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq(
+          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
+        )))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()), 5.seconds)
+
+      val expectedResult =
+        Seq(IncomeSource(
+          taxCodeIncomes(1).copy(status = PotentiallyCeased), employment)
+        )
+
+      result mustBe expectedResult
+    }
+
+    "return empty JSON when no records match" in {
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq(
+          TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
+            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
+        )))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+
+    }
+
+    "return list of live and matched pension TaxCodeIncomes for a given year" in {
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, PensionIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      val expectedResult =
+        Seq(IncomeSource(
+          TaxCodeIncome(
+            componentType = PensionIncome,
+            employmentId = Some(1),
+            amount = 1100,
+            description = "PensionIncome",
+            taxCode = "1150L",
+            name = "Employer1",
+            basisOperation = Week1Month1BasisOperation,
+            status = Live,
+            inYearAdjustmentIntoCY = 0,
+            totalInYearAdjustment = 0,
+            inYearAdjustmentIntoCYPlusOne = 0
+          ),
+          Employment(
+            name = "company name",
+            payrollNumber = Some("888"),
+            startDate = LocalDate.parse(s"${TaxYear().next.year}-05-26"),
+            endDate = None,
+            annualAccounts = Seq.empty,
+            taxDistrictNumber = "",
+            payeNumber = "",
+            sequenceNumber = 1,
+            cessationPay = Some(100),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = true
+          )
+        ))
+
+      result mustBe expectedResult
+    }
+
+    "return empty json when there are no matching live employments" in {
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty json when there are no matching live pensions" in {
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, PensionIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty json when there are no TaxCodeIncome records for a given nino" in {
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq(employment)))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, PensionIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty json when there are no employment records for a given nino" in {
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty[Employment]))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = Await.result(sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, PensionIncome, Live)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+  }
+
+  "nonMatchingCeasedEmployments" must {
+    val mockIncomeRepository = mock[IncomeRepository]
+    val mockEmploymentService = mock[EmploymentService]
+
+    val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(TaxCodeIncome(PensionIncome, Some(1), BigDecimal(1100),
+      PensionIncome.toString, "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
+      TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+        EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)),
+      TaxCodeIncome(EmploymentIncome, Some(3), BigDecimal(0),
+        EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)))
+
+    val employment = Employment("company name", Some("888"), new LocalDate(TaxYear().next.year, 5, 26),
+      None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
+
+    "return list of non matching ceased employments when some employments do have an end date" in {
+      val employments = Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+
+      val expectedResult =
+        Seq(employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+
+      result mustBe expectedResult
+    }
+
+    "return empty json when no employments have an end date" in {
+      val employments = Seq(employment, employment.copy(sequenceNumber = 1))
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty json when TaxCodeIncomes do not have an Id" in {
+      val employments = Seq(employment, employment.copy(sequenceNumber = 1))
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq(
+          TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
+            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
+        )))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty Json when there are no TaxCodeIncome records for a given nino" in {
+      val employments = Seq(employment, employment.copy(sequenceNumber = 1))
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(employments))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
+    }
+
+    "return empty json when there are no employment records for a given nino" in {
+
+      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(Seq(
+          TaxCodeIncome(EmploymentIncome, None, BigDecimal(0),
+            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Ceased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0))
+        )))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+        .thenReturn(Future.successful(Seq.empty[Employment]))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+
+      result mustBe Seq.empty
     }
   }
 

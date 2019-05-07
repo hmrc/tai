@@ -61,49 +61,18 @@ class IncomeController @Inject()(incomeService: IncomeService,
       } recoverWith taxAccountErrorHandler
   }
 
-  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus):
-  Action[AnyContent] = authentication.async {
+  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async {
     implicit request =>
-
-      def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
-        filteredTaxCodeIncomes.flatMap { income =>
-          employments.flatMap(emp =>
-            income.employmentId match {
-              case Some(id) if id == emp.sequenceNumber =>  Seq(IncomeSource(income, emp))
-              case _ => Seq.empty[IncomeSource]
-            }
-          )
-        }
-
-      def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome], incomeStatus: String): Seq[TaxCodeIncome] =
-          taxCodeIncomes.filter(income => income.componentType == incomeType)
-
-      (for {
-        taxCodeIncomes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, year)
-        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = filterTaxCodeIncomes(taxCodeIncomes, status.toString)
-        employments: Seq[Employment] <- incomeService.employments(filteredTaxCodeIncomes, nino, year)
-        result: Seq[IncomeSource] = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
-      } yield {
-        Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-      }) recoverWith taxAccountErrorHandler
+      incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).map {
+        result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
+      } recoverWith taxAccountErrorHandler
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
-
-      def filterNonMatchingCeasedEmploymentsWithEndDate(employments: Seq[Employment], taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
-        employments
-          .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
-          .filter(_.endDate.isDefined)
-
-      (for {
-        taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year)
-        filteredTaxCodeIncomes: Seq[TaxCodeIncome] = taxCodeIncomes.filter(income => income.status != Live && income.componentType == EmploymentIncome)
-        employments: Seq[Employment] <- employmentService.employments(nino, year)
-        result: Seq[Employment] = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
-      } yield {
-        Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-      }) recoverWith taxAccountErrorHandler
+      incomeService.nonMatchingCeasedEmployments(nino, year).map {
+        result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
+      } recoverWith taxAccountErrorHandler
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
