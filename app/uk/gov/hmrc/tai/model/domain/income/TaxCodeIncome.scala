@@ -51,6 +51,7 @@ object TaxCodeIncomeStatus {
     case "Live" => Live
     case "PotentiallyCeased" => PotentiallyCeased
     case "Ceased" => Ceased
+    case _ => throw new IllegalArgumentException("Invalid TaxCodeIncomeStatus")
   }
 
   implicit val formatTaxCodeIncomeSourceStatusType: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
