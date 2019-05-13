@@ -23,11 +23,11 @@ import play.api.libs.json._
   *
   * @param grossAmount
   */
-case class UpdateIabdFlatRateExpense(grossAmount: Int) {
+case class UpdateIabdEmployeeExpense(grossAmount: Int) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
 }
 
-object UpdateIabdFlatRateExpense {
-  implicit val format: Format[UpdateIabdFlatRateExpense] = Json.format[UpdateIabdFlatRateExpense]
+object UpdateIabdEmployeeExpense {
+  implicit val format: Format[UpdateIabdEmployeeExpense] = Json.format[UpdateIabdEmployeeExpense]
 }

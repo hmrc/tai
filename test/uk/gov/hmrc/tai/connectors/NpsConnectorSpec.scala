@@ -17,12 +17,10 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
-import org.joda.time.DateTime
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -33,7 +31,7 @@ import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
-import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdFlatRateExpense}
+import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}

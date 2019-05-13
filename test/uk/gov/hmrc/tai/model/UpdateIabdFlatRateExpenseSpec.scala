@@ -33,7 +33,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
           | }
         """.stripMargin)
 
-      val employeeExpense: UpdateIabdFlatRateExpense = employeeExpenseJson.as[UpdateIabdFlatRateExpense]
+      val employeeExpense: UpdateIabdEmployeeExpense = employeeExpenseJson.as[UpdateIabdEmployeeExpense]
 
       employeeExpense.grossAmount shouldBe 1234
     }
@@ -46,7 +46,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: JsResultException = intercept[JsResultException] {
-        employeeExpenseJson.as[UpdateIabdFlatRateExpense].grossAmount
+        employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
       parseError shouldBe an[JsResultException]
@@ -63,7 +63,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[UpdateIabdFlatRateExpense].grossAmount
+        employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
       parseError.getMessage shouldBe "requirement failed: grossAmount cannot be less than 0"
@@ -80,7 +80,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
-        employeeExpenseJson.as[UpdateIabdFlatRateExpense].grossAmount
+        employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
       parseError.getMessage shouldBe "requirement failed: grossAmount cannot be greater than 999999"
