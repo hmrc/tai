@@ -46,6 +46,8 @@ object APITypes extends Enumeration {
   val TaxAccountHistoryAPI = Value
   val DesUpdateProfessionalSubscriptionsAPI = Value
   val DesGetProfessionalSubscriptionsAPI = Value
+  val DesGetEmployeeExpensesAPI = Value
+  val DesUpdateEmployeeExpensesAPI = Value
 }
 
 object BasisOperation extends Enumeration {

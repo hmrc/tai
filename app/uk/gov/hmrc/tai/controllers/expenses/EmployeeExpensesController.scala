@@ -32,8 +32,8 @@ package uk.gov.hmrc.tai.controllers.expenses
  */
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.libs.json.JsValue
+import play.api.mvc.Action
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
@@ -41,6 +41,8 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
+import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class EmployeeExpensesController @Inject()(
@@ -68,13 +70,5 @@ class EmployeeExpensesController @Inject()(
               }
           }
       }
-  }
-
-  def getEmployeeExpensesata(nino: Nino, year: Int): Action[AnyContent] = authentication.async {
-    implicit request =>
-      employeeExpensesService.getEmployeeExpenses(nino, year).map {
-        iabdData =>
-          Ok(Json.toJson(iabdData))
-      } recoverWith taxAccountErrorHandler
   }
 }
