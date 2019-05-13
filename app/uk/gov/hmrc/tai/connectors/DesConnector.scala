@@ -98,7 +98,7 @@ class DesConnector @Inject()(httpClient: HttpClient,
 
   def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
                               expensesData: List[UpdateIabdEmployeeExpense],
-                              apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
+                              apiType: APITypes)
                              (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")

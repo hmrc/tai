@@ -33,6 +33,7 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
@@ -461,7 +462,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100))
+            expensesData = List(UpdateIabdEmployeeExpense(100)),
+            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
           )(hc), 5 seconds)
 
           result.status mustBe Status.OK
@@ -485,7 +487,9 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100))
+            expensesData = List(UpdateIabdEmployeeExpense(100)),
+            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+
           )(hc)
 
           val ex: HttpException = the[HttpException] thrownBy Await.result(result, 5 seconds)
