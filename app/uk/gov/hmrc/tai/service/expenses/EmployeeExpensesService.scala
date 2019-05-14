@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector, NpsConnector}
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps2.IabdType
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
@@ -34,16 +34,21 @@ class EmployeeExpensesService @Inject()(desConnector: DesConnector,
                                         iabdConnector: IabdConnector,
                                         featureTogglesConfig: FeatureTogglesConfig) {
 
-  def updateEmployeeExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: UpdateIabdEmployeeExpense)
+  def updateEmployeeExpensesData(nino: Nino, taxYear: TaxYear, version: Int, expensesData: UpdateIabdEmployeeExpense, iabd: Int)
                                 (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     desConnector.updateExpensesDataToDes(
       nino = nino,
       year = taxYear.year,
-      iabdType = IabdType.FlatRateJobExpenses.code,
+      iabdType = iabd,
       version = version,
       expensesData = List(expensesData),
-      apiType = APITypes.DesUpdateEmployeeExpensesAPI
+      apiType = APITypes.DesIabdUpdateEmployeeExpensesAPI
     )
+  }
+
+  def getEmployeeExpenses(nino: Nino, taxYear: Int, iabd: Int)
+                         (implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+    desConnector.getIabdsForTypeFromDes(nino, taxYear, iabd)
   }
 }

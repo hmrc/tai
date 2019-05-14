@@ -32,8 +32,8 @@ package uk.gov.hmrc.tai.controllers.expenses
  */
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
-import play.api.mvc.Action
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
@@ -42,6 +42,7 @@ import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
@@ -53,7 +54,7 @@ class EmployeeExpensesController @Inject()(
     with ApiFormats
     with ControllerErrorHandler {
 
-  def updateEmployeeExpensesData(nino: Nino, year: TaxYear): Action[JsValue] = authentication.async(parse.json) {
+  def updateEmployeeExpensesData(nino: Nino, year: TaxYear, iabd: Int ): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IabdUpdateExpensesRequest] {
         iabdUpdateExpensesRequest =>
@@ -61,7 +62,8 @@ class EmployeeExpensesController @Inject()(
             nino = nino,
             taxYear = year,
             version = iabdUpdateExpensesRequest.version,
-            expensesData = UpdateIabdEmployeeExpense(iabdUpdateExpensesRequest.grossAmount)
+            expensesData = UpdateIabdEmployeeExpense(iabdUpdateExpensesRequest.grossAmount),
+            iabd = iabd
           ).map {
             value =>
               value.status match {
@@ -70,5 +72,13 @@ class EmployeeExpensesController @Inject()(
               }
           }
       }
+  }
+
+  def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] = authentication.async {
+    implicit request =>
+      employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map {
+        iabdData =>
+          Ok(Json.toJson(iabdData))
+      } recoverWith taxAccountErrorHandler
   }
 }
