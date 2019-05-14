@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdFlatRateExpense}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
@@ -97,13 +97,13 @@ class DesConnector @Inject()(httpClient: HttpClient,
   }
 
   def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
-                              expensesData: List[UpdateIabdFlatRateExpense],
-                              apiType: APITypes = APITypes.DesIabdUpdateFlatRateExpensesAPI)
+                              expensesData: List[UpdateIabdEmployeeExpense],
+                              apiType: APITypes)
                              (implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[List[UpdateIabdFlatRateExpense]](postUrl, apiType, expensesData)(headerForUpdate(version, daPtaOriginatorId), implicitly)
+    postToDes[List[UpdateIabdEmployeeExpense]](postUrl, apiType, expensesData)(headerForUpdate(version, daPtaOriginatorId), implicitly)
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String = {

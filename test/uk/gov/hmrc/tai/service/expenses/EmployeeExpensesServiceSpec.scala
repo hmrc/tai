@@ -37,7 +37,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class FlatRateExpensesServiceSpec extends PlaySpec
+class EmployeeExpensesServiceSpec extends PlaySpec
   with MockitoSugar
   with MockAuthenticationPredicate with ScalaFutures {
 
@@ -48,15 +48,15 @@ class FlatRateExpensesServiceSpec extends PlaySpec
   private val mockIabdConnector = mock[IabdConnector]
   private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
-  private val service = new FlatRateExpensesService(
+  private val service = new EmployeeExpensesService(
     desConnector = mockDesConnector,
     npsConnector = mockNpsConnector,
     iabdConnector = mockIabdConnector,
     featureTogglesConfig = mockFeaturesToggle)
 
   private val nino = new Generator(new Random).nextNino
-  private val updateIabdFlatRateExpense = UpdateIabdEmployeeExpense(100)
-  private val iabd = IabdType.FlatRateJobExpenses.code
+  private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100)
+  private val iabd = 56
 
   private val validNpsIabd: List[NpsIabdRoot] = List(
     NpsIabdRoot(
@@ -70,7 +70,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
   private lazy val timeoutDuration: Duration = 5 seconds
 
-  "updateFlatRateExpensesData" must {
+  "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
@@ -79,7 +79,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
           .status mustBe 200
       }
     }
@@ -91,13 +91,13 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
           .status mustBe 500
       }
     }
   }
 
-  "getFlatRateExpensesData" must {
+  "getEmployeeExpensesData" must {
 
     "return a list of NpsIabds" when {
 
@@ -112,13 +112,13 @@ class FlatRateExpensesServiceSpec extends PlaySpec
         val mockNpsConnector = mock[NpsConnector]
         val mockIabdConnector = mock[IabdConnector]
 
-        val service = new FlatRateExpensesService(
+        val service = new EmployeeExpensesService(
           desConnector = mockDesConnector,
           npsConnector = mockNpsConnector,
           iabdConnector = mockIabdConnector,
           featureTogglesConfig = mockFeaturesToggle)
 
-        val result = service.getFlatRateExpenses(nino, taxYear)
+        val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         whenReady(result) {
           result =>
@@ -139,7 +139,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
           when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
             .thenReturn(Future.failed(new BadRequestException("")))
 
-          val result = service.getFlatRateExpenses(nino, taxYear)
+          val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
           intercept[Exception] {
             whenReady(result) {
