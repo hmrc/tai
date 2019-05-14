@@ -20,14 +20,14 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UnauthorizedException}
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
@@ -96,9 +96,9 @@ class CodingComponentControllerSpec
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
         when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
-          .thenReturn(Future.failed(new NotFoundException("")))
+          .thenReturn(Future.failed(new UnauthorizedException("")))
 
-        intercept[NotFoundException] {
+        intercept[UnauthorizedException] {
           await(sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()))
         }
       }
@@ -113,6 +113,22 @@ class CodingComponentControllerSpec
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
         status(result) mustBe 400
         val expectedJson = """{"reason":"bad request exception"}"""
+        contentAsString(result) mustBe expectedJson
+      }
+    }
+
+    "return a not found request" when {
+      "a NotFoundException is thrown" in {
+        val mockCodingComponentService = mock[CodingComponentService]
+        val sut = createSUT(mockCodingComponentService)
+
+        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+          .thenReturn(Future.failed(new NotFoundException("not found exception")))
+
+        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
+        status(result) mustBe 404
+
+        val expectedJson = """{"reason":"not found exception"}"""
         contentAsString(result) mustBe expectedJson
       }
     }
