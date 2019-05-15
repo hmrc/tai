@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.benefits.GenericBenefit
 
 sealed trait TaxComponentType
 
@@ -26,18 +27,6 @@ sealed trait DeductionComponentType extends TaxComponentType
 sealed trait IncomeComponentType extends TaxComponentType
 
 sealed trait TaxCodeIncomeComponentType extends IncomeComponentType
-
-object TaxCodeIncomeComponentType{
-  def apply(value: String): TaxCodeIncomeComponentType = value match {
-    case "EmploymentIncome" => EmploymentIncome
-    case "PensionIncome" => PensionIncome
-    case "JobSeekerAllowanceIncome" => JobSeekerAllowanceIncome
-    case "OtherIncome" => OtherIncome
-    case _ => throw new IllegalArgumentException("Invalid Tax component type")
-  }
-}
-
-
 sealed trait NonTaxCodeIncomeComponentType extends IncomeComponentType
 
 //Coding components

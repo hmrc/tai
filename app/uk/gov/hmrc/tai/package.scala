@@ -17,9 +17,6 @@
 package uk.gov.hmrc.tai
 
 package object binders {
-  implicit val ninoBinder: NinoBinder.type = NinoBinder
-  implicit val taxYearBinder: TaxYearBinder.type = TaxYearBinder
-  implicit val taxCodeIncomeComponentBinder: TaxCodeIncomeComponentBinder.type = TaxCodeIncomeComponentBinder
-  implicit val taxCodeIncomeStatusBinder: TaxCodeIncomeStatusBinder.type = TaxCodeIncomeStatusBinder
-
+  implicit val ninoBinder = NinoBinder
+  implicit val taxYearBinder = TaxYearBinder
 }
