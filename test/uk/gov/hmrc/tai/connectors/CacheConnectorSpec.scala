@@ -323,6 +323,18 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
     }
   }
 
+  "failed to remove the session data and errorMsg is None" in {
+    val mockMongoConfig = mock[MongoConfig]
+    when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+    val sut = createSUT(mockMongoConfig)
+    val writeErrors = Seq(WriteError(0, 0, "Failed"))
+    val eventualWriteResult = Future.successful(DefaultWriteResult(ok = false, 0, writeErrors, None, None, None))
+    when(sut.cacheRepository.removeById(any(), any())(any())).thenReturn(eventualWriteResult)
+
+    val ex = the[RuntimeException] thrownBy Await.result(sut.removeById("ABC"), atMost)
+    ex.getMessage mustBe "Error while removing the session data"
+  }
+
   "findOptSeq" must {
     "return some sequence" when {
       "cache returns sequence" in {
