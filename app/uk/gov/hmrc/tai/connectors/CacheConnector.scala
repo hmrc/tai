@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.tai.connectors
-
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.Play
@@ -28,7 +27,6 @@ import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.Future
@@ -43,7 +41,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
   private val expireAfter: Long = defaultExpireAfter
   private val defaultKey = "TAI-DATA"
 
-  def cacheRepository: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
+  val cacheRepository: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
 
   def createOrUpdate[T](id: String, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if(mongoConfig.mongoEncryptionEnabled){
