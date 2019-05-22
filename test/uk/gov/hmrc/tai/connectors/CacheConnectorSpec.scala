@@ -495,6 +495,6 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
   private val atMost = 5 seconds
 
   private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = new CacheConnector(mongoConfig) {
-    override val cacheRepository: CacheRepository = mock[CacheRepository]
+    override lazy val cacheRepository: CacheRepository = mock[CacheRepository]
   }
 }
