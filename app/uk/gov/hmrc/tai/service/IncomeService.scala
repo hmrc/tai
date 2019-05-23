@@ -21,10 +21,9 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.TaiRoot
-import uk.gov.hmrc.tai.model.domain.income.{Incomes, TaxCodeIncome}
+import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
-import uk.gov.hmrc.tai.model.domain.{Employment, income}
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
@@ -38,6 +37,39 @@ class IncomeService @Inject()(employmentService: EmploymentService,
                               taxAccountRepository: TaxAccountRepository,
                               auditor: Auditor) {
 
+  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+    def filterNonMatchingCeasedEmploymentsWithEndDate(employments: Seq[Employment], taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
+      employments
+        .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
+        .filter(_.endDate.isDefined)
+
+    for {
+      taxCodeIncomes <- taxCodeIncomes(nino, year)
+      filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.status != Live && income.componentType == EmploymentIncome)
+      employments <- employmentService.employments(nino, year)
+      result = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
+    } yield result
+  }
+
+  def matchedTaxCodeIncomesForYear(nino: Nino, year: TaxYear, incomeType: TaxCodeIncomeComponentType, status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier): Future[Seq[IncomeSource]] = {
+    def filterMatchingEmploymentsToIncomeSource(employments: Seq[Employment], filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
+      filteredTaxCodeIncomes.flatMap { income =>
+        employments
+          .filter(emp => income.employmentId.contains(emp.sequenceNumber))
+          .map(IncomeSource(income, _))
+      }
+
+    def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome]): Seq[TaxCodeIncome] =
+      taxCodeIncomes.filter(income => income.componentType == incomeType)
+
+    for {
+      taxCodeIncomes <- taxCodeIncomes(nino, year)
+      filteredTaxCodeIncomes = filterTaxCodeIncomes(taxCodeIncomes)
+      employments <- employments(filteredTaxCodeIncomes, nino, year)
+      result = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
+    } yield result
+  }
+
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] = {
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
   }
@@ -50,8 +82,16 @@ class IncomeService @Inject()(employmentService: EmploymentService,
     incomeRepository.incomes(nino, year)
   }
 
+  def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit headerCarrier: HeaderCarrier): Future[Seq[Employment]] = {
+    if (filteredTaxCodeIncomes.isEmpty) {
+      Future.successful(Seq.empty[Employment])
+    } else {
+      employmentService.employments(nino, year)
+    }
+  }
+
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)
-                          (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+                         (implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) => {
       auditor.sendDataEvent(
@@ -60,7 +100,7 @@ class IncomeService @Inject()(employmentService: EmploymentService,
           "year" -> year.toString,
           "employmentId" -> employmentId.toString,
           "newAmount" -> amount.toString,
-        "currentAmount" -> currentAmount))
+          "currentAmount" -> currentAmount))
     }
 
     for {
@@ -69,13 +109,13 @@ class IncomeService @Inject()(employmentService: EmploymentService,
       incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, personDetails.version, amount)
     } yield {
 
-      if(incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+      if (incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
       incomeUpdateResponse
     }
   }
 
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)
-                                 (implicit hc: HeaderCarrier): Future[Option[String]] = {
+                                         (implicit hc: HeaderCarrier): Future[Option[String]] = {
     taxCodeIncomes(nino, year) map { taxCodeIncomes =>
       taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
     }

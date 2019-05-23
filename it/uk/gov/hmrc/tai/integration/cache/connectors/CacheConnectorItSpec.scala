@@ -10,6 +10,7 @@ import uk.gov.hmrc.tai.connectors.CacheConnector
 import uk.gov.hmrc.tai.integration.TaiBaseSpec
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -154,7 +155,7 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
   private val atMost = 5 seconds
 
-  private def createSUT(mongoConfig: MongoConfig) = new CacheConnector(mongoConfig) {
+  private def createSUT(mongoConfig: MongoConfig): CacheConnector = new CacheConnector(mongoConfig) {
     val expireAfter: Long = 5
     override val cacheRepository: CacheRepository = CacheRepository("TAI-IT-TEST", expireAfter, Cache.mongoFormats)
   }

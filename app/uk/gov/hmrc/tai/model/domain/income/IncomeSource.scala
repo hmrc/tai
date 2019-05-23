@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai
+package uk.gov.hmrc.tai.model.domain.income
 
-package object binders {
-  implicit val ninoBinder: NinoBinder.type = NinoBinder
-  implicit val taxYearBinder: TaxYearBinder.type = TaxYearBinder
-  implicit val taxCodeIncomeComponentBinder: TaxCodeIncomeComponentBinder.type = TaxCodeIncomeComponentBinder
-  implicit val taxCodeIncomeStatusBinder: TaxCodeIncomeStatusBinder.type = TaxCodeIncomeStatusBinder
+import uk.gov.hmrc.tai.model.domain.Employment
 
-}
+case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
