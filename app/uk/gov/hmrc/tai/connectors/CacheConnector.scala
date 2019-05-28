@@ -41,7 +41,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
   private val expireAfter: Long = defaultExpireAfter
   private val defaultKey = "TAI-DATA"
 
-  lazy val cacheRepository: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
+  val cacheRepository: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
 
   def createOrUpdate[T](id: String, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if(mongoConfig.mongoEncryptionEnabled){
