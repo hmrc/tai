@@ -19,21 +19,19 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsBoolean, Json}
+import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.{TaxCodeMismatch, TaxCodeRecord, api}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
 import uk.gov.hmrc.tai.service.TaxCodeChangeServiceImpl
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
@@ -164,7 +162,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
     }
 
     "return false and list of tax code changes" when {
-
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
         when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
@@ -191,6 +188,17 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
         status(result) mustEqual BAD_REQUEST
+        contentAsString(result) mustEqual """{"reason":"Error"}"""
+      }
+    }
+
+    "return a NotFound 404" when {
+      "a not found exception has occurred" in {
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.failed(new NotFoundException("Error")))
+
+        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+
+        status(result) mustEqual NOT_FOUND
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
@@ -243,12 +251,13 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       }
     }
+
     "respond with BAD_REQUEST" when {
       "a bad request exception has occurred" in {
         when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
-        val result = controller.taxCodeMismatch(nino)(FakeRequest())
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual """{"reason":"Error"}"""
