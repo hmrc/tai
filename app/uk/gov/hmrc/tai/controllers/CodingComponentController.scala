@@ -20,10 +20,10 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.CodingComponentAPIFormatters
@@ -33,8 +33,9 @@ import uk.gov.hmrc.tai.util.RequestQueryFilter
 
 @Singleton
 class CodingComponentController @Inject()(authentication: AuthenticationPredicate,
-                                          codingComponentService: CodingComponentService)
-  extends BaseController
+                                          codingComponentService: CodingComponentService,
+                                          cc: ControllerComponents)
+  extends BackendController(cc)
   with ApiFormats
   with RequestQueryFilter
   with CodingComponentAPIFormatters {

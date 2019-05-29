@@ -19,15 +19,19 @@ package uk.gov.hmrc.tai.controllers
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.service.PersonService
 
 @Singleton
-class PersonController @Inject()(authentication: AuthenticationPredicate, personService: PersonService) extends BaseController with ApiFormats {
+class PersonController @Inject()(authentication: AuthenticationPredicate,
+                                 personService: PersonService,
+                                 cc: ControllerComponents)
+  extends BackendController(cc)
+    with ApiFormats {
 
   def person(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     personService.person(nino) map { person =>

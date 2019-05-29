@@ -17,28 +17,31 @@
 package uk.gov.hmrc.tai.controllers.predicates
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthorisedFunctions, ConfidenceLevel}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions) extends BaseController {
+class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions,
+                                        cc: ControllerComponents)
+  extends BackendController(cc) {
 
   def async(action: Request[AnyContent] => Future[Result]): Action[AnyContent] =
-    Action.async { implicit request =>
-      authorisedFunctions.authorised(ConfidenceLevel.L100) {
-        action(request)
-      }
+    Action.async {
+      implicit request =>
+        authorisedFunctions.authorised(ConfidenceLevel.L100) {
+          action(request)
+        }
     }
 
   def async[JsValue](bodyParser: BodyParser[JsValue])(action: Request[JsValue] => Future[Result]): Action[JsValue] =
-    Action.async(bodyParser) { implicit request =>
-      authorisedFunctions.authorised(ConfidenceLevel.L100) {
-        action(request)
-      }
+    Action.async(bodyParser) {
+      implicit request =>
+        authorisedFunctions.authorised(ConfidenceLevel.L100) {
+          action(request)
+        }
     }
 }

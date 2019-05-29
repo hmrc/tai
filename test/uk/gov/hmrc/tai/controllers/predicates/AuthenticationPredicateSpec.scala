@@ -17,15 +17,15 @@
 package uk.gov.hmrc.tai.controllers.predicates
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
 import play.api.libs.json.JsValue
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.{BackendController, BaseController}
 import uk.gov.hmrc.tai.mocks.{MockAuthorisedUser, MockUnauthorisedUser}
 
 import scala.concurrent.Future
@@ -33,9 +33,12 @@ import scala.concurrent.Future
 
 class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
 
+  val cc = mock[ControllerComponents]
+
+
   "async for get" must {
     "return UNAUTHORIZED when called with an Unauthenticated user" in {
-      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser)
+      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser, cc)
       val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
       ScalaFutures.whenReady(result.failed) { e =>
         e mustBe a[MissingBearerToken]
@@ -43,7 +46,7 @@ class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
     }
 
     "return OK when called with an Authenticated user" in {
-      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser)
+      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser, cc)
       val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
       status(result) mustBe Status.OK
     }
@@ -51,7 +54,7 @@ class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
 
   "async for post" must {
     "return UNAUTHORIZED when called with an Unauthenticated user" in {
-      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser)
+      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser, cc)
       val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
       ScalaFutures.whenReady(result.failed) { e =>
         e mustBe a[MissingBearerToken]
@@ -59,13 +62,14 @@ class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
     }
 
     "return OK when called with an Authenticated user" in {
-      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser)
+      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser, cc)
       val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
       status(result) mustBe Status.OK
     }
   }
 
-  private class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+  private class SUT(val authentication: AuthenticationPredicate, cc: ControllerComponents = cc)
+  extends BackendController(cc) {
     def get: Action[AnyContent] = authentication.async {
       implicit request =>
         Future.successful(Ok)

@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
+import com.google.inject.{Inject, Singleton}
 import play.Logger
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
-import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps2.IabdType._
@@ -32,16 +34,14 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
 
 import scala.concurrent.Future
-import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
 @Singleton
 class TaxSummaryController @Inject()(taiService: TaiService,
                                      taxAccountService: TaxAccountService,
                                      metrics: Metrics,
-                                     authentication: AuthenticationPredicate)
-  extends BaseController
+                                     authentication: AuthenticationPredicate,
+                                     cc: ControllerComponents)
+  extends BackendController(cc)
     with MongoFormatter {
 
   def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] = authentication.async {

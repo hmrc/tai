@@ -18,24 +18,25 @@ package uk.gov.hmrc.tai.controllers.income
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HttpException, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.{AmountRequest, CloseAccountRequest}
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 import scala.concurrent.Future
 
 @Singleton
 class BbsiController @Inject()(bbsiService: BbsiService,
-                               authentication: AuthenticationPredicate)
-  extends BaseController
+                               authentication: AuthenticationPredicate,
+                               cc: ControllerComponents)
+extends BackendController(cc)
     with ApiFormats
     with ControllerErrorHandler {
 

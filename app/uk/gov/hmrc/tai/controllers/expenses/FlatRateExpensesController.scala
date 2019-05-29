@@ -18,14 +18,14 @@ package uk.gov.hmrc.tai.controllers.expenses
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.FlatRateExpensesService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -33,9 +33,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class FlatRateExpensesController @Inject()(
                                             authentication: AuthenticationPredicate,
-                                            flatRateExpensesService: FlatRateExpensesService
-                                          )
-  extends BaseController
+                                            flatRateExpensesService: FlatRateExpensesService,
+                                            cc: ControllerComponents)
+  extends BackendController(cc)
     with ApiFormats
     with ControllerErrorHandler {
 

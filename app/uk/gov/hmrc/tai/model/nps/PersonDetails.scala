@@ -16,10 +16,14 @@
 
 package uk.gov.hmrc.tai.model.nps
 
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
+
 import org.joda.time.{ DateTimeZone, DateTime }
 import play.api.libs.json.{ Writes, Format, Reads, Json }
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.model.TaiRoot
+
 
 object Person {
   implicit val formats = Json.format[Person]

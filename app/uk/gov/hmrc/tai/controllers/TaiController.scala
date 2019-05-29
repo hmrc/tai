@@ -18,25 +18,26 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.domain.Nino
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{SessionData, Tax}
+import uk.gov.hmrc.tai.model.SessionData
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
 class TaiController @Inject()(taxAccountService: TaxAccountService,
-                              metrics: Metrics, authentication: AuthenticationPredicate)
-  extends BaseController
+                              metrics: Metrics, authentication: AuthenticationPredicate,
+                              cc: ControllerComponents)
+  extends BackendController(cc)
     with MongoFormatter {
 
   def getTaiRoot(nino: Nino): Action[AnyContent] = authentication.async {

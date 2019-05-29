@@ -21,10 +21,11 @@ private object AppDependencies {
   val compile = Seq(
     filters,
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
-    "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "0.40.0",
+    "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
     "uk.gov.hmrc" %% "json-encryption" % "3.2.0",
-    "uk.gov.hmrc" %% "mongo-caching" % "5.7.0" exclude("uk.gov.hmrc","time_2.11")
+    "uk.gov.hmrc" %% "mongo-caching" % "6.1.0-play-26" exclude("uk.gov.hmrc","time_2.11"),
+    "com.typesafe.play" %% "play-json-joda" % "2.6.10"
   )
 
   trait TestDependencies {
@@ -35,9 +36,8 @@ private object AppDependencies {
   object Test {
     def apply() = new TestDependencies {
       override lazy val test = Seq(
-        "uk.gov.hmrc" %% "hmrctest" % "3.8.0-play-25" % scope,
-        "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % scope,
-        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "3.8.0-play-26" % scope,
+        "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
         "org.pegdown" % "pegdown" % pegdownVersion % scope,
         "org.jsoup" % "jsoup" % "1.7.3" % scope,
         "org.scalacheck" %% "scalacheck" % "1.12.5" % scope,

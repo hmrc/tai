@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.model.api
 
-
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.EmploymentUpdate
 import uk.gov.hmrc.tai.model.domain._
