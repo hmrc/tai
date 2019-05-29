@@ -42,7 +42,7 @@ private object AppDependencies {
         "org.jsoup" % "jsoup" % "1.7.3" % scope,
         "org.scalacheck" %% "scalacheck" % "1.12.5" % scope,
         "org.mockito" % "mockito-core" % "1.9.5",
-        "com.github.tomakehurst" % "wiremock" % "2.15.0" % scope
+        "com.github.tomakehurst" % "wiremock-jre8" % "2.21.0" % scope
       )
     }.test
   }
