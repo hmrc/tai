@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers.expenses
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import play.api.test.Helpers._
@@ -47,7 +47,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
 
   private def controller(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new EmployeeExpensesController(authentication, employeeExpensesService = mockEmployeeExpensesService)
+    new EmployeeExpensesController(authentication, employeeExpensesService = mockEmployeeExpensesService, cc)
 
   private val nino = new Generator(new Random).nextNino
   private val iabd = 56

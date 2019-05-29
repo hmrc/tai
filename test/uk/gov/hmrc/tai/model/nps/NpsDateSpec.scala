@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.nps
 
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.data.validation.ValidationError
@@ -62,7 +64,7 @@ class NpsDateSpec extends PlaySpec {
         val p = NpsDate.reads.reads(JsNull)
         p match {
           case error: JsError => {
-            val valErrors: Seq[ValidationError] = error.errors.head._2
+            val valErrors: Seq[JsonValidationError] = error.errors.head._2
             valErrors.size mustBe 1
             valErrors.head.message mustBe "Cannot convert null to NpsDate"
           }

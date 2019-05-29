@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -72,6 +72,6 @@ class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthen
 
   private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
 
-  val testController = new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate)
+  val testController = new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate, cc)
 
 }

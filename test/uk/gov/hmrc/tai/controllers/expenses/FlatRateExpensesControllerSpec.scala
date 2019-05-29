@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers.expenses
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import play.api.test.Helpers._
@@ -47,7 +47,7 @@ class FlatRateExpensesControllerSpec extends PlaySpec
   private val mockFlatRateExpensesService = mock[FlatRateExpensesService]
 
   private def controller(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService)
+    new FlatRateExpensesController(authentication, flatRateExpensesService = mockFlatRateExpensesService, cc)
 
   private val nino = new Generator(new Random).nextNino
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount = 100)

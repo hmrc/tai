@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.tai
 
 import com.fasterxml.jackson.annotation.JsonFormat.Value
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import org.slf4j.{Logger, LoggerFactory}

@@ -21,9 +21,10 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -46,7 +47,7 @@ class EmploymentsControllerSpec extends PlaySpec
   "employments" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
         val result = sut.employments(nextNino, TaxYear().prev)(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -59,7 +60,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe OK
@@ -71,7 +72,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.successful(List(emp)))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
         val jsonResult = Json.obj(
           "data" -> Json.obj(
@@ -99,7 +100,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new NotFoundException("employment not found")))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
 
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
@@ -110,7 +111,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new BadRequestException("no employments recorded for this individual")))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
@@ -122,7 +123,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new InternalServerException("employment service failed")))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
         val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -133,7 +134,7 @@ class EmploymentsControllerSpec extends PlaySpec
     "employment" must {
       "return NOT AUTHORISED" when {
         "the user is not logged in" in {
-          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
           val result = sut.employment(nextNino, 2)(FakeRequest())
           ScalaFutures.whenReady(result.failed) { e =>
             e mustBe a[MissingBearerToken]
@@ -146,7 +147,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.employment(any(), any())(any()))
             .thenReturn(Future.successful(Some(emp)))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.employment(nextNino, 2)(FakeRequest())
 
           val jsonResult = Json.obj(
@@ -177,7 +178,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.employment(any(), any())(any()))
             .thenReturn(Future.successful(None))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.employment(nextNino, 3)(FakeRequest())
 
           status(result) mustBe NOT_FOUND
@@ -189,7 +190,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.employment(any(), any())(any()))
             .thenReturn(Future.failed(new NotFoundException("")))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.employment(nextNino, 3)(FakeRequest())
 
           status(result) mustBe NOT_FOUND
@@ -203,7 +204,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.employment(any(), any())(any()))
             .thenReturn(Future.failed(new InternalServerException("")))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.employment(nextNino, 3)(FakeRequest())
 
           status(result) mustBe INTERNAL_SERVER_ERROR
@@ -215,7 +216,7 @@ class EmploymentsControllerSpec extends PlaySpec
     "endEmployment" must {
       "return NOT AUTHORISED" when {
         "the user is not logged in" in {
-          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
           val result = sut.endEmployment(nextNino, 3)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
             .withHeaders(("content-type", "application/json")))
           ScalaFutures.whenReady(result.failed) { e =>
@@ -233,7 +234,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.endEmployment(any(), any(), any())(any()))
             .thenReturn(Future.successful(envelopeId))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.endEmployment(nextNino, 3)(FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
 
@@ -246,7 +247,7 @@ class EmploymentsControllerSpec extends PlaySpec
     "addEmployment" must {
       "return NOT AUTHORISED" when {
         "the user is not logged in" in {
-          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
           val result = sut.addEmployment(nextNino)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
             .withHeaders(("content-type", "application/json")))
           ScalaFutures.whenReady(result.failed) { e =>
@@ -265,7 +266,7 @@ class EmploymentsControllerSpec extends PlaySpec
           when(mockEmploymentService.addEmployment(Matchers.eq(nino), Matchers.eq(employment))(any()))
             .thenReturn(Future.successful(envelopeId))
 
-          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+          val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
           val result = sut.addEmployment(nino)(FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
 
@@ -278,7 +279,7 @@ class EmploymentsControllerSpec extends PlaySpec
   "incorrectEmployment" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
         val result = sut.incorrectEmployment(nextNino, 1)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
           .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
@@ -297,7 +298,7 @@ class EmploymentsControllerSpec extends PlaySpec
        when(mockEmploymentService.incorrectEmployment(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(employment))(any())).
          thenReturn(Future.successful(envelopeId))
 
-       val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+       val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
        val result = sut.incorrectEmployment(nino, id)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment)).
          withHeaders(("content-type", "application/json")))
 
@@ -310,7 +311,7 @@ class EmploymentsControllerSpec extends PlaySpec
   "updateEmploymentsForPreviousYear" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate, cc)
         val result = sut.updatePreviousYearIncome(nextNino, TaxYear().prev)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
           .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
@@ -329,7 +330,7 @@ class EmploymentsControllerSpec extends PlaySpec
         when(mockEmploymentService.updatePreviousYearIncome(Matchers.eq(nino), Matchers.eq(taxYear), Matchers.eq(employment))(any())).
           thenReturn(Future.successful(envelopeId))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
         val result = sut.updatePreviousYearIncome(nino, taxYear)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment)).
           withHeaders(("content-type", "application/json")))
 

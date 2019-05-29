@@ -21,9 +21,10 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -103,5 +104,5 @@ class PersonControllerSpec extends PlaySpec
   val person = Person(nino, "firstname", "surname", Some(new LocalDate(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"), false, false)
 
   private def createSUT(authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService)
+                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService, mock[ControllerComponents])
 }

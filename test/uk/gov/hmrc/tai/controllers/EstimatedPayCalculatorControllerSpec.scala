@@ -20,9 +20,10 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{Json, Writes}
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -74,7 +75,7 @@ class EstimatedPayCalculatorControllerSpec extends PlaySpec
   }
 
   private def createSUT(taiService: TaiService, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new EstimatedPayCalculatorController(taiService, authentication)
+    new EstimatedPayCalculatorController(taiService, authentication, cc)
 
   val date = new LocalDate(2017, 4, 14)
 

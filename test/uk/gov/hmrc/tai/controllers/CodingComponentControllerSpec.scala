@@ -23,6 +23,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -140,5 +141,5 @@ class CodingComponentControllerSpec
 
   private def createSUT(codingComponentService: CodingComponentService,
                         predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new CodingComponentController(predicate, codingComponentService)
+    new CodingComponentController(predicate, codingComponentService, mock[ControllerComponents])
 }

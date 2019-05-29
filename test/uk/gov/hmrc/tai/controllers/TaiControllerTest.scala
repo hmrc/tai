@@ -20,9 +20,10 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import play.mvc.Http.Status
@@ -234,5 +235,5 @@ class TaiControllerTest extends PlaySpec
 
   private def createSUT(taxAccountService: TaxAccountService, metrics: Metrics,
                         authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-              new TaiController(taxAccountService, metrics, authentication)
+              new TaiController(taxAccountService, metrics, authentication, mock[ControllerComponents])
 }

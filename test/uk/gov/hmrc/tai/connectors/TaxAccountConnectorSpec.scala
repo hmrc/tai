@@ -21,7 +21,7 @@ import java.net.URL
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Matchers
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}

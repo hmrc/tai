@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service.expenses
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId

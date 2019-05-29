@@ -19,9 +19,10 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsString, Json}
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -210,7 +211,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
 
 
   private def createSUT(repository: JourneyCacheRepository, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication)
+  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication, mock[ControllerComponents])
 
   private implicit val hc = HeaderCarrier()
 }

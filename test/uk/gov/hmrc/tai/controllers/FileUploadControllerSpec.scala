@@ -18,15 +18,17 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito.when
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.service.{FileUploadService, Open}
-import scala.concurrent.{Await, Future}
+
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
 
@@ -54,5 +56,5 @@ class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   private def createSUT(fileUploadService: FileUploadService) =
-    new FileUploadController(fileUploadService)
+    new FileUploadController(fileUploadService, mock[ControllerComponents])
 }

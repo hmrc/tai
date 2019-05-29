@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -34,6 +34,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
 import uk.gov.hmrc.tai.service.TaxCodeChangeServiceImpl
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -268,6 +270,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
   val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService)
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, cc)
   private def ninoGenerator = new Generator(new Random).nextNino
 }

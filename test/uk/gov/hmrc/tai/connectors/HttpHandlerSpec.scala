@@ -20,7 +20,7 @@ import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json}

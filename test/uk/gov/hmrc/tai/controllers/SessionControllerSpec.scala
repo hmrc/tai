@@ -19,8 +19,9 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -74,5 +75,5 @@ class SessionControllerSpec extends PlaySpec
   }
 
   private def createSUT(sessionRepository: SessionRepository, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new SessionController(sessionRepository, authentication)
+    new SessionController(sessionRepository, authentication, mock[ControllerComponents])
 }

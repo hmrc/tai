@@ -20,9 +20,10 @@ import data.NpsData
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -322,5 +323,5 @@ class TaxSummaryControllerSpec
                         metrics: Metrics, authentication: AuthenticationPredicate =
                         loggedInAuthenticationPredicate) =
 
-    new TaxSummaryController(taiService, taxAccountService, metrics, authentication)
+    new TaxSummaryController(taiService, taxAccountService, metrics, authentication, mock[ControllerComponents])
 }

@@ -20,9 +20,10 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -101,6 +102,6 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
   val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0, 0, 0)
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(taxAccountSummaryService: TaxAccountSummaryService, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication)
+  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication, mock[ControllerComponents])
 
 }

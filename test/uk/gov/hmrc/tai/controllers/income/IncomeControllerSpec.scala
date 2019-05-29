@@ -415,7 +415,7 @@ class IncomeControllerSpec extends PlaySpec
                         taxAccountService: TaxAccountService = mock[TaxAccountService],
                         employmentService: EmploymentService = mock[EmploymentService],
                         authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, taxAccountService, employmentService, authentication)
+    new IncomeController(incomeService, taxAccountService, employmentService, authentication, cc)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)

@@ -21,9 +21,10 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -33,7 +34,6 @@ import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
 import scala.concurrent.Future
@@ -42,7 +42,7 @@ import scala.util.Random
 class BenefitsControllerSpec
   extends PlaySpec
     with MockitoSugar
-    with MockAuthenticationPredicate{
+    with MockAuthenticationPredicate {
 
   "benefits" must {
     "return Benefits case class with empty lists" when {
@@ -53,7 +53,7 @@ class BenefitsControllerSpec
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(emptyBenefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -71,7 +71,7 @@ class BenefitsControllerSpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val nino = randomNino
-        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate, cc)
         val result = sut.benefits(nino, TaxYear().next)(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -98,7 +98,7 @@ class BenefitsControllerSpec
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(benefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -153,7 +153,7 @@ class BenefitsControllerSpec
         when(mockBenefitService.removeCompanyBenefits(Matchers.eq(nino), Matchers.eq(employmentId), Matchers.eq(removeCompanyBenefit))(any())).
           thenReturn(Future.successful(envelopeId))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit)).
           withHeaders(("content-type", "application/json")))
 
@@ -165,7 +165,7 @@ class BenefitsControllerSpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val nino = randomNino
-        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate, cc)
         val result = sut.removeCompanyBenefits(nino, 1)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).
           withHeaders(("content-type", "application/json")))
 

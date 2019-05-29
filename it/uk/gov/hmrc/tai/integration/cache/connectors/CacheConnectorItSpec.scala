@@ -1,7 +1,7 @@
 package uk.gov.hmrc.tai.integration.cache.connectors
 
 import org.mockito.Mockito
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.cache.model.Cache
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.domain.{Generator, Nino}
