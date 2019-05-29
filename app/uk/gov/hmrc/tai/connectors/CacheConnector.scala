@@ -32,16 +32,18 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import scala.concurrent.Future
 
 @Singleton
-class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnection
-    with TimeToLive
+class TaiCacheRepository @Inject() extends TimeToLive {
+  private val expireAfter: Long = defaultExpireAfter
+  val repo: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
+}
+
+
+@Singleton
+class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig: MongoConfig) extends MongoDbConnection
     with MongoFormatter {
 
   implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(Play.current.configuration.underlying).JsonCrypto
-
-  private val expireAfter: Long = defaultExpireAfter
   private val defaultKey = "TAI-DATA"
-
-  val cacheRepository: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
 
   def createOrUpdate[T](id: String, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if(mongoConfig.mongoEncryptionEnabled){
@@ -51,7 +53,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
       Json.toJson(data)
     }
 
-    cacheRepository.createOrUpdate(id, key, jsonData).map(_ => data)
+    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => data)
   }
 
   def createOrUpdateJson(id: String, json: JsValue, key: String = defaultKey): Future[JsValue] = {
@@ -62,7 +64,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
       json
     }
 
-    cacheRepository.createOrUpdate(id, key, jsonData).map(_ => json)
+    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => json)
   }
 
   def createOrUpdateSeq[T](id: String, data: Seq[T], key: String = defaultKey)(implicit writes: Writes[T]): Future[Seq[T]] = {
@@ -72,13 +74,13 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
     } else {
       Json.toJson(data)
     }
-    cacheRepository.createOrUpdate(id, key, jsonData).map(_ => data)
+    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => data)
   }
 
   def find[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] = {
     if(mongoConfig.mongoEncryptionEnabled){
       val jsonDecryptor = new JsonDecryptor[T]()
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[T]](jsonDecryptor).isSuccess) {
@@ -92,7 +94,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         }
       }
     } else {
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[T].isSuccess) {
@@ -113,7 +115,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
   def findSeq[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] = {
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
@@ -129,7 +131,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         }
       }
     } else {
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
@@ -150,7 +152,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
   def findOptSeq[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] = {
     if(mongoConfig.mongoEncryptionEnabled){
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
@@ -164,7 +166,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
         }
       }
     } else {
-      cacheRepository.findById(id) map {
+      cacheRepository.repo.findById(id) map {
         case Some(cache) => cache.data flatMap {
           json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
@@ -182,7 +184,7 @@ class CacheConnector @Inject()(mongoConfig: MongoConfig) extends MongoDbConnecti
 
   def removeById(id: String): Future[Boolean] = {
     for {
-      writeResult <- cacheRepository.removeById(id)
+      writeResult <- cacheRepository.repo.removeById(id)
     } yield {
       if (writeResult.writeErrors.nonEmpty) {
         val errorMessages = writeResult.writeErrors.map(_.errmsg)
