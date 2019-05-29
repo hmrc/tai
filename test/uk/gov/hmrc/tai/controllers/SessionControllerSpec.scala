@@ -22,7 +22,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.ControllerComponents
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
@@ -75,5 +75,5 @@ class SessionControllerSpec extends PlaySpec
   }
 
   private def createSUT(sessionRepository: SessionRepository, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new SessionController(sessionRepository, authentication, mock[ControllerComponents])
+    new SessionController(sessionRepository, authentication, Helpers.stubControllerComponents())
 }

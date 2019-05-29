@@ -24,7 +24,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsString, Json}
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
-import play.api.test.{FakeHeaders, FakeRequest}
+import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 
@@ -211,7 +211,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
 
 
   private def createSUT(repository: JourneyCacheRepository, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication, mock[ControllerComponents])
+  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication, Helpers.stubControllerComponents())
 
   private implicit val hc = HeaderCarrier()
 }

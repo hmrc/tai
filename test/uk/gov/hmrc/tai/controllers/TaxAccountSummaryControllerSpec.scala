@@ -24,7 +24,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
@@ -102,6 +102,6 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
   val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0, 0, 0)
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(taxAccountSummaryService: TaxAccountSummaryService, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication, mock[ControllerComponents])
+  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication, Helpers.stubControllerComponents())
 
 }

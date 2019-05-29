@@ -200,8 +200,9 @@ class RtiPackageSpec extends PlaySpec {
 
       "employment object is converted to json" in {
         val json: String =
-          """{"empRefs":{"officeNo":"HMRC","payeRef":"12345","aoRef":"00000"},"payments":{"inYear":[],"eyu":[]},"sequenceNumber":1}"""
+          """{"empRefs":{"payeRef":"12345","officeNo":"HMRC","aoRef":"00000"},"payments":{"eyu":[],"inYear":[]},"sequenceNumber":1}"""
         val employmentObject = RtiEmployment("HMRC", "12345", "00000", Nil, Nil, None, 1)
+
         Json.toJson(employmentObject).toString must be(json)
       }
     }

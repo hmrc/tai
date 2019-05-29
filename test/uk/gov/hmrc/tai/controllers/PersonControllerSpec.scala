@@ -24,7 +24,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -41,7 +40,8 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class PersonControllerSpec extends PlaySpec
-  with MockAuthenticationPredicate with MockitoSugar {
+  with MockAuthenticationPredicate
+  with MockitoSugar {
 
   "taxPayer method" should {
     "return 200" when{
@@ -104,5 +104,5 @@ class PersonControllerSpec extends PlaySpec
   val person = Person(nino, "firstname", "surname", Some(new LocalDate(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"), false, false)
 
   private def createSUT(authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService, mock[ControllerComponents])
+                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService, cc)
 }

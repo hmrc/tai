@@ -25,7 +25,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, _}
-import play.api.test.{FakeHeaders, FakeRequest}
+import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
@@ -323,5 +323,5 @@ class TaxSummaryControllerSpec
                         metrics: Metrics, authentication: AuthenticationPredicate =
                         loggedInAuthenticationPredicate) =
 
-    new TaxSummaryController(taiService, taxAccountService, metrics, authentication, mock[ControllerComponents])
+    new TaxSummaryController(taiService, taxAccountService, metrics, authentication, Helpers.stubControllerComponents())
 }

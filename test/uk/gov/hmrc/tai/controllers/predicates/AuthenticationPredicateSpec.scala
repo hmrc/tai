@@ -22,7 +22,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.play.bootstrap.controller.{BackendController, BaseController}
@@ -33,8 +33,7 @@ import scala.concurrent.Future
 
 class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
 
-  val cc = mock[ControllerComponents]
-
+  val cc = Helpers.stubControllerComponents()
 
   "async for get" must {
     "return UNAUTHORIZED when called with an Unauthenticated user" in {

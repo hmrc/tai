@@ -25,7 +25,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, _}
-import play.api.test.{FakeHeaders, FakeRequest}
+import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import play.mvc.Http.Status
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -235,5 +235,5 @@ class TaiControllerTest extends PlaySpec
 
   private def createSUT(taxAccountService: TaxAccountService, metrics: Metrics,
                         authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-              new TaiController(taxAccountService, metrics, authentication, mock[ControllerComponents])
+              new TaiController(taxAccountService, metrics, authentication, Helpers.stubControllerComponents())
 }

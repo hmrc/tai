@@ -26,7 +26,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
@@ -191,6 +191,6 @@ class TotalTaxControllerSpec extends PlaySpec
     reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource, None, taxReliefComponents)
 
   private def createSUT(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate =
-                        loggedInAuthenticationPredicate) = new TotalTaxController(totalTaxService, authentication, mock[ControllerComponents])
+                        loggedInAuthenticationPredicate) = new TotalTaxController(totalTaxService, authentication, Helpers.stubControllerComponents())
 
 }

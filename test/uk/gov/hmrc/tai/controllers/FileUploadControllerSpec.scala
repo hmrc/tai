@@ -22,8 +22,8 @@ import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
 import play.api.test.{FakeHeaders, FakeRequest}
+import play.test.Helpers
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.service.{FileUploadService, Open}
 
@@ -56,5 +56,5 @@ class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   private def createSUT(fileUploadService: FileUploadService) =
-    new FileUploadController(fileUploadService, mock[ControllerComponents])
+    new FileUploadController(fileUploadService, play.api.test.Helpers.stubControllerComponents())
 }

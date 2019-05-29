@@ -18,7 +18,8 @@ package uk.gov.hmrc.tai.mocks
 
 import org.scalatest.mockito.MockitoSugar
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
+import play.api.test.Helpers
+import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.{AuthorisedFunctions, MissingBearerToken}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.auth.MicroserviceAuthConnector
@@ -43,7 +44,7 @@ object MockUnauthorisedUser extends MockAuthorisedFunctions {
 }
 
 trait MockAuthenticationPredicate extends MockitoSugar {
-  val cc: ControllerComponents = mock[ControllerComponents]
+  val cc: ControllerComponents = Helpers.stubControllerComponents()
 
   val loggedInAuthenticationPredicate = new AuthenticationPredicate(MockAuthorisedUser, cc)
   val notLoggedInAuthenticationPredicate = new AuthenticationPredicate(MockUnauthorisedUser, cc)
