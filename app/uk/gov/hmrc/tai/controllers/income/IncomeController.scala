@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -33,12 +32,14 @@ import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSu
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
 class IncomeController @Inject()(incomeService: IncomeService,
                                  taxAccountService: TaxAccountService,
                                  employmentService: EmploymentService,
                                  authentication: AuthenticationPredicate,
-                                 cc: ControllerComponents)
+                                 cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with ApiFormats
     with TaxCodeIncomeSourceAPIFormatters

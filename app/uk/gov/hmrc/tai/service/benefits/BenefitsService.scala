@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service.benefits
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -33,7 +32,7 @@ import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
 import uk.gov.hmrc.tai.util.IFormConstants
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 import scala.util.control.NonFatal
 
@@ -45,7 +44,7 @@ class BenefitsService @Inject()(taxAccountService: TaxAccountService,
                                 iFormSubmissionService: IFormSubmissionService,
                                 fileUploadService: FileUploadService,
                                 pdfService: PdfService,
-                                auditable: Auditor) {
+                                auditable: Auditor)(implicit ec: ExecutionContext) {
 
   def companyCarBenefits(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
     benefits(nino, TaxYear()).map(_.companyCarBenefits)

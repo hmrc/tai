@@ -17,14 +17,13 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.CacheConnector
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector) {
+class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit ec: ExecutionContext) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
