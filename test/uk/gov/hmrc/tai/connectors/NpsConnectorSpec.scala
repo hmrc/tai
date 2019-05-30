@@ -21,7 +21,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsNull, JsResultException, JsValue, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -119,19 +119,40 @@ class NpsConnectorSpec extends PlaySpec
     }
 
     "return tax account" when {
+      "throws a JsResultException given an empty sequence of NpsTaxAccount" in {
+        val emptyJson = Json.parse("[]")
+        an[JsResultException] should be thrownBy emptyJson.as[NpsTaxAccount]
+      }
+
       "given a nino and a year" in {
         val mockMetrics = mock[Metrics]
+        when(mockMetrics.startTimer(any())).thenReturn((new Timer).time)
+
         val mockHttpClient = mock[HttpClient]
         val mockAudit = mock[Auditor]
         val mockFormats = mock[IabdUpdateAmountFormats]
         val mockConfig = mock[NpsConfig]
 
         val sut = createSUT(mockMetrics, mockHttpClient, mockAudit, mockFormats, mockConfig)
-        when(mockMetrics.startTimer(any())).thenReturn((new Timer).time)
+
+        def stripFormatting(string: String): String = {
+          string.stripMargin.replaceAll("\\n+", "")
+        }
+
+        val input = stripFormatting(
+          """
+            |{
+            |"nino":"nino",
+            |"taxYear":2020
+            }"""
+        )
+
+        val response: HttpResponse = HttpResponse(200, Some(Json.parse(input)), Map("ETag" -> Seq("0")))
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+          .thenReturn(Future.successful(response))
+
         val expectedResult: (NpsTaxAccount, Int, JsValue) =
-          (NpsTaxAccount(None, None, None, None, None, None, None, None, None, None, None, None, None), 0, Json.parse("[]"))
+          (NpsTaxAccount(Some("nino"), Some(2020), None, None, None, None, None, None, None, None, None, None, None), 0, Json.parse(input))
 
         Await.result(sut.getCalculatedTaxAccount(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe expectedResult
       }
@@ -147,6 +168,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockMetrics.startTimer(any())).thenReturn((new Timer).time)
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+
         Await.result(sut.getCalculatedTaxAccountRawResponse(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe (SuccesfulGetResponseWithObject)
       }
     }
