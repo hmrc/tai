@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.JodaReads._
+import play.api.libs.json.JodaWrites._
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
@@ -27,12 +26,12 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.service.TaiService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EstimatedPayCalculatorController @Inject()(taiService: TaiService,
                                                  authentication: AuthenticationPredicate,
-                                                 cc: ControllerComponents)
+                                                 cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc) {
 
   def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) {

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -29,13 +28,14 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeChangeConnector @Inject()(metrics: Metrics,
                                        httpClient: HttpClient,
                                        auditor: Auditor,
                                        config: DesConfig,
-                                       taxCodeChangeUrl: TaxCodeChangeUrl) extends BaseConnector(auditor, metrics, httpClient) {
+                                       taxCodeChangeUrl: TaxCodeChangeUrl)(implicit ec: ExecutionContext)
+  extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = config.originatorId
 

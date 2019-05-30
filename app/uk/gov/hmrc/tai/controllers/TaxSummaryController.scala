@@ -20,7 +20,6 @@ import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.domain.Nino
@@ -33,14 +32,14 @@ import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxSummaryController @Inject()(taiService: TaiService,
                                      taxAccountService: TaxAccountService,
                                      metrics: Metrics,
                                      authentication: AuthenticationPredicate,
-                                     cc: ControllerComponents)
+                                     cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with MongoFormatter {
 

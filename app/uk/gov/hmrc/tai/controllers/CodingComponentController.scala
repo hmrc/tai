@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -31,10 +30,12 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.RequestQueryFilter
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
 class CodingComponentController @Inject()(authentication: AuthenticationPredicate,
                                           codingComponentService: CodingComponentService,
-                                          cc: ControllerComponents)
+                                          cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
   with ApiFormats
   with RequestQueryFilter

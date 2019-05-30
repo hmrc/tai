@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -31,12 +30,12 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaiController @Inject()(taxAccountService: TaxAccountService,
                               metrics: Metrics, authentication: AuthenticationPredicate,
-                              cc: ControllerComponents)
+                              cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with MongoFormatter {
 

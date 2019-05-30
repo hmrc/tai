@@ -38,7 +38,6 @@ import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.util.TaiConstants._
 import uk.gov.hmrc.tai.util.{DateTimeHelper, TaiConstants}
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent._
 
 @Singleton
@@ -51,7 +50,7 @@ class TaiService @Inject()(rti: RtiConnector,
                            auditor: Auditor,
                            featureTogglesConfig: FeatureTogglesConfig,
                            npsConfig: NpsConfig,
-                           cyPlusOneConfig: CyPlusOneConfig) extends NpsFormatter {
+                           cyPlusOneConfig: CyPlusOneConfig)(implicit ec: ExecutionContext) extends NpsFormatter {
 
   val IabdUpdateSourceCustomerEntered: Int = if (featureTogglesConfig.desUpdateEnabled) 39 else 0
 

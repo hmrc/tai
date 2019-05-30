@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -28,14 +27,14 @@ import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IncomeService @Inject()(employmentService: EmploymentService,
                               taxAccountService: TaxAccountService,
                               incomeRepository: IncomeRepository,
                               taxAccountRepository: TaxAccountRepository,
-                              auditor: Auditor) {
+                              auditor: Auditor)(implicit ec: ExecutionContext) {
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     def filterNonMatchingCeasedEmploymentsWithEndDate(employments: Seq[Employment], taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =

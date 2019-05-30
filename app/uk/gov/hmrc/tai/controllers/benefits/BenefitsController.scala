@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -29,10 +28,12 @@ import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
 class BenefitsController @Inject()(benefitService: BenefitsService,
                                    authentication: AuthenticationPredicate,
-                                   cc: ControllerComponents)
+                                   cc: ControllerComponents)(implicit ec: ExecutionContext)
   extends BackendController(cc)
     with ApiFormats
     with ControllerErrorHandler{

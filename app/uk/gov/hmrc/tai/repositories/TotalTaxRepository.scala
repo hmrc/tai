@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
@@ -25,10 +24,11 @@ import uk.gov.hmrc.tai.model.domain.formatters.IncomeCategoryHodFormatters
 import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository) extends TaxAccountHodFormatters
+class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository)(implicit ec: ExecutionContext)
+  extends TaxAccountHodFormatters
     with IncomeCategoryHodFormatters {
 
   def incomeCategories(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IncomeCategory]] =

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
@@ -26,14 +25,14 @@ import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.{BankAccount, UntaxedInterestIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 
 @Singleton
 class IncomeRepository @Inject()(taxAccountRepository: TaxAccountRepository,
                                  bbsiRepository: BbsiRepository,
-                                 iabdRepository: IabdRepository)
+                                 iabdRepository: IabdRepository)(implicit ec: ExecutionContext)
   extends TaxAccountIncomeHodFormatters
     with TaxCodeIncomeHodFormatters
     with IabdHodFormatters {

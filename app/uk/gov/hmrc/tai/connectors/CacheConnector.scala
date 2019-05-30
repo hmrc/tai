@@ -18,14 +18,13 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.Play
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
-import play.modules.reactivemongo.{MongoDbConnection, ReactiveMongoComponent}
+import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.ReadPreference
 import reactivemongo.api.commands.{WriteConcern, WriteResult}
-import reactivemongo.api.{DB, ReadPreference}
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.{Cache, Id}
-import uk.gov.hmrc.cache.repository.{CacheMongoRepository, CacheRepository}
+import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.DatabaseUpdate
@@ -55,7 +54,7 @@ class TaiCacheRepository @Inject()(mongo: ReactiveMongoComponent)(implicit ec: E
 
 
 @Singleton
-class CacheConnector @Inject()(taiCacheRepository: TaiCacheRepository, mongoConfig: MongoConfig) extends MongoFormatter {
+class CacheConnector @Inject()(taiCacheRepository: TaiCacheRepository, mongoConfig: MongoConfig)(implicit ec: ExecutionContext) extends MongoFormatter {
 
   implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(Play.current.configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"

@@ -18,16 +18,16 @@ package uk.gov.hmrc.tai.connectors
 
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import com.google.inject.{Inject, Singleton}
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class Caching @Inject()(cacheConnector: CacheConnector,
                         metrics: Metrics,
-                        cacheMetricsConfig: CacheMetricsConfig) {
+                        cacheMetricsConfig: CacheMetricsConfig)(implicit ec: ExecutionContext) {
 
   def cacheFromApi(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
     val sessionId = fetchSessionId(hc)
