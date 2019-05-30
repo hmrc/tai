@@ -61,17 +61,7 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends HodConfig {
 
 @Singleton
 class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig) extends HodConfig {
-  lazy val optionalPath: Option[String] = {
-    val confString = servicesConfig.getConfString("nps-hod", "")
-
-    if (confString.isEmpty) {
-      None
-    } else {
-      Some(servicesConfig.getString("path"))
-    }
-  }
-
-  lazy val path: String = optionalPath.fold("")(path => s"$path")
+  private lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
   override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
   override lazy val environment = ""
