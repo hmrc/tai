@@ -246,7 +246,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
     for {
-      (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
       error: ValidationError <- errors
       message: String <- error.messages
     } yield {
