@@ -19,10 +19,12 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import org.joda.time.Days
 import play.Logger
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, RtiCalc}
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot}
 import uk.gov.hmrc.tai.model.nps2.Income.Live
@@ -30,11 +32,10 @@ import uk.gov.hmrc.tai.model.nps2.{IabdType, Income}
 import uk.gov.hmrc.tai.model.rti.PayFrequency._
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai._
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, RtiCalc}
 import uk.gov.hmrc.tai.util.TaiConstants
 import uk.gov.hmrc.tai.util.TaiConstants._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -43,7 +44,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
                                      des: DesConnector,
                                      featureTogglesConfig: FeatureTogglesConfig,
                                      npsConfig: NpsConfig,
-                                     incomeHelper: IncomeHelper)(implicit ec: ExecutionContext) {
+                                     incomeHelper: IncomeHelper) {
 
   val autoUpdate: Boolean = npsConfig.autoUpdatePayEnabled.getOrElse(false)
   val IabdUpdateSourceInternetCalculated: Int = if (featureTogglesConfig.desUpdateEnabled) 46 else 1

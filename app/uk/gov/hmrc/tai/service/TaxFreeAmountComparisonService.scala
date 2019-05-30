@@ -20,17 +20,18 @@ import com.google.inject.{Inject, Singleton}
 import play.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.TaxCodeSummary
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 @Singleton
 class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeServiceImpl,
-                                               codingComponentService: CodingComponentService)(implicit ec: ExecutionContext) {
+                                               codingComponentService: CodingComponentService) {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc:HeaderCarrier): Future[TaxFreeAmountComparison] = {
     val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)

@@ -34,14 +34,15 @@ import uk.gov.hmrc.tai.model.enums.APITypes._
 import uk.gov.hmrc.tai.model.fileupload.EnvelopeSummary
 import uk.gov.hmrc.tai.model.fileupload.formatters.FileUploadFormatters
 
-import scala.concurrent.{ExecutionContext, Future}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.Future
 
 @Singleton
 class FileUploadConnector @Inject()(metrics: Metrics,
                                     httpClient: HttpClient,
                                     wsClient: WSClient,
                                     urls: FileUploadUrls,
-                                    config: FileUploadConfig)(implicit ec: ExecutionContext) {
+                                    config: FileUploadConfig) {
 
 
   def routingRequest(envelopeId: String): JsValue = Json.obj(
