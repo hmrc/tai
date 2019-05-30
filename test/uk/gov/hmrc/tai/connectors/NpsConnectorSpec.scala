@@ -187,7 +187,7 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
         val resp = sut.updateEmploymentData(nino = SuccessTestNino, 1, 1, 1, List())(HeaderCarrier())
-        val result: HttpResponse = Await.result(resp, 5 seconds)
+        val result: HttpResponse = Await.result(resp, 5.seconds)
         result.status mustBe 200
       }
 
@@ -207,7 +207,7 @@ class NpsConnectorSpec extends PlaySpec
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(IabdUpdateAmount(1, 200, Some(100), Some("10/4/2016"), Some(1))))(HeaderCarrier())
-        val result: HttpResponse = Await.result(resp, 5 seconds)
+        val result: HttpResponse = Await.result(resp, 5.seconds)
         result.status mustBe 200
       }
     }

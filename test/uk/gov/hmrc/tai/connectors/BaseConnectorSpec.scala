@@ -108,7 +108,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -130,7 +130,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -155,7 +155,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(fakeResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -180,7 +180,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(fakeResponse))
 
         val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[PersonDetails])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -201,7 +201,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -222,7 +222,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockMetrics, times(1)).startTimer(any())
         verify(mockTimerContext, times(1)).stop()
@@ -250,7 +250,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val randomNino = new Generator(new Random).nextNino
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,randomNino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
+        Await.result(resp, 5.seconds)
 
         verify(mockAuditor, times(1))
           .sendDataEvent(Matchers.eq("RTI returned incorrect account"), any())(any())
@@ -273,7 +273,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        val (responseBody, etag) = Await.result(resp, 5 seconds)
+        val (responseBody, etag) = Await.result(resp, 5.seconds)
 
         responseBody mustBe responseBodyObject
         etag mustBe 34
@@ -295,7 +295,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject])
-        val r = Await.result(resp, 5 seconds)
+        val r = Await.result(resp, 5.seconds)
 
         r.status mustBe 200
         r.json.as[ResponseObject] mustBe responseBodyObject
@@ -321,7 +321,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[NotFoundException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[NotFoundException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"not found\""
 
@@ -343,7 +343,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[InternalServerException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[InternalServerException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"internal server error\""
 
@@ -365,7 +365,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[BadRequestException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[BadRequestException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"bad request\""
 
@@ -387,7 +387,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"unknown response\""
 
@@ -410,7 +410,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
         ex.getMessage mustBe "\"unknown response\""
 
       }
@@ -436,7 +436,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(fakeResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "Success"
         rtiData.get mustBe fakeRtiData
@@ -461,7 +461,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(fakeResponse))
         val randomNino = new Generator(new Random).nextNino
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,randomNino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "Incorrect RTI Payload"
         rtiData mustBe empty
@@ -485,7 +485,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(BadRequestHttpResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "\"bad request\""
         rtiData mustBe empty
@@ -507,7 +507,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(NotFoundHttpResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "\"not found\""
         rtiData mustBe empty
@@ -529,7 +529,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(InternalServerErrorHttpResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "\"internal server error\""
         rtiData mustBe empty
@@ -551,7 +551,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(UnknownErrorHttpResponse))
 
         val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI,nino.nino)(HeaderCarrier(), Json.format[ResponseObject])
-        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus:RtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.response mustBe "\"unknown response\""
         rtiData mustBe empty
@@ -581,7 +581,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(fakeResponse))
 
         val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[PersonDetails])
-        val personalDetails = Await.result(resp, 5 seconds)
+        val personalDetails = Await.result(resp, 5.seconds)
 
         personalDetails mustBe fakePersonalDetails
       }
@@ -605,7 +605,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(HttpResponse(Status.LOCKED, None)))
 
         val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[PersonDetails])
-        val personalDetails = Await.result(resp, 5 seconds)
+        val personalDetails = Await.result(resp, 5.seconds)
 
         personalDetails mustBe fakePersonalDetails
       }
@@ -628,7 +628,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[PersonDetails])
 
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
         ex.getMessage mustBe "\"unknown response\""
       }
     }
@@ -650,7 +650,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        val (responseBody, etag) = Await.result(resp, 5 seconds)
+        val (responseBody, etag) = Await.result(resp, 5.seconds)
 
         responseBody mustBe responseBodyObject
         etag mustBe 34
@@ -671,7 +671,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val resp = Await.result(sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject]), 5 seconds)
+        val resp = Await.result(sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject]), 5.seconds)
 
         resp.status mustBe 200
         resp.json.as[ResponseObject] mustBe responseBodyObject
@@ -696,7 +696,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[NotFoundException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[NotFoundException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"not found\""
 
@@ -718,7 +718,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[InternalServerException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[InternalServerException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"internal server error\""
 
@@ -740,7 +740,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[BadRequestException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[BadRequestException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"bad request\""
 
@@ -762,7 +762,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"unknown response\""
 
@@ -784,7 +784,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
 
         val resp = sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(HeaderCarrier(), Json.format[ResponseObject])
 
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
         ex.getMessage mustBe "\"unknown response\""
 
       }

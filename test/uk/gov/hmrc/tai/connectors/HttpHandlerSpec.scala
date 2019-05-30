@@ -54,7 +54,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.successful(SuccessfulGetResponseWithObject))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val response = Await.result(SUT.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
+        val response = Await.result(SUT.getFromApi(testUrl, APITypes.RTIAPI), 5.seconds)
 
         response mustBe Json.toJson(responseBodyObject)
 
@@ -80,7 +80,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.failed(new BadRequestException("bad request")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[BadRequestException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        val ex = the[BadRequestException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5.seconds)
 
         ex.message mustBe "bad request"
 
@@ -105,7 +105,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.failed(new NotFoundException("not found")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[NotFoundException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        val ex = the[NotFoundException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5.seconds)
 
         ex.message mustBe "not found"
 
@@ -130,7 +130,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.failed(new InternalServerException("internal server error")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[InternalServerException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        val ex = the[InternalServerException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5.seconds)
 
         ex.message mustBe "internal server error"
 
@@ -155,7 +155,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.failed(new LockedException("locked")))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[LockedException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        val ex = the[LockedException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5.seconds)
 
         ex.message mustBe "locked"
 
@@ -180,7 +180,7 @@ class HttpHandlerSpec extends PlaySpec
           .thenReturn(Future.failed(new HttpException("unknown response", responseCode = 418)))
 
         val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[HttpException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5.seconds)
 
         ex.message mustBe "unknown response"
 
@@ -205,10 +205,10 @@ class HttpHandlerSpec extends PlaySpec
         .thenReturn(Future.successful(HttpResponse(NO_CONTENT, Some(Json.toJson(userInput)))))
 
       val SUT = createSUT(mock[Metrics], mockHttp)
-      val okResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val createdResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val acceptedResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val noContentResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+      val okResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
+      val createdResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
+      val acceptedResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
+      val noContentResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
 
       okResponse.status mustBe OK
       okResponse.json mustBe Json.toJson(userInput)
@@ -232,7 +232,7 @@ class HttpHandlerSpec extends PlaySpec
         when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any())).
           thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
 
-        val result = the[HttpException] thrownBy Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+        val result = the[HttpException] thrownBy Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
 
         result.responseCode mustBe NOT_FOUND
       }
@@ -246,7 +246,7 @@ class HttpHandlerSpec extends PlaySpec
         when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any())).
           thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT)))
 
-        val result = the[HttpException] thrownBy Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+        val result = the[HttpException] thrownBy Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5.seconds)
 
         result.responseCode mustBe GATEWAY_TIMEOUT
       }

@@ -39,7 +39,7 @@ class PdfServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(htmlAsString.getBytes))
 
         val sut = createSut(mockPdfConnector)
-        val result = Await.result(sut.generatePdf(htmlAsString), 5 seconds)
+        val result = Await.result(sut.generatePdf(htmlAsString), 5.seconds)
 
         result mustBe htmlAsString.getBytes
       }
@@ -56,7 +56,7 @@ class PdfServiceSpec extends PlaySpec with MockitoSugar {
         val sut = createSut(mockPdfConnector)
         val result = sut.generatePdf(htmlAsString)
 
-        the[HttpException] thrownBy Await.result(result, 5 seconds)
+        the[HttpException] thrownBy Await.result(result, 5.seconds)
       }
     }
   }

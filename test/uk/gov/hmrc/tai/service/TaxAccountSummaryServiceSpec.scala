@@ -117,7 +117,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
         val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -147,7 +147,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
         val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -180,7 +180,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(67.44)
         res.totalInYearAdjustment mustBe BigDecimal(23.20)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(11.60)
@@ -224,7 +224,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds) mustBe
+        Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds) mustBe
           TaxAccountSummary(1111, -620, 67.46, 0, 0, 0, 10000)
       }
     }

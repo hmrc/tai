@@ -79,7 +79,7 @@ class EmployeeExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5.seconds)
           .status mustBe 200
       }
     }
@@ -91,7 +91,7 @@ class EmployeeExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5.seconds)
           .status mustBe 500
       }
     }

@@ -54,7 +54,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5.seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -76,7 +76,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5.seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "0"
@@ -94,7 +94,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val thrown = the[HttpException] thrownBy Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val thrown = the[HttpException] thrownBy Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5.seconds)
 
       thrown.getMessage mustBe "Internal Server Error"
     }
@@ -113,7 +113,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5.seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -135,7 +135,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5.seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"

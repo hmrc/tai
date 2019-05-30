@@ -79,7 +79,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5.seconds)
           .status mustBe 200
       }
     }
@@ -91,7 +91,7 @@ class FlatRateExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5 seconds)
+        Await.result(service.updateFlatRateExpensesData(nino, TaxYear(), 1, updateIabdFlatRateExpense), 5.seconds)
           .status mustBe 500
       }
     }

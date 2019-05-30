@@ -61,7 +61,7 @@ class FileUploadConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
-      Await.result(sut.createEnvelope, 5 seconds) mustBe "4142477f-9242-4a98-9c8b-73295cfb170c"
+      Await.result(sut.createEnvelope, 5.seconds) mustBe "4142477f-9242-4a98-9c8b-73295cfb170c"
     }
     "call the file upload service create envelope endpoint" in {
       val callbackUrl = "theCallBackURL"
@@ -102,7 +102,7 @@ class FileUploadConnectorSpec extends PlaySpec
           .thenReturn(mockTimerContext)
 
         val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
-        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5.seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
       }
@@ -112,7 +112,7 @@ class FileUploadConnectorSpec extends PlaySpec
           .thenReturn(Future.failed(new RuntimeException("call failed")))
 
         val sut = createSut(mock[Metrics], mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
-        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5.seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
 
@@ -127,7 +127,7 @@ class FileUploadConnectorSpec extends PlaySpec
           .thenReturn(mockTimerContext)
 
         val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
-        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5.seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
       }
@@ -163,7 +163,7 @@ class FileUploadConnectorSpec extends PlaySpec
           .thenReturn(Future.successful(HttpResponse(400)))
 
         val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
-        the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
+        the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5.seconds)
 
         verify(mockMetrics, times(1)).incrementFailedCounter(FusCreateEnvelope)
       }
@@ -195,7 +195,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockAhcWSClient.url(any())).thenReturn(mockWSRequest)
 
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
-        val result = Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mockAhcWSClient), 5 seconds)
+        val result = Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mockAhcWSClient), 5.seconds)
 
         result.status mustBe OK
         verify(mockMetrics, times(1)).incrementSuccessCounter(Matchers.eq(FusUploadFile))
@@ -224,7 +224,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(ahcWSClient.url(any())).thenReturn(mockWSRequest)
         when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
 
-        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5.seconds)
         verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
       }
 
@@ -243,7 +243,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
         val ahcWSClient: AhcWSClient = mock[AhcWSClient]
 
-        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5.seconds)
       }
     }
 
@@ -263,7 +263,7 @@ class FileUploadConnectorSpec extends PlaySpec
 
       val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
 
-      Await.result(sut.closeEnvelope(envelopeId), 5 seconds) mustBe envelopeId
+      Await.result(sut.closeEnvelope(envelopeId), 5.seconds) mustBe envelopeId
     }
 
     "call the file upload service routing request endpoint" in {
@@ -309,7 +309,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(CREATED)))
 
-        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
         ex.getMessage mustBe "File upload envelope routing request failed"
       }
@@ -328,7 +328,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.failed(new RuntimeException("call failed")))
 
-        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
         ex.getMessage mustBe "File upload envelope routing request failed"
 
@@ -347,7 +347,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(400)))
 
-        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
+        val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
         ex.getMessage mustBe "File upload envelope routing request failed"
 
@@ -388,7 +388,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(400)))
 
-        the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
+        the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
         verify(mockMetrics, times(1)).incrementFailedCounter(FusCloseEnvelope)
       }

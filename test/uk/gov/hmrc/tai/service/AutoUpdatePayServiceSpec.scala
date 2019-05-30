@@ -2171,7 +2171,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5.seconds)
 
         result.length mustBe 2
 
@@ -2220,7 +2220,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         result.length mustBe 0
 
@@ -2254,7 +2254,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         result.length mustBe 2
 
@@ -2292,7 +2292,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5.seconds)
 
         result.length mustBe 0
 
@@ -2337,7 +2337,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         result.length mustBe 2
 
@@ -2386,7 +2386,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val resp: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         resp.length mustBe 0
 
@@ -2420,7 +2420,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         resp.length mustBe 2
 
@@ -2455,7 +2455,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(HttpResponse(200)))
           .thenReturn(Future.failed(new RuntimeException("second call failed")))
 
-        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5.seconds)
 
         resp.length mustBe 1
 

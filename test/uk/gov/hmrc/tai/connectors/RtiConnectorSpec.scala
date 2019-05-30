@@ -102,7 +102,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp = sut.getRTI(Nino(nino.nino), TaxYear(2017))
-        val (rtiData, rtiStatus) = Await.result(resp, 5 seconds)
+        val (rtiData, rtiStatus) = Await.result(resp, 5.seconds)
 
         rtiStatus.status mustBe 200
         rtiData mustBe Some(fakeRtiData)
@@ -133,7 +133,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val rtiData = Await.result(resp, 5 seconds)
+        val rtiData = Await.result(resp, 5.seconds)
 
         rtiData mustBe fakeRtiData
       }
@@ -161,7 +161,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val rtiData = Await.result(resp, 5 seconds)
+        val rtiData = Await.result(resp, 5.seconds)
 
         rtiData mustBe fakeRtiData
 
@@ -186,7 +186,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"bad request\""
       }
@@ -208,7 +208,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"not found\""
       }
@@ -230,7 +230,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"internal server error\""
 
@@ -253,7 +253,7 @@ class RtiConnectorSpec extends PlaySpec
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
         val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
+        val ex = the[HttpException] thrownBy Await.result(resp, 5.seconds)
 
         ex.getMessage mustBe "\"unknown response\""
 

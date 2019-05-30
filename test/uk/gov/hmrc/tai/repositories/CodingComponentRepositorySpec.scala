@@ -48,7 +48,7 @@ class CodingComponentRepositorySpec extends PlaySpec
           .thenReturn(Future.successful(emptyJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
-        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5.seconds)
 
         result mustBe Nil
       }
@@ -62,7 +62,7 @@ class CodingComponentRepositorySpec extends PlaySpec
           .thenReturn(Future.successful(primaryIncomeDeductionsNpsJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
-        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5.seconds)
 
         result mustBe Seq(
           CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Estimated Tax You Owe This Year"),
@@ -90,7 +90,7 @@ class CodingComponentRepositorySpec extends PlaySpec
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5.seconds)
 
       result mustBe expected
     }
@@ -111,7 +111,7 @@ class CodingComponentRepositorySpec extends PlaySpec
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5.seconds)
 
       result mustBe expected
     }
@@ -133,7 +133,7 @@ class CodingComponentRepositorySpec extends PlaySpec
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5.seconds)
 
       result mustBe expected
     }

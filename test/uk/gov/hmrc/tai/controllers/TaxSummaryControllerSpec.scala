@@ -287,7 +287,7 @@ class TaxSummaryControllerSpec
       val sut = createSUT(mockTaiService, mock[TaxAccountService], mock[Metrics])
       val summaryDetails = sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
 
-      val ex = the[HttpException] thrownBy Await.result(summaryDetails, 5 seconds)
+      val ex = the[HttpException] thrownBy Await.result(summaryDetails, 5.seconds)
       ex.message mustBe "Incorrect Version Number"
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())

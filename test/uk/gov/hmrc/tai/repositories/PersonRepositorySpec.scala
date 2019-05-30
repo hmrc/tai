@@ -55,7 +55,7 @@ class PersonRepositorySpec extends PlaySpec
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
 
         result mustBe person
 
@@ -83,7 +83,7 @@ class PersonRepositorySpec extends PlaySpec
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
 
         result mustBe person
 
@@ -120,7 +120,7 @@ class PersonRepositorySpec extends PlaySpec
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), Matchers.eq(expectedPersonFromPartialJson), Matchers.eq(personMongoKey))(any())

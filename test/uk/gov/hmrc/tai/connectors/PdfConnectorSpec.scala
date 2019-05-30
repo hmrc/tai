@@ -61,7 +61,7 @@ class PdfConnectorSpec extends PlaySpec
         val sut = createSut(mockMetrics, mockWSClient, mock[PdfUrls])
         val response = sut.generatePdf(htmlAsString)
 
-        val result = Await.result(response, 5 seconds)
+        val result = Await.result(response, 5.seconds)
 
         result mustBe htmlAsString.getBytes
 
@@ -100,7 +100,7 @@ class PdfConnectorSpec extends PlaySpec
         val sut = createSut(mockMetrics, mockWSClient, mock[PdfUrls])
         val result = sut.generatePdf(htmlAsString)
 
-        the[HttpException] thrownBy Await.result(result, 5 seconds)
+        the[HttpException] thrownBy Await.result(result, 5.seconds)
 
         verify(mockWSRequest, times(1))
           .post(anyString())(any())

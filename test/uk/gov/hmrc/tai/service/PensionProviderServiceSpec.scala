@@ -51,7 +51,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-        val result = Await.result(sut.addPensionProvider(nino, addPensionProvider), 5 seconds)
+        val result = Await.result(sut.addPensionProvider(nino, addPensionProvider), 5.seconds)
 
         result mustBe "1"
       }
@@ -74,7 +74,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-      Await.result(sut.addPensionProvider(nino, pensionProvider), 5 seconds)
+      Await.result(sut.addPensionProvider(nino, pensionProvider), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.AddPensionProviderAuditTxnName),
         Matchers.eq(map))(any())
@@ -90,7 +90,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
 
-        val result = Await.result(sut.addPensionProviderForm(pensionProvider)(hc)(person), 5 seconds)
+        val result = Await.result(sut.addPensionProviderForm(pensionProvider)(hc)(person), 5.seconds)
         result mustBe PensionProviderIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider)).toString
 
       }
@@ -110,7 +110,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-        val result = Await.result(sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider), 5 seconds)
+        val result = Await.result(sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider), 5.seconds)
 
         result mustBe "1"
       }
@@ -132,7 +132,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-      Await.result(sut.incorrectPensionProvider(nino, 1, pensionProvider), 5 seconds)
+      Await.result(sut.incorrectPensionProvider(nino, 1, pensionProvider), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey),
         Matchers.eq(map))(any())
@@ -155,7 +155,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
 
-        val result = Await.result(sut.incorrectPensionProviderForm(nino,1,pensionProvider)(hc) (person), 5 seconds)
+        val result = Await.result(sut.incorrectPensionProviderForm(nino,1,pensionProvider)(hc) (person), 5.seconds)
         result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
 
       }

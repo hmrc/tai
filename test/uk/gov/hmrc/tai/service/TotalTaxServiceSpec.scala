@@ -53,7 +53,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.incomeCategories must contain theSameElementsAs incomeCategories
       result.reliefsGivingBackTax mustBe None
@@ -75,7 +75,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.amount mustBe BigDecimal(1000)
       result.reliefsGivingBackTax mustBe None
@@ -100,7 +100,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.reliefsGivingBackTax mustBe Some(adjustment)
     }
@@ -121,7 +121,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.alreadyTaxedAtSourceComponents(any(), any())(any())).thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.otherTaxDue mustBe Some(adjustment)
     }
@@ -141,7 +141,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.alreadyTaxedAtSource mustBe Some(adjustment)
     }
@@ -160,7 +160,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.taxOnOtherIncome mustBe Some(40)
     }
@@ -180,7 +180,7 @@ class TotalTaxServiceSpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.totalTax(nino, TaxYear()), 5.seconds)
 
       result.taxReliefComponent mustBe Some(taxReliefComponents)
     }

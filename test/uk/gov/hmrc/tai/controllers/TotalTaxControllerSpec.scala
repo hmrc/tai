@@ -160,7 +160,7 @@ class TotalTaxControllerSpec extends PlaySpec
 
         val sut = createSUT(mockTotalTaxService)
         val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        val ex = the[LockedException] thrownBy Await.result(result, 5 seconds)
+        val ex = the[LockedException] thrownBy Await.result(result, 5.seconds)
         ex.message mustBe "Account is locked"
       }
     }

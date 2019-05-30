@@ -917,7 +917,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5.seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -968,7 +968,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5.seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -1011,7 +1011,7 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5.seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe requestVersion

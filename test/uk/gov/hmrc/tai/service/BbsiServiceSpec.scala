@@ -195,7 +195,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
       Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
 
       val fakePerson = Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
-      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
+      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5.seconds)
 
       testIform must include("Correct amount of gross interest")
       testIform must include("1234.56")

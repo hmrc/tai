@@ -39,14 +39,14 @@ class PersonServiceSpec extends PlaySpec with MockitoSugar {
       val mockRepo = mock[PersonRepository]
       when(mockRepo.getPerson(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
       val SUT = createSUT(mockRepo)
-      Await.result(SUT.person(nino), 5 seconds) mustBe(person)
+      Await.result(SUT.person(nino), 5.seconds) mustBe(person)
     }
 
     "expose any exception thrown by the person repository" in {
       val mockRepo = mock[PersonRepository]
       when(mockRepo.getPerson(Matchers.eq(nino))(any())).thenReturn(Future.failed(new NotFoundException("an example not found exception")))
       val SUT = createSUT(mockRepo)
-      val thrown = the[NotFoundException] thrownBy Await.result(SUT.person(nino), 5 seconds)
+      val thrown = the[NotFoundException] thrownBy Await.result(SUT.person(nino), 5.seconds)
       thrown.getMessage mustBe "an example not found exception"
     }
   }

@@ -56,7 +56,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -73,7 +73,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -90,7 +90,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5.seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -111,7 +111,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
-          val result = Await.result(responseFuture, 5 seconds)
+          val result = Await.result(responseFuture, 5.seconds)
           result mustBe BigDecimal(1371)
         }
       }
@@ -130,7 +130,7 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
 
-          val result = Await.result(responseFuture, 5 seconds)
+          val result = Await.result(responseFuture, 5.seconds)
           result mustBe BigDecimal(1071)
         }
       }

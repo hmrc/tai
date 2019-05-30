@@ -220,7 +220,7 @@ class TaiControllerTest extends PlaySpec
       val sut = createSUT(mockTaxAccountService, mock[Metrics])
       val result = sut.updateTaiData(nino)(fakeRequest)
 
-      val ex = the[InternalServerException] thrownBy Await.result(result, 5 seconds)
+      val ex = the[InternalServerException] thrownBy Await.result(result, 5.seconds)
 
       ex.getMessage mustBe "FAILED"
       verify(mockTaxAccountService, times(1))

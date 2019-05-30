@@ -39,7 +39,7 @@ class CachingSpec extends PlaySpec with MockitoSugar {
         val jsonFromCache = Json.obj("aaa" -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
         when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(Some(jsonFromCache)))
-        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5.seconds)
         result mustBe jsonFromCache
 
         verify(metrics, times(1)).incrementCacheHitCounter()
@@ -53,7 +53,7 @@ class CachingSpec extends PlaySpec with MockitoSugar {
         when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(None))
         when(cacheConnector.createOrUpdateJson(Matchers.eq(sessionId), Matchers.eq(jsonFromFunction),Matchers.eq(mongoKey))).
           thenReturn(Future.successful(jsonFromFunction))
-        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5.seconds)
         result mustBe jsonFromFunction
 
         verify(metrics, times(1)).incrementCacheMissCounter()

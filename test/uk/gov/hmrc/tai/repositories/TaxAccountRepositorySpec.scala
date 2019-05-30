@@ -70,7 +70,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
 
-      val result = Await.result(responseFuture, 5 seconds)
+      val result = Await.result(responseFuture, 5.seconds)
 
       result mustBe HodUpdateSuccess
 
@@ -87,7 +87,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
 
-      val result = Await.result(responseFuture, 5 seconds)
+      val result = Await.result(responseFuture, 5.seconds)
       result mustBe HodUpdateFailure
 
     }
@@ -103,7 +103,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
 
-      val result = Await.result(responseFuture, 5 seconds)
+      val result = Await.result(responseFuture, 5.seconds)
       result mustBe HodUpdateSuccess
     }
 
@@ -116,7 +116,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
 
-      val result = Await.result(responseFuture, 5 seconds)
+      val result = Await.result(responseFuture, 5.seconds)
       result mustBe HodUpdateFailure
     }
 
@@ -133,7 +133,7 @@ class TaxAccountRepositorySpec extends PlaySpec
 
           val sut = createSUT(cache, taxAccountConnector)
 
-          val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(sut.taxAccount(nino, taxYear), 5.seconds)
 
           result mustBe taxAccountJsonResponse
         }
@@ -160,7 +160,7 @@ class TaxAccountRepositorySpec extends PlaySpec
         .thenReturn(Future.successful(taxAccountJsonResponse))
 
       val sut = createSUT(cache, taxAccountConnector)
-      val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+      val result = Await.result(sut.taxAccount(nino, taxYear), 5.seconds)
 
       result mustBe taxAccountJsonResponse
     }

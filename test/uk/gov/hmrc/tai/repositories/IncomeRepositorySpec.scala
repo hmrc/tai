@@ -187,7 +187,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5.seconds)
 
         result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None),
@@ -252,7 +252,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5.seconds)
 
         result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None),
@@ -318,7 +318,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5.seconds)
 
         result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), Some(ManualTelephone)),
@@ -384,7 +384,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5.seconds)
 
         result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
           "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), Some(ManualTelephone),

@@ -86,7 +86,7 @@ class PersonControllerSpec extends PlaySpec
       when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.failed(new NotFoundException("an example not found exception")))
 
       val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
-      val thrown = the[NotFoundException] thrownBy Await.result(result, 5 seconds)
+      val thrown = the[NotFoundException] thrownBy Await.result(result, 5.seconds)
       thrown.getMessage mustBe("an example not found exception")
     }
   }

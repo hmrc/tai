@@ -622,7 +622,7 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[FeatureTogglesConfig])
 
 
-      val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014)(hc), 5 seconds)
+      val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014)(hc), 5.seconds)
 
       summaryDetails mustBe taxSummaryDetails
     }
@@ -675,7 +675,7 @@ class TaxAccountServiceSpec extends PlaySpec
 
         val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
-        val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
+        val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5.seconds)
         Json.parse(ex.message) mustBe failureMsg
 
       }
@@ -723,7 +723,7 @@ class TaxAccountServiceSpec extends PlaySpec
 
         val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
-        val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
+        val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5.seconds)
         ex.message mustBe failureMsg
 
       }

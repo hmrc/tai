@@ -81,7 +81,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(taxCodeIncomes))
 
       val SUT = createSUT(incomeRepository = mockIncomeRepository)
-      val result = Await.result(SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()), 5 seconds)
+      val result = Await.result(SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()), 5.seconds)
 
       result mustBe taxCodeIncomes
     }
@@ -466,7 +466,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -510,7 +510,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -559,7 +559,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
 
           result mustBe IncomeUpdateSuccess
 
@@ -603,7 +603,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             taxAccountRepository = mockTaxAccountRepository,
             taxAccountService = mockTaxAccountSvc)
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
 
           result mustBe IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
         }

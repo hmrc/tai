@@ -46,7 +46,7 @@ class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
 
         val service = testCodingComponentService(mockIabdRepository)
 
-        val result = Await.result(service.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = Await.result(service.codingComponents(nino, TaxYear()), 5.seconds)
         result mustBe codingComponentList
       }
     }

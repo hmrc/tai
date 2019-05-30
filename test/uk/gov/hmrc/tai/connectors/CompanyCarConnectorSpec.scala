@@ -58,7 +58,7 @@ class CompanyCarConnectorSpec extends PlaySpec
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
 
-      Await.result(sut.carBenefits(randomNino, taxYear), 5 seconds) mustBe expectedResponse
+      Await.result(sut.carBenefits(randomNino, taxYear), 5.seconds) mustBe expectedResponse
     }
 
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
@@ -92,7 +92,7 @@ class CompanyCarConnectorSpec extends PlaySpec
         .thenReturn(Future.successful(rawResponse))
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      Await.result(sut.carBenefits(randomNino, taxYear), 5 seconds) mustBe expectedResponse
+      Await.result(sut.carBenefits(randomNino, taxYear), 5.seconds) mustBe expectedResponse
     }
   }
 
@@ -110,7 +110,7 @@ class CompanyCarConnectorSpec extends PlaySpec
         .thenReturn(Future.successful(HttpResponse(OK, Some(sampleResponse))))
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      val result = Await.result(sut.withdrawCarBenefit(randomNino, taxYear, 1, 2, removeCarAndFuelModel), 5 seconds)
+      val result = Await.result(sut.withdrawCarBenefit(randomNino, taxYear, 1, 2, removeCarAndFuelModel), 5.seconds)
 
       result mustBe "4958621783d14007b71d55934d5ccca9"
       verify(mockHttpHandler, times(1))
@@ -129,7 +129,7 @@ class CompanyCarConnectorSpec extends PlaySpec
         .thenReturn(Future.successful(response))
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      val result = Await.result(sut.ninoVersion(nino), 5 seconds)
+      val result = Await.result(sut.ninoVersion(nino), 5.seconds)
 
       result mustBe expectedResponse
     }

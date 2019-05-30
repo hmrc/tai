@@ -43,7 +43,7 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5.seconds)
       result must contain theSameElementsAs Seq(
         IncomeCategory(UkDividendsIncomeCategory, 0, 0, 0,
           Seq(TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
@@ -58,7 +58,7 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
       when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5 seconds)
+      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5.seconds)
 
       result mustBe 100
     }

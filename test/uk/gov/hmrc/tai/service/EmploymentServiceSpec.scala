@@ -107,7 +107,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSut(mockEmploymentRepository, mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
 
-        Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds) mustBe "1"
+        Await.result(sut.endEmployment(nino, 2, endEmployment), 5.seconds) mustBe "1"
 
         verify(mockFileUploadService, times(1)).uploadFile(any(), any(),
           Matchers.contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())
@@ -141,7 +141,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockEmploymentRepository, mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
-      Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds)
+      Await.result(sut.endEmployment(nino, 2, endEmployment), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq("EndEmploymentRequest"),
         Matchers.eq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20")))(any())
@@ -172,7 +172,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(mock[EmploymentRepository], mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
-        val result = Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
+        val result = Await.result(sut.addEmployment(nino, addEmployment), 5.seconds)
 
         result mustBe "1"
 
@@ -203,7 +203,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(mock[EmploymentRepository], mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
-      Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
+      Await.result(sut.addEmployment(nino, addEmployment), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.AddEmploymentAuditTxnName),
         Matchers.eq(Map("nino" -> nino.nino , "envelope Id" -> "111", "start-date" -> "2017-08-01",
@@ -226,7 +226,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-        val result = Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
+        val result = Await.result(sut.incorrectEmployment(nino, 1, employment), 5.seconds)
 
         result mustBe "1"
       }
@@ -251,7 +251,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-      Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
+      Await.result(sut.incorrectEmployment(nino, 1, employment), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.IncorrectEmploymentAuditTxnName),
         Matchers.eq(map))(any())
@@ -273,7 +273,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-        val result = Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
+        val result = Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5.seconds)
 
         result mustBe "1"
       }
@@ -299,7 +299,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
-      Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
+      Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName),
         Matchers.eq(map))(any())

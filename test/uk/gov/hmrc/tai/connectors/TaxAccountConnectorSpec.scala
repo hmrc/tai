@@ -65,7 +65,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig, taxAccountUrls = taxAccountURLWithToggleMock)
-          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(connector.taxAccount(nino, taxYear), 5.seconds)
 
           result mustBe jsonResponse
         }
@@ -85,7 +85,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
             server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
             val connector = createSUT(featureTogglesConfig = featureTogglesConfig, taxAccountUrls = taxAccountURLWithToggleMock)
-            val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+            val result = Await.result(connector.taxAccount(nino, taxYear), 5.seconds)
 
             result mustBe jsonResponse
           }
@@ -104,7 +104,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5.seconds)
 
           result mustBe HodUpdateSuccess
         }
@@ -120,7 +120,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5.seconds)
 
           result mustBe HodUpdateFailure
         }
@@ -178,7 +178,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig, taxAccountUrls = taxAccountURLWithToggleMock)
-          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(connector.taxAccount(nino, taxYear), 5.seconds)
 
           result mustBe jsonResponse
         }
@@ -200,7 +200,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig, taxAccountUrls = taxAccountURLWithToggleMock)
-          val result = Await.result(connector.taxAccount(nino, taxYear), 5 seconds)
+          val result = Await.result(connector.taxAccount(nino, taxYear), 5.seconds)
 
           result mustBe jsonResponse
         }
@@ -221,7 +221,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5.seconds)
 
           result mustBe HodUpdateSuccess
         }
@@ -237,7 +237,7 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
           server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
 
           val connector = createSUT(featureTogglesConfig = featureTogglesConfig)
-          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
+          val result = Await.result(connector.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5.seconds)
 
           result mustBe HodUpdateFailure
         }
