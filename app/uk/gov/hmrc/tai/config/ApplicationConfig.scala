@@ -67,33 +67,33 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfi
   override lazy val environment = ""
   override lazy val authorization = ""
   override lazy val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
-  lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
-  lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
-  lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")
+  lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("auto-update-pay.enabled")
+  lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-update-source.enabled")
+  lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-post-calc.enabled")
 }
 
 @Singleton
 class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration) {
-  lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getBoolean("cy-plus-one.enabled")
-  lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getString("cy-plus-one.startDayMonth")
+  lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("cy-plus-one.enabled")
+  lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getOptional[String]("cy-plus-one.startDayMonth")
 }
 
 @Singleton
 class MongoConfig @Inject()(val runModeConfiguration: Configuration) {
-  lazy val mongoEnabled: Boolean = runModeConfiguration.getBoolean("cache.isEnabled").getOrElse(false)
-  lazy val mongoEncryptionEnabled: Boolean = runModeConfiguration.getBoolean("mongo.encryption.enabled").getOrElse(true)
+  lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
+  lazy val mongoEncryptionEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
 }
 
 @Singleton
 class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration) {
-  def desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
+  def desEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.call").getOrElse(false)
 
-  def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
+  def desUpdateEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.update.call").getOrElse(false)
 
-  def confirmedAPIEnabled: Boolean = runModeConfiguration.getBoolean("tai.confirmedAPI.enabled").getOrElse(false)
+  def confirmedAPIEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.confirmedAPI.enabled").getOrElse(false)
 }
 
 @Singleton
 class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration) {
-  def cacheMetricsEnabled: Boolean = runModeConfiguration.getBoolean("tai.cacheMetrics.enabled").getOrElse(false)
+  def cacheMetricsEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
 }
