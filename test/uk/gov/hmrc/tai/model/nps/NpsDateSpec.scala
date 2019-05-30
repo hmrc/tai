@@ -123,8 +123,8 @@ class NpsDateSpec extends PlaySpec {
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
     for {
-      (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError <- errors
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
+      error: JsonValidationError <- errors
       message: String <- error.messages
     } yield {
       message
