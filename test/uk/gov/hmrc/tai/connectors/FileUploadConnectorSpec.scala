@@ -188,7 +188,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockWSRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
           .thenReturn(Future.successful(mockWSResponse))
 
-        when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
+        when(mockWSRequest.withHttpHeaders(any())).thenReturn(mockWSRequest)
 
         val mockWsClient = mock[AhcWSClient]
         val mockAhcWSClient: AhcWSClient = mock[AhcWSClient]
@@ -222,7 +222,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockWSRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
           .thenReturn(Future.successful(mockWSResponse))
         when(ahcWSClient.url(any())).thenReturn(mockWSRequest)
-        when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
+        when(mockWSRequest.withHttpHeaders(any())).thenReturn(mockWSRequest)
 
         the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5.seconds)
         verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
@@ -240,7 +240,7 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockWSRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
           .thenReturn(Future.failed(new RuntimeException("Error")))
         when(mockWsClient.url(any())).thenReturn(mockWSRequest)
-        when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
+        when(mockWSRequest.withHttpHeaders(any())).thenReturn(mockWSRequest)
         val ahcWSClient: AhcWSClient = mock[AhcWSClient]
 
         the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5.seconds)
