@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants

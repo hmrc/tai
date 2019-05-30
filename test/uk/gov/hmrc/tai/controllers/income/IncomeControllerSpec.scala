@@ -41,6 +41,7 @@ import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateRe
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 

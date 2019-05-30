@@ -35,6 +35,7 @@ import uk.gov.hmrc.tai.model.nps2.{IabdType, NpsFormatter, TaxAccount}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

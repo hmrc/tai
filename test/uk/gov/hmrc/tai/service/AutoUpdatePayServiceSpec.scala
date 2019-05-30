@@ -41,6 +41,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.IabdUpdateAmount
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConversions._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}

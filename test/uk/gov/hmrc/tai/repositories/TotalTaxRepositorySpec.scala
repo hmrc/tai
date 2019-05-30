@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

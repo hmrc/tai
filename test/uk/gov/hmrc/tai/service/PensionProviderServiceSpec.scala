@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.repositories.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 

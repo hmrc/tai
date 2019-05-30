@@ -24,7 +24,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
@@ -35,6 +34,7 @@ import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
 import uk.gov.hmrc.tai.service.PensionProviderService
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class PensionProviderControllerSpec extends PlaySpec

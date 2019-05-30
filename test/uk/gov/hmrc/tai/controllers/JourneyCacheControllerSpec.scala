@@ -22,16 +22,16 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsString, Json}
-import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
-
-import scala.concurrent.Future
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class JourneyCacheControllerSpec  extends PlaySpec
   with MockitoSugar

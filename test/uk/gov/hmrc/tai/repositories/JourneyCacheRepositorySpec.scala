@@ -26,6 +26,7 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.CacheConnector
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

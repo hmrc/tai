@@ -23,16 +23,16 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{Json, Writes}
-import play.api.mvc.ControllerComponents
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.service.TaiService
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class EstimatedPayCalculatorControllerSpec extends PlaySpec
   with MockitoSugar

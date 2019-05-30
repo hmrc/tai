@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.model.domain.{CommunityInvestmentTaxCredit, EstimatedTaxY
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.domain
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

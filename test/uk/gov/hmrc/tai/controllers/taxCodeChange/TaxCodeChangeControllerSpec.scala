@@ -37,6 +37,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 

@@ -38,6 +38,7 @@ import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.enums.APITypes._
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

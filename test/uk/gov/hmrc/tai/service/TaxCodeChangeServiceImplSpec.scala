@@ -34,6 +34,7 @@ import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}

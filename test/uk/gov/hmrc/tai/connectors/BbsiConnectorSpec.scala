@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random

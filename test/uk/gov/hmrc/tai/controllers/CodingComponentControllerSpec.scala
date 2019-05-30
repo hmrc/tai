@@ -23,13 +23,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers.{status, _}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UnauthorizedException}
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UnauthorizedException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
@@ -38,6 +37,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.{NpsExceptions, RequestQueryFilter}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 

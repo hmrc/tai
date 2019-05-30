@@ -23,9 +23,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
-import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers.{status, _}
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http._
@@ -37,8 +36,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
 import uk.gov.hmrc.tai.util.NpsExceptions
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 class TaxAccountSummaryControllerSpec extends PlaySpec

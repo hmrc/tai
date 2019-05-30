@@ -23,7 +23,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest, Helpers}
 import play.mvc.Http.Status
@@ -37,6 +36,7 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
