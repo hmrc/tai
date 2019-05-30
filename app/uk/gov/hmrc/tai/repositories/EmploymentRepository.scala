@@ -28,14 +28,13 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentRepository @Inject()(rtiConnector: RtiConnector,
                                      cacheConnector: CacheConnector,
                                      npsConnector: NpsConnector,
-                                     auditor: Auditor) {
+                                     auditor: Auditor)(implicit ec: ExecutionContext){
 
   private val EmploymentMongoKey = "EmploymentData"
 

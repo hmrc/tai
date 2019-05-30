@@ -28,13 +28,12 @@ import uk.gov.hmrc.tai.repositories.BbsiRepository
 import uk.gov.hmrc.tai.templates.html.{IncorrectBankAccountIform, RemoveBankAccountIform}
 import uk.gov.hmrc.tai.util.IFormConstants
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class BbsiService @Inject()(bbsiRepository: BbsiRepository,
                             iFormSubmissionService: IFormSubmissionService,
-                            auditor: Auditor) {
+                            auditor: Auditor)(implicit ec: ExecutionContext) {
 
   private val CloseBankAccountAuditRequest = "CloseBankAccountRequest"
 

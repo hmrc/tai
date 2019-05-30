@@ -17,18 +17,17 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.TotalTax
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxRepository}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TotalTaxService @Inject()(totalTaxRepository: TotalTaxRepository,
-                                taxAccountSummaryRepository: TaxAccountSummaryRepository) {
+                                taxAccountSummaryRepository: TaxAccountSummaryRepository)(implicit ec: ExecutionContext) {
 
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] =
     for {
