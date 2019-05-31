@@ -48,7 +48,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
       (currentDate.isBefore(TaxYear().end) || currentDate.isEqual(TaxYear().end))
   }
 
-  @deprecated("Does not check if date is post tax year, use withinTaxYear instead")
+  @deprecated("Does not check if date is post tax year, use withinTaxYear instead", "0.170.0")
   def fallsInThisTaxYear(currentDate: LocalDate): Boolean = {
     val earliestDateForCurrentTaxYear = start
     earliestDateForCurrentTaxYear.isBefore(currentDate) || earliestDateForCurrentTaxYear.isEqual(currentDate)
