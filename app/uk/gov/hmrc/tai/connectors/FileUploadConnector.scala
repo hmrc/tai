@@ -96,7 +96,7 @@ class FileUploadConnector @Inject()(metrics: Metrics,
       Source(ByteString(byteArray) :: Nil)) :: DataPart("", "") :: Nil)
 
     ahcWSClient.url(url)
-      .withHeaders(hc.copy(otherHeaders = Seq("CSRF-token" -> "nocheck")).headers: _*).post(multipartFormData).map { response =>
+      .withHttpHeaders(hc.copy(otherHeaders = Seq("CSRF-token" -> "nocheck")).headers: _*).post(multipartFormData).map { response =>
 
       timerContext.stop()
 
