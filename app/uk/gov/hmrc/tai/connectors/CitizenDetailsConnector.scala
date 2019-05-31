@@ -26,13 +26,14 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.PersonDetails
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CitizenDetailsConnector @Inject()(metrics: Metrics,
                                         httpClient: HttpClient,
                                         auditor: Auditor,
-                                        urls: CitizenDetailsUrls) extends BaseConnector(auditor, metrics, httpClient) {
+                                        urls: CitizenDetailsUrls)(implicit ec: ExecutionContext)
+  extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId: String = ""
 

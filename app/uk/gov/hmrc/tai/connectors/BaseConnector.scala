@@ -22,18 +22,18 @@ import play.api.libs.json.{Format, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseConnector(auditor: Auditor,
                              metrics: Metrics,
-                             httpClient: HttpClient) extends RawResponseReads {
+                             httpClient: HttpClient)(implicit ec: ExecutionContext)
+  extends RawResponseReads {
 
   def originatorId: String
 
