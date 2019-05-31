@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.nps._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

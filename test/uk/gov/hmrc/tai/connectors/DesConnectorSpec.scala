@@ -38,6 +38,7 @@ import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

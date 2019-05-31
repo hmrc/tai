@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.{Payment, _}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.BufferedSource
 
 class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters {
@@ -247,7 +248,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
     for {
       (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
-      error: ValidationError <- errors
+      error: JsonValidationError <- errors
       message: String <- error.messages
     } yield {
       path.toString() + " -> " + message

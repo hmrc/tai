@@ -33,6 +33,7 @@ import uk.gov.hmrc.tai.model
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

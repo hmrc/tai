@@ -25,6 +25,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class AuditorSpec extends PlaySpec with MockitoSugar {
 
   "Auditable" should {
@@ -43,7 +45,6 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
 
       "send data event method has called with custom values 2" in {
         implicit val hc = HeaderCarrier()
-        implicit val ec = MdcLoggingExecutionContext.fromLoggingDetails
 
         val mockAudit = mock[AuditConnector]
 

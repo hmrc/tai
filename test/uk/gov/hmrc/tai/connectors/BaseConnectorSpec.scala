@@ -35,6 +35,7 @@ import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

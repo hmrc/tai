@@ -30,6 +30,7 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.http._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps

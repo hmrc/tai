@@ -29,6 +29,7 @@ import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
 
