@@ -42,13 +42,16 @@ object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
 
 sealed trait TaxCodeIncomeStatus
 case object Live extends TaxCodeIncomeStatus
+case object NotLive extends TaxCodeIncomeStatus
 case object PotentiallyCeased extends TaxCodeIncomeStatus
 case object Ceased extends TaxCodeIncomeStatus
+
 
 object TaxCodeIncomeStatus {
 
   def apply(value: String): TaxCodeIncomeStatus = value match {
     case "Live" => Live
+    case "NotLive" => NotLive
     case "PotentiallyCeased" => PotentiallyCeased
     case "Ceased" => Ceased
     case _ => throw new IllegalArgumentException("Invalid TaxCodeIncomeStatus")
