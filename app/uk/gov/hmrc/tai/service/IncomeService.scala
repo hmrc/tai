@@ -60,7 +60,10 @@ class IncomeService @Inject()(employmentService: EmploymentService,
       }
 
     def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome]): Seq[TaxCodeIncome] =
-      taxCodeIncomes.filter(income => income.componentType == incomeType)
+      if (status == NotLive)
+        taxCodeIncomes.filter(income => income.componentType == incomeType && income.status != Live)
+      else
+        taxCodeIncomes.filter(income => income.componentType == incomeType && income.status == status)
 
     for {
       taxCodeIncomes <- taxCodeIncomes(nino, year)

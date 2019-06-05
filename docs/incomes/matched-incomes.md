@@ -21,6 +21,8 @@ Matched Incomes
    `year=Int`
 
    `incomeType=[EmploymentIncome|PensionIncome]`
+   
+   `status=[Live|NotLive|Ceased|PotentiallyCeased]`
 
 * **Success Response:**
 
