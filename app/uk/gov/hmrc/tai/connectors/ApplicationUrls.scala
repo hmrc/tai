@@ -34,7 +34,6 @@ class RtiUrls @Inject()(config: DesConfig) {
 
 @Singleton
 class  PdfUrls @Inject()(config: PdfConfig) {
-
   def generatePdfUrl = s"${config.baseURL}/pdf-generator-service/generate"
 }
 
@@ -58,7 +57,6 @@ class PayeUrls @Inject()(config: PayeConfig) {
 
 @Singleton
 class CitizenDetailsUrls @Inject()(config: CitizenDetailsConfig) {
-
   def designatoryDetailsUrl(nino: Nino) = s"${config.baseURL}/citizen-details/${nino.nino}/designatory-details"
 }
 
