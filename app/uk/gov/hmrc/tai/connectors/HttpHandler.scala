@@ -50,7 +50,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
             throw new NotFoundException(response.body)
           }
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url with message body ${response.body}")
+            Logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
             throw new InternalServerException(response.body)
           }
           case Status.BAD_REQUEST => {
@@ -62,7 +62,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
             throw new LockedException(response.body)
           }
           case _ => {
-            Logger.warn(s"HttpHandler - A Server error returned from $api for url $url with message body ${response.body}")
+            Logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
             throw new HttpException(response.body, response.status)
           }
         }
