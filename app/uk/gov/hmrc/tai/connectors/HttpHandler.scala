@@ -46,23 +46,23 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
             case Failure(e) => throw new RuntimeException("Unable to parse response")
           }
           case Status.NOT_FOUND => {
-            Logger.warn(s"HttpHandler - No DATA Found error returned from $api")
+            Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)
           }
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"HttpHandler - Internal Server error returned from $api")
+            Logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
             throw new InternalServerException(response.body)
           }
           case Status.BAD_REQUEST => {
-            Logger.warn(s"HttpHandler - Bad request exception returned from $api")
+            Logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
             throw new BadRequestException(response.body)
           }
           case Status.LOCKED => {
-            Logger.warn(s"HttpHandler - Locked response returned from $api")
+            Logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
             throw new LockedException(response.body)
           }
           case _ => {
-            Logger.warn(s"HttpHandler - A Server error returned from $api")
+            Logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
             throw new HttpException(response.body, response.status)
           }
         }
@@ -99,7 +99,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
           httpResponse
         }
         case _ => {
-          Logger.warn(s"HttpHandler - Error received with status: ${httpResponse.status} and body: ${httpResponse.body}")
+          Logger.warn(s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
           metrics.incrementFailedCounter(api)
           throw new HttpException(httpResponse.body, httpResponse.status)
         }

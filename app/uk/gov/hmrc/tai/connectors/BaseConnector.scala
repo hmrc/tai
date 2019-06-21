@@ -66,25 +66,25 @@ abstract class BaseConnector(auditor: Auditor,
           }
 
           case Status.NOT_FOUND => {
-            Logger.warn(s"NPSAPI - No DATA Found error returned from NPS for $api with status $httpResponse.status and url $url")
+            Logger.warn(s"NPSAPI - No DATA Found error returned from NPS for $api with status ${httpResponse.status} for url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new NotFoundException(httpResponse.body))
           }
 
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"NPSAPI - Internal Server error returned from NPS for $api with status $httpResponse.status and url $url")
+            Logger.warn(s"NPSAPI - Internal Server error returned from NPS for $api with status ${httpResponse.status} for url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new InternalServerException(httpResponse.body))
           }
 
           case Status.BAD_REQUEST => {
-            Logger.warn(s"NPSAPI - Bad request exception returned from NPS for $api with status $httpResponse.status and url $url")
+            Logger.warn(s"NPSAPI - Bad request exception returned from NPS for $api with status ${httpResponse.status} for url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new BadRequestException(httpResponse.body))
           }
 
           case _ => {
-            Logger.warn(s"NPSAPI - A Server error returned from NPS for $api with status $httpResponse.status and url $url")
+            Logger.warn(s"NPSAPI - A Server error returned from NPS for $api with status ${httpResponse.status} for url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new HttpException(httpResponse.body, httpResponse.status))
           }
@@ -140,19 +140,19 @@ abstract class BaseConnector(auditor: Auditor,
             }
           }
           case Status.BAD_REQUEST => {
-            Logger.warn(s"RTIAPI - Bad Request error returned from RTI HODS for $reqNino")
+            Logger.warn(s"RTIAPI - Bad Request error returned from RTI HODS for $reqNino and url $url")
             Future.successful((None, RtiStatus(res.status, res.body)))
           }
           case Status.NOT_FOUND => {
-            Logger.warn(s"RTIAPI - No DATA Found error returned from RTI HODS for $reqNino")
+            Logger.warn(s"RTIAPI - No DATA Found error returned from RTI HODS for $reqNino and url $url")
             Future.successful((None, RtiStatus(res.status, res.body)))
           }
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"RTIAPI - Internal Server error returned from RTI HODS $reqNino")
+            Logger.warn(s"RTIAPI - Internal Server error returned from RTI HODS for $reqNino for url $url")
             Future.successful((None, RtiStatus(res.status, res.body)))
           }
           case _ => {
-            Logger.warn(s"RTIAPI - An error returned from RTI HODS $reqNino")
+            Logger.warn(s"RTIAPI - An error returned from RTI HODS for $reqNino for url $url")
             Future.successful((None, RtiStatus(res.status, res.body)))
           }
         }
@@ -200,25 +200,25 @@ abstract class BaseConnector(auditor: Auditor,
           }
 
           case Status.NOT_FOUND => {
-            Logger.warn(s"DESAPI - No DATA Found error returned from DES HODS for $api")
+            Logger.warn(s"DESAPI - No DATA Found error returned from DES HODS for $api and url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new NotFoundException(httpResponse.body))
           }
 
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"DESAPI - Internal Server error returned from DES HODS for $api")
+            Logger.warn(s"DESAPI - Internal Server error returned from DES HODS for $api and url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new InternalServerException(httpResponse.body))
           }
 
           case Status.BAD_REQUEST => {
-            Logger.warn(s"DESAPI - Bad request exception returned from DES HODS for $api")
+            Logger.warn(s"DESAPI - Bad request exception returned from DES HODS for $api and url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new BadRequestException(httpResponse.body))
           }
 
           case _ => {
-            Logger.warn(s"DESAPI - A Server error returned from DES HODS for $api")
+            Logger.warn(s"DESAPI - A Server error returned from DES HODS for $api and url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new HttpException(httpResponse.body, httpResponse.status))
           }
@@ -238,8 +238,8 @@ abstract class BaseConnector(auditor: Auditor,
             Future.successful(httpResponse)
           }
           case _ => {
-            Logger.warn(s"DESAPI - A server error returned from DES HODS in postToDes with status " +
-              httpResponse.status + " url " + url)
+            Logger.warn(s"DESAPI - A server error returned from DES HODS in postToDes with status ${httpResponse.status}, " +
+              s"url $url")
             metrics.incrementFailedCounter(api)
             Future.failed(new HttpException(httpResponse.body, httpResponse.status))
           }
