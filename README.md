@@ -42,7 +42,8 @@ API
 | ```/tai/:nino/tax-account/tax-free-amount-comparison ```  | GET | The end point returns the current and previous IABD information relating to Income Sources and Total Liabilities for a given nino [More...](docs/taxaccount/tax-free-amount-comparison.md) |
 |```/tai/:nino/tax-account/year/:year/income/:incomeType/status/:status``` | GET | The end point matches tax code incomes to employments [More...](docs/incomes/matched-incomes.md) |
 |```/tai/:nino/employments/year/:year/status/ceased``` | GET | The end point returns ceased non-matching employments [More...](docs/incomes/nonmatching-incomes.md) |
-                                                    
+|```/tai/:nino/tax-account/:year/expenses/employee-expenses/:iabd``` | GET | The end point returns IABD data based on IABD type for a tax year [More...](docs/employee-expenses/get-employee-expenses.md) |
+|```/tai/:nino/tax-account/:year/expenses/employee-expenses/:iabd``` | POST | The end point updates IABD data based on IABD type for a tax year [More...](docs/employee-expenses/update-employee-expenses.md) |
 
 Deprecated API Endpoints (Not advised to use)
 ---
