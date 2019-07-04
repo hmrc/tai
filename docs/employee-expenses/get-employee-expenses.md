@@ -29,7 +29,7 @@ Employee Expenses
    
 ```json
        {
-            "nino": "AB123456A",
+            "nino": "<NINO>",
             "sequenceNumber": 201600003,
             "taxYear": 2018,
             "type": 56,
