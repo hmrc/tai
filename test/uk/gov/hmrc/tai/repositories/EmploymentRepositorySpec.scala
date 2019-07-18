@@ -526,13 +526,13 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Adjustment(TaxAdjustment,-27.99),
           Adjustment(NationalInsuranceAdjustment,12.3))))
 
-        val pymnts = List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually))
+        val payments = List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
 
         val annualAccount = AnnualAccount(
           key = "0-0-0",
           taxYear = TaxYear(2017),
           realTimeStatus = Available,
-          payments = pymnts,
+          payments = payments,
           endOfTaxYearUpdates = eyus)
         val expectedEmploymentDetails = List(
           Employment("EMPLOYER1", Some("0"), new LocalDate(2016, 4, 6), None, Seq(annualAccount), "0", "0", 2, None, false, false))
@@ -560,14 +560,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           EndOfTaxYearUpdate(new LocalDate("2016-06-17"),List(
             Adjustment(TaxAdjustment,-28.99), Adjustment(NationalInsuranceAdjustment,13.3))))
 
-        val pymnts = List(
-          Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff))
+        val payments = List(
+          Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
 
         val annualAccount = AnnualAccount(
           key = "0-0-0",
           taxYear = TaxYear(2017),
           realTimeStatus = Available,
-          payments = pymnts,
+          payments = payments,
           endOfTaxYearUpdates = eyus)
 
         val expectedEmploymentDetails = List(
@@ -595,21 +595,21 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val eyus2 = List(EndOfTaxYearUpdate(new LocalDate("2016-06-17"),List(
           Adjustment(TaxAdjustment,-66.6), Adjustment(NationalInsuranceAdjustment,66.6))))
 
-        val pymnts1 = List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually))
-        val pymnts2 = List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly))
+        val payments1 = List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually, None))
+        val payments2 = List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
 
         val annualAccount1 = AnnualAccount(
           key = "0-0-0",
           taxYear = TaxYear(2017),
           realTimeStatus = Available,
-          payments = pymnts1,
+          payments = payments1,
           endOfTaxYearUpdates = eyus1)
 
         val annualAccount2 = AnnualAccount(
           key = "00-00-00",
           taxYear = TaxYear(2017),
           realTimeStatus = Available,
-          payments = pymnts2,
+          payments = payments2,
           endOfTaxYearUpdates = eyus2)
 
         val expectedEmploymentDetails = List(

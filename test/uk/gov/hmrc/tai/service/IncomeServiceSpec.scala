@@ -718,7 +718,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
     "return the amount YTD" when {
       "payment information has be found" in {
 
-        val payment = Payment(LocalDate.now(), 1234.56, 0, 0, 0, 0, 0, Weekly)
+        val payment = Payment(LocalDate.now(), 1234.56, 0, 0, 0, 0, 0, Weekly, None)
         val annualAccount = AnnualAccount("", TaxYear(), Available, Seq(payment), Nil)
 
         val SUT = createSUT()

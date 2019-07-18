@@ -86,7 +86,8 @@ class AnnualAccountSpec extends PlaySpec {
         amount = 200,
         taxAmount = 100,
         nationalInsuranceAmount = 150,
-        payFrequency = Monthly)),
+        payFrequency = Monthly,
+        duplicate = None)),
     endOfTaxYearUpdates = Nil)
 
   val SutWithMultiplePayments = SutWithOnePayment.copy(
@@ -98,7 +99,8 @@ class AnnualAccountSpec extends PlaySpec {
         amount = 200,
         taxAmount = 100,
         nationalInsuranceAmount = 150,
-        payFrequency = Weekly) :+
+        payFrequency = Weekly,
+        duplicate = None) :+
       Payment(date = new LocalDate(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
@@ -106,5 +108,6 @@ class AnnualAccountSpec extends PlaySpec {
         amount = 200,
         taxAmount = 100,
         nationalInsuranceAmount = 150,
-        payFrequency = FortNightly))
+        payFrequency = FortNightly,
+        duplicate = None))
 }

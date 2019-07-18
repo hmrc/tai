@@ -91,7 +91,8 @@ trait EmploymentHodFormatters {
         amount = mandatoryMoneyAmount("TaxablePay"),
         taxAmount = mandatoryMoneyAmount("TaxDeductedOrRefunded"),
         nationalInsuranceAmount = niFigure.flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
-        payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormat)
+        payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormat),
+        duplicate = (json \ "duplicate").asOpt[Boolean]
       )
 
       JsSuccess(payment)

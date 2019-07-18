@@ -88,7 +88,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
           amount = 5000,
           taxAmount = 1500,
           nationalInsuranceAmount = 600,
-          payFrequency = Quarterly)
+          payFrequency = Quarterly,
+          duplicate = None)
 
         val annualAccount = getJson("rtiSingleEmploymentSinglePayment").as[Seq[AnnualAccount]](annualAccountHodReads).head
         annualAccount mustBe AnnualAccount("0000-0000-0000", TaxYear(2016), Available, Seq(payment), Nil)
@@ -104,7 +105,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
           amount = 5000,
           taxAmount = 1500,
           nationalInsuranceAmount = 600,
-          payFrequency = Monthly)
+          payFrequency = Monthly,
+          duplicate = None)
 
         val eyu = EndOfTaxYearUpdate(
           date = new LocalDate("2016-06-17"),
@@ -160,6 +162,14 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       val parsedJson: Payment = getJson("rtiInYearFragment").as[Payment](paymentHodReads)
       parsedJson mustBe samplePayment
     }
+
+    "read nps json and convert it to payment object with duplicate entry" in {
+      val parsedJson: Payment = getJson("rtiInYearFragmentWithDuplicate").as[Payment](paymentHodReads)
+      val expectedPayment = samplePayment.copy(duplicate = Some(true))
+
+      parsedJson mustBe expectedPayment
+    }
+
 
     "throw an error" when {
       "a field key is wrong" in {
@@ -232,7 +242,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     amount = 200,
     taxAmount = 100,
     nationalInsuranceAmount = 150,
-    payFrequency = Irregular)
+    payFrequency = Irregular,
+    duplicate = None)
 
   val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(new LocalDate(2016,6,4), Seq(Adjustment(TaxAdjustment,-20.99)))
   val sampleEndOfTaxYearUpdateMultipleAdjusts = EndOfTaxYearUpdate(new LocalDate(2016,6,4), Seq(
