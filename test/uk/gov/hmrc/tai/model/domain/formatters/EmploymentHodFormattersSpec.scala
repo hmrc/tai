@@ -163,14 +163,6 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       parsedJson mustBe samplePayment
     }
 
-    "read nps json and convert it to payment object with duplicate entry" in {
-      val parsedJson: Payment = getJson("rtiInYearFragmentWithDuplicate").as[Payment](paymentHodReads)
-      val expectedPayment = samplePayment.copy(duplicate = Some(true))
-
-      parsedJson mustBe expectedPayment
-    }
-
-
     "throw an error" when {
       "a field key is wrong" in {
 
