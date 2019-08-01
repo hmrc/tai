@@ -27,7 +27,8 @@ case class Payment(
                     amount: BigDecimal,
                     taxAmount: BigDecimal,
                     nationalInsuranceAmount: BigDecimal,
-                    payFrequency : PaymentFrequency
+                    payFrequency : PaymentFrequency,
+                    duplicate: Option[Boolean]
                   ) extends Ordered[Payment] {
 
   def compare(that: Payment): Int = this.date compare that.date

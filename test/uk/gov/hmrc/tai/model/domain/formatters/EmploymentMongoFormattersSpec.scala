@@ -112,7 +112,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
       "given a valid Employment object and json" in {
         val employmentDetails = List(Employment("TEST", Some("12345"), new LocalDate("2017-05-26"), None,
           List(AnnualAccount("", TaxYear(2017), Available,
-            List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly)),
+            List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
             List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10)))))), "", "", 2, Some(100), false, false))
 
         val json = Json.arr(
@@ -134,7 +134,8 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
                     "amount" -> 10,
                     "taxAmount" -> 10,
                     "nationalInsuranceAmount" -> 10,
-                    "payFrequency" -> "Monthly"
+                    "payFrequency" -> "Monthly",
+                    "duplicate" -> true
                   )
                 ),
                 "endOfTaxYearUpdates" -> Json.arr(
