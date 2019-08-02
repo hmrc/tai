@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.service
 
-
 import com.codahale.metrics.Timer
 import data.NpsData
 import org.joda.time.LocalDate
@@ -48,10 +47,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-
-class TaxAccountServiceSpec extends PlaySpec
-  with MockitoSugar
-  with MongoFormatter {
+class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatter {
 
   "taiData" must {
     "return a session data instance" when {
@@ -67,7 +63,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenReturn(Future.successful(sessionData()))
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -87,7 +83,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val result = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
@@ -109,7 +106,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -129,9 +126,12 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
-        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds) mustBe sessionData(gateKeeperTaxSummaryDetails, gatekeeperTaiRoot)
+        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds) mustBe sessionData(
+          gateKeeperTaxSummaryDetails,
+          gatekeeperTaiRoot)
 
         verify(mockCacheConnector, times(1))
           .find[SessionData](Matchers.eq("TESTING"), any())(any())
@@ -153,7 +153,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -169,7 +169,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mock[MongoConfig],
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
@@ -179,13 +180,12 @@ class TaxAccountServiceSpec extends PlaySpec
       }
     }
 
-
     "store session data in unencrypted form" when {
       "encryption is disabled and data is not already held in cache" in {
         val mockTaiService = mock[TaiService]
         when(mockTaiService.getAutoUpdateResults(any(), any())(any()))
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
-        when(mockTaiService.getCalculatedTaxAccount(any(),any(),any(),any())(any()))
+        when(mockTaiService.getCalculatedTaxAccount(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(taxSummaryDetails))
 
         val mockCacheConnector = mock[CacheConnector]
@@ -195,7 +195,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -220,7 +220,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMetrics,
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
@@ -242,7 +243,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -262,7 +263,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
@@ -286,7 +288,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -306,7 +308,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
@@ -335,7 +338,7 @@ class TaxAccountServiceSpec extends PlaySpec
         .thenReturn(Future.successful(sd))
 
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -355,9 +358,11 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[Metrics],
         mock[NpsConfig],
         mockMongoConfig,
-        mock[FeatureTogglesConfig])
+        mock[FeatureTogglesConfig]
+      )
 
-      val version = Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
+      val version =
+        Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
 
       version mustBe Some(1)
     }
@@ -380,7 +385,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenReturn(Future.successful(sd))
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -400,9 +405,11 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
-        val version = Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
+        val version =
+          Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
 
         version mustBe None
       }
@@ -422,7 +429,8 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[Metrics],
         mock[NpsConfig],
         mock[MongoConfig],
-        mock[FeatureTogglesConfig])
+        mock[FeatureTogglesConfig]
+      )
 
       val sessionId = sut.fetchSessionId(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue))))
 
@@ -442,7 +450,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mock[MongoConfig],
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val ex = the[RuntimeException] thrownBy sut.fetchSessionId(headerCarrier)
 
@@ -464,7 +473,7 @@ class TaxAccountServiceSpec extends PlaySpec
         .thenAnswer(reflectedSessionAnswer)
 
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -480,7 +489,8 @@ class TaxAccountServiceSpec extends PlaySpec
         mock[Metrics],
         mock[NpsConfig],
         mock[MongoConfig],
-        mock[FeatureTogglesConfig])
+        mock[FeatureTogglesConfig]
+      )
 
       val awaitResult = Await.result(sut.personDetails(nino)(hc), 5.seconds)
       awaitResult mustBe nonGatekeeperTaiRoot
@@ -503,7 +513,7 @@ class TaxAccountServiceSpec extends PlaySpec
         val mockNpsConnector = mock[NpsConnector]
 
         val mockDesConnector = mock[DesConnector]
-        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(),any())(any()))
+        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -523,7 +533,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mock[MongoConfig],
-          mockFeatureToggleConfig)
+          mockFeatureToggleConfig
+        )
 
         Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
 
@@ -547,7 +558,7 @@ class TaxAccountServiceSpec extends PlaySpec
         val mockDesConnector = mock[DesConnector]
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -567,7 +578,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
 
@@ -587,8 +599,8 @@ class TaxAccountServiceSpec extends PlaySpec
       val mockTaiService = mock[TaiService]
       when(mockTaiService.getAutoUpdateResults(any(), any())(any()))
         .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
-      when(mockTaiService.getCalculatedTaxAccount(any(),any(), any(), any())(any())).
-        thenReturn(Future.successful(taxSummaryDetails))
+      when(mockTaiService.getCalculatedTaxAccount(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(taxSummaryDetails))
 
       val mockCacheConnector = mock[CacheConnector]
       when(mockCacheConnector.find[SessionData](any(), any())(any()))
@@ -597,7 +609,7 @@ class TaxAccountServiceSpec extends PlaySpec
         .thenAnswer(reflectedSessionAnswer)
 
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+      when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -618,8 +630,8 @@ class TaxAccountServiceSpec extends PlaySpec
         mockMetrics,
         mock[NpsConfig],
         mock[MongoConfig],
-        mock[FeatureTogglesConfig])
-
+        mock[FeatureTogglesConfig]
+      )
 
       val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014)(hc), 5 seconds)
 
@@ -629,10 +641,11 @@ class TaxAccountServiceSpec extends PlaySpec
     "return appropriate npserror" when {
       "api throws service unavailable exception" in {
         val failureMsg = Json.obj(
-          "message" -> "Service Unavailable",
-          "statusCode" -> 503,
+          "message"          -> "Service Unavailable",
+          "statusCode"       -> 503,
           "appStatusMessage" -> "Service Unavailable",
-          "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+          "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+        )
 
         val mockTaiService = mock[TaiService]
         when(mockTaiService.getAutoUpdateResults(any(), any())(any()))
@@ -645,7 +658,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, responseJson = Some(failureMsg))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -670,7 +683,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMetrics,
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
@@ -693,7 +707,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(),any())(any()))
+        when(mockNpsConnector.getCalculatedTaxAccountRawResponse(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, responseString = Some(failureMsg))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -718,7 +732,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mockMetrics,
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
 
@@ -743,7 +758,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockDesConnector = mock[DesConnector]
-        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(),any())(any()))
+        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -765,7 +780,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
 
@@ -790,7 +806,7 @@ class TaxAccountServiceSpec extends PlaySpec
           .thenAnswer(reflectedSessionAnswer)
 
         val mockDesConnector = mock[DesConnector]
-        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(),any())(any()))
+        when(mockDesConnector.getCalculatedTaxAccountRawResponseFromDes(any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson("")))))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -810,7 +826,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
 
@@ -845,7 +862,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         sut.invalidateTaiCacheData()(hc)
 
@@ -875,7 +893,8 @@ class TaxAccountServiceSpec extends PlaySpec
           mock[Metrics],
           mock[NpsConfig],
           mockMongoConfig,
-          mock[FeatureTogglesConfig])
+          mock[FeatureTogglesConfig]
+        )
 
         sut.invalidateTaiCacheData()(hc)
 
@@ -890,7 +909,9 @@ class TaxAccountServiceSpec extends PlaySpec
   private val year = TaxYear().year
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
 
-  private def sessionData(taxSummaryDetails: TaxSummaryDetails = taxSummaryDetails, taiRoot: TaiRoot = nonGatekeeperTaiRoot) =
+  private def sessionData(
+    taxSummaryDetails: TaxSummaryDetails = taxSummaryDetails,
+    taiRoot: TaiRoot = nonGatekeeperTaiRoot) =
     SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails, taiRoot = Some(taiRoot))
 
   private val nonGatekeeperTaiRoot = TaiRoot(
@@ -917,38 +938,47 @@ class TaxAccountServiceSpec extends PlaySpec
     deceasedIndicator = None
   )
 
-  private val gatekeeperPersonDetails = PersonDetails("0", Person(
-    firstName = None,
-    middleName = None,
-    lastName = None,
-    initials = None,
-    title = None,
-    honours = None,
-    sex = None,
-    dateOfBirth = None,
-    nino = nino,
-    manualCorrespondenceInd = Some(true),
-    deceased = None))
+  private val gatekeeperPersonDetails = PersonDetails(
+    "0",
+    Person(
+      firstName = None,
+      middleName = None,
+      lastName = None,
+      initials = None,
+      title = None,
+      honours = None,
+      sex = None,
+      dateOfBirth = None,
+      nino = nino,
+      manualCorrespondenceInd = Some(true),
+      deceased = None
+    )
+  )
 
-  private val nonGatekeeperPersonDetails = PersonDetails("0", Person(
-    firstName = None,
-    middleName = None,
-    lastName = None,
-    initials = None,
-    title = None,
-    honours = None,
-    sex = None,
-    dateOfBirth = None,
-    nino = nino,
-    manualCorrespondenceInd = None,
-    deceased = None))
+  private val nonGatekeeperPersonDetails = PersonDetails(
+    "0",
+    Person(
+      firstName = None,
+      middleName = None,
+      lastName = None,
+      initials = None,
+      title = None,
+      honours = None,
+      sex = None,
+      dateOfBirth = None,
+      nino = nino,
+      manualCorrespondenceInd = None,
+      deceased = None
+    )
+  )
 
-
-  private val gateKeeper = GateKeeper(gateKeepered = true,
-    List(GateKeeperRule(
-      Some(TaiConstants.mciGateKeeperType),
-      Some(TaiConstants.mciGatekeeperId),
-      Some(TaiConstants.mciGatekeeperDescr))))
+  private val gateKeeper = GateKeeper(
+    gateKeepered = true,
+    List(
+      GateKeeperRule(
+        Some(TaiConstants.mciGateKeeperType),
+        Some(TaiConstants.mciGatekeeperId),
+        Some(TaiConstants.mciGatekeeperDescr))))
 
   private val gateKeeperTaxSummaryDetails = TaxSummaryDetails(
     nino = nino.nino,
@@ -967,25 +997,50 @@ class TaxAccountServiceSpec extends PlaySpec
     ceasedEmploymentDetail = None
   )
 
-  private val npsEmployment = List(nps2.NpsEmployment(Some("EMPLOYER1"), isPrimary = true, 1,
-    Some("00021109"), 126, Nil, None, new LocalDate(2005, 11, 1)))
+  private val npsEmployment = List(
+    nps2.NpsEmployment(
+      Some("EMPLOYER1"),
+      isPrimary = true,
+      1,
+      Some("00021109"),
+      126,
+      Nil,
+      None,
+      new LocalDate(2005, 11, 1)))
 
-  private val employments = List(NpsEmployment(1, NpsDate(new LocalDate(2005, 11, 7)), None, "126", "P32",
-    Some("EMPLOYER1"), 1, Some(1), Some("00021109"), None, None, Some(false), Some(false),
-    Some(false), Some(false), Some(false), None))
+  private val employments = List(
+    NpsEmployment(
+      1,
+      NpsDate(new LocalDate(2005, 11, 7)),
+      None,
+      "126",
+      "P32",
+      Some("EMPLOYER1"),
+      1,
+      Some(1),
+      Some("00021109"),
+      None,
+      None,
+      Some(false),
+      Some(false),
+      Some(false),
+      Some(false),
+      Some(false),
+      None
+    ))
 
-
-  private def createSut(taiService: TaiService,
-                        cacheConnector: CacheConnector,
-                        citizenDetailsConnector: CitizenDetailsConnector,
-                        nps: NpsConnector,
-                        des: DesConnector,
-                        metrics: Metrics,
-                        hodConfig: NpsConfig,
-                        mongoConfig: MongoConfig,
-                        featureTogglesConfig: FeatureTogglesConfig) =
-
-    new TaxAccountService(taiService,
+  private def createSut(
+    taiService: TaiService,
+    cacheConnector: CacheConnector,
+    citizenDetailsConnector: CitizenDetailsConnector,
+    nps: NpsConnector,
+    des: DesConnector,
+    metrics: Metrics,
+    hodConfig: NpsConfig,
+    mongoConfig: MongoConfig,
+    featureTogglesConfig: FeatureTogglesConfig) =
+    new TaxAccountService(
+      taiService,
       cacheConnector,
       citizenDetailsConnector,
       nps,

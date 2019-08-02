@@ -45,8 +45,7 @@ package object nps2 {
       override def reads(json: JsValue): JsResult[LocalDate] = json match {
         case JsString(dateRegex(d, m, y)) =>
           JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(ValidationError(
-          s"Invalid date format [dd/MM/yyyy]: $invalid"))
+        case invalid => JsError(ValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
       }
     },
     new Writes[LocalDate] {

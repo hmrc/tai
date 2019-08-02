@@ -123,35 +123,35 @@ class TaxBandCalculatorSpec extends PlaySpec {
     "return calculated income and tax" when {
       "given an empty tax band" in {
         val taxBand = TaxBand()
-        val expectedResult: (Option[BigDecimal], Option[BigDecimal]) = (Some(0),Some(0))
+        val expectedResult: (Option[BigDecimal], Option[BigDecimal]) = (Some(0), Some(0))
 
-        sut.recreateTaxBand(taxBand,0,0) mustBe expectedResult
+        sut.recreateTaxBand(taxBand, 0, 0) mustBe expectedResult
       }
 
       "given lower band is none" in {
         val taxBand = TaxBand(upperBand = Some(200))
         val expectedResult: (Option[BigDecimal], Option[BigDecimal]) = (None, None)
-          sut.recreateTaxBand(taxBand, 10, 50) mustBe expectedResult
+        sut.recreateTaxBand(taxBand, 10, 50) mustBe expectedResult
       }
 
       "given lower band is defined" in {
         val taxBand = TaxBand(upperBand = Some(20000), lowerBand = Some(10000), rate = Some(60))
         val expectedResult: (Option[BigDecimal], Option[BigDecimal]) = (Some(1000), Some(600))
-          sut.recreateTaxBand(taxBand, 1000, 5000) mustBe expectedResult
+        sut.recreateTaxBand(taxBand, 1000, 5000) mustBe expectedResult
       }
     }
 
     "Return a list of sorted tax bands" when {
       "Given no old tax bands" in {
-        sut.recreateTaxBandsNewTaxableIncome(Some(25000),None) mustBe None
+        sut.recreateTaxBandsNewTaxableIncome(Some(25000), None) mustBe None
       }
 
       "Given no new taxable income" in {
-        sut.recreateTaxBandsNewTaxableIncome(None,Some(taxBandInput)) mustBe Some(taxBandInput)
+        sut.recreateTaxBandsNewTaxableIncome(None, Some(taxBandInput)) mustBe Some(taxBandInput)
       }
 
       "Given both old tax bands and new taxable income" in {
-        val newTaxBands = sut.recreateTaxBandsNewTaxableIncome(Some(25000),Some(taxBandInput))
+        val newTaxBands = sut.recreateTaxBandsNewTaxableIncome(Some(25000), Some(taxBandInput))
 
         newTaxBands.get.size mustBe 3
         newTaxBands.get(0).income mustBe Some(25000)
@@ -169,7 +169,24 @@ class TaxBandCalculatorSpec extends PlaySpec {
   def sut = TaxBandCalculator
 
   val taxBandInput = List(
-    TaxBand(income = Some(BigDecimal(30000)), tax = Some(BigDecimal(6000)), lowerBand = Some(BigDecimal(0)), upperBand = Some(BigDecimal(30000)), rate = Some(BigDecimal(20))),
-    TaxBand(income = Some(BigDecimal(30000)), tax = Some(BigDecimal(12000)), lowerBand = Some(BigDecimal(30000)), upperBand = Some(BigDecimal(150000)), rate = Some(BigDecimal(40))),
-    TaxBand(income = None, tax = None, lowerBand = Some(BigDecimal(150000)), upperBand = None, rate = Some(BigDecimal(45))))
+    TaxBand(
+      income = Some(BigDecimal(30000)),
+      tax = Some(BigDecimal(6000)),
+      lowerBand = Some(BigDecimal(0)),
+      upperBand = Some(BigDecimal(30000)),
+      rate = Some(BigDecimal(20))),
+    TaxBand(
+      income = Some(BigDecimal(30000)),
+      tax = Some(BigDecimal(12000)),
+      lowerBand = Some(BigDecimal(30000)),
+      upperBand = Some(BigDecimal(150000)),
+      rate = Some(BigDecimal(40))
+    ),
+    TaxBand(
+      income = None,
+      tax = None,
+      lowerBand = Some(BigDecimal(150000)),
+      upperBand = None,
+      rate = Some(BigDecimal(45)))
+  )
 }

@@ -21,9 +21,9 @@ import play.api.libs.json.{Format, Json}
 case class FileUploadCallback(envelopeId: String, fileId: String, status: String, reason: Option[String]) {
   def toMap: Map[String, String] = Map(
     "envelopId" -> envelopeId,
-    "status" -> status,
-    "reason" -> reason.getOrElse(""),
-    "file-Id" -> fileId
+    "status"    -> status,
+    "reason"    -> reason.getOrElse(""),
+    "file-Id"   -> fileId
   )
 }
 

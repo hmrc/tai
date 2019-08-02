@@ -26,7 +26,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-
 class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
   val mockConfigNps = mock[NpsConfig]
@@ -47,7 +46,6 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
   }
 
   private val nino: Nino = new Generator(new Random).nextNino
-
 
   "RtiUrls" must {
     "return the correct urls" when {
@@ -82,7 +80,8 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
         payeUrls.carBenefitsForYearUrl(nino, TaxYear(2017)) mustBe s"/paye/${nino.nino}/car-benefits/2017"
         payeUrls.ninoVersionUrl(nino) mustBe s"/paye/${nino.nino}/version"
-        payeUrls.removeCarBenefitUrl(nino, TaxYear(2017), 1, 2) mustBe s"/paye/${nino.nino}/benefits/2017/1/car/2/remove"
+        payeUrls
+          .removeCarBenefitUrl(nino, TaxYear(2017), 1, 2) mustBe s"/paye/${nino.nino}/benefits/2017/1/car/2/remove"
       }
     }
   }
@@ -137,7 +136,8 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
       "return the correct DES url" when {
         "given argument values" ignore {
           featureToggle(true, false)
-          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
+          taxAccountUrls
+            .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
         }
       }
 
@@ -153,7 +153,8 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
       "return the correct DES url" when {
         "given argument values" in {
           featureToggle(true, true)
-          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
+          taxAccountUrls
+            .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
         }
       }
       "return the correct NPS url" when {
@@ -166,8 +167,6 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
   }
 
-
-
   "IabdUrls" must {
     "return the correct urls" when {
       "given argument values" in {
@@ -179,14 +178,16 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     "return the correct iabd employment url" when {
       "given argument values" in {
         iabdUrls.npsIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
-        iabdUrls.desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
+        iabdUrls
+          .desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
       }
     }
 
     "IabdByTypeUrls" must {
       "return the correct urls" when {
         "given argument values" in {
-          iabdUrls.desIabdByTypeUrl(nino, TaxYear(2017), IabdType.FlatRateJobExpenses) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017?type=56"
+          iabdUrls
+            .desIabdByTypeUrl(nino, TaxYear(2017), IabdType.FlatRateJobExpenses) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017?type=56"
         }
       }
     }

@@ -33,12 +33,9 @@ import scala.concurrent.Future
 
 @Singleton
 class TotalTaxController @Inject()(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate)
-  extends BaseController
-  with ApiFormats
-  with NpsExceptions
-  with ControllerErrorHandler{
+    extends BaseController with ApiFormats with NpsExceptions with ControllerErrorHandler {
 
-  def totalTax(nino: Nino, year:TaxYear): Action[AnyContent] = authentication.async { implicit request =>
+  def totalTax(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     totalTaxService.totalTax(nino, year) map { totalTax =>
       Ok(Json.toJson(ApiResponse(totalTax, Nil)))
     } recoverWith taxAccountErrorHandler

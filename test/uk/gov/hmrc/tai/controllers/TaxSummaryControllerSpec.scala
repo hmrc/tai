@@ -39,17 +39,15 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxSummaryControllerSpec
-  extends PlaySpec
-    with MockitoSugar
-    with MockAuthenticationPredicate{
+class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   private implicit val hc = HeaderCarrier()
 
   "getTaxSummary" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val sut =
+          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
         val result = sut.getTaxSummary(nino, 2014)(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -75,10 +73,11 @@ class TaxSummaryControllerSpec
 
     "return Bad Request error from Hods for the supplied nino and year" in {
       val badRequestErrorResponse = Json.obj(
-        "message" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "statusCode" -> 400,
+        "message"          -> "Cannot complete a Coding Calculation without a Primary Employment",
+        "statusCode"       -> 400,
         "appStatusMessage" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -89,15 +88,16 @@ class TaxSummaryControllerSpec
 
       status(badRequest) mustBe BAD_REQUEST
       val json: JsValue = contentAsJson(badRequest)
-        (json \ "message").get mustBe JsString("Cannot complete a Coding Calculation without a Primary Employment")
+      (json \ "message").get mustBe JsString("Cannot complete a Coding Calculation without a Primary Employment")
     }
 
     "return Not Found error from Hods for the supplied nino and year" in {
       val notFoundErrorResponse = Json.obj(
-        "message" -> "Not Found Exception",
-        "statusCode" -> 404,
+        "message"          -> "Not Found Exception",
+        "statusCode"       -> 404,
         "appStatusMessage" -> "Not Found Exception",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -112,10 +112,11 @@ class TaxSummaryControllerSpec
 
     "return Service Unavailable error from Hods for the supplied nino and year" in {
       val serviceUnavailableErrorResponse = Json.obj(
-        "message" -> "Service Unavailable",
-        "statusCode" -> 503,
+        "message"          -> "Service Unavailable",
+        "statusCode"       -> 503,
         "appStatusMessage" -> "Service Unavailable",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -130,10 +131,11 @@ class TaxSummaryControllerSpec
 
     "return Internal Server error from Hods for the supplied nino and year" in {
       val internalServerErrorResponse = Json.obj(
-        "message" -> "Internal Server error",
-        "statusCode" -> 500,
+        "message"          -> "Internal Server error",
+        "statusCode"       -> 500,
         "appStatusMessage" -> "Internal Server error",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taxSummaryDetails(any(), any())(any()))
@@ -150,7 +152,8 @@ class TaxSummaryControllerSpec
   "getTaxSummaryPartial" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val sut =
+          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
         val result = sut.getTaxSummaryPartial(nino, 2014)(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -177,7 +180,8 @@ class TaxSummaryControllerSpec
     "return Bad Request error from Hods for the supplied nino and year" in {
       val mockTaiService = mock[TaiService]
       when(mockTaiService.getCalculatedTaxAccountPartial(any(), any())(any()))
-        .thenReturn(Future.failed(new BadRequestException("Cannot complete a Coding Calculation without a Primary Employment")))
+        .thenReturn(
+          Future.failed(new BadRequestException("Cannot complete a Coding Calculation without a Primary Employment")))
 
       val sut = createSUT(mockTaiService, mock[TaxAccountService], mock[Metrics])
       val badRequest = sut.getTaxSummaryPartial(new Nino(nino.nino), 2014)(FakeRequest())
@@ -187,8 +191,8 @@ class TaxSummaryControllerSpec
 
     "return Not Found error from Hods for the supplied nino and year" in {
       val mockTaiService = mock[TaiService]
-      when(mockTaiService.getCalculatedTaxAccountPartial(any(),
-        any())(any())).thenReturn(Future.failed(new NotFoundException("No Data Found")))
+      when(mockTaiService.getCalculatedTaxAccountPartial(any(), any())(any()))
+        .thenReturn(Future.failed(new NotFoundException("No Data Found")))
 
       val sut = createSUT(mockTaiService, mock[TaxAccountService], mock[Metrics])
       val notFound = sut.getTaxSummaryPartial(new Nino(nino.nino), 2014)(FakeRequest())
@@ -222,13 +226,13 @@ class TaxSummaryControllerSpec
     }
   }
 
-
   "updateEmployments " must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.updateEmployments(new Nino(nino.nino), 2014)(FakeRequest("POST", "/",
-          FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
+        val sut =
+          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
+        val result = sut.updateEmployments(new Nino(nino.nino), 2014)(
+          FakeRequest("POST", "/", FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -241,8 +245,11 @@ class TaxSummaryControllerSpec
       val updateEmployment4 = EmploymentAmount("test4", "desc", 4, newAmount = 987, oldAmount = 123)
       val empAmount = List(updateEmployment1, updateEmployment2, updateEmployment3, updateEmployment4)
       val requestData = IabdUpdateEmploymentsRequest(version = 1, empAmount)
-      val fakeRequest = FakeRequest(method = "POST", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(requestData))
+      val fakeRequest = FakeRequest(
+        method = "POST",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = Json.toJson(requestData))
 
       val mockTaiService = mock[TaiService]
       when(mockTaiService.updateEmployments(any(), any(), any(), any())(any()))
@@ -250,7 +257,8 @@ class TaxSummaryControllerSpec
 
       val mockTaxAccountService = mock[TaxAccountService]
       doNothing()
-        .when(mockTaxAccountService).invalidateTaiCacheData()
+        .when(mockTaxAccountService)
+        .invalidateTaiCacheData()
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       val summaryDetails = sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
@@ -258,12 +266,18 @@ class TaxSummaryControllerSpec
       val json: JsValue = contentAsJson(summaryDetails)
       (json \ "version").get mustBe JsNumber(3)
       (json \ "iabdType").get mustBe JsNumber(27)
-      (json \\ "employmentId") mustBe List(JsNumber(updateEmployment1.employmentId),
-        JsNumber(updateEmployment2.employmentId), JsNumber(updateEmployment3.employmentId),
-        JsNumber(updateEmployment4.employmentId))
-      (json \\ "newAmount") mustBe List(JsNumber(updateEmployment1.newAmount),
-        JsNumber(updateEmployment2.newAmount), JsNumber(updateEmployment3.newAmount),
-        JsNumber(updateEmployment4.newAmount))
+      (json \\ "employmentId") mustBe List(
+        JsNumber(updateEmployment1.employmentId),
+        JsNumber(updateEmployment2.employmentId),
+        JsNumber(updateEmployment3.employmentId),
+        JsNumber(updateEmployment4.employmentId)
+      )
+      (json \\ "newAmount") mustBe List(
+        JsNumber(updateEmployment1.newAmount),
+        JsNumber(updateEmployment2.newAmount),
+        JsNumber(updateEmployment3.newAmount),
+        JsNumber(updateEmployment4.newAmount)
+      )
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
       verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
@@ -276,8 +290,11 @@ class TaxSummaryControllerSpec
       val updateEmployment4 = EmploymentAmount("test4", "desc", 4, newAmount = 987, oldAmount = 123)
       val empAmount = List(updateEmployment1, updateEmployment2, updateEmployment3, updateEmployment4)
       val requestData = IabdUpdateEmploymentsRequest(version = 1, empAmount)
-      val fakeRequest = FakeRequest(method = "POST", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(requestData))
+      val fakeRequest = FakeRequest(
+        method = "POST",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = Json.toJson(requestData))
 
       val mockTaiService = mock[TaiService]
       when(mockTaiService.updateEmployments(any(), any(), any(), any())(any()))
@@ -299,8 +316,11 @@ class TaxSummaryControllerSpec
       val updateEmployment4 = EmploymentAmount("test4", "desc", 4, newAmount = 987, oldAmount = 123)
       val empAmount = List(updateEmployment1, updateEmployment2, updateEmployment3, updateEmployment4)
       val requestData = IabdUpdateEmploymentsRequest(version = 1, empAmount)
-      val fakeRequest = FakeRequest(method = "POST", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(requestData))
+      val fakeRequest = FakeRequest(
+        method = "POST",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = Json.toJson(requestData))
 
       val mockTaiService = mock[TaiService]
       when(mockTaiService.updateEmployments(any(), any(), any(), any())(any()))
@@ -308,7 +328,8 @@ class TaxSummaryControllerSpec
 
       val mockTaxAccountService = mock[TaxAccountService]
       doThrow(new RuntimeException(""))
-        .when(mockTaxAccountService).invalidateTaiCacheData()(any())
+        .when(mockTaxAccountService)
+        .invalidateTaiCacheData()(any())
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       the[RuntimeException] thrownBy sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
@@ -317,10 +338,10 @@ class TaxSummaryControllerSpec
     }
   }
   private val nino: Nino = new Generator(new Random).nextNino
-  private def createSUT(taiService: TaiService,
-                        taxAccountService: TaxAccountService,
-                        metrics: Metrics, authentication: AuthenticationPredicate =
-                        loggedInAuthenticationPredicate) =
-
+  private def createSUT(
+    taiService: TaiService,
+    taxAccountService: TaxAccountService,
+    metrics: Metrics,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new TaxSummaryController(taiService, taxAccountService, metrics, authentication)
 }

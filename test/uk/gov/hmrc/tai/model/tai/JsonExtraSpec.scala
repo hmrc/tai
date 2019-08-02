@@ -31,23 +31,23 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
   "JsonExtra" should {
     "Use map format to write to Json value" when {
       "given valid input return JsValue" in {
-        val inputMap: Map[TaxYear, TaxYear]  = Map(TaxYear(2016) -> TaxYear(2017))
-        val result = JsonExtra.mapFormat("foo","bar").writes(inputMap)
-        result.toString() must be ("""[{"foo":2016,"bar":2017}]""")
+        val inputMap: Map[TaxYear, TaxYear] = Map(TaxYear(2016) -> TaxYear(2017))
+        val result = JsonExtra.mapFormat("foo", "bar").writes(inputMap)
+        result.toString() must be("""[{"foo":2016,"bar":2017}]""")
       }
     }
 
     "Use JsValue to read input into map" when {
       "given valid input return correct object" in {
-        val inputJsValue: JsValue  = Json.parse("""[{"foo":2016, "bar":2017}]""")
-        val result = JsonExtra.mapFormat("foo","bar").reads(inputJsValue)
-        result must be (JsSuccess(Map(TaxYear(2016) -> TaxYear(2017))))
+        val inputJsValue: JsValue = Json.parse("""[{"foo":2016, "bar":2017}]""")
+        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        result must be(JsSuccess(Map(TaxYear(2016) -> TaxYear(2017))))
       }
 
       "given invalid input return JsError" in {
-        val inputJsValue: JsValue  = Json.parse("""{}""")
-        val result = JsonExtra.mapFormat("foo","bar").reads(inputJsValue)
-        result must be (JsError(s"Expected JsArray(...), found {}"))
+        val inputJsValue: JsValue = Json.parse("""{}""")
+        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        result must be(JsError(s"Expected JsArray(...), found {}"))
       }
     }
 
@@ -61,27 +61,29 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
       "read when given Json" in {
         val inputJsValue: JsString = JsString("""FOO""")
         val result = JsonExtra.enumerationFormat(testEnum).reads(inputJsValue)
-        result must be (JsSuccess(testEnum.FOO.leftSideValue))
+        result must be(JsSuccess(testEnum.FOO.leftSideValue))
       }
 
       "write when given a value" in {
         val inputValue = testEnum.BAR.leftSideValue
         val result = JsonExtra.enumerationFormat(testEnum).writes(inputValue)
-        result must be (JsString("""BAR"""))
+        result must be(JsString("""BAR"""))
       }
     }
 
     "Use bodge list to" when {
       "write to Json" in {
         implicit val formatRtiEyuList: Format[List[RtiEyu]] = JsonExtra.bodgeList[RtiEyu]
-        val json = Json.toJson(List(RtiEyu(None, None, None, new LocalDate(2016,6,9))))
-        json.toString() must be ("""[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
+        val json = Json.toJson(List(RtiEyu(None, None, None, new LocalDate(2016, 6, 9))))
+        json.toString() must be(
+          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
       }
 
       "read Json and return list" in {
-        val json: JsValue = Json.parse("""[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
+        val json: JsValue = Json.parse(
+          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
         val result = JsonExtra.bodgeList[RtiEyu].reads(json)
-        result.asOpt must be(Some(List(RtiEyu(None,None,None,new LocalDate(2016,6,9)))))
+        result.asOpt must be(Some(List(RtiEyu(None, None, None, new LocalDate(2016, 6, 9)))))
       }
 
       "read empty Json and return error" in {
@@ -92,4 +94,3 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
     }
   }
 }
-

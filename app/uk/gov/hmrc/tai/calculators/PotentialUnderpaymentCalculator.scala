@@ -20,12 +20,15 @@ import uk.gov.hmrc.tai.model.TaxBand
 
 object PotentialUnderpaymentCalculator {
 
-  def calculatePotentialUnderpayment(totalTax : Option[BigDecimal] = None, taxBands : Option[List[TaxBand]] = None) : Option[BigDecimal]  = {
+  def calculatePotentialUnderpayment(
+    totalTax: Option[BigDecimal] = None,
+    taxBands: Option[List[TaxBand]] = None): Option[BigDecimal] = {
 
     //The difference between the taxbands total and the total tax is the potential underpayment
-    val potentialUnderpayment = totalTax.map{totalTaxAmount =>
-      val totalTaxFromTaxBands = taxBands.map(_.foldLeft(BigDecimal(0))((total,taxBand) =>
-        taxBand.tax.getOrElse(BigDecimal(0))  + total)).getOrElse(BigDecimal(0))
+    val potentialUnderpayment = totalTax.map { totalTaxAmount =>
+      val totalTaxFromTaxBands = taxBands
+        .map(_.foldLeft(BigDecimal(0))((total, taxBand) => taxBand.tax.getOrElse(BigDecimal(0)) + total))
+        .getOrElse(BigDecimal(0))
       if (totalTaxFromTaxBands > totalTaxAmount) {
         totalTaxFromTaxBands - totalTaxAmount
       } else {
@@ -36,7 +39,7 @@ object PotentialUnderpaymentCalculator {
     //If the value is <= 0 return None
     potentialUnderpayment match {
       case Some(y) if y > BigDecimal(0) => Some(y)
-      case _ => None
+      case _                            => None
     }
   }
 

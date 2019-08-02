@@ -21,33 +21,33 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
-
-case class EmploymentPensionViewModel(taxYearRange: String,
-                                      nino: String,
-                                      firstName: String,
-                                      lastName: String,
-                                      dateOfBirth: String,
-                                      telephoneContactAllowed: String,
-                                      telephoneNumber: String,
-                                      addressLine1: String,
-                                      addressLine2: String,
-                                      addressLine3: String,
-                                      postcode: String,
-                                      isAdd: String,
-                                      isUpdate: String,
-                                      isEnd: String,
-                                      employmentPensionName: String,
-                                      payrollNumber: String,
-                                      startDate: String,
-                                      endDate: String,
-                                      whatYouToldUs: String)
+case class EmploymentPensionViewModel(
+  taxYearRange: String,
+  nino: String,
+  firstName: String,
+  lastName: String,
+  dateOfBirth: String,
+  telephoneContactAllowed: String,
+  telephoneNumber: String,
+  addressLine1: String,
+  addressLine2: String,
+  addressLine3: String,
+  postcode: String,
+  isAdd: String,
+  isUpdate: String,
+  isEnd: String,
+  employmentPensionName: String,
+  payrollNumber: String,
+  startDate: String,
+  endDate: String,
+  whatYouToldUs: String)
 
 object EmploymentPensionViewModel {
 
-  def apply(taxYear: TaxYear, person: Person, employment: AddEmployment): EmploymentPensionViewModel = {
-
+  def apply(taxYear: TaxYear, person: Person, employment: AddEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -67,12 +67,15 @@ object EmploymentPensionViewModel {
       endDate = "",
       whatYouToldUs = ""
     )
-  }
 
-  def apply(taxYear: TaxYear, person: Person, endEmployment: EndEmployment, existingEmployment: Employment): EmploymentPensionViewModel = {
-
+  def apply(
+    taxYear: TaxYear,
+    person: Person,
+    endEmployment: EndEmployment,
+    existingEmployment: Employment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -92,12 +95,15 @@ object EmploymentPensionViewModel {
       endDate = endEmployment.endDate.toString(IFormConstants.DateFormat),
       whatYouToldUs = ""
     )
-  }
 
-  def apply(taxYear: TaxYear, person: Person, incorrectEmployment: IncorrectEmployment, existingEmployment: Employment): EmploymentPensionViewModel = {
-
+  def apply(
+    taxYear: TaxYear,
+    person: Person,
+    incorrectEmployment: IncorrectEmployment,
+    existingEmployment: Employment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -117,12 +123,11 @@ object EmploymentPensionViewModel {
       endDate = "",
       whatYouToldUs = incorrectEmployment.whatYouToldUs
     )
-  }
 
-  def apply(taxYear: TaxYear, person: Person, pensionProvider: AddPensionProvider): EmploymentPensionViewModel = {
-
+  def apply(taxYear: TaxYear, person: Person, pensionProvider: AddPensionProvider): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -142,13 +147,15 @@ object EmploymentPensionViewModel {
       endDate = "",
       whatYouToldUs = ""
     )
-  }
 
-  def apply(taxYear: TaxYear, person: Person, incorrectPensionProvider: IncorrectPensionProvider, existingEmployment: Employment):
-            EmploymentPensionViewModel = {
-
+  def apply(
+    taxYear: TaxYear,
+    person: Person,
+    incorrectPensionProvider: IncorrectPensionProvider,
+    existingEmployment: Employment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -168,11 +175,11 @@ object EmploymentPensionViewModel {
       endDate = "",
       whatYouToldUs = incorrectPensionProvider.whatYouToldUs
     )
-  }
 
   def apply(taxYear: TaxYear, person: Person, incorrectEmployment: IncorrectEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange = s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
+      taxYearRange =
+        s"${taxYear.start.toString(IFormConstants.DateFormat)} to ${taxYear.end.toString(IFormConstants.DateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -193,5 +200,3 @@ object EmploymentPensionViewModel {
       whatYouToldUs = incorrectEmployment.whatYouToldUs
     )
 }
-
-

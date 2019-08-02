@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
@@ -27,8 +26,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
 
-
-class NpsIncomeSourceSpec extends PlaySpec  {
+class NpsIncomeSourceSpec extends PlaySpec {
   "toTaxCodeIncomeSummary" should {
     "create a tax code income summary" when {
       "there is an employment but no adjusted net income" in {
@@ -45,7 +43,8 @@ class NpsIncomeSourceSpec extends PlaySpec  {
         val payeRef = "This is the PAYE ref"
         val otherIncomeSourceIndicator = true
 
-        val employment = NpsEmployment(sequenceNumber = 1,
+        val employment = NpsEmployment(
+          sequenceNumber = 1,
           startDate = startDate,
           endDate = Some(endDate),
           taxDistrictNumber = "",
@@ -61,7 +60,8 @@ class NpsIncomeSourceSpec extends PlaySpec  {
           otherIncomeSourceIndicator = None,
           payrolledTaxYear = None,
           payrolledTaxYear1 = None,
-          cessationPayThisEmployment = None)
+          cessationPayThisEmployment = None
+        )
 
         val sut = createSUT(
           name = Some(name),
@@ -107,7 +107,13 @@ class NpsIncomeSourceSpec extends PlaySpec  {
 
         val result = sut.toTaxCodeIncomeSummary()
 
-        result mustBe TaxCodeIncomeSummary(name = "", taxCode = "", incomeType = Some(0), tax = Tax(), isEditable = true, isLive = true)
+        result mustBe TaxCodeIncomeSummary(
+          name = "",
+          taxCode = "",
+          incomeType = Some(0),
+          tax = Tax(),
+          isEditable = true,
+          isLive = true)
       }
     }
 
@@ -236,7 +242,8 @@ class NpsIncomeSourceSpec extends PlaySpec  {
 
     "not return an nps component" when {
       "there are no matching personal allowance components" in {
-        val interestWithoutTaxTakenOffGrossInterest = NpsComponent(`type` = Some(DeductionType.InterestWithoutTaxTakenOffGrossInterest.id))
+        val interestWithoutTaxTakenOffGrossInterest =
+          NpsComponent(`type` = Some(DeductionType.InterestWithoutTaxTakenOffGrossInterest.id))
 
         val sut = createSUT(deductions = Some(List(interestWithoutTaxTakenOffGrossInterest)))
         val result = sut.inYearAdjustmentComponent
@@ -297,7 +304,7 @@ class NpsIncomeSourceSpec extends PlaySpec  {
   "personalAllowanceReceived" should {
     "return the personal allowance received component" when {
       "there is one in the nps component" in {
-        val personalAllowanceReceived  = NpsComponent(`type` = Some(AllowanceType.PersonalAllowanceReceived.id))
+        val personalAllowanceReceived = NpsComponent(`type` = Some(AllowanceType.PersonalAllowanceReceived.id))
 
         val sut = createSUT(allowances = Some(List(personalAllowanceReceived)))
         val result = sut.personalAllowanceReceived
@@ -321,7 +328,8 @@ class NpsIncomeSourceSpec extends PlaySpec  {
   "statePension" should {
     "return the amount of state pension or benefits" when {
       "there is an nps component of type state pension or benefits with an amount" in {
-        val statePensionOrBenefits = NpsComponent(amount = Some(555),`type` = Some(DeductionType.StatePensionOrBenefits.id))
+        val statePensionOrBenefits =
+          NpsComponent(amount = Some(555), `type` = Some(DeductionType.StatePensionOrBenefits.id))
 
         val sut = createSUT(deductions = Some(List(statePensionOrBenefits)))
         val result = sut.statePension
@@ -365,7 +373,11 @@ class NpsIncomeSourceSpec extends PlaySpec  {
 
   "TaxCodeIncomeSummary Model" should {
     "return the basisOperation if basisOperation exists " in {
-      val npsComponent = NpsComponent(amount = Some(BigDecimal(333.33)), `type` = Some(11), iabdSummaries = None, npsDescription = Some("npsDescription"))
+      val npsComponent = NpsComponent(
+        amount = Some(BigDecimal(333.33)),
+        `type` = Some(11),
+        iabdSummaries = None,
+        npsDescription = Some("npsDescription"))
 
       val payAndTax = NpsTax(
         totalIncome = Some(npsComponent),
@@ -388,7 +400,8 @@ class NpsIncomeSourceSpec extends PlaySpec  {
         employmentPayeRef = None,
         pensionIndicator = Some(false),
         otherIncomeSourceIndicator = Some(false),
-        basisOperation = Some(BasisOperation.Week1Month1))
+        basisOperation = Some(BasisOperation.Week1Month1)
+      )
 
       npsIncomeSource.toTaxCodeIncomeSummary().basisOperation mustBe Some(BasisOperation.Week1Month1)
     }
@@ -407,49 +420,50 @@ class NpsIncomeSourceSpec extends PlaySpec  {
   }
 
   val incomeSourceJson: String = """{    "employmentId": 5,
-                            |    "employmentType": 1,
-                            |    "employmentStatus": 1,
-                            |    "employmentTaxDistrictNumber": 1,
-                            |    "employmentPayeRef": "000",
-                            |    "pensionIndicator": true,
-                            |    "otherIncomeSourceIndicator": false,
-                            |    "jsaIndicator": false,
-                            |    "name": "EMPLOYER1",
-                            |    "taxCode": "K136",
-                            |    "allowances": [],
-                            |    "deductions": []
+                                   |    "employmentType": 1,
+                                   |    "employmentStatus": 1,
+                                   |    "employmentTaxDistrictNumber": 1,
+                                   |    "employmentPayeRef": "000",
+                                   |    "pensionIndicator": true,
+                                   |    "otherIncomeSourceIndicator": false,
+                                   |    "jsaIndicator": false,
+                                   |    "name": "EMPLOYER1",
+                                   |    "taxCode": "K136",
+                                   |    "allowances": [],
+                                   |    "deductions": []
                             }""".stripMargin
 
   val incomeSourceWithBasisOperationIncludedInJson: String = """{
                                  "employmentId": 5,
-                            |    "employmentType": 1,
-                            |    "employmentStatus": 1,
-                            |    "employmentTaxDistrictNumber": 1,
-                            |    "employmentPayeRef": "000",
-                            |    "pensionIndicator": true,
-                            |    "otherIncomeSourceIndicator": false,
-                            |    "jsaIndicator": false,
-                            |    "name": "00000",
-                            |    "taxCode": "K136",
-                            |    "basisOperation":1,
-                            |    "allowances": [],
-                            |    "deductions": []
+                                                               |    "employmentType": 1,
+                                                               |    "employmentStatus": 1,
+                                                               |    "employmentTaxDistrictNumber": 1,
+                                                               |    "employmentPayeRef": "000",
+                                                               |    "pensionIndicator": true,
+                                                               |    "otherIncomeSourceIndicator": false,
+                                                               |    "jsaIndicator": false,
+                                                               |    "name": "00000",
+                                                               |    "taxCode": "K136",
+                                                               |    "basisOperation":1,
+                                                               |    "allowances": [],
+                                                               |    "deductions": []
                             }""".stripMargin
 
-  private def createSUT(name: Option[String] = None,
-                        taxCode: Option[String] = None,
-                        employmentType: Option[Int] = None,
-                        allowances: Option[List[NpsComponent]] = None,
-                        deductions: Option[List[NpsComponent]] = None,
-                        payAndTax: Option[NpsTax] = None,
-                        employmentId: Option[Int] = None,
-                        employmentStatus: Option[Int] = None,
-                        employmentTaxDistrictNumber: Option[Int] = None,
-                        employmentPayeRef: Option[String] = None,
-                        pensionIndicator: Option[Boolean] = None,
-                        otherIncomeSourceIndicator: Option[Boolean] = None,
-                        jsaIndicator: Option[Boolean] = None,
-                        basisOperation: Option[BasisOperation] = None): NpsIncomeSource = {
+  private def createSUT(
+    name: Option[String] = None,
+    taxCode: Option[String] = None,
+    employmentType: Option[Int] = None,
+    allowances: Option[List[NpsComponent]] = None,
+    deductions: Option[List[NpsComponent]] = None,
+    payAndTax: Option[NpsTax] = None,
+    employmentId: Option[Int] = None,
+    employmentStatus: Option[Int] = None,
+    employmentTaxDistrictNumber: Option[Int] = None,
+    employmentPayeRef: Option[String] = None,
+    pensionIndicator: Option[Boolean] = None,
+    otherIncomeSourceIndicator: Option[Boolean] = None,
+    jsaIndicator: Option[Boolean] = None,
+    basisOperation: Option[BasisOperation] = None): NpsIncomeSource =
     NpsIncomeSource(
       name = name,
       taxCode = taxCode,
@@ -466,5 +480,4 @@ class NpsIncomeSourceSpec extends PlaySpec  {
       jsaIndicator = jsaIndicator,
       basisOperation = basisOperation
     )
-  }
 }

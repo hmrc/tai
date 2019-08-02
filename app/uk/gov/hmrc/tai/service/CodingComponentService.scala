@@ -28,11 +28,10 @@ import scala.concurrent.Future
 @Singleton
 class CodingComponentService @Inject()(codingComponentRepository: CodingComponentRepository) {
 
-  def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
+  def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     codingComponentRepository.codingComponents(nino, year)
-  }
 
-  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
+  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(
+    implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     codingComponentRepository.codingComponentsForTaxCodeId(nino, taxCodeId)
-  }
 }

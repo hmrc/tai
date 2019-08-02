@@ -57,33 +57,45 @@ class NpsIabdSummarySpec extends PlaySpec {
 
       "given incomeSource and npsEmployments as none" in {
 
-        mockIabdSummary.toIadbSummary(None, None) mustBe IabdSummary(1,"Description",350,Some(2),Some(3),None)
+        mockIabdSummary.toIadbSummary(None, None) mustBe IabdSummary(1, "Description", 350, Some(2), Some(3), None)
 
       }
 
       "given incomeSource and npsEmployments values" in {
 
         val mockIncomeSources = Some(List(NpsIncomeSource(name = Some("AAA"), employmentId = Some(2))))
-        val mockNpsEmployments = Some(List(NpsEmployment(
-          sequenceNumber = 1, startDate = NpsDate(TaxYear().start.minusDays(1)),
-          endDate = Some(NpsDate(TaxYear().next.start)),
-          taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAAA"), employmentType = 1)))
+        val mockNpsEmployments = Some(
+          List(NpsEmployment(
+            sequenceNumber = 1,
+            startDate = NpsDate(TaxYear().start.minusDays(1)),
+            endDate = Some(NpsDate(TaxYear().next.start)),
+            taxDistrictNumber = "tax1",
+            payeNumber = "payeno",
+            employerName = Some("AAAA"),
+            employmentType = 1
+          )))
 
         mockIabdSummary.toIadbSummary(mockIncomeSources, mockNpsEmployments) mustBe
-          IabdSummary(1,"Description",350,Some(2),Some(3),Some("AAA"))
+          IabdSummary(1, "Description", 350, Some(2), Some(3), Some("AAA"))
 
       }
 
       "given none incomeSource and npsEmployments value" in {
 
-        val mockNpsEmployments = Some(List(NpsEmployment(
-          sequenceNumber = 2, startDate = NpsDate(TaxYear().start.minusDays(1)),
-          endDate = Some(NpsDate(TaxYear().next.start)),
-          taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAAA"), employmentType = 1)))
+        val mockNpsEmployments = Some(
+          List(NpsEmployment(
+            sequenceNumber = 2,
+            startDate = NpsDate(TaxYear().start.minusDays(1)),
+            endDate = Some(NpsDate(TaxYear().next.start)),
+            taxDistrictNumber = "tax1",
+            payeNumber = "payeno",
+            employerName = Some("AAAA"),
+            employmentType = 1
+          )))
         val noneAmountIabdSummary = mockIabdSummary.copy(amount = None)
 
         noneAmountIabdSummary.toIadbSummary(None, mockNpsEmployments) mustBe
-          IabdSummary(1,"Description",0,Some(2),Some(3),Some("AAAA"))
+          IabdSummary(1, "Description", 0, Some(2), Some(3), Some("AAAA"))
 
       }
     }

@@ -43,9 +43,9 @@ class RtiPackageSpec extends PlaySpec {
         }
 
         val msg: Seq[String] = for {
-          (_, validations) <- ex.errors
+          (_, validations)            <- ex.errors
           validation: ValidationError <- validations
-          messages: String <- validation.messages
+          messages: String            <- validation.messages
         } yield {
           messages
         }
@@ -58,7 +58,8 @@ class RtiPackageSpec extends PlaySpec {
 
       "convert received date object to json" in {
         val rti = RtiEyu(None, None, None, (new LocalDate(2016, 7, 29)))
-        Json.toJson(rti).toString must be("""{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
+        Json.toJson(rti).toString must be(
+          """{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
     }
@@ -145,8 +146,8 @@ class RtiPackageSpec extends PlaySpec {
         val employments = rtiData.employments
         employments mustNot be(Nil)
 
-        val rtiEyu = employments.map {
-          employment => employment.eyu
+        val rtiEyu = employments.map { employment =>
+          employment.eyu
         }
 
         rtiEyu mustNot be(Nil)
@@ -162,17 +163,20 @@ class RtiPackageSpec extends PlaySpec {
 
       "convert EYU object having taxablePayDelta only to json " in {
         val rti = RtiEyu(Some(10), None, None, (new LocalDate(2016, 7, 29)))
-        Json.toJson(rti).toString() must be("""{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
+        Json.toJson(rti).toString() must be(
+          """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object having taxablePayDelta and totalTaxDelta to json " in {
         val rti = RtiEyu(Some(10), Some(10), None, (new LocalDate(2016, 7, 29)))
-        Json.toJson(rti).toString() must be("""{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
+        Json.toJson(rti).toString() must be(
+          """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object to json " in {
         val rti = RtiEyu(Some(10), Some(10), Some(10), (new LocalDate(2016, 7, 29)))
-        Json.toJson(rti).toString() must be("""{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[{"type":"EmpeeContribnsDelta","amount":10}]}],"rcvdDate":"2016-07-29"}""")
+        Json.toJson(rti).toString() must be(
+          """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[{"type":"EmpeeContribnsDelta","amount":10}]}],"rcvdDate":"2016-07-29"}""")
       }
 
     }
@@ -209,15 +213,18 @@ class RtiPackageSpec extends PlaySpec {
     "successfully use implicit payments formats" when {
 
       val records = Seq("15-16", "16-17").flatMap(
-        year => json(year).map {
-          case (nino, json) => (year, nino, Try(json.as[RtiData]))
+        year =>
+          json(year).map {
+            case (nino, json) => (year, nino, Try(json.as[RtiData]))
         }
       )
 
       "monetary amount map is parsed from the JSON" in {
-        val parsedJson = Json.parse(
-          """[{"type": "TaxablePayYTD","amount": 2135.41}]"""
-        ).as[Map[String, BigDecimal]]
+        val parsedJson = Json
+          .parse(
+            """[{"type": "TaxablePayYTD","amount": 2135.41}]"""
+          )
+          .as[Map[String, BigDecimal]]
         parsedJson("TaxablePayYTD") must be(BigDecimal("2135.41"))
       }
 
@@ -394,7 +401,8 @@ class RtiPackageSpec extends PlaySpec {
       }
 
       "RtiPayment object is converted to json" in {
-        val rtiPayment = RtiPayment(PayFrequency.Monthly, new LocalDate(2016, 11, 23), new LocalDate(2016, 12, 20), 200, 300, 100, 200)
+        val rtiPayment =
+          RtiPayment(PayFrequency.Monthly, new LocalDate(2016, 11, 23), new LocalDate(2016, 12, 20), 200, 300, 100, 200)
         Json.toJson(rtiPayment).toString must be(
           """{"payFreq":"M1","pmtDate":"2016-11-23","rcvdDate":"2016-12-20","mandatoryMonetaryAmount":[{"type":
               "TaxablePayYTD","amount":300},{"type":"TotalTaxYTD","amount":200},{"type":"TaxablePay","amount":200},{"type":"TaxDeductedOrRefunded","amount":100}],
@@ -412,7 +420,7 @@ class RtiPackageSpec extends PlaySpec {
         records.foreach {
           case (_, _, Success(json)) => Json.toJson(json).as[RtiData] must be(json)
           case record =>
-            val (year,nino,json) = record
+            val (year, nino, json) = record
             fail("Not able to parse json " + (year, nino).toString)
         }
       }

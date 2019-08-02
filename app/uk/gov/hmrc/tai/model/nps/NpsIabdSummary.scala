@@ -20,38 +20,45 @@ import uk.gov.hmrc.tai.model.IabdSummary
 import play.api.libs.json.{Json, OFormat}
 
 case class NpsIabdSummary(
-  amount: Option[BigDecimal]=None,
+  amount: Option[BigDecimal] = None,
   `type`: Option[Int],
-  npsDescription:Option[String] = None,
-  employmentId : Option[Int] = None,
-  estimatedPaySource : Option[Int] = None
+  npsDescription: Option[String] = None,
+  employmentId: Option[Int] = None,
+  estimatedPaySource: Option[Int] = None
 ) {
 
   override def equals(o: Any): Boolean = o match {
     case that: NpsIabdSummary => that.`type`.equals(this.`type`)
-    case _ => false
+    case _                    => false
   }
   override def hashCode: Int = `type`.getOrElse(0)
 
-  def toIadbSummary(incomeSources : Option[List[NpsIncomeSource]],
-                    npsEmployments : Option[List[NpsEmployment]] = None): IabdSummary = {
+  def toIadbSummary(
+    incomeSources: Option[List[NpsIncomeSource]],
+    npsEmployments: Option[List[NpsEmployment]] = None): IabdSummary = {
 
-    val namefromIncomeSource = for{
-      sources <- incomeSources
+    val namefromIncomeSource = for {
+      sources         <- incomeSources
       npsIncomeSource <- sources.find(_.employmentId == employmentId)
-      name <- npsIncomeSource.name
+      name            <- npsIncomeSource.name
     } yield name
 
-    def nameFromEmployments = for{
-      employments <- npsEmployments
-      employer <- employments.find(_.sequenceNumber == employmentId.getOrElse(-1))
-      name <- employer.employerName
-    } yield name
+    def nameFromEmployments =
+      for {
+        employments <- npsEmployments
+        employer    <- employments.find(_.sequenceNumber == employmentId.getOrElse(-1))
+        name        <- employer.employerName
+      } yield name
 
-    val employerName = if(namefromIncomeSource.isDefined) namefromIncomeSource else nameFromEmployments
+    val employerName = if (namefromIncomeSource.isDefined) namefromIncomeSource else nameFromEmployments
 
-    IabdSummary(`type`.getOrElse(0), npsDescription.getOrElse(""),
-      amount.getOrElse(BigDecimal(0)), employmentId, estimatedPaySource,employerName)
+    IabdSummary(
+      `type`.getOrElse(0),
+      npsDescription.getOrElse(""),
+      amount.getOrElse(BigDecimal(0)),
+      employmentId,
+      estimatedPaySource,
+      employerName)
   }
 }
 

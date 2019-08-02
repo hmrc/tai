@@ -28,21 +28,20 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 
 @Singleton
-class BbsiRepository @Inject()(cacheConnector: CacheConnector,
-                               bbsiConnector: BbsiConnector) {
+class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) {
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
+  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
     cacheConnector.findOptSeq[BankAccount](fetchSessionId(hc), BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
-          accountsWithId <- cacheConnector.createOrUpdateSeq(fetchSessionId(hc), populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
+          accountsWithId <- cacheConnector.createOrUpdateSeq(fetchSessionId(hc), populateId(accounts), BBSIKey)(
+                             BbsiMongoFormatters.bbsiFormat)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }
-  }
 
   private def populateId(accounts: Seq[BankAccount]): Seq[BankAccount] = {
 
@@ -53,7 +52,6 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector,
       .foldLeft(Seq.empty[BankAccount])(updateIds)
   }
 
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String = {
+  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
     headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-  }
 }

@@ -22,7 +22,6 @@ import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
 case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
 
   def applicableTaxCodeRecords: Seq[TaxCodeRecord] = {
@@ -31,13 +30,11 @@ case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
     applicableRecords
   }
 
-  private def operatedTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
+  private def operatedTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] =
     records.filter(_.operatedTaxCode)
-  }
 
-  private def inYearTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] = {
+  private def inYearTaxCodeRecords(records: Seq[TaxCodeRecord]): Seq[TaxCodeRecord] =
     records.filter(_.taxYear.compare(TaxYear()) == 0)
-  }
 }
 
 object TaxCodeHistory {
@@ -45,7 +42,7 @@ object TaxCodeHistory {
   implicit val reads: Reads[TaxCodeHistory] = (
     (JsPath \ "nino").read[String] and
       (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
-    )(TaxCodeHistory.apply _)
+  )(TaxCodeHistory.apply _)
 
   implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
 }

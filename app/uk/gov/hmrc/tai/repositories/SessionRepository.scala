@@ -23,12 +23,14 @@ import uk.gov.hmrc.tai.connectors.CacheConnector
 import scala.concurrent.Future
 
 @Singleton
-class SessionRepository @Inject()(cacheConnector: CacheConnector){
+class SessionRepository @Inject()(cacheConnector: CacheConnector) {
 
-  def invalidateCache()(implicit hc: HeaderCarrier): Future[Boolean] = {
-    cacheConnector.removeById(hc.sessionId.map(_.value).getOrElse(
-      throw new RuntimeException("Error while fetching session id")
-    ))
-  }
+  def invalidateCache()(implicit hc: HeaderCarrier): Future[Boolean] =
+    cacheConnector.removeById(
+      hc.sessionId
+        .map(_.value)
+        .getOrElse(
+          throw new RuntimeException("Error while fetching session id")
+        ))
 
 }

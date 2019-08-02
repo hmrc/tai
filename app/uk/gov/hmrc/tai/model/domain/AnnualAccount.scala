@@ -16,17 +16,15 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
-case class AnnualAccount (
-                           key: String,
-                           taxYear: TaxYear,
-                           realTimeStatus: RealTimeStatus,
-                           payments: Seq[Payment],
-                           endOfTaxYearUpdates: Seq[EndOfTaxYearUpdate]) {
+case class AnnualAccount(
+  key: String,
+  taxYear: TaxYear,
+  realTimeStatus: RealTimeStatus,
+  payments: Seq[Payment],
+  endOfTaxYearUpdates: Seq[EndOfTaxYearUpdate]) {
 
   lazy val totalIncomeYearToDate: BigDecimal =
     if (payments.isEmpty) 0 else payments.max.amountYearToDate

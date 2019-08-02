@@ -21,11 +21,11 @@ import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class CloseBankAccount(
-                           personDetails: Person,
-                           taxYear: TaxYear,
-                           bankAccount: BankAccount,
-                           endDate: LocalDate,
-                           interestEarnedThisTaxYear: Option[BigDecimal]) {
+  personDetails: Person,
+  taxYear: TaxYear,
+  bankAccount: BankAccount,
+  endDate: LocalDate,
+  interestEarnedThisTaxYear: Option[BigDecimal]) {
 
   private val dateFormat = "d MMMM yyyy"
 

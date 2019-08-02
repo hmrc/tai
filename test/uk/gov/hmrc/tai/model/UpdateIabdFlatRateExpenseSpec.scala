@@ -25,12 +25,11 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
 
     "parse json correctly" in {
 
-      val employeeExpenseJson = Json.parse(
-        """
-          | {
-          |   "sequenceNumber": 201800001,
-          |   "grossAmount": 1234
-          | }
+      val employeeExpenseJson = Json.parse("""
+                                             | {
+                                             |   "sequenceNumber": 201800001,
+                                             |   "grossAmount": 1234
+                                             | }
         """.stripMargin)
 
       val employeeExpense: UpdateIabdEmployeeExpense = employeeExpenseJson.as[UpdateIabdEmployeeExpense]
@@ -40,9 +39,8 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
 
     "give error when grossAmount field is empty" in {
 
-      val employeeExpenseJson = Json.parse(
-        """
-          | {}
+      val employeeExpenseJson = Json.parse("""
+                                             | {}
         """.stripMargin)
 
       val parseError: JsResultException = intercept[JsResultException] {
@@ -55,11 +53,10 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
 
     "give error when grossAmount field is less than 0" in {
 
-      val employeeExpenseJson = Json.parse(
-        """
-          | {
-          |   "grossAmount": -1
-          | }
+      val employeeExpenseJson = Json.parse("""
+                                             | {
+                                             |   "grossAmount": -1
+                                             | }
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {
@@ -72,11 +69,10 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
 
     "give error when grossAmount field is greater than 999999" in {
 
-      val employeeExpenseJson = Json.parse(
-        """
-          | {
-          |   "grossAmount": 1000000
-          | }
+      val employeeExpenseJson = Json.parse("""
+                                             | {
+                                             |   "grossAmount": 1000000
+                                             | }
         """.stripMargin)
 
       val parseError: IllegalArgumentException = intercept[IllegalArgumentException] {

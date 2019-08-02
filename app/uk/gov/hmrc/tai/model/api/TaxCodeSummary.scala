@@ -21,35 +21,41 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-case class TaxCodeSummary(taxCodeId: Int,
-                          taxCode: String,
-                          basisOfOperation: String,
-                          startDate: LocalDate,
-                          endDate: LocalDate,
-                          employerName: String,
-                          payrollNumber: Option[String],
-                          pensionIndicator: Boolean,
-                          primary: Boolean)
+case class TaxCodeSummary(
+  taxCodeId: Int,
+  taxCode: String,
+  basisOfOperation: String,
+  startDate: LocalDate,
+  endDate: LocalDate,
+  employerName: String,
+  payrollNumber: Option[String],
+  pensionIndicator: Boolean,
+  primary: Boolean)
 
 object TaxCodeSummary {
 
   implicit val format: OFormat[TaxCodeSummary] = Json.format[TaxCodeSummary]
 
-  def apply(taxCodeRecord: TaxCodeRecord, date:LocalDate): TaxCodeSummary = {
+  def apply(taxCodeRecord: TaxCodeRecord, date: LocalDate): TaxCodeSummary = {
 
     val taxYear = TaxYear(date)
     val startDate =
       if (taxCodeRecord.dateOfCalculation.isBefore(taxYear.start)) {
         taxYear.start
-      }
-      else {
+      } else {
         taxCodeRecord.dateOfCalculation
       }
 
     TaxCodeSummary(
       taxCodeRecord.taxCodeId,
-      taxCodeRecord.taxCode, taxCodeRecord.basisOfOperation, startDate , date,
-      taxCodeRecord.employerName, taxCodeRecord.payrollNumber, taxCodeRecord.pensionIndicator, taxCodeRecord.isPrimary
+      taxCodeRecord.taxCode,
+      taxCodeRecord.basisOfOperation,
+      startDate,
+      date,
+      taxCodeRecord.employerName,
+      taxCodeRecord.payrollNumber,
+      taxCodeRecord.pensionIndicator,
+      taxCodeRecord.isPrimary
     )
   }
 

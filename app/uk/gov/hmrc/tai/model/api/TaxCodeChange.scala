@@ -20,7 +20,6 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 
-
 case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSummary]) {
   def latestTaxCodeChangeDate: LocalDate = current.map(_.startDate).min
 
@@ -34,21 +33,19 @@ case class TaxCodeChange(current: Seq[TaxCodeSummary], previous: Seq[TaxCodeSumm
   def primaryPreviousPayrollNumber: Option[String] = primaryPayrollNumber(previous)
   def secondaryPreviousPayrollNumbers: Seq[String] = secondaryPayrollNumbers(previous)
 
-  def primaryPreviousRecord : Option[TaxCodeSummary] = primaryRecord(previous)
+  def primaryPreviousRecord: Option[TaxCodeSummary] = primaryRecord(previous)
 
-  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]): Option[String] = {
+  private def primaryPayrollNumber(records: Seq[TaxCodeSummary]): Option[String] =
     primaryRecord(records) match {
       case Some(record) => record.payrollNumber
-      case None => None
+      case None         => None
     }
-  }
   private def secondaryPayrollNumbers(records: Seq[TaxCodeSummary]) = secondaryRecords(records).flatMap(_.payrollNumber)
-  private def primaryTaxCode(records: Seq[TaxCodeSummary]): Option[String] = {
+  private def primaryTaxCode(records: Seq[TaxCodeSummary]): Option[String] =
     primaryRecord(records) match {
       case Some(record) => Some(record.taxCode)
-      case None => None
+      case None         => None
     }
-  }
   private def secondaryTaxCode(records: Seq[TaxCodeSummary]) = secondaryRecords(records).map(_.taxCode)
 
   private def primaryRecord(records: Seq[TaxCodeSummary]): Option[TaxCodeSummary] =

@@ -20,39 +20,38 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.http.{InternalServerException, BadRequestException,NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.util.NpsExceptions
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication
-  with MockitoSugar
-  with NpsExceptions{
+class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication with MockitoSugar with NpsExceptions {
 
-  "ControllerErrorHandler"should{
-    "return BAD_REQUEST"when {
-      "there is hod BAD_REQUEST exception"in {
+  "ControllerErrorHandler" should {
+    "return BAD_REQUEST" when {
+      "there is hod BAD_REQUEST exception" in {
         val sut = createSUT
         val pf = sut.taxAccountErrorHandler()
         val result = pf(new BadRequestException(CodingCalculationCYPlusOne))
         status(result) mustBe BAD_REQUEST
       }
     }
-    "return NOT_FOUND" when{
-      "tax account returns NOT_FOUND"in{
+    "return NOT_FOUND" when {
+      "tax account returns NOT_FOUND" in {
         val sut = createSUT
         val pf = sut.taxAccountErrorHandler()
         val result = pf(new NotFoundException("No coding components found"))
         status(result) mustBe NOT_FOUND
       }
     }
-    "return internal server error" when{
-      "tax account returns internal server error"in{
+    "return internal server error" when {
+      "tax account returns internal server error" in {
         val sut = createSUT
         val pf = sut.taxAccountErrorHandler()
         val result = the[InternalServerException] thrownBy Await.result(
-          pf(new InternalServerException("any other error")), 5.seconds
+          pf(new InternalServerException("any other error")),
+          5.seconds
         )
         result.getMessage mustBe "any other error"
       }

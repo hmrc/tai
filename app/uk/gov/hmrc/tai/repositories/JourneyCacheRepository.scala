@@ -28,37 +28,35 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
-  def currentCache(journeyName: String)(implicit hc: HeaderCarrier) : Future[Option[Map[String, String]]] = {
+  def currentCache(journeyName: String)(implicit hc: HeaderCarrier): Future[Option[Map[String, String]]] =
     cacheConnector.find[Map[String, String]](sessionId, journeyName + JourneyCacheSuffix)
-  }
 
-  def currentCache(journeyName: String, key: String)(implicit hc: HeaderCarrier) : Future[Option[String]] = {
+  def currentCache(journeyName: String, key: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     currentCache(journeyName).map({
       case Some(cache) => cache.get(key)
-      case _ => None
+      case _           => None
     })
-  }
 
-  def cached(journeyName: String, cache: Map[String, String])(implicit hc: HeaderCarrier) : Future[Map[String, String]] = {
-    currentCache(journeyName).flatMap( existingCache => {
+  def cached(journeyName: String, cache: Map[String, String])(implicit hc: HeaderCarrier): Future[Map[String, String]] =
+    currentCache(journeyName).flatMap(existingCache => {
       val toCache =
         existingCache match {
           case Some(existing) => existing ++ cache
-          case _ => cache
+          case _              => cache
         }
       cacheConnector.createOrUpdate[Map[String, String]](sessionId, toCache, journeyName + JourneyCacheSuffix)
     })
-  }
 
-  def cached(journeyName: String, key: String, value: String)(implicit hc: HeaderCarrier) : Future[Map[String, String]] = {
+  def cached(journeyName: String, key: String, value: String)(implicit hc: HeaderCarrier): Future[Map[String, String]] =
     cached(journeyName, Map(key -> value))
-  }
 
-  def flush(journeyName: String)(implicit hc: HeaderCarrier) : Future[Boolean] = {
-    cacheConnector.createOrUpdate[Map[String, String]](sessionId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map { _ => true}
-  }
+  def flush(journeyName: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+    cacheConnector
+      .createOrUpdate[Map[String, String]](sessionId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map {
+      _ =>
+        true
+    }
 
-  def sessionId(implicit hc: HeaderCarrier): String = {
+  def sessionId(implicit hc: HeaderCarrier): String =
     hc.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while retrieving session id"))
-  }
 }

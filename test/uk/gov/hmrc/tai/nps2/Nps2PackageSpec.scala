@@ -83,14 +83,18 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
 
       "unmarshall a Json taxBand string into a TaxBand model" in {
-        val unmarshalledTestClass = Json.parse(
-          """{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}""").as[TaxBand]
+        val unmarshalledTestClass = Json
+          .parse(
+            """{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}""")
+          .as[TaxBand]
         unmarshalledTestClass mustBe testTaxBand
       }
 
       "unmarshall a taxBand provided by nps2 in Json format into a TaxBand model" in {
-        val unmarshalledTestClass = Json.parse(
-          """{"bandType": "B","taxCode": "BR","isBasicRate": true,"income": 14000,"tax": 2800,"lowerBand": 0,"upperBand": 32000,"rate": 20}""").as[TaxBand]
+        val unmarshalledTestClass = Json
+          .parse(
+            """{"bandType": "B","taxCode": "BR","isBasicRate": true,"income": 14000,"tax": 2800,"lowerBand": 0,"upperBand": 32000,"rate": 20}""")
+          .as[TaxBand]
 
         unmarshalledTestClass mustBe
           TaxBand(
@@ -101,7 +105,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
             lowerBand = Some(0),
             upperBand = Some(32000),
             rate = 20
-        )
+          )
       }
     }
 
@@ -112,8 +116,10 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
 
       "unmarshall a Json Iabd string into an Iabd model" in {
-        val unmarshalledTestClass = Json.parse(
-          """{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}""").as[Iabd]
+        val unmarshalledTestClass = Json
+          .parse(
+            """{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}""")
+          .as[Iabd]
         unmarshalledTestClass mustBe testIabd
       }
 
@@ -129,14 +135,15 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
 
       "unmarshall a Json Iabd list into a List of Iabd" in {
-        val unmarshalledTestClass = Json.
-          parse(
+        val unmarshalledTestClass = Json
+          .parse(
             """
             [
             {"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32},
             {"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32},
             {"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}]"""
-          ).as[List[Iabd]]
+          )
+          .as[List[Iabd]]
 
         unmarshalledTestClass mustBe iabdList
       }
@@ -155,13 +162,15 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
 
       "unmarshall a Json Component string into a Component model" in {
-        val unmarshalledTestClass = Json.parse(
-          """
+        val unmarshalledTestClass = Json
+          .parse(
+            """
           {
           "amount":34000.3,
           "sourceAmount":32000.7,
           "iabdSummaries":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}]}"""
-        ).as[Component]
+          )
+          .as[Component]
 
         unmarshalledTestClass mustBe testComponent
       }
@@ -174,7 +183,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
           """{
             |"nonSavings":{
             |"taxBands":[{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33},
-                        |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}],
+            |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}],
             |"totalTax":123.1,"totalTaxableIncome":999.1,"totalIncome":333.1}}""".stripMargin
         )
       }
@@ -202,7 +211,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
         "ignore any tax bands that have income value of zero" when {
           "and create a corresponding Liability Map structure from the filtered result" in {
             val npsJson =
-            """
+              """
             {
                "nonSavings": {
                  "taxBands": [
@@ -264,7 +273,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
             taxDetail mustEqual Some(TaxDetail(
               totalTax = Some(3919),
-              totalTaxableIncome= Some(19595),
+              totalTaxableIncome = Some(19595),
               totalIncome = Some(30595),
               taxBands = List(
                 TaxBand(
@@ -325,18 +334,15 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
             unmarshalledTestClass must not be empty
             val taxDetail = unmarshalledTestClass.get(TaxObject.Type.NonSavings)
 
-            taxDetail mustEqual Some(TaxDetail(
-              totalTax = Some(3919),
-              totalTaxableIncome= Some(19595),
-              totalIncome = Some(30595),
-              taxBands = List(
-                TaxBand(
-                  bandType = Some("pa"),
-                  income = 11000,
-                  tax = 0,
-                  rate = 0)
-              )
-            ))
+            taxDetail mustEqual Some(
+              TaxDetail(
+                totalTax = Some(3919),
+                totalTaxableIncome = Some(19595),
+                totalIncome = Some(30595),
+                taxBands = List(
+                  TaxBand(bandType = Some("pa"), income = 11000, tax = 0, rate = 0)
+                )
+              ))
           }
         }
 
@@ -400,14 +406,10 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
             taxDetail mustEqual Some(TaxDetail(
               totalTax = Some(3919),
-              totalTaxableIncome= Some(19595),
+              totalTaxableIncome = Some(19595),
               totalIncome = Some(30595),
               taxBands = List(
-                TaxBand(
-                  bandType = Some("pa"),
-                  income = 11000,
-                  tax = 0,
-                  rate = 0),
+                TaxBand(bandType = Some("pa"), income = 11000, tax = 0, rate = 0),
                 TaxBand(
                   bandType = Some("B"),
                   code = None,
@@ -430,29 +432,29 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
         val jsonObj = Json.toJson(testIncome)
         jsonObj.toString() mustBe stripFormatting(
           """{
-             |"employmentId":1,
-              |"employmentType":1,
-              |"employmentStatus":3,
-              |"employmentTaxDistrictNumber":1,
-              |"employmentPayeRef":"000",
-              |"pensionIndicator":false,
-              |"jsaIndicator":false,
-              |"otherIncomeSourceIndicator":false,
-              |"name":"name",
-              |"endDate":"12/12/2017",
-              |"worksNumber":"1234",
-              |"taxCode":"AB1234",
-              |"potentialUnderpayment":20.2,
-              |"employmentRecord":{
-                   |"employerName":"EMPLOYER1",
-                   |"employmentType":1,
-                   |"sequenceNumber":1,
-                   |"worksNumber":"1234",
-                   |"taxDistrictNumber":"1",
-                   |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
-                   |"cessationPayThisEmployment":2200.22,
-                   |"startDate":"12/12/2017"},
-              |"basisOperation":"Week1Month1"}""".stripMargin
+            |"employmentId":1,
+            |"employmentType":1,
+            |"employmentStatus":3,
+            |"employmentTaxDistrictNumber":1,
+            |"employmentPayeRef":"000",
+            |"pensionIndicator":false,
+            |"jsaIndicator":false,
+            |"otherIncomeSourceIndicator":false,
+            |"name":"name",
+            |"endDate":"12/12/2017",
+            |"worksNumber":"1234",
+            |"taxCode":"AB1234",
+            |"potentialUnderpayment":20.2,
+            |"employmentRecord":{
+            |"employerName":"EMPLOYER1",
+            |"employmentType":1,
+            |"sequenceNumber":1,
+            |"worksNumber":"1234",
+            |"taxDistrictNumber":"1",
+            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
+            |"cessationPayThisEmployment":2200.22,
+            |"startDate":"12/12/2017"},
+            |"basisOperation":"Week1Month1"}""".stripMargin
         )
       }
 
@@ -489,7 +491,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
       "unmarshall a Json Income string into an Income model" in {
 
-        val incomeJson = """{
+        val incomeJson =
+          """{
                               "employmentId":1,
                               "employmentType":1,
                               "employmentStatus":2,
@@ -519,7 +522,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
 
       "fail to unmarshall a Json Income string for which the Income Type cannot be derived" in {
-        val incomeJson = """{
+        val incomeJson =
+          """{
                               "employmentId":1,
                               "employmentType":1,
                               "employmentStatus":2,
@@ -588,42 +592,42 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
         val jsonObj = Json.toJson(testTaxAccount)
         jsonObj.toString() mustBe stripFormatting(
           """{
-             |"taxAcccountId":12345,
-             |"date":"12/12/2017",
-             |"totalEstTax":12000.32,
-             |"totalLiability":{
-               |"nonSavings":
-                 |{"taxBands":[
-                   |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33},
-                   |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}],
-                  |"totalTax":123.1,
-                  |"totalTaxableIncome":999.1,
-                  |"totalIncome":333.1}},
-             |"incomeSources":[{
-                  |"employmentId":1,
-                  |"employmentType":1,
-                  |"employmentStatus":3,
-                  |"employmentTaxDistrictNumber":1,
-                  |"employmentPayeRef":"000",
-                  |"pensionIndicator":false,
-                  |"jsaIndicator":false,
-                  |"otherIncomeSourceIndicator":false,
-                  |"name":"name",
-                  |"endDate":"12/12/2017",
-                  |"worksNumber":"1234",
-                  |"taxCode":"AB1234",
-                  |"potentialUnderpayment":20.2,
-                  |"employmentRecord":{
-                      |"employerName":"EMPLOYER1",
-                      |"employmentType":1,
-                      |"sequenceNumber":1,
-                      |"worksNumber":"1234",
-                      |"taxDistrictNumber":"1",
-                      |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
-                      |"cessationPayThisEmployment":2200.22,
-                      |"startDate":"12/12/2017"},
-                  |"basisOperation":"Week1Month1"}],
-             |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}]}""".stripMargin)
+            |"taxAcccountId":12345,
+            |"date":"12/12/2017",
+            |"totalEstTax":12000.32,
+            |"totalLiability":{
+            |"nonSavings":
+            |{"taxBands":[
+            |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33},
+            |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}],
+            |"totalTax":123.1,
+            |"totalTaxableIncome":999.1,
+            |"totalIncome":333.1}},
+            |"incomeSources":[{
+            |"employmentId":1,
+            |"employmentType":1,
+            |"employmentStatus":3,
+            |"employmentTaxDistrictNumber":1,
+            |"employmentPayeRef":"000",
+            |"pensionIndicator":false,
+            |"jsaIndicator":false,
+            |"otherIncomeSourceIndicator":false,
+            |"name":"name",
+            |"endDate":"12/12/2017",
+            |"worksNumber":"1234",
+            |"taxCode":"AB1234",
+            |"potentialUnderpayment":20.2,
+            |"employmentRecord":{
+            |"employerName":"EMPLOYER1",
+            |"employmentType":1,
+            |"sequenceNumber":1,
+            |"worksNumber":"1234",
+            |"taxDistrictNumber":"1",
+            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
+            |"cessationPayThisEmployment":2200.22,
+            |"startDate":"12/12/2017"},
+            |"basisOperation":"Week1Month1"}],
+            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}]}""".stripMargin)
 
       }
 
@@ -675,19 +679,17 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     }
   }
 
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
+  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
       (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError <- errors
-      message: String <- error.messages
+      error: ValidationError                       <- errors
+      message: String                              <- error.messages
     } yield {
       path.toString() + " -> " + message
     }
-  }
 
-  private def stripFormatting(string: String): String = {
+  private def stripFormatting(string: String): String =
     string.stripMargin.replaceAll("\\n+", "")
-  }
 
   private val fixedDate = LocalDate.parse("2017-12-12")
 
@@ -700,7 +702,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     upperBand = Some(20000),
     rate = 33)
 
-  private val testIabd = Iabd(amount = 10,
+  private val testIabd = Iabd(
+    amount = 10,
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
@@ -718,21 +721,18 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
   private val testLiabilityMapValue = TaxDetail(
     totalTax = Some(123.1),
-    totalTaxableIncome= Some(999.1),
+    totalTaxableIncome = Some(999.1),
     totalIncome = Some(333.1),
     taxBands = List(testTaxBand, testTaxBand))
 
   private val testLiabilityMapValueEmpty = TaxDetail(
     totalTax = None,
-    totalTaxableIncome= None,
+    totalTaxableIncome = None,
     totalIncome = Some(333.1),
     taxBands = List(testTaxBand, testTaxBand))
 
-  private val testLiabilityMapValueEmptyTaxBands = TaxDetail(
-    totalTax = Some(123.1),
-    totalTaxableIncome= Some(999.1),
-    totalIncome = Some(333.1),
-    taxBands = Nil)
+  private val testLiabilityMapValueEmptyTaxBands =
+    TaxDetail(totalTax = Some(123.1), totalTaxableIncome = Some(999.1), totalIncome = Some(333.1), taxBands = Nil)
 
   private val testNpsEmployment = NpsEmployment(
     employerName = Some("EMPLOYER1"),
@@ -754,7 +754,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     payeRef = "000",
     name = "name",
     worksNumber = Some("1234"),
-    taxCode="AB1234",
+    taxCode = "AB1234",
     potentialUnderpayment = 20.20,
     employmentRecord = Some(testNpsEmployment),
     basisOperation = Some(BasisOperation.Week1Month1)
@@ -769,7 +769,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     payeRef = "000",
     name = "name",
     worksNumber = Some("1234"),
-    taxCode="AB1234",
+    taxCode = "AB1234",
     potentialUnderpayment = 20.20,
     employmentRecord = Some(testNpsEmployment),
     basisOperation = Some(BasisOperation.Week1Month1)

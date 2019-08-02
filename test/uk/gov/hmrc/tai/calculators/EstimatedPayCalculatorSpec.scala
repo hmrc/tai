@@ -54,7 +54,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
       }
 
       "other amount is entered and days have been entered with no bonus" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), days = Some(27))
+        val payDetails =
+          PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), days = Some(27))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -63,7 +64,12 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
       }
 
       "other amount is entered and days have been entered and bounus has been entered" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), days = Some(27), bonus = Some(1000))
+        val payDetails = PayDetails(
+          paymentFrequency = PayFreq.other,
+          pay = Some(100),
+          taxablePay = Some(80),
+          days = Some(27),
+          bonus = Some(1000))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -72,7 +78,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
       }
 
       "other amount is entered and No days have been entered and bonus has been entered" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), bonus = Some(1000))
+        val payDetails =
+          PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), bonus = Some(1000))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -84,7 +91,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
     "return the net pay the same as the gross pay" when {
 
       "no net has been entered" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = None, bonus = Some(1000))
+        val payDetails =
+          PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = None, bonus = Some(1000))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -97,12 +105,16 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
       "an employment start date is supplied which falls in the current tax year" in {
 
-        val daysInHalfYear : Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() /2
+        val daysInHalfYear: Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() / 2
 
         val startDateHalfThroughYear = TaxYear().end.minusDays(daysInHalfYear)
 
-        val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(100),
-          taxablePay = Some(80), bonus = None, startDate = Some(startDateHalfThroughYear))
+        val payDetails = PayDetails(
+          paymentFrequency = PayFreq.weekly,
+          pay = Some(100),
+          taxablePay = Some(80),
+          bonus = None,
+          startDate = Some(startDateHalfThroughYear))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -114,8 +126,12 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
     "calculate net and gross pay amounts which are 0" when {
 
       "an employment start date is supplied which falls in the current tax year and the annual amount is 0" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(0),
-          taxablePay = Some(0), bonus = None, startDate = Some(TaxYear().start))
+        val payDetails = PayDetails(
+          paymentFrequency = PayFreq.weekly,
+          pay = Some(0),
+          taxablePay = Some(0),
+          bonus = None,
+          startDate = Some(TaxYear().start))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -125,8 +141,12 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
       "an employment start date is supplied which falls in the next tax year" in {
         val startDateInNextTaxYear = TaxYear().next.start
-        val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = Some(100),
-        taxablePay = Some(80), bonus = None, startDate = Some(startDateInNextTaxYear))
+        val payDetails = PayDetails(
+          paymentFrequency = PayFreq.weekly,
+          pay = Some(100),
+          taxablePay = Some(80),
+          bonus = None,
+          startDate = Some(startDateInNextTaxYear))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -135,8 +155,12 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
       }
 
       "no annual pay or taxablePay amounts are supplied, but an employment start date is supplied" in {
-        val payDetails = PayDetails(paymentFrequency = PayFreq.weekly, pay = None,
-          taxablePay = None, bonus = None, startDate = Some(TaxYear().start))
+        val payDetails = PayDetails(
+          paymentFrequency = PayFreq.weekly,
+          pay = None,
+          taxablePay = None,
+          bonus = None,
+          startDate = Some(TaxYear().start))
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 

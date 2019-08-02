@@ -30,7 +30,8 @@ object IabdUpdateSource {
   object InformationLetter extends IabdUpdateSource { val code = 40 }
   case class Unknown(code: Int) extends IabdUpdateSource
 
-  val set: Set[IabdUpdateSource] = Set(ManualTelephone, Letter, Email, AgentContact, OtherForm, Internet, InformationLetter)
+  val set: Set[IabdUpdateSource] =
+    Set(ManualTelephone, Letter, Email, AgentContact, OtherForm, Internet, InformationLetter)
 
-  def apply(i: Int): IabdUpdateSource = set.find{_.code == i}.getOrElse{Unknown(i)}
+  def apply(i: Int): IabdUpdateSource = set.find { _.code == i }.getOrElse { Unknown(i) }
 }

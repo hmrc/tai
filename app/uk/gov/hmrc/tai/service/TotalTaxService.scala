@@ -27,23 +27,30 @@ import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxReposi
 import scala.concurrent.Future
 
 @Singleton
-class TotalTaxService @Inject()(totalTaxRepository: TotalTaxRepository,
-                                taxAccountSummaryRepository: TaxAccountSummaryRepository) {
+class TotalTaxService @Inject()(
+  totalTaxRepository: TotalTaxRepository,
+  taxAccountSummaryRepository: TaxAccountSummaryRepository) {
 
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] =
     for {
-      incomeCategories <- totalTaxRepository.incomeCategories(nino, year)
-      totalTaxAmount <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
+      incomeCategories     <- totalTaxRepository.incomeCategories(nino, year)
+      totalTaxAmount       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
       reliefsGivingBackTax <- taxAccountSummaryRepository.reliefsGivingBackTaxComponents(nino, year)
-      otherTaxDue <- taxAccountSummaryRepository.otherTaxDueComponents(nino, year)
+      otherTaxDue          <- taxAccountSummaryRepository.otherTaxDueComponents(nino, year)
       alreadyTaxedAtSource <- taxAccountSummaryRepository.alreadyTaxedAtSourceComponents(nino, year)
-      taxOnOtherIncome <- taxAccountSummaryRepository.taxOnOtherIncome(nino, year)
-      taxReliefComponents <- taxAccountSummaryRepository.taxReliefComponents(nino, year)
+      taxOnOtherIncome     <- taxAccountSummaryRepository.taxOnOtherIncome(nino, year)
+      taxReliefComponents  <- taxAccountSummaryRepository.taxReliefComponents(nino, year)
     } yield {
-      TotalTax(totalTaxAmount, incomeCategories, reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource, taxOnOtherIncome, taxReliefComponents)
+      TotalTax(
+        totalTaxAmount,
+        incomeCategories,
+        reliefsGivingBackTax,
+        otherTaxDue,
+        alreadyTaxedAtSource,
+        taxOnOtherIncome,
+        taxReliefComponents)
     }
 
-  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
     totalTaxRepository.taxFreeAllowance(nino, year)
-  }
 }

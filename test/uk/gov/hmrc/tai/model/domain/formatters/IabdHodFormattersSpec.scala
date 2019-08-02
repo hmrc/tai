@@ -36,15 +36,15 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
       "type 27 Iabd is not present" in {
         val json = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> "10/04/2017",
+            "nino"            -> nino.withoutSuffix,
+            "taxYear"         -> 2017,
+            "type"            -> 10,
+            "source"          -> 15,
+            "grossAmount"     -> JsNull,
+            "receiptDate"     -> JsNull,
+            "captureDate"     -> "10/04/2017",
             "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "netAmount"       -> 100
           )
         )
 
@@ -56,37 +56,37 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
       "only user have one employment" in {
         val json = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> "10/04/2017",
+            "nino"            -> nino.withoutSuffix,
+            "taxYear"         -> 2017,
+            "type"            -> 10,
+            "source"          -> 15,
+            "grossAmount"     -> JsNull,
+            "receiptDate"     -> JsNull,
+            "captureDate"     -> "10/04/2017",
             "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "netAmount"       -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> "10/04/2017",
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> "10/04/2017",
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           )
         )
 
         val expectedJson = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "source" -> 15,
-            "type" -> 27,
-            "captureDate" -> "10/04/2017"
+            "source"                   -> 15,
+            "type"                     -> 27,
+            "captureDate"              -> "10/04/2017"
           )
         )
 
@@ -96,56 +96,56 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
       "user have multiple employment" in {
         val json = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> "10/04/2017",
+            "nino"            -> nino.withoutSuffix,
+            "taxYear"         -> 2017,
+            "type"            -> 10,
+            "source"          -> 15,
+            "grossAmount"     -> JsNull,
+            "receiptDate"     -> JsNull,
+            "captureDate"     -> "10/04/2017",
             "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "netAmount"       -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> "10/04/2017",
-            "captureDate" -> "10/04/2017",
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> "10/04/2017",
+            "captureDate"              -> "10/04/2017",
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 2,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 12,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> JsNull,
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 12,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           )
         )
 
         val expectedJson = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "source" -> 15,
-            "type" -> 27,
-            "receiptDate" -> "10/04/2017",
-            "captureDate" -> "10/04/2017"
+            "source"                   -> 15,
+            "type"                     -> 27,
+            "receiptDate"              -> "10/04/2017",
+            "captureDate"              -> "10/04/2017"
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 2,
-            "source" -> 12,
-            "type" -> 27
+            "source"                   -> 12,
+            "type"                     -> 27
           )
         )
 
@@ -155,6 +155,5 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
   }
 
   val nino = new Generator(new Random).nextNino
-
 
 }

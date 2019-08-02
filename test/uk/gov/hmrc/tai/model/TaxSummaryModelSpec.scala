@@ -20,11 +20,11 @@ import data.NpsData
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.calculators.TaxCalculator
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxModelFactory}
-import uk.gov.hmrc.tai.model.nps.{NpsTotalLiability, NpsComponent, NpsIabdSummary, NpsTax}
+import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsIabdSummary, NpsTax, NpsTotalLiability}
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.util.TaiConstants
 
-class TaxSummaryModelSpec  extends UnitSpec {
+class TaxSummaryModelSpec extends UnitSpec {
 
   "Incomes" should {
 
@@ -43,7 +43,6 @@ class TaxSummaryModelSpec  extends UnitSpec {
         val iabdSummary = nonSavings.totalIncome.get.iabdSummaries.get
         val noneCoded = iabdSummary.find(iabd => iabd.`type` == Some(IabdType.NonCodedIncome.code))
         noneCoded.isDefined shouldBe false
-
 
         val taiTaxDetails = npsTaxAccount.toTaxSummary(1, npsEmployment)
         taiTaxDetails.totalLiability.isDefined shouldBe true
@@ -104,8 +103,10 @@ class TaxSummaryModelSpec  extends UnitSpec {
       val tcIncomes = emps.taxCodeIncomes
       val totalIYA = tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.totalInYearAdjustment.getOrElse(BigDecimal(0)))
       val currentIYA = tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentIntoCY.getOrElse(BigDecimal(0)))
-      val currentIYAPlusOne = tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentIntoCYPlusOne.getOrElse(BigDecimal(0)))
-      val previousIYA = tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentFromPreviousYear.getOrElse(BigDecimal(0)))
+      val currentIYAPlusOne =
+        tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentIntoCYPlusOne.getOrElse(BigDecimal(0)))
+      val previousIYA =
+        tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentFromPreviousYear.getOrElse(BigDecimal(0)))
 
       "include total " in {
         totalIYA shouldBe BigDecimal(272)
@@ -135,10 +136,15 @@ class TaxSummaryModelSpec  extends UnitSpec {
       }
     }
   }
-  "withMciRule" should{
-    "return GateKeeper with Manual Correspondence Indicator data" in{
-      val gateKeeper = GateKeeper(true, List(GateKeeperRule(Some(TaiConstants.mciGateKeeperType),
-        Some(TaiConstants.mciGatekeeperId), Some(TaiConstants.mciGatekeeperDescr))))
+  "withMciRule" should {
+    "return GateKeeper with Manual Correspondence Indicator data" in {
+      val gateKeeper = GateKeeper(
+        true,
+        List(
+          GateKeeperRule(
+            Some(TaiConstants.mciGateKeeperType),
+            Some(TaiConstants.mciGatekeeperId),
+            Some(TaiConstants.mciGatekeeperDescr))))
       GateKeeper.withMciRule shouldBe gateKeeper
     }
   }

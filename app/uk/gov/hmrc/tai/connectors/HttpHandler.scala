@@ -39,12 +39,13 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
     val timerContext = metrics.startTimer(api)
 
     implicit val responseHandler = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
+      override def read(method: String, url: String, response: HttpResponse): HttpResponse =
         response.status match {
-          case Status.OK => Try(response) match {
-            case Success(data) => data
-            case Failure(e) => throw new RuntimeException("Unable to parse response")
-          }
+          case Status.OK =>
+            Try(response) match {
+              case Success(data) => data
+              case Failure(e)    => throw new RuntimeException("Unable to parse response")
+            }
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)
@@ -66,13 +67,12 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
             throw new HttpException(response.body, response.status)
           }
         }
-      }
     }
 
     (for {
       response <- httpClient.GET[HttpResponse](url)
-      _ <- Future.successful(timerContext.stop())
-      _ <- Future.successful(metrics.incrementSuccessCounter(api))
+      _        <- Future.successful(timerContext.stop())
+      _        <- Future.successful(metrics.incrementSuccessCounter(api))
     } yield response.json) recover {
       case lockedException: LockedException =>
         timerContext.stop()
@@ -86,7 +86,9 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
 
   }
 
-  def postToApi[I](url: String, data: I, api: APITypes)(implicit hc: HeaderCarrier, writes: Writes[I]): Future[HttpResponse] = {
+  def postToApi[I](url: String, data: I, api: APITypes)(
+    implicit hc: HeaderCarrier,
+    writes: Writes[I]): Future[HttpResponse] = {
 
     val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
@@ -99,7 +101,8 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
           httpResponse
         }
         case _ => {
-          Logger.warn(s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
+          Logger.warn(
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
           metrics.incrementFailedCounter(api)
           throw new HttpException(httpResponse.body, httpResponse.status)
         }

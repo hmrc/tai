@@ -34,19 +34,30 @@ class TaxCodeIncomeAPIFormattersSpec extends PlaySpec with TaxCodeIncomeSourceAP
   "taxCodeIncomeSourceWrites" must {
     "write tax component correctly to json" when {
       "only mandatory fields are provided and tax code income type is employment" in {
-        Json.toJson(TaxCodeIncome(EmploymentIncome, Some(1), 1111, "employment", "1150L",
-          "employment", OtherBasisOperation, Live, BigDecimal(200.22), BigDecimal(0), BigDecimal(0)))(taxCodeIncomeSourceWrites) mustBe
+        Json.toJson(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            1111,
+            "employment",
+            "1150L",
+            "employment",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(200.22),
+            BigDecimal(0),
+            BigDecimal(0)))(taxCodeIncomeSourceWrites) mustBe
           Json.obj(
-            "componentType" -> "EmploymentIncome",
-            "employmentId" -> 1,
-            "amount" -> 1111,
-            "description" -> "employment",
-            "taxCode" -> "1150L",
-            "name" -> "employment",
-            "basisOperation" -> "OtherBasisOperation",
-            "status" -> "Live",
-            "inYearAdjustmentIntoCY" -> 200.22,
-            "totalInYearAdjustment" -> 0,
+            "componentType"                 -> "EmploymentIncome",
+            "employmentId"                  -> 1,
+            "amount"                        -> 1111,
+            "description"                   -> "employment",
+            "taxCode"                       -> "1150L",
+            "name"                          -> "employment",
+            "basisOperation"                -> "OtherBasisOperation",
+            "status"                        -> "Live",
+            "inYearAdjustmentIntoCY"        -> 200.22,
+            "totalInYearAdjustment"         -> 0,
             "inYearAdjustmentIntoCYPlusOne" -> 0
           )
       }

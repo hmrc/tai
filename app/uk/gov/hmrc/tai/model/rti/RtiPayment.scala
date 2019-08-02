@@ -20,30 +20,30 @@ import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
 
 /**
- *
- * @param payFrequency should really be at the employment record level
- * @param paidOn date the payment was made, can be no earlier than
- *   2014-04-06
- * @param submittedOn date the FPS submission containing this payment was
- *   received, can be no earlier than 2014-04-06
- * @param payId the employers payroll Id for this payment
- */
+  *
+  * @param payFrequency should really be at the employment record level
+  * @param paidOn date the payment was made, can be no earlier than
+  *   2014-04-06
+  * @param submittedOn date the FPS submission containing this payment was
+  *   received, can be no earlier than 2014-04-06
+  * @param payId the employers payroll Id for this payment
+  */
 case class RtiPayment(
-   payFrequency: PayFrequency.Value,
-   paidOn: LocalDate,
-   submittedOn: LocalDate,
-   taxablePay: BigDecimal,
-   taxablePayYTD: BigDecimal,
-   taxed: BigDecimal,
-   taxedYTD: BigDecimal,
-   payId: Option[String] = None,
-   isOccupationalPension: Boolean = false,
-   occupationalPensionAmount: Option[BigDecimal] = None,
-   weekOfTaxYear: Option[Int] = None,
-   monthOfTaxYear: Option[Int] = None,
-   nicPaid: Option[BigDecimal] = None,
-   nicPaidYTD: Option[BigDecimal] = None
-   ) extends Ordered[RtiPayment] {
+  payFrequency: PayFrequency.Value,
+  paidOn: LocalDate,
+  submittedOn: LocalDate,
+  taxablePay: BigDecimal,
+  taxablePayYTD: BigDecimal,
+  taxed: BigDecimal,
+  taxedYTD: BigDecimal,
+  payId: Option[String] = None,
+  isOccupationalPension: Boolean = false,
+  occupationalPensionAmount: Option[BigDecimal] = None,
+  weekOfTaxYear: Option[Int] = None,
+  monthOfTaxYear: Option[Int] = None,
+  nicPaid: Option[BigDecimal] = None,
+  nicPaidYTD: Option[BigDecimal] = None
+) extends Ordered[RtiPayment] {
 
   def compare(that: RtiPayment): Int = this.paidOn compare that.paidOn
 

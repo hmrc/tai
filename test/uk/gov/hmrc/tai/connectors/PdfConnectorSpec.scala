@@ -32,9 +32,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PdfConnectorSpec extends PlaySpec
-    with MockitoSugar
-    with FakeTaiPlayApplication {
+class PdfConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
 
   "PdfConnector" must {
 
@@ -128,5 +126,5 @@ class PdfConnectorSpec extends PlaySpec
 
   private def createSut(metrics: Metrics, wsClient: WSClient, urls: PdfUrls) =
     new PdfConnector(metrics, wsClient, urls)
-  
+
 }

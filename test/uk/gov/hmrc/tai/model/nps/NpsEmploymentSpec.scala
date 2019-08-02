@@ -26,11 +26,19 @@ class NpsEmploymentSpec extends PlaySpec {
     "return NpsIncomeSource" when {
       "given an estimated pay " in {
         val npsIncomeSource = createSUT.toNpsIncomeSource(BigDecimal(100))
-        val mockPayAndTax = Some(NpsTax(totalIncome=Some(new NpsComponent(amount=Some(100)))))
+        val mockPayAndTax = Some(NpsTax(totalIncome = Some(new NpsComponent(amount = Some(100)))))
 
-        npsIncomeSource mustBe NpsIncomeSource(name = Some("AAA"), taxCode=None, employmentId=Some(1),
-          employmentStatus = Some(1), employmentType = Some(1), payAndTax=mockPayAndTax,
-          pensionIndicator = Some(false), otherIncomeSourceIndicator=Some(false), jsaIndicator=Some(false))
+        npsIncomeSource mustBe NpsIncomeSource(
+          name = Some("AAA"),
+          taxCode = None,
+          employmentId = Some(1),
+          employmentStatus = Some(1),
+          employmentType = Some(1),
+          payAndTax = mockPayAndTax,
+          pensionIndicator = Some(false),
+          otherIncomeSourceIndicator = Some(false),
+          jsaIndicator = Some(false)
+        )
       }
     }
   }
@@ -39,21 +47,33 @@ class NpsEmploymentSpec extends PlaySpec {
     "return TaxCodeIncomeSummary" when {
       "given an estimated pay" in {
         val taxCodeIncomeSummary = createSUT.toTaxCodeIncomeSummary(BigDecimal(100))
-        val mockPayAndTax = Tax(totalIncome=Some(100))
+        val mockPayAndTax = Tax(totalIncome = Some(100))
 
-        taxCodeIncomeSummary mustBe TaxCodeIncomeSummary(name = "AAA", taxCode="startingTaxCode1",
-          employmentId=Some(1), tax=mockPayAndTax, isLive=true)
+        taxCodeIncomeSummary mustBe TaxCodeIncomeSummary(
+          name = "AAA",
+          taxCode = "startingTaxCode1",
+          employmentId = Some(1),
+          tax = mockPayAndTax,
+          isLive = true)
       }
     }
   }
 
   val createSUT = NpsEmployment(
-    sequenceNumber = 1, startDate = NpsDate(TaxYear().start.minusDays(1)),
+    sequenceNumber = 1,
+    startDate = NpsDate(TaxYear().start.minusDays(1)),
     endDate = Some(NpsDate(TaxYear().next.start)),
-    taxDistrictNumber = "tax1", payeNumber = "payeno", employerName = Some("AAA"),
-    employmentType = 1, employmentStatus = Some(1), worksNumber = Some("0000"),
+    taxDistrictNumber = "tax1",
+    payeNumber = "payeno",
+    employerName = Some("AAA"),
+    employmentType = 1,
+    employmentStatus = Some(1),
+    worksNumber = Some("0000"),
     receivingJobseekersAllowance = Some(false),
-    receivingOccupationalPension = Some(false), otherIncomeSourceIndicator = Some(false),
-    jobTitle = Some("jobTitle1"), startingTaxCode = Some("startingTaxCode1"))
+    receivingOccupationalPension = Some(false),
+    otherIncomeSourceIndicator = Some(false),
+    jobTitle = Some("jobTitle1"),
+    startingTaxCode = Some("startingTaxCode1")
+  )
 
 }

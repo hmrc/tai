@@ -27,7 +27,8 @@ import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.service.PersonService
 
 @Singleton
-class PersonController @Inject()(authentication: AuthenticationPredicate, personService: PersonService) extends BaseController with ApiFormats {
+class PersonController @Inject()(authentication: AuthenticationPredicate, personService: PersonService)
+    extends BaseController with ApiFormats {
 
   def person(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     personService.person(nino) map { person =>

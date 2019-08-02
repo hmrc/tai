@@ -22,7 +22,6 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 
 import scala.util.Random
 
-
 class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFormatters {
 
   "iabdsFromTotalLiabilityReads" must {
@@ -31,7 +30,7 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
       val iabdSummaries = npsIabdSummaries(2)
       val json = Json.obj(
         "taxAccountId" -> "id",
-        "nino" -> nino.nino,
+        "nino"         -> nino.nino,
         "totalLiability" -> Json.obj(
           "nonSavings" -> Json.obj(
             "totalIncome" -> Json.obj(
@@ -41,15 +40,13 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
         )
       )
       val result = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
-      result mustBe Seq(
-        NpsIabdSummary(1, Some(1), 1, "desc"),
-        NpsIabdSummary(1, Some(1), 1, "desc"))
+      result mustBe Seq(NpsIabdSummary(1, Some(1), 1, "desc"), NpsIabdSummary(1, Some(1), 1, "desc"))
     }
 
     "extract iabd summaries of type 'totalIncome' from six categories of interest" in {
       val json = Json.obj(
         "taxAccountId" -> "id",
-        "nino" -> nino.nino,
+        "nino"         -> nino.nino,
         "totalLiability" -> Json.obj(
           "nonSavings" -> Json.obj(
             "totalIncome" -> Json.obj(
@@ -89,7 +86,7 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
     "extract iabd summaries of type 'allowReliefDeducts' from six categories of interest" in {
       val json = Json.obj(
         "taxAccountId" -> "id",
-        "nino" -> nino.nino,
+        "nino"         -> nino.nino,
         "totalLiability" -> Json.obj(
           "nonSavings" -> Json.obj(
             "allowReliefDeducts" -> Json.obj(
@@ -132,16 +129,18 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
 
         val json = Json.obj(
           "taxAccountId" -> "id",
-          "nino" -> nino.nino,
+          "nino"         -> nino.nino,
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 1,
-                  "npsDescription" -> "desc",
-                  "employmentId" -> 1,
-                  "estimatesPaySource" -> 1
-                )))
+                "iabdSummaries" -> JsArray(
+                  Seq(
+                    Json.obj(
+                      "amount"             -> 1,
+                      "npsDescription"     -> "desc",
+                      "employmentId"       -> 1,
+                      "estimatesPaySource" -> 1
+                    )))
               )
             )
           )
@@ -152,7 +151,7 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
       "no iabd summaries are present within any of the six categories for each of 'totalIncome' or 'allowReliefDeducts'" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
-          "nino" -> nino.nino,
+          "nino"         -> nino.nino,
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
@@ -188,7 +187,7 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
       "spread across all six categories for each of 'totalIncome' and 'allowReliefDeducts'" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
-          "nino" -> nino.nino,
+          "nino"         -> nino.nino,
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
@@ -246,17 +245,16 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
   }
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1) : Seq[JsObject] = {
+  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
     for {
       i <- 1 to noOfIabds
     } yield {
       Json.obj(
-        "amount" -> 1,
-        "type" -> iabdType,
-        "npsDescription" -> "desc",
-        "employmentId" -> 1,
+        "amount"             -> 1,
+        "type"               -> iabdType,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> 1,
         "estimatesPaySource" -> 1
       )
     }
-  }
 }

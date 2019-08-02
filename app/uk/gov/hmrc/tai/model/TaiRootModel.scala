@@ -18,15 +18,16 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.json._
 
-case class TaiRoot(nino: String,
-                    version:Int,
-                    title: String,
-                    firstName: String,
-                    secondName: Option[String],
-                    surname: String,
-                    name: String,
-                   manualCorrespondenceInd: Boolean,
-                   deceasedIndicator: Option[Boolean])
+case class TaiRoot(
+  nino: String,
+  version: Int,
+  title: String,
+  firstName: String,
+  secondName: Option[String],
+  surname: String,
+  name: String,
+  manualCorrespondenceInd: Boolean,
+  deceasedIndicator: Option[Boolean])
 
 object TaiRoot {
   implicit val formats = Json.format[TaiRoot]

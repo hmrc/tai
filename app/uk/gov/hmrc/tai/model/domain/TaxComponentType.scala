@@ -27,16 +27,15 @@ sealed trait IncomeComponentType extends TaxComponentType
 
 sealed trait TaxCodeIncomeComponentType extends IncomeComponentType
 
-object TaxCodeIncomeComponentType{
+object TaxCodeIncomeComponentType {
   def apply(value: String): TaxCodeIncomeComponentType = value match {
-    case "EmploymentIncome" => EmploymentIncome
-    case "PensionIncome" => PensionIncome
+    case "EmploymentIncome"         => EmploymentIncome
+    case "PensionIncome"            => PensionIncome
     case "JobSeekerAllowanceIncome" => JobSeekerAllowanceIncome
-    case "OtherIncome" => OtherIncome
-    case _ => throw new IllegalArgumentException("Invalid Tax component type")
+    case "OtherIncome"              => OtherIncome
+    case _                          => throw new IllegalArgumentException("Invalid Tax component type")
   }
 }
-
 
 sealed trait NonTaxCodeIncomeComponentType extends IncomeComponentType
 
@@ -149,7 +148,7 @@ case object PurchasedLifeAnnuities extends NonTaxCodeIncomeComponentType
 
 //Tax-code Incomes
 case object EmploymentIncome extends TaxCodeIncomeComponentType
-case object PensionIncome  extends TaxCodeIncomeComponentType
+case object PensionIncome extends TaxCodeIncomeComponentType
 case object JobSeekerAllowanceIncome extends TaxCodeIncomeComponentType
 case object OtherIncome extends TaxCodeIncomeComponentType
 
@@ -170,6 +169,7 @@ object BenefitComponentType {
 object NonTaxCodeIncomeComponentType {
   implicit val formatNonTaxCodeIncomeComponentType = new Format[NonTaxCodeIncomeComponentType] {
     override def reads(json: JsValue): JsSuccess[NonTaxCodeIncomeComponentType] = ???
-    override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) = JsString(nonTaxCodeIncomeComponentType.toString)
+    override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) =
+      JsString(nonTaxCodeIncomeComponentType.toString)
   }
 }

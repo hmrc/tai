@@ -21,6 +21,6 @@ import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 
 case class BenefitsOLD(companyCarBenefits: Option[Seq[CompanyCarBenefit]])
 
-object BenefitsOLD{
+object BenefitsOLD {
   implicit val formats = Json.format[BenefitsOLD]
 }

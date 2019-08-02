@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 
 class AnnualAccountSpec extends PlaySpec {
 
@@ -61,25 +59,27 @@ class AnnualAccountSpec extends PlaySpec {
     }
   }
 
-
-
-  val SutWithNoPayments = AnnualAccount("taxdistrict-payeref-payroll",
+  val SutWithNoPayments = AnnualAccount(
+    "taxdistrict-payeref-payroll",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
-  val SutWithNoPayroll = AnnualAccount("taxdistrict-payeref",
+  val SutWithNoPayroll = AnnualAccount(
+    "taxdistrict-payeref",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
-  val SutWithOnePayment = AnnualAccount("",
+  val SutWithOnePayment = AnnualAccount(
+    "",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = List(
-      Payment(date = new LocalDate(2017, 5, 26),
+      Payment(
+        date = new LocalDate(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,
@@ -87,12 +87,15 @@ class AnnualAccountSpec extends PlaySpec {
         taxAmount = 100,
         nationalInsuranceAmount = 150,
         payFrequency = Monthly,
-        duplicate = None)),
-    endOfTaxYearUpdates = Nil)
+        duplicate = None
+      )),
+    endOfTaxYearUpdates = Nil
+  )
 
   val SutWithMultiplePayments = SutWithOnePayment.copy(
     payments = SutWithOnePayment.payments :+
-      Payment(date = new LocalDate(2017, 5, 26),
+      Payment(
+        date = new LocalDate(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,
@@ -100,8 +103,10 @@ class AnnualAccountSpec extends PlaySpec {
         taxAmount = 100,
         nationalInsuranceAmount = 150,
         payFrequency = Weekly,
-        duplicate = None) :+
-      Payment(date = new LocalDate(2017, 5, 26),
+        duplicate = None
+      ) :+
+      Payment(
+        date = new LocalDate(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,
@@ -109,5 +114,6 @@ class AnnualAccountSpec extends PlaySpec {
         taxAmount = 100,
         nationalInsuranceAmount = 150,
         payFrequency = FortNightly,
-        duplicate = None))
+        duplicate = None
+      ))
 }

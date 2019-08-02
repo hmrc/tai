@@ -29,14 +29,15 @@ import uk.gov.hmrc.tai.model.nps.PersonDetails
 import scala.concurrent.Future
 
 @Singleton
-class CitizenDetailsConnector @Inject()(metrics: Metrics,
-                                        httpClient: HttpClient,
-                                        auditor: Auditor,
-                                        urls: CitizenDetailsUrls) extends BaseConnector(auditor, metrics, httpClient) {
+class CitizenDetailsConnector @Inject()(
+  metrics: Metrics,
+  httpClient: HttpClient,
+  auditor: Auditor,
+  urls: CitizenDetailsUrls)
+    extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId: String = ""
 
-  def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] = {
+  def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] =
     getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)
-  }
 }

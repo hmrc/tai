@@ -19,15 +19,16 @@ package uk.gov.hmrc.tai.model.domain.calculation
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustment
 
-case class TaxBand(bandType: String,
-                   code: String,
-                   income: BigDecimal,
-                   tax: BigDecimal,
-                   lowerBand: Option[BigDecimal] = None,
-                   upperBand: Option[BigDecimal] = None,
-                   rate: BigDecimal)
+case class TaxBand(
+  bandType: String,
+  code: String,
+  income: BigDecimal,
+  tax: BigDecimal,
+  lowerBand: Option[BigDecimal] = None,
+  upperBand: Option[BigDecimal] = None,
+  rate: BigDecimal)
 
-object TaxBand{
+object TaxBand {
   implicit val formats = Json.format[TaxBand]
 }
 
@@ -39,32 +40,33 @@ case object UkDividendsIncomeCategory extends IncomeCategoryType
 case object ForeignInterestIncomeCategory extends IncomeCategoryType
 case object ForeignDividendsIncomeCategory extends IncomeCategoryType
 
-object IncomeCategoryType{
+object IncomeCategoryType {
   implicit val incomeCategoryTypeFormats = new Format[IncomeCategoryType] {
     override def reads(json: JsValue): JsResult[IncomeCategoryType] = ???
     override def writes(o: IncomeCategoryType): JsValue = JsString(o.toString)
   }
 }
 
-case class IncomeCategory(incomeCategoryType: IncomeCategoryType,
-                          totalTax: BigDecimal,
-                          totalTaxableIncome: BigDecimal,
-                          totalIncome: BigDecimal,
-                          taxBands: Seq[TaxBand]
-                         )
+case class IncomeCategory(
+  incomeCategoryType: IncomeCategoryType,
+  totalTax: BigDecimal,
+  totalTaxableIncome: BigDecimal,
+  totalIncome: BigDecimal,
+  taxBands: Seq[TaxBand])
 
-object IncomeCategory{
+object IncomeCategory {
   implicit val formats = Json.format[IncomeCategory]
 }
 
-case class TotalTax(amount: BigDecimal,
-                    incomeCategories: Seq[IncomeCategory],
-                    reliefsGivingBackTax: Option[TaxAdjustment],
-                    otherTaxDue: Option[TaxAdjustment],
-                    alreadyTaxedAtSource: Option[TaxAdjustment],
-                    taxOnOtherIncome: Option[BigDecimal] = None,
-                    taxReliefComponent: Option[TaxAdjustment] = None)
+case class TotalTax(
+  amount: BigDecimal,
+  incomeCategories: Seq[IncomeCategory],
+  reliefsGivingBackTax: Option[TaxAdjustment],
+  otherTaxDue: Option[TaxAdjustment],
+  alreadyTaxedAtSource: Option[TaxAdjustment],
+  taxOnOtherIncome: Option[BigDecimal] = None,
+  taxReliefComponent: Option[TaxAdjustment] = None)
 
-object TotalTax{
+object TotalTax {
   implicit val formats = Json.format[TotalTax]
 }

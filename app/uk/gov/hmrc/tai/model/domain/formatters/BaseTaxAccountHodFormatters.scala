@@ -21,7 +21,8 @@ import play.api.libs.json._
 trait BaseTaxAccountHodFormatters {
   val iabdsFromTotalLiabilityReads = new Reads[Seq[NpsIabdSummary]] {
     override def reads(json: JsValue): JsResult[Seq[NpsIabdSummary]] = {
-      val categories = Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+      val categories =
+        Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
       val totalIncomeList = totalLiabilityIabds(json, "totalIncome", categories)
       val allowReliefDeductsList = totalLiabilityIabds(json, "allowReliefDeducts", categories)
       JsSuccess(totalIncomeList ++ allowReliefDeductsList)
@@ -33,17 +34,15 @@ trait BaseTaxAccountHodFormatters {
       (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
     }
 
-    iabdJsArray.flatMap (_.value) collect { case json if (json \ "type").asOpt[Int].isDefined =>
-      val componentType = (json \ "type").as[Int]
-      val employmentId = (json \ "employmentId").asOpt[Int]
-      val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val description = (json \ "npsDescription").asOpt[String].getOrElse("")
-      NpsIabdSummary(componentType, employmentId, amount, description)
+    iabdJsArray.flatMap(_.value) collect {
+      case json if (json \ "type").asOpt[Int].isDefined =>
+        val componentType = (json \ "type").as[Int]
+        val employmentId = (json \ "employmentId").asOpt[Int]
+        val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+        val description = (json \ "npsDescription").asOpt[String].getOrElse("")
+        NpsIabdSummary(componentType, employmentId, amount, description)
     }
   }
 }
 
-case class NpsIabdSummary(componentType: Int,
-                          employmentId: Option[Int],
-                          amount: BigDecimal,
-                          description: String)
+case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)

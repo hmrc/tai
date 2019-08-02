@@ -20,10 +20,8 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-
-
 @Singleton
-class Auditor @Inject()(audit: AuditConnector)  {
+class Auditor @Inject()(audit: AuditConnector) {
 
   def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
     audit.sendExplicitAudit(transactionName, detail)

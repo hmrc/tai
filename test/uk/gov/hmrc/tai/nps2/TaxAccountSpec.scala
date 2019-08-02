@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.model.nps2.TaxObject.Type._
 import uk.gov.hmrc.tai.model.nps2.{NpsEmployment, NpsFormatter, TaxAccount, TaxBand}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 
-
 class TaxAccountSpec extends PlaySpec with NpsFormatter {
 
   "TaxAccount format" should {
@@ -54,10 +53,12 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
       taxAccountObject.taxObjects.keySet mustBe Set(NonSavings, UkDividends)
 
       val dividends = taxAccountObject.taxObjects.values.toList.last
-      dividends.taxBands.filter(_.bandType.contains("pa")) mustBe List(TaxBand(bandType = Some("pa"), income = 1500, tax = 0, rate = 0))
+      dividends.taxBands.filter(_.bandType.contains("pa")) mustBe List(
+        TaxBand(bandType = Some("pa"), income = 1500, tax = 0, rate = 0))
 
       val nonSavings = taxAccountObject.taxObjects.values.toList.head
-      nonSavings.taxBands.filter(_.bandType.contains("pa")) mustBe List(TaxBand(bandType = Some("pa"), income = 10000, tax = 0, rate = 0))
+      nonSavings.taxBands.filter(_.bandType.contains("pa")) mustBe List(
+        TaxBand(bandType = Some("pa"), income = 10000, tax = 0, rate = 0))
     }
   }
 
@@ -65,7 +66,8 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
     "update income" when {
       "passed employments with sequenceNo matches with employmentId" in {
         val sut = createSut
-        val employment = NpsEmployment(employerName = None,
+        val employment = NpsEmployment(
+          employerName = None,
           sequenceNumber = 2,
           isPrimary = true,
           worksNumber = Some("ABCD"),
@@ -82,7 +84,8 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
     "not update income" when {
       "passed employments with sequenceNo doesn't matches with employmentId" in {
         val sut = createSut
-        val employment = NpsEmployment(employerName = None,
+        val employment = NpsEmployment(
+          employerName = None,
           sequenceNumber = 3,
           isPrimary = true,
           worksNumber = Some("ABCD"),

@@ -33,9 +33,7 @@ import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.service.TaiService
 
-class EstimatedPayCalculatorControllerSpec extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate{
+class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Estimated pay calculator controller" should {
     "return NOT AUTHORISED" when {
@@ -73,7 +71,9 @@ class EstimatedPayCalculatorControllerSpec extends PlaySpec
     }
   }
 
-  private def createSUT(taiService: TaiService, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(
+    taiService: TaiService,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new EstimatedPayCalculatorController(taiService, authentication)
 
   val date = new LocalDate(2017, 4, 14)

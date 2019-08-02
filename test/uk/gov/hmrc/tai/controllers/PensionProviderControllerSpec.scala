@@ -36,16 +36,17 @@ import uk.gov.hmrc.tai.service.PensionProviderService
 
 import scala.concurrent.Future
 
-class PensionProviderControllerSpec extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate{
+class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "addPensionProvider" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = new PensionProviderController(mock[PensionProviderService], authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.addPensionProvider(nextNino)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json")))
+        val sut = new PensionProviderController(
+          mock[PensionProviderService],
+          authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.addPensionProvider(nextNino)(
+          FakeRequest("POST", "/", FakeHeaders(), JsNull)
+            .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -54,7 +55,8 @@ class PensionProviderControllerSpec extends PlaySpec
     "return envelope Id" when {
       "called with valid add pension request" in {
         val envelopeId = "envelopId"
-        val pensionProvider = AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
+        val pensionProvider =
+          AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(pensionProvider)
         val nino = nextNino
 
@@ -62,9 +64,11 @@ class PensionProviderControllerSpec extends PlaySpec
         when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new PensionProviderController(mockPensionProviderService, authentication = loggedInAuthenticationPredicate)
-        val result = sut.addPensionProvider(nino)(FakeRequest("POST", "/", FakeHeaders(), json)
-          .withHeaders(("content-type", "application/json")))
+        val sut =
+          new PensionProviderController(mockPensionProviderService, authentication = loggedInAuthenticationPredicate)
+        val result = sut.addPensionProvider(nino)(
+          FakeRequest("POST", "/", FakeHeaders(), json)
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -75,9 +79,12 @@ class PensionProviderControllerSpec extends PlaySpec
   "incorrectPensionProvider" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = new PensionProviderController(mock[PensionProviderService], authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.incorrectPensionProvider(nextNino, 1)(FakeRequest("POST", "/", FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json")))
+        val sut = new PensionProviderController(
+          mock[PensionProviderService],
+          authentication = notLoggedInAuthenticationPredicate)
+        val result = sut.incorrectPensionProvider(nextNino, 1)(
+          FakeRequest("POST", "/", FakeHeaders(), JsNull)
+            .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -90,12 +97,15 @@ class PensionProviderControllerSpec extends PlaySpec
         val nino = nextNino
         val id = 1
         val mockPensionProviderService = mock[PensionProviderService]
-        when(mockPensionProviderService.incorrectPensionProvider(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(pensionProvider))(any())).
-          thenReturn(Future.successful(envelopeId))
+        when(
+          mockPensionProviderService
+            .incorrectPensionProvider(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(pensionProvider))(any()))
+          .thenReturn(Future.successful(envelopeId))
 
         val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate)
-        val result = sut.incorrectPensionProvider(nino, id)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider)).
-          withHeaders(("content-type", "application/json")))
+        val result = sut.incorrectPensionProvider(nino, id)(
+          FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)

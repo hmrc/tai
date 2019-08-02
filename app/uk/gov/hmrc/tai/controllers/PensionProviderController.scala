@@ -29,28 +29,25 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class PensionProviderController @Inject()(pensionProviderService: PensionProviderService,
-                                          authentication: AuthenticationPredicate)
-  extends BaseController
-  with ApiFormats {
+class PensionProviderController @Inject()(
+  pensionProviderService: PensionProviderService,
+  authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats {
 
-  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) {
-    implicit request =>
-      withJsonBody[AddPensionProvider] {
-        pensionProvider =>
-          pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
-      }
+  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    withJsonBody[AddPensionProvider] { pensionProvider =>
+      pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId => {
+        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+      })
+    }
   }
 
-  def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] =  authentication.async(parse.json) {
+  def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
-      withJsonBody[IncorrectPensionProvider] {
-        incorrectPension =>
-          pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
+      withJsonBody[IncorrectPensionProvider] { incorrectPension =>
+        pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId => {
+          Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        })
       }
   }
 

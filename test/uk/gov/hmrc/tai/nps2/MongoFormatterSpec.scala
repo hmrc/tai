@@ -36,27 +36,27 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
           "nonSavings" -> Json.obj(
             "taxBands" -> Json.arr(
               Json.obj(
-                "bandType" -> "dummyType",
-                "code" -> "ABCD123",
-                "income" -> 33000,
-                "tax" -> 8000,
+                "bandType"  -> "dummyType",
+                "code"      -> "ABCD123",
+                "income"    -> 33000,
+                "tax"       -> 8000,
                 "lowerBand" -> 5000,
                 "upperBand" -> 20000,
-                "rate" -> 33
+                "rate"      -> 33
               ),
               Json.obj(
-                "bandType" -> "dummyType",
-                "code" -> "ABCD123",
-                "income" -> 33000,
-                "tax" -> 8000,
+                "bandType"  -> "dummyType",
+                "code"      -> "ABCD123",
+                "income"    -> 33000,
+                "tax"       -> 8000,
                 "lowerBand" -> 5000,
                 "upperBand" -> 20000,
-                "rate" -> 33
+                "rate"      -> 33
               )
             ),
-            "totalTax" -> 123.1,
+            "totalTax"           -> 123.1,
             "totalTaxableIncome" -> 999.1,
-            "totalIncome" -> 333.1
+            "totalIncome"        -> 333.1
           )
         )
 
@@ -65,11 +65,12 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
         totalLiabilityMap must not be empty
         val taxDetail = totalLiabilityMap.get(TaxObject.Type.NonSavings)
 
-        taxDetail mustBe Some(TaxDetail(
-          totalTax = Some(123.1),
-          totalTaxableIncome = Some(999.1),
-          totalIncome = Some(333.1),
-          taxBands = List(testTaxBand, testTaxBand)))
+        taxDetail mustBe Some(
+          TaxDetail(
+            totalTax = Some(123.1),
+            totalTaxableIncome = Some(999.1),
+            totalIncome = Some(333.1),
+            taxBands = List(testTaxBand, testTaxBand)))
 
         Json.toJson(totalLiabilityMap) mustBe json
       }
@@ -79,36 +80,38 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the Income json with Ceased Status" in {
 
         val json = Json.obj(
-          "employmentId" -> JsNull,
-          "employmentType" -> 2,
-          "employmentStatus" -> 3,
+          "employmentId"                -> JsNull,
+          "employmentType"              -> 2,
+          "employmentStatus"            -> 3,
           "employmentTaxDistrictNumber" -> JsNull,
-          "employmentPayeRef" -> "payRef",
-          "pensionIndicator" -> false,
-          "jsaIndicator" -> false,
-          "otherIncomeSourceIndicator" -> false,
-          "name" -> "name",
-          "endDate" -> "12/12/2017",
-          "worksNumber" -> "1234",
-          "taxCode" -> "AB1234",
-          "potentialUnderpayment" -> 20.2,
+          "employmentPayeRef"           -> "payRef",
+          "pensionIndicator"            -> false,
+          "jsaIndicator"                -> false,
+          "otherIncomeSourceIndicator"  -> false,
+          "name"                        -> "name",
+          "endDate"                     -> "12/12/2017",
+          "worksNumber"                 -> "1234",
+          "taxCode"                     -> "AB1234",
+          "potentialUnderpayment"       -> 20.2,
           "employmentRecord" -> Json.obj(
-            "employerName" -> "Company Plc",
-            "employmentType" -> 1,
-            "sequenceNumber" -> 1,
-            "worksNumber" -> "1234",
+            "employerName"      -> "Company Plc",
+            "employmentType"    -> 1,
+            "sequenceNumber"    -> 1,
+            "worksNumber"       -> "1234",
             "taxDistrictNumber" -> "1",
             "iabds" -> Json.arr(
               Json.obj(
-                "grossAmount" -> 10,
-                "type" -> 1,
-                "source" -> 16,
-                "typeDescription" -> "dummyDescription",
+                "grossAmount"              -> 10,
+                "type"                     -> 1,
+                "source"                   -> 16,
+                "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
               )),
             "cessationPayThisEmployment" -> 2200.22,
-            "startDate" -> "12/12/2017"),
-          "basisOperation" -> "Week1Month1")
+            "startDate"                  -> "12/12/2017"
+          ),
+          "basisOperation" -> "Week1Month1"
+        )
 
         val income = json.as[Income]
 
@@ -121,36 +124,38 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the Income json with Live Status" in {
 
         val json = Json.obj(
-          "employmentId" -> JsNull,
-          "employmentType" -> 2,
-          "employmentStatus" -> 1,
+          "employmentId"                -> JsNull,
+          "employmentType"              -> 2,
+          "employmentStatus"            -> 1,
           "employmentTaxDistrictNumber" -> JsNull,
-          "employmentPayeRef" -> "payRef",
-          "pensionIndicator" -> false,
-          "jsaIndicator" -> true,
-          "otherIncomeSourceIndicator" -> false,
-          "name" -> "name",
-          "endDate" -> "12/12/2017",
-          "worksNumber" -> "1234",
-          "taxCode" -> "AB1234",
-          "potentialUnderpayment" -> 20.2,
+          "employmentPayeRef"           -> "payRef",
+          "pensionIndicator"            -> false,
+          "jsaIndicator"                -> true,
+          "otherIncomeSourceIndicator"  -> false,
+          "name"                        -> "name",
+          "endDate"                     -> "12/12/2017",
+          "worksNumber"                 -> "1234",
+          "taxCode"                     -> "AB1234",
+          "potentialUnderpayment"       -> 20.2,
           "employmentRecord" -> Json.obj(
-            "employerName" -> "Company Plc",
-            "employmentType" -> 1,
-            "sequenceNumber" -> 1,
-            "worksNumber" -> "1234",
+            "employerName"      -> "Company Plc",
+            "employmentType"    -> 1,
+            "sequenceNumber"    -> 1,
+            "worksNumber"       -> "1234",
             "taxDistrictNumber" -> "1",
             "iabds" -> Json.arr(
               Json.obj(
-                "grossAmount" -> 10,
-                "type" -> 1,
-                "source" -> 16,
-                "typeDescription" -> "dummyDescription",
+                "grossAmount"              -> 10,
+                "type"                     -> 1,
+                "source"                   -> 16,
+                "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
               )),
             "cessationPayThisEmployment" -> 2200.22,
-            "startDate" -> "12/12/2017"),
-          "basisOperation" -> "Week1Month1")
+            "startDate"                  -> "12/12/2017"
+          ),
+          "basisOperation" -> "Week1Month1"
+        )
 
         val income = json.as[Income]
 
@@ -163,36 +168,38 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the Income json with Potentially Ceased Status" in {
 
         val json = Json.obj(
-          "employmentId" -> JsNull,
-          "employmentType" -> 2,
-          "employmentStatus" -> 2,
+          "employmentId"                -> JsNull,
+          "employmentType"              -> 2,
+          "employmentStatus"            -> 2,
           "employmentTaxDistrictNumber" -> JsNull,
-          "employmentPayeRef" -> "payRef",
-          "pensionIndicator" -> false,
-          "jsaIndicator" -> false,
-          "otherIncomeSourceIndicator" -> true,
-          "name" -> "name",
-          "endDate" -> "12/12/2017",
-          "worksNumber" -> "1234",
-          "taxCode" -> "AB1234",
-          "potentialUnderpayment" -> 20.2,
+          "employmentPayeRef"           -> "payRef",
+          "pensionIndicator"            -> false,
+          "jsaIndicator"                -> false,
+          "otherIncomeSourceIndicator"  -> true,
+          "name"                        -> "name",
+          "endDate"                     -> "12/12/2017",
+          "worksNumber"                 -> "1234",
+          "taxCode"                     -> "AB1234",
+          "potentialUnderpayment"       -> 20.2,
           "employmentRecord" -> Json.obj(
-            "employerName" -> "Company Plc",
-            "employmentType" -> 1,
-            "sequenceNumber" -> 1,
-            "worksNumber" -> "1234",
+            "employerName"      -> "Company Plc",
+            "employmentType"    -> 1,
+            "sequenceNumber"    -> 1,
+            "worksNumber"       -> "1234",
             "taxDistrictNumber" -> "1",
             "iabds" -> Json.arr(
               Json.obj(
-                "grossAmount" -> 10,
-                "type" -> 1,
-                "source" -> 16,
-                "typeDescription" -> "dummyDescription",
+                "grossAmount"              -> 10,
+                "type"                     -> 1,
+                "source"                   -> 16,
+                "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
               )),
             "cessationPayThisEmployment" -> 2200.22,
-            "startDate" -> "12/12/2017"),
-          "basisOperation" -> "Week1Month1")
+            "startDate"                  -> "12/12/2017"
+          ),
+          "basisOperation" -> "Week1Month1"
+        )
 
         val income = json.as[Income]
 
@@ -207,36 +214,38 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the Income json with incorrect Status" in {
 
         val json = Json.obj(
-          "employmentId" -> JsNull,
-          "employmentType" -> 2,
-          "employmentStatus" -> 4,
+          "employmentId"                -> JsNull,
+          "employmentType"              -> 2,
+          "employmentStatus"            -> 4,
           "employmentTaxDistrictNumber" -> JsNull,
-          "employmentPayeRef" -> "payRef",
-          "pensionIndicator" -> false,
-          "jsaIndicator" -> false,
-          "otherIncomeSourceIndicator" -> true,
-          "name" -> "name",
-          "endDate" -> "12/12/2017",
-          "worksNumber" -> "1234",
-          "taxCode" -> "AB1234",
-          "potentialUnderpayment" -> 20.2,
+          "employmentPayeRef"           -> "payRef",
+          "pensionIndicator"            -> false,
+          "jsaIndicator"                -> false,
+          "otherIncomeSourceIndicator"  -> true,
+          "name"                        -> "name",
+          "endDate"                     -> "12/12/2017",
+          "worksNumber"                 -> "1234",
+          "taxCode"                     -> "AB1234",
+          "potentialUnderpayment"       -> 20.2,
           "employmentRecord" -> Json.obj(
-            "employerName" -> "Company Plc",
-            "employmentType" -> 1,
-            "sequenceNumber" -> 1,
-            "worksNumber" -> "1234",
+            "employerName"      -> "Company Plc",
+            "employmentType"    -> 1,
+            "sequenceNumber"    -> 1,
+            "worksNumber"       -> "1234",
             "taxDistrictNumber" -> "1",
             "iabds" -> Json.arr(
               Json.obj(
-                "grossAmount" -> 10,
-                "type" -> 1,
-                "source" -> 16,
-                "typeDescription" -> "dummyDescription",
+                "grossAmount"              -> 10,
+                "type"                     -> 1,
+                "source"                   -> 16,
+                "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
               )),
             "cessationPayThisEmployment" -> 2200.22,
-            "startDate" -> "12/12/2017"),
-          "basisOperation" -> "Week1Month1")
+            "startDate"                  -> "12/12/2017"
+          ),
+          "basisOperation" -> "Week1Month1"
+        )
 
         the[RuntimeException] thrownBy json.as[Income]
       }
@@ -246,16 +255,17 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the Component json" in {
 
         val json = Json.obj(
-          "amount" -> 34000.3,
+          "amount"       -> 34000.3,
           "sourceAmount" -> 32000.7,
           "iabdSummaries" -> Json.arr(
             Json.obj(
-              "grossAmount" -> 10,
-              "type" -> 1,
-              "source" -> 16,
-              "typeDescription" -> "dummyDescription",
+              "grossAmount"              -> 10,
+              "type"                     -> 1,
+              "source"                   -> 16,
+              "typeDescription"          -> "dummyDescription",
               "employmentSequenceNumber" -> 32
-            )))
+            ))
+        )
 
         val component = json.as[Component]
 
@@ -269,21 +279,22 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
       "reading the NpsEmployment json" in {
 
         val json = Json.obj(
-          "employerName" -> "Company Plc",
-          "employmentType" -> 1,
-          "sequenceNumber" -> 1,
-          "worksNumber" -> "1234",
+          "employerName"      -> "Company Plc",
+          "employmentType"    -> 1,
+          "sequenceNumber"    -> 1,
+          "worksNumber"       -> "1234",
           "taxDistrictNumber" -> "1",
           "iabds" -> Json.arr(
             Json.obj(
-              "grossAmount" -> 10,
-              "type" -> 1,
-              "source" -> 16,
-              "typeDescription" -> "dummyDescription",
+              "grossAmount"              -> 10,
+              "type"                     -> 1,
+              "source"                   -> 16,
+              "typeDescription"          -> "dummyDescription",
               "employmentSequenceNumber" -> 32
             )),
           "cessationPayThisEmployment" -> 2200.22,
-          "startDate" -> "12/12/2017")
+          "startDate"                  -> "12/12/2017"
+        )
 
         val npsEmployment = json.as[NpsEmployment]
 
@@ -310,7 +321,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
 
   private val fixedDate = LocalDate.parse("2017-12-12")
 
-  private val testIabd = Iabd(amount = 10,
+  private val testIabd = Iabd(
+    amount = 10,
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
@@ -327,7 +339,6 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
     start = fixedDate
   )
 
-  private def stripFormatting(string: String): String = {
+  private def stripFormatting(string: String): String =
     string.stripMargin.replaceAll("\\n+", "")
-  }
 }

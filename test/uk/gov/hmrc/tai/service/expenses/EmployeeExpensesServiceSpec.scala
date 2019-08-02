@@ -37,9 +37,8 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class EmployeeExpensesServiceSpec extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate with ScalaFutures {
+class EmployeeExpensesServiceSpec
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
@@ -79,7 +78,8 @@ class EmployeeExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        Await
+          .result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
           .status mustBe 200
       }
     }
@@ -91,7 +91,8 @@ class EmployeeExpensesServiceSpec extends PlaySpec
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await.result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        Await
+          .result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
           .status mustBe 500
       }
     }
@@ -120,16 +121,14 @@ class EmployeeExpensesServiceSpec extends PlaySpec
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
-        whenReady(result) {
-          result =>
+        whenReady(result) { result =>
+          result mustBe validNpsIabd
 
-            result mustBe validNpsIabd
+          verify(mockNpsConnector, times(0))
+            .getIabdsForType(nino, taxYear, iabd)
 
-            verify(mockNpsConnector, times(0))
-              .getIabdsForType(nino, taxYear, iabd)
-
-            verify(mockDesConnector, times(1))
-              .getIabdsForTypeFromDes(nino, taxYear, iabd)
+          verify(mockDesConnector, times(1))
+            .getIabdsForTypeFromDes(nino, taxYear, iabd)
         }
       }
 

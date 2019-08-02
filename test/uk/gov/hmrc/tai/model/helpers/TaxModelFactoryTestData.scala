@@ -80,10 +80,7 @@ trait TaxModelFactoryTestData {
   val genericNpsComponent = NpsComponent(
     amount = Some(1000),
     `type` = Some(AllowanceType.PersonalSavingsAllowance.id),
-    iabdSummaries = Some(List(
-      blindPersonNpsIabdSummary,
-      flatRateExpensesNpsIabdSummary,
-      giftAidNpsIabdSummary)),
+    iabdSummaries = Some(List(blindPersonNpsIabdSummary, flatRateExpensesNpsIabdSummary, giftAidNpsIabdSummary)),
     npsDescription = Some("nps component description"),
     sourceAmount = Some(200)
   )
@@ -91,10 +88,7 @@ trait TaxModelFactoryTestData {
   val genericNpsComponent2 = NpsComponent(
     amount = Some(1000),
     `type` = Some(AllowanceType.PersonalSavingsAllowance.id),
-    iabdSummaries = Some(List(
-      jobExpencesNpsIabdSummary,
-      miscNpsIabdSummary,
-      personalPensionNpsIabdSummary)),
+    iabdSummaries = Some(List(jobExpencesNpsIabdSummary, miscNpsIabdSummary, personalPensionNpsIabdSummary)),
     npsDescription = Some("nps component description"),
     sourceAmount = Some(200)
   )
@@ -123,9 +117,10 @@ trait TaxModelFactoryTestData {
     taxBands = Some(List(taxBand))
   )
 
-  val blindPersonIabdSummary = IabdSummary(IabdType.BlindPersonsAllowance.code, "description", 400, Some(123), Some(1), Some("employee name"))
-  val flatRateExpensesIabdSummary = IabdSummary(IabdType.FlatRateJobExpenses.code, "description", 200, Some(123), Some(1), Some("employee name"))
-
+  val blindPersonIabdSummary =
+    IabdSummary(IabdType.BlindPersonsAllowance.code, "description", 400, Some(123), Some(1), Some("employee name"))
+  val flatRateExpensesIabdSummary =
+    IabdSummary(IabdType.FlatRateJobExpenses.code, "description", 200, Some(123), Some(1), Some("employee name"))
 
   val employment = Employments(
     id = Some(123),
@@ -145,9 +140,15 @@ trait TaxModelFactoryTestData {
 
   val noTypeTaxCodeComponent = TaxCodeComponent(Some("no type tax code component description"), Some(200), None)
 
-  val personalAllowanceRecievedTaxCodeComponent = TaxCodeComponent(Some("PersonalAllowanceReceived tax code component description"), Some(200), Some(AllowanceType.PersonalAllowanceReceived.id))
+  val personalAllowanceRecievedTaxCodeComponent = TaxCodeComponent(
+    Some("PersonalAllowanceReceived tax code component description"),
+    Some(200),
+    Some(AllowanceType.PersonalAllowanceReceived.id))
 
-  val personalAllowanceTransferredTaxCodeComponent = TaxCodeComponent(Some("PersonalAllowanceTransferred tax code component description"), Some(50), Some(DeductionType.PersonalAllowanceTransferred.id))
+  val personalAllowanceTransferredTaxCodeComponent = TaxCodeComponent(
+    Some("PersonalAllowanceTransferred tax code component description"),
+    Some(50),
+    Some(DeductionType.PersonalAllowanceTransferred.id))
 
   val taxCodeDetails = TaxCodeDetails(
     employment = Some(List(employment)),
@@ -241,6 +242,23 @@ trait TaxModelFactoryTestData {
 
   private val CurrentYear: Int = 2017
 
-  val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-    "23", "123", None, 1, Some(Ceased.code), Some("1002"), None, None, None, None, None, None, None, Some(1000))
+  val npsEmployment = NpsEmployment(
+    1,
+    NpsDate(new LocalDate(CurrentYear, 4, 23)),
+    Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+    "23",
+    "123",
+    None,
+    1,
+    Some(Ceased.code),
+    Some("1002"),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    Some(1000)
+  )
 }

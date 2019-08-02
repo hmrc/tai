@@ -21,12 +21,11 @@ import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import play.api.mvc.Results._
 import scala.concurrent.Future
 
+trait ControllerErrorHandler {
 
-trait ControllerErrorHandler{
-
-  def taxAccountErrorHandler():PartialFunction[Throwable, Future[Result]] ={
-    case ex: BadRequestException  => Future.successful(BadRequest(ex.message))
-    case ex: NotFoundException => Future.successful(NotFound(ex.message))
-    case ex => throw ex
+  def taxAccountErrorHandler(): PartialFunction[Throwable, Future[Result]] = {
+    case ex: BadRequestException => Future.successful(BadRequest(ex.message))
+    case ex: NotFoundException   => Future.successful(NotFound(ex.message))
+    case ex                      => throw ex
   }
 }

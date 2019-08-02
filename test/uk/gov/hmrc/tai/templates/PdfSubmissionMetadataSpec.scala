@@ -32,7 +32,7 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
     "not have a line feed character at the top of the file" when {
 
-      "the xml is generated" in  {
+      "the xml is generated" in {
 
         val sut = createSUT(pdfSubmission)
 
@@ -70,9 +70,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(0)
 
-        section.select("attribute_name").text()  mustBe "hmrc_time_of_receipt"
-        section.select("attribute_type").text()  mustBe "time"
-        section.select("attribute_value").text()  mustBe pdfSubmission.hmrcReceivedAt.toString("dd/MM/yyyy HH:mm:ss")
+        section.select("attribute_name").text() mustBe "hmrc_time_of_receipt"
+        section.select("attribute_type").text() mustBe "time"
+        section.select("attribute_value").text() mustBe pdfSubmission.hmrcReceivedAt.toString("dd/MM/yyyy HH:mm:ss")
       }
     }
 
@@ -86,9 +86,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(1)
 
-        section.select("attribute_name").text()  mustBe "time_xml_created"
-        section.select("attribute_type").text()  mustBe "time"
-        section.select("attribute_value").text()  mustBe pdfSubmission.xmlCreatedAt.toString("dd/MM/yyyy HH:mm:ss")
+        section.select("attribute_name").text() mustBe "time_xml_created"
+        section.select("attribute_type").text() mustBe "time"
+        section.select("attribute_value").text() mustBe pdfSubmission.xmlCreatedAt.toString("dd/MM/yyyy HH:mm:ss")
       }
     }
 
@@ -102,9 +102,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(2)
 
-        section.select("attribute_name").text()  mustBe "submission_reference"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.xmlCreatedAt.toString("ssMMyyddmmHH")
+        section.select("attribute_name").text() mustBe "submission_reference"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.xmlCreatedAt.toString("ssMMyyddmmHH")
       }
     }
 
@@ -118,9 +118,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(3)
 
-        section.select("attribute_name").text()  mustBe "form_id"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.formId
+        section.select("attribute_name").text() mustBe "form_id"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.formId
       }
     }
 
@@ -134,9 +134,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(4)
 
-        section.select("attribute_name").text()  mustBe "number_pages"
-        section.select("attribute_type").text()  mustBe "integer"
-        section.select("attribute_value").text()  mustBe pdfSubmission.numberOfPages.toString
+        section.select("attribute_name").text() mustBe "number_pages"
+        section.select("attribute_type").text() mustBe "integer"
+        section.select("attribute_value").text() mustBe pdfSubmission.numberOfPages.toString
       }
     }
 
@@ -150,9 +150,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(5)
 
-        section.select("attribute_name").text()  mustBe "source"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.source
+        section.select("attribute_name").text() mustBe "source"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.source
       }
     }
 
@@ -166,9 +166,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(6)
 
-        section.select("attribute_name").text()  mustBe "customer_id"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.customerId
+        section.select("attribute_name").text() mustBe "customer_id"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.customerId
       }
     }
 
@@ -182,9 +182,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(7)
 
-        section.select("attribute_name").text()  mustBe "submission_mark"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.submissionMark
+        section.select("attribute_name").text() mustBe "submission_mark"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.submissionMark
       }
     }
 
@@ -198,9 +198,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(8)
 
-        section.select("attribute_name").text()  mustBe "cas_key"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.casKey
+        section.select("attribute_name").text() mustBe "cas_key"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.casKey
       }
     }
 
@@ -214,9 +214,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(9)
 
-        section.select("attribute_name").text()  mustBe "classification_type"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.classificationType
+        section.select("attribute_name").text() mustBe "classification_type"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.classificationType
       }
     }
 
@@ -230,9 +230,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(10)
 
-        section.select("attribute_name").text()  mustBe "business_area"
-        section.select("attribute_type").text()  mustBe "string"
-        section.select("attribute_value").text()  mustBe pdfSubmission.businessArea
+        section.select("attribute_name").text() mustBe "business_area"
+        section.select("attribute_type").text() mustBe "string"
+        section.select("attribute_value").text() mustBe pdfSubmission.businessArea
       }
     }
 
@@ -246,9 +246,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         val section = doc.select("metadata > attribute").get(11)
 
-        section.select("attribute_name").text()  mustBe "attachment_count"
-        section.select("attribute_type").text()  mustBe "int"
-        section.select("attribute_value").text()  mustBe pdfSubmission.attachmentCount.toString
+        section.select("attribute_name").text() mustBe "attachment_count"
+        section.select("attribute_type").text() mustBe "int"
+        section.select("attribute_value").text() mustBe pdfSubmission.attachmentCount.toString
       }
     }
   }
@@ -264,5 +264,6 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
     casKey = "casKey1"
   )
 
-  private def createSUT(pdfSubmission: PdfSubmission): Xml = uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata(pdfSubmission)
+  private def createSUT(pdfSubmission: PdfSubmission): Xml =
+    uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata(pdfSubmission)
 }

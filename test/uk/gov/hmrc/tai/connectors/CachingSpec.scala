@@ -31,13 +31,14 @@ import scala.language.postfixOps
 
 class CachingSpec extends PlaySpec with MockitoSugar {
 
-  "cache" must{
-    "return the json from cache" when{
+  "cache" must {
+    "return the json from cache" when {
       "the key is present in the cache" in {
         val sut = cacheTest
-        val jsonFromCache = Json.obj("aaa" -> "bbb")
+        val jsonFromCache = Json.obj("aaa"  -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
-        when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(Some(jsonFromCache)))
+        when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey)))
+          .thenReturn(Future.successful(Some(jsonFromCache)))
         val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromCache
 
@@ -45,13 +46,15 @@ class CachingSpec extends PlaySpec with MockitoSugar {
       }
     }
 
-    "return the json from the supplied function" when{
-      "the key is not present in the cache" in{
+    "return the json from the supplied function" when {
+      "the key is not present in the cache" in {
         val sut = cacheTest
         val jsonFromFunction = Json.obj("c" -> "d")
         when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(mongoKey))).thenReturn(Future.successful(None))
-        when(cacheConnector.createOrUpdateJson(Matchers.eq(sessionId), Matchers.eq(jsonFromFunction),Matchers.eq(mongoKey))).
-          thenReturn(Future.successful(jsonFromFunction))
+        when(
+          cacheConnector
+            .createOrUpdateJson(Matchers.eq(sessionId), Matchers.eq(jsonFromFunction), Matchers.eq(mongoKey)))
+          .thenReturn(Future.successful(jsonFromFunction))
         val result = Await.result(sut.cacheFromApi(mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromFunction
 

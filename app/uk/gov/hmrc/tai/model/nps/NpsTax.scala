@@ -20,11 +20,12 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.{Tax, TaxBand}
 import uk.gov.hmrc.tai.model.helpers.TaxHelper
 
-case class NpsTax(totalIncome : Option[NpsComponent] = None,
-                  allowReliefDeducts : Option[NpsComponent] = None,
-                  totalTaxableIncome: Option[BigDecimal] = None,
-                  totalTax : Option[BigDecimal] = None,
-                  taxBands : Option[List[TaxBand]] = None)
+case class NpsTax(
+  totalIncome: Option[NpsComponent] = None,
+  allowReliefDeducts: Option[NpsComponent] = None,
+  totalTaxableIncome: Option[BigDecimal] = None,
+  totalTax: Option[BigDecimal] = None,
+  taxBands: Option[List[TaxBand]] = None)
 
 object NpsTax {
   implicit val formats = Json.format[NpsTax]

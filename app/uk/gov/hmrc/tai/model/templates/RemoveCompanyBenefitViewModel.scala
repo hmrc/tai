@@ -21,29 +21,28 @@ import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
-case class RemoveCompanyBenefitViewModel (
-                                           nino: String,
-                                           firstName: String,
-                                           lastName: String,
-                                           dateOfBirth: String,
-                                           telephoneContactAllowed: String,
-                                           telephoneNumber: String,
-                                           addressLine1: String,
-                                           addressLine2: String,
-                                           addressLine3: String,
-                                           postcode: String,
-                                           isAdd: String,
-                                           isUpdate: String,
-                                           isEnd: String,
-                                           companyBenefitName: String,
-                                           amountReceived: String,
-                                           endDate: String,
-                                           whatYouToldUs: String
-                                         )
+case class RemoveCompanyBenefitViewModel(
+  nino: String,
+  firstName: String,
+  lastName: String,
+  dateOfBirth: String,
+  telephoneContactAllowed: String,
+  telephoneNumber: String,
+  addressLine1: String,
+  addressLine2: String,
+  addressLine3: String,
+  postcode: String,
+  isAdd: String,
+  isUpdate: String,
+  isEnd: String,
+  companyBenefitName: String,
+  amountReceived: String,
+  endDate: String,
+  whatYouToldUs: String
+)
 object RemoveCompanyBenefitViewModel {
 
-  def apply(person: Person, removeCompanyBenefit: RemoveCompanyBenefit): RemoveCompanyBenefitViewModel = {
-
+  def apply(person: Person, removeCompanyBenefit: RemoveCompanyBenefit): RemoveCompanyBenefitViewModel =
     RemoveCompanyBenefitViewModel(
       nino = person.nino.nino,
       firstName = person.firstName,
@@ -63,5 +62,4 @@ object RemoveCompanyBenefitViewModel {
       endDate = removeCompanyBenefit.stopDate,
       whatYouToldUs = removeCompanyBenefit.whatYouToldUs
     )
-  }
 }

@@ -26,9 +26,8 @@ import uk.gov.hmrc.play.config.ServicesConfig
 
 // $COVERAGE-OFF$ No proper implementation to test
 @Singleton
-class MicroserviceAuthConnector @Inject()(val environment: Environment,
-                                          val conf: Configuration,
-                                          val WSHttp: HttpClient) extends PlayAuthConnector with ServicesConfig {
+class MicroserviceAuthConnector @Inject()(val environment: Environment, val conf: Configuration, val WSHttp: HttpClient)
+    extends PlayAuthConnector with ServicesConfig {
   override protected def runModeConfiguration: Configuration = conf
   override protected def mode: Mode = environment.mode
   lazy val serviceUrl = baseUrl("auth")

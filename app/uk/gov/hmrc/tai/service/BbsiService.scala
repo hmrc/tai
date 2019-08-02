@@ -32,87 +32,91 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 
 @Singleton
-class BbsiService @Inject()(bbsiRepository: BbsiRepository,
-                            iFormSubmissionService: IFormSubmissionService,
-                            auditor: Auditor) {
+class BbsiService @Inject()(
+  bbsiRepository: BbsiRepository,
+  iFormSubmissionService: IFormSubmissionService,
+  auditor: Auditor) {
 
   private val CloseBankAccountAuditRequest = "CloseBankAccountRequest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear = TaxYear())
-                 (implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
+  def bbsiDetails(nino: Nino, taxYear: TaxYear = TaxYear())(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
     bbsiRepository.bbsiDetails(nino, taxYear)
 
-  def bbsiAccount(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Option[BankAccount]] = {
-    bbsiDetails(nino) map(_.find(_.id == id))
-  }
+  def bbsiAccount(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Option[BankAccount]] =
+    bbsiDetails(nino) map (_.find(_.id == id))
 
-  def closeBankAccount(nino: Nino, id: Int, closeAccountRequest: CloseAccountRequest)(implicit hc: HeaderCarrier): Future[String] = {
+  def closeBankAccount(nino: Nino, id: Int, closeAccountRequest: CloseAccountRequest)(
+    implicit hc: HeaderCarrier): Future[String] =
     bbsiAccount(nino, id) flatMap {
       case Some(bankAccount) =>
-
-        iFormSubmissionService.uploadIForm(nino, "CloseBankAccount", "BBSI5", (person: Person) => {
-          val templateModel = CloseBankAccount(person, TaxYear(), bankAccount, closeAccountRequest.date, closeAccountRequest.interestEarnedThisTaxYear)
-          Future.successful(RemoveBankAccountIform(templateModel).toString())
-        }) map { envelopeId =>
-
-          auditor.sendDataEvent(CloseBankAccountAuditRequest,
-            detail = Map(
-              "nino" -> nino.nino,
-              "envelope Id" -> envelopeId,
-              "end-date" -> closeAccountRequest.date.toString()))
+        iFormSubmissionService.uploadIForm(
+          nino,
+          "CloseBankAccount",
+          "BBSI5",
+          (person: Person) => {
+            val templateModel = CloseBankAccount(
+              person,
+              TaxYear(),
+              bankAccount,
+              closeAccountRequest.date,
+              closeAccountRequest.interestEarnedThisTaxYear)
+            Future.successful(RemoveBankAccountIform(templateModel).toString())
+          }
+        ) map { envelopeId =>
+          auditor.sendDataEvent(
+            CloseBankAccountAuditRequest,
+            detail =
+              Map("nino" -> nino.nino, "envelope Id" -> envelopeId, "end-date" -> closeAccountRequest.date.toString()))
 
           envelopeId
         }
 
       case None => throw BankAccountNotFound("Bank Account not found")
     }
-  }
 
-  def removeIncorrectBankAccount(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[String] = {
+  def removeIncorrectBankAccount(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[String] =
     bbsiAccount(nino, id) flatMap {
       case Some(bankAccount) =>
-
-        iFormSubmissionService.uploadIForm(nino, "RemoveIncorrectBankAccount", "BBSI5", (person: Person) => {
-          val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount)
-          Future.successful(IncorrectBankAccountIform(templateModel).toString())
-        }) map { envelopeId =>
-
+        iFormSubmissionService.uploadIForm(
+          nino,
+          "RemoveIncorrectBankAccount",
+          "BBSI5",
+          (person: Person) => {
+            val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount)
+            Future.successful(IncorrectBankAccountIform(templateModel).toString())
+          }
+        ) map { envelopeId =>
           auditor.sendDataEvent(
             IFormConstants.RemoveBankAccountRequest,
-            detail = Map(
-              "nino" -> nino.nino,
-              "envelope Id" -> envelopeId))
-
+            detail = Map("nino" -> nino.nino, "envelope Id" -> envelopeId))
 
           envelopeId
         }
 
       case None => throw BankAccountNotFound("Bank Account not found")
     }
-  }
 
-  def updateBankAccountInterest(nino: Nino, id: Int, interest: BigDecimal)(implicit hc: HeaderCarrier): Future[String] = {
+  def updateBankAccountInterest(nino: Nino, id: Int, interest: BigDecimal)(implicit hc: HeaderCarrier): Future[String] =
     bbsiAccount(nino, id) flatMap {
       case Some(bankAccount) =>
-
-        iFormSubmissionService.uploadIForm(nino, "UpdateBankAccountInterest", "BBSI5", (person: Person) => {
-          val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount, Some(interest))
-          Future.successful(IncorrectBankAccountIform(templateModel).toString())
-        }) map { envelopeId: String =>
-
+        iFormSubmissionService.uploadIForm(
+          nino,
+          "UpdateBankAccountInterest",
+          "BBSI5",
+          (person: Person) => {
+            val templateModel = IncorrectBankAccount(person, TaxYear(), bankAccount, Some(interest))
+            Future.successful(IncorrectBankAccountIform(templateModel).toString())
+          }
+        ) map { envelopeId: String =>
           auditor.sendDataEvent(
             IFormConstants.UpdateBankAccountRequest,
-            detail = Map(
-              "nino" -> nino.nino,
-              "envelope Id" -> envelopeId,
-              "interest" -> interest.toString))
+            detail = Map("nino" -> nino.nino, "envelope Id" -> envelopeId, "interest" -> interest.toString))
 
           envelopeId
         }
 
       case None => throw BankAccountNotFound("Bank Account not found")
     }
-  }
 }
 
 case class BankAccountNotFound(message: String) extends RuntimeException(s"error message :$message")

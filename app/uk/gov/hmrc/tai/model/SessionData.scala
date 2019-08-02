@@ -17,10 +17,9 @@
 package uk.gov.hmrc.tai.model
 
 case class SessionData(
-                        nino: String,
-                        taiRoot: Option[TaiRoot] = None,
-                        taxSummaryDetailsCY: TaxSummaryDetails,
-                        editIncomeForm: Option[EditIncomeForm] = None,
-                        incomeCalculation: Option[IncomeCalculation] = None
-                      )
-
+  nino: String,
+  taiRoot: Option[TaiRoot] = None,
+  taxSummaryDetailsCY: TaxSummaryDetails,
+  editIncomeForm: Option[EditIncomeForm] = None,
+  incomeCalculation: Option[IncomeCalculation] = None
+)

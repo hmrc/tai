@@ -41,17 +41,15 @@ import scala.concurrent.Future
 import scala.util.Random
 
 class CodingComponentControllerSpec
-    extends PlaySpec
-    with MockitoSugar
-    with RequestQueryFilter
-    with NpsExceptions
-    with MockAuthenticationPredicate{
+    extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions with MockAuthenticationPredicate {
 
   "codingComponentsForYear" must {
-     "return OK with sequence of coding components" when {
+    "return OK with sequence of coding components" when {
       "coding component service returns a sequence of coding components" in {
-        val codingComponentSeq = Seq(CodingComponent(EmployerProvidedServices, Some(12), 12321, "Some Description"),
-          CodingComponent(PersonalPensionPayments, Some(31), 12345, "Some Description Some"))
+        val codingComponentSeq = Seq(
+          CodingComponent(EmployerProvidedServices, Some(12), 12321, "Some Description"),
+          CodingComponent(PersonalPensionPayments, Some(31), 12345, "Some Description Some")
+        )
 
         val mockCodingComponentService = mock[CodingComponentService]
         when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
@@ -64,18 +62,20 @@ class CodingComponentControllerSpec
           "data" -> Json.arr(
             Json.obj(
               "componentType" -> "EmployerProvidedServices",
-              "employmentId" -> 12,
-              "amount" -> 12321,
-              "description" -> "Some Description",
-              "iabdCategory" -> "Benefit"),
+              "employmentId"  -> 12,
+              "amount"        -> 12321,
+              "description"   -> "Some Description",
+              "iabdCategory"  -> "Benefit"),
             Json.obj(
               "componentType" -> "PersonalPensionPayments",
-              "employmentId" -> 31,
-              "amount" -> 12345,
-              "description" -> "Some Description Some",
-              "iabdCategory" -> "Allowance"
-            )),
-          "links" -> Json.arr())
+              "employmentId"  -> 31,
+              "amount"        -> 12345,
+              "description"   -> "Some Description Some",
+              "iabdCategory"  -> "Allowance"
+            )
+          ),
+          "links" -> Json.arr()
+        )
         contentAsJson(result) mustBe expectedJson
       }
     }
@@ -138,7 +138,8 @@ class CodingComponentControllerSpec
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
-  private def createSUT(codingComponentService: CodingComponentService,
-                        predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(
+    codingComponentService: CodingComponentService,
+    predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new CodingComponentController(predicate, codingComponentService)
 }

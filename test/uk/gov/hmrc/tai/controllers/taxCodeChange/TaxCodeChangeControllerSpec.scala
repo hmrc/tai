@@ -38,7 +38,8 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
+class TaxCodeChangeControllerSpec
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -80,35 +81,56 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val date = LocalDate.now()
       val testNino = ninoGenerator
-      val currentRecord = api.TaxCodeSummary(1, "b", Cumulative, date, date.minusDays(1), "Employer 1",
-        Some("12345"), pensionIndicator = false, primary = true)
-      val previousRecord = api.TaxCodeSummary(2, "a", Cumulative, date, date.minusDays(1), "Employer 2",
-        Some("67890"), pensionIndicator = false, primary = true)
-      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
-        Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
+      val currentRecord = api.TaxCodeSummary(
+        1,
+        "b",
+        Cumulative,
+        date,
+        date.minusDays(1),
+        "Employer 1",
+        Some("12345"),
+        pensionIndicator = false,
+        primary = true)
+      val previousRecord = api.TaxCodeSummary(
+        2,
+        "a",
+        Cumulative,
+        date,
+        date.minusDays(1),
+        "Employer 2",
+        Some("67890"),
+        pensionIndicator = false,
+        primary = true)
+      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any()))
+        .thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.arr(Json.obj("taxCodeId" -> 1,
-                                  "taxCode" -> "b",
-                                  "basisOfOperation" -> Cumulative,
-                                  "startDate" -> date.toString,
-                                  "endDate" -> date.minusDays(1).toString,
-                                  "employerName" -> "Employer 1",
-                                  "payrollNumber" -> "12345",
-                                  "pensionIndicator" -> false,
-                                  "primary" -> true)),
-          "previous" -> Json.arr(Json.obj("taxCodeId" -> 2,
-                                  "taxCode" -> "a",
-                                  "basisOfOperation" -> Cumulative,
-                                  "startDate" -> date.toString,
-                                  "endDate" -> date.minusDays(1).toString,
-                                  "employerName" -> "Employer 2",
-                                  "payrollNumber" -> "67890",
-                                  "pensionIndicator" -> false,
-                                  "primary" -> true))),
-        "links" -> Json.arr())
-
+          "current" -> Json.arr(Json.obj(
+            "taxCodeId"        -> 1,
+            "taxCode"          -> "b",
+            "basisOfOperation" -> Cumulative,
+            "startDate"        -> date.toString,
+            "endDate"          -> date.minusDays(1).toString,
+            "employerName"     -> "Employer 1",
+            "payrollNumber"    -> "12345",
+            "pensionIndicator" -> false,
+            "primary"          -> true
+          )),
+          "previous" -> Json.arr(Json.obj(
+            "taxCodeId"        -> 2,
+            "taxCode"          -> "a",
+            "basisOfOperation" -> Cumulative,
+            "startDate"        -> date.toString,
+            "endDate"          -> date.minusDays(1).toString,
+            "employerName"     -> "Employer 2",
+            "payrollNumber"    -> "67890",
+            "pensionIndicator" -> false,
+            "primary"          -> true
+          ))
+        ),
+        "links" -> Json.arr()
+      )
 
       val response = controller.taxCodeChange(testNino)(FakeRequest())
 
@@ -119,14 +141,14 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       val testNino = ninoGenerator
 
-      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any())).thenReturn(
-        Future.successful(TaxCodeChange(Seq.empty, Seq.empty)))
+      when(taxCodeService.taxCodeChange(Matchers.eq(testNino))(Matchers.any()))
+        .thenReturn(Future.successful(TaxCodeChange(Seq.empty, Seq.empty)))
 
       val response = controller.taxCodeChange(testNino)(FakeRequest())
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.arr(),
+          "current"  -> Json.arr(),
           "previous" -> Json.arr()
         ),
         "links" -> Json.arr()
@@ -145,13 +167,14 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L"))))
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
-            "mismatch" -> true,
-            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
-            "confirmedTaxCodes" -> Json.arr("1185L")
+            "mismatch"            -> true,
+            "unconfirmedTaxCodes" -> Json.arr("1185L", "BR"),
+            "confirmedTaxCodes"   -> Json.arr("1185L")
           ),
           "links" -> Json.arr())
 
@@ -164,14 +187,14 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
     "return false and list of tax code changes" when {
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(
-          Future.successful(TaxCodeMismatch(true, Seq("1185L","BR"), Seq("1185L","BR"))))
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
-            "mismatch" -> true,
-            "unconfirmedTaxCodes" -> Json.arr("1185L","BR"),
-            "confirmedTaxCodes" -> Json.arr("1185L","BR")
+            "mismatch"            -> true,
+            "unconfirmedTaxCodes" -> Json.arr("1185L", "BR"),
+            "confirmedTaxCodes"   -> Json.arr("1185L", "BR")
           ),
           "links" -> Json.arr())
 
@@ -183,7 +206,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
     "return a BadRequest 400" when {
       "a bad request exception has occurred" in {
-        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.failed(new BadRequestException("Error")))
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
@@ -194,7 +218,8 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
 
     "return a NotFound 404" when {
       "a not found exception has occurred" in {
-        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any())).thenReturn(Future.failed(new NotFoundException("Error")))
+        when(taxCodeService.taxCodeMismatch(Matchers.any())(Matchers.any()))
+          .thenReturn(Future.failed(new NotFoundException("Error")))
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
@@ -213,34 +238,36 @@ class TaxCodeChangeControllerSpec extends PlaySpec with MockitoSugar with MockAu
       "given valid nino and year" in {
 
         when(taxCodeService.latestTaxCodes(Matchers.any(), Matchers.any())(Matchers.any()))
-          .thenReturn(Future.successful(Seq(
-            TaxCodeSummary(
-              1,
-              "code",
-              "Cumulative",
-              LocalDate.now(),
-              LocalDate.now().plusDays(1),
-              "Employer 1",
-              Some("1234"),
-              false,
-              true
-            )
-          )))
+          .thenReturn(
+            Future.successful(
+              Seq(
+                TaxCodeSummary(
+                  1,
+                  "code",
+                  "Cumulative",
+                  LocalDate.now(),
+                  LocalDate.now().plusDays(1),
+                  "Employer 1",
+                  Some("1234"),
+                  false,
+                  true
+                )
+              )))
 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
         val json = Json.obj(
           "data" -> Json.arr(
             Json.obj(
-              "taxCodeId" -> 1,
-              "taxCode" -> "code",
+              "taxCodeId"        -> 1,
+              "taxCode"          -> "code",
               "basisOfOperation" -> "Cumulative",
-              "startDate" -> LocalDate.now(),
-              "endDate" -> LocalDate.now().plusDays(1),
-              "employerName" -> "Employer 1",
-              "payrollNumber" -> "1234",
+              "startDate"        -> LocalDate.now(),
+              "endDate"          -> LocalDate.now().plusDays(1),
+              "employerName"     -> "Employer 1",
+              "payrollNumber"    -> "1234",
               "pensionIndicator" -> false,
-              "primary" -> true
+              "primary"          -> true
             )
           ),
           "links" -> Json.arr()

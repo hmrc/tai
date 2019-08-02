@@ -26,19 +26,21 @@ case class AnnualAccount(
   rtiStatus: Option[RtiStatus] = None
 ) {
   def employments: Seq[Employment] = {
-    val rtiEmps = rti.map{_.employments}.getOrElse(Nil)
+    val rtiEmps = rti.map { _.employments }.getOrElse(Nil)
     val npsIncomes = nps.map(_.incomes.filter(_.employmentRecord.isDefined)).getOrElse(Seq())
-    rtiEmps.flatMap{ r =>
+    rtiEmps.flatMap { r =>
       npsIncomes.filter { n =>
         n.payeRef == r.payeRef &&
-          n.taxDistrict.contains(r.officeRefNo.toInt)
+        n.taxDistrict.contains(r.officeRefNo.toInt)
       } match {
-        case Seq(one) => Some(Employment(one,Some(r)))
-        case Nil => None
-        case m => m.find(_.worksNumber == r.currentPayId &&
-          r.currentPayId.isDefined).map(Employment(_,Some(r)))
+        case Seq(one) => Some(Employment(one, Some(r)))
+        case Nil      => None
+        case m =>
+          m.find(
+              _.worksNumber == r.currentPayId &&
+                r.currentPayId.isDefined)
+            .map(Employment(_, Some(r)))
       }
     }
   }
 }
-

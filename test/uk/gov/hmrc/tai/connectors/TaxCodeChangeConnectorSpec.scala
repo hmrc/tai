@@ -38,7 +38,8 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with TaxCodeHistoryConstants {
+class TaxCodeChangeConnectorSpec
+    extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with TaxCodeHistoryConstants {
 
   "taxCodeHistory" must {
     "return tax code change response" when {
@@ -86,10 +87,13 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
         val connector = createSut()
         val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
 
-        result mustEqual TaxCodeHistory(testNino.nino, Seq(
-          TaxCodeRecordFactory.createPrimaryEmployment(payrollNumber = None),
-          TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
-        ))
+        result mustEqual TaxCodeHistory(
+          testNino.nino,
+          Seq(
+            TaxCodeRecordFactory.createPrimaryEmployment(payrollNumber = None),
+            TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
+          )
+        )
       }
     }
 
@@ -112,22 +116,21 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with WireMockHelper with Befor
       )
 
       val connector = createSut()
-      val ex = the[JsResultException] thrownBy Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+      val ex = the[JsResultException] thrownBy Await
+        .result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
       ex.getMessage must include("ValidationError")
     }
   }
 
   lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
 
-  private def createSut(metrics: Metrics = injector.instanceOf[Metrics],
-                        httpClient: HttpClient = injector.instanceOf[HttpClient],
-                        auditor: Auditor = injector.instanceOf[Auditor],
-                        config: DesConfig = injector.instanceOf[DesConfig],
-                        taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) = {
-
+  private def createSut(
+    metrics: Metrics = injector.instanceOf[Metrics],
+    httpClient: HttpClient = injector.instanceOf[HttpClient],
+    auditor: Auditor = injector.instanceOf[Auditor],
+    config: DesConfig = injector.instanceOf[DesConfig],
+    taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
     new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
-
-  }
 
   private def randomNino: Nino = new Generator(new Random).nextNino
 }

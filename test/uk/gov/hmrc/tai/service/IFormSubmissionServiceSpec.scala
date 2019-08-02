@@ -53,14 +53,21 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
       val messageId = Await.result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
-        Future("")})(hc), 5.seconds)
+        Future("")
+      })(hc), 5.seconds)
 
       messageId mustBe "1"
 
-      verify(mockFileUploadService, times(1)).uploadFile(any(), any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())
-      verify(mockFileUploadService, times(1)).uploadFile(any(), any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"), any())(any())
+      verify(mockFileUploadService, times(1)).uploadFile(
+        any(),
+        any(),
+        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        any())(any())
+      verify(mockFileUploadService, times(1)).uploadFile(
+        any(),
+        any(),
+        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        any())(any())
     }
 
     "abort the iform submission when the iform creation fails" in {
@@ -75,13 +82,21 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      the[RuntimeException] thrownBy Await.result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
-        Future("")})(hc), 5.seconds)
+      the[RuntimeException] thrownBy Await
+        .result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
+          Future("")
+        })(hc), 5.seconds)
 
-      verify(mockFileUploadService, never()).uploadFile(any(), any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())
-      verify(mockFileUploadService, never()).uploadFile(any(), any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"), any())(any())
+      verify(mockFileUploadService, never()).uploadFile(
+        any(),
+        any(),
+        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        any())(any())
+      verify(mockFileUploadService, never()).uploadFile(
+        any(),
+        any(),
+        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        any())(any())
     }
   }
 
@@ -96,8 +111,9 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
 
-  private def createSUT(personRepository: PersonRepository,
-                        pdfService: PdfService,
-                        fileUploadService: FileUploadService) =
+  private def createSUT(
+    personRepository: PersonRepository,
+    pdfService: PdfService,
+    fileUploadService: FileUploadService) =
     new IFormSubmissionService(personRepository, pdfService, fileUploadService)
 }

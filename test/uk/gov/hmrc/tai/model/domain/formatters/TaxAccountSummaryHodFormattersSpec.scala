@@ -67,34 +67,37 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
             "totalLiability" -> 1234.56,
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 40
-              ),
-                Json.obj(
-                  "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )))
-            )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 40
+                  ),
+                  Json.obj(
+                    "bandType" -> "D0",
+                    "taxCode"  -> "BR",
+                    "income"   -> 1000,
+                    "rate"     -> 20
+                  )))
+            )
+          ))
 
         json.as[BigDecimal](taxAccountSummaryReads) mustBe BigDecimal(1194.56)
       }
@@ -121,10 +124,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "reliefsGivingBackTax" -> Json.obj(
               "enterpriseInvestmentSchemeRelief" -> 100,
-              "concessionalRelief" -> 100.50,
-              "maintenancePayments" -> 200,
-              "marriedCouplesAllowance" -> 300,
-              "doubleTaxationRelief" -> 400
+              "concessionalRelief"               -> 100.50,
+              "maintenancePayments"              -> 200,
+              "marriedCouplesAllowance"          -> 300,
+              "doubleTaxationRelief"             -> 400
             )
           )
         )
@@ -143,10 +146,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "reliefsGivingBackTax" -> Json.obj(
               "enterpriseInvestmentSchemeRelief" -> 100,
-              "concessionalRelief" -> 100.50,
-              "maintenancePayments" -> JsNull,
-              "marriedCouplesAllowance" -> 300,
-              "doubleTaxationRelief" -> 400
+              "concessionalRelief"               -> 100.50,
+              "maintenancePayments"              -> JsNull,
+              "marriedCouplesAllowance"          -> 300,
+              "doubleTaxationRelief"             -> 400
             )
           )
         )
@@ -164,10 +167,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "reliefsGivingBackTax" -> Json.obj(
               "enterpriseInvestmentSchemeRelief" -> JsNull,
-              "concessionalRelief" -> JsNull,
-              "maintenancePayments" -> JsNull,
-              "marriedCouplesAllowance" -> JsNull,
-              "doubleTaxationRelief" -> JsNull
+              "concessionalRelief"               -> JsNull,
+              "maintenancePayments"              -> JsNull,
+              "marriedCouplesAllowance"          -> JsNull,
+              "doubleTaxationRelief"             -> JsNull
             )
           )
         )
@@ -195,10 +198,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "otherTaxDue" -> Json.obj(
-              "excessGiftAidTax" -> 100,
-              "excessWidowsAndOrphans" -> 100,
+              "excessGiftAidTax"          -> 100,
+              "excessWidowsAndOrphans"    -> 100,
               "pensionPaymentsAdjustment" -> 200,
-              "childBenefit" -> 300
+              "childBenefit"              -> 300
             )
           )
         )
@@ -215,10 +218,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "otherTaxDue" -> Json.obj(
-              "excessGiftAidTax" -> 100,
-              "excessWidowsAndOrphans" -> 100,
+              "excessGiftAidTax"          -> 100,
+              "excessWidowsAndOrphans"    -> 100,
               "pensionPaymentsAdjustment" -> 200,
-              "childBenefit" -> JsNull
+              "childBenefit"              -> JsNull
             )
           )
         )
@@ -234,10 +237,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "otherTaxDue" -> Json.obj(
-              "excessGiftAidTax" -> JsNull,
-              "excessWidowsAndOrphans" -> JsNull,
+              "excessGiftAidTax"          -> JsNull,
+              "excessWidowsAndOrphans"    -> JsNull,
               "pensionPaymentsAdjustment" -> JsNull,
-              "childBenefit" -> JsNull
+              "childBenefit"              -> JsNull
             )
           )
         )
@@ -265,9 +268,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "alreadyTaxedAtSource" -> Json.obj(
-              "taxOnBankBSInterest" -> 100,
-              "taxCreditOnUKDividends" -> 100,
-              "taxCreditOnForeignInterest" -> 200,
+              "taxOnBankBSInterest"               -> 100,
+              "taxCreditOnUKDividends"            -> 100,
+              "taxCreditOnForeignInterest"        -> 200,
               "taxCreditOnForeignIncomeDividends" -> 300
             )
           )
@@ -285,9 +288,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "alreadyTaxedAtSource" -> Json.obj(
-              "taxOnBankBSInterest" -> JsNull,
-              "taxCreditOnUKDividends" -> 100,
-              "taxCreditOnForeignInterest" -> 200,
+              "taxOnBankBSInterest"               -> JsNull,
+              "taxCreditOnUKDividends"            -> 100,
+              "taxCreditOnForeignInterest"        -> 200,
               "taxCreditOnForeignIncomeDividends" -> JsNull
             )
           )
@@ -303,9 +306,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "alreadyTaxedAtSource" -> Json.obj(
-              "taxOnBankBSInterest" -> JsNull,
-              "taxCreditOnUKDividends" -> JsNull,
-              "taxCreditOnForeignInterest" -> JsNull,
+              "taxOnBankBSInterest"               -> JsNull,
+              "taxCreditOnUKDividends"            -> JsNull,
+              "taxCreditOnForeignInterest"        -> JsNull,
               "taxCreditOnForeignIncomeDividends" -> JsNull
             )
           )
@@ -323,33 +326,35 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 40
-              ),
-                Json.obj(
-                  "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 40
+                  ),
+                  Json.obj(
+                    "bandType" -> "D0",
+                    "taxCode"  -> "BR",
+                    "income"   -> 1000,
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -362,33 +367,35 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 1000,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 1000,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 40
-              ),
-                Json.obj(
-                  "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 40
+                  ),
+                  Json.obj(
+                    "bandType" -> "D0",
+                    "taxCode"  -> "BR",
+                    "income"   -> 1000,
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -401,40 +408,41 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 10000,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 10000,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 5000,
-                "taxCode" -> "BR",
-                "rate" -> 40
-              ),
+              "taxBands" -> JsArray(Seq(
+                Json.obj(
+                  "bandType" -> "B",
+                  "income"   -> 5000,
+                  "taxCode"  -> "BR",
+                  "rate"     -> 40
+                ),
                 Json.obj(
                   "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )
-                ,
+                  "taxCode"  -> "BR",
+                  "income"   -> 1000,
+                  "rate"     -> 20
+                ),
                 Json.obj(
                   "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 8000,
-                  "rate" -> 10
-                )))
+                  "taxCode"  -> "BR",
+                  "income"   -> 8000,
+                  "rate"     -> 10
+                )
+              ))
             )
           )
         )
@@ -447,27 +455,29 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 20
-              )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -480,21 +490,23 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 84,
-                  "npsDescription" -> "Job-Seeker Allowance",
-                  "employmentId" -> JsNull
-                ))
-
-                )
+                "iabdSummaries" -> JsArray(
+                  Seq(
+                    Json.obj(
+                      "amount"         -> 100,
+                      "type"           -> 84,
+                      "npsDescription" -> "Job-Seeker Allowance",
+                      "employmentId"   -> JsNull
+                    )))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 20
-              )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -507,20 +519,20 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
               "taxBands" -> JsNull
             )
@@ -535,27 +547,29 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> JsNull,
-                "taxCode" -> "BR",
-                "rate" -> 20
-              )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> JsNull,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -572,10 +586,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "reliefsGivingBackTax" -> Json.obj(
               "enterpriseInvestmentSchemeRelief" -> 100,
-              "concessionalRelief" -> 100.50,
-              "maintenancePayments" -> 200,
-              "marriedCouplesAllowance" -> 300,
-              "doubleTaxationRelief" -> 400
+              "concessionalRelief"               -> 100.50,
+              "maintenancePayments"              -> 200,
+              "marriedCouplesAllowance"          -> 300,
+              "doubleTaxationRelief"             -> 400
             )
           )
         )
@@ -593,10 +607,10 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "otherTaxDue" -> Json.obj(
-              "excessGiftAidTax" -> 100,
-              "excessWidowsAndOrphans" -> 100,
+              "excessGiftAidTax"          -> 100,
+              "excessWidowsAndOrphans"    -> 100,
               "pensionPaymentsAdjustment" -> 200,
-              "childBenefit" -> 300
+              "childBenefit"              -> 300
             )
           )
         )
@@ -613,9 +627,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "alreadyTaxedAtSource" -> Json.obj(
-              "taxOnBankBSInterest" -> 100,
-              "taxCreditOnUKDividends" -> 100,
-              "taxCreditOnForeignInterest" -> 200,
+              "taxOnBankBSInterest"               -> 100,
+              "taxCreditOnUKDividends"            -> 100,
+              "taxCreditOnForeignInterest"        -> 200,
               "taxCreditOnForeignIncomeDividends" -> 300
             )
           )
@@ -634,27 +648,27 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "reliefsGivingBackTax" -> Json.obj(
               "enterpriseInvestmentSchemeRelief" -> 100,
-              "concessionalRelief" -> 100.50,
-              "maintenancePayments" -> 200,
-              "marriedCouplesAllowance" -> 300,
-              "doubleTaxationRelief" -> 400
+              "concessionalRelief"               -> 100.50,
+              "maintenancePayments"              -> 200,
+              "marriedCouplesAllowance"          -> 300,
+              "doubleTaxationRelief"             -> 400
             ),
             "otherTaxDue" -> Json.obj(
-              "excessGiftAidTax" -> 100,
-              "excessWidowsAndOrphans" -> 100,
+              "excessGiftAidTax"          -> 100,
+              "excessWidowsAndOrphans"    -> 100,
               "pensionPaymentsAdjustment" -> 200,
-              "childBenefit" -> 300
+              "childBenefit"              -> 300
             ),
             "alreadyTaxedAtSource" -> Json.obj(
-              "taxOnBankBSInterest" -> 100,
-              "taxCreditOnUKDividends" -> 100,
-              "taxCreditOnForeignInterest" -> 200,
+              "taxOnBankBSInterest"               -> 100,
+              "taxCreditOnUKDividends"            -> 100,
+              "taxCreditOnForeignInterest"        -> 200,
               "taxCreditOnForeignIncomeDividends" -> 300
             ),
             "basicRateExtensions" -> Json.obj(
-              "personalPensionPayment" -> 600,
+              "personalPensionPayment"       -> 600,
               "personalPensionPaymentRelief" -> 100,
-              "giftAidPaymentsRelief" -> 200
+              "giftAidPaymentsRelief"        -> 200
             )
           )
         )
@@ -688,33 +702,35 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
-                "iabdSummaries" -> JsArray(Seq(Json.obj(
-                  "amount" -> 100,
-                  "type" -> 19,
-                  "npsDescription" -> "Non-Coded Income",
-                  "employmentId" -> JsNull
-                ),
+                "iabdSummaries" -> JsArray(Seq(
                   Json.obj(
-                    "amount" -> 100,
-                    "type" -> 84,
+                    "amount"         -> 100,
+                    "type"           -> 19,
+                    "npsDescription" -> "Non-Coded Income",
+                    "employmentId"   -> JsNull
+                  ),
+                  Json.obj(
+                    "amount"         -> 100,
+                    "type"           -> 84,
                     "npsDescription" -> "Job-Seeker Allowance",
-                    "employmentId" -> JsNull
-                  ))
-
-                )
+                    "employmentId"   -> JsNull
+                  )
+                ))
               ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 40
-              ),
-                Json.obj(
-                  "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 40
+                  ),
+                  Json.obj(
+                    "bandType" -> "D0",
+                    "taxCode"  -> "BR",
+                    "income"   -> 1000,
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -729,19 +745,21 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
             "nonSavings" -> Json.obj(
               "totalIncome" -> Json.obj(
                 "iabdSummaries" -> JsArray()
-                ),
-              "taxBands" -> JsArray(Seq(Json.obj(
-                "bandType" -> "B",
-                "income" -> 1000,
-                "taxCode" -> "BR",
-                "rate" -> 40
               ),
-                Json.obj(
-                  "bandType" -> "D0",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "rate" -> 20
-                )))
+              "taxBands" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "bandType" -> "B",
+                    "income"   -> 1000,
+                    "taxCode"  -> "BR",
+                    "rate"     -> 40
+                  ),
+                  Json.obj(
+                    "bandType" -> "D0",
+                    "taxCode"  -> "BR",
+                    "income"   -> 1000,
+                    "rate"     -> 20
+                  )))
             )
           )
         )
@@ -766,9 +784,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "basicRateExtensions" -> Json.obj(
-              "personalPensionPayment" -> JsNull,
+              "personalPensionPayment"       -> JsNull,
               "personalPensionPaymentRelief" -> JsNull,
-              "giftAidPaymentsRelief" -> JsNull
+              "giftAidPaymentsRelief"        -> JsNull
             )
           )
         )
@@ -782,9 +800,9 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "basicRateExtensions" -> Json.obj(
-              "personalPensionPayment" -> 600,
+              "personalPensionPayment"       -> 600,
               "personalPensionPaymentRelief" -> 100,
-              "giftAidPaymentsRelief" -> 200
+              "giftAidPaymentsRelief"        -> 200
             )
           )
         )
@@ -801,7 +819,7 @@ class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with
           "totalLiability" -> Json.obj(
             "basicRateExtensions" -> Json.obj(
               "personalPensionPayment" -> 600,
-              "giftAidPaymentsRelief" -> 200
+              "giftAidPaymentsRelief"  -> 200
             )
           )
         )

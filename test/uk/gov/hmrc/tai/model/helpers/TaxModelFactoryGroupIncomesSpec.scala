@@ -22,7 +22,6 @@ import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.IabdType.Profit
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 
-
 class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestData {
 
   "groupIncomes" should {
@@ -33,11 +32,10 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
     }
     "return some grouped incomes" when {
       "passed employments as taxCodeIncomeTotal" in {
-        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name",
-          taxCode = "taxCode", tax = Tax(Some(5000))))
+        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name", taxCode = "taxCode", tax = Tax(Some(5000))))
 
-        val taxCodeIncomeTotal = TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000),
-          BigDecimal(40000))
+        val taxCodeIncomeTotal =
+          TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
         val taxCodeIncomes = TaxCodeIncomes(Some(taxCodeIncomeTotal), None, None, None, false, 50000, 40000, 5000)
         val noneTaxCodeIncomes = NoneTaxCodeIncomes(totalIncome = BigDecimal(0))
@@ -51,19 +49,20 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
       "passed state pension and statePensionLumpSum" in {
 
         val resTaxCodeIncomes = TaxCodeIncomes(None, None, None, None, false, 0, 0, 0)
-        val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(Some(100), Some(200), None, None, None, None, None, None, None, None, 300)
+        val resNoneTaxCodeIncomes =
+          NoneTaxCodeIncomes(Some(100), Some(200), None, None, None, None, None, None, None, None, 300)
         val resTotal = BigDecimal(300)
 
         val res = Some(Incomes(resTaxCodeIncomes, resNoneTaxCodeIncomes, resTotal))
-        createSUT.groupIncomes(statePension = Some(BigDecimal(100)), statePensionLumpSum = Some(BigDecimal(200))) mustBe res
+        createSUT
+          .groupIncomes(statePension = Some(BigDecimal(100)), statePensionLumpSum = Some(BigDecimal(200))) mustBe res
       }
 
       "passed occupational pensions as taxCodeIncomeTotal" in {
-        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name",
-          taxCode = "taxCode", tax = Tax(Some(5000))))
+        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name", taxCode = "taxCode", tax = Tax(Some(5000))))
 
-        val taxCodeIncomeTotal = TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000),
-          BigDecimal(40000))
+        val taxCodeIncomeTotal =
+          TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
         val resTaxCodeIncomes = TaxCodeIncomes(None, Some(taxCodeIncomeTotal), None, None, false, 50000, 40000, 5000)
         val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, None, None, None, None, None, None, 0)
@@ -74,16 +73,19 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
       }
 
       "passed taxableStateBenefitIncomes as taxCodeIncomeTotal" in {
-        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name",
-          taxCode = "taxCode", tax = Tax(Some(5000))))
+        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name", taxCode = "taxCode", tax = Tax(Some(5000))))
 
-        val taxCodeIncomeTotal = TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000),
-          BigDecimal(40000))
+        val taxCodeIncomeTotal =
+          TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
         val resTaxCodeIncomes = TaxCodeIncomes(None, Some(taxCodeIncomeTotal), None, None, false, 50000, 40000, 5000)
         val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, None, None, None, None, None, None, 0)
         val total = BigDecimal(50000)
-        val res = Some(Incomes(TaxCodeIncomes(None, None, Some(taxCodeIncomeTotal), None, false, 50000, 40000, 5000), resNoneTaxCodeIncomes, total))
+        val res = Some(
+          Incomes(
+            TaxCodeIncomes(None, None, Some(taxCodeIncomeTotal), None, false, 50000, 40000, 5000),
+            resNoneTaxCodeIncomes,
+            total))
 
         createSUT.groupIncomes(taxableStateBenefitIncomes = Some(taxCodeIncomeTotal)) mustBe res
       }
@@ -92,7 +94,8 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
 
         val taxComponent = Some(TaxComponent(500, 5, "taxable state benefit", Nil))
 
-        val noneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, taxComponent, None, None, None, None, None, 500)
+        val noneTaxCodeIncomes =
+          NoneTaxCodeIncomes(None, None, None, None, taxComponent, None, None, None, None, None, 500)
         val taxCodeIncomes = TaxCodeIncomes(None, None, None, None, false, 0, 0, 0)
         val resTotal = BigDecimal(500)
         val res = Some(Incomes(taxCodeIncomes, noneTaxCodeIncomes, resTotal))
@@ -101,16 +104,19 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
       }
 
       "passed ceasedEmployments as taxCodeIncomeTotal" in {
-        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name",
-          taxCode = "taxCode", tax = Tax(Some(5000))))
+        val taxCodeIncomeSummary = List(TaxCodeIncomeSummary(name = "name", taxCode = "taxCode", tax = Tax(Some(5000))))
 
-        val taxCodeIncomeTotal = TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000),
-          BigDecimal(40000))
+        val taxCodeIncomeTotal =
+          TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
         val resTaxCodeIncomes = TaxCodeIncomes(None, Some(taxCodeIncomeTotal), None, None, false, 50000, 40000, 5000)
-        val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None,None,None,None,None,None,None,None,None,None,0)
+        val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, None, None, None, None, None, None, 0)
         val resTotal = BigDecimal(50000)
-        val res = Some(Incomes(TaxCodeIncomes(None,None,None,Some(taxCodeIncomeTotal),false,50000,40000,5000),resNoneTaxCodeIncomes,resTotal))
+        val res = Some(
+          Incomes(
+            TaxCodeIncomes(None, None, None, Some(taxCodeIncomeTotal), false, 50000, 40000, 5000),
+            resNoneTaxCodeIncomes,
+            resTotal))
 
         createSUT.groupIncomes(ceasedEmployments = Some(taxCodeIncomeTotal)) mustBe res
       }
@@ -155,24 +161,25 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
           totalLiability = Some(5000)
         )
 
-        val incomeSources = Some(List(NpsIncomeSource(
-          name = Some("income source name"),
-          taxCode = Some("K950BR"),
-          employmentType = Some(1),
-          allowances = Some(List(npsComponent)),
-          deductions = Some(List(npsComponent)),
-          payAndTax = Some(npsTax),
-          employmentId = Some(123),
-          employmentStatus = Some(1),
-          employmentTaxDistrictNumber = Some(321),
-          employmentPayeRef = Some("321/000"),
-          pensionIndicator = Some(false),
-          otherIncomeSourceIndicator = Some(false),
-          jsaIndicator = Some(false),
-          basisOperation = Some(BasisOperation.Cumulative))
-        ))
+        val incomeSources = Some(
+          List(NpsIncomeSource(
+            name = Some("income source name"),
+            taxCode = Some("K950BR"),
+            employmentType = Some(1),
+            allowances = Some(List(npsComponent)),
+            deductions = Some(List(npsComponent)),
+            payAndTax = Some(npsTax),
+            employmentId = Some(123),
+            employmentStatus = Some(1),
+            employmentTaxDistrictNumber = Some(321),
+            employmentPayeRef = Some("321/000"),
+            pensionIndicator = Some(false),
+            otherIncomeSourceIndicator = Some(false),
+            jsaIndicator = Some(false),
+            basisOperation = Some(BasisOperation.Cumulative)
+          )))
 
-        val taxCodeIncomes = TaxCodeIncomes(None,None,None,None,false,0,0,0)
+        val taxCodeIncomes = TaxCodeIncomes(None, None, None, None, false, 0, 0, 0)
 
         val res = createSUT.groupIncomes(totalLiability = Some(totalLiab), incomeSources = incomeSources)
 
@@ -187,4 +194,3 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
   class SUT extends TaxModelFactory
 
 }
-

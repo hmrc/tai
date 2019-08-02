@@ -21,20 +21,20 @@ import org.slf4j._
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 
-case class Income (
-                    employmentId: Option[Int],
-                    isPrimary: Boolean,
-                    incomeType: IncomeType.Value,
-                    status: Status,
-                    taxDistrict: Option[Int],
-                    payeRef: String,
-                    name: String,
-                    worksNumber: Option[String],
-                    taxCode: String,
-                    potentialUnderpayment: BigDecimal,
-                    employmentRecord: Option[NpsEmployment],
-                    basisOperation:Option[BasisOperation]=None
-                    )
+case class Income(
+  employmentId: Option[Int],
+  isPrimary: Boolean,
+  incomeType: IncomeType.Value,
+  status: Status,
+  taxDistrict: Option[Int],
+  payeRef: String,
+  name: String,
+  worksNumber: Option[String],
+  taxCode: String,
+  potentialUnderpayment: BigDecimal,
+  employmentRecord: Option[NpsEmployment],
+  basisOperation: Option[BasisOperation] = None
+)
 
 object Income {
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -49,18 +49,16 @@ object Income {
 
   object Status {
     def apply(code: Option[Int], ceased: Option[LocalDate]): Status =
-      (code,ceased) match {
-        case (Some(Live.code),None) => Live
-        case (Some(Ceased.code),Some(date)) => Ceased(date)
-        case (Some(PotentiallyCeased.code),None) => PotentiallyCeased
-        case (x,Some(date)) => {
-          log.warn(
-            s"Suspect Income status: CODE:$x, ending $date, setting to ceased")
+      (code, ceased) match {
+        case (Some(Live.code), None)              => Live
+        case (Some(Ceased.code), Some(date))      => Ceased(date)
+        case (Some(PotentiallyCeased.code), None) => PotentiallyCeased
+        case (x, Some(date)) => {
+          log.warn(s"Suspect Income status: CODE:$x, ending $date, setting to ceased")
           Ceased(date)
         }
-        case (x,None) => {
-          log.warn(
-            s"Suspect Income status: CODE:$x, no ending date, setting to live")
+        case (x, None) => {
+          log.warn(s"Suspect Income status: CODE:$x, no ending date, setting to live")
           Live
         }
       }

@@ -28,42 +28,45 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-
-
 @Singleton
-class IncomeRepository @Inject()(taxAccountRepository: TaxAccountRepository,
-                                 bbsiRepository: BbsiRepository,
-                                 iabdRepository: IabdRepository)
-  extends TaxAccountIncomeHodFormatters
-    with TaxCodeIncomeHodFormatters
-    with IabdHodFormatters {
+class IncomeRepository @Inject()(
+  taxAccountRepository: TaxAccountRepository,
+  bbsiRepository: BbsiRepository,
+  iabdRepository: IabdRepository)
+    extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
-    taxAccountRepository.taxAccount(nino, year) flatMap  { jsValue =>
+  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
+    taxAccountRepository.taxAccount(nino, year) flatMap { jsValue =>
       val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads)
-      val (untaxedInterestIncome, otherNonTaxCodeIncome) = nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
+      val (untaxedInterestIncome, otherNonTaxCodeIncome) =
+        nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
-      if(untaxedInterestIncome.nonEmpty){
+      if (untaxedInterestIncome.nonEmpty) {
         for {
           accounts <- bbsiRepository.bbsiDetails(nino, year).recover({ case NonFatal(_) => Seq.empty[BankAccount] })
         } yield {
           val income = untaxedInterestIncome.head
-          val untaxedInterest = UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description, accounts)
+          val untaxedInterest = UntaxedInterest(
+            income.incomeComponentType,
+            income.employmentId,
+            income.amount,
+            income.description,
+            accounts)
           Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
         }
       } else {
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
     }
-  }
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    val taxCodeIncomeFuture = taxAccountRepository.taxAccount(nino, year) map (_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
-    val iabdDetailsFuture = iabdRepository.iabds(nino, year) map(_.as[Seq[IabdDetails]])
+    val taxCodeIncomeFuture = taxAccountRepository
+      .taxAccount(nino, year) map (_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
+    val iabdDetailsFuture = iabdRepository.iabds(nino, year) map (_.as[Seq[IabdDetails]])
 
     for {
       taxCodeIncomes <- taxCodeIncomeFuture
-      iabdDetails <- iabdDetailsFuture
+      iabdDetails    <- iabdDetailsFuture
     } yield {
 
       taxCodeIncomes.map { taxCodeIncome =>
@@ -71,7 +74,6 @@ class IncomeRepository @Inject()(taxAccountRepository: TaxAccountRepository,
       }
     }
   }
-
 
   private def addIabdDetailsToTaxCodeIncome(iabdDetails: Seq[IabdDetails], taxCodeIncome: TaxCodeIncome) = {
     val iabdDetail = iabdDetails.find(_.employmentSequenceNumber == taxCodeIncome.employmentId)

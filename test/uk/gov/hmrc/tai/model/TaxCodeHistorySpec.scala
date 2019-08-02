@@ -54,7 +54,7 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
     "return a TaxCodeHistory when there are no tax code records" in {
 
       val validJson = Json.obj(
-        "nino" -> nino,
+        "nino"          -> nino,
         "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
       )
 

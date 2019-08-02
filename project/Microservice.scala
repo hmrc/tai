@@ -5,7 +5,7 @@ import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport.scalafmtOnCompile
 
 trait MicroService {
 
@@ -48,7 +48,8 @@ trait MicroService {
       libraryDependencies ++= appDependencies,
       retrieveManaged := true,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-      routesGenerator := InjectedRoutesGenerator
+      routesGenerator := InjectedRoutesGenerator,
+      scalafmtOnCompile := true
     )
     .settings(inConfig(ITTestPhases.TemplateTest)(Defaults.testSettings): _*)
     .configs(IntegrationTest)

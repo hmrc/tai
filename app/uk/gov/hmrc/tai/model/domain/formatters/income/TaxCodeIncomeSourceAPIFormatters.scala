@@ -45,11 +45,11 @@ trait TaxCodeIncomeSourceAPIFormatters {
       (JsPath \ "name").write[String] and
       (JsPath \ "basisOperation").write[BasisOperation](basisOperationWrites) and
       (JsPath \ "status").write[TaxCodeIncomeStatus](taxCodeIncomeSourceStatusWrites) and
-      (JsPath \ "inYearAdjustmentIntoCY").write[BigDecimal]and
-      (JsPath \ "totalInYearAdjustment").write[BigDecimal]and
+      (JsPath \ "inYearAdjustmentIntoCY").write[BigDecimal] and
+      (JsPath \ "totalInYearAdjustment").write[BigDecimal] and
       (JsPath \ "inYearAdjustmentIntoCYPlusOne").write[BigDecimal] and
       (JsPath \ "iabdUpdateSource").writeNullable[IabdUpdateSource] and
       (JsPath \ "updateNotificationDate").writeNullable[LocalDate] and
       (JsPath \ "updateActionDate").writeNullable[LocalDate]
-    ) (unlift(TaxCodeIncome.unapply))
+  )(unlift(TaxCodeIncome.unapply))
 }

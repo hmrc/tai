@@ -42,7 +42,8 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with MongoFormatter with BeforeAndAfterEach {
+class CacheConnectorSpec
+    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with MongoFormatter with BeforeAndAfterEach {
 
   "Cache Connector" should {
     "save the data in cache" when {
@@ -160,7 +161,6 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         verify(cacheRepository, times(1)).findById(Matchers.eq(Id(id)), any())(any())
       }
 
-
       "id is not present in the cache and encryption is enabled" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
@@ -212,7 +212,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val eventualSomeCache = Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
+        val eventualSomeCache =
+          Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[SessionData](id, "TAI-SESSION"), atMost)
@@ -242,7 +243,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val eventualSomeCache = Some(Cache(Id(id), Some(Json.toJson(Map("TAI-DATA" -> List(sessionData, sessionData))))))
+        val eventualSomeCache =
+          Some(Cache(Id(id), Some(Json.toJson(Map("TAI-DATA" -> List(sessionData, sessionData))))))
         when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[String](id, "TAI-DATA"), atMost)
@@ -300,7 +302,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.removeById(any(), any())(any())).thenReturn(Future.successful(DefaultWriteResult(ok = true, 0, Nil, None, None, None)))
+        when(cacheRepository.removeById(any(), any())(any()))
+          .thenReturn(Future.successful(DefaultWriteResult(ok = true, 0, Nil, None, None, None)))
 
         val result = Await.result(sut.removeById("ABC"), atMost)
 
@@ -315,7 +318,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val writeErrors = Seq(WriteError(0, 0, "Failed"))
-        val eventualWriteResult = Future.successful(DefaultWriteResult(ok = false, 0, writeErrors, None, None, Some("Failed")))
+        val eventualWriteResult =
+          Future.successful(DefaultWriteResult(ok = false, 0, writeErrors, None, None, Some("Failed")))
         when(cacheRepository.removeById(any(), any())(any())).thenReturn(eventualWriteResult)
 
         val ex = the[RuntimeException] thrownBy Await.result(sut.removeById("ABC"), atMost)
@@ -330,7 +334,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val eventualSomeCache = Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
+        val eventualSomeCache =
+          Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](id, "TAI-SESSION"), atMost)
@@ -389,7 +394,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val eventualSomeCache = Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
+        val eventualSomeCache =
+          Some(Cache(Id(id), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](id, "TAI-DATA"), atMost)
@@ -420,7 +426,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(cacheRepository.createOrUpdate(Matchers.eq(Id("1")), Matchers.eq("KeyName"), Matchers.eq(jsonData))).thenReturn(databaseUpdate)
+        when(cacheRepository.createOrUpdate(Matchers.eq(Id("1")), Matchers.eq("KeyName"), Matchers.eq(jsonData)))
+          .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(id = "1", json = jsonData, key = "KeyName"), atMost)
 
@@ -432,7 +439,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(cacheRepository.createOrUpdate(Matchers.eq(Id("1")), Matchers.eq("KeyName"), any())).thenReturn(databaseUpdate)
+        when(cacheRepository.createOrUpdate(Matchers.eq(Id("1")), Matchers.eq("KeyName"), any()))
+          .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(id = "1", json = jsonData, key = "KeyName"), atMost)
 
@@ -449,7 +457,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj(mongoKey -> "DATA")
         val eventualSomeCache = Some(Cache(Id(id), Some(json)))
-        when(cacheRepository.findById(Matchers.eq(Id(id)), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(cacheRepository.findById(Matchers.eq(Id(id)), any())(any()))
+          .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(id, mongoKey), atMost)
 
@@ -476,7 +485,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj("wrong-key" -> "DATA")
         val eventualSomeCache = Some(Cache(Id(id), Some(json)))
-        when(cacheRepository.findById(Matchers.eq(Id(id)), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(cacheRepository.findById(Matchers.eq(Id(id)), any())(any()))
+          .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(id, mongoKey), atMost)
 
@@ -485,8 +495,8 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
     }
   }
 
-
-  lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(Play.current.configuration.underlying).JsonCrypto
+  lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(
+    Play.current.configuration.underlying).JsonCrypto
   val nino = new Generator(new Random).nextNino
   val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
   val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
@@ -505,7 +515,6 @@ class CacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppl
     new CacheConnector(taiCacheRepository, mongoConfig)
   }
 
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     reset(cacheRepository)
-  }
 }

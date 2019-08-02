@@ -42,8 +42,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class FileUploadConnectorSpec extends PlaySpec
-  with MockitoSugar {
+class FileUploadConnectorSpec extends PlaySpec with MockitoSugar {
 
   implicit val hc = HeaderCarrier()
 
@@ -51,8 +50,8 @@ class FileUploadConnectorSpec extends PlaySpec
     "return an envelope id" in {
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(CREATED, None,
-          Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
+        .thenReturn(Future.successful(
+          HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -76,8 +75,8 @@ class FileUploadConnectorSpec extends PlaySpec
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(CREATED, None,
-          Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
+        .thenReturn(Future.successful(
+          HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -141,8 +140,8 @@ class FileUploadConnectorSpec extends PlaySpec
 
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(CREATED, None,
-            Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
+          .thenReturn(Future.successful(
+            HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
 
         val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
         Await.result(sut.createEnvelope, 5.seconds)
@@ -194,7 +193,9 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockAhcWSClient.url(any())).thenReturn(mockWSRequest)
 
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
-        val result = Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mockAhcWSClient), 5 seconds)
+        val result = Await.result(
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mockAhcWSClient),
+          5 seconds)
 
         result.status mustBe OK
         verify(mockMetrics, times(1)).incrementSuccessCounter(Matchers.eq(FusUploadFile))
@@ -223,7 +224,8 @@ class FileUploadConnectorSpec extends PlaySpec
         when(ahcWSClient.url(any())).thenReturn(mockWSRequest)
         when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
 
-        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        the[RuntimeException] thrownBy Await
+          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
         verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
       }
 
@@ -242,7 +244,8 @@ class FileUploadConnectorSpec extends PlaySpec
         when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
         val ahcWSClient: AhcWSClient = mock[AhcWSClient]
 
-        the[RuntimeException] thrownBy Await.result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        the[RuntimeException] thrownBy Await
+          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
       }
     }
 
@@ -252,8 +255,8 @@ class FileUploadConnectorSpec extends PlaySpec
     "return an envelope id" in {
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(CREATED, None,
-          Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
+        .thenReturn(
+          Future.successful(HttpResponse(CREATED, None, Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -270,8 +273,8 @@ class FileUploadConnectorSpec extends PlaySpec
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(CREATED, None,
-          Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
+        .thenReturn(
+          Future.successful(HttpResponse(CREATED, None, Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
 
       val mockUrls = mock[FileUploadUrls]
       when(mockUrls.fileUrl(any(), any()))
@@ -357,8 +360,8 @@ class FileUploadConnectorSpec extends PlaySpec
       "the call is successful" in {
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(CREATED, None,
-            Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
+          .thenReturn(Future.successful(
+            HttpResponse(CREATED, None, Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
 
         val mockWsClient = mock[WSClient]
         val mockUrls = mock[FileUploadUrls]
@@ -410,9 +413,14 @@ class FileUploadConnectorSpec extends PlaySpec
 
         val result = Await.result(sut.envelope(envelopeId), 5.seconds)
 
-        result.get mustBe EnvelopeSummary(envelopeId, "CLOSED",
-          Seq(EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-iform", "AVAILABLE"),
-            EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "AVAILABLE")))
+        result.get mustBe EnvelopeSummary(
+          envelopeId,
+          "CLOSED",
+          Seq(
+            EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-iform", "AVAILABLE"),
+            EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "AVAILABLE")
+          )
+        )
 
       }
 
@@ -489,8 +497,10 @@ class FileUploadConnectorSpec extends PlaySpec
   private val envelopeId: String = "4142477f-9242-4a98-9c8b-73295cfb170c"
 
   private def envelopeStatusResponse(file1Status: String, file2Status: String, status: String = "OPEN") = {
-    val file1 = Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-iform", "status" -> file1Status)
-    val file2 = Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "status" -> file2Status)
+    val file1 =
+      Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-iform", "status" -> file1Status)
+    val file2 =
+      Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "status" -> file2Status)
     Json.obj("id" -> envelopeId, "status" -> status, "files" -> JsArray(Seq(file1, file2)))
   }
 
@@ -498,11 +508,11 @@ class FileUploadConnectorSpec extends PlaySpec
   private val fileName = "fileName.pdf"
   private val contentType = MimeContentType.ApplicationPdf
 
-  private def createSut(metrics: Metrics,
-                        HttpClient: HttpClient,
-                        wsClient: WSClient,
-                        urls: FileUploadUrls,
-                        config: FileUploadConfig) =
-
+  private def createSut(
+    metrics: Metrics,
+    HttpClient: HttpClient,
+    wsClient: WSClient,
+    urls: FileUploadUrls,
+    config: FileUploadConfig) =
     new FileUploadConnector(metrics, HttpClient, wsClient, urls, config)
 }

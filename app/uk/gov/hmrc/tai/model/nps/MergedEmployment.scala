@@ -19,13 +19,15 @@ package uk.gov.hmrc.tai.model.nps
 import uk.gov.hmrc.tai.model.TaxCodeIncomeSummary
 import uk.gov.hmrc.tai.util.TaiConstants
 
-case class MergedEmployment(incomeSource : NpsIncomeSource, employment :Option[NpsEmployment]=None,
-                            adjustedNetIncome : Option[BigDecimal]=None) {
+case class MergedEmployment(
+  incomeSource: NpsIncomeSource,
+  employment: Option[NpsEmployment] = None,
+  adjustedNetIncome: Option[BigDecimal] = None) {
 
-  lazy val orderField = s"${incomeSource.employmentType.getOrElse(TaiConstants.SecondaryEmployment)}-${incomeSource.name.getOrElse("No Name Supplied")}"
+  lazy val orderField =
+    s"${incomeSource.employmentType.getOrElse(TaiConstants.SecondaryEmployment)}-${incomeSource.name.getOrElse("No Name Supplied")}"
 
-  def toTaxCodeIncomeSummary: TaxCodeIncomeSummary = {
+  def toTaxCodeIncomeSummary: TaxCodeIncomeSummary =
     incomeSource.toTaxCodeIncomeSummary(employment, adjustedNetIncome)
-  }
 
 }

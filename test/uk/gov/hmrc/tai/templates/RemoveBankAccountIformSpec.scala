@@ -26,8 +26,7 @@ import uk.gov.hmrc.tai.model.templates.CloseBankAccount
 
 import scala.util.Random
 
-
-class RemoveBankAccountIformSpec extends PlaySpec{
+class RemoveBankAccountIformSpec extends PlaySpec {
 
   "Remove Bank Account Iform" must {
     "display Logo" in {
@@ -47,17 +46,23 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
       val bankAndBuildingIncorrect = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
 
-      bankAndBuildingIncorrect.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that is incorrect?"
+      bankAndBuildingIncorrect
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that is incorrect?"
       bankAndBuildingIncorrect.select("td:nth-of-type(2)").text() mustBe "No"
 
       val bankAndBuildingMissing = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
 
-      bankAndBuildingMissing.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that is missing?"
+      bankAndBuildingMissing
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that is missing?"
       bankAndBuildingMissing.select("td:nth-of-type(2)").text() mustBe "No"
 
       val bankAndBuildingEnded = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
 
-      bankAndBuildingEnded.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that has ended?"
+      bankAndBuildingEnded
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that has ended?"
       bankAndBuildingEnded.select("td:nth-of-type(2)").text() mustBe "Yes"
     }
 
@@ -73,24 +78,32 @@ class RemoveBankAccountIformSpec extends PlaySpec{
       endSection.select("tr:nth-of-type(2) td:nth-of-type(2)").text() mustBe closeBankAccount.personDetails.firstName
       endSection.select("tr:nth-of-type(3) td:nth-of-type(1)").text() mustBe "Sort code"
       endSection.select("tr:nth-of-type(3) td:nth-of-type(2)").text() mustBe closeBankAccount.bankAccount.sortCode.get
-      endSection.select("tr:nth-of-type(4) td:nth-of-type(1)").text() mustBe "Account number of the UK bank or building society"
-      endSection.select("tr:nth-of-type(4) td:nth-of-type(2)").text() mustBe closeBankAccount.bankAccount.accountNumber.get
+      endSection
+        .select("tr:nth-of-type(4) td:nth-of-type(1)")
+        .text() mustBe "Account number of the UK bank or building society"
+      endSection
+        .select("tr:nth-of-type(4) td:nth-of-type(2)")
+        .text() mustBe closeBankAccount.bankAccount.accountNumber.get
       endSection.select("tr:nth-of-type(5) td:nth-of-type(1)").text() mustBe "Is this a joint account?"
       endSection.select("tr:nth-of-type(5) td:nth-of-type(2)").text() mustBe "No"
       endSection.select("tr:nth-of-type(6) td:nth-of-type(1)").text() mustBe "Date you closed the account"
-      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.toString("d MMMM yyyy")
+      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.toString(
+        "d MMMM yyyy")
     }
 
     "display ended section with interest supplied and within current tax year" in {
 
-      val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, Some(123.45))
+      val closeBankAccount =
+        CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, Some(123.45))
 
       val sut = uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(closeBankAccount)
       val doc = Jsoup.parse(sut.toString)
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
+      endSection
+        .select("tr:nth-of-type(7) td:nth-of-type(1)")
+        .text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "£123.45"
     }
 
@@ -103,13 +116,16 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
+      endSection
+        .select("tr:nth-of-type(7) td:nth-of-type(1)")
+        .text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "I do not know"
     }
 
     "display ended section with interest not supplied and before current tax year" in {
 
-      val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate.minusDays(1), None)
+      val closeBankAccount =
+        CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate.minusDays(1), None)
 
       val sut = uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(closeBankAccount)
       val doc = Jsoup.parse(sut.toString)
@@ -131,19 +147,26 @@ class RemoveBankAccountIformSpec extends PlaySpec{
 
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
-      endSection.select("tr:nth-of-type(7) td:nth-of-type(1)").text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
+      endSection
+        .select("tr:nth-of-type(7) td:nth-of-type(1)")
+        .text() mustBe s"Interest earned since 6 April ${TaxYear().year}"
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "I do not know"
     }
   }
   private val nino: Nino = new Generator(new Random).nextNino
   private val dateOfBirth = LocalDate.parse("2017-02-01")
 
-  private val personDetails = Person(Nino(nino.nino), "test", "tester", Some(dateOfBirth),
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
     Address("line1", "line2", "line3", "postcode", "country"))
 
   private val startOfTaxYearCloseDate = TaxYear().start
 
   private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
   private val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, None)
-  private def removeBankAccountTemplate(viewModel: CloseBankAccount = closeBankAccount) = uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(viewModel)
+  private def removeBankAccountTemplate(viewModel: CloseBankAccount = closeBankAccount) =
+    uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(viewModel)
 }

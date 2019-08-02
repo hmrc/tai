@@ -35,7 +35,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
+class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
 
   "taxFreeAmountComparison" should {
     "return a sequence of current coding components" when {
@@ -106,7 +106,9 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+        when(
+          codingComponentService
+            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -135,7 +137,9 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
         when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
-        when(codingComponentService.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+        when(
+          codingComponentService
+            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
           .thenReturn(Future.successful(previousCodingComponents))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
@@ -160,13 +164,50 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
     val payrollNumberCurr = "456"
 
     val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
-      TaxCodeSummary(PRIMARY_PREVIOUS_TAX_CODE_ID, "1185L", Cumulative, previousStartDate, previousEndDate, "Employer 1", Some(payrollNumberPrev), pensionIndicator = false, primary = true),
-      TaxCodeSummary(2, "BR", Cumulative, previousStartDate, previousEndDate, "Employer 2", Some(payrollNumberPrev), pensionIndicator = false, primary = false)
+      TaxCodeSummary(
+        PRIMARY_PREVIOUS_TAX_CODE_ID,
+        "1185L",
+        Cumulative,
+        previousStartDate,
+        previousEndDate,
+        "Employer 1",
+        Some(payrollNumberPrev),
+        pensionIndicator = false,
+        primary = true
+      ),
+      TaxCodeSummary(
+        2,
+        "BR",
+        Cumulative,
+        previousStartDate,
+        previousEndDate,
+        "Employer 2",
+        Some(payrollNumberPrev),
+        pensionIndicator = false,
+        primary = false)
     )
 
     val currentTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
-      TaxCodeSummary(3, "1000L", Cumulative, currentStartDate, currentEndDate, "Employer 1", Some(payrollNumberCurr), pensionIndicator = false, primary = true),
-      TaxCodeSummary(4, "185L", Cumulative, currentStartDate, currentEndDate, "Employer 2", Some(payrollNumberCurr), pensionIndicator = false, primary = false)
+      TaxCodeSummary(
+        3,
+        "1000L",
+        Cumulative,
+        currentStartDate,
+        currentEndDate,
+        "Employer 1",
+        Some(payrollNumberCurr),
+        pensionIndicator = false,
+        primary = true),
+      TaxCodeSummary(
+        4,
+        "185L",
+        Cumulative,
+        currentStartDate,
+        currentEndDate,
+        "Employer 2",
+        Some(payrollNumberCurr),
+        pensionIndicator = false,
+        primary = false)
     )
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
@@ -176,9 +217,9 @@ class TaxFreeAmountComparisonServiceSpec  extends PlaySpec with MockitoSugar wit
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private def createTestService(taxCodeChangeService: TaxCodeChangeServiceImpl,
-                                codingComponentService: CodingComponentService): TaxFreeAmountComparisonService = {
+  private def createTestService(
+    taxCodeChangeService: TaxCodeChangeServiceImpl,
+    codingComponentService: CodingComponentService): TaxFreeAmountComparisonService =
     new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
-  }
 
 }

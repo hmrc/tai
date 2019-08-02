@@ -20,19 +20,20 @@ import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 
 case class EditIncomeForm(
-                           name: String, description: String,
-                           employmentId: Int = 0,
-                           newAmount: Option[String] = None,
-                           oldAmount: Int = 0,
-                           worksNumber: Option[String] = None,
-                           jobTitle: Option[String] = None,
-                           startDate: Option[LocalDate] = None,
-                           endDate: Option[LocalDate] = None,
-                           isLive: Boolean = true,
-                           isOccupationalPension: Boolean = false,
-                           hasMultipleIncomes: Boolean = false,
-                           payToDate: Option[String] = None
-                         )
+  name: String,
+  description: String,
+  employmentId: Int = 0,
+  newAmount: Option[String] = None,
+  oldAmount: Int = 0,
+  worksNumber: Option[String] = None,
+  jobTitle: Option[String] = None,
+  startDate: Option[LocalDate] = None,
+  endDate: Option[LocalDate] = None,
+  isLive: Boolean = true,
+  isOccupationalPension: Boolean = false,
+  hasMultipleIncomes: Boolean = false,
+  payToDate: Option[String] = None
+)
 
 object EditIncomeForm {
   implicit val formats: Format[EditIncomeForm] = Json.format[EditIncomeForm]
@@ -50,8 +51,7 @@ object HoursWorkedForm {
   implicit val formats = Json.format[HoursWorkedForm]
 }
 
-case class PayPeriodForm(payPeriod: Option[String],
-                         otherInDays: Option[Int] = None)
+case class PayPeriodForm(payPeriod: Option[String], otherInDays: Option[Int] = None)
 
 object PayPeriodForm {
   implicit val formats = Json.format[PayPeriodForm]
@@ -88,18 +88,18 @@ object BonusOvertimeAmountForm {
 }
 
 case class IncomeCalculation(
-                              incomeId: Option[Int] = None,
-                              howToUpdateForm: Option[HowToUpdateForm] = None,
-                              hoursWorkedForm: Option[HoursWorkedForm] = None,
-                              payPeriodForm: Option[PayPeriodForm] = None,
-                              payslipForm: Option[PayslipForm] = None,
-                              taxablePayslipForm: Option[TaxablePayslipForm] = None,
-                              payslipDeductionsForm: Option[PayslipDeductionsForm] = None,
-                              bonusPaymentsForm: Option[BonusPaymentsForm] = None,
-                              bonusOvertimeAmountForm: Option[BonusOvertimeAmountForm] = None,
-                              netAmount: Option[BigDecimal] = None,
-                              grossAmount: Option[BigDecimal] = None
-                            )
+  incomeId: Option[Int] = None,
+  howToUpdateForm: Option[HowToUpdateForm] = None,
+  hoursWorkedForm: Option[HoursWorkedForm] = None,
+  payPeriodForm: Option[PayPeriodForm] = None,
+  payslipForm: Option[PayslipForm] = None,
+  taxablePayslipForm: Option[TaxablePayslipForm] = None,
+  payslipDeductionsForm: Option[PayslipDeductionsForm] = None,
+  bonusPaymentsForm: Option[BonusPaymentsForm] = None,
+  bonusOvertimeAmountForm: Option[BonusOvertimeAmountForm] = None,
+  netAmount: Option[BigDecimal] = None,
+  grossAmount: Option[BigDecimal] = None
+)
 
 object IncomeCalculation {
   implicit val formats: Format[IncomeCalculation] = Json.format[IncomeCalculation]

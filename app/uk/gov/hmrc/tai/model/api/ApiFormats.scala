@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.api
 
-
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.EmploymentUpdate
 import uk.gov.hmrc.tai.model.domain._
@@ -24,23 +23,22 @@ import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.domain.income.IncomeSource
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
 trait ApiFormats {
 
   implicit val adjustmentFormat: Format[Adjustment] = Json.format[Adjustment]
 
   implicit val paymentFrequencyFormat = new Format[PaymentFrequency] {
     override def reads(json: JsValue): JsResult[PaymentFrequency] = json.as[String] match {
-      case "Weekly" => JsSuccess(Weekly)
+      case "Weekly"      => JsSuccess(Weekly)
       case "FortNightly" => JsSuccess(FortNightly)
-      case "FourWeekly" => JsSuccess(FourWeekly)
-      case "Monthly" => JsSuccess(Monthly)
-      case "Quarterly" => JsSuccess(Quarterly)
-      case "BiAnnually" => JsSuccess(BiAnnually)
-      case "Annually" => JsSuccess(Annually)
-      case "OneOff" => JsSuccess(OneOff)
-      case "Irregular" => JsSuccess(Irregular)
-      case _ => throw new IllegalArgumentException("Invalid payment frequency")
+      case "FourWeekly"  => JsSuccess(FourWeekly)
+      case "Monthly"     => JsSuccess(Monthly)
+      case "Quarterly"   => JsSuccess(Quarterly)
+      case "BiAnnually"  => JsSuccess(BiAnnually)
+      case "Annually"    => JsSuccess(Annually)
+      case "OneOff"      => JsSuccess(OneOff)
+      case "Irregular"   => JsSuccess(Irregular)
+      case _             => throw new IllegalArgumentException("Invalid payment frequency")
     }
 
     override def writes(paymentFrequency: PaymentFrequency): JsValue = JsString(paymentFrequency.toString)
@@ -49,14 +47,12 @@ trait ApiFormats {
   implicit val paymentFormat: Format[Payment] = Json.format[Payment]
 
   implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
-    override def reads(json: JsValue): JsSuccess[TaxYear] = {
+    override def reads(json: JsValue): JsSuccess[TaxYear] =
       if (json.validate[Int].isSuccess) {
         JsSuccess(TaxYear(json.as[Int]))
-      }
-      else {
+      } else {
         throw new IllegalArgumentException("Invalid tax year")
       }
-    }
 
     override def writes(taxYear: TaxYear): JsNumber = JsNumber(taxYear.year)
   }

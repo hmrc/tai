@@ -48,7 +48,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     val fakePersonDetails = PersonDetails(version, fakeCidPerson)
 
     val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-    when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any())).thenReturn(Future.successful(fakePersonDetails))
+    when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any()))
+      .thenReturn(Future.successful(fakePersonDetails))
 
     val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
     when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -71,7 +72,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[Auditor],
       mockFeatureTogglesConfig,
       mockNpsConfig,
-      mockCyPlusOneConfig)
+      mockCyPlusOneConfig
+    )
 
     val result: TaiRoot = Await.result(sut.getTaiRoot(Nino(nino.nino)), timeoutDuration)
 
@@ -88,11 +90,13 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
     "desCall is true" should {
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear)).thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, 1, Nil)))
+      when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear))
+        .thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, 1, Nil)))
 
       val mockDesConnector = mock[DesConnector]
       when(mockDesConnector.getIabdsFromDes(any(), any())(any())).thenReturn(Future.successful(fakeIabds))
-      when(mockDesConnector.getCalculatedTaxAccountFromDes(any(), any())(any())).thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
+      when(mockDesConnector.getCalculatedTaxAccountFromDes(any(), any())(any()))
+        .thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
 
       val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
       when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
@@ -115,8 +119,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
-
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getCalculatedTaxAccountPartial(Nino(nino.nino), taxYear), timeoutDuration)
 
@@ -145,9 +149,11 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
     "desCall is false" should {
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear)).thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, 1, Nil)))
+      when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear))
+        .thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, 1, Nil)))
       when(mockNpsConnector.getIabds(any(), any())(any())).thenReturn(Future.successful(fakeIabds))
-      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any())).thenReturn(Future.successful((NpsTaxAccount(Some(""), Some(1)), 0, Json.toJson(fakeSummary))))
+      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any()))
+        .thenReturn(Future.successful((NpsTaxAccount(Some(""), Some(1)), 0, Json.toJson(fakeSummary))))
 
       val mockDesConnector = mock[DesConnector]
 
@@ -172,7 +178,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getCalculatedTaxAccountPartial(Nino(nino.nino), taxYear), timeoutDuration)
 
@@ -201,11 +208,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
   "getAutoUpdateResults" should {
     val mockRtiConnector = mock[RtiConnector]
-    when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear).prev)).thenReturn(Future.successful((Some(rtiDataPY), rtiStatus)))
-    when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear))).thenReturn(Future.successful((Some(rtiDataCY), rtiStatus)))
+    when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear).prev))
+      .thenReturn(Future.successful((Some(rtiDataPY), rtiStatus)))
+    when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear)))
+      .thenReturn(Future.successful((Some(rtiDataCY), rtiStatus)))
 
     val mockNpsConnector = mock[NpsConnector]
-    when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear)).thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, version, Nil)))
+    when(mockNpsConnector.getEmployments(Nino(nino.nino), taxYear))
+      .thenReturn(Future.successful((npsEmploymentList, nps2EmploymentList, version, Nil)))
     when(mockNpsConnector.getIabdsForType(any(), any(), any())(any())).thenReturn(Future.successful(fakeIabds))
 
     val mockAutoUpdatePayService = mock[AutoUpdatePayService]
@@ -232,7 +242,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[Auditor],
       mockFeatureTogglesConfig,
       mockNpsConfig,
-      mockCyPlusOneConfig)
+      mockCyPlusOneConfig
+    )
 
     val result = Await.result(sut.getAutoUpdateResults(Nino(nino.nino), taxYear), timeoutDuration)
 
@@ -241,7 +252,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         AnnualAccount(TaxYear().prev, None, Some(rtiDataPY), Some(rtiStatus)),
         AnnualAccount(TaxYear(), None, Some(rtiDataCY), Some(rtiStatus)))
 
-      val expectedResult: (List[NpsEmployment], List[RtiCalc], List[nps2.NpsEmployment], List[GateKeeperRule], Seq[AnnualAccount]) =
+      val expectedResult
+        : (List[NpsEmployment], List[RtiCalc], List[nps2.NpsEmployment], List[GateKeeperRule], Seq[AnnualAccount]) =
         (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts)
 
       result mustBe expectedResult
@@ -282,7 +294,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[Auditor],
       mockFeatureTogglesConfig,
       mockNpsConfig,
-      mockCyPlusOneConfig)
+      mockCyPlusOneConfig
+    )
 
     "return false" when {
       "employments list is empty" in {
@@ -325,7 +338,9 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         result mustBe true
       }
       "there are multiple employments with one of them without an end date" in {
-        val employmentList = List(npsEmployment.copy(endDate = None), npsEmployment.copy(endDate = Some(NpsDate(new LocalDate(taxYear, 4, 6)))))
+        val employmentList = List(
+          npsEmployment.copy(endDate = None),
+          npsEmployment.copy(endDate = Some(NpsDate(new LocalDate(taxYear, 4, 6)))))
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe true
       }
@@ -356,9 +371,11 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
-        val result = Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
+        val result =
+          Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
         result mustBe Nil
       }
     }
@@ -395,9 +412,11 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
             mock[Auditor],
             mockFeatureTogglesConfig,
             mockNpsConfig,
-            mockCyPlusOneConfig)
+            mockCyPlusOneConfig
+          )
 
-          val result = Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+          val result =
+            Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
 
           result mustBe fakeIabds
           verify(mockDesConnector, times(1))
@@ -426,17 +445,21 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           when(mockCyPlusOneConfig.cyPlusOneEnableDate)
             .thenReturn(Some("10/10"))
 
-          val sut = createSUT(mock[RtiConnector],
-            mockNpsConnector, mock[DesConnector],
+          val sut = createSUT(
+            mock[RtiConnector],
+            mockNpsConnector,
+            mock[DesConnector],
             mock[CitizenDetailsConnector],
             mock[AutoUpdatePayService],
             mock[NextYearComparisonService],
             mock[Auditor],
             mockFeatureTogglesConfig,
             mockNpsConfig,
-            mockCyPlusOneConfig)
+            mockCyPlusOneConfig
+          )
 
-          val result = Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+          val result =
+            Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
 
           result mustBe fakeIabds
           verify(mockNpsConnector, times(1))
@@ -470,9 +493,11 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
-        val result = Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
+        val result =
+          Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
         val expectedResult: (Option[RtiData], RtiStatus) = (None, RtiStatus(404, "Employment ceased"))
 
         result mustBe expectedResult
@@ -482,7 +507,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     "isNotCeasedEmployment is true" should {
       "return the correct result from rti" in {
         val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear))).thenReturn(Future.successful((Some(rtiDataCY), rtiStatus)))
+        when(mockRtiConnector.getRTI(Nino(nino.nino), TaxYear(taxYear)))
+          .thenReturn(Future.successful((Some(rtiDataCY), rtiStatus)))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -495,7 +521,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mockRtiConnector,
+        val sut = createSUT(
+          mockRtiConnector,
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -504,9 +531,11 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
-        val result = Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+        val result =
+          Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
         val expectedResult: (Option[RtiData], RtiStatus) = (Some(rtiDataCY), rtiStatus)
 
         result mustBe expectedResult
@@ -532,7 +561,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
       when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-      val sut = createSUT(mock[RtiConnector],
+      val sut = createSUT(
+        mock[RtiConnector],
         mockNpsConnector,
         mock[DesConnector],
         mock[CitizenDetailsConnector],
@@ -541,7 +571,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getIabd(Nino(nino.nino), taxYear), timeoutDuration)
 
@@ -574,7 +605,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getIabd(Nino(nino.nino), taxYear), timeoutDuration)
 
@@ -587,7 +619,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   "getCalculatedTaxAccountFromConnector" should {
     "return the correct tuple from nps when desCall is false" in {
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any())).thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
+      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any()))
+        .thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
 
       val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
       when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -600,7 +633,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
       when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-      val sut = createSUT(mock[RtiConnector],
+      val sut = createSUT(
+        mock[RtiConnector],
         mockNpsConnector,
         mock[DesConnector],
         mock[CitizenDetailsConnector],
@@ -609,7 +643,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear), timeoutDuration)
       val expectedResult: (NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
@@ -620,7 +655,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     }
     "return the correct tuple from des when desCall is true" in {
       val mockDesConnector = mock[DesConnector]
-      when(mockDesConnector.getCalculatedTaxAccountFromDes(any(), any())(any())).thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
+      when(mockDesConnector.getCalculatedTaxAccountFromDes(any(), any())(any()))
+        .thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
 
       val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
       when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
@@ -633,7 +669,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
       when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-      val sut = createSUT(mock[RtiConnector],
+      val sut = createSUT(
+        mock[RtiConnector],
         mock[NpsConnector],
         mockDesConnector,
         mock[CitizenDetailsConnector],
@@ -642,7 +679,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
       val result = Await.result(sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear), timeoutDuration)
       val expectedResult: (NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
@@ -670,7 +708,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mockNpsConnector,
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -679,7 +718,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val annualAccounts = Seq(
           AnnualAccount(TaxYear().prev, None, Some(rtiDataPY), Some(rtiStatus)),
@@ -687,15 +727,26 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val npsTaxAccountJson = NpsData.getNpsTaxAccountJson
 
-        val result = Await.result(sut.getCalculatedTaxAccount(Nino(nino.nino), taxYear,
-          (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
-          (npsTaxAccountJson, version)), timeoutDuration)
+        val result = Await.result(
+          sut.getCalculatedTaxAccount(
+            Nino(nino.nino),
+            taxYear,
+            (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
+            (npsTaxAccountJson, version)),
+          timeoutDuration
+        )
 
         val npsTaxAccount = npsTaxAccountJson.as[NpsTaxAccount]
         val taxAccount = npsTaxAccountJson.as[TaxAccount]
         val cyPyAnnualAccounts = annualAccounts.map(_.copy(nps = Some(taxAccount.withEmployments(nps2EmploymentList))))
-        val taxSummary = npsTaxAccount.toTaxSummary(version, npsEmploymentList, fakeIabds,
-          rtiCalc, cyPyAnnualAccounts.filter(_.year == TaxYear()).toList).copy(accounts = cyPyAnnualAccounts)
+        val taxSummary = npsTaxAccount
+          .toTaxSummary(
+            version,
+            npsEmploymentList,
+            fakeIabds,
+            rtiCalc,
+            cyPyAnnualAccounts.filter(_.year == TaxYear()).toList)
+          .copy(accounts = cyPyAnnualAccounts)
 
         result mustBe taxSummary
       }
@@ -707,7 +758,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getIabds(any(), any())(any())).thenReturn(Future.successful(fakeIabds))
-        when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any())).thenReturn(Future.successful((NpsTaxAccount(Some(""), Some(1)), 0, Json.toJson(fakeSummary))))
+        when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any()))
+          .thenReturn(Future.successful((NpsTaxAccount(Some(""), Some(1)), 0, Json.toJson(fakeSummary))))
 
         val mockDesConnector = mock[DesConnector]
         val mockAutoUpdatePayService = mock[AutoUpdatePayService]
@@ -726,7 +778,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(true))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(None)
 
-        val sut = createSUT(mockRtiConnector,
+        val sut = createSUT(
+          mockRtiConnector,
           mockNpsConnector,
           mockDesConnector,
           mockCitizenDetailsConnector,
@@ -735,7 +788,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mockAuditor,
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val annualAccounts = Seq(
           AnnualAccount(TaxYear().prev, None, Some(rtiDataPY), Some(rtiStatus)),
@@ -743,9 +797,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
 
         val npsTaxAccountJson = NpsData.getNpsTaxAccountJson
 
-        val result = Await.result(sut.getCalculatedTaxAccount(Nino(nino.nino), taxYear,
-          (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
-          (npsTaxAccountJson, version)), timeoutDuration)
+        val result = Await.result(
+          sut.getCalculatedTaxAccount(
+            Nino(nino.nino),
+            taxYear,
+            (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
+            (npsTaxAccountJson, version)),
+          timeoutDuration
+        )
 
         verify(mockNpsConnector, times(1))
           .getCalculatedTaxAccount(Nino(nino.nino), taxYear + 1)
@@ -753,8 +812,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val npsTaxAccount = npsTaxAccountJson.as[NpsTaxAccount]
         val taxAccount = npsTaxAccountJson.as[TaxAccount]
         val cyPyAnnualAccounts = annualAccounts.map(_.copy(nps = Some(taxAccount.withEmployments(nps2EmploymentList))))
-        val taxSummary = npsTaxAccount.toTaxSummary(version, npsEmploymentList, fakeIabds,
-          rtiCalc, cyPyAnnualAccounts.filter(_.year == TaxYear()).toList).copy(accounts = cyPyAnnualAccounts)
+        val taxSummary = npsTaxAccount
+          .toTaxSummary(
+            version,
+            npsEmploymentList,
+            fakeIabds,
+            rtiCalc,
+            cyPyAnnualAccounts.filter(_.year == TaxYear()).toList)
+          .copy(accounts = cyPyAnnualAccounts)
 
         result mustBe taxSummary
       }
@@ -766,7 +831,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       val taxSummaryDetails = TaxSummaryDetails(nino.nino, version)
 
       val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any())).thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
+      when(mockNpsConnector.getCalculatedTaxAccount(any(), any())(any()))
+        .thenReturn(Future.successful((npsTaxAccount, version, Json.toJson(fakeSummary))))
 
       val mockNextYearComparisonService = mock[NextYearComparisonService]
       when(mockNextYearComparisonService.stripCeasedFromNps(any())).thenReturn(npsTaxAccount)
@@ -783,7 +849,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
       when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-      val sut = createSUT(mock[RtiConnector],
+      val sut = createSUT(
+        mock[RtiConnector],
         mockNpsConnector,
         mock[DesConnector],
         mock[CitizenDetailsConnector],
@@ -792,17 +859,16 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         mock[Auditor],
         mockFeatureTogglesConfig,
         mockNpsConfig,
-        mockCyPlusOneConfig)
+        mockCyPlusOneConfig
+      )
 
+      val result = Await.result(
+        sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails),
+        timeoutDuration)
+      val expectedAccounts =
+        List(AnnualAccount(TaxYear(taxYear + 1), Some(TaxAccount(None, None, 0, Map.empty, Nil, Nil)), None, None))
 
-      val result = Await.result(sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails), timeoutDuration)
-      val expectedAccounts = List(
-        AnnualAccount(TaxYear(taxYear + 1), Some(TaxAccount(None, None, 0, Map.empty, Nil, Nil)), None, None))
-
-      val expectedResult = TaxSummaryDetails(
-        nino = nino.nino,
-        version = version,
-        accounts = expectedAccounts)
+      val expectedResult = TaxSummaryDetails(nino = nino.nino, version = version, accounts = expectedAccounts)
 
       result mustBe expectedResult
     }
@@ -831,7 +897,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
       mock[Auditor],
       mockFeatureTogglesConfig,
       mockNpsConfig,
-      mockCyPlusOneConfig)
+      mockCyPlusOneConfig
+    )
 
     "when cyPlusOneEnabled is true" when {
       "return false when cyPlusOneEnableDate is defined, and current date is before this date" in {
@@ -878,17 +945,17 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val version = "123"
         val fakeCidPerson = Person(None, None, None, None, None, None, None, None, Nino(nino.nino), None, None)
         val fakePersonDetails = PersonDetails(version, fakeCidPerson)
-        val employmentAmounts = List(
-          EmploymentAmount("", "", 1, 20, 10),
-          EmploymentAmount("", "", 2, 30, 40))
+        val employmentAmounts = List(EmploymentAmount("", "", 1, 20, 10), EmploymentAmount("", "", 2, 30, 40))
 
         val editEmployments = IabdUpdateEmploymentsRequest(requestVersion, employmentAmounts)
 
         val mockDesConnector = mock[DesConnector]
-        when(mockDesConnector.updateEmploymentDataToDes(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HttpResponse(200)))
+        when(mockDesConnector.updateEmploymentDataToDes(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-        when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any())).thenReturn(Future.successful(fakePersonDetails))
+        when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any()))
+          .thenReturn(Future.successful(fakePersonDetails))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -901,7 +968,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mockDesConnector,
           mockCitizenDetailsConnector,
@@ -910,13 +978,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
-
+          mockCyPlusOneConfig
+        )
 
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse =
+          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -937,10 +1006,12 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val editEmployments = IabdUpdateEmploymentsRequest(requestVersion, employmentAmounts)
 
         val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.updateEmploymentData(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HttpResponse(200)))
+        when(mockNpsConnector.updateEmploymentData(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-        when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any())).thenReturn(Future.successful(fakePersonDetails))
+        when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any()))
+          .thenReturn(Future.successful(fakePersonDetails))
 
         val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(false)
@@ -953,7 +1024,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mockNpsConnector,
           mock[DesConnector],
           mockCitizenDetailsConnector,
@@ -962,12 +1034,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse =
+          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -996,7 +1070,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mockNpsConnector,
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1005,12 +1080,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val sessionIdValue = "the update session id"
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
-        val result: IabdUpdateEmploymentsResponse = Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+        val result: IabdUpdateEmploymentsResponse =
+          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe requestVersion
@@ -1037,7 +1114,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1046,7 +1124,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
@@ -1071,7 +1150,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mockRtiConnector,
+        val sut = createSUT(
+          mockRtiConnector,
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1080,7 +1160,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
@@ -1101,7 +1182,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1110,7 +1192,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
         result mustBe IabdUpdateAmount(
@@ -1132,7 +1215,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1141,7 +1225,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
 
@@ -1164,7 +1249,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mockRtiConnector,
+        val sut = createSUT(
+          mockRtiConnector,
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1173,11 +1259,14 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.getIadbUpdateAmount(employmentAmount)
-        result mustBe IabdUpdateAmount(employmentSequenceNumber = employmentAmount.employmentId,
-          grossAmount = employmentAmount.newAmount, source = Some(0))
+        result mustBe IabdUpdateAmount(
+          employmentSequenceNumber = employmentAmount.employmentId,
+          grossAmount = employmentAmount.newAmount,
+          source = Some(0))
       }
     }
   }
@@ -1199,7 +1288,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1208,7 +1298,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.sessionOrUUID(testHeaderCarrier)
         result mustBe testSessionId
@@ -1230,7 +1321,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         when(mockCyPlusOneConfig.cyPlusOneEnabled).thenReturn(Some(false))
         when(mockCyPlusOneConfig.cyPlusOneEnableDate).thenReturn(Some("10/10"))
 
-        val sut = createSUT(mock[RtiConnector],
+        val sut = createSUT(
+          mock[RtiConnector],
           mock[NpsConnector],
           mock[DesConnector],
           mock[CitizenDetailsConnector],
@@ -1239,7 +1331,8 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
           mock[Auditor],
           mockFeatureTogglesConfig,
           mockNpsConfig,
-          mockCyPlusOneConfig)
+          mockCyPlusOneConfig
+        )
 
         val result = sut.sessionOrUUID(testHeaderCarrier)
         result must not be empty
@@ -1248,18 +1341,26 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
     }
   }
 
-  private def createSUT(rti: RtiConnector,
-                        nps: NpsConnector,
-                        des: DesConnector,
-                        cid: CitizenDetailsConnector,
-                        autoUpdatePayService: AutoUpdatePayService,
-                        nextYearComparisonService: NextYearComparisonService,
-                        Auditor: Auditor,
-                        featureTogglesConfig: FeatureTogglesConfig,
-                        npsConfig: NpsConfig,
-                        cyPlusOneConfig: CyPlusOneConfig) =
-
-    new TaiService(rti, nps, des, cid, autoUpdatePayService, nextYearComparisonService, Auditor, featureTogglesConfig,
+  private def createSUT(
+    rti: RtiConnector,
+    nps: NpsConnector,
+    des: DesConnector,
+    cid: CitizenDetailsConnector,
+    autoUpdatePayService: AutoUpdatePayService,
+    nextYearComparisonService: NextYearComparisonService,
+    Auditor: Auditor,
+    featureTogglesConfig: FeatureTogglesConfig,
+    npsConfig: NpsConfig,
+    cyPlusOneConfig: CyPlusOneConfig) =
+    new TaiService(
+      rti,
+      nps,
+      des,
+      cid,
+      autoUpdatePayService,
+      nextYearComparisonService,
+      Auditor,
+      featureTogglesConfig,
       npsConfig,
       cyPlusOneConfig)
 
@@ -1270,30 +1371,71 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   private lazy val employmentName = Some("employmentName1")
   private lazy val worksNumber = Some("00000")
   private lazy val rtiDataCY = RtiData(
-    nino.nino, TaxYear(2016), "M1464687373867", List(
-      RtiEmployment("111", "A00", "00000", List(
-        RtiPayment(PayFrequency.Weekly, new LocalDate(2005, 11, 7), new LocalDate(2005, 11, 7),
-          1000, 1000, 200, 200, worksNumber, isOccupationalPension = false, None, Some(2), None,
-          Some(0), Some(0))), Nil, Some("00000"), 16)))
+    nino.nino,
+    TaxYear(2016),
+    "M1464687373867",
+    List(
+      RtiEmployment(
+        "111",
+        "A00",
+        "00000",
+        List(RtiPayment(
+          PayFrequency.Weekly,
+          new LocalDate(2005, 11, 7),
+          new LocalDate(2005, 11, 7),
+          1000,
+          1000,
+          200,
+          200,
+          worksNumber,
+          isOccupationalPension = false,
+          None,
+          Some(2),
+          None,
+          Some(0),
+          Some(0)
+        )),
+        Nil,
+        Some("00000"),
+        16
+      ))
+  )
 
   private lazy val rtiDataPY = rtiDataCY.copy(taxYear = TaxYear(2015))
   private lazy val rtiStatus = RtiStatus(200, "")
   private lazy val rtiCalc = List(
-    RtiCalc(1, Some(new LocalDate(2005, 11, 7)), Some(PayFrequency.Weekly), 1, 1,
-      "EMPLOYER1", 11950, Some(31070.0)))
+    RtiCalc(1, Some(new LocalDate(2005, 11, 7)), Some(PayFrequency.Weekly), 1, 1, "EMPLOYER1", 11950, Some(31070.0)))
 
   private lazy val version = 0
   private lazy val npsTaxAccount = NpsTaxAccount(Some(""), Some(1))
-  private lazy val nps2EmploymentList = List(nps2.NpsEmployment(employmentName, isPrimary = true, 1, worksNumber, 126, Nil, None, new LocalDate(2005, 11, 1)))
-  private lazy val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(2005, 11, 7)), None, "111", "A00",
-    employmentName, 1, Some(1), worksNumber, None, None, Some(false), Some(false),
-    Some(false), Some(false), Some(false), None)
+  private lazy val nps2EmploymentList = List(
+    nps2.NpsEmployment(employmentName, isPrimary = true, 1, worksNumber, 126, Nil, None, new LocalDate(2005, 11, 1)))
+  private lazy val npsEmployment = NpsEmployment(
+    1,
+    NpsDate(new LocalDate(2005, 11, 7)),
+    None,
+    "111",
+    "A00",
+    employmentName,
+    1,
+    Some(1),
+    worksNumber,
+    None,
+    None,
+    Some(false),
+    Some(false),
+    Some(false),
+    Some(false),
+    Some(false),
+    None
+  )
 
   private lazy val npsEmploymentList = List(npsEmployment)
   private lazy val iabd: NpsIabdRoot = NpsIabdRoot("", Some(0), 0, Some(BigDecimal(0)))
   private lazy val fakeIabds = List(iabd)
   private lazy val totalLiability: NpsTotalLiability = NpsTotalLiability(totalLiability = Some(BigDecimal(11111.12)))
-  private lazy val fakeSummary = NpsTaxAccount(nino = Some(nino.nino), taxYear = Some(taxYear), totalLiability = Some(totalLiability))
+  private lazy val fakeSummary =
+    NpsTaxAccount(nino = Some(nino.nino), taxYear = Some(taxYear), totalLiability = Some(totalLiability))
 
   private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 }

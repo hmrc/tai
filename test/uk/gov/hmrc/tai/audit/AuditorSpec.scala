@@ -56,7 +56,7 @@ class AuditorSpec extends PlaySpec with MockitoSugar {
 
         auditor.sendDataEvent("Test-tx", detail)
 
-        verify(mockAudit, times(1)).sendExplicitAudit(Matchers.eq("Test-tx"), Matchers.eq(detail))(any(),any())
+        verify(mockAudit, times(1)).sendExplicitAudit(Matchers.eq("Test-tx"), Matchers.eq(detail))(any(), any())
       }
     }
   }

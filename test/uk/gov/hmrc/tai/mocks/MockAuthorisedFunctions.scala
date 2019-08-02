@@ -31,13 +31,16 @@ trait MockAuthorisedFunctions extends AuthorisedFunctions with MockitoSugar {
 
 object MockAuthorisedUser extends MockAuthorisedFunctions {
   override def authorised(predicate: Predicate): AuthorisedFunction = new AuthorisedFunction(predicate) {
-    override def apply[A](body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] = body
+    override def apply[A](
+      body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] = body
   }
 }
 
 object MockUnauthorisedUser extends MockAuthorisedFunctions {
   override def authorised(predicate: Predicate): AuthorisedFunction = new AuthorisedFunction(predicate) {
-    override def apply[A](body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] = Future.failed(new MissingBearerToken)
+    override def apply[A](
+      body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] =
+      Future.failed(new MissingBearerToken)
   }
 }
 
