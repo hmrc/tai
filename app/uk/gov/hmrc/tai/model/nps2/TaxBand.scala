@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-case class TaxBand (
+case class TaxBand(
   /**
     * Part of the tax code. Rarely used by itself.
     */

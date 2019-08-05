@@ -40,15 +40,13 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
-class TaxAccountSummaryControllerSpec extends PlaySpec
-  with MockitoSugar
-  with NpsExceptions
-  with MockAuthenticationPredicate{
+class TaxAccountSummaryControllerSpec
+    extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
 
   "taxAccountSummaryForYear" must {
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
-        val sut = createSUT(mock[TaxAccountSummaryService],notLoggedInAuthenticationPredicate)
+        val sut = createSUT(mock[TaxAccountSummaryService], notLoggedInAuthenticationPredicate)
         val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -58,7 +56,7 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear().next))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxAccountSummaryForYearCY1))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -67,15 +65,16 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
 
         val expectedJson = Json.obj(
           "data" -> Json.obj(
-            "totalEstimatedTax" -> 2222,
-            "taxFreeAmount" -> 1,
-            "totalInYearAdjustmentIntoCY" -> 56.78,
-            "totalInYearAdjustment" -> 100.00,
+            "totalEstimatedTax"                  -> 2222,
+            "taxFreeAmount"                      -> 1,
+            "totalInYearAdjustmentIntoCY"        -> 56.78,
+            "totalInYearAdjustment"              -> 100.00,
             "totalInYearAdjustmentIntoCYPlusOne" -> 43.22,
-            "totalEstimatedIncome" -> 200,
-            "taxFreeAllowance" -> 100
+            "totalEstimatedIncome"               -> 200,
+            "taxFreeAllowance"                   -> 100
           ),
-          "links" -> Json.arr())
+          "links" -> Json.arr()
+        )
         contentAsJson(result) mustBe expectedJson
       }
     }
@@ -83,7 +82,7 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
     "return Locked exception" when {
       "nps throws locked exception" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -98,9 +97,11 @@ class TaxAccountSummaryControllerSpec extends PlaySpec
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
-  val taxAccountSummary = TaxAccountSummary(1111,0, 12.34, 0, 0, 0, 0)
-  val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222,1, 56.78, 100.00, 43.22, 200, 100)
-  private def createSUT(taxAccountSummaryService: TaxAccountSummaryService, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new TaxAccountSummaryController(taxAccountSummaryService, authentication)
+  val taxAccountSummary = TaxAccountSummary(1111, 0, 12.34, 0, 0, 0, 0)
+  val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222, 1, 56.78, 100.00, 43.22, 200, 100)
+  private def createSUT(
+    taxAccountSummaryService: TaxAccountSummaryService,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new TaxAccountSummaryController(taxAccountSummaryService, authentication)
 
 }

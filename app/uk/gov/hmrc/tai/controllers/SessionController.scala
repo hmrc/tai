@@ -24,13 +24,10 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class SessionController @Inject()(sessionRepository: SessionRepository,
-                                  authentication: AuthenticationPredicate)
-  extends BaseController {
+class SessionController @Inject()(sessionRepository: SessionRepository, authentication: AuthenticationPredicate)
+    extends BaseController {
 
-  def invalidateCache(): Action[AnyContent] = authentication.async {
-    implicit request =>
-      for (success <- sessionRepository.invalidateCache()) yield
-        if (success) Accepted else InternalServerError
+  def invalidateCache(): Action[AnyContent] = authentication.async { implicit request =>
+    for (success <- sessionRepository.invalidateCache()) yield if (success) Accepted else InternalServerError
   }
 }

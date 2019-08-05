@@ -28,15 +28,16 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository) extends TaxAccountHodFormatters
-    with IncomeCategoryHodFormatters {
+class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository)
+    extends TaxAccountHodFormatters with IncomeCategoryHodFormatters {
 
   def incomeCategories(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IncomeCategory]] =
-    taxAccountRepository.taxAccount(nino, year)
+    taxAccountRepository
+      .taxAccount(nino, year)
       .map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
 
-  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
-    taxAccountRepository.taxAccount(nino, year)
+  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
+    taxAccountRepository
+      .taxAccount(nino, year)
       .map(_.as[BigDecimal](taxFreeAllowanceReads))
-  }
 }

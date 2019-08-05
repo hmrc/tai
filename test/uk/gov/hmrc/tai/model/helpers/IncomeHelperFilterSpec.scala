@@ -101,9 +101,14 @@ class IncomeHelperFilterSpec extends PlaySpec {
       }
 
       "all incomes are benefits" in {
-        val listMergedEmployment = List(MergedEmployment(modifiableIncome(TaiConstants.ESA_TAX_DISTRICT, TaiConstants.ESA_PAYE_NUMBER)),
-          MergedEmployment(modifiableIncome(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT, TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)),
-          MergedEmployment(modifiableIncome(TaiConstants.JSA_TAX_DISTRICT, TaiConstants.JSA_PAYE_NUMBER)))
+        val listMergedEmployment = List(
+          MergedEmployment(modifiableIncome(TaiConstants.ESA_TAX_DISTRICT, TaiConstants.ESA_PAYE_NUMBER)),
+          MergedEmployment(
+            modifiableIncome(
+              TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT,
+              TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)),
+          MergedEmployment(modifiableIncome(TaiConstants.JSA_TAX_DISTRICT, TaiConstants.JSA_PAYE_NUMBER))
+        )
         val (benefits, income) = sut.filterTaxableStateBenefits(listMergedEmployment)
 
         benefits.size mustBe 3
@@ -119,10 +124,16 @@ class IncomeHelperFilterSpec extends PlaySpec {
       }
 
       "there are few benefits" in {
-        val listMergedEmployment = List(MergedEmployment(modifiableIncome(TaiConstants.ESA_TAX_DISTRICT, TaiConstants.ESA_PAYE_NUMBER)),
-          MergedEmployment(modifiableIncome(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT, TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)),
+        val listMergedEmployment = List(
+          MergedEmployment(modifiableIncome(TaiConstants.ESA_TAX_DISTRICT, TaiConstants.ESA_PAYE_NUMBER)),
+          MergedEmployment(
+            modifiableIncome(
+              TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT,
+              TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)),
           MergedEmployment(modifiableIncome(TaiConstants.JSA_TAX_DISTRICT, TaiConstants.JSA_PAYE_NUMBER)),
-          MergedEmployment(income1), MergedEmployment(pension))
+          MergedEmployment(income1),
+          MergedEmployment(pension)
+        )
         val (benefits, income) = sut.filterTaxableStateBenefits(listMergedEmployment)
 
         benefits.size mustBe 3
@@ -132,13 +143,53 @@ class IncomeHelperFilterSpec extends PlaySpec {
 
   }
 
-  val income1 = NpsIncomeSource(name = Some("primary"), taxCode = Some("taxCode1"), employmentType = Some(1), employmentStatus = Some(Live.code), employmentId = Some(1))
-  val pension = NpsIncomeSource(Some("pension1"), Some("taxCodePension"), Some(3), None, None, None, Some(5), Some(Live.code), None, None, Some(true), Some(true))
-  val ceasedIncome = NpsIncomeSource(Some("ceasedIncome"), Some("taxCodePension"), Some(3), None, None, None, None, employmentStatus = Some(Ceased.code))
-  val potentiallyCeasedIncome = NpsIncomeSource(Some("potCeased"), Some("taxCodePension"), Some(3), None, None, None, None, employmentStatus = Some(PotentiallyCeased.code))
-  val modifiableIncome = (taxNum:Int, payeRef:String) =>
-    NpsIncomeSource(name = Some("value"), taxCode = Some("taxCode1"), employmentType = Some(1), employmentStatus = Some(Live.code), employmentId = Some(1),
-      employmentTaxDistrictNumber = Some(taxNum), employmentPayeRef = Some(payeRef))
+  val income1 = NpsIncomeSource(
+    name = Some("primary"),
+    taxCode = Some("taxCode1"),
+    employmentType = Some(1),
+    employmentStatus = Some(Live.code),
+    employmentId = Some(1))
+  val pension = NpsIncomeSource(
+    Some("pension1"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    Some(5),
+    Some(Live.code),
+    None,
+    None,
+    Some(true),
+    Some(true))
+  val ceasedIncome = NpsIncomeSource(
+    Some("ceasedIncome"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    None,
+    employmentStatus = Some(Ceased.code))
+  val potentiallyCeasedIncome = NpsIncomeSource(
+    Some("potCeased"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    None,
+    employmentStatus = Some(PotentiallyCeased.code))
+  val modifiableIncome = (taxNum: Int, payeRef: String) =>
+    NpsIncomeSource(
+      name = Some("value"),
+      taxCode = Some("taxCode1"),
+      employmentType = Some(1),
+      employmentStatus = Some(Live.code),
+      employmentId = Some(1),
+      employmentTaxDistrictNumber = Some(taxNum),
+      employmentPayeRef = Some(payeRef)
+  )
 
   def sut = IncomeHelper
 

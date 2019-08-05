@@ -20,9 +20,8 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.binders.TaxYearBinder
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
 class TaxYearBinderSpec extends PlaySpec {
-  
+
   "TaxYearBinder" must {
     "correctly parse the taxyear type" in {
       TaxYearBinder.bind("year", "2017") mustBe Right(TaxYear(2017))
@@ -34,4 +33,3 @@ class TaxYearBinderSpec extends PlaySpec {
     }
   }
 }
-

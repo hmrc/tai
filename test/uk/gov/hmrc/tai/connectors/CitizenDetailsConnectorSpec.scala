@@ -36,17 +36,30 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CitizenDetailsConnectorSpec extends PlaySpec
-    with MockitoSugar {
+class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar {
 
   "Get data from citizen-details service" must {
     "return person information when requesting " in {
       val jsonData = Json.toJson(
-        PersonDetails("100", Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, Nino(nino.nino), Some(false), Some(false))))
+        PersonDetails(
+          "100",
+          Person(
+            Some("FName"),
+            None,
+            Some("LName"),
+            None,
+            Some("Mr"),
+            None,
+            None,
+            None,
+            Nino(nino.nino),
+            Some(false),
+            Some(false))))
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+        .thenReturn(Future.successful(
+          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -54,21 +67,34 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails =
+        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 100, "Mr", "FName", None, "LName", "FName LName", manualCorrespondenceInd = false, Some(false))
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = false,
+        Some(false))
 
     }
 
     "return Record Locked when requesting  " in {
       val jsonData = Json.toJson(
-        PersonDetails("0", Person(Some(""), None, Some(""), None, Some(""), None, None, None, Nino(nino.nino), Some(true), Some(false))))
+        PersonDetails(
+          "0",
+          Person(Some(""), None, Some(""), None, Some(""), None, None, None, Nino(nino.nino), Some(true), Some(false))))
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(responseStatus = 423, responseString = Some("Record Locked"), responseJson = Some(jsonData))))
+        .thenReturn(Future.successful(
+          HttpResponse(responseStatus = 423, responseString = Some("Record Locked"), responseJson = Some(jsonData))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -76,7 +102,8 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails =
+        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "0"
@@ -86,7 +113,8 @@ class CitizenDetailsConnectorSpec extends PlaySpec
     "return Internal server error when requesting " in {
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(responseStatus = 500, responseString = Some("Internal Server Error"), responseJson = None)))
+        .thenReturn(Future.successful(
+          HttpResponse(responseStatus = 500, responseString = Some("Internal Server Error"), responseJson = None)))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -94,18 +122,33 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val thrown = the[HttpException] thrownBy Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val thrown = the[HttpException] thrownBy Await
+        .result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       thrown.getMessage mustBe "Internal Server Error"
     }
 
     "return deceased indicator as false if no value is returned form citizen details" in {
       val jsonData = Json.toJson(
-        PersonDetails("100", Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, Nino(nino.nino), None, Some(false))))
+        PersonDetails(
+          "100",
+          Person(
+            Some("FName"),
+            None,
+            Some("LName"),
+            None,
+            Some("Mr"),
+            None,
+            None,
+            None,
+            Nino(nino.nino),
+            None,
+            Some(false))))
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+        .thenReturn(Future.successful(
+          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -113,21 +156,45 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails =
+        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 100, "Mr", "FName", None, "LName", "FName LName", manualCorrespondenceInd = false, Some(false))
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = false,
+        Some(false))
 
     }
 
     "return deceased indicator as true" in {
       val jsonData = Json.toJson(
-        PersonDetails("100", Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, Nino(nino.nino), Some(true), Some(false))))
+        PersonDetails(
+          "100",
+          Person(
+            Some("FName"),
+            None,
+            Some("LName"),
+            None,
+            Some("Mr"),
+            None,
+            None,
+            None,
+            Nino(nino.nino),
+            Some(true),
+            Some(false))))
 
       val mockHttpClient = mock[HttpClient]
       when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
-        .thenReturn(Future.successful(HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+        .thenReturn(Future.successful(
+          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
       val mockTimerContext = mock[Timer.Context]
       val mockMetrics = mock[Metrics]
@@ -135,11 +202,21 @@ class CitizenDetailsConnectorSpec extends PlaySpec
         .thenReturn(mockTimerContext)
 
       val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails = Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails =
+        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(nino.nino,100,"Mr", "FName", None, "LName", "FName LName", manualCorrespondenceInd = true, Some(false))
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = true,
+        Some(false))
     }
   }
 

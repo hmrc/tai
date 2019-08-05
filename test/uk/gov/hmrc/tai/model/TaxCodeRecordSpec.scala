@@ -42,7 +42,6 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
     }
   }
 
-
   val cyMinus1 = TaxYear().prev
 
   val mostRecentStartDate = cyMinus1.start.plusDays(2)

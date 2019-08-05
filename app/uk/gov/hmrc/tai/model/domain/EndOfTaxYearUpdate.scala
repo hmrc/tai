@@ -19,8 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
 
-case class EndOfTaxYearUpdate(date: LocalDate, adjustments: Seq[Adjustment])
-    extends Ordered[EndOfTaxYearUpdate] {
+case class EndOfTaxYearUpdate(date: LocalDate, adjustments: Seq[Adjustment]) extends Ordered[EndOfTaxYearUpdate] {
 
   def compare(that: EndOfTaxYearUpdate): Int = this.date compare that.date
 }

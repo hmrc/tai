@@ -59,14 +59,18 @@ object BasisOperation extends Enumeration {
   )
 
   implicit val enumFormat = new Format[BasisOperation] {
-    def reads(json: JsValue) = {
-      JsSuccess(json.validate[Int].fold(
-        invalid = { _ =>
-          BasisOperation.withName(json.as[String])
-        },
-        valid = { basis => basisOperations.getOrElse(basis, throw new RuntimeException("Invalid BasisOperation Type")) }
-      ))
-    }
+    def reads(json: JsValue) =
+      JsSuccess(
+        json
+          .validate[Int]
+          .fold(
+            invalid = { _ =>
+              BasisOperation.withName(json.as[String])
+            },
+            valid = { basis =>
+              basisOperations.getOrElse(basis, throw new RuntimeException("Invalid BasisOperation Type"))
+            }
+          ))
 
     def writes(enum: BasisOperation) = JsString(enum.toString)
   }

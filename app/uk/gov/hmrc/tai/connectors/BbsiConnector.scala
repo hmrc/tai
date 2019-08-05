@@ -31,19 +31,19 @@ import uk.gov.hmrc.tai.util.TaiConstants
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 @Singleton
-class BbsiConnector @Inject()(httpHandler: HttpHandler,
-                              urls: BbsiUrls,
-                              config: DesConfig) {
+class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig) {
 
-  def createHeader: HeaderCarrier = HeaderCarrier(extraHeaders =
-    Seq("Environment" -> config.environment,
-      "Authorization" -> s"Bearer ${config.authorization}",
-      "Content-Type" -> TaiConstants.contentType))
+  def createHeader: HeaderCarrier =
+    HeaderCarrier(
+      extraHeaders = Seq(
+        "Environment"   -> config.environment,
+        "Authorization" -> s"Bearer ${config.authorization}",
+        "Content-Type"  -> TaiConstants.contentType))
 
   def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
     implicit val hc: HeaderCarrier = createHeader
-    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map {
-      json => json.as[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
+    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map { json =>
+      json.as[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
     }
   }
 }

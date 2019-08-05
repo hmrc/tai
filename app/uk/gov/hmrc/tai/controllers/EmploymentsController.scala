@@ -30,70 +30,66 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class EmploymentsController @Inject()(employmentService: EmploymentService,
-                                      authentication: AuthenticationPredicate)
-  extends BaseController
-  with ApiFormats {
+class EmploymentsController @Inject()(employmentService: EmploymentService, authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
-    employmentService.employments(nino, year).map { employments: Seq[Employment] =>
-      Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
-    }.recover {
-      case _: NotFoundException => NotFound
-      case ex:BadRequestException => BadRequest(ex.getMessage)
-      case _ => InternalServerError
-    }
+    employmentService
+      .employments(nino, year)
+      .map { employments: Seq[Employment] =>
+        Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
+      }
+      .recover {
+        case _: NotFoundException    => NotFound
+        case ex: BadRequestException => BadRequest(ex.getMessage)
+        case _                       => InternalServerError
+      }
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
-    employmentService.employment(nino, id).map {
-      case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
-      case None => NotFound
-    }.recover {
-      case _: NotFoundException => NotFound
-      case _ => InternalServerError
+    employmentService
+      .employment(nino, id)
+      .map {
+        case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
+        case None             => NotFound
+      }
+      .recover {
+        case _: NotFoundException => NotFound
+        case _                    => InternalServerError
+      }
+  }
+
+  def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    withJsonBody[EndEmployment] { endEmployment =>
+      employmentService.endEmployment(nino, id, endEmployment) map (envelopeId => {
+        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+      })
     }
   }
 
-  def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
-    implicit request =>
-      withJsonBody[EndEmployment] {
-        endEmployment =>
-          employmentService.endEmployment(nino, id, endEmployment) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
-      }
+  def addEmployment(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    withJsonBody[AddEmployment] { employment =>
+      employmentService.addEmployment(nino, employment) map (envelopeId => {
+        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+      })
+    }
   }
 
-  def addEmployment(nino: Nino): Action[JsValue] =  authentication.async(parse.json) {
-    implicit request =>
-      withJsonBody[AddEmployment] {
-        employment =>
-          employmentService.addEmployment(nino, employment) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
-      }
+  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    withJsonBody[IncorrectEmployment] { employment =>
+      employmentService.incorrectEmployment(nino, id, employment) map (envelopeId => {
+        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+      })
+    }
   }
 
-  def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] =  authentication.async(parse.json) {
+  def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
-      withJsonBody[IncorrectEmployment] {
-        employment =>
-          employmentService.incorrectEmployment(nino, id, employment) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
-      }
-  }
-
-  def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] =  authentication.async(parse.json) {
-    implicit request =>
-      withJsonBody[IncorrectEmployment] {
-        employment =>
-          employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
+      withJsonBody[IncorrectEmployment] { employment =>
+        employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId => {
+          Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        })
       }
   }
 
 }
-

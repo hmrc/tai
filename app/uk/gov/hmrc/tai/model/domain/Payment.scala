@@ -20,16 +20,16 @@ import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
 
 case class Payment(
-                    date: LocalDate,
-                    amountYearToDate: BigDecimal,
-                    taxAmountYearToDate: BigDecimal,
-                    nationalInsuranceAmountYearToDate: BigDecimal,
-                    amount: BigDecimal,
-                    taxAmount: BigDecimal,
-                    nationalInsuranceAmount: BigDecimal,
-                    payFrequency : PaymentFrequency,
-                    duplicate: Option[Boolean]
-                  ) extends Ordered[Payment] {
+  date: LocalDate,
+  amountYearToDate: BigDecimal,
+  taxAmountYearToDate: BigDecimal,
+  nationalInsuranceAmountYearToDate: BigDecimal,
+  amount: BigDecimal,
+  taxAmount: BigDecimal,
+  nationalInsuranceAmount: BigDecimal,
+  payFrequency: PaymentFrequency,
+  duplicate: Option[Boolean]
+) extends Ordered[Payment] {
 
   def compare(that: Payment): Int = this.date compare that.date
 }

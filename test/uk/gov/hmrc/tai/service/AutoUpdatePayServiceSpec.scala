@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.service
 
-
 import org.joda.time.{Days, LocalDate}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers._
@@ -45,7 +44,6 @@ import scala.collection.JavaConversions._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}
 
-
 class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
   "updateIncomes" should {
@@ -68,7 +66,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.updateIncomes(nino, CurrentYear, Nil, Nil, 23, None)(HeaderCarrier()) mustBe Nil
       }
@@ -91,7 +90,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.updateIncomes(nino, CurrentYear, Nil, Nil, 23, None)(HeaderCarrier()) mustBe Nil
       }
 
@@ -120,15 +120,18 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenThrow(exception)
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.updateIncomes(nino, CurrentYear, List(npsEmployment), List(iabdRoot), 1, Some(rtiData))(HeaderCarrier()) mustBe Nil
       }
     }
 
     "return a list of RtiCalc" when {
       "the auto update flag is set to true" in {
-        val employments = List(NpsEmployment(1, npsDateStartOfYear, None, "", "123", None, 1, Some(Live.code), Some("1000")))
-        val rtiData = Some(RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1))))
+        val employments =
+          List(NpsEmployment(1, npsDateStartOfYear, None, "", "123", None, 1, Some(Live.code), Some("1000")))
+        val rtiData =
+          Some(RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1))))
         val expectedResult = List(RtiCalc(1, None, None, 1, 1, "", BigDecimal(0), None))
 
         val mockNpsConnector = mock[NpsConnector]
@@ -146,12 +149,12 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockFeatureTogglesConfig.desEnabled)
           .thenReturn(true)
 
-
         val mockIncomeHelper = mock[IncomeHelper]
         when(mockIncomeHelper.isEditableByAutoUpdateService(any(), any()))
           .thenReturn(true)
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.updateIncomes(nino, CurrentYear, employments, Nil, 23, rtiData)(HeaderCarrier()) mustBe expectedResult
       }
     }
@@ -180,13 +183,12 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
       when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
         .thenReturn(Future.successful(HttpResponse(200)))
 
-      val sut = createSUT(mock[NpsConnector],
-        mockDesConnector,
-        mockFeatureTogglesConfig,
-        mockNpsConfig,
-        mockIncomeHelper)
+      val sut =
+        createSUT(mock[NpsConnector], mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-      val result = sut.updateCeasedAndRtiIncomes(nino, CurrentYear, List(npsEmployment), List(iabdRoot), 1, Some(rtiData))(HeaderCarrier())
+      val result =
+        sut.updateCeasedAndRtiIncomes(nino, CurrentYear, List(npsEmployment), List(iabdRoot), 1, Some(rtiData))(
+          HeaderCarrier())
 
       result mustBe Success(Nil)
     }
@@ -217,8 +219,10 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenThrow(exception)
 
-        val sut = createSUT(mock[NpsConnector], mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.updateCeasedAndRtiIncomes(nino, CurrentYear, List(npsEmployment), List(iabdRoot), 1, Some(rtiData))(HeaderCarrier()) mustBe Failure(exception)
+        val sut =
+          createSUT(mock[NpsConnector], mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.updateCeasedAndRtiIncomes(nino, CurrentYear, List(npsEmployment), List(iabdRoot), 1, Some(rtiData))(
+          HeaderCarrier()) mustBe Failure(exception)
 
       }
     }
@@ -226,12 +230,27 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
   "getCeasedIncomeFinalSalaries" should {
 
-
     "Get the ceased income final salaries" when {
       "the ceased employment has a cessation pay greater than zero and it ceased within the current year" in {
         val employments = List(
-          NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123", None, 1,
-            Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(100)))
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(100)))
 
         val mockNpsConnector = mock[NpsConnector]
 
@@ -255,15 +274,33 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(46)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(
+          IabdUpdateAmount(1, 100, None, None, Some(46)))
       }
     }
     "Set the update amount source to be internet calculated" when {
       "the des update flag is set to true" in {
-      val employments = List(
-        NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123", None, 1,
-          Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(100)))
+        val employments = List(
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(100)))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -284,13 +321,31 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(46)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(
+          IabdUpdateAmount(1, 100, None, None, Some(46)))
       }
       "the des update flag is set to false" in {
-      val employments = List(
-        NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123", None, 1,
-          Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(100)))
+        val employments = List(
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(100)))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -311,16 +366,34 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(IabdUpdateAmount(1, 100, None, None, Some(1)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List(
+          IabdUpdateAmount(1, 100, None, None, Some(1)))
       }
     }
 
     "Not get the ceased income final salaries" when {
       "the employment status is live" in {
         val employments = List(
-          NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123", None, 1,
-            Some(Live.code), Some("1000"), None, None, None, None, None, None, None, Some(100)))
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Live.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(100)))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -339,14 +412,31 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List()
       }
 
       "the cessation pay this employment is zero" in {
         val employments = List(
-          NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123", None, 1,
-            Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(0)))
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(0)))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -365,15 +455,33 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List()
       }
 
       "the end date is not the current tax year" in {
         val currentYear = new LocalDate(2015, 1, 1)
         val employments = List(
-          NpsEmployment(1, NpsDate(currentYear), Some(NpsDate(new LocalDate(2016, 4, 12))), "", "123",
-            None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(100)))
+          NpsEmployment(
+            1,
+            NpsDate(currentYear),
+            Some(NpsDate(new LocalDate(2016, 4, 12))),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(100)
+          ))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -392,14 +500,31 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List()
       }
 
       "the gross amount and the estimated pay are the same" in {
         val employments = List(
-          NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear), "", "123",
-            None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000)))
+          NpsEmployment(
+            1,
+            npsDateStartOfYear,
+            Some(npsDateCurrentTaxYear),
+            "",
+            "123",
+            None,
+            1,
+            Some(Ceased.code),
+            Some("1000"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(1000)))
 
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
@@ -418,14 +543,14 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.getCeasedIncomeFinalSalaries(employments, List(iabdRoot)) mustBe List()
       }
     }
   }
 
   "ceaseEmploymentAmountDifferent" should {
-
 
     "compare ceased employments" when {
       "the sequence numbers don't match and the amounts are different" in {
@@ -446,7 +571,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val iabdRoots = List(NpsIabdRoot(nino.value, Some(2), 23, Some(1000)))
 
@@ -471,7 +597,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.ceaseEmploymentAmountDifferent(npsEmploymentWithCessationPay, List(iabdRoot)) mustBe false
       }
@@ -494,10 +621,27 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val employment = NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear),
-          "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1))
+        val employment = NpsEmployment(
+          1,
+          npsDateStartOfYear,
+          Some(npsDateCurrentTaxYear),
+          "",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1))
 
         sut.ceaseEmploymentAmountDifferent(employment, List(iabdRoot)) mustBe true
       }
@@ -519,10 +663,27 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val employment = NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear),
-          "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, None)
+        val employment = NpsEmployment(
+          1,
+          npsDateStartOfYear,
+          Some(npsDateCurrentTaxYear),
+          "",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None)
 
         sut.ceaseEmploymentAmountDifferent(employment, List(iabdRoot)) mustBe false
       }
@@ -551,18 +712,28 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val employments = NpsEmployment(1, npsDateStartOfYear, None, "", "123",
-          None, 1, Some(Live.code), Some("1000"))
+        val employments = NpsEmployment(1, npsDateStartOfYear, None, "", "123", None, 1, Some(Live.code), Some("1000"))
 
         val rtiData = RtiData("", TaxYear(CurrentYear), "", List(rtiEmp))
 
-        sut.getRtiUpdateAmounts(nino, CurrentYear, List(employments), Some(rtiData))(HeaderCarrier()) mustBe ((
-          List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
-          List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
-          List(RtiCalc(1, Some(new LocalDate(CurrentYear, 6, 20)), Some(PayFrequency.FourWeekly), 1, 1, "", 20000, Some(104000)))
-        ))
+        sut.getRtiUpdateAmounts(nino, CurrentYear, List(employments), Some(rtiData))(HeaderCarrier()) mustBe (
+          (
+            List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
+            List(IabdUpdateAmount(1, 104000, None, None, Some(46))),
+            List(
+              RtiCalc(
+                1,
+                Some(new LocalDate(CurrentYear, 6, 20)),
+                Some(PayFrequency.FourWeekly),
+                1,
+                1,
+                "",
+                20000,
+                Some(104000)))
+          ))
       }
     }
 
@@ -585,10 +756,11 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val rtiData = RtiData("", TaxYear(CurrentYear), "", List(
-          RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
+        val rtiData =
+          RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
 
         sut.getRtiUpdateAmounts(nino, CurrentYear, Nil, Some(rtiData))(HeaderCarrier()) mustBe ((Nil, Nil, Nil))
       }
@@ -611,9 +783,14 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        sut.getRtiUpdateAmounts(nino, CurrentYear, List(npsEmploymentWithCessationPay), None)(HeaderCarrier()) mustBe ((Nil, Nil, Nil))
+        sut.getRtiUpdateAmounts(nino, CurrentYear, List(npsEmploymentWithCessationPay), None)(HeaderCarrier()) mustBe (
+          (
+            Nil,
+            Nil,
+            Nil))
       }
 
       "the employments do not match the RTI data" in {
@@ -634,15 +811,36 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val rtiData = RtiData("", TaxYear(CurrentYear), "", List(
-          RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
+        val rtiData =
+          RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
 
-        val employment = NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear),
-          "", "3221", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val employment = NpsEmployment(
+          1,
+          npsDateStartOfYear,
+          Some(npsDateCurrentTaxYear),
+          "",
+          "3221",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000))
 
-        sut.getRtiUpdateAmounts(nino, CurrentYear, List(employment), Some(rtiData))(HeaderCarrier()) mustBe ((Nil, Nil, Nil))
+        sut.getRtiUpdateAmounts(nino, CurrentYear, List(employment), Some(rtiData))(HeaderCarrier()) mustBe (
+          (
+            Nil,
+            Nil,
+            Nil))
       }
     }
 
@@ -667,7 +865,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val nyExpected = npsUpdateAmount.copy(grossAmount = 2000)
 
         sut.getUpdateAmounts(1, Some(1000), Some(2000)) mustBe ((Some(npsUpdateAmount), Some(nyExpected)))
@@ -690,7 +889,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val cyExpected = npsUpdateAmount.copy(source = None)
         val nyExpected = cyExpected.copy(grossAmount = 2000)
 
@@ -716,7 +916,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val cyExpected = IabdUpdateAmount(
           employmentSequenceNumber = 1,
           grossAmount = 1000,
@@ -745,7 +946,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         sut.getUpdateAmounts(1, None, None) mustBe ((None, None))
         sut.getUpdateAmounts(1, None, Some(1000)) mustBe ((None, None))
       }
@@ -771,15 +973,44 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(CurrentYear, 4, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.FourWeekly,
+          new LocalDate(CurrentYear, 4, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(20000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 4, 30))),
-          "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 4, 30))),
+          "",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.estimatedPay(rtiEmp: RtiEmployment, npsEmployment: NpsEmployment) mustBe ((Some(20000), Some(20000)))
       }
@@ -801,14 +1032,43 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(CurrentYear, 4, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.FourWeekly,
+          new LocalDate(CurrentYear, 4, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(20000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.estimatedPay(rtiEmp: RtiEmployment, npsEmployment: NpsEmployment) mustBe ((Some(20000), Some(20000)))
       }
@@ -830,9 +1090,14 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        sut.getMidYearEstimatedPay(PayFrequency.Weekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Weekly,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Fortnightly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -851,8 +1116,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Fortnightly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Fortnightly,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is FourWeekly" in {
 
@@ -869,8 +1139,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.FourWeekly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.FourWeekly,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Monthly" in {
 
@@ -890,8 +1165,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Monthly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((expectedPay, Some(228125)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Monthly,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((expectedPay, Some(228125)))
       }
       "the frequency is Quarterly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -910,8 +1190,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Quarterly, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(80000), Some(80000)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Quarterly,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(80000), Some(80000)))
       }
       "the frequency is BiAnnually" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -930,8 +1215,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.BiAnnually, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(40000), Some(40000)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.BiAnnually,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(40000), Some(40000)))
       }
       "the frequency is Annually" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -950,8 +1240,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        sut.getMidYearEstimatedPay(PayFrequency.Annually, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(20000), Some(20000)))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Annually,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(20000), Some(20000)))
       }
     }
     "return the mid year estimated pay values for the current year" when {
@@ -973,13 +1268,29 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.FourWeekly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(20000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        sut.getMidYearEstimatedPay(PayFrequency.OneOff, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(20000), None))
+        sut.getMidYearEstimatedPay(
+          PayFrequency.OneOff,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(20000), None))
       }
     }
     "return the taxable pay year to date value as the mid year estimated pay values for the current year and the next year" when {
@@ -1001,13 +1312,29 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(20000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        sut.getMidYearEstimatedPay(PayFrequency.Irregular, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(20000), Some(20000)))
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Irregular,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(20000), Some(20000)))
       }
     }
     "return the primary pay value as the mid year estimated pay values for the current year and the next year" when {
@@ -1029,13 +1356,29 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(8000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(8000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        sut.getMidYearEstimatedPay(PayFrequency.Irregular, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), Income.Live.code) mustBe ((Some(15000), Some(15000)))
+        sut.getMidYearEstimatedPay(
+          PayFrequency.Irregular,
+          rtiEmp,
+          NpsDate(new LocalDate(CurrentYear, 5, 20)),
+          Income.Live.code) mustBe ((Some(15000), Some(15000)))
       }
     }
     "return the secondary pay value as the mid year estimated pay values for the current year and the next year" when {
@@ -1057,13 +1400,28 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-        sut.getMidYearEstimatedPay(PayFrequency.Irregular, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), 3) mustBe ((Some(5000), Some(5000)))
+        sut.getMidYearEstimatedPay(PayFrequency.Irregular, rtiEmp, NpsDate(new LocalDate(CurrentYear, 5, 20)), 3) mustBe (
+          (
+            Some(5000),
+            Some(5000)))
       }
     }
   }
@@ -1086,9 +1444,21 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val payment = RtiPayment(PayFrequency.Weekly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val payment = RtiPayment(
+          PayFrequency.Weekly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1112,10 +1482,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Fortnightly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.Fortnightly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1139,10 +1521,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.FourWeekly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1166,10 +1560,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(2))
+        val payment = RtiPayment(
+          PayFrequency.Monthly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(2)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1193,10 +1600,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Quarterly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(2))
+        val payment = RtiPayment(
+          PayFrequency.Quarterly,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(2)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1220,10 +1640,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.BiAnnually, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(2))
+        val payment = RtiPayment(
+          PayFrequency.BiAnnually,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(2)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1247,7 +1680,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.getContinuousEstimatedPay(PayFrequency.Annually, rtiEmp, 1) mustBe Some(20000)
       }
@@ -1269,7 +1703,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.getContinuousEstimatedPay(PayFrequency.OneOff, rtiEmp, 1) mustBe Some(20000)
       }
@@ -1293,7 +1728,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.getContinuousEstimatedPay(PayFrequency.Irregular, rtiEmp, 1) mustBe Some(20000)
       }
@@ -1317,10 +1753,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(8000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(8000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1346,10 +1794,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1376,10 +1836,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(1))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(1)
+        )
         val noOfMonths = 1
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe Some(3000)
@@ -1402,10 +1875,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(2))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(2)
+        )
         val noOfMonths = -1
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe Some(-1500)
@@ -1428,10 +1914,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(-2))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(-2)
+        )
         val noOfMonths = -2
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe Some(3000)
@@ -1454,10 +1953,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(12))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(12)
+        )
         val noOfMonths = 2
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe Some(500)
@@ -1480,10 +1992,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), Some(2))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          Some(2)
+        )
         val noOfMonths = 6
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe Some(9000)
@@ -1508,10 +2033,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10), None)
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10),
+          None
+        )
         val noOfMonths = 1
 
         sut.getEstPayWithMonthNo(payment, noOfMonths) mustBe None
@@ -1538,10 +2076,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(CurrentYear, 8, 25), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
+        val payment = RtiPayment(
+          PayFrequency.Monthly,
+          new LocalDate(CurrentYear, 8, 25),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          None,
+          None
+        )
 
         sut.getRemainingBiAnnual(payment) mustBe SIX_MONTHS.remainingBiAnnual
       }
@@ -1563,10 +2114,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(CurrentYear, 10, 5), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
+        val payment = RtiPayment(
+          PayFrequency.Monthly,
+          new LocalDate(CurrentYear, 10, 5),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          None,
+          None
+        )
 
         sut.getRemainingBiAnnual(payment) mustBe SIX_MONTHS.remainingBiAnnual
       }
@@ -1586,10 +2150,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, new LocalDate(NextYear, 1, 1), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
+        val payment = RtiPayment(
+          PayFrequency.Monthly,
+          new LocalDate(NextYear, 1, 1),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          None,
+          None
+        )
 
         sut.getRemainingBiAnnual(payment) mustBe 0
       }
@@ -1607,10 +2184,23 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockFeatureTogglesConfig.desEnabled).thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Monthly, midPointofTaxYearPlusOneDay, new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(3000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, None, None)
+        val payment = RtiPayment(
+          PayFrequency.Monthly,
+          midPointofTaxYearPlusOneDay,
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(3000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          None,
+          None
+        )
 
         sut.getRemainingBiAnnual(payment) mustBe 0
       }
@@ -1635,7 +2225,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 274
 
@@ -1661,7 +2252,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 272
 
@@ -1685,7 +2277,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 183
 
@@ -1711,7 +2304,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 181
 
@@ -1735,7 +2329,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 91
 
@@ -1761,7 +2356,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = 89
 
@@ -1785,7 +2381,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = NINE_MONTHS.days
 
@@ -1809,7 +2406,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = SIX_MONTHS.days
 
@@ -1833,7 +2431,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val daysBetween = THREE_MONTHS.days
 
@@ -1861,10 +2460,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(8000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(8000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1889,10 +2500,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
-        val payment = RtiPayment(PayFrequency.Irregular, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-          BigDecimal(20), BigDecimal(8000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+        val payment = RtiPayment(
+          PayFrequency.Irregular,
+          new LocalDate(CurrentYear, 6, 20),
+          new LocalDate(CurrentYear, 4, 20),
+          BigDecimal(20),
+          BigDecimal(8000),
+          BigDecimal(0),
+          BigDecimal(0),
+          None,
+          isOccupationalPension = false,
+          None,
+          Some(10)
+        )
 
         val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -1915,7 +2538,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         sut.getFinalEstPayWithDefault(None, rtiEmp) mustBe None
       }
@@ -1924,22 +2548,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
   "compareTaxDistrictNos" should {
     val mockNpsConnector = mock[NpsConnector]
-        val mockDesConnector = mock[DesConnector]
+    val mockDesConnector = mock[DesConnector]
 
-        val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+    val mockNpsConfig = mock[NpsConfig]
+    when(mockNpsConfig.autoUpdatePayEnabled)
+      .thenReturn(Some(true))
+    when(mockNpsConfig.updateSourceEnabled)
+      .thenReturn(Some(true))
+    when(mockNpsConfig.postCalcEnabled)
+      .thenReturn(Some(true))
 
-        val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
-        when(mockFeatureTogglesConfig.desEnabled)
-          .thenReturn(true)
-        val mockIncomeHelper = mock[IncomeHelper]
+    val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
+    when(mockFeatureTogglesConfig.desEnabled)
+      .thenReturn(true)
+    val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+    val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
     "return true" when {
       "employmentTaxDistrictNo and officeNo are the same" in {
@@ -1958,22 +2582,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
   "findEmployment" should {
     val mockNpsConnector = mock[NpsConnector]
-        val mockDesConnector = mock[DesConnector]
+    val mockDesConnector = mock[DesConnector]
 
-        val mockNpsConfig = mock[NpsConfig]
-        when(mockNpsConfig.autoUpdatePayEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.updateSourceEnabled)
-          .thenReturn(Some(true))
-        when(mockNpsConfig.postCalcEnabled)
-          .thenReturn(Some(true))
+    val mockNpsConfig = mock[NpsConfig]
+    when(mockNpsConfig.autoUpdatePayEnabled)
+      .thenReturn(Some(true))
+    when(mockNpsConfig.updateSourceEnabled)
+      .thenReturn(Some(true))
+    when(mockNpsConfig.postCalcEnabled)
+      .thenReturn(Some(true))
 
-        val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
-        when(mockFeatureTogglesConfig.desEnabled)
-          .thenReturn(true)
-        val mockIncomeHelper = mock[IncomeHelper]
+    val mockFeatureTogglesConfig = mock[FeatureTogglesConfig]
+    when(mockFeatureTogglesConfig.desEnabled)
+      .thenReturn(true)
+    val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+    val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
     "return an NPS employment" when {
       "a single matching employment is given" in {
@@ -1993,12 +2617,30 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiEmp = RtiEmployment("23", "123", "", Nil, Nil, Some("1000"), 1)
 
-        val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.findEmployment(rtiEmp, List(npsEmployment)) mustBe Some(npsEmployment)
       }
@@ -2020,16 +2662,50 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiEmp = RtiEmployment("23", "123", "", Nil, Nil, Some("1001"), 1)
 
-        val npsEmployment1 = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "123", None, 1, Some(Ceased.code), Some("1001"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment1 = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1001"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
-
-        val npsEmployment2 = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment2 = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.findEmployment(rtiEmp, List(npsEmployment1, npsEmployment2)) mustBe Some(npsEmployment1)
       }
@@ -2059,16 +2735,33 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiEmp = RtiEmployment("23", "123", "", Nil, Nil, Some("1000"), 1)
 
-        val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "24", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "24",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.findEmployment(rtiEmp, List(npsEmployment)) mustBe None
       }
-
 
       "the given employment\'s PAYE number does not match an rti employment PAYE ref" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2087,12 +2780,30 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiEmp = RtiEmployment("23", "123", "", Nil, Nil, Some("1000"), 1)
 
-        val npsEmployment = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "1234", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "1234",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1000"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.findEmployment(rtiEmp, List(npsEmployment)) mustBe None
       }
@@ -2114,16 +2825,50 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(true)
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiEmp = RtiEmployment("23", "123", "", Nil, Nil, Some("1000"), 1)
 
-        val npsEmployment1 = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "123", None, 1, Some(Ceased.code), Some("1001"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment1 = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1001"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
-
-        val npsEmployment2 = NpsEmployment(1, NpsDate(new LocalDate(CurrentYear, 4, 23)), Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
-          "23", "123", None, 1, Some(Ceased.code), Some("1002"), None, None, None, None, None, None, None, Some(1000))
+        val npsEmployment2 = NpsEmployment(
+          1,
+          NpsDate(new LocalDate(CurrentYear, 4, 23)),
+          Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+          "23",
+          "123",
+          None,
+          1,
+          Some(Ceased.code),
+          Some("1002"),
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          None,
+          Some(1000)
+        )
 
         sut.findEmployment(rtiEmp, List(npsEmployment1, npsEmployment2)) mustBe None
       }
@@ -2153,7 +2898,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
         val taxYearCaptor = ArgumentCaptor.forClass(classOf[Int])
         val iadbTypeCaptor = ArgumentCaptor.forClass(classOf[Int])
@@ -2170,7 +2916,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(
+            nino,
+            CurrentYear,
+            Nil,
+            List(npsUpdateAmount),
+            List(npsUpdate2),
+            List(rtiCalc),
+            1,
+            List(iabdRoot))(HeaderCarrier()),
+          5 seconds)
 
         result.length mustBe 2
 
@@ -2186,7 +2942,9 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         taxYearCaptor.getAllValues.toList mustBe List(CurrentYear, NextYear)
         iadbTypeCaptor.getAllValues.toList mustBe List(IabdType.NewEstimatedPay.code, IabdType.NewEstimatedPay.code)
         versionCaptor.getAllValues.toList mustBe List(1, 2)
-        updateAmountsCaptor.getAllValues.toList mustBe List(List(IabdUpdateAmount(1, 1000, None, None, Some(46))), List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
+        updateAmountsCaptor.getAllValues.toList mustBe List(
+          List(IabdUpdateAmount(1, 1000, None, None, Some(46))),
+          List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
         apiTypesCaptor.getAllValues.toList mustBe List(null, null)
 
       }
@@ -2212,14 +2970,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
+          5 seconds)
 
         result.length mustBe 0
 
@@ -2246,14 +3007,18 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
+            HeaderCarrier()),
+          5 seconds)
 
         result.length mustBe 2
 
@@ -2280,7 +3045,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
 
         val npsUpdate2 = npsUpdateAmount.copy(grossAmount = 3000)
 
@@ -2291,12 +3057,22 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, List(iabdRoot))(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(
+            nino,
+            CurrentYear,
+            Nil,
+            List(npsUpdateAmount),
+            List(npsUpdate2),
+            List(rtiCalc),
+            1,
+            List(iabdRoot))(HeaderCarrier()),
+          5 seconds)
 
         result.length mustBe 0
 
         verify(mockDesConnector, never).updateEmploymentDataToDes(any(), any(), any(), any(), any(), any())(any())
-        
+
       }
     }
     "call the NPS updateEmploymentData with the correct parameters" when {
@@ -2321,7 +3097,8 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
         val taxYearCaptor = ArgumentCaptor.forClass(classOf[Int])
         val iadbTypeCaptor = ArgumentCaptor.forClass(classOf[Int])
@@ -2336,7 +3113,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), List(npsUpdate2), List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val result: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(
+            nino,
+            CurrentYear,
+            Nil,
+            List(npsUpdateAmount),
+            List(npsUpdate2),
+            List(rtiCalc),
+            1,
+            Nil)(HeaderCarrier()),
+          5 seconds)
 
         result.length mustBe 2
 
@@ -2352,7 +3139,9 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         taxYearCaptor.getAllValues.toList mustBe List(CurrentYear, NextYear)
         iadbTypeCaptor.getAllValues.toList mustBe List(IabdType.NewEstimatedPay.code, IabdType.NewEstimatedPay.code)
         versionCaptor.getAllValues.toList mustBe List(1, 2)
-        updateAmountsCaptor.getAllValues.toList mustBe List(List(IabdUpdateAmount(1, 1000, None, None, Some(46))), List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
+        updateAmountsCaptor.getAllValues.toList mustBe List(
+          List(IabdUpdateAmount(1, 1000, None, None, Some(46))),
+          List(IabdUpdateAmount(1, 3000, None, None, Some(46))))
         apiTypesCaptor.getAllValues.toList mustBe List(null, null)
 
       }
@@ -2378,14 +3167,17 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val resp: Seq[HttpResponse] = Await.result (sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
+          5 seconds)
 
         resp.length mustBe 0
 
@@ -2412,14 +3204,18 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
+            HeaderCarrier()),
+          5 seconds)
 
         resp.length mustBe 2
 
@@ -2447,14 +3243,18 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
           .thenReturn(Future.failed(new RuntimeException("second call failed")))
 
-        val resp: Seq[HttpResponse] = Await.result(sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()), 5 seconds)
+        val resp: Seq[HttpResponse] = Await.result(
+          sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
+            HeaderCarrier()),
+          5 seconds)
 
         resp.length mustBe 1
 
@@ -2464,9 +3264,9 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  "forceUpdateEmploymentData" must{
-    "return false" when{
-      "totalPayToDate is NOT defined" in{
+  "forceUpdateEmploymentData" must {
+    "return false" when {
+      "totalPayToDate is NOT defined" in {
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -2486,12 +3286,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val result = sut.forceUpdateEmploymentData(totalPayToDate = None,originalAmount = Some(BigDecimal("100")))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val result = sut.forceUpdateEmploymentData(totalPayToDate = None, originalAmount = Some(BigDecimal("100")))
 
         result mustBe false
       }
-      "originalAmount is NOT defined" in{
+      "originalAmount is NOT defined" in {
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -2511,12 +3312,13 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val result = sut.forceUpdateEmploymentData(totalPayToDate = None,originalAmount = Some(BigDecimal("100")))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val result = sut.forceUpdateEmploymentData(totalPayToDate = None, originalAmount = Some(BigDecimal("100")))
 
         result mustBe false
       }
-      "originalAmount is BIGGER than totalPayToDate" in{
+      "originalAmount is BIGGER than totalPayToDate" in {
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -2536,12 +3338,14 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val result = sut.forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("100")) , originalAmount = Some(BigDecimal("200")))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val result = sut
+          .forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("100")), originalAmount = Some(BigDecimal("200")))
 
         result mustBe false
       }
-      "originalAmount is EQUAL to totalPayToDate" in{
+      "originalAmount is EQUAL to totalPayToDate" in {
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -2561,14 +3365,16 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val result = sut.forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("100")) , originalAmount = Some(BigDecimal("100")))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val result = sut
+          .forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("100")), originalAmount = Some(BigDecimal("100")))
 
         result mustBe false
       }
     }
-    "return true" when{
-      "totalPayDate is BIGGER than originalAmount" in{
+    "return true" when {
+      "totalPayDate is BIGGER than originalAmount" in {
         val mockNpsConnector = mock[NpsConnector]
         val mockDesConnector = mock[DesConnector]
 
@@ -2588,8 +3394,10 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIncomeHelper = mock[IncomeHelper]
 
-        val sut = createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
-        val result = sut.forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("200")) , originalAmount = Some(BigDecimal("100")))
+        val sut =
+          createSUT(mockNpsConnector, mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
+        val result = sut
+          .forceUpdateEmploymentData(totalPayToDate = Some(BigDecimal("200")), originalAmount = Some(BigDecimal("100")))
 
         result mustBe true
       }
@@ -2603,22 +3411,30 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
   private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))
 
   val expectedPay =
-    if (new LocalDate(TaxYear().year + 1,1,1).year().isLeap)
+    if (new LocalDate(TaxYear().year + 1, 1, 1).year().isLeap)
       Some(201250)
     else
       Some(200625)
 
-  val daysInHalfYear : Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() /2
+  val daysInHalfYear: Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() / 2
 
-  val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear+1)
+  val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear + 1)
 
-  private val npsUpdateAmount = IabdUpdateAmount(
-    employmentSequenceNumber = 1,
-    grossAmount = 1000,
-    source = Some(46))
+  private val npsUpdateAmount = IabdUpdateAmount(employmentSequenceNumber = 1, grossAmount = 1000, source = Some(46))
 
-  val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(CurrentYear, 6, 20), new LocalDate(CurrentYear, 4, 20),
-    BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+  val payment = RtiPayment(
+    PayFrequency.FourWeekly,
+    new LocalDate(CurrentYear, 6, 20),
+    new LocalDate(CurrentYear, 4, 20),
+    BigDecimal(20),
+    BigDecimal(20000),
+    BigDecimal(0),
+    BigDecimal(0),
+    None,
+    isOccupationalPension = false,
+    None,
+    Some(10)
+  )
 
   val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
@@ -2626,17 +3442,49 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
   val iabdRoot = NpsIabdRoot(nino.value, Some(1), 23, Some(1000))
 
-  val npsEmployment = NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear),
-    "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(100))
+  val npsEmployment = NpsEmployment(
+    1,
+    npsDateStartOfYear,
+    Some(npsDateCurrentTaxYear),
+    "",
+    "123",
+    None,
+    1,
+    Some(Ceased.code),
+    Some("1000"),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    Some(100))
 
-  val npsEmploymentWithCessationPay = NpsEmployment(1, npsDateStartOfYear, Some(npsDateCurrentTaxYear),
-    "", "123", None, 1, Some(Ceased.code), Some("1000"), None, None, None, None, None, None, None, Some(1000))
+  val npsEmploymentWithCessationPay = NpsEmployment(
+    1,
+    npsDateStartOfYear,
+    Some(npsDateCurrentTaxYear),
+    "",
+    "123",
+    None,
+    1,
+    Some(Ceased.code),
+    Some("1000"),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    Some(1000))
 
-  private def createSUT(nps: NpsConnector,
-                        des: DesConnector,
-                        featureTogglesConfig: FeatureTogglesConfig,
-                        npsConfig: NpsConfig,
-                        incomeHelper: IncomeHelper) =
-
+  private def createSUT(
+    nps: NpsConnector,
+    des: DesConnector,
+    featureTogglesConfig: FeatureTogglesConfig,
+    npsConfig: NpsConfig,
+    incomeHelper: IncomeHelper) =
     new AutoUpdatePayService(nps, des, featureTogglesConfig, npsConfig, incomeHelper)
 }

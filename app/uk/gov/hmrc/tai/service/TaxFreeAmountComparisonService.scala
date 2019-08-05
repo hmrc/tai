@@ -30,48 +30,49 @@ import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 @Singleton
-class TaxFreeAmountComparisonService @Inject()(taxCodeChangeService: TaxCodeChangeServiceImpl,
-                                               codingComponentService: CodingComponentService) {
+class TaxFreeAmountComparisonService @Inject()(
+  taxCodeChangeService: TaxCodeChangeServiceImpl,
+  codingComponentService: CodingComponentService) {
 
-  def taxFreeAmountComparison(nino: Nino)(implicit hc:HeaderCarrier): Future[TaxFreeAmountComparison] = {
+  def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
     val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
     val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
-      current <- currentComponents
+      current  <- currentComponents
       previous <- previousComponents
     } yield {
       TaxFreeAmountComparison(previous, current)
     }
   }
 
-  private def getCurrentComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def getCurrentComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
 
     currentCodingComponentFuture.onFailure {
-      case NonFatal(e) => Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case NonFatal(e) =>
+        Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
     }
 
     currentCodingComponentFuture
   }
 
-  private def getPreviousComponents(nino: Nino)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def getPreviousComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     previousPrimaryTaxCodeRecord(nino).flatMap {
       case Some(record) => previousCodingComponentForId(nino, record.taxCodeId)
-      case None => Future.successful(Seq.empty[CodingComponent])
+      case None         => Future.successful(Seq.empty[CodingComponent])
     }
-  }
 
-  private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc:HeaderCarrier): Future[Option[TaxCodeSummary]] = {
+  private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[TaxCodeSummary]] =
     taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => taxCodeChange.primaryPreviousRecord)
-  }
 
-  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(implicit hc:HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(
+    implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     val previousCodingComponentsFuture = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
 
-
     previousCodingComponentsFuture.onFailure {
-      case NonFatal(e) => Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case NonFatal(e) =>
+        Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
     }
 
     previousCodingComponentsFuture

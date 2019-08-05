@@ -22,7 +22,7 @@ package object tai {
   implicit val formatTaxYear = new Format[TaxYear] {
     override def reads(j: JsValue): JsResult[TaxYear] = j match {
       case JsNumber(n) => JsSuccess(TaxYear(n.toInt))
-      case x => JsError(s"Expected JsNumber, found $x")
+      case x           => JsError(s"Expected JsNumber, found $x")
     }
     override def writes(v: TaxYear): JsValue = JsNumber(v.year)
   }

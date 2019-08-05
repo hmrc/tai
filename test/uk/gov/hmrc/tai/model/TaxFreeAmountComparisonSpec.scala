@@ -37,7 +37,7 @@ class TaxFreeAmountComparisonSpec extends PlaySpec {
 
         val expectedJson = Json.obj(
           "previous" -> Json.arr(),
-          "current" -> Json.arr()
+          "current"  -> Json.arr()
         )
 
         Json.toJson(model) mustEqual expectedJson
@@ -45,4 +45,3 @@ class TaxFreeAmountComparisonSpec extends PlaySpec {
     }
   }
 }
-

@@ -33,11 +33,8 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import scala.concurrent.Future
 
 @Singleton
-class BbsiController @Inject()(bbsiService: BbsiService,
-                               authentication: AuthenticationPredicate)
-  extends BaseController
-    with ApiFormats
-    with ControllerErrorHandler {
+class BbsiController @Inject()(bbsiService: BbsiService, authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats with ControllerErrorHandler {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>
@@ -48,17 +45,16 @@ class BbsiController @Inject()(bbsiService: BbsiService,
   def bbsiAccount(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiAccount(nino, id).map {
       case Some(account) => Ok(Json.toJson(ApiResponse(account, Nil)))
-      case None => NotFound
+      case None          => NotFound
     } recoverWith taxAccountErrorHandler
   }
 
-  def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
-    implicit request => {
-      withJsonBody[CloseAccountRequest] {
-        closeAccountRequest =>
-          bbsiService.closeBankAccount(nino, id, closeAccountRequest) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
+  def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    {
+      withJsonBody[CloseAccountRequest] { closeAccountRequest =>
+        bbsiService.closeBankAccount(nino, id, closeAccountRequest) map (envelopeId => {
+          Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        })
       }
     } recoverWith {
       case BankAccountNotFound(body) =>
@@ -69,8 +65,8 @@ class BbsiController @Inject()(bbsiService: BbsiService,
     }
   }
 
-  def removeAccount(nino: Nino, id: Int): Action[AnyContent] = authentication.async {
-    implicit request => {
+  def removeAccount(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
+    {
       bbsiService.removeIncorrectBankAccount(nino, id) map { envelopeId =>
         Accepted(Json.toJson(ApiResponse(envelopeId, Nil)))
       }
@@ -84,22 +80,22 @@ class BbsiController @Inject()(bbsiService: BbsiService,
   }
 
   def updateAccountInterest(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
-    implicit request => {
-      withJsonBody[AmountRequest] {
-        amountRequest =>
+    implicit request =>
+      {
+        withJsonBody[AmountRequest] { amountRequest =>
           bbsiService.updateBankAccountInterest(nino, id, amountRequest.amount) map (envelopeId => {
             Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
           })
+        }
+      } recoverWith {
+        case BankAccountNotFound(body) =>
+          Logger.warn(s"Bbsi - No bank account found for nino $nino")
+          Future.successful(NotFound(body))
+        case ex: HttpException =>
+          Future.failed(ex)
+        case _ =>
+          Future.successful(InternalServerError("Error while updating bank account"))
       }
-    } recoverWith {
-      case BankAccountNotFound(body) =>
-        Logger.warn(s"Bbsi - No bank account found for nino $nino")
-        Future.successful(NotFound(body))
-      case ex: HttpException =>
-        Future.failed(ex)
-      case _ =>
-        Future.successful(InternalServerError("Error while updating bank account"))
-    }
   }
 
 }

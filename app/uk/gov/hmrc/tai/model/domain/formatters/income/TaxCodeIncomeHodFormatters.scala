@@ -27,7 +27,7 @@ trait TaxCodeIncomeHodFormatters {
     override def reads(json: JsValue): JsResult[BasisOperation] = {
       val result = json.asOpt[Int] match {
         case Some(1) => Week1Month1BasisOperation
-        case _ => OtherBasisOperation
+        case _       => OtherBasisOperation
       }
       JsSuccess(result)
     }
@@ -48,19 +48,33 @@ trait TaxCodeIncomeHodFormatters {
       val description = incomeSourceType.toString
       val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
       val name = (json \ "name").asOpt[String].getOrElse("")
-      val basisOperation = (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
+      val basisOperation =
+        (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
       val status = employmentStatus(json)
       val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(TaxCodeIncome(incomeSourceType, employmentId, amount, description, taxCode, name, basisOperation, status, iyaCy,totalIya,iyaCyPlusOne))
+      JsSuccess(
+        TaxCodeIncome(
+          incomeSourceType,
+          employmentId,
+          amount,
+          description,
+          taxCode,
+          name,
+          basisOperation,
+          status,
+          iyaCy,
+          totalIya,
+          iyaCyPlusOne))
     }
   }
 
   val taxCodeIncomeSourcesReads = new Reads[Seq[TaxCodeIncome]] {
     override def reads(json: JsValue): JsResult[Seq[TaxCodeIncome]] = {
-      val taxCodeIncomes = (json \ "incomeSources").asOpt[Seq[TaxCodeIncome]](
-        Reads.seq(taxCodeIncomeSourceReads)).getOrElse(Seq.empty[TaxCodeIncome])
+      val taxCodeIncomes = (json \ "incomeSources")
+        .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
+        .getOrElse(Seq.empty[TaxCodeIncome])
       JsSuccess(taxCodeIncomes)
     }
   }
@@ -102,10 +116,13 @@ trait TaxCodeIncomeHodFormatters {
   }
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
-    val iabdSummaries: Option[Seq[IabdSummary]] = (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries").asOpt[Seq[IabdSummary]](Reads.seq(iabdSummaryReads))
+    val iabdSummaries: Option[Seq[IabdSummary]] =
+      (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries").asOpt[Seq[IabdSummary]](Reads.seq(iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
-      _.find(iabd => newEstimatedPayTypeFilter(iabd) &&
-        employmentFilter(iabd, employmentId))
+      _.find(
+        iabd =>
+          newEstimatedPayTypeFilter(iabd) &&
+            employmentFilter(iabd, employmentId))
     }
     iabdSummary.map(_.amount) match {
       case Some(amount) => Some(amount)
@@ -123,7 +140,7 @@ trait TaxCodeIncomeHodFormatters {
   private[formatters] def employmentFilter(iabdSummary: IabdSummary, employmentId: Option[Int]): Boolean = {
     val compare = for {
       jsEmploymentId <- iabdSummary.employmentId
-      empId <- employmentId
+      empId          <- employmentId
     } yield jsEmploymentId == empId
 
     compare.getOrElse(false)

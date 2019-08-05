@@ -48,8 +48,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         when(iabdUrls.npsIabdUrl(any(), any())).thenReturn("URL")
         when(featureTogglesConfig.desEnabled).thenReturn(false)
         when(mockNpsConfig.originatorId).thenReturn("TEST")
-        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
-          eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+        when(
+          mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
+            Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
         val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
@@ -68,8 +69,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
-          when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
-            eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          when(
+            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
+              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
@@ -87,8 +89,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
-          when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(Matchers.
-            eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          when(
+            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
+              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
@@ -110,8 +113,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         when(featureTogglesConfig.desEnabled).thenReturn(true)
         when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
         when(mockDesConfig.originatorId).thenReturn("TEST")
-        when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
-          eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+        when(
+          mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
+            Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
         val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
@@ -130,8 +134,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
-          when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
-            eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          when(
+            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
+              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
@@ -149,8 +154,9 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
-          when(mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(Matchers.
-            eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          when(
+            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
+              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
@@ -165,25 +171,24 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
   val nino = new Generator(new Random).nextNino
   private val json = Json.arr(
     Json.obj(
-      "nino" -> nino.withoutSuffix,
-      "taxYear" -> 2017,
-      "type" -> 10,
-      "source" -> 15,
-      "grossAmount" -> JsNull,
-      "receiptDate" -> JsNull,
-      "captureDate" -> "10/04/2017",
+      "nino"            -> nino.withoutSuffix,
+      "taxYear"         -> 2017,
+      "type"            -> 10,
+      "source"          -> 15,
+      "grossAmount"     -> JsNull,
+      "receiptDate"     -> JsNull,
+      "captureDate"     -> "10/04/2017",
       "typeDescription" -> "Total gift aid Payments",
-      "netAmount" -> 100
+      "netAmount"       -> 100
     )
   )
 
-
-  private def createSUT(npsConfig: NpsConfig = mock[NpsConfig],
-                        desConfig: DesConfig = mock[DesConfig],
-                        httpHandler: HttpHandler = mock[HttpHandler],
-                        iabdUrls: IabdUrls = mock[IabdUrls],
-                        featureTogglesConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]) = {
+  private def createSUT(
+    npsConfig: NpsConfig = mock[NpsConfig],
+    desConfig: DesConfig = mock[DesConfig],
+    httpHandler: HttpHandler = mock[HttpHandler],
+    iabdUrls: IabdUrls = mock[IabdUrls],
+    featureTogglesConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]) =
     new IabdConnector(npsConfig, desConfig, httpHandler, iabdUrls, featureTogglesConfig)
-  }
 
 }

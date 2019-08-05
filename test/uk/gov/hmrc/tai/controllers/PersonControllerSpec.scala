@@ -39,12 +39,11 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class PersonControllerSpec extends PlaySpec
-  with MockAuthenticationPredicate with MockitoSugar {
+class PersonControllerSpec extends PlaySpec with MockAuthenticationPredicate with MockitoSugar {
 
   "taxPayer method" should {
-    "return 200" when{
-      "given a valid nino" in{
+    "return 200" when {
+      "given a valid nino" in {
         val mockPersonService = mock[PersonService]
         when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
 
@@ -56,21 +55,23 @@ class PersonControllerSpec extends PlaySpec
       "the person service was able to successfully retrieve details" in {
         val expectedJson = Json.obj(
           "data" ->
-              Json.obj(
-                "nino" -> nino.nino,
-                "firstName" -> "firstname",
-                "surname" -> "surname",
-                "dateOfBirth" -> "1982-05-26",
-                "address" -> Json.obj(
-                  "line1" -> "l1",
-                  "line2" -> "l2",
-                  "line3" -> "l3",
-                  "postcode" -> "pc",
-                  "country" -> "country"
-                ),
-                "isDeceased" -> false,
-                "hasCorruptData" -> false),
-          "links" -> Json.arr())
+            Json.obj(
+              "nino"        -> nino.nino,
+              "firstName"   -> "firstname",
+              "surname"     -> "surname",
+              "dateOfBirth" -> "1982-05-26",
+              "address" -> Json.obj(
+                "line1"    -> "l1",
+                "line2"    -> "l2",
+                "line3"    -> "l3",
+                "postcode" -> "pc",
+                "country"  -> "country"
+              ),
+              "isDeceased"     -> false,
+              "hasCorruptData" -> false
+            ),
+          "links" -> Json.arr()
+        )
 
         val mockPersonService = mock[PersonService]
         when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
@@ -81,11 +82,12 @@ class PersonControllerSpec extends PlaySpec
     }
     "expose any underlying excpetion" in {
       val mockPersonService = mock[PersonService]
-      when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.failed(new NotFoundException("an example not found exception")))
+      when(mockPersonService.person(Matchers.eq(nino))(any()))
+        .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
 
       val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
       val thrown = the[NotFoundException] thrownBy Await.result(result, 5 seconds)
-      thrown.getMessage mustBe("an example not found exception")
+      thrown.getMessage mustBe ("an example not found exception")
     }
   }
   "return NOT AUTHORISED" when {
@@ -100,8 +102,16 @@ class PersonControllerSpec extends PlaySpec
 
   implicit val hc = HeaderCarrier()
   val nino = new Generator(new Random).nextNino
-  val person = Person(nino, "firstname", "surname", Some(new LocalDate(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"), false, false)
+  val person = Person(
+    nino,
+    "firstname",
+    "surname",
+    Some(new LocalDate(1982, 5, 26)),
+    Address("l1", "l2", "l3", "pc", "country"),
+    false,
+    false)
 
-  private def createSUT(authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-                        personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService)
+  private def createSUT(
+    authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
+    personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService)
 }

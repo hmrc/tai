@@ -78,7 +78,6 @@ class FormatLiabilityMapFormatSpec extends PlaySpec with NpsFormatter {
         paBandIncome mustBe Some(11000)
       }
 
-
       "non-savings has been passed with tax-bands" in {
         val npsJson =
           """

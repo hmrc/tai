@@ -39,11 +39,8 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxAccountRepositorySpec extends PlaySpec
-  with MockitoSugar
-  with FakeTaiPlayApplication
-  with HodsSource
-  with MongoConstants {
+class TaxAccountRepositorySpec
+    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with HodsSource with MongoConstants {
 
   val nino = new Generator(new Random).nextNino
   val metrics = mock[Metrics]
@@ -56,14 +53,13 @@ class TaxAccountRepositorySpec extends PlaySpec
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("1212")))
 
-
   "updateTaxCodeAmount" should {
     "update tax code amount" in {
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).
-        thenReturn(Future.successful(HodUpdateSuccess))
+      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateSuccess))
 
       val SUT = createSUT(cache, taxAccountConnector)
 
@@ -79,8 +75,8 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).
-        thenReturn(Future.successful(HodUpdateFailure))
+      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateFailure))
 
       val SUT = createSUT(cache, taxAccountConnector)
 
@@ -95,8 +91,8 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).
-        thenReturn(Future.successful(HodUpdateSuccess))
+      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateSuccess))
 
       val SUT = createSUT(cache, taxAccountConnector)
 
@@ -109,7 +105,8 @@ class TaxAccountRepositorySpec extends PlaySpec
     "return an error status when income can't be updated" in {
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any())).thenReturn(Future.successful(HodUpdateFailure))
+      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateFailure))
 
       val SUT = createSUT(cache, taxAccountConnector)
 
@@ -118,7 +115,6 @@ class TaxAccountRepositorySpec extends PlaySpec
       val result = Await.result(responseFuture, 5 seconds)
       result mustBe HodUpdateFailure
     }
-
 
     "taxAccount" must {
       "return Tax Account as Json in the response" when {
@@ -144,16 +140,14 @@ class TaxAccountRepositorySpec extends PlaySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(cacheConnector.findJson(
-        Matchers.eq(sessionId),
-        Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-      ).thenReturn(Future.successful(None))
+      when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+        .thenReturn(Future.successful(None))
 
-      when(cacheConnector.createOrUpdateJson(
-        Matchers.eq(sessionId),
-        Matchers.eq(taxAccountJsonResponse),
-        Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))
-      ).thenReturn(Future.successful(taxAccountJsonResponse))
+      when(
+        cacheConnector.createOrUpdateJson(
+          Matchers.eq(sessionId),
+          Matchers.eq(taxAccountJsonResponse),
+          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))).thenReturn(Future.successful(taxAccountJsonResponse))
 
       when(taxAccountConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
         .thenReturn(Future.successful(taxAccountJsonResponse))
@@ -185,21 +179,14 @@ class TaxAccountRepositorySpec extends PlaySpec
   }
 
   private val taxAccountJsonResponse = Json.obj(
-    "taxYear" -> 2017,
-    "totalLiability" -> Json.obj(
-      "untaxedInterest" -> Json.obj(
-        "totalTaxableIncome" -> 123)),
+    "taxYear"        -> 2017,
+    "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
     "incomeSources" -> Json.arr(
-      Json.obj(
-        "employmentId" -> 1,
-        "taxCode" -> "1150L",
-        "name" -> "Employer1",
-        "basisOperation" -> 1),
-      Json.obj(
-        "employmentId" -> 2,
-        "taxCode" -> "1100L",
-        "name" -> "Employer2",
-        "basisOperation" -> 2)))
+      Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
+      Json.obj("employmentId" -> 2, "taxCode" -> "1100L", "name" -> "Employer2", "basisOperation" -> 2)
+    )
+  )
 
-  def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) = new TaxAccountRepository(cache, taxAccountConnector)
+  def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) =
+    new TaxAccountRepository(cache, taxAccountConnector)
 }

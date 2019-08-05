@@ -16,27 +16,39 @@
 
 package uk.gov.hmrc.tai.model.enums
 
-sealed trait IncomeType{
+sealed trait IncomeType {
   def code: Int
   def description: String
 }
 
 object IncomeType {
-  object IncomeTypeEmployment extends IncomeType { val code = 0
-    val description = "IncomeTypeEmployment" }
+  object IncomeTypeEmployment extends IncomeType {
+    val code = 0
+    val description = "IncomeTypeEmployment"
+  }
 
-  object IncomeTypeOccupationalPension extends IncomeType { val code = 1
-    val description = "IncomeTypeOccupationalPension" }
+  object IncomeTypeOccupationalPension extends IncomeType {
+    val code = 1
+    val description = "IncomeTypeOccupationalPension"
+  }
 
-  object IncomeTypeESA extends IncomeType { val code = 2
-    val description = "IncomeTypeESA" }
+  object IncomeTypeESA extends IncomeType {
+    val code = 2
+    val description = "IncomeTypeESA"
+  }
 
-  object IncomeTypeIB extends IncomeType { val code = 3
-    val description = "IncomeTypeIB" }
+  object IncomeTypeIB extends IncomeType {
+    val code = 3
+    val description = "IncomeTypeIB"
+  }
 
-  object IncomeTypeJSA extends IncomeType { val code = 4
-    val description = "IncomeTypeJSA" }
+  object IncomeTypeJSA extends IncomeType {
+    val code = 4
+    val description = "IncomeTypeJSA"
+  }
 
-  object IncomeTypeStatePensionLumpSum extends IncomeType { val code = 5
-    val description = "IncomeTypeStatePensionLumpSum" }
+  object IncomeTypeStatePensionLumpSum extends IncomeType {
+    val code = 5
+    val description = "IncomeTypeStatePensionLumpSum"
+  }
 }

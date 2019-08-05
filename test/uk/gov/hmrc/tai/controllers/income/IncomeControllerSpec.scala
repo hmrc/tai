@@ -44,28 +44,61 @@ import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountServ
 import scala.concurrent.Future
 import scala.util.Random
 
-class IncomeControllerSpec extends PlaySpec
-  with MockitoSugar
-  with TaxCodeIncomeSourceAPIFormatters
-  with MockAuthenticationPredicate
-  with ApiFormats {
+class IncomeControllerSpec
+    extends PlaySpec with MockitoSugar with TaxCodeIncomeSourceAPIFormatters with MockAuthenticationPredicate
+    with ApiFormats {
 
   val employmentId = 1
   val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
   val expectedJsonEmpty: JsObject = Json.obj(
-    "data" -> Json.arr(),
+    "data"  -> Json.arr(),
     "links" -> Json.arr()
   )
 
   val mockIncomeService = mock[IncomeService]
   val mockEmploymentService = mock[EmploymentService]
 
-  val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(TaxCodeIncome(PensionIncome, Some(1), BigDecimal(1100),
-    PensionIncome.toString, "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
-    TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-      EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)),
-    TaxCodeIncome(EmploymentIncome, Some(3), BigDecimal(0),
-      EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)))
+  val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
+    TaxCodeIncome(
+      PensionIncome,
+      Some(1),
+      BigDecimal(1100),
+      PensionIncome.toString,
+      "1150L",
+      "Employer1",
+      Week1Month1BasisOperation,
+      Live,
+      BigDecimal(0),
+      BigDecimal(0),
+      BigDecimal(0)
+    ),
+    TaxCodeIncome(
+      EmploymentIncome,
+      Some(2),
+      BigDecimal(0),
+      EmploymentIncome.toString,
+      "1100L",
+      "Employer2",
+      OtherBasisOperation,
+      Live,
+      BigDecimal(321.12),
+      BigDecimal(0),
+      BigDecimal(0)
+    ),
+    TaxCodeIncome(
+      EmploymentIncome,
+      Some(3),
+      BigDecimal(0),
+      EmploymentIncome.toString,
+      "1100L",
+      "Employer2",
+      OtherBasisOperation,
+      Live,
+      BigDecimal(321.12),
+      BigDecimal(0),
+      BigDecimal(0)
+    )
+  )
 
   "untaxedInterest" must {
     "return NOT AUTHORISED" when {
@@ -89,11 +122,10 @@ class IncomeControllerSpec extends PlaySpec
         val expectedJson = Json.obj(
           "data" -> Json.obj(
             "incomeComponentType" -> "UntaxedInterestIncome",
-            "amount" -> 123,
-            "description" -> "Untaxed Interest",
-            "bankAccounts" -> JsArray()
-          )
-          ,
+            "amount"              -> 123,
+            "description"         -> "Untaxed Interest",
+            "bankAccounts"        -> JsArray()
+          ),
           "links" -> Json.arr()
         )
 
@@ -160,10 +192,34 @@ class IncomeControllerSpec extends PlaySpec
 
     "return Ok with tax code incomes" when {
       "a list of tax code incomes is returned by income service" in {
-        val taxCodeIncomesNoPension = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(1100),
-          EmploymentIncome.toString, "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
-          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-            EmploymentIncome.toString, "1100L", "Employer2", OtherBasisOperation, PotentiallyCeased, BigDecimal(321.12), BigDecimal(0), BigDecimal(0)))
+        val taxCodeIncomesNoPension = Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(1100),
+            EmploymentIncome.toString,
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0)
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(0),
+            EmploymentIncome.toString,
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            PotentiallyCeased,
+            BigDecimal(321.12),
+            BigDecimal(0),
+            BigDecimal(0)
+          )
+        )
 
         when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxCodeIncomesNoPension))
@@ -174,31 +230,32 @@ class IncomeControllerSpec extends PlaySpec
         val expectedJson = Json.obj(
           "data" -> Json.arr(
             Json.obj(
-              "componentType" -> EmploymentIncome.toString,
-              "employmentId" -> 1,
-              "amount" -> 1100,
-              "description" -> EmploymentIncome.toString,
-              "taxCode" -> "1150L",
-              "name" -> "Employer1",
-              "basisOperation" -> "Week1Month1BasisOperation",
-              "status" -> Live.toString,
-              "inYearAdjustmentIntoCY" -> 0,
-              "totalInYearAdjustment" -> 0,
-              "inYearAdjustmentIntoCYPlusOne" -> 0),
+              "componentType"                 -> EmploymentIncome.toString,
+              "employmentId"                  -> 1,
+              "amount"                        -> 1100,
+              "description"                   -> EmploymentIncome.toString,
+              "taxCode"                       -> "1150L",
+              "name"                          -> "Employer1",
+              "basisOperation"                -> "Week1Month1BasisOperation",
+              "status"                        -> Live.toString,
+              "inYearAdjustmentIntoCY"        -> 0,
+              "totalInYearAdjustment"         -> 0,
+              "inYearAdjustmentIntoCYPlusOne" -> 0
+            ),
             Json.obj(
-              "componentType" -> EmploymentIncome.toString,
-              "employmentId" -> 2,
-              "amount" -> 0,
-              "description" -> EmploymentIncome.toString,
-              "taxCode" -> "1100L",
-              "name" -> "Employer2",
-              "basisOperation" -> "OtherBasisOperation",
-              "status" -> PotentiallyCeased.toString,
-              "inYearAdjustmentIntoCY" -> 321.12,
-              "totalInYearAdjustment" -> 0,
-              "inYearAdjustmentIntoCYPlusOne" -> 0)
-          )
-          ,
+              "componentType"                 -> EmploymentIncome.toString,
+              "employmentId"                  -> 2,
+              "amount"                        -> 0,
+              "description"                   -> EmploymentIncome.toString,
+              "taxCode"                       -> "1100L",
+              "name"                          -> "Employer2",
+              "basisOperation"                -> "OtherBasisOperation",
+              "status"                        -> PotentiallyCeased.toString,
+              "inYearAdjustmentIntoCY"        -> 321.12,
+              "totalInYearAdjustment"         -> 0,
+              "inYearAdjustmentIntoCYPlusOne" -> 0
+            )
+          ),
           "links" -> Json.arr()
         )
 
@@ -209,8 +266,19 @@ class IncomeControllerSpec extends PlaySpec
 
   "matchedTaxCodeIncomesForYear" must {
 
-    val employment = Employment("company name", Some("888"), new LocalDate(TaxYear().next.year, 5, 26),
-      None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
+    val employment = Employment(
+      "company name",
+      Some("888"),
+      new LocalDate(TaxYear().next.year, 5, 26),
+      None,
+      Nil,
+      "",
+      "",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true
+    )
     val employments = Seq(employment, employment.copy(sequenceNumber = 1))
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
@@ -218,11 +286,14 @@ class IncomeControllerSpec extends PlaySpec
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
         .thenReturn(Future.successful(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
-      val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(
+        incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
+        authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
       val expectedJson = Json.obj(
-        "data" -> Json.arr(Json.toJson(IncomeSource(taxCodeIncomes(1), employment))),
+        "data"  -> Json.arr(Json.toJson(IncomeSource(taxCodeIncomes(1), employment))),
         "links" -> Json.arr()
       )
 
@@ -261,22 +332,36 @@ class IncomeControllerSpec extends PlaySpec
   }
 
   "nonMatchingCeasedEmployments" must {
-    val employment = Employment("company name", Some("888"), new LocalDate(TaxYear().next.year, 5, 26),
-      None, Nil, "", "", 2, Some(100), hasPayrolledBenefit = false, receivingOccupationalPension = true)
+    val employment = Employment(
+      "company name",
+      Some("888"),
+      new LocalDate(TaxYear().next.year, 5, 26),
+      None,
+      Nil,
+      "",
+      "",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true
+    )
 
     "return non matching ceased employments JSON" in {
-      val employments = Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+      val employments =
+        Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeService = mockIncomeService, employmentService = mockEmploymentService, authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(
+        incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
+        authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(FakeRequest())
 
-
       val expectedJson = Json.obj(
-        "data" -> employments,
+        "data"  -> employments,
         "links" -> Json.arr()
       )
 
@@ -328,9 +413,13 @@ class IncomeControllerSpec extends PlaySpec
     "return Ok with income" when {
       "income returned by IncomeService" in {
 
-        val income = uk.gov.hmrc.tai.model.domain.income.Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, Seq(
-          OtherNonTaxCodeIncome(Profit, None, 100, "Profit")
-        )))
+        val income = uk.gov.hmrc.tai.model.domain.income.Incomes(
+          Seq.empty[TaxCodeIncome],
+          NonTaxCodeIncome(
+            None,
+            Seq(
+              OtherNonTaxCodeIncome(Profit, None, 100, "Profit")
+            )))
 
         when(mockIncomeService.incomes(any(), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.successful(income))
@@ -345,13 +434,12 @@ class IncomeControllerSpec extends PlaySpec
               "otherNonTaxCodeIncomes" -> Json.arr(
                 Json.obj(
                   "incomeComponentType" -> "Profit",
-                  "amount" -> 100,
-                  "description" -> "Profit"
+                  "amount"              -> 100,
+                  "description"         -> "Profit"
                 )
               )
             )
-          )
-          ,
+          ),
           "links" -> Json.arr()
         )
 
@@ -365,9 +453,9 @@ class IncomeControllerSpec extends PlaySpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.updateTaxCodeIncome(nino, TaxYear(), 1)(FakeRequest("POST", "/",
-          FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json")))
+        val result = sut.updateTaxCodeIncome(nino, TaxYear(), 1)(
+          FakeRequest("POST", "/", FakeHeaders(), JsNull)
+            .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -409,12 +497,14 @@ class IncomeControllerSpec extends PlaySpec
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   private val nino = new Generator(new Random).nextNino
 
-  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
+  private val untaxedInterest =
+    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
 
-  private def createSUT(incomeService: IncomeService = mock[IncomeService],
-                        taxAccountService: TaxAccountService = mock[TaxAccountService],
-                        employmentService: EmploymentService = mock[EmploymentService],
-                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(
+    incomeService: IncomeService = mock[IncomeService],
+    taxAccountService: TaxAccountService = mock[TaxAccountService],
+    employmentService: EmploymentService = mock[EmploymentService],
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new IncomeController(incomeService, taxAccountService, employmentService, authentication)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
@@ -429,7 +519,9 @@ class IncomeControllerSpec extends PlaySpec
     mockTaxAccountService
   }
 
-  private def setup(response: Future[IncomeUpdateResponse], mockTaxAccountService: TaxAccountService): IncomeController = {
+  private def setup(
+    response: Future[IncomeUpdateResponse],
+    mockTaxAccountService: TaxAccountService): IncomeController = {
     val mockIncomeService: IncomeService = {
       val mockIncomeService: IncomeService = mock[IncomeService]
       when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)

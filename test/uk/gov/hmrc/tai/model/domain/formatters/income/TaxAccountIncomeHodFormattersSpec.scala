@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
 
 import scala.util.Random
 
-
 class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHodFormatters {
 
   "nonTaxCodeIncomeReads" must {
@@ -32,15 +31,15 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
       "there is no total liability present in tax account" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
-          "nino" -> nino.nino
+          "nino"         -> nino.nino
         )
         json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe empty
       }
 
       "total liability is null in tax account" in {
         val json = Json.obj(
-          "taxAccountId" -> "id",
-          "nino" -> nino.nino,
+          "taxAccountId"   -> "id",
+          "nino"           -> nino.nino,
           "totalLiability" -> JsNull
         )
         json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe empty
@@ -49,8 +48,12 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
 
     "return non-tax-code incomes" when {
       "non-tax-code-incomes are present" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68,
-          69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125), 100))
+        val json = taxAccountJsonWithIabds(
+          npsIabdSummaries(
+            1,
+            Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
+              81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
+            100))
 
         json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
@@ -87,23 +90,23 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
     }
   }
 
-  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] = {
+  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
     types.map { tp =>
       Json.obj(
-        "amount" -> amount,
-        "type" -> tp,
-        "npsDescription" -> "desc",
-        "employmentId" -> empId,
+        "amount"             -> amount,
+        "type"               -> tp,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> empId,
         "estimatesPaySource" -> 1
       )
     }
-  }
 
-  private def taxAccountJsonWithIabds(incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-                                      allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject = {
+  private def taxAccountJsonWithIabds(
+    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
-      "nino" -> nino.nino,
+      "nino"         -> nino.nino,
       "totalLiability" -> Json.obj(
         "nonSavings" -> Json.obj(
           "totalIncome" -> Json.obj(
@@ -115,7 +118,6 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
         )
       )
     )
-  }
   private val nino: Nino = new Generator(new Random).nextNino
 
 }

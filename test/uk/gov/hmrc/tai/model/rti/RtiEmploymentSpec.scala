@@ -26,8 +26,8 @@ class RtiEmploymentSpec extends PlaySpec {
 
     "return valid payFrequency" when {
       "RtiPayments has multiple payments" in {
-        val paymentList = List(data.sample.get.copy(payFrequency = payFrequency),
-          data.sample.get.copy(payFrequency = payFrequency))
+        val paymentList =
+          List(data.sample.get.copy(payFrequency = payFrequency), data.sample.get.copy(payFrequency = payFrequency))
 
         sut(paymentList).payFrequency mustBe payFrequency
       }
@@ -39,8 +39,8 @@ class RtiEmploymentSpec extends PlaySpec {
 
     "return valid taxablePayYTD" when {
       "RtiPayments has multiple payments" in {
-        val paymentList = List(data.sample.get.copy(payFrequency = payFrequency),
-          data.sample.get.copy(payFrequency = payFrequency))
+        val paymentList =
+          List(data.sample.get.copy(payFrequency = payFrequency), data.sample.get.copy(payFrequency = payFrequency))
 
         sut(paymentList).taxablePayYTD mustNot be(0)
       }
@@ -51,7 +51,7 @@ class RtiEmploymentSpec extends PlaySpec {
     }
   }
 
-  def sut(paymentsInput: List[RtiPayment]) = {
+  def sut(paymentsInput: List[RtiPayment]) =
     RtiEmployment(
       officeRefNo = "officeRefNo",
       payeRef = "payeRef",
@@ -61,5 +61,4 @@ class RtiEmploymentSpec extends PlaySpec {
       currentPayId = None,
       sequenceNumber = 1
     )
-  }
 }

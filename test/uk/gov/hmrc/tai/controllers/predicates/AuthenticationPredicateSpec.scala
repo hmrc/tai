@@ -30,7 +30,6 @@ import uk.gov.hmrc.tai.mocks.{MockAuthorisedUser, MockUnauthorisedUser}
 
 import scala.concurrent.Future
 
-
 class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
 
   "async for get" must {
@@ -66,16 +65,14 @@ class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
   }
 
   private class SUT(val authentication: AuthenticationPredicate) extends BaseController {
-    def get: Action[AnyContent] = authentication.async {
-      implicit request =>
-        Future.successful(Ok)
+    def get: Action[AnyContent] = authentication.async { implicit request =>
+      Future.successful(Ok)
     }
 
-    def post: Action[JsValue] = authentication.async(parse.json){
-      implicit request =>
-        withJsonBody[String] {
-          _ => Future.successful(Ok)
-        }
+    def post: Action[JsValue] = authentication.async(parse.json) { implicit request =>
+      withJsonBody[String] { _ =>
+        Future.successful(Ok)
+      }
     }
   }
 }

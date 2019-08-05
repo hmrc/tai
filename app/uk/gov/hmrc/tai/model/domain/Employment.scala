@@ -16,54 +16,48 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 
-
 case class Employment(
-                       name: String,
-                       payrollNumber: Option[String],
-                       startDate: LocalDate,
-                       endDate: Option[LocalDate],
-                       annualAccounts: Seq[AnnualAccount],
-                       taxDistrictNumber: String,
-                       payeNumber: String,
-                       sequenceNumber: Int,
-                       cessationPay: Option[BigDecimal],
-                       hasPayrolledBenefit: Boolean,
-                       receivingOccupationalPension: Boolean) {
+  name: String,
+  payrollNumber: Option[String],
+  startDate: LocalDate,
+  endDate: Option[LocalDate],
+  annualAccounts: Seq[AnnualAccount],
+  taxDistrictNumber: String,
+  payeNumber: String,
+  sequenceNumber: Int,
+  cessationPay: Option[BigDecimal],
+  hasPayrolledBenefit: Boolean,
+  receivingOccupationalPension: Boolean) {
 
   lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
 
   lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
 
-  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some (annualAccounts.max)
+  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 }
 
-case class AddEmployment(employerName: String,
-                         startDate: LocalDate,
-                         payrollNumber: String,
-                         telephoneContactAllowed: String,
-                         telephoneNumber: Option[String])
+case class AddEmployment(
+  employerName: String,
+  startDate: LocalDate,
+  payrollNumber: String,
+  telephoneContactAllowed: String,
+  telephoneNumber: Option[String])
 
 object AddEmployment {
   implicit val formats = Json.format[AddEmployment]
 }
 
-case class EndEmployment(endDate: LocalDate,
-                         telephoneContactAllowed: String,
-                         telephoneNumber: Option[String])
+case class EndEmployment(endDate: LocalDate, telephoneContactAllowed: String, telephoneNumber: Option[String])
 
 object EndEmployment {
   implicit val formats = Json.format[EndEmployment]
 }
 
-case class IncorrectEmployment(whatYouToldUs: String,
-                               telephoneContactAllowed: String,
-                               telephoneNumber: Option[String])
+case class IncorrectEmployment(whatYouToldUs: String, telephoneContactAllowed: String, telephoneNumber: Option[String])
 
 object IncorrectEmployment {
   implicit val formats: Format[IncorrectEmployment] = Json.format[IncorrectEmployment]
 }
-

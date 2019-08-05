@@ -47,7 +47,7 @@ class NpsDateSpec extends PlaySpec {
     }
 
     "throw a JsError" when {
-      
+
       "an empty string is given" in {
         val thrown = the[JsResultException] thrownBy Json.parse("""""""").as[NpsDate]
         extractErrorsPerPath(thrown) mustBe List("""The date was not of the expected format [dd/MM/yyyy]: """"")
@@ -77,7 +77,8 @@ class NpsDateSpec extends PlaySpec {
     "create an NpsDate" when {
 
       "given an Option of a String" in {
-        NpsDateImplicitConversions.optDateFromOptString(Some("2016-10-10")) mustBe Some(NpsDate(LocalDate.parse("2016-10-10")))
+        NpsDateImplicitConversions.optDateFromOptString(Some("2016-10-10")) mustBe Some(
+          NpsDate(LocalDate.parse("2016-10-10")))
         NpsDateImplicitConversions.optDateFromOptString(None) mustBe None
       }
 
@@ -119,13 +120,12 @@ class NpsDateSpec extends PlaySpec {
     }
   }
 
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
+  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
       (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError <- errors
-      message: String <- error.messages
+      error: ValidationError                       <- errors
+      message: String                              <- error.messages
     } yield {
       message
     }
-  }
 }

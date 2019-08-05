@@ -25,21 +25,19 @@ import com.google.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class Caching @Inject()(cacheConnector: CacheConnector,
-                        metrics: Metrics,
-                        cacheMetricsConfig: CacheMetricsConfig) {
+class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig) {
 
   def cacheFromApi(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
     val sessionId = fetchSessionId(hc)
     cacheConnector.findJson(sessionId, mongoKey).flatMap {
       case Some(jsonFromCache) => {
-        if(cacheMetricsConfig.cacheMetricsEnabled)
+        if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheHitCounter()
 
         Future.successful(jsonFromCache)
       }
       case _ => {
-        if(cacheMetricsConfig.cacheMetricsEnabled)
+        if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheMissCounter()
 
         jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(sessionId, _, mongoKey))
@@ -47,8 +45,7 @@ class Caching @Inject()(cacheConnector: CacheConnector,
     }
   }
 
-  def fetchSessionId(headerCarrier: HeaderCarrier): String = {
+  def fetchSessionId(headerCarrier: HeaderCarrier): String =
     headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-  }
 
 }

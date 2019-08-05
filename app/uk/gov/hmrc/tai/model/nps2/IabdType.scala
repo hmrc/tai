@@ -71,9 +71,11 @@ object IabdType {
   object PersonalIncidentalExpenses extends IabdType { val code = 49 }
   object QualfyingRelocationExpenses extends IabdType { val code = 50 }
   object EmployerProvidedProfessionalSubscription extends IabdType {
-    val code = 51 }
+    val code = 51
+  }
   object IncomeTaxPaidButNotDeductedFromDirectorsRemuneration extends IabdType {
-    val code = 52 }
+    val code = 52
+  }
   object TravelAndSubsistence extends IabdType { val code = 53 }
   object VouchersAndCreditCards extends IabdType { val code = 54 }
   object JobExpenses extends IabdType { val code = 55 }
@@ -108,15 +110,19 @@ object IabdType {
   object JobSeekersAllowance extends IabdType { val code = 84 }
   object OtherBenefit extends IabdType { val code = 85 }
   object TrustsSettlementsAndEstatesAtTrustRate extends IabdType {
-    val code = 86 }
+    val code = 86
+  }
   object TrustsSettlementsAndEstatesAtBasicRate extends IabdType {
-    val code = 87 }
+    val code = 87
+  }
   object TrustsSettlementsAndEstatesAtLowerRate extends IabdType {
-    val code = 88 }
+    val code = 88
+  }
   object TrustsSettlementsAndEstatesAtNonPayableDividendRate extends IabdType {
-    val code = 89 }
+    val code = 89
+  }
   object VentureCapitalTrust extends IabdType { val code = 90 }
-  object BPATransferredSpouseCivilPartner  extends IabdType { val code = 91 }
+  object BPATransferredSpouseCivilPartner extends IabdType { val code = 91 }
   object TradeUnionSubscriptions extends IabdType { val code = 93 }
   object ChargeableEventGain extends IabdType { val code = 94 }
   object GiftAidAdjustment extends IabdType { val code = 95 }
@@ -137,9 +143,11 @@ object IabdType {
   object MarriedCouplesAllowanceMCCP extends IabdType { val code = 110 }
   object SurplusMarriedCouplesAllowanceMAT extends IabdType { val code = 111 }
   object SurplusMarriedCouplesAllowanceToWifeWAA extends IabdType {
-    val code = 112 }
+    val code = 112
+  }
   object SurplusMarriedCouplesAllowanceToWifeWAE extends IabdType {
-    val code = 113 }
+    val code = 113
+  }
   object MarriedCouplesAllowanceToWifeWMA extends IabdType { val code = 114 }
   object FriendlySocietySubscriptions extends IabdType { val code = 115 }
   object HigherRateAdjustment extends IabdType { val code = 116 }
@@ -157,44 +165,106 @@ object IabdType {
   case class Unknown(code: Int) extends IabdType
 
   val set = Seq(
-    GiftAidPayments, GiftAidTreatedAsPaidInPreviousTaxYear,
-    OneOffGiftAidPayments, GiftAidAfterEndOfTaxYear, PersonalPensionPayments,
-    EmployerProvidedServices, BalancingCharge, LoanInterestAmount,
-    DeathSicknessOrFuneralBenefits, MarriedCouplesAllowanceMAA,
-    BlindPersonsAllowance, BpaReceivedFromSpouseOrCivilPartner,
-    RetirementAnnuityPayments, NonCodedIncome, Commission, OtherIncomeEarned,
-    OtherIncomeNotEarned, PartTimeEarnings, Tips, OtherEarnings,
-    NewEstimatedPay, BenefitInKind, CarFuelBenefit, MedicalInsurance,
-    CarBenefit, Telephone, ServiceBenefit, TaxableExpensesBenefit, VanBenefit,
-    VanFuelBenefit, BeneficialLoan, Accommodation, Assets, AssetTransfer,
-    EducationalServices, Entertaining, Expenses, Mileage,
-    NonQualifyingRelocationExpenses, NurseryPlaces, OtherItems,
-    PaymentsOnEmployeesBehalf, PersonalIncidentalExpenses,
-    QualfyingRelocationExpenses, EmployerProvidedProfessionalSubscription,
-    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration, TravelAndSubsistence,
-    VouchersAndCreditCards, JobExpenses, FlatRateJobExpenses,
-    ProfessionalSubscriptions, HotelAndMealExpenses, OtherExpenses,
-    VehicleExpenses, MileageAllowanceRelief, ForeignDividendIncome,
-    ForeignPropertyIncome, ForeignInterestAndOtherSavings,
-    ForeignPensionsAndOtherIncome, StatePension, OccupationalPension,
-    PublicServicesPension, ForcesPension, PersonalPensionAnnuity, Profit,
-    LossBroughtForwardFromEarlierTaxYear, BankOrBuildingSocietyInterest,
-    UkDividend, UnitTrust, StockDividend, NationalSavings, SavingsBond,
-    PurchasedLifeAnnuities, UntaxedInterest, IncapacityBenefit,
-    JobSeekersAllowance, TrustsSettlementsAndEstatesAtTrustRate,
+    GiftAidPayments,
+    GiftAidTreatedAsPaidInPreviousTaxYear,
+    OneOffGiftAidPayments,
+    GiftAidAfterEndOfTaxYear,
+    PersonalPensionPayments,
+    EmployerProvidedServices,
+    BalancingCharge,
+    LoanInterestAmount,
+    DeathSicknessOrFuneralBenefits,
+    MarriedCouplesAllowanceMAA,
+    BlindPersonsAllowance,
+    BpaReceivedFromSpouseOrCivilPartner,
+    RetirementAnnuityPayments,
+    NonCodedIncome,
+    Commission,
+    OtherIncomeEarned,
+    OtherIncomeNotEarned,
+    PartTimeEarnings,
+    Tips,
+    OtherEarnings,
+    NewEstimatedPay,
+    BenefitInKind,
+    CarFuelBenefit,
+    MedicalInsurance,
+    CarBenefit,
+    Telephone,
+    ServiceBenefit,
+    TaxableExpensesBenefit,
+    VanBenefit,
+    VanFuelBenefit,
+    BeneficialLoan,
+    Accommodation,
+    Assets,
+    AssetTransfer,
+    EducationalServices,
+    Entertaining,
+    Expenses,
+    Mileage,
+    NonQualifyingRelocationExpenses,
+    NurseryPlaces,
+    OtherItems,
+    PaymentsOnEmployeesBehalf,
+    PersonalIncidentalExpenses,
+    QualfyingRelocationExpenses,
+    EmployerProvidedProfessionalSubscription,
+    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
+    TravelAndSubsistence,
+    VouchersAndCreditCards,
+    JobExpenses,
+    FlatRateJobExpenses,
+    ProfessionalSubscriptions,
+    HotelAndMealExpenses,
+    OtherExpenses,
+    VehicleExpenses,
+    MileageAllowanceRelief,
+    ForeignDividendIncome,
+    ForeignPropertyIncome,
+    ForeignInterestAndOtherSavings,
+    ForeignPensionsAndOtherIncome,
+    StatePension,
+    OccupationalPension,
+    PublicServicesPension,
+    ForcesPension,
+    PersonalPensionAnnuity,
+    Profit,
+    LossBroughtForwardFromEarlierTaxYear,
+    BankOrBuildingSocietyInterest,
+    UkDividend,
+    UnitTrust,
+    StockDividend,
+    NationalSavings,
+    SavingsBond,
+    PurchasedLifeAnnuities,
+    UntaxedInterest,
+    IncapacityBenefit,
+    JobSeekersAllowance,
+    TrustsSettlementsAndEstatesAtTrustRate,
     TrustsSettlementsAndEstatesAtBasicRate,
     TrustsSettlementsAndEstatesAtLowerRate,
     TrustsSettlementsAndEstatesAtNonPayableDividendRate,
-    TradeUnionSubscriptions, GiftAidAdjustment, WidowsAndOrphansAdjustment,
-    MarriedCouplesAllowanceToWifeMAW, EarlyYearsAdjustment, LossRelief,
-    ForeignPensionAllowance, MarriedCouplesAllowanceMAE,
-    MarriedCouplesAllowanceMCCP, SurplusMarriedCouplesAllowanceToWifeWAA,
-    SurplusMarriedCouplesAllowanceToWifeWAE, MarriedCouplesAllowanceToWifeWMA,
-    FriendlySocietySubscriptions, NonCashBenefit, PersonalAllowancePA,
-    PersonalAllowanceAgedPAA, PersonalAllowanceElderlyPAE,
-    EmploymentAndSupportAllowance)
+    TradeUnionSubscriptions,
+    GiftAidAdjustment,
+    WidowsAndOrphansAdjustment,
+    MarriedCouplesAllowanceToWifeMAW,
+    EarlyYearsAdjustment,
+    LossRelief,
+    ForeignPensionAllowance,
+    MarriedCouplesAllowanceMAE,
+    MarriedCouplesAllowanceMCCP,
+    SurplusMarriedCouplesAllowanceToWifeWAA,
+    SurplusMarriedCouplesAllowanceToWifeWAE,
+    MarriedCouplesAllowanceToWifeWMA,
+    FriendlySocietySubscriptions,
+    NonCashBenefit,
+    PersonalAllowancePA,
+    PersonalAllowanceAgedPAA,
+    PersonalAllowanceElderlyPAE,
+    EmploymentAndSupportAllowance
+  )
 
-  def apply(i: Int): IabdType = set.find{_.code == i}.
-    getOrElse{Unknown(i)}
+  def apply(i: Int): IabdType = set.find { _.code == i }.getOrElse { Unknown(i) }
 
 }

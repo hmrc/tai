@@ -38,9 +38,7 @@ import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 import scala.concurrent.Future
 import scala.util.Random
 
-class EmployeeExpensesControllerSpec extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate {
+class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
@@ -127,10 +125,11 @@ class EmployeeExpensesControllerSpec extends PlaySpec
         when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
-        val result = controller(notLoggedInAuthenticationPredicate).updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
+        val result =
+          controller(notLoggedInAuthenticationPredicate).updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
-        whenReady(result.failed) {
-          e => e mustBe a[MissingBearerToken]
+        whenReady(result.failed) { e =>
+          e mustBe a[MissingBearerToken]
         }
       }
     }

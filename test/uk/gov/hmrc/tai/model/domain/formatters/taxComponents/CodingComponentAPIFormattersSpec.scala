@@ -34,13 +34,12 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
   "codingComponentWrites" must {
     "write tax component correctly to json" when {
       "only mandatory fields are provided and codingComponent is Allowance" in {
-        Json.toJson(
-          CodingComponent(GiftAidPayments, None, 1232, "Some Desc"))(codingComponentWrites) mustBe
+        Json.toJson(CodingComponent(GiftAidPayments, None, 1232, "Some Desc"))(codingComponentWrites) mustBe
           Json.obj(
             "componentType" -> "GiftAidPayments",
-            "amount" -> 1232,
-            "description" -> "Some Desc",
-            "iabdCategory" -> "Allowance"
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Allowance"
           )
       }
       "all the fields are provided and codingComponent is Allowance" in {
@@ -49,11 +48,11 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
         )(codingComponentWrites) mustBe
           Json.obj(
             "componentType" -> "GiftAidPayments",
-            "employmentId" -> 111,
-            "amount" -> 1232,
-            "description" -> "Some Desc",
-            "iabdCategory" -> "Allowance",
-            "inputAmount" -> 12500
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Allowance",
+            "inputAmount"   -> 12500
           )
       }
       "all the fields are provided and codingComponent is Benefit" in {
@@ -62,11 +61,11 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
         )(codingComponentWrites) mustBe
           Json.obj(
             "componentType" -> "AssetTransfer",
-            "employmentId" -> 111,
-            "amount" -> 1232,
-            "description" -> "Some Desc",
-            "iabdCategory" -> "Benefit",
-            "inputAmount" -> BigDecimal("13200.01")
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Benefit",
+            "inputAmount"   -> BigDecimal("13200.01")
           )
       }
       "all the fields are provided and codingComponent is Deduction" in {
@@ -75,24 +74,23 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
         )(codingComponentWrites) mustBe
           Json.obj(
             "componentType" -> "BalancingCharge",
-            "employmentId" -> 111,
-            "amount" -> 1232,
-            "description" -> "Some Desc",
-            "iabdCategory" -> "Deduction",
-            "inputAmount" -> 12500
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Deduction",
+            "inputAmount"   -> 12500
           )
       }
       "all the fields are provided and codingComponent is NonTaxCodeIncomeType" in {
-        Json.toJson(CodingComponent(NonCodedIncome, Some(111), 1232, "Some Desc", Some(12500))
-        )(codingComponentWrites) mustBe
+        Json.toJson(CodingComponent(NonCodedIncome, Some(111), 1232, "Some Desc", Some(12500)))(codingComponentWrites) mustBe
           Json.obj(
-          "componentType" -> "NonCodedIncome",
-          "employmentId" -> 111,
-          "amount" -> 1232,
-          "description" -> "Some Desc",
-          "iabdCategory" -> "NonTaxCodeIncome",
-          "inputAmount" -> 12500
-        )
+            "componentType" -> "NonCodedIncome",
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "NonTaxCodeIncome",
+            "inputAmount"   -> 12500
+          )
       }
     }
     "throw a runtime exception" when {

@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.api
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
-
 class ApiResponseSpec extends PlaySpec {
 
   implicit val testFormat = Json.format[TestObject]
@@ -28,11 +27,11 @@ class ApiResponseSpec extends PlaySpec {
     "produce a valid json message with a data section" when {
       "given a valid object" in {
 
-        val sut = ApiResponse (TestObject("test name", 33), Nil)
+        val sut = ApiResponse(TestObject("test name", 33), Nil)
 
         val resp = Json.toJson(sut)
 
-        resp mustBe Json.obj("data" -> Json.obj("name" -> "test name","age" -> 33),"links" -> Json.arr())
+        resp mustBe Json.obj("data" -> Json.obj("name" -> "test name", "age" -> 33), "links" -> Json.arr())
       }
     }
     "produce a valid json message with links" when {
@@ -43,34 +42,26 @@ class ApiResponseSpec extends PlaySpec {
         val resp = Json.toJson(sut)
 
         resp mustBe Json.obj(
-          "data" -> 3,
-          "links" -> Json.arr(
-            Json.obj(
-              "uri" -> "/tai/tax-payer",
-              "rel" -> "self",
-              "method" -> "GET")))
+          "data"  -> 3,
+          "links" -> Json.arr(Json.obj("uri" -> "/tai/tax-payer", "rel" -> "self", "method" -> "GET")))
       }
 
       "given multiple links" in {
 
-        val sut = ApiResponse("hello", List(ApiLink("/tai/tax-payer", "self"), ApiLink("/tai/tax-payers", "create", "POST")))
+        val sut =
+          ApiResponse("hello", List(ApiLink("/tai/tax-payer", "self"), ApiLink("/tai/tax-payers", "create", "POST")))
 
         val resp = Json.toJson(sut)
 
         resp mustBe Json.obj(
           "data" -> "hello",
           "links" -> Json.arr(
-            Json.obj(
-              "uri" -> "/tai/tax-payer",
-              "rel" -> "self",
-              "method" -> "GET"),
-            Json.obj(
-              "uri" -> "/tai/tax-payers",
-              "rel" -> "create",
-              "method" -> "POST")))
+            Json.obj("uri" -> "/tai/tax-payer", "rel"  -> "self", "method"   -> "GET"),
+            Json.obj("uri" -> "/tai/tax-payers", "rel" -> "create", "method" -> "POST"))
+        )
       }
     }
   }
 }
 
-case class TestObject (name: String, age: Int)
+case class TestObject(name: String, age: Int)

@@ -22,14 +22,12 @@ import org.scalatestplus.play.OneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
-
 trait FakeTaiPlayApplication extends OneServerPerSuite with PatienceConfiguration with TestSuite {
   this: Suite =>
 
   override lazy val port = 19331
 
-  val additionalConfiguration = Map [String, Any] (
-    "metrics.enabled" -> false)
+  val additionalConfiguration = Map[String, Any]("metrics.enabled" -> false)
 
   implicit override lazy val app: Application =
     new GuiceApplicationBuilder()

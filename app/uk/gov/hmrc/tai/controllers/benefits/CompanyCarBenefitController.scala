@@ -29,30 +29,31 @@ import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class CompanyCarBenefitController @Inject()(companyCarBenefitService: BenefitsService,
-                                            authentication: AuthenticationPredicate)
-  extends BaseController
-    with ApiFormats
-    with ControllerErrorHandler{
+class CompanyCarBenefitController @Inject()(
+  companyCarBenefitService: BenefitsService,
+  authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats with ControllerErrorHandler {
 
   def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    companyCarBenefitService.companyCarBenefits(nino).map{
+    companyCarBenefitService.companyCarBenefits(nino).map {
       case Nil => NotFound
-      case c => Ok(Json.toJson(ApiResponse(c,Nil)))
+      case c   => Ok(Json.toJson(ApiResponse(c, Nil)))
     } recoverWith taxAccountErrorHandler
   }
 
-  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int): Action[AnyContent] = authentication.async { implicit request =>
-    companyCarBenefitService.companyCarBenefitForEmployment(nino, employmentSeqNum).map{
-      case None => NotFound
-      case Some(c) => Ok(Json.toJson(ApiResponse(c,Nil)))
-    } recoverWith taxAccountErrorHandler
-  }
-
-  def withdrawCompanyCarAndFuel(nino: Nino, employmentSeqNum: Int, carSeqNum: Int): Action[JsValue] = authentication.async(parse.json) {
+  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int): Action[AnyContent] = authentication.async {
     implicit request =>
-    withJsonBody[WithdrawCarAndFuel] { removeCarAndFuel =>
-      companyCarBenefitService.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel) map(_ => Ok)
-    }
+      companyCarBenefitService.companyCarBenefitForEmployment(nino, employmentSeqNum).map {
+        case None    => NotFound
+        case Some(c) => Ok(Json.toJson(ApiResponse(c, Nil)))
+      } recoverWith taxAccountErrorHandler
   }
+
+  def withdrawCompanyCarAndFuel(nino: Nino, employmentSeqNum: Int, carSeqNum: Int): Action[JsValue] =
+    authentication.async(parse.json) { implicit request =>
+      withJsonBody[WithdrawCarAndFuel] { removeCarAndFuel =>
+        companyCarBenefitService.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel) map (
+          _ => Ok)
+      }
+    }
 }

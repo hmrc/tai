@@ -33,7 +33,8 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
       .configure(
         "microservice.services.des-hod.port" -> server.port(),
         "microservice.services.nps-hod.port" -> server.port()
-      ).build()
+      )
+      .build()
 
   protected lazy val injector: Injector = app.injector
 

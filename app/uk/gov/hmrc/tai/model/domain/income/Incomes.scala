@@ -19,21 +19,30 @@ package uk.gov.hmrc.tai.model.domain.income
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.tai.model.domain.{BankAccount, NonTaxCodeIncomeComponentType}
 
-case class UntaxedInterest(incomeComponentType: NonTaxCodeIncomeComponentType, employmentId: Option[Int],
-                           amount: BigDecimal, description: String, bankAccounts: Seq[BankAccount])
+case class UntaxedInterest(
+  incomeComponentType: NonTaxCodeIncomeComponentType,
+  employmentId: Option[Int],
+  amount: BigDecimal,
+  description: String,
+  bankAccounts: Seq[BankAccount])
 
 object UntaxedInterest {
   implicit val format: Format[UntaxedInterest] = Json.format[UntaxedInterest]
 }
 
-case class OtherNonTaxCodeIncome(incomeComponentType: NonTaxCodeIncomeComponentType, employmentId: Option[Int],
-                                 amount: BigDecimal, description: String)
+case class OtherNonTaxCodeIncome(
+  incomeComponentType: NonTaxCodeIncomeComponentType,
+  employmentId: Option[Int],
+  amount: BigDecimal,
+  description: String)
 
 object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 }
 
-case class NonTaxCodeIncome(untaxedInterest: Option[UntaxedInterest], otherNonTaxCodeIncomes: Seq[OtherNonTaxCodeIncome])
+case class NonTaxCodeIncome(
+  untaxedInterest: Option[UntaxedInterest],
+  otherNonTaxCodeIncomes: Seq[OtherNonTaxCodeIncome])
 
 object NonTaxCodeIncome {
   implicit val format: Format[NonTaxCodeIncome] = Json.format[NonTaxCodeIncome]

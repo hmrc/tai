@@ -20,12 +20,13 @@ import org.joda.time.LocalDate
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.enums.PayFreq._
 
-case class PayDetails (paymentFrequency : PayFreq,
-                       pay : Option[BigDecimal] = None,
-                       taxablePay : Option[BigDecimal] = None,
-                       days : Option[Int] = None,
-                       bonus : Option[BigDecimal] = None,
-                       startDate : Option[LocalDate] = None)
+case class PayDetails(
+  paymentFrequency: PayFreq,
+  pay: Option[BigDecimal] = None,
+  taxablePay: Option[BigDecimal] = None,
+  days: Option[Int] = None,
+  bonus: Option[BigDecimal] = None,
+  startDate: Option[LocalDate] = None)
 
 object PayDetails {
   implicit val formats = Json.format[PayDetails]

@@ -33,28 +33,27 @@ object TaxFreeAmountComparisonFactory {
     )
   }
 
-  def createJson: JsObject = {
+  def createJson: JsObject =
     Json.obj(
       "previous" -> Json.arr(
         Json.obj(
           "componentType" -> CarBenefit,
-          "employmentId" -> 1,
-          "amount" -> 1,
-          "description" -> "Car Benefit",
-          "iabdCategory" -> "Benefit",
-          "inputAmount" -> 1
+          "employmentId"  -> 1,
+          "amount"        -> 1,
+          "description"   -> "Car Benefit",
+          "iabdCategory"  -> "Benefit",
+          "inputAmount"   -> 1
         )
       ),
-      "current" ->  Json.arr(
+      "current" -> Json.arr(
         Json.obj(
           "componentType" -> Mileage,
-          "employmentId" -> 2,
-          "amount" -> 100,
-          "description" -> "Mileage",
-          "iabdCategory" -> "Benefit",
-          "inputAmount" -> 100
+          "employmentId"  -> 2,
+          "amount"        -> 100,
+          "description"   -> "Mileage",
+          "iabdCategory"  -> "Benefit",
+          "inputAmount"   -> 100
         )
       )
     )
-  }
 }

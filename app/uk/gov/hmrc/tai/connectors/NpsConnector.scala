@@ -38,24 +38,28 @@ import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmount
 import scala.concurrent.Future
 
 @Singleton
-class NpsConnector @Inject()(metrics: Metrics,
-                             httpClient: HttpClient,
-                             auditor: Auditor,
-                             formats: IabdUpdateAmountFormats,
-                             config: NpsConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
+class NpsConnector @Inject()(
+  metrics: Metrics,
+  httpClient: HttpClient,
+  auditor: Auditor,
+  formats: IabdUpdateAmountFormats,
+  config: NpsConfig)
+    extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
   override val originatorId = config.originatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
-  def getEmployments(nino: Nino, year: Int)
-    (implicit hc: HeaderCarrier): Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
+  def getEmployments(nino: Nino, year: Int)(implicit hc: HeaderCarrier)
+    : Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
     val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI)
-    json.map { x => (x._1.as[List[NpsEmployment]], x._1.as[List[model.nps2.NpsEmployment]], x._2, Nil)}
+    json.map { x =>
+      (x._1.as[List[NpsEmployment]], x._1.as[List[model.nps2.NpsEmployment]], x._2, Nil)
+    }
   }
 
-  def getEmploymentDetails(nino: Nino, year: Int) (implicit hc: HeaderCarrier): Future[JsValue] = {
+  def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
     getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI).map(_._1)
   }
@@ -70,7 +74,8 @@ class NpsConnector @Inject()(metrics: Metrics,
     getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI).map(x => x._1)
   }
 
-  def getCalculatedTaxAccount(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
+  def getCalculatedTaxAccount(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
     getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
   }
@@ -81,22 +86,25 @@ class NpsConnector @Inject()(metrics: Metrics,
     httpClient.GET[HttpResponse](urlToRead)
   }
 
-  def updateEmploymentData(nino: Nino, year: Int, iabdType: Int, version: Int,
-                           updateAmounts: List[IabdUpdateAmount],
-                           apiType: APITypes = APITypes.NpsIabdUpdateEstPayAutoAPI)
-                          (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateEmploymentData(
+    nino: Nino,
+    year: Int,
+    iabdType: Int,
+    version: Int,
+    updateAmounts: List[IabdUpdateAmount],
+    apiType: APITypes = APITypes.NpsIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     if (updateAmounts.nonEmpty) {
       val postUrl = npsPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(extraNpsHeaders(hc, version, sessionOrUUID), formats.formatList)
+      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(
+        extraNpsHeaders(hc, version, sessionOrUUID),
+        formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }
-  }
 
-  private def sessionOrUUID(implicit hc: HeaderCarrier): String = {
+  private def sessionOrUUID(implicit hc: HeaderCarrier): String =
     hc.sessionId match {
       case Some(sessionId) => sessionId.value
-      case None => UUID.randomUUID().toString.replace("-", "")
+      case None            => UUID.randomUUID().toString.replace("-", "")
     }
-  }
 }

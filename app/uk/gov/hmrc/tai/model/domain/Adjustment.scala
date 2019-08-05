@@ -16,5 +16,4 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-case class Adjustment(`type`: AdjustmentType,
-                      amount: BigDecimal)
+case class Adjustment(`type`: AdjustmentType, amount: BigDecimal)

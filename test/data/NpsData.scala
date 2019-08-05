@@ -27,7 +27,6 @@ import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import scala.io.BufferedSource
 import scala.util.Random
 
-
 object NpsData extends NpsFormatter {
 
   private lazy val nonCodedTaxAccountJson = "NonCodedMultiIncome/NpsTaxAccount.json"
@@ -62,8 +61,8 @@ object NpsData extends NpsFormatter {
 
   private lazy val outstandingDebtJson = "OutstandingDebt/NpsTaxAccount.json"
 
-  private lazy val taxSummaryDetailsJson ="TaxSummaryDetails/TaxSummary.json"
-  private lazy val JSAOtherIncomeSourceNpsEmploymentJson ="AutoUpdate/JSAOtherIncomeSourceNpsEmployment.json"
+  private lazy val taxSummaryDetailsJson = "TaxSummaryDetails/TaxSummary.json"
+  private lazy val JSAOtherIncomeSourceNpsEmploymentJson = "AutoUpdate/JSAOtherIncomeSourceNpsEmployment.json"
 
   private lazy val NpsTaxAccountJson = "TaxDetail/TaxAccount.json"
 
@@ -75,63 +74,63 @@ object NpsData extends NpsFormatter {
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private def getNpsTaxAccount(fileName: String):NpsTaxAccount = {
+  private def getNpsTaxAccount(fileName: String): NpsTaxAccount = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[NpsTaxAccount](jsVal)
     result.get
   }
 
-  private def getJson(fileName: String):JsValue = {
+  private def getJson(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     jsVal
   }
 
-  private def getSelectedNpsEmployment(fileName: String):NpsEmployment = {
+  private def getSelectedNpsEmployment(fileName: String): NpsEmployment = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[NpsEmployment](jsVal)
     result.get
   }
 
-  private def getNpsEmployment(fileName: String):List[NpsEmployment] = {
+  private def getNpsEmployment(fileName: String): List[NpsEmployment] = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[List[NpsEmployment]](jsVal)
     result.get
   }
 
-  private def getTaxSummaryDetails(fileName: String):TaxSummaryDetails = {
+  private def getTaxSummaryDetails(fileName: String): TaxSummaryDetails = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[TaxSummaryDetails](jsVal)
     result.get
   }
 
-  private def getNpsEmploymentIABDs(fileName: String):List[NpsIabdRoot] = {
+  private def getNpsEmploymentIABDs(fileName: String): List[NpsIabdRoot] = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[List[NpsIabdRoot]](jsVal)
     result.get
   }
 
-  private def getNpsIABDs(fileName: String):List[NpsIabdRoot] = {
+  private def getNpsIABDs(fileName: String): List[NpsIabdRoot] = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[List[NpsIabdRoot]](jsVal)
     result.get
@@ -142,38 +141,38 @@ object NpsData extends NpsFormatter {
   def getNpsNonCodedWithCeasedTaxAccount() = getNpsTaxAccount(nonCodedWithCeasedTaxAccountJson)
   def getNpsNonCodedWithCeasedEmployment() = getNpsEmployment(nonCodedWithCeaseddEmploymentJson)
 
-  def getNpsBasicRateExtnTaxAccount() = getNpsTaxAccount(basicRateExtnTaxAccountJson )
-  def getNpsBasicRateExtnEmployment() = getNpsEmployment(basicRateExtnEmploymentJson )
+  def getNpsBasicRateExtnTaxAccount() = getNpsTaxAccount(basicRateExtnTaxAccountJson)
+  def getNpsBasicRateExtnEmployment() = getNpsEmployment(basicRateExtnEmploymentJson)
 
-  def getNpsBasicRateLivePensionTaxAccount() = getNpsTaxAccount(basicRateLivePensionTaxAccountJson )
-  def getNpsBasicRateLivePensions() = getNpsEmployment(basicRateLivePensionJson )
+  def getNpsBasicRateLivePensionTaxAccount() = getNpsTaxAccount(basicRateLivePensionTaxAccountJson)
+  def getNpsBasicRateLivePensions() = getNpsEmployment(basicRateLivePensionJson)
 
-  def getNpsCeasedEmploymentTaxAccount() = getNpsTaxAccount(ceasedEmploymentTaxAccountJson )
-  def getNpsCeasedEmployments() = getNpsEmployment(ceasedEmploymentJson )
+  def getNpsCeasedEmploymentTaxAccount() = getNpsTaxAccount(ceasedEmploymentTaxAccountJson)
+  def getNpsCeasedEmployments() = getNpsEmployment(ceasedEmploymentJson)
 
-  def getNpsPotentiallyCeasedEmploymentTaxAccount() = getNpsTaxAccount(potentiallyCeasedEmploymentTaxAccountJson )
-  def getNpsPotentiallyCeasedEmployments() = getNpsEmployment(potentiallyCeasedEmploymentJson )
+  def getNpsPotentiallyCeasedEmploymentTaxAccount() = getNpsTaxAccount(potentiallyCeasedEmploymentTaxAccountJson)
+  def getNpsPotentiallyCeasedEmployments() = getNpsEmployment(potentiallyCeasedEmploymentJson)
 
-  def getNpsTwoEmploymentsOneWithJSAIndicatorTaxAccount() = getNpsTaxAccount(twoEmploymentsOneWithJSATaxAccountJson )
-  def getNpsTwoEmploymentsOneWithJSAIndicator() = getNpsEmployment(twoEmploymentsOneWithJSAJson )
+  def getNpsTwoEmploymentsOneWithJSAIndicatorTaxAccount() = getNpsTaxAccount(twoEmploymentsOneWithJSATaxAccountJson)
+  def getNpsTwoEmploymentsOneWithJSAIndicator() = getNpsEmployment(twoEmploymentsOneWithJSAJson)
 
-  def getNpsBankInterestAndDividendsTaxAccount() = getNpsTaxAccount(bankInterestAndDividendsTaxAccountJson )
+  def getNpsBankInterestAndDividendsTaxAccount() = getNpsTaxAccount(bankInterestAndDividendsTaxAccountJson)
 
-  def getNpsPotentialUnderpaymentTaxAccount() = getNpsTaxAccount(potentialUnderpaymentTaxAccountJson )
-  def getNpsPotentialUnderpaymentEmployments() = getNpsEmployment(potentialUnderpaymentEmploymentJson )
+  def getNpsPotentialUnderpaymentTaxAccount() = getNpsTaxAccount(potentialUnderpaymentTaxAccountJson)
+  def getNpsPotentialUnderpaymentEmployments() = getNpsEmployment(potentialUnderpaymentEmploymentJson)
 
-  def getNpsBankInterestAllHigherRateTaxAccount() = getNpsTaxAccount(bankInterestAllHigherRateTaxAccountJson )
+  def getNpsBankInterestAllHigherRateTaxAccount() = getNpsTaxAccount(bankInterestAllHigherRateTaxAccountJson)
 
-  def getNpsChildBenefitTaxAccount() = getNpsTaxAccount(childBenefitTaxAccountJson )
-  def getNpsChildBenefitIabds() = getNpsIABDs(childBenefitIabdsJson )
+  def getNpsChildBenefitTaxAccount() = getNpsTaxAccount(childBenefitTaxAccountJson)
+  def getNpsChildBenefitIabds() = getNpsIABDs(childBenefitIabdsJson)
 
   def getNpsOutstandingDebt() = getNpsTaxAccount(outstandingDebtJson)
 
   private lazy val giftAidTaxAccountJson = "HigherRateIncomeWithGiftAid/NpsTaxAccount.json"
-  def getNpsGiftAidTaxAccount() = getNpsTaxAccount(giftAidTaxAccountJson )
+  def getNpsGiftAidTaxAccount() = getNpsTaxAccount(giftAidTaxAccountJson)
 
   private lazy val ukDividendsTaxAccountJson = "Dividends_BasicRate/NpsTaxAccount.json"
-  def getNpsDividendsTaxAccount() = getNpsTaxAccount(ukDividendsTaxAccountJson )
+  def getNpsDividendsTaxAccount() = getNpsTaxAccount(ukDividendsTaxAccountJson)
 
   def getTaxSummary = getTaxSummaryDetails(taxSummaryDetailsJson)
   def getJSAOtherIncomeSourceNpsEmployment = getNpsEmployment(JSAOtherIncomeSourceNpsEmploymentJson)

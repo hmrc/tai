@@ -38,11 +38,13 @@ import uk.gov.hmrc.tai.util.TaiConstants
 import scala.concurrent.Future
 
 @Singleton
-class DesConnector @Inject()(httpClient: HttpClient,
-                             metrics: Metrics,
-                             auditor: Auditor,
-                             formats: IabdUpdateAmountFormats,
-                             config: DesConfig) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter  {
+class DesConnector @Inject()(
+  httpClient: HttpClient,
+  metrics: Metrics,
+  auditor: Auditor,
+  formats: IabdUpdateAmountFormats,
+  config: DesConfig)
+    extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
   override def originatorId = config.originatorId
 
@@ -50,17 +52,19 @@ class DesConnector @Inject()(httpClient: HttpClient,
 
   def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
-  def commonHeaderValues = Seq(
-    "Environment" -> config.environment,
-    "Authorization" -> config.authorization,
-    "Content-Type" -> TaiConstants.contentType)
+  def commonHeaderValues =
+    Seq(
+      "Environment"   -> config.environment,
+      "Authorization" -> config.authorization,
+      "Content-Type"  -> TaiConstants.contentType)
 
   def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
 
   def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
     HeaderCarrier(extraHeaders = commonHeaderValues ++ Seq("Originator-Id" -> originatorId, "ETag" -> version.toString))
 
-  def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+  def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(
+    implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year?type=$iabdType")
     implicit val hc: HeaderCarrier = header
     getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI).map(x => x._1)
@@ -72,44 +76,54 @@ class DesConnector @Inject()(httpClient: HttpClient,
     getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI).map(x => x._1)
   }
 
-  def getCalculatedTaxAccountFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
+  def getCalculatedTaxAccountFromDes(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
     val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
     implicit val hc: HeaderCarrier = header
     getFromDes[JsValue](urlToRead, APITypes.DesTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
   }
 
-  def getCalculatedTaxAccountRawResponseFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def getCalculatedTaxAccountRawResponseFromDes(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
     implicit val hc: HeaderCarrier = header
     httpClient.GET[HttpResponse](urlToRead)
   }
 
-  def updateEmploymentDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
-                           updateAmounts: List[IabdUpdateAmount],
-                           apiType: APITypes = APITypes.DesIabdUpdateEstPayAutoAPI)
-                          (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateEmploymentDataToDes(
+    nino: Nino,
+    year: Int,
+    iabdType: Int,
+    version: Int,
+    updateAmounts: List[IabdUpdateAmount],
+    apiType: APITypes = APITypes.DesIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     if (updateAmounts.nonEmpty) {
       val postUrl = desPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(headerForUpdate(version, originatorId), formats.formatList)
+      postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(
+        headerForUpdate(version, originatorId),
+        formats.formatList)
     } else {
       Future(HttpResponse(OK))
     }
-  }
 
-  def updateExpensesDataToDes(nino: Nino, year: Int, iabdType: Int, version: Int,
-                              expensesData: List[UpdateIabdEmployeeExpense],
-                              apiType: APITypes)
-                             (implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateExpensesDataToDes(
+    nino: Nino,
+    year: Int,
+    iabdType: Int,
+    version: Int,
+    expensesData: List[UpdateIabdEmployeeExpense],
+    apiType: APITypes)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[List[UpdateIabdEmployeeExpense]](postUrl, apiType, expensesData)(headerForUpdate(version, daPtaOriginatorId), implicitly)
+    postToDes[List[UpdateIabdEmployeeExpense]](postUrl, apiType, expensesData)(
+      headerForUpdate(version, daPtaOriginatorId),
+      implicitly)
   }
 
-  def sessionOrUUID(implicit hc: HeaderCarrier): String = {
+  def sessionOrUUID(implicit hc: HeaderCarrier): String =
     hc.sessionId match {
       case Some(sessionId) => sessionId.value
-      case None => UUID.randomUUID().toString.replace("-", "")
+      case None            => UUID.randomUUID().toString.replace("-", "")
     }
-  }
 }

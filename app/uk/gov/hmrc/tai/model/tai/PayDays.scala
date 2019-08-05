@@ -53,4 +53,3 @@ object NoOfMonths extends Enumeration {
   val Quarterly = Value(4)
   val BiAnnually = Value(2)
 }
-

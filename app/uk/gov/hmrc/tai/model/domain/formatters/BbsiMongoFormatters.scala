@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 
-
 trait BbsiMongoFormatters {
   implicit val bbsiFormat: Format[BankAccount] = Json.format[BankAccount]
 }

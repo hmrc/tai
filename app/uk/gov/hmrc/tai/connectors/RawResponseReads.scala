@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import uk.gov.hmrc.http.{ HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 trait RawResponseReads {
 

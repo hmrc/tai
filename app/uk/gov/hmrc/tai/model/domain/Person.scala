@@ -19,19 +19,16 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 
-case class Person(nino: Nino,
-                  firstName: String,
-                  surname: String,
-                  dateOfBirth: Option[LocalDate],
-                  address: Address,
-                  isDeceased: Boolean = false,
-                  hasCorruptData: Boolean = false)
+case class Person(
+  nino: Nino,
+  firstName: String,
+  surname: String,
+  dateOfBirth: Option[LocalDate],
+  address: Address,
+  isDeceased: Boolean = false,
+  hasCorruptData: Boolean = false)
 
-case class Address(line1: String,
-                   line2: String,
-                   line3: String,
-                   postcode: String,
-                   country: String)
+case class Address(line1: String, line2: String, line3: String, postcode: String, country: String)
 
 object PersonFormatter {
 
@@ -44,11 +41,11 @@ object PersonFormatter {
 
   val personHodRead: Reads[Person] = (
     (JsPath \ "person" \ "nino").read[Nino] and
-    ((JsPath \ "person" \ "firstName").read[String] or Reads.pure("")) and
-    ((JsPath \ "person" \ "lastName").read[String] or Reads.pure("")) and
-    (JsPath \ "person" \ "dateOfBirth").readNullable[LocalDate] and
-    ((JsPath \ "address" ).read[Address] or Reads.pure(Address("", "", "", "", ""))) and
-    ((JsPath \ "person" \ "deceased").read[Boolean] or Reads.pure(false)) and
-    ((JsPath \ "person" \ "manualCorrespondenceInd").read[Boolean] or Reads.pure(false))
+      ((JsPath \ "person" \ "firstName").read[String] or Reads.pure("")) and
+      ((JsPath \ "person" \ "lastName").read[String] or Reads.pure("")) and
+      (JsPath \ "person" \ "dateOfBirth").readNullable[LocalDate] and
+      ((JsPath \ "address").read[Address] or Reads.pure(Address("", "", "", "", ""))) and
+      ((JsPath \ "person" \ "deceased").read[Boolean] or Reads.pure(false)) and
+      ((JsPath \ "person" \ "manualCorrespondenceInd").read[Boolean] or Reads.pure(false))
   )(Person.apply _)
 }

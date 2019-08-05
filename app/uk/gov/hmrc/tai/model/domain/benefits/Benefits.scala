@@ -20,50 +20,53 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.domain.{BenefitComponentType, TaxComponentType}
 
-case class CompanyCar(carSeqNo:Int,
-                      makeModel:String,
-                      hasActiveFuelBenefit: Boolean,
-                      dateMadeAvailable: Option[LocalDate],
-                      dateActiveFuelBenefitMadeAvailable: Option[LocalDate],
-                      dateWithdrawn: Option[LocalDate])
+case class CompanyCar(
+  carSeqNo: Int,
+  makeModel: String,
+  hasActiveFuelBenefit: Boolean,
+  dateMadeAvailable: Option[LocalDate],
+  dateActiveFuelBenefitMadeAvailable: Option[LocalDate],
+  dateWithdrawn: Option[LocalDate])
 
-object CompanyCar{
+object CompanyCar {
   implicit val formats = Json.format[CompanyCar]
 }
 
-case class CompanyCarBenefit(employmentSeqNo:Int,
-                             grossAmount:BigDecimal,
-                             companyCars: Seq[CompanyCar],
-                             version:Option[Int] = None)
+case class CompanyCarBenefit(
+  employmentSeqNo: Int,
+  grossAmount: BigDecimal,
+  companyCars: Seq[CompanyCar],
+  version: Option[Int] = None)
 
-object CompanyCarBenefit{
+object CompanyCarBenefit {
   implicit val formats = Json.format[CompanyCarBenefit]
 }
 
-case class GenericBenefit(benefitType:BenefitComponentType, employmentId:Option[Int], amount:BigDecimal)
+case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
 
-object GenericBenefit{
+object GenericBenefit {
   implicit val formats = Json.format[GenericBenefit]
 }
 
 case class Benefits(companyCarBenefits: Seq[CompanyCarBenefit], otherBenefits: Seq[GenericBenefit])
 
-object Benefits{
+object Benefits {
   implicit val formats = Json.format[Benefits]
 }
 
 case class WithdrawCarAndFuel(version: Int, carWithdrawDate: LocalDate, fuelWithdrawDate: Option[LocalDate])
 
-object WithdrawCarAndFuel{
+object WithdrawCarAndFuel {
   implicit val formats = Json.format[WithdrawCarAndFuel]
 }
 
-case class RemoveCompanyBenefit(benefitType: String,
-                                whatYouToldUs: String,
-                                stopDate: String,
-                                valueOfBenefit: Option[String],
-                                contactByPhone: String,
-                                phoneNumber: Option[String])
+case class RemoveCompanyBenefit(
+  benefitType: String,
+  whatYouToldUs: String,
+  stopDate: String,
+  valueOfBenefit: Option[String],
+  contactByPhone: String,
+  phoneNumber: Option[String])
 
 object RemoveCompanyBenefit {
   implicit val formats = Json.format[RemoveCompanyBenefit]

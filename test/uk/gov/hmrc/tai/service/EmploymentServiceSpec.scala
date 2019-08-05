@@ -47,7 +47,13 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
       when(mockEmploymentRepository.employmentsForYear(any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
-      val sut = createSut(mockEmploymentRepository, mock[PersonRepository], mock[IFormSubmissionService], mock[FileUploadService], mock[PdfService], mock[Auditor])
+      val sut = createSut(
+        mockEmploymentRepository,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor])
       val employments = Await.result(sut.employments(nino, TaxYear())(HeaderCarrier()), 5.seconds)
 
       employments mustBe employmentsForYear
@@ -58,7 +64,13 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
       when(mockEmploymentRepository.employment(any(), any())(any()))
         .thenReturn(Future.successful(Some(employment)))
 
-      val sut = createSut(mockEmploymentRepository, mock[PersonRepository], mock[IFormSubmissionService], mock[FileUploadService], mock[PdfService], mock[Auditor])
+      val sut = createSut(
+        mockEmploymentRepository,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor])
       val employments = Await.result(sut.employment(nino, 2)(HeaderCarrier()), 5.seconds)
 
       employments mustBe Some(employment)
@@ -70,7 +82,13 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
       when(mockEmploymentRepository.employment(any(), any())(any()))
         .thenReturn(Future.successful(None))
 
-      val sut = createSut(mockEmploymentRepository, mock[PersonRepository], mock[IFormSubmissionService], mock[FileUploadService], mock[PdfService], mock[Auditor])
+      val sut = createSut(
+        mockEmploymentRepository,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor])
       val employments = Await.result(sut.employment(nino, 5)(HeaderCarrier()), 5.seconds)
 
       employments mustBe None
@@ -80,7 +98,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
   "endEmployment" must {
     "return an envelopeId" when {
       "given valid inputs" in {
-        val endEmployment = EndEmployment(new LocalDate(2017,6,20), "1234",Some("123456789"))
+        val endEmployment = EndEmployment(new LocalDate(2017, 6, 20), "1234", Some("123456789"))
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))
@@ -101,20 +119,30 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable)
+        doNothing()
+          .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mockEmploymentRepository, mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
+        val sut = createSut(
+          mockEmploymentRepository,
+          mockPersonRepository,
+          mock[IFormSubmissionService],
+          mockFileUploadService,
+          mockPdfService,
+          mockAuditable)
 
         Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds) mustBe "1"
 
-        verify(mockFileUploadService, times(1)).uploadFile(any(), any(),
-          Matchers.contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())
+        verify(mockFileUploadService, times(1)).uploadFile(
+          any(),
+          any(),
+          Matchers.contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          any())(any())
       }
     }
 
     "Send end journey audit event for envelope id" in {
-      val endEmployment = EndEmployment(new LocalDate(2017,6,20), "1234",Some("123456789"))
+      val endEmployment = EndEmployment(new LocalDate(2017, 6, 20), "1234", Some("123456789"))
 
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
@@ -123,7 +151,6 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
       val mockPersonRepository = mock[PersonRepository]
       when(mockPersonRepository.getPerson(any())(any()))
         .thenReturn(Future.successful(person))
-
 
       val mockPdfService = mock[PdfService]
       when(mockPdfService.generatePdf(any()))
@@ -137,12 +164,20 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockAuditable = mock[Auditor]
       doNothing()
-        .when(mockAuditable).sendDataEvent(any(), any())(any())
+        .when(mockAuditable)
+        .sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mockEmploymentRepository, mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
+      val sut = createSut(
+        mockEmploymentRepository,
+        mockPersonRepository,
+        mock[IFormSubmissionService],
+        mockFileUploadService,
+        mockPdfService,
+        mockAuditable)
       Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds)
 
-      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq("EndEmploymentRequest"),
+      verify(mockAuditable, times(1)).sendDataEvent(
+        Matchers.eq("EndEmploymentRequest"),
         Matchers.eq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20")))(any())
     }
   }
@@ -150,7 +185,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
   "addEmployment" must {
     "return an envelopeId" when {
       "given valid inputs" in {
-        val addEmployment = AddEmployment("testName", new LocalDate(2017,8,1), "1234", "Yes", Some("123456789"))
+        val addEmployment = AddEmployment("testName", new LocalDate(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
         val mockPersonRepository = mock[PersonRepository]
         when(mockPersonRepository.getPerson(any())(any()))
@@ -167,21 +202,31 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable)
+        doNothing()
+          .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mock[EmploymentRepository], mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
+        val sut = createSut(
+          mock[EmploymentRepository],
+          mockPersonRepository,
+          mock[IFormSubmissionService],
+          mockFileUploadService,
+          mockPdfService,
+          mockAuditable)
         val result = Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
 
         result mustBe "1"
 
-        verify(mockFileUploadService, times(1)).uploadFile(any(), any(),
-          Matchers.contains(s"1-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"), any())(any())
+        verify(mockFileUploadService, times(1)).uploadFile(
+          any(),
+          any(),
+          Matchers.contains(s"1-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          any())(any())
       }
     }
 
     "Send add journey audit event for envelope id" in {
-      val addEmployment = AddEmployment("testName", new LocalDate(2017,8,1), "1234", "Yes", Some("123456789"))
+      val addEmployment = AddEmployment("testName", new LocalDate(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
       val mockPersonRepository = mock[PersonRepository]
       when(mockPersonRepository.getPerson(any())(any()))
@@ -198,15 +243,29 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val mockAuditable = mock[Auditor]
-      doNothing().when(mockAuditable)
+      doNothing()
+        .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mock[EmploymentRepository], mockPersonRepository, mock[IFormSubmissionService], mockFileUploadService, mockPdfService, mockAuditable)
+      val sut = createSut(
+        mock[EmploymentRepository],
+        mockPersonRepository,
+        mock[IFormSubmissionService],
+        mockFileUploadService,
+        mockPdfService,
+        mockAuditable)
       Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
 
-      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.AddEmploymentAuditTxnName),
-        Matchers.eq(Map("nino" -> nino.nino , "envelope Id" -> "111", "start-date" -> "2017-08-01",
-          "payrollNo" -> "1234", "employerName" -> "testName")))(any())
+      verify(mockAuditable, times(1)).sendDataEvent(
+        Matchers.eq(IFormConstants.AddEmploymentAuditTxnName),
+        Matchers.eq(
+          Map(
+            "nino"         -> nino.nino,
+            "envelope Id"  -> "111",
+            "start-date"   -> "2017-08-01",
+            "payrollNo"    -> "1234",
+            "employerName" -> "testName"))
+      )(any())
     }
   }
 
@@ -216,15 +275,26 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(mockIFormSubmissionService.uploadIForm(Matchers.eq(nino), Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
-          Matchers.eq("TES1"), any())(any()))
+        when(
+          mockIFormSubmissionService.uploadIForm(
+            Matchers.eq(nino),
+            Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
+            Matchers.eq("TES1"),
+            any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable)
+        doNothing()
+          .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
+        val sut = createSut(
+          mock[EmploymentRepository],
+          mock[PersonRepository],
+          mockIFormSubmissionService,
+          mock[FileUploadService],
+          mock[PdfService],
+          mockAuditable)
         val result = Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
 
         result mustBe "1"
@@ -234,26 +304,38 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
     "Send incorrect employment journey audit event" in {
       val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("1234567"))
       val map = Map(
-        "nino" -> nino.nino,
-        "envelope Id" -> "1",
-        "what-you-told-us" -> employment.whatYouToldUs.length.toString,
+        "nino"                    -> nino.nino,
+        "envelope Id"             -> "1",
+        "what-you-told-us"        -> employment.whatYouToldUs.length.toString,
         "telephoneContactAllowed" -> employment.telephoneContactAllowed,
-        "telephoneNumber" -> employment.telephoneNumber.getOrElse(""))
+        "telephoneNumber"         -> employment.telephoneNumber.getOrElse("")
+      )
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
-      when(mockIFormSubmissionService.uploadIForm(Matchers.eq(nino), Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
-        Matchers.eq("TES1"), any())(any()))
+      when(
+        mockIFormSubmissionService.uploadIForm(
+          Matchers.eq(nino),
+          Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
+          Matchers.eq("TES1"),
+          any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing().when(mockAuditable)
+      doNothing()
+        .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
+      val sut = createSut(
+        mock[EmploymentRepository],
+        mock[PersonRepository],
+        mockIFormSubmissionService,
+        mock[FileUploadService],
+        mock[PdfService],
+        mockAuditable)
       Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
 
-      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.IncorrectEmploymentAuditTxnName),
-        Matchers.eq(map))(any())
+      verify(mockAuditable, times(1))
+        .sendDataEvent(Matchers.eq(IFormConstants.IncorrectEmploymentAuditTxnName), Matchers.eq(map))(any())
     }
   }
 
@@ -263,15 +345,26 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(mockIFormSubmissionService.uploadIForm(Matchers.eq(nino), Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
-          Matchers.eq("TES1"), any())(any()))
+        when(
+          mockIFormSubmissionService.uploadIForm(
+            Matchers.eq(nino),
+            Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
+            Matchers.eq("TES1"),
+            any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable)
+        doNothing()
+          .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
+        val sut = createSut(
+          mock[EmploymentRepository],
+          mock[PersonRepository],
+          mockIFormSubmissionService,
+          mock[FileUploadService],
+          mock[PdfService],
+          mockAuditable)
         val result = Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
 
         result mustBe "1"
@@ -281,27 +374,39 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
     "Send incorrect employment journey audit event" in {
       val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("1234567"))
       val map = Map(
-        "nino" -> nino.nino,
-        "envelope Id" -> "1",
-        "taxYear" -> "2016",
-        "what-you-told-us" -> employment.whatYouToldUs.length.toString,
+        "nino"                    -> nino.nino,
+        "envelope Id"             -> "1",
+        "taxYear"                 -> "2016",
+        "what-you-told-us"        -> employment.whatYouToldUs.length.toString,
         "telephoneContactAllowed" -> employment.telephoneContactAllowed,
-        "telephoneNumber" -> employment.telephoneNumber.getOrElse(""))
+        "telephoneNumber"         -> employment.telephoneNumber.getOrElse("")
+      )
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
-      when(mockIFormSubmissionService.uploadIForm(Matchers.eq(nino), Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
-        Matchers.eq("TES1"), any())(any()))
+      when(
+        mockIFormSubmissionService.uploadIForm(
+          Matchers.eq(nino),
+          Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
+          Matchers.eq("TES1"),
+          any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing().when(mockAuditable)
+      doNothing()
+        .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mock[EmploymentRepository], mock[PersonRepository], mockIFormSubmissionService, mock[FileUploadService], mock[PdfService], mockAuditable)
+      val sut = createSut(
+        mock[EmploymentRepository],
+        mock[PersonRepository],
+        mockIFormSubmissionService,
+        mock[FileUploadService],
+        mock[PdfService],
+        mockAuditable)
       Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
 
-      verify(mockAuditable, times(1)).sendDataEvent(Matchers.eq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName),
-        Matchers.eq(map))(any())
+      verify(mockAuditable, times(1))
+        .sendDataEvent(Matchers.eq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), Matchers.eq(map))(any())
     }
   }
 
@@ -310,17 +415,33 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
 
-  private val person = Person(nino, "", "", None, Address("","","","",""))
+  private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
-  private val employment = Employment("TEST", Some("12345"), LocalDate.now(), None,
-    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)), "", "", 2, Some(100), false, false)
+  private val employment = Employment(
+    "TEST",
+    Some("12345"),
+    LocalDate.now(),
+    None,
+    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
+    "",
+    "",
+    2,
+    Some(100),
+    false,
+    false)
 
-  private def createSut(employmentRepository: EmploymentRepository,
-                        personRepository: PersonRepository,
-                        iFormSubmissionService: IFormSubmissionService,
-                        fileUploadService: FileUploadService,
-                        pdfService: PdfService,
-                        auditable: Auditor) =
-
-    new EmploymentService(employmentRepository, personRepository, iFormSubmissionService, fileUploadService, pdfService, auditable)
+  private def createSut(
+    employmentRepository: EmploymentRepository,
+    personRepository: PersonRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    fileUploadService: FileUploadService,
+    pdfService: PdfService,
+    auditable: Auditor) =
+    new EmploymentService(
+      employmentRepository,
+      personRepository,
+      iFormSubmissionService,
+      fileUploadService,
+      pdfService,
+      auditable)
 }

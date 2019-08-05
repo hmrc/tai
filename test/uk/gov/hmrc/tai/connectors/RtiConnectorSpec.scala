@@ -36,9 +36,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-
-class RtiConnectorSpec extends PlaySpec
-  with MockitoSugar {
+class RtiConnectorSpec extends PlaySpec with MockitoSugar {
 
   private implicit val hc = HeaderCarrier()
 
@@ -77,7 +75,10 @@ class RtiConnectorSpec extends PlaySpec
       val sut = createSUT(mock[HttpClient], mockMetrics, mock[Auditor], mockConfig, mock[RtiUrls])
 
       val headers = sut.createHeader
-      headers.extraHeaders mustBe List(("Environment", "env"), ("Authorization", "auth"), ("Gov-Uk-Originator-Id", "orgId"))
+      headers.extraHeaders mustBe List(
+        ("Environment", "env"),
+        ("Authorization", "auth"),
+        ("Gov-Uk-Originator-Id", "orgId"))
     }
 
     "have get RTI" when {
@@ -109,7 +110,6 @@ class RtiConnectorSpec extends PlaySpec
       }
     }
 
-
     "return RTI Json" when {
       "given a valid Nino and TaxYear" in {
         val fakeRtiData = Json.toJson(RtiData(nino.nino, TaxYear(2017), "req123", Nil))
@@ -140,7 +140,7 @@ class RtiConnectorSpec extends PlaySpec
 
     "return a success response from RTI Details" when {
       "it returns a success Http response for GET transactions with matching nino data" in {
-        val fakeRtiData = Json.toJson(RtiData (nino.nino, TaxYear(2017), "req123", Nil))
+        val fakeRtiData = Json.toJson(RtiData(nino.nino, TaxYear(2017), "req123", Nil))
         val fakeResponse: HttpResponse = HttpResponse(200, Some(fakeRtiData))
 
         val mockHttpClient = mock[HttpClient]
@@ -184,7 +184,7 @@ class RtiConnectorSpec extends PlaySpec
         val mockConfig = mock[DesConfig]
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
-        val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
+        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
         val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
 
         ex.getMessage mustBe "\"bad request\""
@@ -206,7 +206,7 @@ class RtiConnectorSpec extends PlaySpec
         val mockConfig = mock[DesConfig]
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
-        val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
+        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
         val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
 
         ex.getMessage mustBe "\"not found\""
@@ -228,7 +228,7 @@ class RtiConnectorSpec extends PlaySpec
         val mockConfig = mock[DesConfig]
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
-        val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
+        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
         val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
 
         ex.getMessage mustBe "\"internal server error\""
@@ -251,7 +251,7 @@ class RtiConnectorSpec extends PlaySpec
         val mockConfig = mock[DesConfig]
         val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
 
-        val resp =  sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
+        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
         val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
 
         ex.getMessage mustBe "\"unknown response\""
@@ -261,16 +261,19 @@ class RtiConnectorSpec extends PlaySpec
   }
   private val nino: Nino = new Generator(new Random).nextNino
   private val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse = HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse = HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse = HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
+  private val UnknownErrorHttpResponse: HttpResponse =
+    HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
+  private val NotFoundHttpResponse: HttpResponse =
+    HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
+  private val InternalServerErrorHttpResponse: HttpResponse =
+    HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
 
-  private def createSUT(httpClient: HttpClient,
-                        metrics: Metrics,
-                        audit: Auditor,
-                        rtiConfig: DesConfig,
-                        rtiUrls: RtiUrls) =
-
+  private def createSUT(
+    httpClient: HttpClient,
+    metrics: Metrics,
+    audit: Auditor,
+    rtiConfig: DesConfig,
+    rtiUrls: RtiUrls) =
     new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls) {
       override val originatorId: String = "orgId"
     }

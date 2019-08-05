@@ -19,12 +19,11 @@ package uk.gov.hmrc.tai.model.rti
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-
 case class RtiStatus(
   status: Int,
   response: String
 )
 
-object RtiStatus{
+object RtiStatus {
   implicit val Format = Json.format[RtiStatus]
 }

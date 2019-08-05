@@ -32,16 +32,15 @@ import PayFrequency._
   *   uniquely identifies a specific employment in NPS
   */
 case class RtiEmployment(
-
   officeRefNo: String,
   payeRef: String,
   accountOfficeReference: String,
   payments: List[RtiPayment] = Nil,
   eyu: List[RtiEyu] = Nil,
-  currentPayId: Option[String]= None,
+  currentPayId: Option[String] = None,
   sequenceNumber: Int
 ) {
-  
+
   def payFrequency: PayFrequency.Value = payments.lastOption.map(_.payFrequency).getOrElse(Irregular)
 
   def taxablePayYTD: BigDecimal = payments.lastOption.map(_.taxablePayYTD).getOrElse(0)

@@ -16,16 +16,21 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource._
-
 
 class IabdUpdateSourceSpec extends PlaySpec {
   "IabdUpdateSource" should {
     "return all the IABD update source types" when {
       "set is called" in {
-        IabdUpdateSource.set mustBe Set(ManualTelephone, Letter, Email, AgentContact, OtherForm, Internet, InformationLetter)
+        IabdUpdateSource.set mustBe Set(
+          ManualTelephone,
+          Letter,
+          Email,
+          AgentContact,
+          OtherForm,
+          Internet,
+          InformationLetter)
       }
     }
 

@@ -24,25 +24,30 @@ object QaData {
 
   def jsonFile[T](
     f: String
-  )(implicit m: Format[T]): Option[T] = Option(
-    getClass.getResourceAsStream(f)).map{ x => Json.parse (
-      fromInputStream(x).getLines.mkString
-    )
-  }.map{ x => Json.fromJson[T](x) match {
-    case JsSuccess(r,_) => r
-    case JsError(e) => {
-      throw new IllegalArgumentException(
-        e.map(_.toString).mkString("\n")
-      )
-    }
-  }}
+  )(implicit m: Format[T]): Option[T] =
+    Option(getClass.getResourceAsStream(f))
+      .map { x =>
+        Json.parse(
+          fromInputStream(x).getLines.mkString
+        )
+      }
+      .map { x =>
+        Json.fromJson[T](x) match {
+          case JsSuccess(r, _) => r
+          case JsError(e) => {
+            throw new IllegalArgumentException(
+              e.map(_.toString).mkString("\n")
+            )
+          }
+        }
+      }
 
   def obj(year: String)(nino: String) = json(year)(nino).as[RtiData]
 
-  def json(year: String): Map[String,JsValue] = {
+  def json(year: String): Map[String, JsValue] = {
     val dir = new File(s"test/data/rti/$year")
     val jsonFiles = dir.listFiles.filter(_.getName.endsWith(".json"))
-    jsonFiles.map{ file =>
+    jsonFiles.map { file =>
       (
         file.getName.takeWhile(_ != '.'),
         Json.parse(
@@ -55,38 +60,42 @@ object QaData {
   def prettyPrint(year: String)(nino: String): String = {
 
     def printEmployment(emp: RtiEmployment): String = {
-      val table = emp.payments.sorted.map{x =>
-        Seq("",
-          x.paidOn,
-          x.taxablePay,
-          x.taxablePayYTD,
-          x.taxed,
-          x.taxedYTD
-        ).mkString("|")
-      }.mkString("\n")
+      val table = emp.payments.sorted
+        .map { x =>
+          Seq("", x.paidOn, x.taxablePay, x.taxablePayYTD, x.taxed, x.taxedYTD).mkString("|")
+        }
+        .mkString("\n")
       s"""
 ** Employment (${emp.sequenceNumber})
 - Office Reference Number :: ${emp.officeRefNo}
 - PAYE :: ${emp.payeRef}
 - Account Office :: ${emp.accountOfficeReference}
 
-| Paid On | Taxable Pay | Pay YTD | Taxed | Taxed YTD |
-|-
+      | Paid On | Taxable Pay | Pay YTD | Taxed | Taxed YTD |
+      |-
 $table
 """
     }
 
     s"* $nino ($year)" +
-    Try(obj(year)(nino)).map {
-      _.employments.map(printEmployment).mkString
-    }.recover{ case e => e.toString }.toOption.get
+      Try(obj(year)(nino))
+        .map {
+          _.employments.map(printEmployment).mkString
+        }
+        .recover { case e => e.toString }
+        .toOption
+        .get
   }
 
   val prettyPrintAll: String = {
-    Seq("15-16","16-17").map{ y =>
-      json(y).keys.map{ n =>
-        prettyPrint(y)(n)
-      }.mkString("\n")
-    }.mkString("\n\n")
+    Seq("15-16", "16-17")
+      .map { y =>
+        json(y).keys
+          .map { n =>
+            prettyPrint(y)(n)
+          }
+          .mkString("\n")
+      }
+      .mkString("\n\n")
   }
 }

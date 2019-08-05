@@ -18,19 +18,27 @@ package uk.gov.hmrc.tai.model.nps
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model._
 
-case class NpsComponent (amount: Option[BigDecimal] = None,
-                         `type`: Option[Int] = None,
-                         iabdSummaries: Option[List[NpsIabdSummary]] = None,
-                         npsDescription :Option[String] = None,
-                         sourceAmount: Option[BigDecimal]=None) {
-  def toTaxComponent(incomeSources : Option[List[NpsIncomeSource]], npsEmployments: Option[List[NpsEmployment]] = None) : TaxComponent = {
-
-    new TaxComponent(amount.getOrElse(BigDecimal(0)), `type`.getOrElse(0), npsDescription.getOrElse(""),
+case class NpsComponent(
+  amount: Option[BigDecimal] = None,
+  `type`: Option[Int] = None,
+  iabdSummaries: Option[List[NpsIabdSummary]] = None,
+  npsDescription: Option[String] = None,
+  sourceAmount: Option[BigDecimal] = None) {
+  def toTaxComponent(
+    incomeSources: Option[List[NpsIncomeSource]],
+    npsEmployments: Option[List[NpsEmployment]] = None): TaxComponent =
+    new TaxComponent(
+      amount.getOrElse(BigDecimal(0)),
+      `type`.getOrElse(0),
+      npsDescription.getOrElse(""),
       iabdSummaries match {
         case None => Nil
-        case Some(x) => x.sortBy(_.amount).reverse.map(_.toIadbSummary(incomeSources = incomeSources, npsEmployments = npsEmployments))}
+        case Some(x) =>
+          x.sortBy(_.amount)
+            .reverse
+            .map(_.toIadbSummary(incomeSources = incomeSources, npsEmployments = npsEmployments))
+      }
     )
-  }
 }
 object NpsComponent {
   implicit val formats = Json.format[NpsComponent]

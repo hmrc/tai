@@ -28,7 +28,8 @@ class IncomeHelperSpec extends PlaySpec {
 
   "isEditableByUser" should {
     "return if user is editable or not when given different employment status" when {
-      val isEditable = (employmentStatus: Option[Int]) => sut.isEditableByUser(Some(false), None, Some(false), employmentStatus)
+      val isEditable =
+        (employmentStatus: Option[Int]) => sut.isEditableByUser(Some(false), None, Some(false), employmentStatus)
 
       "user is live" in {
         isEditable(Some(Live.code)) mustBe true
@@ -48,7 +49,8 @@ class IncomeHelperSpec extends PlaySpec {
     }
 
     "return if user is editable or not when given different source indicators" when {
-      val isEditable = (otherIncomeSourceIndicator: Option[Boolean]) => sut.isEditableByUser(otherIncomeSourceIndicator, None, Some(false), Some(Live.code))
+      val isEditable = (otherIncomeSourceIndicator: Option[Boolean]) =>
+        sut.isEditableByUser(otherIncomeSourceIndicator, None, Some(false), Some(Live.code))
 
       "otherIncomeSourceIndicator is true" in {
         isEditable(Some(true)) mustBe false
@@ -64,7 +66,8 @@ class IncomeHelperSpec extends PlaySpec {
     }
 
     "return if user is editable or not when given cessationPayThisEmployment" when {
-      val isEditable = (cessationPayThisEmployment: Option[BigDecimal]) => sut.isEditableByUser(None, cessationPayThisEmployment, Some(false), Some(Live.code))
+      val isEditable = (cessationPayThisEmployment: Option[BigDecimal]) =>
+        sut.isEditableByUser(None, cessationPayThisEmployment, Some(false), Some(Live.code))
 
       "cessationPayThisEmployment is true" in {
         isEditable(Some(2)) mustBe false
@@ -76,7 +79,8 @@ class IncomeHelperSpec extends PlaySpec {
     }
 
     "return if user is editable or not when given different jsa indicators" when {
-      val isEditable = (jsaIndicator: Option[Boolean]) => sut.isEditableByUser(None, None, jsaIndicator, Some(Live.code))
+      val isEditable =
+        (jsaIndicator: Option[Boolean]) => sut.isEditableByUser(None, None, jsaIndicator, Some(Live.code))
 
       "jsaIndicator is true" in {
         isEditable(Some(true)) mustBe false
@@ -153,12 +157,15 @@ class IncomeHelperSpec extends PlaySpec {
       }
 
       "given income with total gift aid payments" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(TotalGiftAidPayments.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(TotalGiftAidPayments.code))))))
         sut.getGiftFromAdjustedNetIncome(modifiedNpsComponent) mustBe 14000
       }
 
       "given income with GiftAidPayments and GiftAidTreatedAsPaidInPreviousTaxYear" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(GiftAidTreatedAsPaidInPreviousTaxYear.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(iabdSummaries =
+            Some(List(iabdSummary1, modifiableIabdSummaryType(Some(GiftAidTreatedAsPaidInPreviousTaxYear.code))))))
         sut.getGiftFromAdjustedNetIncome(modifiedNpsComponent) mustBe 1000
       }
     }
@@ -183,7 +190,9 @@ class IncomeHelperSpec extends PlaySpec {
   "getIBFromAdjustedNetIncome" should {
     "return iabd amount for incapacity benefits" when {
       "given NPSComponent and iabd type as incapacity benefits" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
         sut.getIBFromAdjustedNetIncome(modifiedNpsComponent) mustBe Some(14000)
       }
 
@@ -229,7 +238,9 @@ class IncomeHelperSpec extends PlaySpec {
   "getESAFromAdjustedNetIncome" should {
     "return iabd amount for employment and support allowance" when {
       "given NPSComponent and iabd type as employment and support allowance" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(EmploymentAndSupportAllowance.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(iabdSummaries =
+            Some(List(iabdSummary1, modifiableIabdSummaryType(Some(EmploymentAndSupportAllowance.code))))))
         sut.getESAFromAdjustedNetIncome(modifiedNpsComponent) mustBe Some(14000)
       }
 
@@ -254,12 +265,16 @@ class IncomeHelperSpec extends PlaySpec {
       val EmploymentId = Some(4)
 
       "given NPSComponent and iabd type as net income" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
         sut.getEstimatedPayFromAdjustedNetIncome(modifiedNpsComponent, EmploymentId) mustBe Some(14000)
       }
 
       "given employment id not in the income list" in {
-        val modifiedNpsComponent = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
+        val modifiedNpsComponent = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
         sut.getEstimatedPayFromAdjustedNetIncome(modifiedNpsComponent, Some(1)) mustBe None
       }
 
@@ -279,8 +294,10 @@ class IncomeHelperSpec extends PlaySpec {
   }
 
   "isOccupationalPension" should {
-    def isOccupationalPensionWithDefaultNoneParams(empTaxDistrictNum: Option[Int] = None, empPayeRef: Option[String] = None,
-                  pensionInd: Option[Boolean] = None) = sut.isOccupationalPension(empTaxDistrictNum, empPayeRef, pensionInd)
+    def isOccupationalPensionWithDefaultNoneParams(
+      empTaxDistrictNum: Option[Int] = None,
+      empPayeRef: Option[String] = None,
+      pensionInd: Option[Boolean] = None) = sut.isOccupationalPension(empTaxDistrictNum, empPayeRef, pensionInd)
 
     "return true if employment has pension" when {
       "given no input" in {
@@ -292,12 +309,14 @@ class IncomeHelperSpec extends PlaySpec {
       }
 
       "given pension financial tax district number and pension financial paye reference" in {
-        isOccupationalPensionWithDefaultNoneParams(empTaxDistrictNum = Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT),
+        isOccupationalPensionWithDefaultNoneParams(
+          empTaxDistrictNum = Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT),
           empPayeRef = Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_PAYE_NUMBER)) mustBe true
       }
 
       "given pension financial tax district number and some other paye reference" in {
-        isOccupationalPensionWithDefaultNoneParams(empTaxDistrictNum = Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT),
+        isOccupationalPensionWithDefaultNoneParams(
+          empTaxDistrictNum = Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT),
           empPayeRef = Some(TaiConstants.ESA_PAYE_NUMBER)) mustBe false
       }
     }
@@ -311,49 +330,72 @@ class IncomeHelperSpec extends PlaySpec {
 
       "given Income sources" in {
         val incomeSources = Some(List(income1, pension))
-        sut.getAllIncomes(Nil, incomeSources) mustBe List(MergedEmployment(income1, None, None), MergedEmployment(pension, None, None))
+        sut.getAllIncomes(Nil, incomeSources) mustBe List(
+          MergedEmployment(income1, None, None),
+          MergedEmployment(pension, None, None))
       }
 
       "given Income source of secondary employment and employment support allowance" in {
         val incomeSource = modifiableIncome(TaiConstants.ESA_TAX_DISTRICT, TaiConstants.ESA_PAYE_NUMBER)
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(EmploymentAndSupportAllowance.code))))))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        val adjustedNetIncome = Some(
+          npsComponent.copy(iabdSummaries =
+            Some(List(iabdSummary1, modifiableIabdSummaryType(Some(EmploymentAndSupportAllowance.code))))))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given Income source of secondary employment and incapacity benefits" in {
-        val incomeSource = modifiableIncome(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT, TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        val incomeSource =
+          modifiableIncome(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT, TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)
+        val adjustedNetIncome = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given Income source of secondary employment and JSA Tax" in {
         val incomeSource = modifiableIncome(TaiConstants.JSA_TAX_DISTRICT, TaiConstants.JSA_PAYE_NUMBER)
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        val adjustedNetIncome = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given Income source of secondary employment and JSA student tax" in {
-        val incomeSource = modifiableIncome(TaiConstants.JSA_STUDENTS_TAX_DISTRICT, TaiConstants.JSA_STUDENTS_PAYE_NUMBER)
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        val incomeSource =
+          modifiableIncome(TaiConstants.JSA_STUDENTS_TAX_DISTRICT, TaiConstants.JSA_STUDENTS_PAYE_NUMBER)
+        val adjustedNetIncome = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given Income source of secondary employment and JSA DWP tax" in {
         val incomeSource = modifiableIncome(TaiConstants.JSA_NEW_DWP_TAX_DISTRICT, TaiConstants.JSA_NEW_DWP_PAYE_NUMBER)
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        val adjustedNetIncome = Some(
+          npsComponent.copy(
+            iabdSummaries = Some(List(iabdSummary1, modifiableIabdSummaryType(Some(IncapacityBenefit.code))))))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given Income source of primary employment and jsa indicator as true" in {
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
+        val adjustedNetIncome =
+          Some(npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
         val incomeSource = income1.copy(jsaIndicator = Some(true))
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, None))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, None))
       }
 
       "given Income source of secondary employment and calculate adjustment pay" in {
-        val adjustedNetIncome = Some(npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
+        val adjustedNetIncome =
+          Some(npsComponent.copy(iabdSummaries = Some(List(modifiableIabdSummaryType(Some(NewEstimatedPay.code))))))
         val incomeSource = modifiableIncome(0, "")
-        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(MergedEmployment(incomeSource, None, Some(14000)))
+        sut.getAllIncomes(Nil, Some(List(incomeSource)), adjustedNetIncome) mustBe List(
+          MergedEmployment(incomeSource, None, Some(14000)))
       }
 
       "given NPS Employment and no income sources" in {
@@ -368,13 +410,20 @@ class IncomeHelperSpec extends PlaySpec {
         val income2AdjustedNetIncome = NpsIabdSummary(amount = incomeAmount2, `type` = Some(27), employmentId = Some(2))
 
         val adjustedNetIncomes = List(income1AdjustedNetIncome, income2AdjustedNetIncome)
-        val adjustedNetIncomeForCeased = NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
+        val adjustedNetIncomeForCeased =
+          NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
 
         val mergedIncomes = sut.getAllIncomes(employmentsDetails, None, Some(adjustedNetIncomeForCeased))
 
         mergedIncomes.size mustBe 2
-        mergedIncomes.head mustBe MergedEmployment(employment1.toNpsIncomeSource(incomeAmount1.get), Some(employment1), incomeAmount1)
-        mergedIncomes.last mustBe MergedEmployment(employment2.toNpsIncomeSource(incomeAmount2.get), Some(employment2), incomeAmount2)
+        mergedIncomes.head mustBe MergedEmployment(
+          employment1.toNpsIncomeSource(incomeAmount1.get),
+          Some(employment1),
+          incomeAmount1)
+        mergedIncomes.last mustBe MergedEmployment(
+          employment2.toNpsIncomeSource(incomeAmount2.get),
+          Some(employment2),
+          incomeAmount2)
       }
 
       "given NPS employment with secondary employment and ESA income source" in {
@@ -382,18 +431,25 @@ class IncomeHelperSpec extends PlaySpec {
         val incomeAmount2: Option[BigDecimal] = Some(1291)
         val employmentsDetails = List(employment1, employmentESA)
         val income1AdjustedNetIncome = NpsIabdSummary(amount = incomeAmount1, `type` = Some(27), employmentId = Some(1))
-        val income2AdjustedNetIncome = NpsIabdSummary(amount = incomeAmount2, `type` = Some(123), employmentId = Some(2))
+        val income2AdjustedNetIncome =
+          NpsIabdSummary(amount = incomeAmount2, `type` = Some(123), employmentId = Some(2))
 
         val adjustedNetIncomes = List(income1AdjustedNetIncome, income2AdjustedNetIncome)
-        val adjustedNetIncomeForCeased = NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
+        val adjustedNetIncomeForCeased =
+          NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
 
         val mergedIncomes = sut.getAllIncomes(employmentsDetails, None, Some(adjustedNetIncomeForCeased))
 
         mergedIncomes.size mustBe 2
-        mergedIncomes.head mustBe MergedEmployment(employment1.toNpsIncomeSource(incomeAmount1.get), Some(employment1), incomeAmount1)
-        mergedIncomes.last mustBe MergedEmployment(employmentESA.toNpsIncomeSource(incomeAmount2.get), Some(employmentESA), incomeAmount2)
+        mergedIncomes.head mustBe MergedEmployment(
+          employment1.toNpsIncomeSource(incomeAmount1.get),
+          Some(employment1),
+          incomeAmount1)
+        mergedIncomes.last mustBe MergedEmployment(
+          employmentESA.toNpsIncomeSource(incomeAmount2.get),
+          Some(employmentESA),
+          incomeAmount2)
       }
-
 
       "given both nps employment and income source" in {
         val incomeAmount1: Option[BigDecimal] = Some(15000)
@@ -401,7 +457,8 @@ class IncomeHelperSpec extends PlaySpec {
         val income1AdjustedNetIncome = NpsIabdSummary(amount = incomeAmount1, `type` = Some(27), employmentId = Some(1))
 
         val adjustedNetIncomes = List(income1AdjustedNetIncome)
-        val adjustedNetIncomeForCeased = NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
+        val adjustedNetIncomeForCeased =
+          NpsComponent(amount = Some(16448), `type` = None, iabdSummaries = Some(adjustedNetIncomes))
 
         val incomeSources = Some(List(income1))
         val mergedIncomes = sut.getAllIncomes(employmentsDetails, incomeSources, Some(adjustedNetIncomeForCeased))
@@ -415,15 +472,21 @@ class IncomeHelperSpec extends PlaySpec {
   "incomeType" should {
     "return a valid incomeType code" when {
 
-      def incomeTypeTestWithDefaultNoneParams(tdn: Option[Int] = None, pr: Option[String] = None, et: Option[Int] = None,
-                    jsaInd: Option[Boolean] = None, penInd: Option[Boolean] = None) = sut.incomeType(tdn, pr, et, jsaInd, penInd)
+      def incomeTypeTestWithDefaultNoneParams(
+        tdn: Option[Int] = None,
+        pr: Option[String] = None,
+        et: Option[Int] = None,
+        jsaInd: Option[Boolean] = None,
+        penInd: Option[Boolean] = None) = sut.incomeType(tdn, pr, et, jsaInd, penInd)
 
       "No Tax District number and Paye Ref is provided" in {
         incomeTypeTestWithDefaultNoneParams() mustBe IncomeTypeEmployment.code
       }
 
       "Tax District number and Paye Ref is state pension lumpsum" in {
-        incomeTypeTestWithDefaultNoneParams(Some(TaiConstants.PENSION_LUMP_SUM_TAX_DISTRICT), Some(TaiConstants.PENSION_LUMP_SUM_PAYE_NUMBER)) mustBe IncomeTypeStatePensionLumpSum.code
+        incomeTypeTestWithDefaultNoneParams(
+          Some(TaiConstants.PENSION_LUMP_SUM_TAX_DISTRICT),
+          Some(TaiConstants.PENSION_LUMP_SUM_PAYE_NUMBER)) mustBe IncomeTypeStatePensionLumpSum.code
       }
 
       "Income has Occupation Pension Indicator true" in {
@@ -431,7 +494,9 @@ class IncomeHelperSpec extends PlaySpec {
       }
 
       "Income has Occupation Pension" in {
-        incomeTypeTestWithDefaultNoneParams(Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT), Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_PAYE_NUMBER)) mustBe IncomeTypeOccupationalPension.code
+        incomeTypeTestWithDefaultNoneParams(
+          Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_TAX_DISTRICT),
+          Some(TaiConstants.PENSION_FINANCIAL_ASSISTANCE_PAYE_NUMBER)) mustBe IncomeTypeOccupationalPension.code
       }
 
       "Tax District number and Paye Ref is Employment support allowance" in {
@@ -439,7 +504,9 @@ class IncomeHelperSpec extends PlaySpec {
       }
 
       "Tax District number and Paye Ref is Incapacity benefit tax" in {
-        incomeTypeTestWithDefaultNoneParams(Some(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT), Some(TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)) mustBe IncomeTypeIB.code
+        incomeTypeTestWithDefaultNoneParams(
+          Some(TaiConstants.INCAPACITY_BENEFIT_TAX_DISTRICT),
+          Some(TaiConstants.INCAPACITY_BENEFIT_PAYE_NUMBER)) mustBe IncomeTypeIB.code
       }
 
       "Tax District number and Paye Ref is JSA" in {
@@ -460,26 +527,83 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  val iabdSummary1 = NpsIabdSummary(amount = Some(BigDecimal(15000)), `type` = Some(GiftAidPayments.code), employmentId = Some(1))
+  val iabdSummary1 =
+    NpsIabdSummary(amount = Some(BigDecimal(15000)), `type` = Some(GiftAidPayments.code), employmentId = Some(1))
   val iabdSummary2 = NpsIabdSummary(amount = Some(BigDecimal(1291)), `type` = Some(27), employmentId = Some(2))
   val iabdSummary3 = NpsIabdSummary(amount = Some(BigDecimal(23)), `type` = Some(23), employmentId = Some(3))
-  val modifiableIabdSummaryType = (modifiedType: Option[Int]) => NpsIabdSummary(amount = Some(BigDecimal(14000)), `type` = modifiedType, employmentId = Some(4))
-  val npsComponent = NpsComponent(Some(BigDecimal(999.01)), Some(1), Option(List(iabdSummary1, iabdSummary2, iabdSummary3)), Some("npsDescription"))
+  val modifiableIabdSummaryType = (modifiedType: Option[Int]) =>
+    NpsIabdSummary(amount = Some(BigDecimal(14000)), `type` = modifiedType, employmentId = Some(4))
+  val npsComponent = NpsComponent(
+    Some(BigDecimal(999.01)),
+    Some(1),
+    Option(List(iabdSummary1, iabdSummary2, iabdSummary3)),
+    Some("npsDescription"))
 
-  val income1 = NpsIncomeSource(name = Some("primary"), taxCode = Some("taxCode1"), employmentType = Some(1), employmentStatus = Some(Live.code), employmentId = Some(1))
-  val pension = NpsIncomeSource(Some("pension1"), Some("taxCodePension"), Some(3), None, None, None, Some(5), Some(Live.code), None, None, Some(true), Some(true))
-  val modifiableIncome = (etdn: Int, epr: String) => NpsIncomeSource(name = Some("name"), taxCode = Some("taxCodeB"), employmentType = Some(2),
-    employmentId = Some(4), employmentTaxDistrictNumber = Some(etdn), employmentPayeRef = Some(epr))
+  val income1 = NpsIncomeSource(
+    name = Some("primary"),
+    taxCode = Some("taxCode1"),
+    employmentType = Some(1),
+    employmentStatus = Some(Live.code),
+    employmentId = Some(1))
+  val pension = NpsIncomeSource(
+    Some("pension1"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    Some(5),
+    Some(Live.code),
+    None,
+    None,
+    Some(true),
+    Some(true))
+  val modifiableIncome = (etdn: Int, epr: String) =>
+    NpsIncomeSource(
+      name = Some("name"),
+      taxCode = Some("taxCodeB"),
+      employmentType = Some(2),
+      employmentId = Some(4),
+      employmentTaxDistrictNumber = Some(etdn),
+      employmentPayeRef = Some(epr)
+  )
 
-  val employment1 = new NpsEmployment(sequenceNumber = 1, startDate = NpsDate(new LocalDate(2006, 12, 31)), endDate = Some(NpsDate(new LocalDate(2014, 12, 31))),
-    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString, payeNumber = TaiConstants.ESA_PAYE_NUMBER, employerName = Some("AAA"), employmentType = 1, worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle1"), startingTaxCode = Some("startingTaxCode1"))
-  val employment2 = new NpsEmployment(sequenceNumber = 2, startDate = NpsDate(new LocalDate(2006, 12, 12)), endDate = None,
-    taxDistrictNumber = "1", payeNumber = "payeno", employerName = Some("TTT"), employmentType = 2, worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle2"), startingTaxCode = Some("startingTaxCode2"))
-  val employmentESA = new NpsEmployment(sequenceNumber = 2, startDate = NpsDate(new LocalDate(2006, 12, 12)), endDate = None,
-    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString, payeNumber = TaiConstants.ESA_PAYE_NUMBER, employerName = Some("TTT"), employmentType = 2, worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle2"), startingTaxCode = Some("startingTaxCode2"))
+  val employment1 = new NpsEmployment(
+    sequenceNumber = 1,
+    startDate = NpsDate(new LocalDate(2006, 12, 31)),
+    endDate = Some(NpsDate(new LocalDate(2014, 12, 31))),
+    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
+    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
+    employerName = Some("AAA"),
+    employmentType = 1,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle1"),
+    startingTaxCode = Some("startingTaxCode1")
+  )
+  val employment2 = new NpsEmployment(
+    sequenceNumber = 2,
+    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    endDate = None,
+    taxDistrictNumber = "1",
+    payeNumber = "payeno",
+    employerName = Some("TTT"),
+    employmentType = 2,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle2"),
+    startingTaxCode = Some("startingTaxCode2")
+  )
+  val employmentESA = new NpsEmployment(
+    sequenceNumber = 2,
+    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    endDate = None,
+    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
+    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
+    employerName = Some("TTT"),
+    employmentType = 2,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle2"),
+    startingTaxCode = Some("startingTaxCode2")
+  )
 
   def sut = IncomeHelper
 }

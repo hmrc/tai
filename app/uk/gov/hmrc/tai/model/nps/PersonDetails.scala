@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.{ DateTimeZone, DateTime }
-import play.api.libs.json.{ Writes, Format, Reads, Json }
+import org.joda.time.{DateTime, DateTimeZone}
+import play.api.libs.json.{Format, Json, Reads, Writes}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.model.TaiRoot
 
@@ -41,9 +41,7 @@ object PersonDetails {
   implicit val formats = Json.format[PersonDetails]
 }
 
-case class PersonDetails(
-  etag: String,
-  person: Person) {
+case class PersonDetails(etag: String, person: Person) {
 
   def toTaiRoot: TaiRoot = {
     val firstName = person.firstName.getOrElse("")
@@ -53,6 +51,15 @@ case class PersonDetails(
     val title = person.title.getOrElse("")
     val deceasedIndicator = person.deceased
     val manualCorrespondenceInd = person.manualCorrespondenceInd.getOrElse(false)
-    TaiRoot(nino, etag.toInt, title, firstName, secondName, surname, s"$firstName $surname", manualCorrespondenceInd, deceasedIndicator)
+    TaiRoot(
+      nino,
+      etag.toInt,
+      title,
+      firstName,
+      secondName,
+      surname,
+      s"$firstName $surname",
+      manualCorrespondenceInd,
+      deceasedIndicator)
   }
 }

@@ -20,7 +20,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 
-
 class PaymentFrequencySpec extends PlaySpec with EmploymentHodFormatters {
 
   "Payment Frequency" must {

@@ -34,73 +34,80 @@ import uk.gov.hmrc.tai.util.{HodsSource, TaiConstants}
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountConnector @Inject()(npsConfig: NpsConfig,
-                                    desConfig: DesConfig,
-                                    taxAccountUrls: TaxAccountUrls,
-                                    iabdUrls: IabdUrls,
-                                    IabdUpdateAmountFormats: IabdUpdateAmountFormats,
-                                    httpHandler: HttpHandler,
-                                    featureTogglesConfig: FeatureTogglesConfig) extends HodsSource {
+class TaxAccountConnector @Inject()(
+  npsConfig: NpsConfig,
+  desConfig: DesConfig,
+  taxAccountUrls: TaxAccountUrls,
+  iabdUrls: IabdUrls,
+  IabdUpdateAmountFormats: IabdUpdateAmountFormats,
+  httpHandler: HttpHandler,
+  featureTogglesConfig: FeatureTogglesConfig)
+    extends HodsSource {
 
-  def hcWithHodHeaders(implicit hc:HeaderCarrier): HeaderCarrier =
-    if(featureTogglesConfig.desEnabled){
+  def hcWithHodHeaders(implicit hc: HeaderCarrier): HeaderCarrier =
+    if (featureTogglesConfig.desEnabled) {
       createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     } else {
       hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
     }
 
-  def taxAccount(nino:Nino, taxYear:TaxYear)(implicit hc:HeaderCarrier): Future[JsValue] = {
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
-  }
 
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc:HeaderCarrier): Future[JsValue] = {
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
     httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
   }
 
-  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)
-                         (implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
-
-    if(featureTogglesConfig.desUpdateEnabled) {
+  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
+    implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
+    if (featureTogglesConfig.desUpdateEnabled) {
       val url = iabdUrls.desIabdEmploymentUrl(nino, taxYear, iabdType)
-      val amountList =  List(
+      val amountList = List(
         IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(DesSource))
       )
       val requestHeader = headersForUpdate(hc, version, sessionOrUUID, desConfig.originatorId)
 
-      httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI)(
-        requestHeader, IabdUpdateAmountFormats.formatList
-      ).map { _ => HodUpdateSuccess}.recover { case _ => HodUpdateFailure }
-    }
-    else {
+      httpHandler
+        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI)(
+          requestHeader,
+          IabdUpdateAmountFormats.formatList
+        )
+        .map { _ =>
+          HodUpdateSuccess
+        }
+        .recover { case _ => HodUpdateFailure }
+    } else {
       val url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType)
       val amountList = List(
-          IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
+        IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
       )
       val requestHeader = headersForUpdate(hc, version, sessionOrUUID, npsConfig.originatorId)
 
-      httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI)(
-        requestHeader, IabdUpdateAmountFormats.formatList
-      ).map { _ => HodUpdateSuccess}.recover{ case _ => HodUpdateFailure}
+      httpHandler
+        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI)(
+          requestHeader,
+          IabdUpdateAmountFormats.formatList
+        )
+        .map { _ =>
+          HodUpdateSuccess
+        }
+        .recover { case _ => HodUpdateFailure }
     }
 
-  }
-
-  def sessionOrUUID(implicit hc: HeaderCarrier): String = {
+  def sessionOrUUID(implicit hc: HeaderCarrier): String =
     hc.sessionId match {
       case Some(sessionId) => sessionId.value
-      case None => UUID.randomUUID().toString.replace("-", "")
+      case None            => UUID.randomUUID().toString.replace("-", "")
     }
-  }
 
-  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): HeaderCarrier = {
+  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): HeaderCarrier =
     hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
-  }
 
-  val createHeader = HeaderCarrier(extraHeaders =
-    Seq(
-      "Environment" -> desConfig.environment,
+  val createHeader = HeaderCarrier(
+    extraHeaders = Seq(
+      "Environment"   -> desConfig.environment,
       "Authorization" -> desConfig.authorization,
-      "Content-Type" -> TaiConstants.contentType))
+      "Content-Type"  -> TaiConstants.contentType))
 }

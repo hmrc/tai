@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxHelper}
 import uk.gov.hmrc.tai.model.nps2.{AllowanceType, DeductionType}
@@ -24,42 +23,48 @@ import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
 
-
-case class NpsIncomeSource(name : Option[String] = None,
-                           taxCode : Option[String] = None,
-                           employmentType : Option[Int] = Some(TaiConstants.PrimaryEmployment),
-                           allowances : Option[List[NpsComponent]] = None,
-                           deductions : Option[List[NpsComponent]] = None,
-                           payAndTax : Option[NpsTax] = None,
-                           employmentId:Option[Int] = None,
-                           employmentStatus :Option[Int] = None,
-                           employmentTaxDistrictNumber:Option[Int] = None,
-                           employmentPayeRef:Option[String] = None,
-                           pensionIndicator:Option[Boolean] = None,
-                           otherIncomeSourceIndicator:Option[Boolean] = None,
-                           jsaIndicator:Option[Boolean] = None,
-                           totalInYearAdjustment:Option[BigDecimal] = None,
-                           inYearAdjustmentIntoCY:Option[BigDecimal] = None,
-                           inYearAdjustmentIntoCYPlusOne:Option[BigDecimal] = None,
-                           inYearAdjustmentFromPreviousYear:Option[BigDecimal] = None,
-                           basisOperation:Option[BasisOperation] = None) {
-  def toTaxCodeIncomeSummary(employment: Option[NpsEmployment]=None, adjustedNetIncome: Option[BigDecimal]=None): TaxCodeIncomeSummary = {
+case class NpsIncomeSource(
+  name: Option[String] = None,
+  taxCode: Option[String] = None,
+  employmentType: Option[Int] = Some(TaiConstants.PrimaryEmployment),
+  allowances: Option[List[NpsComponent]] = None,
+  deductions: Option[List[NpsComponent]] = None,
+  payAndTax: Option[NpsTax] = None,
+  employmentId: Option[Int] = None,
+  employmentStatus: Option[Int] = None,
+  employmentTaxDistrictNumber: Option[Int] = None,
+  employmentPayeRef: Option[String] = None,
+  pensionIndicator: Option[Boolean] = None,
+  otherIncomeSourceIndicator: Option[Boolean] = None,
+  jsaIndicator: Option[Boolean] = None,
+  totalInYearAdjustment: Option[BigDecimal] = None,
+  inYearAdjustmentIntoCY: Option[BigDecimal] = None,
+  inYearAdjustmentIntoCYPlusOne: Option[BigDecimal] = None,
+  inYearAdjustmentFromPreviousYear: Option[BigDecimal] = None,
+  basisOperation: Option[BasisOperation] = None) {
+  def toTaxCodeIncomeSummary(
+    employment: Option[NpsEmployment] = None,
+    adjustedNetIncome: Option[BigDecimal] = None): TaxCodeIncomeSummary = {
     val newIncome = if (adjustedNetIncome.isDefined) {
       adjustedNetIncome
     } else {
       payAndTax.flatMap(_.totalIncome.flatMap(_.amount))
     }
 
-    val tax = payAndTax.map(
-      oldTax => TaxHelper.toAdjustedTax(
-        oldTax,
-        taxCode = taxCode,
-        allowances = allowances,
-        deductions = deductions,
-        totalInYearAdjustment = totalInYearAdjustment,
-        inYearAdjustmentIntoCY = inYearAdjustmentIntoCY,
-        inYearAdjustmentIntoCYPlusOne = inYearAdjustmentIntoCYPlusOne,
-        inYearAdjustmentFromPreviousYear = inYearAdjustmentFromPreviousYear)).getOrElse(new Tax)
+    val tax = payAndTax
+      .map(
+        oldTax =>
+          TaxHelper.toAdjustedTax(
+            oldTax,
+            taxCode = taxCode,
+            allowances = allowances,
+            deductions = deductions,
+            totalInYearAdjustment = totalInYearAdjustment,
+            inYearAdjustmentIntoCY = inYearAdjustmentIntoCY,
+            inYearAdjustmentIntoCYPlusOne = inYearAdjustmentIntoCYPlusOne,
+            inYearAdjustmentFromPreviousYear = inYearAdjustmentFromPreviousYear
+        ))
+      .getOrElse(new Tax)
 
     new TaxCodeIncomeSummary(
       name = name.getOrElse(""),
@@ -83,17 +88,20 @@ case class NpsIncomeSource(name : Option[String] = None,
         jsaIndicator,
         employment.flatMap(_.employmentStatus)
       ),
-      isOccupationalPension = IncomeHelper.isOccupationalPension(employmentTaxDistrictNumber, employmentPayeRef, pensionIndicator),
+      isOccupationalPension =
+        IncomeHelper.isOccupationalPension(employmentTaxDistrictNumber, employmentPayeRef, pensionIndicator),
       isPrimary = IncomeHelper.isPrimary(employmentType),
       basisOperation = basisOperation
     )
   }
 
-  lazy val personalAllowanceComponent: Option[NpsComponent] = allowances.flatMap(_.find(x => List(
-    Some(AllowanceType.PersonalAllowanceStandard.id),
-    Some(AllowanceType.PersonalAllowanceAged.id),
-    Some(AllowanceType.PersonalAllowanceElderly.id)).contains(x.`type`)
-  ))
+  lazy val personalAllowanceComponent: Option[NpsComponent] = allowances.flatMap(
+    _.find(
+      x =>
+        List(
+          Some(AllowanceType.PersonalAllowanceStandard.id),
+          Some(AllowanceType.PersonalAllowanceAged.id),
+          Some(AllowanceType.PersonalAllowanceElderly.id)).contains(x.`type`)))
 
   lazy val underpaymentComponent: Option[NpsComponent] =
     deductions.flatMap(y => y.find(x => List(Some(DeductionType.UnderpaymentAmount.id)).contains(x.`type`)))
@@ -113,7 +121,8 @@ case class NpsIncomeSource(name : Option[String] = None,
   lazy val statePension: Option[BigDecimal] =
     deductions.flatMap(_.find(_.`type`.contains(DeductionType.StatePensionOrBenefits.id))).flatMap(_.amount)
 
-  lazy val incomeType: Int = IncomeHelper.incomeType(employmentTaxDistrictNumber, employmentPayeRef, employmentType, jsaIndicator, pensionIndicator)
+  lazy val incomeType: Int = IncomeHelper
+    .incomeType(employmentTaxDistrictNumber, employmentPayeRef, employmentType, jsaIndicator, pensionIndicator)
 }
 
 object NpsIncomeSource {

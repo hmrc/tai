@@ -28,38 +28,36 @@ import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
 
-class TaxCodeChangeController @Inject()(authentication: AuthenticationPredicate,
-                                        taxCodeChangeService: TaxCodeChangeService) extends BaseController {
+class TaxCodeChangeController @Inject()(
+  authentication: AuthenticationPredicate,
+  taxCodeChangeService: TaxCodeChangeService)
+    extends BaseController {
 
-  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async {
-    implicit request =>
-      taxCodeChangeService.hasTaxCodeChanged(nino).map {
-        taxCodeChanged => {
-          Ok(Json.toJson(taxCodeChanged))
-        }
+  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
+      {
+        Ok(Json.toJson(taxCodeChanged))
       }
+    }
   }
 
-  def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async {
-    implicit request =>
-      taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
-        Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
-      }
+  def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
+      Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+    }
   }
 
-  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.async {
-    implicit request =>
-      taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
-        Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
-      } recover {
-        case ex: NotFoundException => NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
+  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
+      Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
+    } recover {
+      case ex: NotFoundException   => NotFound(Json.toJson(Map("reason"   -> ex.getMessage)))
+      case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+    }
   }
 
   def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
-
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
       latestTaxCodeRecords.map { records =>

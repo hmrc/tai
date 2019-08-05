@@ -27,23 +27,24 @@ trait IncomeCategoryHodFormatters {
       val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
       val totalLiability = (json \ "totalLiability").as[JsValue]
       JsSuccess(
-        categoryNames map (category =>  (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
+        categoryNames map (category =>
+          (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
       )
     }
   }
 
   val incomeCategorySeqReads = new Reads[Seq[IncomeCategory]] {
     override def reads(json: JsValue): JsResult[Seq[IncomeCategory]] = {
-      val categoryNames = Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+      val categoryNames =
+        Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
       val incomeCategoryList = incomeCategories(json, categoryNames)
       JsSuccess(incomeCategoryList)
     }
   }
 
   def incomeCategories(json: JsValue, categories: Seq[String]): Seq[IncomeCategory] = {
-    val categoryMap: Map[String, Option[JsObject]] = categories.map(category =>
-      (category,(json \ "totalLiability" \ category).asOpt[JsObject])
-    ).toMap
+    val categoryMap: Map[String, Option[JsObject]] =
+      categories.map(category => (category, (json \ "totalLiability" \ category).asOpt[JsObject])).toMap
 
     categoryMap.collect {
       case (category, Some(jsObject)) =>
@@ -69,15 +70,14 @@ trait IncomeCategoryHodFormatters {
     }
   }
 
-  private def categoryTypeFactory(category: String) = {
+  private def categoryTypeFactory(category: String) =
     category match {
-      case "nonSavings" => NonSavingsIncomeCategory
-      case "untaxedInterest" => UntaxedInterestIncomeCategory
-      case "bankInterest" => BankInterestIncomeCategory
-      case "ukDividends" => UkDividendsIncomeCategory
-      case "foreignInterest" => ForeignInterestIncomeCategory
+      case "nonSavings"       => NonSavingsIncomeCategory
+      case "untaxedInterest"  => UntaxedInterestIncomeCategory
+      case "bankInterest"     => BankInterestIncomeCategory
+      case "ukDividends"      => UkDividendsIncomeCategory
+      case "foreignInterest"  => ForeignInterestIncomeCategory
       case "foreignDividends" => ForeignDividendsIncomeCategory
-      case _ => throw new RuntimeException("Wrong income category type")
+      case _                  => throw new RuntimeException("Wrong income category type")
     }
-  }
 }

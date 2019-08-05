@@ -31,14 +31,16 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
   "EmploymentPensionViewModel 'add employment' apply method" must {
     "generate a view model with date of birth" when {
       "date of birth is present in person" in {
-        val addEmployment = AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
+        val addEmployment =
+          AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
         val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
         sut mustBe addEmploymentModel
       }
     }
     "generate a view model without date of birth" when {
       "date of birth is absent from person" in {
-        val addEmployment = AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
+        val addEmployment =
+          AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
         val noDobPerson = person.copy(dateOfBirth = None)
         val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = noDobPerson, employment = addEmployment)
         sut mustBe addEmploymentModel.copy(dateOfBirth = "")
@@ -63,7 +65,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
   "EmploymentPensionViewModel 'end employment' apply method" must {
     "generate a view model with the correct yes/no combination" in {
       val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, endEmployment = endEmployment, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        endEmployment = endEmployment,
+        existingEmployment = existingEmployment)
       sut.isAdd mustBe No
       sut.isEnd mustBe Yes
       sut.isUpdate mustBe No
@@ -71,14 +77,22 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
     "generate a view model with the employer name and payroll number present" in {
       val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, endEmployment = endEmployment, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        endEmployment = endEmployment,
+        existingEmployment = existingEmployment)
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
 
     "generate a view model with the payroll number set to 'No', where not present on the existing employment record" in {
       val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, endEmployment = endEmployment, existingEmployment = existingEmployment.copy(payrollNumber = None))
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        endEmployment = endEmployment,
+        existingEmployment = existingEmployment.copy(payrollNumber = None))
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "No"
     }
@@ -87,8 +101,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
   "EmploymentPensionViewModel incorrect employment apply method" must {
     "generate a view model with the correct yes/no combination" in {
       val incorrectEmployment = IncorrectEmployment("TEST", "Yes", Some("123455"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
-        incorrectEmployment = incorrectEmployment, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        incorrectEmployment = incorrectEmployment,
+        existingEmployment = existingEmployment)
       sut.isAdd mustBe No
       sut.isEnd mustBe No
       sut.isUpdate mustBe Yes
@@ -96,8 +113,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
     "generate a view model with the employer name and payroll number present" in {
       val incorrectEmployment = IncorrectEmployment("TEST", "Yes", Some("123455"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
-        incorrectEmployment = incorrectEmployment, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        incorrectEmployment = incorrectEmployment,
+        existingEmployment = existingEmployment)
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
@@ -106,17 +126,23 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
   "EmploymentPensionViewModel 'add pension provider' apply method" must {
     "generate a view model with date of birth" when {
       "date of birth is present in person" in {
-        val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
-        val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
+        val addPensionProvider =
+          AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
+        val sut =
+          EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
         sut mustBe addPensionModel
       }
     }
 
     "generate a view model without date of birth" when {
       "date of birth is absent from person" in {
-        val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
+        val addPensionProvider =
+          AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
         val noDobPerson = person.copy(dateOfBirth = None)
-        val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = noDobPerson, pensionProvider = addPensionProvider)
+        val sut = EmploymentPensionViewModel(
+          taxYear = TaxYear(2017),
+          person = noDobPerson,
+          pensionProvider = addPensionProvider)
         sut mustBe addPensionModel.copy(dateOfBirth = "")
       }
     }
@@ -124,14 +150,16 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model without phone number" when {
       "phone number is absent from AddEmployment model" in {
         val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "No", None)
-        val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
+        val sut =
+          EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
         sut mustBe addPensionModel.copy(telephoneContactAllowed = "No", telephoneNumber = "")
       }
     }
 
     "generate a view model with the correct yes/no combination" in {
       val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "No", None)
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
+      val sut =
+        EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
       sut.isAdd mustBe Yes
       sut.isEnd mustBe No
       sut.isUpdate mustBe No
@@ -142,13 +170,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model with the correct details" in {
       val incorrectEmployment = IncorrectEmployment("TEST", "Yes", Some("123455"))
       val year = TaxYear(2017)
-      val sut = EmploymentPensionViewModel(
-        taxYear = year,
-        person = person,
-        incorrectEmployment = incorrectEmployment)
+      val sut = EmploymentPensionViewModel(taxYear = year, person = person, incorrectEmployment = incorrectEmployment)
 
       sut mustBe EmploymentPensionViewModel(
-        taxYearRange = s"${year.start.toString(IFormConstants.DateFormat)} to ${year.end.toString(IFormConstants.DateFormat)}",
+        taxYearRange =
+          s"${year.start.toString(IFormConstants.DateFormat)} to ${year.end.toString(IFormConstants.DateFormat)}",
         nino = person.nino.nino,
         firstName = person.firstName,
         lastName = person.surname,
@@ -174,8 +200,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
   "EmploymentPensionViewModel incorrect pension apply method" must {
     "generate a view model with the correct yes/no combination" in {
       val incorrectPensionProvider = IncorrectPensionProvider("TEST", "Yes", Some("123455"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
-        incorrectPensionProvider = incorrectPensionProvider, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        incorrectPensionProvider = incorrectPensionProvider,
+        existingEmployment = existingEmployment)
       sut.isAdd mustBe No
       sut.isEnd mustBe No
       sut.isUpdate mustBe Yes
@@ -183,16 +212,22 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
     "generate a view model with the employer name and payroll number present" in {
       val incorrectPensionProvider = IncorrectPensionProvider("TEST", "Yes", Some("123455"))
-      val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person,
-        incorrectPensionProvider = incorrectPensionProvider, existingEmployment = existingEmployment)
+      val sut = EmploymentPensionViewModel(
+        taxYear = TaxYear(2017),
+        person = person,
+        incorrectPensionProvider = incorrectPensionProvider,
+        existingEmployment = existingEmployment)
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
   }
 
-
   private val nino = new Generator(new Random()).nextNino
-  private val person = Person(nino, "firstname", "lastname", Some(new LocalDate("1982-04-03")),
+  private val person = Person(
+    nino,
+    "firstname",
+    "lastname",
+    Some(new LocalDate("1982-04-03")),
     Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
   private val addEmploymentModel = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
@@ -238,6 +273,17 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     ""
   )
 
-  private val existingEmployment = Employment("fake employer", Some("12345"), LocalDate.parse("2017-04-04"), None, Seq.empty[AnnualAccount], "33", "44", 1, Some(100), false, false)
+  private val existingEmployment = Employment(
+    "fake employer",
+    Some("12345"),
+    LocalDate.parse("2017-04-04"),
+    None,
+    Seq.empty[AnnualAccount],
+    "33",
+    "44",
+    1,
+    Some(100),
+    false,
+    false)
 
 }

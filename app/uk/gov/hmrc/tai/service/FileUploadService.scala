@@ -31,8 +31,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 
 @Singleton
-class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector,
-                                  auditor: Auditor) {
+class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, auditor: Auditor) {
 
   private val FileUploadSuccessStatus = "AVAILABLE"
   private val FileUploadErrorStatus = "ERROR"
@@ -40,44 +39,42 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector,
   private val FileUploadSuccessAudit = "FileUploadSuccess"
   private val FileUploadFailureAudit = "FileUploadFailure"
 
-  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] = {
+  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] =
     fileUploadConnector.createEnvelope
-  }
 
-  def envelopeStatus(envelopeId: String)(implicit hc: HeaderCarrier): Future[EnvelopeStatus] = {
+  def envelopeStatus(envelopeId: String)(implicit hc: HeaderCarrier): Future[EnvelopeStatus] =
     fileUploadConnector.envelope(envelopeId) map {
       case Some(envelopeSummary) =>
-        if(envelopeSummary.status != FileUploadOpenStatus){
+        if (envelopeSummary.status != FileUploadOpenStatus) {
           Logger.warn(s"Multiple Callback received for envelope-id $envelopeId (${envelopeSummary.status})")
           Open
-        }
-        else if(envelopeSummary.files.size == 2 && envelopeSummary.files.forall(_.status == FileUploadSuccessStatus)){
+        } else if (envelopeSummary.files.size == 2 && envelopeSummary.files.forall(_.status == FileUploadSuccessStatus)) {
           Closed
         } else {
           Open
         }
       case None => Open
     }
-  }
 
-  def uploadFile(data: Array[Byte], envelopeId: String, fileName: String, contentType: MimeContentType)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def uploadFile(data: Array[Byte], envelopeId: String, fileName: String, contentType: MimeContentType)(
+    implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val system: ActorSystem = ActorSystem()
     implicit val materializer: ActorMaterializer = ActorMaterializer()
 
     val ahcWSClient: AhcWSClient = AhcWSClient()
-    fileUploadConnector.uploadFile(data, fileName, contentType, envelopeId, removeExtension(fileName), ahcWSClient)
+    fileUploadConnector
+      .uploadFile(data, fileName, contentType, envelopeId, removeExtension(fileName), ahcWSClient)
       .andThen { case _ => ahcWSClient.close() }
       .andThen { case _ => system.terminate() }
   }
 
-  def closeEnvelope(envelopeId: String)(implicit hc: HeaderCarrier): Future[String] = {
+  def closeEnvelope(envelopeId: String)(implicit hc: HeaderCarrier): Future[String] =
     fileUploadConnector.closeEnvelope(envelopeId)
-  }
 
-  def fileUploadCallback(details: FileUploadCallback)(implicit hc: HeaderCarrier): Future[EnvelopeStatus] = {
+  def fileUploadCallback(details: FileUploadCallback)(implicit hc: HeaderCarrier): Future[EnvelopeStatus] =
     if (details.status == FileUploadSuccessStatus) {
       callback(details)
-    } else if(details.status == FileUploadErrorStatus) {
+    } else if (details.status == FileUploadErrorStatus) {
 
       auditor.sendDataEvent(FileUploadFailureAudit, detail = details.toMap)
 
@@ -85,9 +82,8 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector,
     } else {
       Future.successful(Open)
     }
-  }
 
-  private def callback(details: FileUploadCallback)(implicit hc: HeaderCarrier) = {
+  private def callback(details: FileUploadCallback)(implicit hc: HeaderCarrier) =
     envelopeStatus(details.envelopeId) map {
       case Closed =>
         closeEnvelope(details.envelopeId)
@@ -97,7 +93,6 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector,
         Closed
       case Open => Open
     }
-  }
 
   private def removeExtension(fileName: String): String = fileName.split("\\.").head
 

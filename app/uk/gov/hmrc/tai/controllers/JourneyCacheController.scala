@@ -25,31 +25,31 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
-class JourneyCacheController @Inject()(repository: JourneyCacheRepository,
-                                       authentication: AuthenticationPredicate)
-  extends BaseController {
+class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authentication: AuthenticationPredicate)
+    extends BaseController {
 
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.currentCache(journeyName) map {
       case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
-      case _ => NotFound
+      case _                             => NotFound
     } recover {
       case _ => InternalServerError
     }
   }
 
-  def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.currentCache(journeyName, key) map {
-      case Some(value) if value.trim!="" => Ok(Json.toJson(value))
-      case _ => NotFound
-    } recover {
-      case _ => InternalServerError
-    }
+  def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async {
+    implicit request =>
+      repository.currentCache(journeyName, key) map {
+        case Some(value) if value.trim != "" => Ok(Json.toJson(value))
+        case _                               => NotFound
+      } recover {
+        case _ => InternalServerError
+      }
   }
 
   def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
-    withJsonBody[Map[String, String]] {
-      cache => repository.cached(journeyName, cache) map { cache =>
+    withJsonBody[Map[String, String]] { cache =>
+      repository.cached(journeyName, cache) map { cache =>
         Created(Json.toJson(cache))
       } recover {
         case _ => InternalServerError

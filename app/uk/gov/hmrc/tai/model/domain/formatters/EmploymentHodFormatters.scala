@@ -29,7 +29,7 @@ import scala.util.{Success, Try}
 
 trait EmploymentHodFormatters {
 
-  implicit val stringMapFormat = JsonExtra.mapFormat[String,BigDecimal]("type", "amount")
+  implicit val stringMapFormat = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val employmentHodReads: Reads[Employment] = new Reads[Employment] {
 
@@ -40,8 +40,7 @@ trait EmploymentHodFormatters {
         override def reads(json: JsValue): JsResult[LocalDate] = json match {
           case JsString(dateRegex(d, m, y)) =>
             JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
-          case invalid => JsError(ValidationError(
-            s"Invalid date format [dd/MM/yyyy]: $invalid"))
+          case invalid => JsError(ValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
         }
       },
       new Writes[LocalDate] {
@@ -57,13 +56,27 @@ trait EmploymentHodFormatters {
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](formatEmploymentLocalDate)
       val endDate = (json \ "endDate").asOpt[LocalDate](formatEmploymentLocalDate)
-      val taxDistrictNumber = numberChecked( (json \ "taxDistrictNumber").as[String] )
+      val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
       val payeNumber = (json \ "payeNumber").as[String]
       val sequenceNumber = (json \ "sequenceNumber").as[Int]
       val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
-      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1").asOpt[Boolean].getOrElse(false)
+      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1")
+        .asOpt[Boolean]
+        .getOrElse(false)
       val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
-      JsSuccess(Employment(name, payrollNumber, startDate, endDate, Nil, taxDistrictNumber, payeNumber, sequenceNumber, cessationPay, payrolledBenefit, receivingOccupationalPension))
+      JsSuccess(
+        Employment(
+          name,
+          payrollNumber,
+          startDate,
+          endDate,
+          Nil,
+          taxDistrictNumber,
+          payeNumber,
+          sequenceNumber,
+          cessationPay,
+          payrolledBenefit,
+          receivingOccupationalPension))
     }
   }
 
@@ -77,11 +90,13 @@ trait EmploymentHodFormatters {
   val paymentHodReads: Reads[Payment] = new Reads[Payment] {
     override def reads(json: JsValue): JsResult[Payment] = {
 
-      val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").
-        as[Map[String, BigDecimal]]
+      val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
 
-      val niFigure = ((json \ "niLettersAndValues").asOpt[JsArray].map(x => x \\ "niFigure")).
-        flatMap(_.headOption).map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
+      val niFigure = ((json \ "niLettersAndValues")
+        .asOpt[JsArray]
+        .map(x => x \\ "niFigure"))
+        .flatMap(_.headOption)
+        .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
       val payment = Payment(
         date = (json \ "pmtDate").as[LocalDate],
@@ -101,16 +116,16 @@ trait EmploymentHodFormatters {
 
   val paymentFrequencyFormat = new Format[PaymentFrequency] {
     override def reads(json: JsValue): JsResult[PaymentFrequency] = json.as[String] match {
-      case Weekly.value => JsSuccess(Weekly)
+      case Weekly.value      => JsSuccess(Weekly)
       case FortNightly.value => JsSuccess(FortNightly)
-      case FourWeekly.value => JsSuccess(FourWeekly)
-      case Monthly.value => JsSuccess(Monthly)
-      case Quarterly.value => JsSuccess(Quarterly)
-      case BiAnnually.value => JsSuccess(BiAnnually)
-      case Annually.value => JsSuccess(Annually)
-      case OneOff.value => JsSuccess(OneOff)
-      case Irregular.value => JsSuccess(Irregular)
-      case _ => throw new IllegalArgumentException("Invalid payment frequency")
+      case FourWeekly.value  => JsSuccess(FourWeekly)
+      case Monthly.value     => JsSuccess(Monthly)
+      case Quarterly.value   => JsSuccess(Quarterly)
+      case BiAnnually.value  => JsSuccess(BiAnnually)
+      case Annually.value    => JsSuccess(Annually)
+      case OneOff.value      => JsSuccess(OneOff)
+      case Irregular.value   => JsSuccess(Irregular)
+      case _                 => throw new IllegalArgumentException("Invalid payment frequency")
     }
 
     override def writes(paymentFrequency: PaymentFrequency): JsValue = JsString(paymentFrequency.toString)
@@ -124,16 +139,19 @@ trait EmploymentHodFormatters {
       val optionalAdjustmentAmountMap =
         ((json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]]).getOrElse(Map())
 
-      val niFigure = ((json \ "niLettersAndValues").asOpt[JsArray].map(x => x \\ "niFigure")).
-        flatMap(_.headOption).map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
+      val niFigure = ((json \ "niLettersAndValues")
+        .asOpt[JsArray]
+        .map(x => x \\ "niFigure"))
+        .flatMap(_.headOption)
+        .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
       val rcvdDate = (json \ "rcvdDate").as[LocalDate]
 
       val adjusts = Seq(
-        optionalAdjustmentAmountMap.get("TotalTaxDelta").map( Adjustment(TaxAdjustment, _) ),
-        optionalAdjustmentAmountMap.get("TaxablePayDelta").map( Adjustment(IncomeAdjustment, _) ),
-        niFigure.flatMap(_.get("EmpeeContribnsDelta")).map( Adjustment(NationalInsuranceAdjustment, _) )
-      ).flatten.filter(_.amount!=0)
+        optionalAdjustmentAmountMap.get("TotalTaxDelta").map(Adjustment(TaxAdjustment, _)),
+        optionalAdjustmentAmountMap.get("TaxablePayDelta").map(Adjustment(IncomeAdjustment, _)),
+        niFigure.flatMap(_.get("EmpeeContribnsDelta")).map(Adjustment(NationalInsuranceAdjustment, _))
+      ).flatten.filter(_.amount != 0)
 
       JsSuccess(EndOfTaxYearUpdate(rcvdDate, adjusts))
     }
@@ -145,28 +163,36 @@ trait EmploymentHodFormatters {
 
       val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
         case JsSuccess(arr, path) => arr.value
-        case _ => Nil
+        case _                    => Nil
       }
 
-      JsSuccess(employments.map {emp =>
-        val officeNo = numberChecked( (emp \ "empRefs" \ "officeNo").as[String] )
+      JsSuccess(employments.map { emp =>
+        val officeNo = numberChecked((emp \ "empRefs" \ "officeNo").as[String])
         val payeRef = (emp \ "empRefs" \ "payeRef").as[String]
-        val currentPayId = (emp \ "currentPayId").asOpt[String].map(pr => if(pr == "") "" else "-" + pr).getOrElse("")
+        val currentPayId = (emp \ "currentPayId").asOpt[String].map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
         val key = officeNo + "-" + payeRef + currentPayId
 
         val payments =
           (emp \ "payments" \ "inYear").validate[JsArray] match {
-            case JsSuccess(arr, path) => arr.value.map {  payment =>
-              payment.as[Payment](paymentHodReads)
-            }.toList.sorted
+            case JsSuccess(arr, path) =>
+              arr.value
+                .map { payment =>
+                  payment.as[Payment](paymentHodReads)
+                }
+                .toList
+                .sorted
             case _ => Nil
           }
 
         val eyus =
           (emp \ "payments" \ "eyu").validate[JsArray] match {
-            case JsSuccess(arr, path) => arr.value.map {  payment =>
-              payment.as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
-            }.toList.sorted
+            case JsSuccess(arr, path) =>
+              arr.value
+                .map { payment =>
+                  payment.as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
+                }
+                .toList
+                .sorted
             case _ => Nil
           }
 
@@ -183,16 +209,12 @@ trait EmploymentHodFormatters {
   }
 
   val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
-  def numberChecked(stringVal: String): String = {
+  def numberChecked(stringVal: String): String =
     stringVal match {
       case numericWithLeadingZeros(zeros, numeric) => numeric
-      case _ => stringVal
+      case _                                       => stringVal
     }
-  }
 
 }
 
 object EmploymentHodFormatters extends EmploymentHodFormatters
-
-
-

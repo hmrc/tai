@@ -19,19 +19,21 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 
-case class AddPensionProvider(pensionProviderName: String,
-                              startDate: LocalDate,
-                              pensionNumber: String,
-                              telephoneContactAllowed: String,
-                              telephoneNumber: Option[String])
+case class AddPensionProvider(
+  pensionProviderName: String,
+  startDate: LocalDate,
+  pensionNumber: String,
+  telephoneContactAllowed: String,
+  telephoneNumber: Option[String])
 
 object AddPensionProvider {
   implicit val addPensionProviderFormat: Format[AddPensionProvider] = Json.format[AddPensionProvider]
 }
 
-case class IncorrectPensionProvider(whatYouToldUs: String,
-                                    telephoneContactAllowed: String,
-                                    telephoneNumber: Option[String])
+case class IncorrectPensionProvider(
+  whatYouToldUs: String,
+  telephoneContactAllowed: String,
+  telephoneNumber: Option[String])
 
 object IncorrectPensionProvider {
   implicit val formats: Format[IncorrectPensionProvider] = Json.format[IncorrectPensionProvider]

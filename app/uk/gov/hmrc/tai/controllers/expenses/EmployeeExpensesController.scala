@@ -47,38 +47,34 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class EmployeeExpensesController @Inject()(
-                                            authentication: AuthenticationPredicate,
-                                            employeeExpensesService: EmployeeExpensesService
-                                          )
-  extends BaseController
-    with ApiFormats
-    with ControllerErrorHandler {
+  authentication: AuthenticationPredicate,
+  employeeExpensesService: EmployeeExpensesService
+) extends BaseController with ApiFormats with ControllerErrorHandler {
 
-  def updateEmployeeExpensesData(nino: Nino, year: TaxYear, iabd: Int ): Action[JsValue] = authentication.async(parse.json) {
-    implicit request =>
-      withJsonBody[IabdUpdateExpensesRequest] {
-        iabdUpdateExpensesRequest =>
-          employeeExpensesService.updateEmployeeExpensesData(
+  def updateEmployeeExpensesData(nino: Nino, year: TaxYear, iabd: Int): Action[JsValue] =
+    authentication.async(parse.json) { implicit request =>
+      withJsonBody[IabdUpdateExpensesRequest] { iabdUpdateExpensesRequest =>
+        employeeExpensesService
+          .updateEmployeeExpensesData(
             nino = nino,
             taxYear = year,
             version = iabdUpdateExpensesRequest.version,
             expensesData = UpdateIabdEmployeeExpense(iabdUpdateExpensesRequest.grossAmount),
             iabd = iabd
-          ).map {
-            value =>
-              value.status match {
-                case OK | NO_CONTENT | ACCEPTED => NoContent
-                case _ => InternalServerError
-              }
+          )
+          .map { value =>
+            value.status match {
+              case OK | NO_CONTENT | ACCEPTED => NoContent
+              case _                          => InternalServerError
+            }
           }
       }
-  }
+    }
 
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] = authentication.async {
     implicit request =>
-      employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map {
-        iabdData =>
-          Ok(Json.toJson(iabdData))
+      employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
+        Ok(Json.toJson(iabdData))
       } recoverWith taxAccountErrorHandler
   }
 }

@@ -18,13 +18,14 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.Json
 
-case class BankAccount(id: Int = 0,
-                       accountNumber: Option[String],
-                       sortCode: Option[String],
-                       bankName: Option[String],
-                       grossInterest: BigDecimal,
-                       source: Option[String],
-                       numberOfAccountHolders: Option[Int])
+case class BankAccount(
+  id: Int = 0,
+  accountNumber: Option[String],
+  sortCode: Option[String],
+  bankName: Option[String],
+  grossInterest: BigDecimal,
+  source: Option[String],
+  numberOfAccountHolders: Option[Int])
 
 object BankAccount {
   implicit val formats = Json.format[BankAccount]

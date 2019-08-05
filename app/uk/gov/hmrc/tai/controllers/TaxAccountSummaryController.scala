@@ -29,16 +29,15 @@ import uk.gov.hmrc.tai.service.TaxAccountSummaryService
 import uk.gov.hmrc.tai.util.NpsExceptions
 
 @Singleton
-class TaxAccountSummaryController @Inject()(taxAccountSummaryService: TaxAccountSummaryService,
-                                            authentication: AuthenticationPredicate)
-  extends BaseController
-  with ApiFormats
-  with NpsExceptions
-  with ControllerErrorHandler{
+class TaxAccountSummaryController @Inject()(
+  taxAccountSummaryService: TaxAccountSummaryService,
+  authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats with NpsExceptions with ControllerErrorHandler {
 
-  def taxAccountSummaryForYear(nino: Nino, year:TaxYear): Action[AnyContent] = authentication.async { implicit request =>
-    taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
-      Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
-    } recoverWith taxAccountErrorHandler
+  def taxAccountSummaryForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
+    implicit request =>
+      taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
+        Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
+      } recoverWith taxAccountErrorHandler
   }
 }

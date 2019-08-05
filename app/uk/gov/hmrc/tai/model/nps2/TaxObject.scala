@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model.nps2
 
 object TaxObject {
   object Type extends Enumeration {
-    val NonSavings, UntaxedInterest, BankInterest, UkDividends, ForeignInterest,
-      ForeignDividends = Value
+    val NonSavings, UntaxedInterest, BankInterest, UkDividends, ForeignInterest, ForeignDividends = Value
   }
 }

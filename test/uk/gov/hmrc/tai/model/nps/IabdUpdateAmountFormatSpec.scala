@@ -23,8 +23,7 @@ import play.api.libs.json.{JsNumber, JsValue, Json}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
 
-class IabdUpdateAmountFormatspec extends PlaySpec
-  with MockitoSugar {
+class IabdUpdateAmountFormatspec extends PlaySpec with MockitoSugar {
 
   "Json writes to DES" must {
     "output the correct employment Sequence Number field name" when {

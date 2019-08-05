@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.nps2.Income.Live
 import uk.gov.hmrc.tai.util.TaiConstants
 
 @Singleton
-class NextYearComparisonService @Inject()()  {
+class NextYearComparisonService @Inject()() {
 
   def stripCeasedFromNps(npsTaxAccount: NpsTaxAccount) = {
 
@@ -34,17 +34,19 @@ class NextYearComparisonService @Inject()()  {
           incomeSource
         case _ =>
           val payAndTax = incomeSource.payAndTax.flatMap(_.totalIncome)
-          val payTax = incomeSource.payAndTax.map(x => x.copy(totalIncome = payAndTax.
-            map(_.copy(amount = Some(BigDecimal(0))))))
+          val payTax =
+            incomeSource.payAndTax.map(x => x.copy(totalIncome = payAndTax.map(_.copy(amount = Some(BigDecimal(0))))))
           incomeSource.copy(payAndTax = payTax, taxCode = Some("Not applicable"))
       }
     })
 
     val totalTaxableIncome = npsTaxAccount.totalLiability
-      .flatMap(_.nonSavings
-        .flatMap(_.totalIncome
-          .flatMap(_.iabdSummaries
-            .map(_.foldLeft(BigDecimal(0))(_ + _.amount.getOrElse(BigDecimal(0)))))))
+      .flatMap(
+        _.nonSavings
+          .flatMap(
+            _.totalIncome
+              .flatMap(_.iabdSummaries
+                .map(_.foldLeft(BigDecimal(0))(_ + _.amount.getOrElse(BigDecimal(0)))))))
 
     val nonSavingsComp = npsTaxAccount.totalLiability
       .flatMap(_.nonSavings)
@@ -59,80 +61,88 @@ class NextYearComparisonService @Inject()()  {
     npsTaxAccount.copy(incomeSources = modifiedIncomeSources, totalLiability = totalLiability)
   }
 
-  def proccessTaxSummaryWithCYPlusOne(taxSummaryDetails: TaxSummaryDetails, nextYear: TaxSummaryDetails): TaxSummaryDetails = {
+  def proccessTaxSummaryWithCYPlusOne(
+    taxSummaryDetails: TaxSummaryDetails,
+    nextYear: TaxSummaryDetails): TaxSummaryDetails = {
 
     val cyPersonalAllowanceCheck = cyPlusOnePersonalAllowance(taxSummaryDetails, nextYear, CYPlusOneChange())
     val cyPlusOneUnderPaymentCheck = cyPlusOneUnderPayment(taxSummaryDetails, nextYear, cyPersonalAllowanceCheck)
     val cyPlusOneTotalTaxCheck = cyPlusOneTotalTax(taxSummaryDetails, nextYear, cyPlusOneUnderPaymentCheck)
     val cyPlusOneEmpBenCheck = cyPlusOneEmpBenefits(taxSummaryDetails, nextYear, cyPlusOneTotalTaxCheck)
-    val cyPlusOnePersonalSavingsAllowanceCheck = cyPlusOnePersonalSavingsAllowance(taxSummaryDetails, nextYear, cyPlusOneEmpBenCheck)
+    val cyPlusOnePersonalSavingsAllowanceCheck =
+      cyPlusOnePersonalSavingsAllowance(taxSummaryDetails, nextYear, cyPlusOneEmpBenCheck)
     val cyPlusOneEmploymentTaxCodesCheck = cyPlusOneEmploymentTaxCodes(nextYear, cyPlusOnePersonalSavingsAllowanceCheck)
     val cyPlusOneScottishTaxCodesCheck = cyPlusOneScottishTaxCodes(nextYear, cyPlusOneEmploymentTaxCodesCheck)
 
     if (cyPlusOneCheckForAnyChanges(cyPlusOneScottishTaxCodesCheck)) {
-      taxSummaryDetails.copy(cyPlusOneChange = Some(cyPlusOneScottishTaxCodesCheck),
-        cyPlusOneSummary = Some(nextYear))
-    }
-    else {
+      taxSummaryDetails.copy(cyPlusOneChange = Some(cyPlusOneScottishTaxCodesCheck), cyPlusOneSummary = Some(nextYear))
+    } else {
       taxSummaryDetails
     }
   }
 
-  def cyPlusOneEmploymentTaxCodes(cyPlusOneTaxSummaryDetails: TaxSummaryDetails, cyPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOneEmploymentTaxCodes(
+    cyPlusOneTaxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneChange: CYPlusOneChange): CYPlusOneChange =
     cyPlusOneChange.copy(employmentsTaxCode = cyPlusOneTaxSummaryDetails.taxCodeDetails.flatMap(_.employment))
-  }
 
-  def cyPlusOneScottishTaxCodes(cyPlusOneTaxSummaryDetails: TaxSummaryDetails, cyPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOneScottishTaxCodes(
+    cyPlusOneTaxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
     val isScottishTaxCodeExist = cyPlusOneTaxSummaryDetails.taxCodeDetails.flatMap(_.employment) match {
       case Some(employments) => Some(employments.exists(_.taxCode.getOrElse("").startsWith("S")))
-      case _ => None
+      case _                 => None
     }
 
     cyPlusOneChange.copy(scottishTaxCodes = isScottishTaxCodeExist)
   }
 
-  def cyPlusOneCheckForAnyChanges(cYPlusOneChange: CYPlusOneChange): Boolean = {
-
+  def cyPlusOneCheckForAnyChanges(cYPlusOneChange: CYPlusOneChange): Boolean =
     cYPlusOneChange.personalAllowance.isDefined ||
       cYPlusOneChange.underPayment.isDefined ||
       cYPlusOneChange.totalTax.isDefined ||
       cYPlusOneChange.employmentBenefits.isDefined ||
       cYPlusOneChange.personalSavingsAllowance.isDefined
-  }
 
-  def cyPlusOneEmpBenefits(taxSummaryDetails: TaxSummaryDetails,
-                           cyPlusOneDetails: TaxSummaryDetails,
-                           cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOneEmpBenefits(
+    taxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneDetails: TaxSummaryDetails,
+    cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
 
     val cyPlusOneBenefits = cyPlusOneDetails.increasesTax.flatMap(_.benefitsFromEmployment)
     val cyBenefits = taxSummaryDetails.increasesTax.flatMap(_.benefitsFromEmployment)
 
-    val totalBikCy = taxSummaryDetails.increasesTax.flatMap(_.benefitsFromEmployment.flatMap(_.iabdSummaries.
-      find(iabd => iabd.iabdType == TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.getOrElse(0))))
+    val totalBikCy =
+      taxSummaryDetails.increasesTax.flatMap(_.benefitsFromEmployment.flatMap(_.iabdSummaries.find(iabd =>
+        iabd.iabdType == TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.getOrElse(0))))
 
-    val totalBikNy = cyPlusOneDetails.increasesTax.flatMap(_.benefitsFromEmployment.flatMap(_.iabdSummaries.
-      find(iabd => iabd.iabdType == TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.getOrElse(0))))
+    val totalBikNy = cyPlusOneDetails.increasesTax.flatMap(_.benefitsFromEmployment.flatMap(_.iabdSummaries.find(iabd =>
+      iabd.iabdType == TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.getOrElse(0))))
 
-    (totalBikCy, totalBikNy, totalBikCy == totalBikNy,
+    (
+      totalBikCy,
+      totalBikNy,
+      totalBikCy == totalBikNy,
       getBenefitsChangeWithoutBik(cyPlusOneBenefits, cyBenefits).isEmpty) match {
-      case (Some(_), Some(_), true, _) => cYPlusOneChange
+      case (Some(_), Some(_), true, _)  => cYPlusOneChange
       case (Some(_), Some(_), false, _) => cYPlusOneChange.copy(employmentBenefits = Some(true))
-      case (_, _, _, true) => cYPlusOneChange
-      case (_, _, _, false) => cYPlusOneChange.copy(employmentBenefits = Some(true))
-      case _ => cYPlusOneChange
+      case (_, _, _, true)              => cYPlusOneChange
+      case (_, _, _, false)             => cYPlusOneChange.copy(employmentBenefits = Some(true))
+      case _                            => cYPlusOneChange
     }
   }
 
-  def getBenefitsChangeWithoutBik(cyPlusOneBenefitsFromEmployment: Option[TaxComponent],
-                                  cyBenefitsFromEmployment: Option[TaxComponent]):
-  List[Change[Some[IabdSummary], Option[IabdSummary]]] = {
+  def getBenefitsChangeWithoutBik(
+    cyPlusOneBenefitsFromEmployment: Option[TaxComponent],
+    cyBenefitsFromEmployment: Option[TaxComponent]): List[Change[Some[IabdSummary], Option[IabdSummary]]] = {
 
     val currentEB = cyBenefitsFromEmployment match {
       case Some(curr) => curr.iabdSummaries
-      case _ => List()
+      case _          => List()
     }
     val cyPlusOneEB = cyPlusOneBenefitsFromEmployment match {
-      case Some(cyp) => cyp.iabdSummaries.filter(x => !TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.contains(x.iabdType))
+      case Some(cyp) =>
+        cyp.iabdSummaries.filter(x => !TaiConstants.IADB_TYPE_BENEFITS_IN_KIND_TOTAL.contains(x.iabdType))
       case _ => List()
     }
 
@@ -144,54 +154,67 @@ class NextYearComparisonService @Inject()()  {
     compare.filter(c => (c.currentYear != c.currentYearPlusOne) && c.currentYear.isDefined)
   }
 
-  def cyPlusOneTotalTax(taxSummaryDetails: TaxSummaryDetails, cyPlusOneDetails: TaxSummaryDetails,
-                        cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOneTotalTax(
+    taxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneDetails: TaxSummaryDetails,
+    cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
 
     val currentTT = taxSummaryDetails.totalLiability.map(_.totalTax).getOrElse(BigDecimal(0))
     val cyPlusOneTT = cyPlusOneDetails.totalLiability.map(_.totalTax).getOrElse(BigDecimal(0))
 
     if (currentTT == cyPlusOneTT) {
       cYPlusOneChange
-    }
-    else {
+    } else {
       cYPlusOneChange.copy(totalTax = Some(Change(currentTT, cyPlusOneTT)))
     }
   }
 
-  def cyPlusOneUnderPayment(taxSummaryDetails: TaxSummaryDetails, cyPlusOneDetails: TaxSummaryDetails,
-                            cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOneUnderPayment(
+    taxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneDetails: TaxSummaryDetails,
+    cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
 
     val currentUP = taxSummaryDetails.totalLiability.map(_.underpaymentPreviousYear).getOrElse(BigDecimal(0))
     val cyPlusOneUP = cyPlusOneDetails.totalLiability.map(_.underpaymentPreviousYear).getOrElse(BigDecimal(0))
 
     if (currentUP == cyPlusOneUP) {
       cYPlusOneChange
-    }
-    else {
+    } else {
       cYPlusOneChange.copy(underPayment = Some(Change(currentUP, cyPlusOneUP)))
     }
   }
 
-  def cyPlusOnePersonalAllowance(taxSummaryDetails: TaxSummaryDetails, cyPlusOneDetails: TaxSummaryDetails,
-                                 cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOnePersonalAllowance(
+    taxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneDetails: TaxSummaryDetails,
+    cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
 
-    val currentPA = taxSummaryDetails.decreasesTax.map(_.personalAllowance.getOrElse(BigDecimal(0))).getOrElse(BigDecimal(0))
-    val cyPlusOnePA = cyPlusOneDetails.decreasesTax.map(_.personalAllowance.getOrElse(BigDecimal(0))).getOrElse(BigDecimal(0))
+    val currentPA =
+      taxSummaryDetails.decreasesTax.map(_.personalAllowance.getOrElse(BigDecimal(0))).getOrElse(BigDecimal(0))
+    val cyPlusOnePA =
+      cyPlusOneDetails.decreasesTax.map(_.personalAllowance.getOrElse(BigDecimal(0))).getOrElse(BigDecimal(0))
 
-    val cyPlusOneStandardPA = cyPlusOneDetails.decreasesTax.map(_.personalAllowanceSourceAmount.getOrElse(BigDecimal(0))).getOrElse(BigDecimal(0))
+    val cyPlusOneStandardPA = cyPlusOneDetails.decreasesTax
+      .map(_.personalAllowanceSourceAmount.getOrElse(BigDecimal(0)))
+      .getOrElse(BigDecimal(0))
 
     if (currentPA == cyPlusOnePA) {
       cYPlusOneChange
     } else {
-      cYPlusOneChange.copy(personalAllowance = Some(Change(currentPA, cyPlusOnePA)), standardPA = Some(cyPlusOneStandardPA))
+      cYPlusOneChange
+        .copy(personalAllowance = Some(Change(currentPA, cyPlusOnePA)), standardPA = Some(cyPlusOneStandardPA))
     }
   }
 
-  def cyPlusOnePersonalSavingsAllowance(taxSummaryDetails: TaxSummaryDetails, cyPlusOneDetails: TaxSummaryDetails,
-                                        cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
+  def cyPlusOnePersonalSavingsAllowance(
+    taxSummaryDetails: TaxSummaryDetails,
+    cyPlusOneDetails: TaxSummaryDetails,
+    cYPlusOneChange: CYPlusOneChange): CYPlusOneChange = {
 
-    val currentValue = taxSummaryDetails.decreasesTax.flatMap(_.personalSavingsAllowance.map(_.amount)).getOrElse(BigDecimal(0))
-    val nextYearValue = cyPlusOneDetails.decreasesTax.flatMap(_.personalSavingsAllowance.map(_.amount)).getOrElse(BigDecimal(0))
+    val currentValue =
+      taxSummaryDetails.decreasesTax.flatMap(_.personalSavingsAllowance.map(_.amount)).getOrElse(BigDecimal(0))
+    val nextYearValue =
+      cyPlusOneDetails.decreasesTax.flatMap(_.personalSavingsAllowance.map(_.amount)).getOrElse(BigDecimal(0))
 
     if (currentValue == nextYearValue) {
       cYPlusOneChange

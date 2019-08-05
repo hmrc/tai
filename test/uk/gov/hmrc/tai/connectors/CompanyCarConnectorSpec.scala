@@ -33,23 +33,23 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CompanyCarConnectorSpec extends PlaySpec
-  with MockitoSugar {
+class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {
-      val expectedResponse = Seq(CompanyCarBenefit(1, 3333, Seq(
-        CompanyCar(24, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
+      val expectedResponse = Seq(
+        CompanyCarBenefit(
+          1,
+          3333,
+          Seq(CompanyCar(24, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
 
       val fakeResponse: JsValue = Json.arr(
         Json.obj(
           "employmentSequenceNumber" -> 1,
-          "grossAmount" -> 3333,
+          "grossAmount"              -> 3333,
           "carDetails" -> Json.arr(
-            Json.obj(
-              "carSequenceNumber" -> 24,
-              "makeModel" -> "company car",
-              "dateMadeAvailable" -> "2014-06-10"))))
+            Json.obj("carSequenceNumber" -> 24, "makeModel" -> "company car", "dateMadeAvailable" -> "2014-06-10"))
+        ))
 
       val mockHttpHandler = mock[HttpHandler]
       when(mockHttpHandler.getFromApi(any(), any())(any()))
@@ -61,25 +61,34 @@ class CompanyCarConnectorSpec extends PlaySpec
     }
 
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
-      val expectedResponse = Seq(CompanyCarBenefit(1, 3333, Seq(
-        CompanyCar(24, "company car", true, Some(LocalDate.parse("2014-06-10")), Some(LocalDate.parse("2017-05-02")), None))))
+      val expectedResponse = Seq(
+        CompanyCarBenefit(
+          1,
+          3333,
+          Seq(
+            CompanyCar(
+              24,
+              "company car",
+              true,
+              Some(LocalDate.parse("2014-06-10")),
+              Some(LocalDate.parse("2017-05-02")),
+              None))))
 
       val rawResponse: JsValue =
         Json.arr(
           Json.obj(
             "employmentSequenceNumber" -> 1,
-            "grossAmount" -> 3333,
+            "grossAmount"              -> 3333,
             "carDetails" -> Json.arr(
               Json.obj(
                 "carSequenceNumber" -> 24,
-                "makeModel" -> "company car",
+                "makeModel"         -> "company car",
                 "dateMadeAvailable" -> "2014-06-10",
                 "fuelBenefit" ->
                   Json.obj(
                     "dateMadeAvailable" -> "2017-05-02",
-                    "benefitAmount" -> 500,
-                    "actions" -> Json.obj(
-                      "foo" -> "bar")
+                    "benefitAmount"     -> 500,
+                    "actions"           -> Json.obj("foo" -> "bar")
                   )
               )
             )
@@ -101,8 +110,8 @@ class CompanyCarConnectorSpec extends PlaySpec
 
       val sampleResponse = Json.obj(
         "transaction" -> Json.obj("oid" -> "4958621783d14007b71d55934d5ccca9"),
-        "taxCode" -> "220T",
-        "allowance" -> 1674)
+        "taxCode"     -> "220T",
+        "allowance"   -> 1674)
 
       val mockHttpHandler = mock[HttpHandler]
       when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
@@ -133,7 +142,6 @@ class CompanyCarConnectorSpec extends PlaySpec
       result mustBe expectedResponse
     }
   }
-
 
   def randomNino: Nino = new Generator(new Random).nextNino
 

@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, Wit
 
 import scala.util.Random
 
-class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFormatters{
+class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFormatters {
 
   "companyCarBenefitReads" must {
     "be able to read correct companyCarBenefit json" when {
@@ -32,14 +32,12 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         val json =
           Json.obj(
             "employmentSequenceNumber" -> 1,
-            "grossAmount" -> 3333,
+            "grossAmount"              -> 3333,
             "carDetails" -> Json.arr(
-              Json.obj(
-                "carSequenceNumber" -> 24,
-                "makeModel" -> "Company car",
-                "dateMadeAvailable" -> "2014-06-10")))
+              Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car", "dateMadeAvailable" -> "2014-06-10"))
+          )
 
-        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")),None,None))
+        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe CompanyCarBenefit(1, 3333, companyCarSeq)
       }
 
@@ -47,20 +45,20 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         val json =
           Json.obj(
             "employmentSequenceNumber" -> 1,
-            "grossAmount" -> 3333,
-            "carDetails" -> Json.arr(
-              Json.obj(
-                "carSequenceNumber" -> 24,
-                "makeModel" -> "Company car",
+            "grossAmount"              -> 3333,
+            "carDetails" -> Json.arr(Json.obj(
+              "carSequenceNumber" -> 24,
+              "makeModel"         -> "Company car",
+              "dateMadeAvailable" -> "2014-06-10",
+              "fuelBenefit" -> Json.obj(
+                "benefitAmount"     -> 500,
                 "dateMadeAvailable" -> "2014-06-10",
-                "fuelBenefit" -> Json.obj(
-                  "benefitAmount" -> 500,
-                  "dateMadeAvailable" -> "2014-06-10",
-                  "dateWithdrawn" -> "2017-06-02",
-                  "actions" -> Json.obj(
-                    "foo" -> "bar")))))
+                "dateWithdrawn"     -> "2017-06-02",
+                "actions"           -> Json.obj("foo" -> "bar"))
+            ))
+          )
 
-        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")),None,None))
+        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe
           CompanyCarBenefit(1, 3333, companyCarSeq)
       }
@@ -69,11 +67,11 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         val json =
           Json.obj(
             "employmentSequenceNumber" -> 1,
-            "grossAmount" -> 3333,
+            "grossAmount"              -> 3333,
             "carDetails" -> Json.arr(
               Json.obj(
                 "carSequenceNumber" -> 24,
-                "makeModel" -> "Company car",
+                "makeModel"         -> "Company car",
                 "dateMadeAvailable" -> "2014-06-10",
                 "fuelBenefit" -> Json.obj(
                   "dateMadeAvailable" -> "2017-05-02"
@@ -82,39 +80,41 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
             )
           )
 
-        val companyCarSeq = Seq(CompanyCar(24, "Company car", true, Some(LocalDate.parse("2014-06-10")), Some(LocalDate.parse("2017-05-02")), None))
+        val companyCarSeq = Seq(
+          CompanyCar(
+            24,
+            "Company car",
+            true,
+            Some(LocalDate.parse("2014-06-10")),
+            Some(LocalDate.parse("2017-05-02")),
+            None))
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe
           CompanyCarBenefit(1, 3333, companyCarSeq)
       }
 
       "be able to read correct companyCarBenefit json when company cars is an empty list" in {
         val json =
-          Json.obj(
-            "employmentSequenceNumber" -> 1,
-            "grossAmount" -> 3333,
-            "carDetails" -> Json.arr())
+          Json.obj("employmentSequenceNumber" -> 1, "grossAmount" -> 3333, "carDetails" -> Json.arr())
 
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe CompanyCarBenefit(1, 3333, Nil)
       }
     }
 
-    "throw an error" when{
-      "employmentSequenceNumber is missing"in {
+    "throw an error" when {
+      "employmentSequenceNumber is missing" in {
         val json = Json.obj("grossAmount" -> 3333)
 
         val result = the[JsResultException] thrownBy json.as[CompanyCarBenefit](companyCarBenefitReads)
         result.getMessage must include("'employmentSequenceNumber' is undefined")
       }
-      "grossAmount is missing"in {
+      "grossAmount is missing" in {
         val json = Json.obj("employmentSequenceNumber" -> 1)
 
         val result = the[JsResultException] thrownBy json.as[CompanyCarBenefit](companyCarBenefitReads)
         result.getMessage must include("'grossAmount' is undefined")
       }
       "car details is missing" in {
-        val json = Json.obj(
-          "employmentSequenceNumber" -> 1,
-          "grossAmount" -> 3333)
+        val json = Json.obj("employmentSequenceNumber" -> 1, "grossAmount" -> 3333)
 
         val result = the[JsResultException] thrownBy json.as[CompanyCarBenefit](companyCarBenefitReads)
         result.getMessage must include("'carDetails' is undefined")
@@ -122,46 +122,55 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
     }
   }
 
-  "companyCarReads" must{
-    "read correct Company Car json" when{
-      "there is a valid make model with only mandatory fields complete" in{
-        val json = Json.obj(
-          "carSequenceNumber" -> 24,
-          "makeModel" -> "Company car")
+  "companyCarReads" must {
+    "read correct Company Car json" when {
+      "there is a valid make model with only mandatory fields complete" in {
+        val json = Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car")
 
         json.as[CompanyCar](companyCarReads) mustBe CompanyCar(24, "Company car", false, None, None, None)
       }
-      "there is a valid response with active fuel benefit" in{
+      "there is a valid response with active fuel benefit" in {
         val json =
           Json.obj(
             "carSequenceNumber" -> 24,
-            "makeModel" -> "Company car",
+            "makeModel"         -> "Company car",
             "dateMadeAvailable" -> "2013-06-10",
             "fuelBenefit" -> Json.obj(
               "dateMadeAvailable" -> "2014-06-10",
-              "benefitAmount" -> 2222,
-              "actions" -> Json.obj(
-                "remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove")))
+              "benefitAmount"     -> 2222,
+              "actions"           -> Json.obj("remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove"))
+          )
 
-        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(24, "Company car", true, Some(LocalDate.parse("2013-06-10")),
-          Some(LocalDate.parse("2014-06-10")), None)
+        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
+          24,
+          "Company car",
+          true,
+          Some(LocalDate.parse("2013-06-10")),
+          Some(LocalDate.parse("2014-06-10")),
+          None)
       }
-      "there is a valid response with car benefit withdrawn date" in{
+      "there is a valid response with car benefit withdrawn date" in {
         val json =
           Json.obj(
             "carSequenceNumber" -> 24,
-            "makeModel" -> "Company car",
+            "makeModel"         -> "Company car",
             "dateMadeAvailable" -> "2013-06-10",
-            "dateWithdrawn" -> "2014-06-16",
+            "dateWithdrawn"     -> "2014-06-16",
             "fuelBenefit" -> Json.obj(
               "dateMadeAvailable" -> "2014-06-10",
-              "dateWithdrawn" -> "2014-06-14",
-              "benefitAmount" -> 2222,
-              "actions" -> Json.obj(
-                "remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove")))
+              "dateWithdrawn"     -> "2014-06-14",
+              "benefitAmount"     -> 2222,
+              "actions"           -> Json.obj("remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove")
+            )
+          )
 
-        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(24, "Company car", false, Some(LocalDate.parse("2013-06-10")),
-          None, Some(LocalDate.parse("2014-06-16")))
+        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
+          24,
+          "Company car",
+          false,
+          Some(LocalDate.parse("2013-06-10")),
+          None,
+          Some(LocalDate.parse("2014-06-16")))
       }
     }
 
@@ -182,25 +191,22 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
 
   "companyCarRemoveWrites" must {
     "create json as per API spec" when {
-      "provided with minimal details" in  {
+      "provided with minimal details" in {
         val removeCarAndFuel = WithdrawCarAndFuel(1, new LocalDate("2017-01-01"), None)
         val json = Json.toJson(removeCarAndFuel)(companyCarRemoveWrites)
-        val expectedJson = Json.obj(
-          "version" -> 1,
-          "removeCarAndFuel" -> Json.obj(
-            "car" -> Json.obj("withdrawDate" -> "2017-01-01")))
+        val expectedJson =
+          Json.obj("version" -> 1, "removeCarAndFuel" -> Json.obj("car" -> Json.obj("withdrawDate" -> "2017-01-01")))
 
         json mustBe expectedJson
       }
 
-      "provided with all the details" in  {
+      "provided with all the details" in {
         val removeCarAndFuel = WithdrawCarAndFuel(1, new LocalDate("2017-01-01"), Some(new LocalDate("2017-02-03")))
         val json = Json.toJson(removeCarAndFuel)(companyCarRemoveWrites)
         val expectedJson = Json.obj(
           "version" -> 1,
-          "removeCarAndFuel" -> Json.obj(
-            "car" -> Json.obj("withdrawDate" -> "2017-01-01"),
-            "fuel" -> Json.obj("withdrawDate" -> "2017-02-03")))
+          "removeCarAndFuel" -> Json
+            .obj("car" -> Json.obj("withdrawDate" -> "2017-01-01"), "fuel" -> Json.obj("withdrawDate" -> "2017-02-03")))
 
         json mustBe expectedJson
       }

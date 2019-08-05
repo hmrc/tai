@@ -38,10 +38,7 @@ import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.util.Random
 
-class CompanyCarBenefitControllerSpec
-  extends PlaySpec
-    with MockitoSugar
-    with MockAuthenticationPredicate{
+class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "companyCarBenefits" must {
 
@@ -74,7 +71,14 @@ class CompanyCarBenefitControllerSpec
           CompanyCarBenefit(
             10,
             1000,
-            Seq(CompanyCar(10, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")), None, None)),
+            Seq(
+              CompanyCar(
+                10,
+                "Company car",
+                hasActiveFuelBenefit = false,
+                Some(LocalDate.parse("2014-06-10")),
+                None,
+                None)),
             sampleVersion))
 
         val mockCompanyCarService = mock[BenefitsService]
@@ -87,19 +91,18 @@ class CompanyCarBenefitControllerSpec
         status(result) mustBe OK
         val expectedJson =
           Json.obj(
-            "data" -> Json.obj(
-              "companyCarBenefits" -> Json.arr(
-                Json.obj(
-                  "employmentSeqNo" -> 10,
-                  "grossAmount" -> 1000,
-                  "companyCars" -> Json.arr(
-                    Json.obj(
-                      "carSeqNo" -> 10,
-                      "makeModel" -> "Company car",
-                      "hasActiveFuelBenefit" -> false,
-                      "dateMadeAvailable" -> "2014-06-10")),
-                  "version" -> 1))),
-            "links" -> Json.arr())
+            "data" -> Json.obj("companyCarBenefits" -> Json.arr(Json.obj(
+              "employmentSeqNo" -> 10,
+              "grossAmount"     -> 1000,
+              "companyCars" -> Json.arr(Json.obj(
+                "carSeqNo"             -> 10,
+                "makeModel"            -> "Company car",
+                "hasActiveFuelBenefit" -> false,
+                "dateMadeAvailable"    -> "2014-06-10")),
+              "version" -> 1
+            ))),
+            "links" -> Json.arr()
+          )
 
         contentAsJson(result) mustBe expectedJson
       }
@@ -109,8 +112,16 @@ class CompanyCarBenefitControllerSpec
           CompanyCarBenefit(
             10,
             1000,
-            Seq(CompanyCar(10, "Company car", hasActiveFuelBenefit = true, Some(LocalDate.parse("2014-06-10")),Some(LocalDate.parse("2014-06-10")), None)),
-            sampleVersion))
+            Seq(
+              CompanyCar(
+                10,
+                "Company car",
+                hasActiveFuelBenefit = true,
+                Some(LocalDate.parse("2014-06-10")),
+                Some(LocalDate.parse("2014-06-10")),
+                None)),
+            sampleVersion
+          ))
 
         val mockCompanyCarService = mock[BenefitsService]
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
@@ -122,20 +133,20 @@ class CompanyCarBenefitControllerSpec
         status(result) mustBe OK
 
         val expectedJson = Json.obj(
-          "data"-> Json.obj(
-            "companyCarBenefits"-> Json.arr(
-              Json.obj(
-                "employmentSeqNo" -> 10,
-                "grossAmount"->1000,
-                "companyCars"-> Json.arr(
-                  Json.obj(
-                    "carSeqNo"->10,
-                    "makeModel"->"Company car",
-                    "hasActiveFuelBenefit"-> true,
-                    "dateMadeAvailable"->"2014-06-10",
-                    "dateActiveFuelBenefitMadeAvailable"->"2014-06-10")),
-                "version" -> 1))),
-          "links" -> Json.arr())
+          "data" -> Json.obj("companyCarBenefits" -> Json.arr(Json.obj(
+            "employmentSeqNo" -> 10,
+            "grossAmount"     -> 1000,
+            "companyCars" -> Json.arr(Json.obj(
+              "carSeqNo"                           -> 10,
+              "makeModel"                          -> "Company car",
+              "hasActiveFuelBenefit"               -> true,
+              "dateMadeAvailable"                  -> "2014-06-10",
+              "dateActiveFuelBenefitMadeAvailable" -> "2014-06-10"
+            )),
+            "version" -> 1
+          ))),
+          "links" -> Json.arr()
+        )
 
         contentAsJson(result) mustBe expectedJson
 
@@ -172,7 +183,14 @@ class CompanyCarBenefitControllerSpec
         val companyCarBenefit = CompanyCarBenefit(
           10,
           1000,
-          Seq(CompanyCar(10, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")),None, None)),
+          Seq(
+            CompanyCar(
+              10,
+              "Company car",
+              hasActiveFuelBenefit = false,
+              Some(LocalDate.parse("2014-06-10")),
+              None,
+              None)),
           sampleVersion)
 
         val mockCompanyCarService = mock[BenefitsService]
@@ -187,15 +205,17 @@ class CompanyCarBenefitControllerSpec
           Json.obj(
             "data" -> Json.obj(
               "employmentSeqNo" -> 10,
-              "grossAmount" -> 1000,
+              "grossAmount"     -> 1000,
               "companyCars" -> Json.arr(
                 Json.obj(
-                  "carSeqNo" -> 10,
-                  "makeModel" -> "Company car",
+                  "carSeqNo"             -> 10,
+                  "makeModel"            -> "Company car",
                   "hasActiveFuelBenefit" -> false,
-                  "dateMadeAvailable" -> "2014-06-10")),
-              "version" -> 1),
-            "links" -> Json.arr())
+                  "dateMadeAvailable"    -> "2014-06-10")),
+              "version" -> 1
+            ),
+            "links" -> Json.arr()
+          )
 
         contentAsJson(result) mustBe expectedJson
       }
@@ -207,8 +227,8 @@ class CompanyCarBenefitControllerSpec
       "the user is not logged in" in {
         val nino = randomNino
         val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, 1)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).
-          withHeaders(("content-type", "application/json")))
+        val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, 1)(
+          FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).withHeaders(("content-type", "application/json")))
 
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -216,7 +236,7 @@ class CompanyCarBenefitControllerSpec
       }
     }
 
-    "return OK when called with correct parameters" in{
+    "return OK when called with correct parameters" in {
       val carWithdrawDate = new LocalDate(2017, 4, 24)
       val fuelWithdrawDate = Some(new LocalDate(2017, 4, 24))
       val nino = randomNino
@@ -227,11 +247,15 @@ class CompanyCarBenefitControllerSpec
         .withHeaders(("content-type", "application/json"))
 
       val mockCompanyCarService = mock[BenefitsService]
-      when(mockCompanyCarService.withdrawCompanyCarAndFuel(Matchers.eq(nino),Matchers.eq(employmentSeqNum),
-        Matchers.eq(carSeqNum), Matchers.eq(removeCarAndFuel))(any())).thenReturn(Future.successful("123456"))
+      when(
+        mockCompanyCarService.withdrawCompanyCarAndFuel(
+          Matchers.eq(nino),
+          Matchers.eq(employmentSeqNum),
+          Matchers.eq(carSeqNum),
+          Matchers.eq(removeCarAndFuel))(any())).thenReturn(Future.successful("123456"))
 
       val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-      val result = sut.withdrawCompanyCarAndFuel(nino,employmentSeqNum, carSeqNum)(fakeRequest)
+      val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum)(fakeRequest)
 
       status(result) mustBe OK
     }

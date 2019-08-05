@@ -30,11 +30,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
 @Singleton
-class BenefitsController @Inject()(benefitService: BenefitsService,
-                                   authentication: AuthenticationPredicate)
-  extends BaseController
-    with ApiFormats
-    with ControllerErrorHandler{
+class BenefitsController @Inject()(benefitService: BenefitsService, authentication: AuthenticationPredicate)
+    extends BaseController with ApiFormats with ControllerErrorHandler {
 
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     benefitService.benefits(nino, taxYear).map { benefitsFromService =>
@@ -42,14 +39,12 @@ class BenefitsController @Inject()(benefitService: BenefitsService,
     } recoverWith taxAccountErrorHandler
   }
 
-  def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = authentication.async(parse.json){
+  def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
-      withJsonBody[RemoveCompanyBenefit] {
-        removeCompanyBenefit =>
-          benefitService.removeCompanyBenefits(nino, empId, removeCompanyBenefit) map (envelopeId => {
-            Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-          })
+      withJsonBody[RemoveCompanyBenefit] { removeCompanyBenefit =>
+        benefitService.removeCompanyBenefits(nino, empId, removeCompanyBenefit) map (envelopeId => {
+          Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        })
       }
   }
 }
-

@@ -130,7 +130,7 @@ class TaxYearSpec extends PlaySpec {
       ex.getMessage mustBe "requirement failed: Invalid year"
     }
 
-    "not thrown an exception when year is valid" in{
+    "not thrown an exception when year is valid" in {
       TaxYear("17") mustBe TaxYear(2017)
     }
   }

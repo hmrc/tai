@@ -43,14 +43,15 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
   val cacheConfig = mock[CacheMetricsConfig]
   val iabdConnector = mock[IabdConnector]
 
-
   "IABD repository" must {
     "return json" when {
       "data is present in cache" in {
 
         val cache = new Caching(cacheConnector, metrics, cacheConfig)
-        when(iabdConnector.iabds(Matchers.eq(nino), Matchers.eq(TaxYear()))(any())).thenReturn(Future.successful(jsonAfterFormat))
-        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}"))).thenReturn(Future.successful(Some(jsonAfterFormat)))
+        when(iabdConnector.iabds(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+          .thenReturn(Future.successful(jsonAfterFormat))
+        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}")))
+          .thenReturn(Future.successful(Some(jsonAfterFormat)))
 
         val sut = createTestCache(cache, iabdConnector)
 
@@ -61,9 +62,9 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
       "data is not present in cache" in {
         val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}"))).thenReturn(Future.successful(None))
-        when(cacheConnector.createOrUpdateJson(any(), any(), any())).
-          thenReturn(Future.successful(jsonAfterFormat))
+        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}")))
+          .thenReturn(Future.successful(None))
+        when(cacheConnector.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
         when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
 
         val sut = createTestCache(cache, iabdConnector)
@@ -75,40 +76,38 @@ class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants 
     }
   }
 
-
-
   private val jsonFromIabdApi = Json.arr(
     Json.obj(
-      "nino" -> nino.withoutSuffix,
-      "taxYear" -> 2017,
-      "type" -> 10,
-      "source" -> 15,
-      "grossAmount" -> JsNull,
-      "receiptDate" -> JsNull,
-      "captureDate" -> "10/04/2017",
+      "nino"            -> nino.withoutSuffix,
+      "taxYear"         -> 2017,
+      "type"            -> 10,
+      "source"          -> 15,
+      "grossAmount"     -> JsNull,
+      "receiptDate"     -> JsNull,
+      "captureDate"     -> "10/04/2017",
       "typeDescription" -> "Total gift aid Payments",
-      "netAmount" -> 100
+      "netAmount"       -> 100
     ),
     Json.obj(
-      "nino" -> nino.withoutSuffix,
+      "nino"                     -> nino.withoutSuffix,
       "employmentSequenceNumber" -> 1,
-      "taxYear" -> 2017,
-      "type" -> 27,
-      "source" -> 15,
-      "grossAmount" -> JsNull,
-      "receiptDate" -> JsNull,
-      "captureDate" -> "10/04/2017",
-      "typeDescription" -> "Total gift aid Payments",
-      "netAmount" -> 100
+      "taxYear"                  -> 2017,
+      "type"                     -> 27,
+      "source"                   -> 15,
+      "grossAmount"              -> JsNull,
+      "receiptDate"              -> JsNull,
+      "captureDate"              -> "10/04/2017",
+      "typeDescription"          -> "Total gift aid Payments",
+      "netAmount"                -> 100
     )
   )
 
   private val jsonAfterFormat = Json.arr(
     Json.obj(
-      "nino" -> nino.withoutSuffix,
+      "nino"                     -> nino.withoutSuffix,
       "employmentSequenceNumber" -> 1,
-      "source" -> 15,
-      "type" -> 27
+      "source"                   -> 15,
+      "type"                     -> 27
     )
   )
 
