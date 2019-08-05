@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
@@ -104,7 +104,13 @@ case class TaxCodeIncome(componentType:TaxComponentType,
                          inYearAdjustmentIntoCYPlusOne:BigDecimal,
                          iabdUpdateSource: Option[IabdUpdateSource] = None,
                          updateNotificationDate: Option[LocalDate] = None,
-                         updateActionDate: Option[LocalDate] = None)
+                         updateActionDate: Option[LocalDate] = None) {
+
+  lazy val taxCodeWithEmergencySuffix: String = basisOperation match {
+    case Week1Month1BasisOperation => taxCode + TaiConstants.EmergencyTaxCode
+    case _ => taxCode
+  }
+}
 
 object TaxCodeIncome {
   implicit val format: Format[TaxCodeIncome] = Json.format[TaxCodeIncome]

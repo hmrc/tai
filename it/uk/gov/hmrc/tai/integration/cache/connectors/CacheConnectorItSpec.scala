@@ -18,7 +18,7 @@ import scala.language.postfixOps
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with MongoFormatter with MockitoSugar {
+class \CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with MongoFormatter with MockitoSugar {
 
   "Cache Connector" should {
     "insert and read the data from mongodb" when {

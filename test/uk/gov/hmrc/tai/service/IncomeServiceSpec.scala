@@ -70,10 +70,17 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
   "taxCodeIncome" must {
     "return the list of taxCodeIncomes for passed nino" in {
-      val taxCodeIncomes = Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-        "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)),
-        TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-          "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0)))
+      val taxCodeIncome1 = TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
+        "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0))
+
+      val taxCodeIncome2 = TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
+        "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0))
+
+      val taxCodeIncomes = Seq(taxCodeIncome1, taxCodeIncome2)
+
+      val taxCodeIncome3 = taxCodeIncome1.copy(taxCode = taxCodeIncome1.taxCode + "X")
+
+      val taxCodeIncomesResult = Seq(taxCodeIncome3, taxCodeIncome2)
 
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
@@ -82,7 +89,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       val SUT = createSUT(incomeRepository = mockIncomeRepository)
       val result = Await.result(SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()), 5 seconds)
 
-      result mustBe taxCodeIncomes
+      result mustBe taxCodeIncomesResult
     }
   }
 
@@ -214,7 +221,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             employmentId = Some(1),
             amount = 1100,
             description = "PensionIncome",
-            taxCode = "1150L",
+            taxCode = "1150LX",
             name = "Employer1",
             basisOperation = Week1Month1BasisOperation,
             status = Live,
