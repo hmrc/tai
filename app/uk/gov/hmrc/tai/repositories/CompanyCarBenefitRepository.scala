@@ -28,17 +28,17 @@ import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.util.MongoConstants
 
 @Singleton
-class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector,
-                                            companyCarConnector: CompanyCarConnector) extends MongoConstants {
+class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector)
+    extends MongoConstants {
 
-  def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
+  def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     cacheConnector.find[Seq[CompanyCarBenefit]](fetchSessionId(hc), CarBenefitKey) flatMap {
       case None => {
         val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)
         val version = companyCarConnector.ninoVersion(nino)
 
         val companyCarBenefitsWithVersion = for {
-          cc <- companyCarBenefits
+          cc  <- companyCarBenefits
           ver <- version
         } yield cc.map(cc => CompanyCarBenefit(cc.employmentSeqNo, cc.grossAmount, cc.companyCars, Some(ver)))
 
@@ -47,10 +47,8 @@ class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector,
         }
       }
       case Some(seq) => Future.successful(seq)
-      }
-  }
+    }
 
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String = {
+  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
     headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-  }
 }

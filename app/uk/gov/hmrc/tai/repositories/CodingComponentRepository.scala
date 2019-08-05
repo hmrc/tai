@@ -28,15 +28,17 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class CodingComponentRepository @Inject()(taxAccountRepository: TaxAccountRepository) extends TaxAccountHodFormatters
-    with TaxCodeIncomeHodFormatters {
+class CodingComponentRepository @Inject()(taxAccountRepository: TaxAccountRepository)
+    extends TaxAccountHodFormatters with TaxCodeIncomeHodFormatters {
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
-    taxAccountRepository.taxAccount(nino, year)
+    taxAccountRepository
+      .taxAccount(nino, year)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
 
-  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
-    taxAccountRepository.taxAccountForTaxCodeId(nino, taxCodeId)
+  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(
+    implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
+    taxAccountRepository
+      .taxAccountForTaxCodeId(nino, taxCodeId)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
-  }
 }

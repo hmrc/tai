@@ -29,9 +29,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector) extends MongoConstants with IabdHodFormatters {
+class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)
+    extends MongoConstants with IabdHodFormatters {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    cache.cacheFromApi(s"$IabdMongoKey${taxYear.year}", iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)))
-  }
+  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+    cache.cacheFromApi(
+      s"$IabdMongoKey${taxYear.year}",
+      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)))
 }

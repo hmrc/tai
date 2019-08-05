@@ -26,8 +26,7 @@ import uk.gov.hmrc.tai.model.templates.IncorrectBankAccount
 
 import scala.util.Random
 
-
-class IncorrectBankAccountIformSpec extends PlaySpec{
+class IncorrectBankAccountIformSpec extends PlaySpec {
 
   "Incorrect Bank Account Iform" must {
     "display Logo" in {
@@ -47,17 +46,23 @@ class IncorrectBankAccountIformSpec extends PlaySpec{
 
       val bankAndBuildingIncorrect = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
 
-      bankAndBuildingIncorrect.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that is incorrect?"
+      bankAndBuildingIncorrect
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that is incorrect?"
       bankAndBuildingIncorrect.select("td:nth-of-type(2)").text() mustBe "Yes"
 
       val bankAndBuildingMissing = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
 
-      bankAndBuildingMissing.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that is missing?"
+      bankAndBuildingMissing
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that is missing?"
       bankAndBuildingMissing.select("td:nth-of-type(2)").text() mustBe "No"
 
       val bankAndBuildingEnded = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
 
-      bankAndBuildingEnded.select("td:nth-of-type(1)").text() mustBe "Do you have UK bank or building society account interest that has ended?"
+      bankAndBuildingEnded
+        .select("td:nth-of-type(1)")
+        .text() mustBe "Do you have UK bank or building society account interest that has ended?"
       bankAndBuildingEnded.select("td:nth-of-type(2)").text() mustBe "No"
     }
 
@@ -69,13 +74,23 @@ class IncorrectBankAccountIformSpec extends PlaySpec{
       val endSection = doc.select("table:nth-of-type(4) > tbody")
 
       endSection.select("tr:nth-of-type(1) td:nth-of-type(1)").text() mustBe "UK bank or building society name"
-      endSection.select("tr:nth-of-type(1) td:nth-of-type(2)").text() mustBe incorrectBankAccount.bankAccount.bankName.get
+      endSection
+        .select("tr:nth-of-type(1) td:nth-of-type(2)")
+        .text() mustBe incorrectBankAccount.bankAccount.bankName.get
       endSection.select("tr:nth-of-type(2) td:nth-of-type(1)").text() mustBe "Account holder's name"
-      endSection.select("tr:nth-of-type(2) td:nth-of-type(2)").text() mustBe incorrectBankAccount.personDetails.firstName
+      endSection
+        .select("tr:nth-of-type(2) td:nth-of-type(2)")
+        .text() mustBe incorrectBankAccount.personDetails.firstName
       endSection.select("tr:nth-of-type(3) td:nth-of-type(1)").text() mustBe "Sort code"
-      endSection.select("tr:nth-of-type(3) td:nth-of-type(2)").text() mustBe incorrectBankAccount.bankAccount.sortCode.get
-      endSection.select("tr:nth-of-type(4) td:nth-of-type(1)").text() mustBe "Account number of the UK bank or building society"
-      endSection.select("tr:nth-of-type(4) td:nth-of-type(2)").text() mustBe incorrectBankAccount.bankAccount.accountNumber.get
+      endSection
+        .select("tr:nth-of-type(3) td:nth-of-type(2)")
+        .text() mustBe incorrectBankAccount.bankAccount.sortCode.get
+      endSection
+        .select("tr:nth-of-type(4) td:nth-of-type(1)")
+        .text() mustBe "Account number of the UK bank or building society"
+      endSection
+        .select("tr:nth-of-type(4) td:nth-of-type(2)")
+        .text() mustBe incorrectBankAccount.bankAccount.accountNumber.get
       endSection.select("tr:nth-of-type(5) td:nth-of-type(1)").text() mustBe "Is this a joint account?"
       endSection.select("tr:nth-of-type(5) td:nth-of-type(2)").text() mustBe "No"
       endSection.select("tr:nth-of-type(6) td:nth-of-type(1)").text() mustBe "Tell us what is incorrect and why"
@@ -97,9 +112,14 @@ class IncorrectBankAccountIformSpec extends PlaySpec{
   private val nino: Nino = new Generator(new Random).nextNino
   private val dateOfBirth = LocalDate.parse("2017-02-01")
 
-  private val personDetails = Person(Nino(nino.nino), "test", "tester", Some(dateOfBirth),
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
     Address("line1", "line2", "line3", "postcode", "country"))
   private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
   private val incorrectBankAccount = IncorrectBankAccount(personDetails, TaxYear(), bankAccount)
-  private def incorrectBankAccountTemplate(viewModel: IncorrectBankAccount = incorrectBankAccount) = uk.gov.hmrc.tai.templates.html.IncorrectBankAccountIform(viewModel)
+  private def incorrectBankAccountTemplate(viewModel: IncorrectBankAccount = incorrectBankAccount) =
+    uk.gov.hmrc.tai.templates.html.IncorrectBankAccountIform(viewModel)
 }

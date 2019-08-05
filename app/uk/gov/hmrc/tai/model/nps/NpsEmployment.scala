@@ -20,38 +20,51 @@ import uk.gov.hmrc.tai.model.helpers.IncomeHelper
 import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
 import play.api.libs.json._
 
-case class NpsEmployment(sequenceNumber: Int,
-                         startDate: NpsDate,
-                         endDate: Option[NpsDate],
-                         taxDistrictNumber: String,
-                         payeNumber: String,
-                         employerName: Option[String],
-                         employmentType: Int,
-                         employmentStatus: Option[Int] = None,
-                         worksNumber: Option[String]=None,
-                         jobTitle: Option[String] = None,
-                         startingTaxCode: Option[String]=None,
-                         receivingJobseekersAllowance: Option[Boolean] = None,
-                         receivingOccupationalPension: Option[Boolean] = None,
-                         otherIncomeSourceIndicator: Option[Boolean] = None,
-                         payrolledTaxYear: Option[Boolean] = None,
-                         payrolledTaxYear1: Option[Boolean] = None,
-                         cessationPayThisEmployment: Option[BigDecimal]=None) {
+case class NpsEmployment(
+  sequenceNumber: Int,
+  startDate: NpsDate,
+  endDate: Option[NpsDate],
+  taxDistrictNumber: String,
+  payeNumber: String,
+  employerName: Option[String],
+  employmentType: Int,
+  employmentStatus: Option[Int] = None,
+  worksNumber: Option[String] = None,
+  jobTitle: Option[String] = None,
+  startingTaxCode: Option[String] = None,
+  receivingJobseekersAllowance: Option[Boolean] = None,
+  receivingOccupationalPension: Option[Boolean] = None,
+  otherIncomeSourceIndicator: Option[Boolean] = None,
+  payrolledTaxYear: Option[Boolean] = None,
+  payrolledTaxYear1: Option[Boolean] = None,
+  cessationPayThisEmployment: Option[BigDecimal] = None) {
 
-  def toNpsIncomeSource(estimatedPay : BigDecimal): NpsIncomeSource = {
-    val payAndTax = NpsTax(totalIncome=Some(new NpsComponent(amount=Some(estimatedPay))))
+  def toNpsIncomeSource(estimatedPay: BigDecimal): NpsIncomeSource = {
+    val payAndTax = NpsTax(totalIncome = Some(new NpsComponent(amount = Some(estimatedPay))))
 
-    NpsIncomeSource(name = employerName, taxCode=None, employmentId=Some(sequenceNumber),
-      employmentStatus = employmentStatus, employmentType = Some(employmentType), payAndTax=Some(payAndTax),
-      pensionIndicator = receivingOccupationalPension, otherIncomeSourceIndicator=otherIncomeSourceIndicator,
-      jsaIndicator=receivingJobseekersAllowance)
+    NpsIncomeSource(
+      name = employerName,
+      taxCode = None,
+      employmentId = Some(sequenceNumber),
+      employmentStatus = employmentStatus,
+      employmentType = Some(employmentType),
+      payAndTax = Some(payAndTax),
+      pensionIndicator = receivingOccupationalPension,
+      otherIncomeSourceIndicator = otherIncomeSourceIndicator,
+      jsaIndicator = receivingJobseekersAllowance
+    )
 
   }
 
-  def toTaxCodeIncomeSummary(estimatedPay : BigDecimal): TaxCodeIncomeSummary = {
-    val payAndTax = Tax(totalIncome=Some(estimatedPay))
-    TaxCodeIncomeSummary(name = employerName.getOrElse(""), taxCode=startingTaxCode.getOrElse(""),
-      employmentId=Some(sequenceNumber), tax=payAndTax, isLive=IncomeHelper.isLive(employmentStatus))
+  def toTaxCodeIncomeSummary(estimatedPay: BigDecimal): TaxCodeIncomeSummary = {
+    val payAndTax = Tax(totalIncome = Some(estimatedPay))
+    TaxCodeIncomeSummary(
+      name = employerName.getOrElse(""),
+      taxCode = startingTaxCode.getOrElse(""),
+      employmentId = Some(sequenceNumber),
+      tax = payAndTax,
+      isLive = IncomeHelper.isLive(employmentStatus)
+    )
   }
 }
 

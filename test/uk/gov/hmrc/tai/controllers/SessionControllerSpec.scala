@@ -30,9 +30,7 @@ import uk.gov.hmrc.tai.repositories.SessionRepository
 
 import scala.concurrent.Future
 
-class SessionControllerSpec extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate{
+class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Session Controller" must {
 
@@ -73,6 +71,8 @@ class SessionControllerSpec extends PlaySpec
     }
   }
 
-  private def createSUT(sessionRepository: SessionRepository, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(
+    sessionRepository: SessionRepository,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new SessionController(sessionRepository, authentication)
 }

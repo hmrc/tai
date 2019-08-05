@@ -39,10 +39,7 @@ import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import scala.concurrent.Future
 import scala.util.Random
 
-class BenefitsControllerSpec
-  extends PlaySpec
-    with MockitoSugar
-    with MockAuthenticationPredicate{
+class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "benefits" must {
     "return Benefits case class with empty lists" when {
@@ -60,7 +57,7 @@ class BenefitsControllerSpec
           Json.obj(
             "data" -> Json.obj(
               "companyCarBenefits" -> Json.arr(),
-              "otherBenefits" -> Json.arr()
+              "otherBenefits"      -> Json.arr()
             ),
             "links" -> Json.arr())
 
@@ -84,8 +81,17 @@ class BenefitsControllerSpec
         val nino = randomNino
         val mockBenefitService = mock[BenefitsService]
         val carBenefits = Seq(
-          CompanyCarBenefit(12, 200, Seq(
-            CompanyCar(10, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")), None, None)),
+          CompanyCarBenefit(
+            12,
+            200,
+            Seq(
+              CompanyCar(
+                10,
+                "Company car",
+                hasActiveFuelBenefit = false,
+                Some(LocalDate.parse("2014-06-10")),
+                None,
+                None)),
             Some(123)),
           CompanyCarBenefit(0, 800, Seq(), None)
         )
@@ -107,29 +113,30 @@ class BenefitsControllerSpec
               "companyCarBenefits" -> Json.arr(
                 Json.obj(
                   "employmentSeqNo" -> 12,
-                  "grossAmount" -> 200,
+                  "grossAmount"     -> 200,
                   "companyCars" -> Json.arr(
                     Json.obj(
-                      "carSeqNo" -> 10,
-                      "makeModel" -> "Company car",
+                      "carSeqNo"             -> 10,
+                      "makeModel"            -> "Company car",
                       "hasActiveFuelBenefit" -> false,
-                      "dateMadeAvailable" -> "2014-06-10")),
-                  "version" -> 123),
+                      "dateMadeAvailable"    -> "2014-06-10")),
+                  "version" -> 123
+                ),
                 Json.obj(
                   "employmentSeqNo" -> 0,
-                  "grossAmount" -> 800,
-                  "companyCars" -> Json.arr()
+                  "grossAmount"     -> 800,
+                  "companyCars"     -> Json.arr()
                 )
               ),
               "otherBenefits" -> Json.arr(
                 Json.obj(
-                  "benefitType" -> "Accommodation",
+                  "benefitType"  -> "Accommodation",
                   "employmentId" -> 126,
-                  "amount" -> 111
+                  "amount"       -> 111
                 ),
                 Json.obj(
                   "benefitType" -> "Assets",
-                  "amount" -> 222
+                  "amount"      -> 222
                 )
               )
             ),
@@ -145,17 +152,27 @@ class BenefitsControllerSpec
     "return an envelope Id" when {
       "called with valid remove company benefit request" in {
         val envelopeId = "envelopeId"
-        val removeCompanyBenefit = RemoveCompanyBenefit("Mileage", "Remove Company Benefit", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
+        val removeCompanyBenefit = RemoveCompanyBenefit(
+          "Mileage",
+          "Remove Company Benefit",
+          "On Or After 6 April 2017",
+          Some("1200"),
+          "Yes",
+          Some("123456789"))
         val nino = randomNino
         val employmentId = 1
 
         val mockBenefitService = mock[BenefitsService]
-        when(mockBenefitService.removeCompanyBenefits(Matchers.eq(nino), Matchers.eq(employmentId), Matchers.eq(removeCompanyBenefit))(any())).
-          thenReturn(Future.successful(envelopeId))
+        when(
+          mockBenefitService.removeCompanyBenefits(
+            Matchers.eq(nino),
+            Matchers.eq(employmentId),
+            Matchers.eq(removeCompanyBenefit))(any())).thenReturn(Future.successful(envelopeId))
 
         val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
-        val result = sut.removeCompanyBenefits(nino, employmentId)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit)).
-          withHeaders(("content-type", "application/json")))
+        val result = sut.removeCompanyBenefits(nino, employmentId)(
+          FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -166,8 +183,8 @@ class BenefitsControllerSpec
       "the user is not logged in" in {
         val nino = randomNino
         val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.removeCompanyBenefits(nino, 1)(FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).
-          withHeaders(("content-type", "application/json")))
+        val result = sut.removeCompanyBenefits(nino, 1)(
+          FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).withHeaders(("content-type", "application/json")))
 
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -178,4 +195,3 @@ class BenefitsControllerSpec
 
   def randomNino = new Generator(new Random).nextNino
 }
-

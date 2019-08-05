@@ -76,11 +76,13 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(Seq(bankAccount)))
 
         val mockAuditor = mock[Auditor]
-        doNothing().when(mockAuditor)
+        doNothing()
+          .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-        val result = Await.result(sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017,6,20), Some(0))), 5.seconds)
+        val result = Await
+          .result(sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))), 5.seconds)
 
         result mustBe "1"
         verify(mockAuditor)
@@ -96,7 +98,8 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
         the[BankAccountNotFound] thrownBy
-          Await.result(sut.closeBankAccount(nino, 49, CloseAccountRequest(new LocalDate(2017,6,20), Some(0))), 5.seconds)
+          Await
+            .result(sut.closeBankAccount(nino, 49, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))), 5.seconds)
       }
     }
   }
@@ -113,7 +116,8 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful("1"))
 
         val mockAuditor = mock[Auditor]
-        doNothing().when(mockAuditor)
+        doNothing()
+          .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
@@ -150,7 +154,8 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful("1"))
 
         val mockAuditor = mock[Auditor]
-        doNothing().when(mockAuditor)
+        doNothing()
+          .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
@@ -158,7 +163,7 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
 
         result mustBe "1"
         verify(mockAuditor)
-            .sendDataEvent(Matchers.eq(IFormConstants.UpdateBankAccountRequest), any())(any())
+          .sendDataEvent(Matchers.eq(IFormConstants.UpdateBankAccountRequest), any())(any())
       }
     }
 
@@ -187,13 +192,15 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful("1"))
 
       val mockAuditor = mock[Auditor]
-      doNothing().when(mockAuditor)
+      doNothing()
+        .when(mockAuditor)
         .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
       Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
 
-      val fakePerson = Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
+      val fakePerson =
+        Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
       val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
 
       testIform must include("Correct amount of gross interest")
@@ -201,12 +208,15 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
       testIform must include("Tell us what is incorrect and why")
       testIform must include("My gross interest is wrong")
 
-      testIform must not include("I never had this account")
+      testIform must not include ("I never had this account")
     }
   }
 
   private val bankAccount = BankAccount(1, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
   private val nino = new Generator(new Random).nextNino
-  private def createSUT(bbsiRepository: BbsiRepository, iFormSubmissionService: IFormSubmissionService, auditor: Auditor) =
+  private def createSUT(
+    bbsiRepository: BbsiRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    auditor: Auditor) =
     new BbsiService(bbsiRepository, iFormSubmissionService, auditor)
 }

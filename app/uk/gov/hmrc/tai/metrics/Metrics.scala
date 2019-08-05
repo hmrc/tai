@@ -35,36 +35,38 @@ class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
   val TimerSuffix = "-timer"
 
   val metricDescriptions = Map(
-    APITypes.NpsPersonAPI -> "nps-person",
-    APITypes.NpsTaxAccountAPI -> "nps-tax-account",
-    APITypes.NpsEmploymentAPI -> "nps-employment",
-    APITypes.RTIAPI -> "nps-rti",
-    APITypes.NpsIabdAllAPI -> "nps-iabd-all",
-    APITypes.NpsIabdSpecificAPI -> "nps-iabd-specific",
-    APITypes.NpsIabdUpdateEstPayManualAPI -> "nps-iabd-estPay-manual",
-    APITypes.NpsIabdUpdateEstPayAutoAPI -> "nps-iabd-estPay-auto",
-    APITypes.DesTaxAccountAPI -> "des-tax-account",
-    APITypes.DesIabdAllAPI -> "des-iabd-all",
-    APITypes.DesIabdSpecificAPI -> "des-iabd-specific",
-    APITypes.DesIabdUpdateEstPayManualAPI -> "des-iabd-estPay-manual",
-    APITypes.DesIabdUpdateEstPayAutoAPI -> "des-iabd-estPay-auto",
+    APITypes.NpsPersonAPI                     -> "nps-person",
+    APITypes.NpsTaxAccountAPI                 -> "nps-tax-account",
+    APITypes.NpsEmploymentAPI                 -> "nps-employment",
+    APITypes.RTIAPI                           -> "nps-rti",
+    APITypes.NpsIabdAllAPI                    -> "nps-iabd-all",
+    APITypes.NpsIabdSpecificAPI               -> "nps-iabd-specific",
+    APITypes.NpsIabdUpdateEstPayManualAPI     -> "nps-iabd-estPay-manual",
+    APITypes.NpsIabdUpdateEstPayAutoAPI       -> "nps-iabd-estPay-auto",
+    APITypes.DesTaxAccountAPI                 -> "des-tax-account",
+    APITypes.DesIabdAllAPI                    -> "des-iabd-all",
+    APITypes.DesIabdSpecificAPI               -> "des-iabd-specific",
+    APITypes.DesIabdUpdateEstPayManualAPI     -> "des-iabd-estPay-manual",
+    APITypes.DesIabdUpdateEstPayAutoAPI       -> "des-iabd-estPay-auto",
     APITypes.DesIabdUpdateFlatRateExpensesAPI -> "des-iabd-flat-rate-expenses-update",
-    APITypes.DesIabdGetFlatRateExpensesAPI -> "des-iabd-flat-rate-expenses-get",
+    APITypes.DesIabdGetFlatRateExpensesAPI    -> "des-iabd-flat-rate-expenses-get",
     APITypes.DesIabdUpdateEmployeeExpensesAPI -> "des-iabd-flat-rate-expenses-update",
-    APITypes.DesIabdGetEmployeeExpensesAPI -> "des-iabd-flat-rate-expenses-get",
-    APITypes.PdfServiceAPI -> "pdf-service",
-    APITypes.CompanyCarAPI -> "company-car",
-    APITypes.FusCreateEnvelope -> "create-envelope",
-    APITypes.FusUploadFile -> "file-upload",
-    APITypes.FusCloseEnvelope -> "close-envelope",
-    APITypes.BbsiAPI -> "bbsi",
-    APITypes.TaxCodeChangeAPI -> "tax-code-change",
-    APITypes.TaxAccountHistoryAPI -> "tax-account-history"
+    APITypes.DesIabdGetEmployeeExpensesAPI    -> "des-iabd-flat-rate-expenses-get",
+    APITypes.PdfServiceAPI                    -> "pdf-service",
+    APITypes.CompanyCarAPI                    -> "company-car",
+    APITypes.FusCreateEnvelope                -> "create-envelope",
+    APITypes.FusUploadFile                    -> "file-upload",
+    APITypes.FusCloseEnvelope                 -> "close-envelope",
+    APITypes.BbsiAPI                          -> "bbsi",
+    APITypes.TaxCodeChangeAPI                 -> "tax-code-change",
+    APITypes.TaxAccountHistoryAPI             -> "tax-account-history"
   )
 
   def startTimer(api: APITypes): Context = registry.timer(metricDescriptions(api) + TimerSuffix).time()
-  def incrementSuccessCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + SuccessCounterSuffix).inc()
-  def incrementFailedCounter(api: APITypes): Unit = registry.counter(metricDescriptions(api) + FailureCounterSuffix).inc()
+  def incrementSuccessCounter(api: APITypes): Unit =
+    registry.counter(metricDescriptions(api) + SuccessCounterSuffix).inc()
+  def incrementFailedCounter(api: APITypes): Unit =
+    registry.counter(metricDescriptions(api) + FailureCounterSuffix).inc()
 
   def incrementCacheHitCounter(): Unit = registry.counter(CacheHitCounter).inc()
   def incrementCacheMissCounter(): Unit = registry.counter(CacheMissCounter).inc()

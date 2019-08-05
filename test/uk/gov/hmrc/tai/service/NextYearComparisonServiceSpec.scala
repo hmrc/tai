@@ -34,14 +34,18 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
     val npsIncomeSource = List(
       NpsIncomeSource(
-        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))), employmentStatus = Some(Live.code),
+        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))),
+        employmentStatus = Some(Live.code),
         taxCode = Some("LiveTC")),
       NpsIncomeSource(
-        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))), employmentStatus = Some(Ceased.code),
+        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))),
+        employmentStatus = Some(Ceased.code),
         taxCode = Some("CeasedTaxCode")),
       NpsIncomeSource(
-        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))), employmentStatus = Some(PotentiallyCeased.code),
-        taxCode = Some("PotentiallyCeasedTaxCode"))
+        payAndTax = Some(NpsTax(totalIncome = Some(NpsComponent(Some(totalIncome))))),
+        employmentStatus = Some(PotentiallyCeased.code),
+        taxCode = Some("PotentiallyCeasedTaxCode")
+      )
     )
 
     "set ceased employments TaxCode to 'Not applicable' and set their PayAndTax total income amount to zero. " +
@@ -49,16 +53,19 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val estPayAmount = BigDecimal(15000)
 
-      val npsIabdSummaries = List(NpsIabdSummary(amount = Some(estPayAmount), `type` = Some(IabdType.NewEstimatedPay.code)))
-      val nonSavings = NpsTax(totalIncome = Some(NpsComponent(amount = Some(BigDecimal(100.00)), iabdSummaries = Some(npsIabdSummaries))))
-      val npsTotalLiability = NpsTotalLiability(nonSavings = Some(nonSavings), totalLiability = Some(BigDecimal(11111.12)))
+      val npsIabdSummaries =
+        List(NpsIabdSummary(amount = Some(estPayAmount), `type` = Some(IabdType.NewEstimatedPay.code)))
+      val nonSavings = NpsTax(
+        totalIncome = Some(NpsComponent(amount = Some(BigDecimal(100.00)), iabdSummaries = Some(npsIabdSummaries))))
+      val npsTotalLiability =
+        NpsTotalLiability(nonSavings = Some(nonSavings), totalLiability = Some(BigDecimal(11111.12)))
 
-      val npsTaxAccount = NpsTaxAccount(None, None, totalLiability = Some(npsTotalLiability), incomeSources = Some(npsIncomeSource))
+      val npsTaxAccount =
+        NpsTaxAccount(None, None, totalLiability = Some(npsTotalLiability), incomeSources = Some(npsIncomeSource))
 
       val result = (new NextYearComparisonService).stripCeasedFromNps(npsTaxAccount)
 
       result.incomeSources foreach { incomeSources =>
-
         incomeSources.size shouldBe 3
 
         incomeSources.head.taxCode shouldBe Some("LiveTC")
@@ -105,15 +112,17 @@ class NextYearComparisonServiceSpec extends UnitSpec {
         NpsIabdSummary(amount = Some(nonCodedIncomeAmount), `type` = Some(IabdType.NonCodedIncome.code))
       )
 
-      val nonSavings = NpsTax(totalIncome = Some(NpsComponent(amount = Some(BigDecimal(100.00)), iabdSummaries = Some(npsIabdSummaries))))
-      val npsTotalLiability = NpsTotalLiability(nonSavings = Some(nonSavings), totalLiability = Some(BigDecimal(11111.12)))
+      val nonSavings = NpsTax(
+        totalIncome = Some(NpsComponent(amount = Some(BigDecimal(100.00)), iabdSummaries = Some(npsIabdSummaries))))
+      val npsTotalLiability =
+        NpsTotalLiability(nonSavings = Some(nonSavings), totalLiability = Some(BigDecimal(11111.12)))
 
-      val npsTaxAccount = NpsTaxAccount(None, None, totalLiability = Some(npsTotalLiability), incomeSources = Some(npsIncomeSource))
+      val npsTaxAccount =
+        NpsTaxAccount(None, None, totalLiability = Some(npsTotalLiability), incomeSources = Some(npsIncomeSource))
 
       val result = (new NextYearComparisonService).stripCeasedFromNps(npsTaxAccount)
 
       result.incomeSources foreach { incomeSources =>
-
         incomeSources.size shouldBe 3
 
         incomeSources.head.taxCode shouldBe Some("LiveTC")
@@ -158,7 +167,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearTaxAccount = TaxSummaryDetails("", 2016)
       val nextYearYearTaxAccount = TaxSummaryDetails("", 2016)
 
-      val result = (new NextYearComparisonService).proccessTaxSummaryWithCYPlusOne(currentYearTaxAccount, nextYearYearTaxAccount)
+      val result =
+        (new NextYearComparisonService).proccessTaxSummaryWithCYPlusOne(currentYearTaxAccount, nextYearYearTaxAccount)
 
       result.cyPlusOneChange.isDefined shouldBe false
 
@@ -179,11 +189,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
   "cyPlusOneEmploymentTaxCodes " should {
 
     "return the change object with the list of cy+1 employments tax code " in {
-      val employments = List(Employments(Some(1), Some("Employer 1"), taxCode = Some("1500L")),
+      val employments = List(
+        Employments(Some(1), Some("Employer 1"), taxCode = Some("1500L")),
         Employments(Some(1), Some("Employer 2"), taxCode = Some("15T")))
 
-      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails =
-        Some(TaxCodeDetails(Some(employments), None, None, None, None)))
+      val nextYear =
+        TaxSummaryDetails("", 1, taxCodeDetails = Some(TaxCodeDetails(Some(employments), None, None, None, None)))
 
       val result = (new NextYearComparisonService).cyPlusOneEmploymentTaxCodes(nextYear, CYPlusOneChange())
 
@@ -192,8 +203,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
     "return an empty change object when there is no cy+1 employments tax code " in {
 
-      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails =
-        Some(TaxCodeDetails(None, None, None, None, None)))
+      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails = Some(TaxCodeDetails(None, None, None, None, None)))
 
       val result = (new NextYearComparisonService).cyPlusOneEmploymentTaxCodes(nextYear, CYPlusOneChange())
 
@@ -205,11 +215,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
   "cyPlusOneScottishTaxCodes " should {
 
     "return the change object with true when the cy+1 tax code is scottish " in {
-      val employments = List(Employments(Some(1), Some("Employer 1"), taxCode = Some("SK1234")),
+      val employments = List(
+        Employments(Some(1), Some("Employer 1"), taxCode = Some("SK1234")),
         Employments(Some(1), Some("Employer 2"), taxCode = Some("160L")))
 
-      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails =
-        Some(TaxCodeDetails(Some(employments), None, None, None, None)))
+      val nextYear =
+        TaxSummaryDetails("", 1, taxCodeDetails = Some(TaxCodeDetails(Some(employments), None, None, None, None)))
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
@@ -218,11 +229,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
     "return an empty change object when there is no cy+1 scottish tax code " in {
 
-      val employments = List(Employments(Some(1), Some("Employer 1"), taxCode = Some("160L")),
+      val employments = List(
+        Employments(Some(1), Some("Employer 1"), taxCode = Some("160L")),
         Employments(Some(1), Some("Employer 2"), taxCode = Some("160L")))
 
-      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails =
-        Some(TaxCodeDetails(Some(employments), None, None, None, None)))
+      val nextYear =
+        TaxSummaryDetails("", 1, taxCodeDetails = Some(TaxCodeDetails(Some(employments), None, None, None, None)))
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
@@ -231,8 +243,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
     "return an empty change object when there is no employments " in {
 
-      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails =
-        Some(TaxCodeDetails(None, None, None, None, None)))
+      val nextYear = TaxSummaryDetails("", 1, taxCodeDetails = Some(TaxCodeDetails(None, None, None, None, None)))
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
@@ -248,13 +259,16 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearAmount = 100
       val nextYearAmount = 100
 
-      val current = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalAllowance = Some(BigDecimal(currentYearAmount)), total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax =
+          Some(DecreasesTax(personalAllowance = Some(BigDecimal(currentYearAmount)), total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalAllowance = Some(BigDecimal(nextYearAmount)), total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax = Some(DecreasesTax(personalAllowance = Some(BigDecimal(nextYearAmount)), total = BigDecimal(0))))
 
       val result = (new NextYearComparisonService).cyPlusOnePersonalAllowance(current, nextYear, CYPlusOneChange())
 
@@ -282,13 +296,17 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearUnderpayment = 100
       val nextYearUnderpayment = 100
 
-      val current = TaxSummaryDetails("", 1, totalLiability = Some(
-        TotalLiability(underpaymentPreviousYear = BigDecimal(currentYearUnderpayment), totalTax = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        totalLiability = Some(
+          TotalLiability(underpaymentPreviousYear = BigDecimal(currentYearUnderpayment), totalTax = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, totalLiability = Some(
-        TotalLiability(underpaymentPreviousYear = BigDecimal(nextYearUnderpayment), totalTax = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        totalLiability =
+          Some(TotalLiability(underpaymentPreviousYear = BigDecimal(nextYearUnderpayment), totalTax = BigDecimal(0))))
 
       val result = (new NextYearComparisonService).cyPlusOneUnderPayment(current, nextYear, CYPlusOneChange())
 
@@ -315,13 +333,11 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearTotalTax = 100
       val nextYearTotalTax = 100
 
-      val current = TaxSummaryDetails("", 1, totalLiability = Some(
-        TotalLiability(totalTax = BigDecimal(currentYearTotalTax)))
-      )
+      val current =
+        TaxSummaryDetails("", 1, totalLiability = Some(TotalLiability(totalTax = BigDecimal(currentYearTotalTax))))
 
-      val nextYear = TaxSummaryDetails("", 1, totalLiability = Some(
-        TotalLiability(totalTax = BigDecimal(nextYearTotalTax)))
-      )
+      val nextYear =
+        TaxSummaryDetails("", 1, totalLiability = Some(TotalLiability(totalTax = BigDecimal(nextYearTotalTax))))
 
       val result = (new NextYearComparisonService).cyPlusOneTotalTax(current, nextYear, CYPlusOneChange())
 
@@ -332,21 +348,47 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
     "Contain total tax change in cy+1 " in {
 
-      val annualAccounts = List(AnnualAccount(TaxYear(2016), Some(TaxAccount(None,None,1564.45,
-        Map(TaxObject.Type.NonSavings -> TaxDetail(Some(1993.80),Some(9969),None,
-          Seq(nps2.TaxBand(Some("pa"),None,2290,0,None,None,0),
-          nps2.TaxBand(Some("B"),None,9969,1993.80,Some(0),Some(33125),20.00))))))))
+      val annualAccounts = List(
+        AnnualAccount(
+          TaxYear(2016),
+          Some(TaxAccount(
+            None,
+            None,
+            1564.45,
+            Map(TaxObject.Type.NonSavings -> TaxDetail(
+              Some(1993.80),
+              Some(9969),
+              None,
+              Seq(
+                nps2.TaxBand(Some("pa"), None, 2290, 0, None, None, 0),
+                nps2.TaxBand(Some("B"), None, 9969, 1993.80, Some(0), Some(33125), 20.00))
+            ))
+          ))
+        ))
 
-      val annualAccountsNy = List(AnnualAccount(TaxYear(2016), Some(TaxAccount(None,None,1564.45,
-        Map(TaxObject.Type.NonSavings -> TaxDetail(Some(2000.80),Some(9969),None,
-          Seq(nps2.TaxBand(Some("pa"),None,2290,0,None,None,0),
-            nps2.TaxBand(Some("B"),None,9969,1993.80,Some(0),Some(33125),20.00))))))))
+      val annualAccountsNy = List(
+        AnnualAccount(
+          TaxYear(2016),
+          Some(TaxAccount(
+            None,
+            None,
+            1564.45,
+            Map(TaxObject.Type.NonSavings -> TaxDetail(
+              Some(2000.80),
+              Some(9969),
+              None,
+              Seq(
+                nps2.TaxBand(Some("pa"), None, 2290, 0, None, None, 0),
+                nps2.TaxBand(Some("B"), None, 9969, 1993.80, Some(0), Some(33125), 20.00))
+            ))
+          ))
+        ))
 
       val current = NpsData.getNpsBankInterestAndDividendsTaxAccount().toTaxSummary(1, Nil, accounts = annualAccounts)
       val nextYear = NpsData.getNpsChildBenefitTaxAccount().toTaxSummary(1, Nil, accounts = annualAccountsNy)
 
       val result = (new NextYearComparisonService).cyPlusOneTotalTax(current, nextYear, CYPlusOneChange())
-      result.totalTax shouldBe Some(Change(1297.2,1680.1))
+      result.totalTax shouldBe Some(Change(1297.2, 1680.1))
     }
   }
 
@@ -357,15 +399,21 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearEmpBenefits = 100
       val nextYearEmpBenefits = 100
 
-      val current = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(currentYearEmpBenefits), 1, "", Nil)),
-          total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(currentYearEmpBenefits), 1, "", Nil)),
+            total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(nextYearEmpBenefits), 1, "", Nil)),
-          total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(nextYearEmpBenefits), 1, "", Nil)),
+            total = BigDecimal(0))))
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
@@ -385,14 +433,24 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentIabdSummaries = List(IabdSummary(29, "", currentYearDeductions, None, None))
       val nextYearIabdSummaries = List(IabdSummary(29, "", nextYearDeductions, None, None))
 
-      val current = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(currentYearEmpBenefits), 1, "", currentIabdSummaries)),
-          total = BigDecimal(0)))
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax =
+          Some(
+            IncreasesTax(
+              benefitsFromEmployment =
+                Some(TaxComponent(BigDecimal(currentYearEmpBenefits), 1, "", currentIabdSummaries)),
+              total = BigDecimal(0)))
       )
 
-      val nextYear = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(nextYearEmpBenefits), 1, "", nextYearIabdSummaries)),
-          total = BigDecimal(0)))
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(nextYearEmpBenefits), 1, "", nextYearIabdSummaries)),
+            total = BigDecimal(0)))
       )
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
@@ -409,18 +467,26 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentBenefitInKindAmount = 100
       val nextYearBenefitInKindAmount = 100
 
-      val currentIabdSummaries = List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", currentBenefitInKindAmount, None, None))
-      val nextYearIabdSummaries = List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", nextYearBenefitInKindAmount, None, None))
+      val currentIabdSummaries =
+        List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", currentBenefitInKindAmount, None, None))
+      val nextYearIabdSummaries =
+        List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", nextYearBenefitInKindAmount, None, None))
 
-      val current = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", currentIabdSummaries)),
-          total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", currentIabdSummaries)),
+            total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", nextYearIabdSummaries)),
-          total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", nextYearIabdSummaries)),
+            total = BigDecimal(0))))
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
@@ -436,18 +502,26 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentBenefitInKindAmount = 100
       val nextYearBenefitInKindAmount = 101
 
-      val currentIabdSummaries = List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", currentBenefitInKindAmount, None, None))
-      val nextYearIabdSummaries = List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", nextYearBenefitInKindAmount, None, None))
+      val currentIabdSummaries =
+        List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", currentBenefitInKindAmount, None, None))
+      val nextYearIabdSummaries =
+        List(IabdSummary(IADB_TYPE_BENEFITS_IN_KIND_TOTAL, "", nextYearBenefitInKindAmount, None, None))
 
-      val current = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", currentIabdSummaries)),
-          total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", currentIabdSummaries)),
+            total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, increasesTax = Some(
-        IncreasesTax(benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", nextYearIabdSummaries)),
-          total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        increasesTax = Some(
+          IncreasesTax(
+            benefitsFromEmployment = Some(TaxComponent(BigDecimal(1), 1, "", nextYearIabdSummaries)),
+            total = BigDecimal(0))))
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
@@ -473,15 +547,22 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearPSA = 100
       val nextYearPSA = 100
 
-      val current = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalSavingsAllowance = Some(TaxComponent(currentYearPSA, 0, "", Nil)), total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax = Some(
+          DecreasesTax(
+            personalSavingsAllowance = Some(TaxComponent(currentYearPSA, 0, "", Nil)),
+            total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalSavingsAllowance = Some(TaxComponent(nextYearPSA, 0, "", Nil)), total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax = Some(
+          DecreasesTax(personalSavingsAllowance = Some(TaxComponent(nextYearPSA, 0, "", Nil)), total = BigDecimal(0))))
 
-      val result = (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
+      val result =
+        (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
 
       result shouldBe CYPlusOneChange()
 
@@ -494,22 +575,28 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val currentYearPSA = 101
       val nextYearPSA = 100
 
-      val current = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalSavingsAllowance = Some(TaxComponent(currentYearPSA, 0, "", Nil)), total = BigDecimal(0)))
-      )
+      val current = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax = Some(
+          DecreasesTax(
+            personalSavingsAllowance = Some(TaxComponent(currentYearPSA, 0, "", Nil)),
+            total = BigDecimal(0))))
 
-      val nextYear = TaxSummaryDetails("", 1, decreasesTax = Some(
-        DecreasesTax(personalSavingsAllowance = Some(TaxComponent(nextYearPSA, 0, "", Nil)), total = BigDecimal(0)))
-      )
+      val nextYear = TaxSummaryDetails(
+        "",
+        1,
+        decreasesTax = Some(
+          DecreasesTax(personalSavingsAllowance = Some(TaxComponent(nextYearPSA, 0, "", Nil)), total = BigDecimal(0))))
 
-      val result = (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
+      val result =
+        (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
 
       result shouldBe CYPlusOneChange(personalSavingsAllowance = Some(Change(currentYearPSA, nextYearPSA)))
 
       result.personalSavingsAllowance.isDefined shouldBe true
 
       result.personalSavingsAllowance foreach { psa =>
-
         psa.currentYear shouldBe currentYearPSA
         psa.currentYearPlusOne shouldBe nextYearPSA
       }

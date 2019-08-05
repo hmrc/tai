@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-
 sealed trait PaymentFrequency {
   val value: String
 }

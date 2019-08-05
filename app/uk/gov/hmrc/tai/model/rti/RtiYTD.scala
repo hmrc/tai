@@ -19,12 +19,12 @@ package uk.gov.hmrc.tai.model.rti
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
-case class RtiYTD (
-  payYTD: Option[BigDecimal]=None,
-  payeRef : String,
-  startDate : LocalDate,
+case class RtiYTD(
+  payYTD: Option[BigDecimal] = None,
+  payeRef: String,
+  startDate: LocalDate,
   endDate: LocalDate,
-  estimatedPay:Option[BigDecimal]=None
+  estimatedPay: Option[BigDecimal] = None
 )
 
 object RtiYTD {

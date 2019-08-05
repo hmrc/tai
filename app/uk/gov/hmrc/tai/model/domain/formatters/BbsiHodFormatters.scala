@@ -19,14 +19,13 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.BankAccount
 
-
 trait BbsiHodFormatters {
 
   val bankAccountHodReads = new Reads[Seq[BankAccount]] {
     override def reads(json: JsValue): JsResult[Seq[BankAccount]] = {
       val accounts: Seq[JsValue] = (json \ "accounts").validate[JsArray] match {
         case JsSuccess(arr, _) => arr.value
-        case _ => throw new RuntimeException("Invalid Json")
+        case _                 => throw new RuntimeException("Invalid Json")
       }
 
       JsSuccess(accounts.map { account =>
@@ -37,8 +36,14 @@ trait BbsiHodFormatters {
         val numberOfAccountHolders = (account \ "numberOfAccountHolders").asOpt[Int]
         val grossInterest = (account \ "grossInterest").as[BigDecimal]
 
-        BankAccount(accountNumber = accountNumber, sortCode = sortCode, bankName = bankName,
-          source = source, grossInterest = grossInterest, numberOfAccountHolders = numberOfAccountHolders)
+        BankAccount(
+          accountNumber = accountNumber,
+          sortCode = sortCode,
+          bankName = bankName,
+          source = source,
+          grossInterest = grossInterest,
+          numberOfAccountHolders = numberOfAccountHolders
+        )
       })
 
     }

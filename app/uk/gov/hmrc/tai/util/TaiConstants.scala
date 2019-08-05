@@ -30,68 +30,141 @@ object TaiConstants {
   val SecondaryEmployment = 2
 
   val IADB_TYPE_OTHER_PENSIONS = List(
-    Some(PersonalPensionPayments.code),Some(LumpSumDeferral.code), Some(PersonalPensionAnnuity.code), Some(ForcesPension.code),
-    Some(PublicServicesPension.code), Some(OccupationalPension.code)
+    Some(PersonalPensionPayments.code),
+    Some(LumpSumDeferral.code),
+    Some(PersonalPensionAnnuity.code),
+    Some(ForcesPension.code),
+    Some(PublicServicesPension.code),
+    Some(OccupationalPension.code)
   )
 
-  val IADB_TYPES_TO_NOT_GROUP= List(
-    Some(StatePension.code), Some(IncapacityBenefit.code),
-    Some(JobSeekersAllowance.code), Some(EmploymentAndSupportAllowance.code), Some(NewEstimatedPay.code),
-    Some(PersonalAllowancePA.code), Some(PersonalAllowanceAgedPAA.code), Some(PersonalAllowanceElderlyPAE.code),
+  val IADB_TYPES_TO_NOT_GROUP = List(
+    Some(StatePension.code),
+    Some(IncapacityBenefit.code),
+    Some(JobSeekersAllowance.code),
+    Some(EmploymentAndSupportAllowance.code),
+    Some(NewEstimatedPay.code),
+    Some(PersonalAllowancePA.code),
+    Some(PersonalAllowanceAgedPAA.code),
+    Some(PersonalAllowanceElderlyPAE.code),
     Some(OtherBenefit.code),
-    Some(Loss.code), Some(LossBroughtForwardFromEarlierTaxYear.code))
+    Some(Loss.code),
+    Some(LossBroughtForwardFromEarlierTaxYear.code)
+  )
 
   val IABD_TYPE_OTHER_INCOME = List(
-    Some(BalancingCharge.code), Some(NonCodedIncome.code), Some(Commission.code),
-    Some(OtherIncomeEarned.code), Some(OtherIncomeNotEarned.code), Some(PartTimeEarnings.code),
-    Some(Tips.code), Some(OtherEarnings.code), Some(CasualEarnings.code),
-    Some(ForeignPropertyIncome.code), Some(ForeignPensionsAndOtherIncome.code), Some(Profit.code),
-    Some(TrustsSettlementsAndEstatesAtTrustRate.code), Some(TrustsSettlementsAndEstatesAtBasicRate.code),
-    Some(TrustsSettlementsAndEstatesAtLowerRate.code), Some(TrustsSettlementsAndEstatesAtNonPayableDividendRate.code), Some(ChargeableEventGain.code),
-    Some(NationalSavings.code), Some(SavingsBond.code), Some(PurchasedLifeAnnuities.code),
-    Some(UnitTrust.code), Some(StockDividend.code), Some(ForeignInterestAndOtherSavings.code),
-    Some(ForeignDividendIncome.code), Some(MaintenancePayments.code), Some(DoubleTaxationRelief.code),
-    Some(ConcessionRelief.code), Some(EnterpriseInvestmentScheme.code), Some(GiftAidAdjustment.code),
+    Some(BalancingCharge.code),
+    Some(NonCodedIncome.code),
+    Some(Commission.code),
+    Some(OtherIncomeEarned.code),
+    Some(OtherIncomeNotEarned.code),
+    Some(PartTimeEarnings.code),
+    Some(Tips.code),
+    Some(OtherEarnings.code),
+    Some(CasualEarnings.code),
+    Some(ForeignPropertyIncome.code),
+    Some(ForeignPensionsAndOtherIncome.code),
+    Some(Profit.code),
+    Some(TrustsSettlementsAndEstatesAtTrustRate.code),
+    Some(TrustsSettlementsAndEstatesAtBasicRate.code),
+    Some(TrustsSettlementsAndEstatesAtLowerRate.code),
+    Some(TrustsSettlementsAndEstatesAtNonPayableDividendRate.code),
+    Some(ChargeableEventGain.code),
+    Some(NationalSavings.code),
+    Some(SavingsBond.code),
+    Some(PurchasedLifeAnnuities.code),
+    Some(UnitTrust.code),
+    Some(StockDividend.code),
+    Some(ForeignInterestAndOtherSavings.code),
+    Some(ForeignDividendIncome.code),
+    Some(MaintenancePayments.code),
+    Some(DoubleTaxationRelief.code),
+    Some(ConcessionRelief.code),
+    Some(EnterpriseInvestmentScheme.code),
+    Some(GiftAidAdjustment.code),
     Some(BereavementAllowance.code)
   )
 
   val IADB_TYPE_BENEFITS_IN_KIND_TOTAL = Some(BenefitInKind.code)
 
   val IADB_TYPE_BENEFITS_IN_KIND = List(
-    Some(Accommodation.code), Some(Assets.code), Some(AssetTransfer.code), Some(EducationalServices.code),
-    Some(EmployerProvidedProfessionalSubscription.code), Some(EmployerProvidedServices.code), Some(Entertaining.code), Some(Expenses.code),
-    Some(IncomeTaxPaidButNotDeductedFromDirectorsRemuneration.code), Some(Mileage.code), Some(NonQualifyingRelocationExpenses.code), Some(NurseryPlaces.code),
-    Some(OtherItems.code), Some(PaymentsOnEmployeesBehalf.code), Some(PersonalIncidentalExpenses.code), Some(QualfyingRelocationExpenses.code),
-    Some(TravelAndSubsistence.code), Some(VouchersAndCreditCards.code)
+    Some(Accommodation.code),
+    Some(Assets.code),
+    Some(AssetTransfer.code),
+    Some(EducationalServices.code),
+    Some(EmployerProvidedProfessionalSubscription.code),
+    Some(EmployerProvidedServices.code),
+    Some(Entertaining.code),
+    Some(Expenses.code),
+    Some(IncomeTaxPaidButNotDeductedFromDirectorsRemuneration.code),
+    Some(Mileage.code),
+    Some(NonQualifyingRelocationExpenses.code),
+    Some(NurseryPlaces.code),
+    Some(OtherItems.code),
+    Some(PaymentsOnEmployeesBehalf.code),
+    Some(PersonalIncidentalExpenses.code),
+    Some(QualfyingRelocationExpenses.code),
+    Some(TravelAndSubsistence.code),
+    Some(VouchersAndCreditCards.code)
   )
 
   val IABD_TYPE_BENEFITS_FROM_EMPLOYMENT = List(
-    Some(CarFuelBenefit.code), Some(MedicalInsurance.code), Some(CarBenefit.code),
-    Some(Telephone.code), Some(ServiceBenefit.code), Some(TaxableExpensesBenefit.code),
-    Some(VanBenefit.code), Some(VanFuelBenefit.code), Some(BeneficialLoan.code),
-    Some(NonCashBenefit.code))
+    Some(CarFuelBenefit.code),
+    Some(MedicalInsurance.code),
+    Some(CarBenefit.code),
+    Some(Telephone.code),
+    Some(ServiceBenefit.code),
+    Some(TaxableExpensesBenefit.code),
+    Some(VanBenefit.code),
+    Some(VanFuelBenefit.code),
+    Some(BeneficialLoan.code),
+    Some(NonCashBenefit.code)
+  )
 
   //val 92 -Earlier Year's Adjustment
 
-  val IABD_TYPE_BLIND_PERSON = List(Some(IabdType.BlindPersonsAllowance.code), Some(BpaReceivedFromSpouseOrCivilPartner.code))
-  val IABD_TYPE_JOB_EXPENSES = List(Some(IabdType.JobExpenses.code), Some(HotelAndMealExpenses.code), Some(OtherExpenses.code),
-    Some(VehicleExpenses.code), Some(MileageAllowanceRelief.code))
-  val IABD_TYPE_GIFT_RELATED = List(Some(GiftAidAdjustment.code), Some(GiftsSharesCharity.code), Some(ConcessionRelief.code))
-  val IABD_TYPE_EXPENSES = List(Some(IabdType.FlatRateJobExpenses.code), Some(IabdType.ProfessionalSubscriptions.code), Some(EarlyYearsAdjustment.code))
-  val IABD_TYPE_MISCELLANEOUS = List(Some(MaintenancePayments.code), Some(LoanInterestAmount.code), Some(TradeUnionSubscriptions.code),
-    Some(CommunityInvestmentTaxCredit.code), Some(VentureCapitalTrust.code), Some(EnterpriseInvestmentScheme.code), Some(IabdType.LossRelief.code),
-    Some(IabdType.DoubleTaxationRelief.code))
-  val IABD_TYPE_PENSION_CONTRIBUTIONS = List(Some(PersonalPensionPayments.code), Some(RetirementAnnuityPayments.code),
+  val IABD_TYPE_BLIND_PERSON =
+    List(Some(IabdType.BlindPersonsAllowance.code), Some(BpaReceivedFromSpouseOrCivilPartner.code))
+  val IABD_TYPE_JOB_EXPENSES = List(
+    Some(IabdType.JobExpenses.code),
+    Some(HotelAndMealExpenses.code),
+    Some(OtherExpenses.code),
+    Some(VehicleExpenses.code),
+    Some(MileageAllowanceRelief.code))
+  val IABD_TYPE_GIFT_RELATED =
+    List(Some(GiftAidAdjustment.code), Some(GiftsSharesCharity.code), Some(ConcessionRelief.code))
+  val IABD_TYPE_EXPENSES = List(
+    Some(IabdType.FlatRateJobExpenses.code),
+    Some(IabdType.ProfessionalSubscriptions.code),
+    Some(EarlyYearsAdjustment.code))
+  val IABD_TYPE_MISCELLANEOUS = List(
+    Some(MaintenancePayments.code),
+    Some(LoanInterestAmount.code),
+    Some(TradeUnionSubscriptions.code),
+    Some(CommunityInvestmentTaxCredit.code),
+    Some(VentureCapitalTrust.code),
+    Some(EnterpriseInvestmentScheme.code),
+    Some(IabdType.LossRelief.code),
+    Some(IabdType.DoubleTaxationRelief.code)
+  )
+  val IABD_TYPE_PENSION_CONTRIBUTIONS = List(
+    Some(PersonalPensionPayments.code),
+    Some(RetirementAnnuityPayments.code),
     Some(IabdType.ForeignPensionAllowance.code))
   val IABD_TYPE_DIVIDENDS = List(Some(UkDividend.code), Some(UnitTrust.code), Some(StockDividend.code))
   val IABD_TYPE_BANK_INTEREST = List(Some(BankOrBuildingSocietyInterest.code), Some(PurchasedLifeAnnuities.code))
   val IABD_TYPE_UNTAXED_INTEREST = List(Some(UntaxedInterest.code), Some(SavingsBond.code), Some(NationalSavings.code))
 
   //Iabd types do not overwrite est pay - Manual Telephone 15, Letter 16, Email 17, Agent Contact 18, Other Form 24, Internet 39, Information letter 40
-  val IABD_TYPES_DO_NOT_OVERWRITE = List(Some(IabdUpdateSource.ManualTelephone.code),
-    Some(IabdUpdateSource.Letter.code), Some(IabdUpdateSource.Email.code),
-    Some(IabdUpdateSource.AgentContact.code), Some(IabdUpdateSource.OtherForm.code),
-    Some(IabdUpdateSource.Internet.code), Some(IabdUpdateSource.InformationLetter.code))
+  val IABD_TYPES_DO_NOT_OVERWRITE = List(
+    Some(IabdUpdateSource.ManualTelephone.code),
+    Some(IabdUpdateSource.Letter.code),
+    Some(IabdUpdateSource.Email.code),
+    Some(IabdUpdateSource.AgentContact.code),
+    Some(IabdUpdateSource.OtherForm.code),
+    Some(IabdUpdateSource.Internet.code),
+    Some(IabdUpdateSource.InformationLetter.code)
+  )
 
   val JSA_TAX_DISTRICT = 921
   val JSA_PAYE_NUMBER = "LDN"
@@ -136,11 +209,11 @@ object TaiConstants {
     EnterpriseInvestmentSchemeRelief.id,
     ConcessionalRelief.id,
     MaintenancePayment.id,
-    DoubleTaxationReliefAllowance.id)
+    DoubleTaxationReliefAllowance.id
+  )
 
-  val FILTERED_OUT_DEDUCTIONS= List(
-    DeductionType.OtherEarningsOrPension.id,
-    DeductionType.PersonalAllowanceTransferred.id)
+  val FILTERED_OUT_DEDUCTIONS =
+    List(DeductionType.OtherEarningsOrPension.id, DeductionType.PersonalAllowanceTransferred.id)
 
   val EMP_BEN_DEDUCTIONS: List[Int] = List(
     DeductionType.EmployerBenefits.id,
@@ -153,7 +226,8 @@ object TaiConstants {
     DeductionType.TaxableExpensesPayments.id,
     DeductionType.Telephone.id,
     DeductionType.VanBenefit.id,
-    DeductionType.VanFuelBenefit.id)
+    DeductionType.VanFuelBenefit.id
+  )
 
   val STANDARD_DATE_FORMAT = "dd/MM/yyyy"
   val npsDateFormat = "yyyy-MM-dd"
@@ -161,7 +235,7 @@ object TaiConstants {
 
   val CEASED_MINUS_ONE = "CY-1"
   val CEASED_MINUS_TWO = "CY-2"
-  val CEASED_MINUS_THREE  = "CY-3"
+  val CEASED_MINUS_THREE = "CY-3"
 
   val DEFAULT_PRIMARY_PAY = 15000
   val DEFAULT_SECONDARY_PAY = 5000

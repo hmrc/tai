@@ -29,24 +29,25 @@ class NpsEmploymentTest extends WordSpec with Matchers with NpsFormatter {
     val stream = scala.io.Source.fromInputStream(resource)
     Json.parse(stream.getLines.mkString) match {
       case JsArray(e) => e
-      case _ => throw new IllegalArgumentException(
-        "Cannot read test NPS employment data")
+      case _          => throw new IllegalArgumentException("Cannot read test NPS employment data")
     }
   }
 
-  val tryParse: Seq[(Int,Try[NpsEmployment])] = {
-    data.zipWithIndex.map{x => (x._2,Try(x._1.as[NpsEmployment]))}
+  val tryParse: Seq[(Int, Try[NpsEmployment])] = {
+    data.zipWithIndex.map { x =>
+      (x._2, Try(x._1.as[NpsEmployment]))
+    }
   }
 
   "NPS Employment JSON Parsing" should {
     "be able to parse all the stub data" in {
-      tryParse.filter(_._2.isFailure).toMap should be (Map.empty)
+      tryParse.filter(_._2.isFailure).toMap should be(Map.empty)
     }
 
     "have the property fromJson(toJson(x)) == x" in {
-      tryParse.foreach{
-        case (k,Success(v)) => Json.toJson(v).as[NpsEmployment] should be (v)
-        case _ =>
+      tryParse.foreach {
+        case (k, Success(v)) => Json.toJson(v).as[NpsEmployment] should be(v)
+        case _               =>
       }
     }
   }

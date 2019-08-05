@@ -22,14 +22,14 @@ import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 trait FileUploadFormatters {
 
   val envelopeSummaryReads = new Reads[EnvelopeSummary] {
-    override def reads(json: JsValue): JsResult[EnvelopeSummary] = {
+    override def reads(json: JsValue): JsResult[EnvelopeSummary] =
       if ((json \ "id").validate[String].isSuccess) {
         val envelopeId = (json \ "id").as[String]
         val envelopeStatus = (json \ "status").as[String]
 
         val files: Seq[JsValue] = (json \ "files").validate[JsArray] match {
           case JsSuccess(arr, _) => arr.value
-          case _ => Nil
+          case _                 => Nil
         }
         val envelopeFiles: Seq[EnvelopeFile] = files map { file: JsValue =>
           val fileId = (file \ "id").as[String]
@@ -40,7 +40,6 @@ trait FileUploadFormatters {
       } else {
         JsError()
       }
-    }
   }
 
 }

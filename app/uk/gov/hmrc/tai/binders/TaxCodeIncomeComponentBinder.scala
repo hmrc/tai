@@ -18,4 +18,5 @@ package uk.gov.hmrc.tai.binders
 
 import uk.gov.hmrc.tai.model.domain.TaxCodeIncomeComponentType
 
-object TaxCodeIncomeComponentBinder extends SimpleObjectBinder[TaxCodeIncomeComponentType](TaxCodeIncomeComponentType.apply, _.toString)
+object TaxCodeIncomeComponentBinder
+    extends SimpleObjectBinder[TaxCodeIncomeComponentType](TaxCodeIncomeComponentType.apply, _.toString)

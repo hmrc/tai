@@ -52,9 +52,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       val npsComponent = NpsComponent(iabdSummaries = Some(List(npsIabdSummary)))
 
       val SUT = NpsTotalLiability(
-        nonSavings = Some(NpsTax(
-          totalIncome = Some(npsComponent),
-          allowReliefDeducts = Some(npsComponent)))
+        nonSavings = Some(NpsTax(totalIncome = Some(npsComponent), allowReliefDeducts = Some(npsComponent)))
       )
 
       "generate an 'allIADBIncomesTypes' property with content" in {
@@ -78,27 +76,35 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     val taxCodeComponentDeduct = TaxCodeComponent(Some("desc"), Some(BigDecimal(32.30)), Some(2))
     val taxCodeComponentOther = TaxCodeComponent(Some("desc"), Some(BigDecimal(12.60)), Some(3))
 
-    val taxCodeDetails = TaxCodeDetails(None, None,
+    val taxCodeDetails = TaxCodeDetails(
+      None,
+      None,
       deductions = Some(List(taxCodeComponentDeduct, taxCodeComponentOther)),
       allowances = Some(List(taxCodeComponentAllow, taxCodeComponentOther)))
 
     "an allowance is requested " should {
 
       "generate an allowance adjustment" in {
-        val adjustment = SUT.getCodingAdjustment(relief = BigDecimal(3434),
-          taxCodeDetails = Some(taxCodeDetails), compType = 1, isAllow = true)
+        val adjustment = SUT.getCodingAdjustment(
+          relief = BigDecimal(3434),
+          taxCodeDetails = Some(taxCodeDetails),
+          compType = 1,
+          isAllow = true)
 
-        adjustment mustBe Some(Adjustment(21.00,3434))
+        adjustment mustBe Some(Adjustment(21.00, 3434))
       }
     }
 
     "an allowance is not requested " should {
 
       "generate an deduction adjustment" in {
-        val adjustment = SUT.getCodingAdjustment(relief = BigDecimal(3434),
-          taxCodeDetails = Some(taxCodeDetails), compType = 2, isAllow = false)
+        val adjustment = SUT.getCodingAdjustment(
+          relief = BigDecimal(3434),
+          taxCodeDetails = Some(taxCodeDetails),
+          compType = 2,
+          isAllow = false)
 
-        adjustment mustBe Some(Adjustment(32.30,3434))
+        adjustment mustBe Some(Adjustment(32.30, 3434))
       }
     }
   }
@@ -116,21 +122,16 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       NpsIabdSummary(Some(10), Some(LossBroughtForwardFromEarlierTaxYear.code), Some("Desc"), Some(2), Some(3))
     val lossBroughtForwardNpsComponent = NpsComponent(iabdSummaries = Some(List(ukDividendsSumm)), `type` = Some(3))
 
-
     "otherIncome is requested for profit and loss amounts that combine to produce a positive overall profit" should {
 
       "supply a new single NpsComponent reflecting a total other income amount, adjusted to reflect the " +
         "overall profit" in {
 
         val SUT = NpsTotalLiability(
-          foreignDividends = Some(NpsTax(
-            totalIncome = Some(otherIncomeNpsComponent))),
-          bankInterest = Some(NpsTax(
-            totalIncome = Some(profitNpsComponent))),
-          nonSavings = Some(NpsTax(
-            totalIncome = Some(lossNpsComponent))),
-          ukDividends = Some(NpsTax(
-            totalIncome = Some(lossBroughtForwardNpsComponent)))
+          foreignDividends = Some(NpsTax(totalIncome = Some(otherIncomeNpsComponent))),
+          bankInterest = Some(NpsTax(totalIncome = Some(profitNpsComponent))),
+          nonSavings = Some(NpsTax(totalIncome = Some(lossNpsComponent))),
+          ukDividends = Some(NpsTax(totalIncome = Some(lossBroughtForwardNpsComponent)))
         )
 
         val result = SUT.otherIncome()
@@ -138,9 +139,10 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         val npsComponent = result.get
         npsComponent.amount mustBe Some(170)
         npsComponent.iabdSummaries mustBe
-          Some(List(
-            NpsIabdSummary(Some(70), Some(72), Some("Desc"), Some(2), Some(3)),
-            NpsIabdSummary(Some(100), Some(62), Some("Desc"), Some(2), Some(3))))
+          Some(
+            List(
+              NpsIabdSummary(Some(70), Some(72), Some("Desc"), Some(2), Some(3)),
+              NpsIabdSummary(Some(100), Some(62), Some("Desc"), Some(2), Some(3))))
       }
     }
 
@@ -152,14 +154,10 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         val lossNpsComponent = NpsComponent(iabdSummaries = Some(List(nonSavingsIabdSummary)), `type` = Some(3))
 
         val SUT = NpsTotalLiability(
-          foreignDividends = Some(NpsTax(
-            totalIncome = Some(otherIncomeNpsComponent))),
-          bankInterest = Some(NpsTax(
-            totalIncome = Some(profitNpsComponent))),
-          nonSavings = Some(NpsTax(
-            totalIncome = Some(lossNpsComponent))),
-          ukDividends = Some(NpsTax(
-            totalIncome = Some(lossBroughtForwardNpsComponent)))
+          foreignDividends = Some(NpsTax(totalIncome = Some(otherIncomeNpsComponent))),
+          bankInterest = Some(NpsTax(totalIncome = Some(profitNpsComponent))),
+          nonSavings = Some(NpsTax(totalIncome = Some(lossNpsComponent))),
+          ukDividends = Some(NpsTax(totalIncome = Some(lossBroughtForwardNpsComponent)))
         )
 
         val result = SUT.otherIncome()
@@ -167,31 +165,77 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         val npsComponent = result.get
         npsComponent.amount mustBe Some(100)
         npsComponent.iabdSummaries mustBe
-          Some(List(
-            NpsIabdSummary(Some(100), Some(62), Some("Desc"), Some(2), Some(3))))
+          Some(List(NpsIabdSummary(Some(100), Some(62), Some("Desc"), Some(2), Some(3))))
       }
     }
   }
 
   "The benefitsInKindRemovingTotalOrComponentParts method" when {
 
-    val iabdBenFromEmp1 = NpsIabdSummary(amount = Some(101), `type` = Some(CarFuelBenefit.code), npsDescription = Some("Desc"), employmentId = Some(1), estimatedPaySource = Some(3))
-    val iabdBenFromEmp2 = NpsIabdSummary(amount = Some(102), `type` = Some(MedicalInsurance.code), npsDescription = Some("Desc"), employmentId = Some(2), estimatedPaySource = Some(3))
-    val iabdBenFromEmp3 = NpsIabdSummary(amount = Some(103), `type` = Some(CarBenefit.code), npsDescription = Some("Desc"), employmentId = Some(3), estimatedPaySource = Some(3))
-    val iabdBenFromEmp4 = NpsIabdSummary(amount = Some(104), `type` = Some(Telephone.code), npsDescription = Some("Desc"), employmentId = Some(4), estimatedPaySource = Some(3))
-    val iabdBenFromEmp5 = NpsIabdSummary(amount = Some(105), `type` = Some(ServiceBenefit.code), npsDescription = Some("Desc"), employmentId = Some(5), estimatedPaySource = Some(3))
+    val iabdBenFromEmp1 = NpsIabdSummary(
+      amount = Some(101),
+      `type` = Some(CarFuelBenefit.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(1),
+      estimatedPaySource = Some(3))
+    val iabdBenFromEmp2 = NpsIabdSummary(
+      amount = Some(102),
+      `type` = Some(MedicalInsurance.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(2),
+      estimatedPaySource = Some(3))
+    val iabdBenFromEmp3 = NpsIabdSummary(
+      amount = Some(103),
+      `type` = Some(CarBenefit.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(3),
+      estimatedPaySource = Some(3))
+    val iabdBenFromEmp4 = NpsIabdSummary(
+      amount = Some(104),
+      `type` = Some(Telephone.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(4),
+      estimatedPaySource = Some(3))
+    val iabdBenFromEmp5 = NpsIabdSummary(
+      amount = Some(105),
+      `type` = Some(ServiceBenefit.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(5),
+      estimatedPaySource = Some(3))
 
-    val iabdBenInKindTotal = NpsIabdSummary(amount = Some(999), `type` = Some(BenefitInKind.code), npsDescription = Some("Desc"), employmentId = Some(5), estimatedPaySource = Some(3))
-    val iabdBenInKind1 = NpsIabdSummary(amount = Some(501), `type` = Some(Accommodation.code), npsDescription = Some("Desc"), employmentId = Some(5), estimatedPaySource = Some(3))
-    val iabdBenInKind2 = NpsIabdSummary(amount = Some(502), `type` = Some(Entertaining.code), npsDescription = Some("Desc"), employmentId = Some(5), estimatedPaySource = Some(3))
+    val iabdBenInKindTotal = NpsIabdSummary(
+      amount = Some(999),
+      `type` = Some(BenefitInKind.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(5),
+      estimatedPaySource = Some(3))
+    val iabdBenInKind1 = NpsIabdSummary(
+      amount = Some(501),
+      `type` = Some(Accommodation.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(5),
+      estimatedPaySource = Some(3))
+    val iabdBenInKind2 = NpsIabdSummary(
+      amount = Some(502),
+      `type` = Some(Entertaining.code),
+      npsDescription = Some("Desc"),
+      employmentId = Some(5),
+      estimatedPaySource = Some(3))
 
     "individual benefits in kind do not sum to the same value as a supplied 'benefits in kind total' amount, " +
       "for a given employment id" should {
 
-      val nonSavingsNpsComponent = NpsComponent(iabdSummaries = Some(
-        List(iabdBenFromEmp1, iabdBenFromEmp2, iabdBenFromEmp3, iabdBenFromEmp4,
-          iabdBenFromEmp5, iabdBenInKindTotal, iabdBenInKind1, iabdBenInKind2))
-      )
+      val nonSavingsNpsComponent = NpsComponent(
+        iabdSummaries = Some(
+          List(
+            iabdBenFromEmp1,
+            iabdBenFromEmp2,
+            iabdBenFromEmp3,
+            iabdBenFromEmp4,
+            iabdBenFromEmp5,
+            iabdBenInKindTotal,
+            iabdBenInKind1,
+            iabdBenInKind2)))
       val SUT = NpsTotalLiability(nonSavings = Some(NpsTax(totalIncome = Some(nonSavingsNpsComponent))))
 
       "favour the 'benefits in kind total' iadb for this employment id, and disregard individual benefits in kind " +
@@ -199,8 +243,14 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
         val benefitsNpsComponent = SUT.benefitsFromEmployment()
         benefitsNpsComponent.get.iabdSummaries mustBe
-          Some(List(iabdBenFromEmp1, iabdBenFromEmp2, iabdBenFromEmp3,
-            iabdBenFromEmp4, iabdBenFromEmp5, iabdBenInKindTotal))
+          Some(
+            List(
+              iabdBenFromEmp1,
+              iabdBenFromEmp2,
+              iabdBenFromEmp3,
+              iabdBenFromEmp4,
+              iabdBenFromEmp5,
+              iabdBenInKindTotal))
         benefitsNpsComponent.get.amount mustBe Some(BigDecimal(1514))
         benefitsNpsComponent.get.`type` mustBe None
         benefitsNpsComponent.get.npsDescription mustBe None
@@ -211,11 +261,18 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     "individual benefits in kind sum to an equal value as the supplied 'benefits in kind total' amount, " +
       "for a given employment id" should {
 
-      val adjustedIabdBenInKind2 = iabdBenInKind2.copy(amount=Some(BigDecimal(498)))
-      val nonSavingsNpsComponent = NpsComponent(iabdSummaries = Some(
-        List(iabdBenFromEmp1, iabdBenFromEmp2, iabdBenFromEmp3, iabdBenFromEmp4,
-          iabdBenFromEmp5, iabdBenInKindTotal, iabdBenInKind1, adjustedIabdBenInKind2))
-      )
+      val adjustedIabdBenInKind2 = iabdBenInKind2.copy(amount = Some(BigDecimal(498)))
+      val nonSavingsNpsComponent = NpsComponent(
+        iabdSummaries = Some(
+          List(
+            iabdBenFromEmp1,
+            iabdBenFromEmp2,
+            iabdBenFromEmp3,
+            iabdBenFromEmp4,
+            iabdBenFromEmp5,
+            iabdBenInKindTotal,
+            iabdBenInKind1,
+            adjustedIabdBenInKind2)))
       val SUT = NpsTotalLiability(nonSavings = Some(NpsTax(totalIncome = Some(nonSavingsNpsComponent))))
 
       "return the fine-grained, individual benefits in kind iabd summaries within the returned component, " +
@@ -223,8 +280,15 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
         val benefitsNpsComponent = SUT.benefitsFromEmployment()
         benefitsNpsComponent.get.iabdSummaries mustBe
-          Some(List(iabdBenFromEmp1, iabdBenFromEmp2, iabdBenFromEmp3, iabdBenFromEmp4,
-            iabdBenFromEmp5, iabdBenInKind1, adjustedIabdBenInKind2))
+          Some(
+            List(
+              iabdBenFromEmp1,
+              iabdBenFromEmp2,
+              iabdBenFromEmp3,
+              iabdBenFromEmp4,
+              iabdBenFromEmp5,
+              iabdBenInKind1,
+              adjustedIabdBenInKind2))
         benefitsNpsComponent.get.amount mustBe Some(BigDecimal(1514))
         benefitsNpsComponent.get.`type` mustBe None
         benefitsNpsComponent.get.npsDescription mustBe None
@@ -239,59 +303,61 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
       val SUT = randomSpreadTotalLiability(
         TaiConstants.IADB_TYPE_OTHER_PENSIONS ::: TaiConstants.IABD_TYPE_BLIND_PERSON ::: TaiConstants.IABD_TYPE_EXPENSES :::
-        TaiConstants.IABD_TYPE_GIFT_RELATED ::: TaiConstants.IABD_TYPE_JOB_EXPENSES ::: TaiConstants.IABD_TYPE_MISCELLANEOUS :::
-        TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS ::: TaiConstants.IABD_TYPE_DIVIDENDS ::: TaiConstants.IABD_TYPE_BANK_INTEREST :::
-        TaiConstants.IABD_TYPE_UNTAXED_INTEREST ::: List(Some(ForeignInterestAndOtherSavings.code), Some(ForeignDividendIncome.code))
+          TaiConstants.IABD_TYPE_GIFT_RELATED ::: TaiConstants.IABD_TYPE_JOB_EXPENSES ::: TaiConstants.IABD_TYPE_MISCELLANEOUS :::
+          TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS ::: TaiConstants.IABD_TYPE_DIVIDENDS ::: TaiConstants.IABD_TYPE_BANK_INTEREST :::
+          TaiConstants.IABD_TYPE_UNTAXED_INTEREST ::: List(
+          Some(ForeignInterestAndOtherSavings.code),
+          Some(ForeignDividendIncome.code))
       )
 
       "extract only those iabd's classified as IADB_TYPE_OTHER_PENSIONS" in {
         val result = SUT.otherPensions().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IADB_TYPE_OTHER_PENSIONS)
+        result.toSet must contain theSameElementsAs (TaiConstants.IADB_TYPE_OTHER_PENSIONS)
       }
 
       "extract only those iabd's classified as IABD_TYPE_BLIND_PERSON" in {
         val result = SUT.blindPerson().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_BLIND_PERSON)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_BLIND_PERSON)
       }
 
       "extract only those iabd's classified as IABD_TYPE_EXPENSES" in {
         val result = SUT.expenses().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_EXPENSES)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_EXPENSES)
       }
 
       "extract only those iabd's classified as IABD_TYPE_GIFT_RELATED" in {
         val result = SUT.giftRelated().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_GIFT_RELATED)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_GIFT_RELATED)
       }
 
       "extract only those iabd's classified as IABD_TYPE_JOB_EXPENSES" in {
         val result = SUT.jobExpenses().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_JOB_EXPENSES)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_JOB_EXPENSES)
       }
 
       "extract only those iabd's classified as IABD_TYPE_MISCELLANEOUS" in {
         val result = SUT.miscellaneous().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_MISCELLANEOUS)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_MISCELLANEOUS)
       }
 
       "extract only those iabd's classified as IABD_TYPE_PENSION_CONTRIBUTIONS" in {
         val result = SUT.pensionContributions().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS)
       }
 
       "extract only those iabd's classified as IABD_TYPE_DIVIDENDS" in {
         val result = SUT.dividends().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_DIVIDENDS)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_DIVIDENDS)
       }
 
       "extract only those iabd's classified as IABD_TYPE_BANK_INTEREST" in {
         val result = SUT.bankinterest().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_BANK_INTEREST)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_BANK_INTEREST)
       }
 
       "extract only those iabd's classified as IABD_TYPE_UNTAXED_INTEREST" in {
         val result = SUT.untaxedinterest().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(TaiConstants.IABD_TYPE_UNTAXED_INTEREST)
+        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_UNTAXED_INTEREST)
       }
 
       "extract only those iabd's classified as ForeignInterestAndOtherSavings.code" in {
@@ -306,7 +372,10 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
       "extract only those iabd's classified as 'other'" in {
         val result = SUT.other().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs(List(Some(BankOrBuildingSocietyInterest.code), Some(UkDividend.code), Some(UntaxedInterest.code)))
+        result.toSet must contain theSameElementsAs (List(
+          Some(BankOrBuildingSocietyInterest.code),
+          Some(UkDividend.code),
+          Some(UntaxedInterest.code)))
       }
     }
   }
@@ -336,18 +405,18 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       )
 
       val nonSavingNpsTax: Option[NpsTax] =
-        Some(NpsTax(totalIncome =
-                      Some(NpsComponent(
-                          amount = None,
-                          iabdSummaries = Some(List(iabdNonCoded)))),
-                    totalTax = Some(BigDecimal(40.00))))
+        Some(
+          NpsTax(
+            totalIncome = Some(NpsComponent(amount = None, iabdSummaries = Some(List(iabdNonCoded)))),
+            totalTax = Some(BigDecimal(40.00))))
 
-      val alreadyTaxedAtSource = Some(NpsAlreadyTaxedAtSource(
-        taxOnBankBSInterest = Some(BigDecimal(10)),
-        taxCreditOnUKDividends = Some(BigDecimal(10)),
-        taxCreditOnForeignInterest = Some(BigDecimal(10)),
-        taxCreditOnForeignIncomeDividends = Some(BigDecimal(10))
-      ))
+      val alreadyTaxedAtSource = Some(
+        NpsAlreadyTaxedAtSource(
+          taxOnBankBSInterest = Some(BigDecimal(10)),
+          taxCreditOnUKDividends = Some(BigDecimal(10)),
+          taxCreditOnForeignInterest = Some(BigDecimal(10)),
+          taxCreditOnForeignIncomeDividends = Some(BigDecimal(10))
+        ))
 
       val SUT = NpsTotalLiability(
         nonSavings = nonSavingNpsTax,
@@ -368,12 +437,13 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     "processing an instance with amounts that contribute to a non zero 'reductionsToLiability' amount (sum of reliefsGivingBackTax " +
       "and marriageAllowanceRelief amounts)" should {
 
-      val npsReliefsGivingBackTax = Some(NpsReliefsGivingBackTax(
-        enterpriseInvestmentSchemeRelief = Some(BigDecimal(5)),
-        concessionalRelief = Some(BigDecimal(5)),
-        maintenancePayments = Some(BigDecimal(5)),
-        doubleTaxationRelief = Some(BigDecimal(5))
-      ))
+      val npsReliefsGivingBackTax = Some(
+        NpsReliefsGivingBackTax(
+          enterpriseInvestmentSchemeRelief = Some(BigDecimal(5)),
+          concessionalRelief = Some(BigDecimal(5)),
+          maintenancePayments = Some(BigDecimal(5)),
+          doubleTaxationRelief = Some(BigDecimal(5))
+        ))
 
       val SUT = NpsTotalLiability(
         reliefsGivingBackTax = npsReliefsGivingBackTax
@@ -382,10 +452,14 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       "return a totalTax amount that is the supplied value, minus the 'reductionsToLiability' calculated amount" in {
 
         val allowances = List(
-          TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.EnterpriseInvestmentSchemeRelief.id)),
+          TaxCodeComponent(
+            amount = Some(BigDecimal(2)),
+            componentType = Some(AllowanceType.EnterpriseInvestmentSchemeRelief.id)),
           TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.ConcessionalRelief.id)),
           TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.MaintenancePayment.id)),
-          TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.DoubleTaxationReliefAllowance.id))
+          TaxCodeComponent(
+            amount = Some(BigDecimal(2)),
+            componentType = Some(AllowanceType.DoubleTaxationReliefAllowance.id))
         )
         val taxCodeDetails = TaxCodeDetails(
           employment = None,
@@ -397,11 +471,13 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         val result = SUT.toTotalLiabilitySummary(
           underpaymentPreviousYear = BigDecimal(0),
           inYearAdjustment = BigDecimal(0),
-          marriageAllowance = Some(MarriageAllowanceCC(
-            marriageAllowanceRelief = BigDecimal(18.00)
-          )),
+          marriageAllowance = Some(
+            MarriageAllowanceCC(
+              marriageAllowanceRelief = BigDecimal(18.00)
+            )),
           taxCodeDetails = Some(taxCodeDetails),
-          totalTax = BigDecimal(99.99))
+          totalTax = BigDecimal(99.99)
+        )
 
         result.totalTax mustBe BigDecimal(61.99)
       }
@@ -410,11 +486,12 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     "processing an instance with amounts that contribute to a non zero 'additionsToTotalLiabilty' amount (sum of otherTaxDue " +
       "and underpaymentPreviousYear, outstandingDebt, childBenefitTaxDue, and inYearAdjustment amounts)" should {
 
-      val npsOtherTaxDue = Some(NpsOtherTaxDue(
-        excessGiftAidTax = Some(BigDecimal(3)),
-        excessWidowsAndOrphans = Some(BigDecimal(3)),
-        pensionPaymentsAdjustment = Some(BigDecimal(3))
-      ))
+      val npsOtherTaxDue = Some(
+        NpsOtherTaxDue(
+          excessGiftAidTax = Some(BigDecimal(3)),
+          excessWidowsAndOrphans = Some(BigDecimal(3)),
+          pensionPaymentsAdjustment = Some(BigDecimal(3))
+        ))
 
       val SUT = NpsTotalLiability(
         otherTaxDue = npsOtherTaxDue
@@ -424,7 +501,9 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
         val deductions = List(
           TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.GiftAidAdjustment.id)),
-          TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.WidowsAndOrphansAdjustment.id)),
+          TaxCodeComponent(
+            amount = Some(BigDecimal(2)),
+            componentType = Some(DeductionType.WidowsAndOrphansAdjustment.id)),
           TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.Annuity.id))
         )
         val taxCodeDetails = TaxCodeDetails(
@@ -440,7 +519,8 @@ class NpsTotalLiabilitySpec extends PlaySpec {
           childBenefitTaxDue = BigDecimal(4),
           inYearAdjustment = BigDecimal(4),
           taxCodeDetails = Some(taxCodeDetails),
-          totalTax = BigDecimal(99.99))
+          totalTax = BigDecimal(99.99)
+        )
 
         result.totalTax mustBe BigDecimal(124.99)
       }
@@ -453,42 +533,50 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         `type` = Some(NonCodedIncome.code)
       )
       val nonSavingNpsTax: Option[NpsTax] =
-        Some(NpsTax(totalIncome =
-          Some(NpsComponent(
-            amount = None,
-            iabdSummaries = Some(List(iabdNonCoded)))),
-          totalTax = Some(BigDecimal(40.00))))
+        Some(
+          NpsTax(
+            totalIncome = Some(NpsComponent(amount = None, iabdSummaries = Some(List(iabdNonCoded)))),
+            totalTax = Some(BigDecimal(40.00))))
 
-      val npsAlreadyTaxedAtSource = Some(NpsAlreadyTaxedAtSource(
-        taxOnBankBSInterest = Some(BigDecimal(6)),
-        taxCreditOnUKDividends = Some(BigDecimal(7)),
-        taxCreditOnForeignInterest = Some(BigDecimal(8)),
-        taxCreditOnForeignIncomeDividends = Some(BigDecimal(9))
-      ))
+      val npsAlreadyTaxedAtSource = Some(
+        NpsAlreadyTaxedAtSource(
+          taxOnBankBSInterest = Some(BigDecimal(6)),
+          taxCreditOnUKDividends = Some(BigDecimal(7)),
+          taxCreditOnForeignInterest = Some(BigDecimal(8)),
+          taxCreditOnForeignIncomeDividends = Some(BigDecimal(9))
+        ))
 
       val allowances = List(
-        TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.EnterpriseInvestmentSchemeRelief.id)),
+        TaxCodeComponent(
+          amount = Some(BigDecimal(2)),
+          componentType = Some(AllowanceType.EnterpriseInvestmentSchemeRelief.id)),
         TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.ConcessionalRelief.id)),
         TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.MaintenancePayment.id)),
-        TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(AllowanceType.DoubleTaxationReliefAllowance.id))
+        TaxCodeComponent(
+          amount = Some(BigDecimal(2)),
+          componentType = Some(AllowanceType.DoubleTaxationReliefAllowance.id))
       )
-      val npsReliefsGivingBackTax = Some(NpsReliefsGivingBackTax(
-        enterpriseInvestmentSchemeRelief = Some(BigDecimal(5)),
-        concessionalRelief = Some(BigDecimal(5)),
-        maintenancePayments = Some(BigDecimal(5)),
-        doubleTaxationRelief = Some(BigDecimal(5))
-      ))
+      val npsReliefsGivingBackTax = Some(
+        NpsReliefsGivingBackTax(
+          enterpriseInvestmentSchemeRelief = Some(BigDecimal(5)),
+          concessionalRelief = Some(BigDecimal(5)),
+          maintenancePayments = Some(BigDecimal(5)),
+          doubleTaxationRelief = Some(BigDecimal(5))
+        ))
 
       val deductions = List(
         TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.GiftAidAdjustment.id)),
-        TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.WidowsAndOrphansAdjustment.id)),
+        TaxCodeComponent(
+          amount = Some(BigDecimal(2)),
+          componentType = Some(DeductionType.WidowsAndOrphansAdjustment.id)),
         TaxCodeComponent(amount = Some(BigDecimal(2)), componentType = Some(DeductionType.Annuity.id))
       )
-      val npsOtherTaxDue = Some(NpsOtherTaxDue(
-        excessGiftAidTax = Some(BigDecimal(3)),
-        excessWidowsAndOrphans = Some(BigDecimal(3)),
-        pensionPaymentsAdjustment = Some(BigDecimal(3))
-      ))
+      val npsOtherTaxDue = Some(
+        NpsOtherTaxDue(
+          excessGiftAidTax = Some(BigDecimal(3)),
+          excessWidowsAndOrphans = Some(BigDecimal(3)),
+          pensionPaymentsAdjustment = Some(BigDecimal(3))
+        ))
 
       val taxCodeDetails = TaxCodeDetails(
         employment = None,
@@ -513,7 +601,8 @@ class NpsTotalLiabilitySpec extends PlaySpec {
           childBenefitAmount = BigDecimal(4),
           childBenefitTaxDue = BigDecimal(5),
           taxCodeDetails = Some(taxCodeDetails),
-          totalTax = BigDecimal(99.99))
+          totalTax = BigDecimal(99.99)
+        )
 
         result.nonCodedIncome.get.totalTax mustBe Some(BigDecimal(40))
         result.underpaymentPreviousYear mustBe BigDecimal(1)
@@ -526,19 +615,24 @@ class NpsTotalLiabilitySpec extends PlaySpec {
         result.taxCreditOnForeignInterest mustBe Some(BigDecimal(8))
         result.taxCreditOnForeignIncomeDividends mustBe Some(BigDecimal(9))
         result.liabilityReductions mustBe
-          Some(LiabilityReductions(None,Some(Adjustment(2,5)),Some(Adjustment(2,5)),Some(Adjustment(2,5)),Some(Adjustment(2,5))))
+          Some(
+            LiabilityReductions(
+              None,
+              Some(Adjustment(2, 5)),
+              Some(Adjustment(2, 5)),
+              Some(Adjustment(2, 5)),
+              Some(Adjustment(2, 5))))
         result.liabilityAdditions mustBe
-          Some(LiabilityAdditions(Some(Adjustment(2,3)),Some(Adjustment(2,3)),Some(Adjustment(2,3))))
+          Some(LiabilityAdditions(Some(Adjustment(2, 3)), Some(Adjustment(2, 3)), Some(Adjustment(2, 3))))
 
         result.totalTax mustBe BigDecimal(29.99)
       }
     }
   }
 
-
   private def randomSpreadTotalLiability(iabdCodes: List[Option[Int]]): NpsTotalLiability = {
 
-    val grouped: Seq[List[Option[Int]]] = iabdCodes.grouped(iabdCodes.size/6).toList
+    val grouped: Seq[List[Option[Int]]] = iabdCodes.grouped(iabdCodes.size / 6).toList
     val overflow: List[Option[Int]] = if (grouped.size > 6) grouped.last else Nil
 
     NpsTotalLiability(
@@ -547,13 +641,13 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       bankInterest = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(2))))))),
       ukDividends = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(3))))))),
       foreignInterest = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(4))))))),
-      foreignDividends = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(5) ::: overflow))))))
+      foreignDividends =
+        Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(5) ::: overflow))))))
     )
   }
 
-  private def iadbList(range: List[Option[Int]]) : List[NpsIabdSummary] = {
+  private def iadbList(range: List[Option[Int]]): List[NpsIabdSummary] =
     range.map(code => {
-      NpsIabdSummary(amount = Some(BigDecimal(1+Random.nextInt(99))), `type` = code)
+      NpsIabdSummary(amount = Some(BigDecimal(1 + Random.nextInt(99))), `type` = code)
     })
-  }
 }

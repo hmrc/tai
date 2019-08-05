@@ -20,13 +20,12 @@ import org.joda.time.LocalDate
 import com.github.nscala_time.time.Imports._
 
 case class RtiEyu(
-                   taxablePayDelta: Option[BigDecimal],
-                   totalTaxDelta: Option[BigDecimal],
-                   empeeContribnsDelta: Option[BigDecimal],
-                   rcvdDate: LocalDate
-                 ) extends Ordered[RtiEyu] {
+  taxablePayDelta: Option[BigDecimal],
+  totalTaxDelta: Option[BigDecimal],
+  empeeContribnsDelta: Option[BigDecimal],
+  rcvdDate: LocalDate
+) extends Ordered[RtiEyu] {
 
   def compare(that: RtiEyu): Int = this.rcvdDate compare that.rcvdDate
 
 }
-

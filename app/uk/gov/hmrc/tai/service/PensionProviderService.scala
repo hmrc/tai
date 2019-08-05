@@ -32,35 +32,43 @@ import uk.gov.hmrc.tai.util.IFormConstants
 import scala.concurrent.Future
 
 @Singleton
-class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionService,
-                                       employmentRepository: EmploymentRepository,
-                                       auditable: Auditor) {
+class PensionProviderService @Inject()(
+  iFormSubmissionService: IFormSubmissionService,
+  employmentRepository: EmploymentRepository,
+  auditable: Auditor) {
 
-  def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
-    iFormSubmissionService.uploadIForm(nino, IFormConstants.AddPensionProviderSubmissionKey, "TES1",
+  def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] =
+    iFormSubmissionService.uploadIForm(
+      nino,
+      IFormConstants.AddPensionProviderSubmissionKey,
+      "TES1",
       addPensionProviderForm(pensionProvider)) map { envelopeId =>
       Logger.info("Envelope Id for incorrect employment- " + envelopeId)
 
-      auditable.sendDataEvent(transactionName = IFormConstants.AddPensionProviderAuditTxnName, detail = Map(
-        "nino" -> nino.nino,
-        "envelope Id" -> envelopeId,
-        "start-date" -> pensionProvider.startDate.toString(),
-        "pensionNumber" -> pensionProvider.pensionNumber,
-        "pensionProviderName" -> pensionProvider.pensionProviderName
-      ))
+      auditable.sendDataEvent(
+        transactionName = IFormConstants.AddPensionProviderAuditTxnName,
+        detail = Map(
+          "nino"                -> nino.nino,
+          "envelope Id"         -> envelopeId,
+          "start-date"          -> pensionProvider.startDate.toString(),
+          "pensionNumber"       -> pensionProvider.pensionNumber,
+          "pensionProviderName" -> pensionProvider.pensionProviderName
+        )
+      )
 
       envelopeId
     }
-  }
 
   private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier) = {
-    person: Person => {
-      val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
-      Future.successful(PensionProviderIForm(templateModel).toString)
-    }
+    person: Person =>
+      {
+        val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
+        Future.successful(PensionProviderIForm(templateModel).toString)
+      }
   }
 
-  def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier): Future[String] = {
+  def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(
+    implicit hc: HeaderCarrier): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,
       IFormConstants.IncorrectPensionProviderSubmissionKey,
@@ -69,21 +77,25 @@ class PensionProviderService @Inject()(iFormSubmissionService: IFormSubmissionSe
     ) map { envelopeId =>
       Logger.info("Envelope Id for incorrect pension provider- " + envelopeId)
 
-      auditable.sendDataEvent(transactionName = IFormConstants.IncorrectPensionProviderSubmissionKey, detail = Map(
-        "nino" -> nino.nino,
-        "envelope Id" -> envelopeId,
-        "what-you-told-us" -> incorrectPensionProvider.whatYouToldUs.length.toString,
-        "telephoneContactAllowed" -> incorrectPensionProvider.telephoneContactAllowed,
-        "telephoneNumber" -> incorrectPensionProvider.telephoneNumber.getOrElse("")
-      ))
+      auditable.sendDataEvent(
+        transactionName = IFormConstants.IncorrectPensionProviderSubmissionKey,
+        detail = Map(
+          "nino"                    -> nino.nino,
+          "envelope Id"             -> envelopeId,
+          "what-you-told-us"        -> incorrectPensionProvider.whatYouToldUs.length.toString,
+          "telephoneContactAllowed" -> incorrectPensionProvider.telephoneContactAllowed,
+          "telephoneNumber"         -> incorrectPensionProvider.telephoneNumber.getOrElse("")
+        )
+      )
 
       envelopeId
     }
-  }
 
-  private[service] def incorrectPensionProviderForm(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)
-                                                   (implicit hc: HeaderCarrier) = {
-    person: Person => {
+  private[service] def incorrectPensionProviderForm(
+    nino: Nino,
+    id: Int,
+    incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier) = { person: Person =>
+    {
       for {
         Some(existingEmployment) <- employmentRepository.employment(nino, id)
         templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)

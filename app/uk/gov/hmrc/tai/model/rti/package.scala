@@ -32,19 +32,18 @@ package object rti {
 
   implicit val freqFormat = JsonExtra.enumerationFormat(PayFrequency)
 
-  implicit val stringMapFormat = JsonExtra.mapFormat[String,BigDecimal]("type", "amount")
+  implicit val stringMapFormat = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val formatLocalDate: Format[LocalDate] = Format(
-    new Reads[LocalDate]{
+    new Reads[LocalDate] {
       val dateRegex: Regex = """^(\d\d\d\d)-(\d\d)-(\d\d)$""".r
       override def reads(json: JsValue): JsResult[LocalDate] = json match {
         case JsString(dateRegex(y, m, d)) =>
           JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(ValidationError(
-          s"Invalid date format [yyyy-MM-dd]: $invalid"))
+        case invalid => JsError(ValidationError(s"Invalid date format [yyyy-MM-dd]: $invalid"))
       }
     },
-    new Writes[LocalDate]{
+    new Writes[LocalDate] {
       val dateFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
       override def writes(date: LocalDate): JsValue =
         JsString(dateFormat.print(date))
@@ -55,7 +54,6 @@ package object rti {
     new Reads[RtiPayment] {
       override def reads(json: JsValue): JsResult[RtiPayment] = {
 
-
         val mma = (json \ "mandatoryMonetaryAmount")
           .as[Map[String, BigDecimal]]
 
@@ -63,7 +61,9 @@ package object rti {
           .asOpt[Map[String, BigDecimal]]
           .getOrElse(Map())
 
-        val niFigure = (json \ "niLettersAndValues").asOpt[JsArray].map(x => x \\ "niFigure")
+        val niFigure = (json \ "niLettersAndValues")
+          .asOpt[JsArray]
+          .map(x => x \\ "niFigure")
           .flatMap(_.headOption)
           .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map.empty[String, BigDecimal]))
 
@@ -76,8 +76,7 @@ package object rti {
           taxed = mma("TaxDeductedOrRefunded"),
           taxedYTD = mma("TotalTaxYTD"),
           payId = (json \ "payId").asOpt[String],
-          isOccupationalPension = (json \ "occPenInd").
-            asOpt[Boolean].getOrElse(false),
+          isOccupationalPension = (json \ "occPenInd").asOpt[Boolean].getOrElse(false),
           occupationalPensionAmount = oma.get("OccPensionAmount"),
           weekOfTaxYear = (json \ "weekNo").asOpt[String].map(_.toInt),
           monthOfTaxYear = (json \ "monthNo").asOpt[String].map(_.toInt),
@@ -89,39 +88,45 @@ package object rti {
       }
     },
     new Writes[RtiPayment] {
-      override def writes(pay: RtiPayment): JsValue = {
+      override def writes(pay: RtiPayment): JsValue =
         Json.obj(
-          "payFreq" -> pay.payFrequency,
-          "pmtDate" -> pay.paidOn,
+          "payFreq"  -> pay.payFrequency,
+          "pmtDate"  -> pay.paidOn,
           "rcvdDate" -> pay.submittedOn,
           "mandatoryMonetaryAmount" -> Seq(
-            "TaxablePayYTD" -> pay.taxablePayYTD,
-            "TotalTaxYTD" -> pay.taxedYTD,
-            "TaxablePay" -> pay.taxablePay,
+            "TaxablePayYTD"         -> pay.taxablePayYTD,
+            "TotalTaxYTD"           -> pay.taxedYTD,
+            "TaxablePay"            -> pay.taxablePay,
             "TaxDeductedOrRefunded" -> pay.taxed
-          ).map { e => Json.obj("type" -> e._1, "amount" -> e._2)},
+          ).map { e =>
+            Json.obj("type" -> e._1, "amount" -> e._2)
+          },
           "optionalMonetaryAmount" -> Seq(
-            pay.occupationalPensionAmount.map {
-              e => "OccPensionAmount" -> e
+            pay.occupationalPensionAmount.map { e =>
+              "OccPensionAmount" -> e
             }
-          ).flatten.map { e => Json.obj("type" -> e._1, "amount" -> e._2)},
-          "payId" -> pay.payId,
+          ).flatten.map { e =>
+            Json.obj("type" -> e._1, "amount" -> e._2)
+          },
+          "payId"     -> pay.payId,
           "occPenInd" -> pay.isOccupationalPension,
-          "irrEmp" -> pay.isIrregular,
-          "weekNo" -> pay.weekOfTaxYear.map(_.toString),
-          "monthNo" -> pay.monthOfTaxYear.map(_.toString),
-          "niLettersAndValues" -> Json.arr(Json.obj(
-            "niFigure" -> Seq(
-              pay.nicPaid.map {
-                e => "EmpeeContribnsInPd" -> e
-              },
-              pay.nicPaidYTD.map {
-                e => "EmpeeContribnsYTD" -> e
+          "irrEmp"    -> pay.isIrregular,
+          "weekNo"    -> pay.weekOfTaxYear.map(_.toString),
+          "monthNo"   -> pay.monthOfTaxYear.map(_.toString),
+          "niLettersAndValues" -> Json.arr(
+            Json.obj(
+              "niFigure" -> Seq(
+                pay.nicPaid.map { e =>
+                  "EmpeeContribnsInPd" -> e
+                },
+                pay.nicPaidYTD.map { e =>
+                  "EmpeeContribnsYTD" -> e
+                }
+              ).flatten.map { e =>
+                Json.obj("type" -> e._1, "amount" -> e._2)
               }
-            ).flatten.map { e => Json.obj("type" -> e._1, "amount" -> e._2)}
-          ))
+            ))
         )
-      }
     }
   )
 
@@ -132,8 +137,11 @@ package object rti {
         val optionalAdjustmentAmountMap =
           (json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]].getOrElse(Map.empty[String, BigDecimal])
 
-        val niFigure = (json \ "niLettersAndValues").asOpt[JsArray].map(x => x \\ "niFigure").
-          flatMap(_.headOption).map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map.empty[String, BigDecimal]))
+        val niFigure = (json \ "niLettersAndValues")
+          .asOpt[JsArray]
+          .map(x => x \\ "niFigure")
+          .flatMap(_.headOption)
+          .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map.empty[String, BigDecimal]))
 
         val rcvdDate = (json \ "rcvdDate").as[LocalDate]
 
@@ -150,21 +158,22 @@ package object rti {
     new Writes[RtiEyu] {
       override def writes(eyu: RtiEyu): JsValue = {
 
-        val formSeqElement = (typeName: String, amount: Option[BigDecimal]) => if (amount.isDefined) {
-          Seq(typeName -> amount)
-        } else {
-          Seq[(String, Option[BigDecimal])]()
+        val formSeqElement = (typeName: String, amount: Option[BigDecimal]) =>
+          if (amount.isDefined) {
+            Seq(typeName -> amount)
+          } else {
+            Seq[(String, Option[BigDecimal])]()
         }
 
         val optionalAdjustmentAmount: Seq[(String, Option[BigDecimal])] =
           formSeqElement("TaxablePayDelta", eyu.taxablePayDelta) ++
-          formSeqElement("TotalTaxDelta", eyu.totalTaxDelta)
+            formSeqElement("TotalTaxDelta", eyu.totalTaxDelta)
 
         val niFigureAmount: Seq[Option[(String, BigDecimal)]] =
-          if(eyu.empeeContribnsDelta.isDefined) {
+          if (eyu.empeeContribnsDelta.isDefined) {
             Seq(
-              eyu.empeeContribnsDelta.map {
-                element => "EmpeeContribnsDelta" -> element
+              eyu.empeeContribnsDelta.map { element =>
+                "EmpeeContribnsDelta" -> element
               }
             )
           } else {
@@ -175,11 +184,14 @@ package object rti {
           "optionalAdjustmentAmount" -> optionalAdjustmentAmount.map { element =>
             Json.obj("type" -> element._1, "amount" -> element._2)
           },
-          "niLettersAndValues" -> Json.arr(Json.obj(
-            "niFigure" -> niFigureAmount.map { element =>
-              Json.obj("type" -> element.fold("")(ele => ele._1), "amount" -> element.fold(BigDecimal(0))(ele => ele._2))
-            }
-          )),
+          "niLettersAndValues" -> Json.arr(
+            Json.obj(
+              "niFigure" -> niFigureAmount.map { element =>
+                Json.obj(
+                  "type"   -> element.fold("")(ele => ele._1),
+                  "amount" -> element.fold(BigDecimal(0))(ele => ele._2))
+              }
+            )),
           "rcvdDate" -> eyu.rcvdDate
         )
       }
@@ -194,30 +206,33 @@ package object rti {
 
   implicit val formatRtiEmployment: Format[RtiEmployment] = (
     (__ \ "empRefs" \ "officeNo").format[String] and
-    (__ \ "empRefs" \ "payeRef").format[String] and
-    (__ \ "empRefs" \ "aoRef").format[String] and
-    (__ \ "payments" \ "inYear").formatNullable[List[RtiPayment]].
-      inmap[List[RtiPayment]](
-        o => o.map(_.sorted).getOrElse(List.empty[RtiPayment]),
-        s => if (s.isEmpty) Some(Nil) else Some(s)
-      ) and
-    (__ \ "payments" \ "eyu").formatNullable[List[RtiEyu]].
-      inmap[List[RtiEyu]](
-      o => o.map(_.sorted).getOrElse(List.empty[RtiEyu]),
-      s => if (s.isEmpty) Some(Nil) else Some(s)
-    ) and
-    (__ \ "currentPayId").formatNullable[String] and
-    (__ \ "sequenceNumber").format[Int]
+      (__ \ "empRefs" \ "payeRef").format[String] and
+      (__ \ "empRefs" \ "aoRef").format[String] and
+      (__ \ "payments" \ "inYear")
+        .formatNullable[List[RtiPayment]]
+        .inmap[List[RtiPayment]](
+          o => o.map(_.sorted).getOrElse(List.empty[RtiPayment]),
+          s => if (s.isEmpty) Some(Nil) else Some(s)
+        ) and
+      (__ \ "payments" \ "eyu")
+        .formatNullable[List[RtiEyu]]
+        .inmap[List[RtiEyu]](
+          o => o.map(_.sorted).getOrElse(List.empty[RtiEyu]),
+          s => if (s.isEmpty) Some(Nil) else Some(s)
+        ) and
+      (__ \ "currentPayId").formatNullable[String] and
+      (__ \ "sequenceNumber").format[Int]
   )(RtiEmployment.apply, unlift(RtiEmployment.unapply))
 
   implicit val formatRtiData: Format[RtiData] =
-    ( (__ \ "request" \ "nino").format[String] and
-      (__ \ "request" \ "relatedTaxYear").format[String].inmap[TaxYear](
-        o => TaxYear(o),
-        s => s.twoDigitRange
-      ) and
+    ((__ \ "request" \ "nino").format[String] and
+      (__ \ "request" \ "relatedTaxYear")
+        .format[String]
+        .inmap[TaxYear](
+          o => TaxYear(o),
+          s => s.twoDigitRange
+        ) and
       (__ \ "request" \ "requestId").format[String] and
-      (__ \ "individual" \ "employments" \ "employment").
-        format[List[RtiEmployment]]
-    )(RtiData.apply, unlift(RtiData.unapply))
+      (__ \ "individual" \ "employments" \ "employment")
+        .format[List[RtiEmployment]])(RtiData.apply, unlift(RtiData.unapply))
 }

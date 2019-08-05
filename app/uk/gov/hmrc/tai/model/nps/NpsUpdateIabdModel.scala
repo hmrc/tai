@@ -18,12 +18,16 @@ package uk.gov.hmrc.tai.model.nps
 
 import play.api.libs.json._
 
-case class NpsIabdRoot (nino: String, employmentSequenceNumber: Option[Int] = None, `type`: Int, grossAmount : Option[BigDecimal] = None,
-                        netAmount : Option[BigDecimal] = None, source:Option[Int]=None, receiptDate : Option[NpsDate] = None,
-                        captureDate : Option[NpsDate] = None)
+case class NpsIabdRoot(
+  nino: String,
+  employmentSequenceNumber: Option[Int] = None,
+  `type`: Int,
+  grossAmount: Option[BigDecimal] = None,
+  netAmount: Option[BigDecimal] = None,
+  source: Option[Int] = None,
+  receiptDate: Option[NpsDate] = None,
+  captureDate: Option[NpsDate] = None)
 
 object NpsIabdRoot {
   implicit val formats = Json.format[NpsIabdRoot]
 }
-
-

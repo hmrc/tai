@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-
-case class TaxDetail(totalTax: Option[BigDecimal] = None,
-                     totalTaxableIncome: Option[BigDecimal] = None,
-                     totalIncome: Option[BigDecimal] = None,
-                     taxBands: Seq[TaxBand] = Nil)
+case class TaxDetail(
+  totalTax: Option[BigDecimal] = None,
+  totalTaxableIncome: Option[BigDecimal] = None,
+  totalIncome: Option[BigDecimal] = None,
+  taxBands: Seq[TaxBand] = Nil)

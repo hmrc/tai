@@ -29,48 +29,48 @@ class TaxCalculatorSpec extends PlaySpec {
     "update totalIncome to expected value" when {
       "updateTax is called with totalIncome as None" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(),0,0)
-        expectedTax.totalIncome must be (None)
+        val expectedTax: Tax = sut.updateTax(Tax(), 0, 0)
+        expectedTax.totalIncome must be(None)
       }
 
       "updateTax is called with some totalIncome value" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000)),0,0)
-        expectedTax.totalIncome must be (Some(BigDecimal(4000)))
+        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000)), 0, 0)
+        expectedTax.totalIncome must be(Some(BigDecimal(4000)))
       }
 
       "updateTax is called with negative updateDifference" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(2000)),-5000,0)
-        expectedTax.totalIncome must be (Some(BigDecimal(0)))
+        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(2000)), -5000, 0)
+        expectedTax.totalIncome must be(Some(BigDecimal(0)))
       }
     }
 
     "update allowedReliefDeducts with expected value" when {
       "updateTax is called with allowedReliefDeducts as None" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(),0,0)
-        expectedTax.allowReliefDeducts must be (None)
+        val expectedTax: Tax = sut.updateTax(Tax(), 0, 0)
+        expectedTax.allowReliefDeducts must be(None)
       }
 
       "updateTax is called with some allowedReliefDeducts value" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(allowReliefDeducts = Some(1000)),0,2000)
-        expectedTax.allowReliefDeducts must be (Some(BigDecimal(3000)))
+        val expectedTax: Tax = sut.updateTax(Tax(allowReliefDeducts = Some(1000)), 0, 2000)
+        expectedTax.allowReliefDeducts must be(Some(BigDecimal(3000)))
       }
     }
 
     "update totalTaxableIncome with expected value" when {
       "updateTax is called with some totalIncome and allowedReliefDeducts values" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), allowReliefDeducts = Some(1000)),0,-2000)
-        expectedTax.totalTaxableIncome must be (Some(BigDecimal(5000)))
+        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), allowReliefDeducts = Some(1000)), 0, -2000)
+        expectedTax.totalTaxableIncome must be(Some(BigDecimal(5000)))
       }
 
       "updateTax is called with totalIncome less than allowedReliefDeducts" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), allowReliefDeducts = Some(5000)),0,0)
-        expectedTax.totalTaxableIncome must be (Some(BigDecimal(0)))
+        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), allowReliefDeducts = Some(5000)), 0, 0)
+        expectedTax.totalTaxableIncome must be(Some(BigDecimal(0)))
       }
     }
 
@@ -79,28 +79,28 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "updateTax is called with totalIncome as None" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(taxBands = taxBandList),0,0)
-        expectedTax.taxBands must be (Some(List(taxBand(Some(0), Some(0)), taxBand(Some(0), Some(0)))))
+        val expectedTax: Tax = sut.updateTax(Tax(taxBands = taxBandList), 0, 0)
+        expectedTax.taxBands must be(Some(List(taxBand(Some(0), Some(0)), taxBand(Some(0), Some(0)))))
       }
 
       "updateTax is called with some totalIncome value" in {
         val sut = SUT
-        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), taxBands = taxBandList),0,0)
-        expectedTax.taxBands must be (Some(List(taxBand(Some(4000), Some(0)), taxBand(Some(0), Some(0)))))
+        val expectedTax: Tax = sut.updateTax(Tax(totalIncome = Some(4000), taxBands = taxBandList), 0, 0)
+        expectedTax.taxBands must be(Some(List(taxBand(Some(4000), Some(0)), taxBand(Some(0), Some(0)))))
       }
     }
 
     "update total tax with expected values" when {
       "updateTax is called with No tax bands" in {
         val sut = SUT
-        val expectedTax = sut.updateTax(Tax(),0,0)
+        val expectedTax = sut.updateTax(Tax(), 0, 0)
         expectedTax.totalTax must be(None)
       }
 
       "updateTax is called with taxBands having rates" in {
         val taxBandList = List(taxBand(rate = Some(20)), taxBand(rate = Some(40)))
         val sut = SUT
-        val expectedTax = sut.updateTax(Tax(totalIncome = Some(1000),taxBands = Some(taxBandList)), 0, 0)
+        val expectedTax = sut.updateTax(Tax(totalIncome = Some(1000), taxBands = Some(taxBandList)), 0, 0)
         expectedTax.totalTax must be(Some(BigDecimal(200)))
       }
     }
@@ -152,19 +152,23 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "taxCode value neither starts with B or D" in {
         val sut = SUT
-        sut.isAdjustmentNeeded(taxCode = Some("K001"), allowances = allowances, deductions = deductions, oldTax = oldTax) must be(false)
+        sut.isAdjustmentNeeded(
+          taxCode = Some("K001"),
+          allowances = allowances,
+          deductions = deductions,
+          oldTax = oldTax) must be(false)
       }
 
       "NpsTax has total tax amount" in {
         val sut = SUT
         val oldTax = NpsTax(totalTax = Some(100))
-        sut.isAdjustmentNeeded(oldTax = oldTax)must be(false)
+        sut.isAdjustmentNeeded(oldTax = oldTax) must be(false)
       }
 
       "NpsTax has total tax amount is 0" in {
         val sut = SUT
         val oldTax = NpsTax(totalTax = Some(0))
-        sut.isAdjustmentNeeded(oldTax = oldTax)must be(false)
+        sut.isAdjustmentNeeded(oldTax = oldTax) must be(false)
       }
 
       "NpsTax has total tax amount is None" in {
@@ -200,7 +204,11 @@ class TaxCalculatorSpec extends PlaySpec {
         val totalTax = Some(BigDecimal(100))
         val totalTaxableIncome = Some(BigDecimal(100))
         val allowReliefDeducts = Some(NpsComponent(amount = Some(100)))
-        val oldTax = NpsTax(allowReliefDeducts = allowReliefDeducts, totalTaxableIncome = totalTaxableIncome, totalTax = totalTax, taxBands = taxBands)
+        val oldTax = NpsTax(
+          allowReliefDeducts = allowReliefDeducts,
+          totalTaxableIncome = totalTaxableIncome,
+          totalTax = totalTax,
+          taxBands = taxBands)
 
         val result = sut.adjustTaxData(taxCode = Some("D0"), oldTax = oldTax)
         result must be((taxBands, totalTax, totalTaxableIncome, Some(100)))
@@ -216,7 +224,10 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "adjustment is needed but total component has empty NPS component" in {
         val sut = SUT
-        val oldTax = NpsTax(totalTax = Some(20), totalIncome = Some(NpsComponent()), allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
+        val oldTax = NpsTax(
+          totalTax = Some(20),
+          totalIncome = Some(NpsComponent()),
+          allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
         val result = sut.adjustTaxData(allowances = allowances, deductions = deductions, oldTax = oldTax)
 
         result must be((None, None, None, None))
@@ -224,7 +235,10 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "totalIncome is provided to adjust Taxable Income and Tax free amount" in {
         val sut = SUT
-        val oldTax = NpsTax(totalTax = Some(20), totalIncome = Some(NpsComponent(amount = Some(1000))), allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
+        val oldTax = NpsTax(
+          totalTax = Some(20),
+          totalIncome = Some(NpsComponent(amount = Some(1000))),
+          allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
         val result = sut.adjustTaxData(allowances = allowances, deductions = deductions, oldTax = oldTax)
 
         result must be((None, None, Some(960), Some(40)))
@@ -232,7 +246,10 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "taxable income is 0" in {
         val sut = SUT
-        val oldTax = NpsTax(totalTax = Some(20), totalIncome = Some(NpsComponent(amount = Some(40))), allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
+        val oldTax = NpsTax(
+          totalTax = Some(20),
+          totalIncome = Some(NpsComponent(amount = Some(40))),
+          allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
         val result = sut.adjustTaxData(allowances = allowances, deductions = deductions, oldTax = oldTax)
 
         result must be((None, None, Some(0), Some(40)))
@@ -241,22 +258,32 @@ class TaxCalculatorSpec extends PlaySpec {
       "tax bands are specified" in {
         val sut = SUT
         val taxBandList = List(taxBand(rate = Some(20)), taxBand(rate = Some(40)))
-        val oldTax = NpsTax(totalTax = Some(20), totalIncome = Some(NpsComponent(amount = Some(40))), taxBands = Some(taxBandList),
+        val oldTax = NpsTax(
+          totalTax = Some(20),
+          totalIncome = Some(NpsComponent(amount = Some(40))),
+          taxBands = Some(taxBandList),
           allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
         val result = sut.adjustTaxData(allowances = allowances, deductions = deductions, oldTax = oldTax)
 
-        val expectedTaxBands = List(TaxBand(Some(0),Some(0),Some(0),Some(5000),Some(20)), TaxBand(Some(0),Some(0),Some(0),Some(5000),Some(40)))
+        val expectedTaxBands = List(
+          TaxBand(Some(0), Some(0), Some(0), Some(5000), Some(20)),
+          TaxBand(Some(0), Some(0), Some(0), Some(5000), Some(40)))
         result must be((Some(expectedTaxBands), Some(0), Some(0), Some(40)))
       }
 
       "tax bands have specified tax" in {
         val sut = SUT
         val taxBandList = List(taxBand(rate = Some(20), tax = Some(1000)), taxBand(rate = Some(40), tax = Some(2000)))
-        val oldTax = NpsTax(totalTax = Some(20), totalIncome = Some(NpsComponent(amount = Some(1000))), taxBands = Some(taxBandList),
+        val oldTax = NpsTax(
+          totalTax = Some(20),
+          totalIncome = Some(NpsComponent(amount = Some(1000))),
+          taxBands = Some(taxBandList),
           allowReliefDeducts = Some(NpsComponent(amount = Some(50))))
         val result = sut.adjustTaxData(allowances = allowances, deductions = deductions, oldTax = oldTax)
 
-        val expectedTaxBands = List(TaxBand(Some(960),Some(192),Some(0),Some(5000),Some(20)), TaxBand(Some(0),Some(0),Some(0),Some(5000),Some(40)))
+        val expectedTaxBands = List(
+          TaxBand(Some(960), Some(192), Some(0), Some(5000), Some(20)),
+          TaxBand(Some(0), Some(0), Some(0), Some(5000), Some(40)))
         result must be((Some(expectedTaxBands), Some(192), Some(960), Some(40)))
       }
 
@@ -269,7 +296,7 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "last year date is provided" in {
         val sut = SUT
-        sut.getStartDateInCurrentFinancialYear(new LocalDate(2016,6,9)) must be(startDateCY)
+        sut.getStartDateInCurrentFinancialYear(new LocalDate(2016, 6, 9)) must be(startDateCY)
       }
 
       "future date is provided" in {
@@ -284,7 +311,7 @@ class TaxCalculatorSpec extends PlaySpec {
     "return basic rate" when {
       "total income and tax bands are None" in {
         val sut = SUT
-        sut.totalAtBasicRate(None,None) must be(0)
+        sut.totalAtBasicRate(None, None) must be(0)
       }
 
       "total income is None" in {
@@ -369,9 +396,13 @@ class TaxCalculatorSpec extends PlaySpec {
 
   private def SUT = TaxCalculator
 
-  private def taxBand(income: Option[BigDecimal] = Some(10), tax: Option[BigDecimal] = Some(1000), lowerBand: Option[BigDecimal] = Some(0),
-              upperBand: Option[BigDecimal] = Some(5000), rate: Option[BigDecimal] = Some(0)) = TaxBand(income, tax, lowerBand, upperBand, rate)
-  private val allowances = Some(List(NpsComponent(Some(60)),NpsComponent(Some(30))))
-  private val deductions = Some(List(NpsComponent(Some(20)),NpsComponent(Some(30))))
+  private def taxBand(
+    income: Option[BigDecimal] = Some(10),
+    tax: Option[BigDecimal] = Some(1000),
+    lowerBand: Option[BigDecimal] = Some(0),
+    upperBand: Option[BigDecimal] = Some(5000),
+    rate: Option[BigDecimal] = Some(0)) = TaxBand(income, tax, lowerBand, upperBand, rate)
+  private val allowances = Some(List(NpsComponent(Some(60)), NpsComponent(Some(30))))
+  private val deductions = Some(List(NpsComponent(Some(20)), NpsComponent(Some(30))))
 
 }

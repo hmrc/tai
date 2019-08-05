@@ -34,26 +34,26 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
-class TaiController @Inject()(taxAccountService: TaxAccountService,
-                              metrics: Metrics, authentication: AuthenticationPredicate)
-  extends BaseController
-    with MongoFormatter {
+class TaiController @Inject()(
+  taxAccountService: TaxAccountService,
+  metrics: Metrics,
+  authentication: AuthenticationPredicate)
+    extends BaseController with MongoFormatter {
 
-  def getTaiRoot(nino: Nino): Action[AnyContent] = authentication.async {
-    implicit request =>
+  def getTaiRoot(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     for {
       taiRoot <- taxAccountService.personDetails(nino)
     } yield Ok(Json.toJson(taiRoot))
 
   }
 
-  def taiData(nino: Nino): Action[AnyContent] = authentication.async {
-    implicit request => {
+  def taiData(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    {
 
       for {
         sessionData <- taxAccountService.taiData(nino, TaxYear().start.getYear())
       } yield Ok(Json.toJson(sessionData))
-    }recoverWith {
+    } recoverWith {
       case NpsError(body, NOT_FOUND) =>
         Logger.warn(s"Tax Account - No tax Account data returned from NPS for nino $nino")
         Future.failed(new NotFoundException(body))
@@ -69,10 +69,10 @@ class TaiController @Inject()(taxAccountService: TaxAccountService,
     }
   }
 
-  def updateTaiData(nino: Nino): Action[JsValue] = authentication.async(parse.json) {
-    implicit request => {
-      withJsonBody[SessionData] {
-        sessionData => {
+  def updateTaiData(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    {
+      withJsonBody[SessionData] { sessionData =>
+        {
           taxAccountService.updateTaiData(nino, sessionData) map (_ => Ok)
         }
       } recoverWith {

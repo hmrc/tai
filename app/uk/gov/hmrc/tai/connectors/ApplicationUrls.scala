@@ -33,22 +33,24 @@ class RtiUrls @Inject()(config: DesConfig) {
 }
 
 @Singleton
-class  PdfUrls @Inject()(config: PdfConfig) {
+class PdfUrls @Inject()(config: PdfConfig) {
   def generatePdfUrl = s"${config.baseURL}/pdf-generator-service/generate"
 }
 
 @Singleton
-class  FileUploadUrls @Inject()(config: FileUploadConfig) {
+class FileUploadUrls @Inject()(config: FileUploadConfig) {
 
   def envelopesUrl = s"${config.baseURL}/file-upload/envelopes"
   def routingUrl = s"${config.baseURL}/file-routing/requests"
-  def fileUrl(envelopeId: String, fileId: String) = s"${config.frontendBaseURL}/file-upload/upload/envelopes/$envelopeId/files/$fileId"
+  def fileUrl(envelopeId: String, fileId: String) =
+    s"${config.frontendBaseURL}/file-upload/upload/envelopes/$envelopeId/files/$fileId"
 }
 
 @Singleton
 class PayeUrls @Inject()(config: PayeConfig) {
 
-  def carBenefitsForYearUrl(nino: Nino, taxYear: TaxYear) = s"${config.baseURL}/paye/${nino.nino}/car-benefits/${taxYear.year}"
+  def carBenefitsForYearUrl(nino: Nino, taxYear: TaxYear) =
+    s"${config.baseURL}/paye/${nino.nino}/car-benefits/${taxYear.year}"
   def ninoVersionUrl(nino: Nino) = s"${config.baseURL}/paye/${nino.nino}/version"
 
   def removeCarBenefitUrl(nino: Nino, taxYear: TaxYear, employmentSequenceNumber: Int, carSequenceNumber: Int) =
@@ -83,9 +85,8 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featu
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 
-  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = {
+  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String =
     if (featureTogglesConfig.desEnabled) desTaxAccountURL(nino, taxYear) else npsTaxAccountURL(nino, taxYear)
-  }
 }
 
 @Singleton
@@ -107,10 +108,9 @@ class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
     s"${desIabdUrl(nino, taxYear)}/employment/$iabdType"
 }
 
-  @Singleton
+@Singleton
 class TaxCodeChangeUrl @Inject()(config: DesConfig) {
 
-  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String = {
+  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String =
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
-  }
 }

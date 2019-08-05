@@ -33,9 +33,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-
-class BbsiConnectorSpec extends PlaySpec
-    with MockitoSugar {
+class BbsiConnectorSpec extends PlaySpec with MockitoSugar {
 
   "BbsiConnector" should {
 
@@ -61,8 +59,8 @@ class BbsiConnectorSpec extends PlaySpec
         verify(mockHttpHandler, times(1))
           .getFromApi(any(), Matchers.eq(APITypes.BbsiAPI))(captor.capture())
 
-        captor.getValue.extraHeaders must contain ("Environment" -> "ist0")
-        captor.getValue.extraHeaders must contain ("Authorization" -> s"Bearer 123")
+        captor.getValue.extraHeaders must contain("Environment"   -> "ist0")
+        captor.getValue.extraHeaders must contain("Authorization" -> s"Bearer 123")
 
       }
 
@@ -80,10 +78,7 @@ class BbsiConnectorSpec extends PlaySpec
 
     "return empty bank accounts" when {
       "api doesn't return account" in {
-        val json: JsValue = Json.obj(
-          "nino" -> nino.nino,
-          "taxYear" -> "2016",
-          "accounts" -> Json.arr())
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016", "accounts" -> Json.arr())
 
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApi(any(), any())(any()))
@@ -98,9 +93,7 @@ class BbsiConnectorSpec extends PlaySpec
 
     "return exception" when {
       "api returns invalid json" in {
-        val json: JsValue = Json.obj(
-          "nino" -> nino.nino,
-          "taxYear" -> "2016")
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
 
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApi(any(), any())(any()))
@@ -113,55 +106,62 @@ class BbsiConnectorSpec extends PlaySpec
       }
     }
   }
-  private val bankAccount = BankAccount(accountNumber = Some("*****5566"), sortCode = Some("112233"), bankName = Some("ACCOUNT ONE"),
-    grossInterest = 1500.5, source = Some("Customer"), numberOfAccountHolders = Some(1))
+  private val bankAccount = BankAccount(
+    accountNumber = Some("*****5566"),
+    sortCode = Some("112233"),
+    bankName = Some("ACCOUNT ONE"),
+    grossInterest = 1500.5,
+    source = Some("Customer"),
+    numberOfAccountHolders = Some(1)
+  )
 
   private implicit val hc = HeaderCarrier()
   private val nino = new Generator(new Random).nextNino
 
   private val multipleBankAccounts = Json.obj(
-    "nino" -> nino.nino,
+    "nino"    -> nino.nino,
     "taxYear" -> "2016",
     "accounts" -> Json.arr(
       Json.obj(
-        "accountNumber" -> "*****5566",
-        "sortCode" -> "112233",
-        "bankName" -> "ACCOUNT ONE",
-        "grossInterest" -> 1500.5,
-        "source" -> "Customer",
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
         "numberOfAccountHolders" -> 1
       ),
       Json.obj(
-        "accountNumber" -> "*****5566",
-        "sortCode" -> "112233",
-        "bankName" -> "ACCOUNT ONE",
-        "grossInterest" -> 1500.5,
-        "source" -> "Customer",
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
         "numberOfAccountHolders" -> 1
       ),
       Json.obj(
-        "accountNumber" -> "*****5566",
-        "sortCode" -> "112233",
-        "bankName" -> "ACCOUNT ONE",
-        "grossInterest" -> 1500.5,
-        "source" -> "Customer",
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
         "numberOfAccountHolders" -> 1
       )
     )
   )
 
   private val singleBankAccount = Json.obj(
-    "nino" -> nino.nino,
+    "nino"    -> nino.nino,
     "taxYear" -> "2016",
     "accounts" -> Json.arr(
       Json.obj(
-        "accountNumber" -> "*****5566",
-        "sortCode" -> "112233",
-        "bankName" -> "ACCOUNT ONE",
-        "grossInterest" -> 1500.5,
-        "source" -> "Customer",
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
         "numberOfAccountHolders" -> 1
-      )))
+      ))
+  )
 
   private val taxYear = TaxYear()
 

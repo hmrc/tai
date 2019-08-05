@@ -25,11 +25,10 @@ class PayDetailsSpec extends UnitSpec {
 
   "PayDetails Json conversion " should {
     "successfully convert json paymentFrequency into PaymentDetails when a 'weekly' payment frequency is supplied." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "weekly"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "weekly"
+                                        | }
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
@@ -37,11 +36,10 @@ class PayDetailsSpec extends UnitSpec {
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when a 'fortnightly' payment frequency is supplied." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "fortnightly"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "fortnightly"
+                                        | }
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
@@ -49,11 +47,10 @@ class PayDetailsSpec extends UnitSpec {
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when a 'monthly' payment frequency is supplied." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "monthly"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "monthly"
+                                        | }
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
@@ -61,11 +58,10 @@ class PayDetailsSpec extends UnitSpec {
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when an 'other' payment frequency is supplied." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "other"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "other"
+                                        | }
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
@@ -73,16 +69,15 @@ class PayDetailsSpec extends UnitSpec {
     }
 
     "successfully convert a full json representation of PaymentDetails into a PaymentDetails object." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "monthly",
-          |   "pay": 5.12,
-          |   "taxablePay": 3.01,
-          |   "days": 23,
-          |   "bonus": 1.23,
-          |   "startDate": "2017-01-01"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "monthly",
+                                        |   "pay": 5.12,
+                                        |   "taxablePay": 3.01,
+                                        |   "days": 23,
+                                        |   "bonus": 1.23,
+                                        |   "startDate": "2017-01-01"
+                                        | }
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
@@ -96,11 +91,10 @@ class PayDetailsSpec extends UnitSpec {
     }
 
     "fail to convert json paymentFrequency into PaymentDetails when an unknown payment frequency is supplied." in {
-      val payDetailsJson = Json.parse(
-        """
-          | {
-          |   "paymentFrequency": "shouldfail"
-          | }
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "shouldfail"
+                                        | }
         """.stripMargin)
 
       intercept[NoSuchElementException] {

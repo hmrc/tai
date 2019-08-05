@@ -32,13 +32,11 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
-class JourneyCacheControllerSpec  extends PlaySpec
-  with MockitoSugar
-  with MockAuthenticationPredicate{
+class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "JourneyCacheController" must {
 
-    val testMap = Map("key1"->"value1", "key2"->"value2")
+    val testMap = Map("key1" -> "value1", "key2" -> "value2")
 
     "supply a named journey cache on GET request" in {
       val mockRepository = mock[JourneyCacheRepository]
@@ -153,7 +151,8 @@ class JourneyCacheControllerSpec  extends PlaySpec
         status(result2) mustBe INTERNAL_SERVER_ERROR
 
         val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
-        val result3 = sut.cached("testjourney")(FakeRequest("POST", "/", FakeHeaders(), cacheJson).withHeaders(("content-type", "application/json")))
+        val result3 = sut.cached("testjourney")(
+          FakeRequest("POST", "/", FakeHeaders(), cacheJson).withHeaders(("content-type", "application/json")))
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("testjourney")(FakeRequest("DELETE", ""))
@@ -162,7 +161,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
     "return NOT AUTHORISED" when {
       "the user is not logged in and tries to request the current cache" in {
-        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val sut = createSUT(mock[JourneyCacheRepository], notLoggedInAuthenticationPredicate)
         val result = sut.currentCache("testjourney")(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -171,7 +170,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
     "return NOT AUTHORISED" when {
       "the user is not logged in and tries to request a named journey cache entry" in {
-        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val sut = createSUT(mock[JourneyCacheRepository], notLoggedInAuthenticationPredicate)
         val result = sut.currentCache("testjourney")(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -180,7 +179,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
     "return NOT AUTHORISED" when {
       "the user is not logged in and tries to request an individual journey cache entry" in {
-        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val sut = createSUT(mock[JourneyCacheRepository], notLoggedInAuthenticationPredicate)
         val result = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -189,9 +188,9 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
     "return NOT AUTHORISED" when {
       "the user is not logged in and tries to post a journey cache entry" in {
-        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
-        val result = sut.cached("testjourney")(FakeRequest("POST", "/", FakeHeaders(),
-          JsNull).withHeaders(("content-type", "application/json")))
+        val sut = createSUT(mock[JourneyCacheRepository], notLoggedInAuthenticationPredicate)
+        val result = sut.cached("testjourney")(
+          FakeRequest("POST", "/", FakeHeaders(), JsNull).withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -199,7 +198,7 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
     "return NOT AUTHORISED" when {
       "the user is not logged in and tries to flush the cache" in {
-        val sut = createSUT(mock[JourneyCacheRepository],notLoggedInAuthenticationPredicate)
+        val sut = createSUT(mock[JourneyCacheRepository], notLoggedInAuthenticationPredicate)
         val result = sut.flush("testjourney")(FakeRequest("DELETE", ""))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -208,9 +207,10 @@ class JourneyCacheControllerSpec  extends PlaySpec
     }
   }
 
-
-  private def createSUT(repository: JourneyCacheRepository, authentication: AuthenticationPredicate =
-  loggedInAuthenticationPredicate) = new JourneyCacheController(repository, authentication)
+  private def createSUT(
+    repository: JourneyCacheRepository,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new JourneyCacheController(repository, authentication)
 
   private implicit val hc = HeaderCarrier()
 }

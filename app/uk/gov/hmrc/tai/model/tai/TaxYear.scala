@@ -34,7 +34,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   require(year.toString.length == 4, "Invalid year")
 
   def start: LocalDate = new LocalDate(year, startMonth, startDay)
-  def end: LocalDate = new LocalDate(year + 1, endMonth , endDay)
+  def end: LocalDate = new LocalDate(year + 1, endMonth, endDay)
   def next: TaxYear = TaxYear(year + 1)
   def prev = TaxYear(year - 1)
   def startPrev: LocalDate = new LocalDate(prev.year, endMonth, startDay)
@@ -43,10 +43,9 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def twoDigitRange = s"${start.year.get % 100}-${end.year.get % 100}"
   def fourDigitRange = s"${start.year.get}-${end.year.get}"
 
-  def withinTaxYear(currentDate: LocalDate): Boolean = {
+  def withinTaxYear(currentDate: LocalDate): Boolean =
     (currentDate.isEqual(TaxYear().start) || currentDate.isAfter(TaxYear().start)) &&
       (currentDate.isBefore(TaxYear().end) || currentDate.isEqual(TaxYear().end))
-  }
 
   @deprecated("Does not check if date is post tax year, use withinTaxYear instead")
   def fallsInThisTaxYear(currentDate: LocalDate): Boolean = {
@@ -70,8 +69,7 @@ object TaxYear {
     val naiveYear = TaxYear(from.year.get)
     if (from < naiveYear.start) {
       naiveYear.prev
-    }
-    else {
+    } else {
       naiveYear
     }
   }
@@ -86,8 +84,8 @@ object TaxYear {
           val year = yearStr.toInt
           val century = Option(cenStr).filter(_.nonEmpty) match {
             case None if year > 70 => 1900
-            case None => 2000
-            case Some(x) => x.toInt * 100
+            case None              => 2000
+            case Some(x)           => x.toInt * 100
           }
           Some(century + year)
         }
@@ -97,7 +95,7 @@ object TaxYear {
 
     from match {
       case Year(year) => TaxYear(year)
-      case YearRange(Year(fYear),Year(tYear)) if tYear == fYear + 1 =>
+      case YearRange(Year(fYear), Year(tYear)) if tYear == fYear + 1 =>
         TaxYear(fYear)
       case x => throw new IllegalArgumentException(s"Cannot parse $x")
     }

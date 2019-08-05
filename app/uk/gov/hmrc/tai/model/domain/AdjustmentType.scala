@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json._
 
-
 sealed trait AdjustmentType
 
 case object NationalInsuranceAdjustment extends AdjustmentType
@@ -31,9 +30,9 @@ object AdjustmentType extends AdjustmentType {
   implicit val formatAdjustmentType = new Format[AdjustmentType] {
     override def reads(json: JsValue): JsSuccess[AdjustmentType] = json.as[String] match {
       case "NationalInsuranceAdjustment" => JsSuccess(NationalInsuranceAdjustment)
-      case "TaxAdjustment" => JsSuccess(TaxAdjustment)
-      case "IncomeAdjustment" => JsSuccess(IncomeAdjustment)
-      case _ => throw new IllegalArgumentException("Invalid adjustment type")
+      case "TaxAdjustment"               => JsSuccess(TaxAdjustment)
+      case "IncomeAdjustment"            => JsSuccess(IncomeAdjustment)
+      case _                             => throw new IllegalArgumentException("Invalid adjustment type")
     }
 
     override def writes(adjustmentType: AdjustmentType) = JsString(adjustmentType.toString)

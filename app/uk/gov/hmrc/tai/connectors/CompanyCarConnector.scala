@@ -29,26 +29,24 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 
 @Singleton
-class CompanyCarConnector @Inject()(httpHandler: HttpHandler,
-                                    urls: PayeUrls) extends CompanyCarBenefitFormatters {
+class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls) extends CompanyCarBenefitFormatters {
 
-  def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier):Future[Seq[CompanyCarBenefit]] = {
-    httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI) map { json=>
+  def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
+    httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI) map { json =>
       json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReads))
     }
-  }
 
-  def ninoVersion(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] = {
-    httpHandler.getFromApi(urls.ninoVersionUrl(nino), APITypes.CompanyCarAPI) map{
-      json => json.as[Int]
+  def ninoVersion(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] =
+    httpHandler.getFromApi(urls.ninoVersionUrl(nino), APITypes.CompanyCarAPI) map { json =>
+      json.as[Int]
     }
-  }
 
-  def withdrawCarBenefit(nino: Nino,
-                         taxYear: TaxYear,
-                         employmentSequenceNumber: Int,
-                         carSequenceNumber: Int,
-                         postData: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] = {
+  def withdrawCarBenefit(
+    nino: Nino,
+    taxYear: TaxYear,
+    employmentSequenceNumber: Int,
+    carSequenceNumber: Int,
+    postData: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] = {
 
     val url = urls.removeCarBenefitUrl(nino, taxYear, employmentSequenceNumber, carSequenceNumber)
     httpHandler.postToApi[WithdrawCarAndFuel](url, postData, APITypes.CompanyCarAPI)(hc, companyCarRemoveWrites) map {

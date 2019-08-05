@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.model.helpers
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.model.{ DecreasesTax, IabdSummary, TaxCodeDetails, TaxComponent }
-
+import uk.gov.hmrc.tai.model.{DecreasesTax, IabdSummary, TaxCodeDetails, TaxComponent}
 
 class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestData {
 
@@ -40,9 +39,8 @@ class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestD
           personalAllowanceTapered = Some(true)
         )
 
-        
         decreasesTax.get mustBe DecreasesTax(
-          personalAllowance = Some (1000),
+          personalAllowance = Some(1000),
           personalAllowanceSourceAmount = Some(200),
           blindPerson = expectedBlindPerson,
           expenses = expectedExpenses,
@@ -50,7 +48,7 @@ class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestD
           jobExpenses = expectedJobExpenses,
           miscellaneous = expectedMiscellaneous,
           pensionContributions = expectedPersonalPension,
-          paTransferredAmount = Some(-50), 
+          paTransferredAmount = Some(-50),
           paReceivedAmount = Some(200),
           paTapered = true,
           personalSavingsAllowance = expectedPersonalSavings,
@@ -62,7 +60,8 @@ class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestD
       "the values for tax detail allowances and deductions arent given" in {
         val sut = createSUT
 
-        val noAllowancesOrDeductions  = taxCodeDetails.copy(allowances = Some(List(noTypeTaxCodeComponent)), deductions = Some(List(noTypeTaxCodeComponent)))
+        val noAllowancesOrDeductions = taxCodeDetails
+          .copy(allowances = Some(List(noTypeTaxCodeComponent)), deductions = Some(List(noTypeTaxCodeComponent)))
         val decreasesTax = sut.groupItemsThatDecreaseTax(
           totalLiability = Some(totalLiab),
           incomeSources = Some(List(incomeSource)),
@@ -72,7 +71,7 @@ class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestD
         )
 
         decreasesTax.get mustBe DecreasesTax(
-          personalAllowance = Some (1000),
+          personalAllowance = Some(1000),
           personalAllowanceSourceAmount = Some(200),
           blindPerson = expectedBlindPerson,
           expenses = expectedExpenses,
@@ -94,14 +93,60 @@ class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestD
 
   class SUT extends TaxModelFactory
 
-  private val expectedBlindPerson = Some(TaxComponent(1000,0,"",List(IabdSummary(14,"blind person npsIabdSummary description",1000,Some(123),Some(3),Some("income source name")))))
-  private val expectedExpenses = Some(TaxComponent(800,0,"",List(IabdSummary(56,"flat rate npsIabdSummary description",800,Some(123),Some(2),Some("income source name")))))
-  private val expectedGiftAid = Some(TaxComponent(300,0,"",List(IabdSummary(95,"gift aid npsIabdSummary description",300,Some(123),Some(2),Some("income source name")))))
-  private val expectedJobExpenses = Some(TaxComponent(400,0,"",List(IabdSummary(55,"job expences npsIabdSummary description",400,Some(123),Some(2),Some("income source name")))))
-  private val expectedMiscellaneous = Some(TaxComponent(700,0,"",List(IabdSummary(6,"misc payments npsIabdSummary description",700,Some(123),Some(2),Some("income source name")))))
-  private val expectedPersonalPension = Some(TaxComponent(900,0,"",List(IabdSummary(5,"personal pension payments npsIabdSummary description",900,Some(123),Some(2),Some("income source name")))))
+  private val expectedBlindPerson = Some(
+    TaxComponent(
+      1000,
+      0,
+      "",
+      List(
+        IabdSummary(
+          14,
+          "blind person npsIabdSummary description",
+          1000,
+          Some(123),
+          Some(3),
+          Some("income source name")))))
+  private val expectedExpenses = Some(
+    TaxComponent(
+      800,
+      0,
+      "",
+      List(
+        IabdSummary(56, "flat rate npsIabdSummary description", 800, Some(123), Some(2), Some("income source name")))))
+  private val expectedGiftAid = Some(
+    TaxComponent(
+      300,
+      0,
+      "",
+      List(
+        IabdSummary(95, "gift aid npsIabdSummary description", 300, Some(123), Some(2), Some("income source name")))))
+  private val expectedJobExpenses = Some(TaxComponent(
+    400,
+    0,
+    "",
+    List(
+      IabdSummary(55, "job expences npsIabdSummary description", 400, Some(123), Some(2), Some("income source name")))))
+  private val expectedMiscellaneous = Some(TaxComponent(
+    700,
+    0,
+    "",
+    List(
+      IabdSummary(6, "misc payments npsIabdSummary description", 700, Some(123), Some(2), Some("income source name")))))
+  private val expectedPersonalPension = Some(
+    TaxComponent(
+      900,
+      0,
+      "",
+      List(
+        IabdSummary(
+          5,
+          "personal pension payments npsIabdSummary description",
+          900,
+          Some(123),
+          Some(2),
+          Some("income source name")))))
 
-  private val expectedPersonalSavings = Some(TaxComponent(1000,33,"nps component description",List(IabdSummary(128,"",1000,None,None,None))))
-
+  private val expectedPersonalSavings = Some(
+    TaxComponent(1000, 33, "nps component description", List(IabdSummary(128, "", 1000, None, None, None))))
 
 }

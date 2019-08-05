@@ -41,10 +41,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class BbsiControllerSpec
-  extends PlaySpec
-    with MockitoSugar
-    with MockAuthenticationPredicate{
+class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Bbsi details" must {
     "return NOT AUTHORISED" when {
@@ -60,36 +57,45 @@ class BbsiControllerSpec
       val expectedJson =
         Json.obj(
           "data" -> Json.arr(
-            Json.obj (
-              "id" -> 0,
-              "accountNumber"-> "*****5566",
-              "sortCode"-> "112233",
-              "bankName"-> "ACCOUNT ONE",
-              "grossInterest"-> 1500.5,
-              "source"-> "Customer",
+            Json.obj(
+              "id"                     -> 0,
+              "accountNumber"          -> "*****5566",
+              "sortCode"               -> "112233",
+              "bankName"               -> "ACCOUNT ONE",
+              "grossInterest"          -> 1500.5,
+              "source"                 -> "Customer",
               "numberOfAccountHolders" -> 1
             ),
             Json.obj(
-              "id"-> 0,
-              "accountNumber"-> "*****5566",
-              "sortCode"-> "112233",
-              "bankName"-> "ACCOUNT ONE",
-              "grossInterest"-> 1500.5,
-              "source"-> "Customer",
+              "id"                     -> 0,
+              "accountNumber"          -> "*****5566",
+              "sortCode"               -> "112233",
+              "bankName"               -> "ACCOUNT ONE",
+              "grossInterest"          -> 1500.5,
+              "source"                 -> "Customer",
               "numberOfAccountHolders" -> 1
             ),
             Json.obj(
-              "id"-> 0,
-              "accountNumber"-> "*****5566",
-              "sortCode"-> "112233",
-              "bankName"-> "ACCOUNT ONE",
-              "grossInterest"-> 1500.5,
-              "source"-> "Customer",
-              "numberOfAccountHolders" -> 1)),
-          "links" -> Json.arr())
+              "id"                     -> 0,
+              "accountNumber"          -> "*****5566",
+              "sortCode"               -> "112233",
+              "bankName"               -> "ACCOUNT ONE",
+              "grossInterest"          -> 1500.5,
+              "source"                 -> "Customer",
+              "numberOfAccountHolders" -> 1
+            )
+          ),
+          "links" -> Json.arr()
+        )
 
-      val bankAccount = BankAccount(accountNumber = Some("*****5566"), sortCode = Some("112233"), bankName = Some("ACCOUNT ONE"),
-        grossInterest = 1500.5, source = Some("Customer"), numberOfAccountHolders = Some(1))
+      val bankAccount = BankAccount(
+        accountNumber = Some("*****5566"),
+        sortCode = Some("112233"),
+        bankName = Some("ACCOUNT ONE"),
+        grossInterest = 1500.5,
+        source = Some("Customer"),
+        numberOfAccountHolders = Some(1)
+      )
 
       val mockBbsiService = mock[BbsiService]
       when(mockBbsiService.bbsiDetails(any(), any())(any()))
@@ -117,17 +123,26 @@ class BbsiControllerSpec
       val expectedJson =
         Json.obj(
           "data" -> Json.obj(
-            "id" -> 1,
-            "accountNumber" -> "*****5566",
-            "sortCode" -> "112233",
-            "bankName" -> "ACCOUNT ONE",
-            "grossInterest" -> 1500.5,
-            "source" -> "Customer",
-            "numberOfAccountHolders" -> 1),
-          "links" -> Json.arr())
+            "id"                     -> 1,
+            "accountNumber"          -> "*****5566",
+            "sortCode"               -> "112233",
+            "bankName"               -> "ACCOUNT ONE",
+            "grossInterest"          -> 1500.5,
+            "source"                 -> "Customer",
+            "numberOfAccountHolders" -> 1
+          ),
+          "links" -> Json.arr()
+        )
 
-      val bankAccount = BankAccount(1, accountNumber = Some("*****5566"), sortCode = Some("112233"), bankName = Some("ACCOUNT ONE"),
-        grossInterest = 1500.5, source = Some("Customer"), numberOfAccountHolders = Some(1))
+      val bankAccount = BankAccount(
+        1,
+        accountNumber = Some("*****5566"),
+        sortCode = Some("112233"),
+        bankName = Some("ACCOUNT ONE"),
+        grossInterest = 1500.5,
+        source = Some("Customer"),
+        numberOfAccountHolders = Some(1)
+      )
 
       val mockBbsiService = mock[BbsiService]
       when(mockBbsiService.bbsiAccount(any(), any())(any()))
@@ -169,8 +184,9 @@ class BbsiControllerSpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/", FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json")))
+        val result = sut.closeBankAccount(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), JsNull)
+            .withHeaders(("content-type", "application/json")))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
@@ -184,9 +200,9 @@ class BbsiControllerSpec
         .thenReturn(Future.successful(envelopeId))
 
       val sut = createSUT(mockBbsiService)
-      val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/",
-        FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
-        .withHeaders(("content-type", "application/json")))
+      val result = sut.closeBankAccount(nino, 1)(
+        FakeRequest("PUT", "/", FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
+          .withHeaders(("content-type", "application/json")))
 
       status(result) mustBe OK
       contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -200,9 +216,9 @@ class BbsiControllerSpec
         .thenReturn(Future.successful(envelopeId))
 
       val sut = createSUT(mockBbsiService)
-      val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/",
-        FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
-        .withHeaders(("content-type", "application/json")))
+      val result = sut.closeBankAccount(nino, 1)(
+        FakeRequest("PUT", "/", FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
+          .withHeaders(("content-type", "application/json")))
 
       status(result) mustBe OK
       contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -216,9 +232,9 @@ class BbsiControllerSpec
         .thenReturn(Future.successful(envelopeId))
 
       val sut = createSUT(mockBbsiService)
-      val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/",
-        FakeHeaders(), Json.obj("date" -> "2017-05-05"))
-        .withHeaders(("content-type", "application/json")))
+      val result = sut.closeBankAccount(nino, 1)(
+        FakeRequest("PUT", "/", FakeHeaders(), Json.obj("date" -> "2017-05-05"))
+          .withHeaders(("content-type", "application/json")))
 
       status(result) mustBe OK
       contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -231,8 +247,9 @@ class BbsiControllerSpec
           .thenReturn(Future.failed(BankAccountNotFound("""{"Error":"Error"}""")))
 
         val sut = createSUT(mockBbsiService)
-        val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0)).withHeaders(("content-type", "application/json")))
+        val result = sut.closeBankAccount(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe NOT_FOUND
       }
@@ -245,8 +262,9 @@ class BbsiControllerSpec
           .thenReturn(Future.failed(new RuntimeException("Error")))
 
         val sut = createSUT(mockBbsiService)
-        val result = sut.closeBankAccount(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0)).withHeaders(("content-type", "application/json")))
+        val result = sut.closeBankAccount(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), Json.obj("date" -> "2017-05-05", "closingInterest" -> 0))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
@@ -308,9 +326,9 @@ class BbsiControllerSpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json")))
+        val result = sut.updateAccountInterest(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), JsNull)
+            .withHeaders(("content-type", "application/json")))
 
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
@@ -325,9 +343,9 @@ class BbsiControllerSpec
         .thenReturn(Future.successful(envelopeId))
 
       val sut = createSUT(mockBbsiService)
-      val result = sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
-        FakeHeaders(), Json.obj("amount" -> 1000.12))
-        .withHeaders(("content-type", "application/json")))
+      val result = sut.updateAccountInterest(nino, 1)(
+        FakeRequest("PUT", "/", FakeHeaders(), Json.obj("amount" -> 1000.12))
+          .withHeaders(("content-type", "application/json")))
 
       status(result) mustBe OK
       contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -340,9 +358,9 @@ class BbsiControllerSpec
           .thenReturn(Future.failed(BankAccountNotFound("""{"Error":"Error"}""")))
 
         val sut = createSUT(mockBbsiService)
-        val result = sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), Json.obj("amount" -> 1000.12))
-          .withHeaders(("content-type", "application/json")))
+        val result = sut.updateAccountInterest(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), Json.obj("amount" -> 1000.12))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe NOT_FOUND
       }
@@ -355,9 +373,11 @@ class BbsiControllerSpec
           .thenReturn(Future.failed(new BadRequestException("sdsd")))
 
         val sut = createSUT(mockBbsiService)
-        val result = the[BadRequestException] thrownBy Await.result(sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), Json.obj("amount" -> 1000.12))
-          .withHeaders(("content-type", "application/json"))), 5.seconds)
+        val result = the[BadRequestException] thrownBy Await.result(
+          sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/", FakeHeaders(), Json.obj("amount" -> 1000.12))
+            .withHeaders(("content-type", "application/json"))),
+          5.seconds
+        )
 
         result.responseCode mustBe BAD_REQUEST
       }
@@ -370,9 +390,9 @@ class BbsiControllerSpec
           .thenReturn(Future.failed(new RuntimeException("Error")))
 
         val sut = createSUT(mockBbsiService)
-        val result = sut.updateAccountInterest(nino, 1)(FakeRequest("PUT", "/",
-          FakeHeaders(), Json.obj("amount" -> 1000.12))
-          .withHeaders(("content-type", "application/json")))
+        val result = sut.updateAccountInterest(nino, 1)(
+          FakeRequest("PUT", "/", FakeHeaders(), Json.obj("amount" -> 1000.12))
+            .withHeaders(("content-type", "application/json")))
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
@@ -382,6 +402,8 @@ class BbsiControllerSpec
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   private val nino = new Generator(new Random).nextNino
 
-  private def createSUT(bbsiService: BbsiService, authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(
+    bbsiService: BbsiService,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new BbsiController(bbsiService, authentication)
 }

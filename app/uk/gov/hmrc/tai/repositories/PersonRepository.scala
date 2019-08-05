@@ -27,35 +27,28 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.concurrent.Future
 
 @Singleton
-class PersonRepository @Inject()(cacheConnector: CacheConnector,
-                                 urls: CitizenDetailsUrls,
-                                 httpHandler: HttpHandler) {
+class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDetailsUrls, httpHandler: HttpHandler) {
 
   private val PersonMongoKey = "PersonData"
 
-  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
-
+  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] =
     getPersonFromStorage().flatMap { person: Option[Person] =>
       person match {
         case Some(personalDetails) => Future.successful(personalDetails)
-        case _ => getPersonFromAPI(nino)
+        case _                     => getPersonFromAPI(nino)
       }
     }
-  }
 
-  private[repositories] def getPersonFromStorage()(implicit hc: HeaderCarrier): Future[Option[Person]] = {
+  private[repositories] def getPersonFromStorage()(implicit hc: HeaderCarrier): Future[Option[Person]] =
     cacheConnector.find(fetchSessionId(hc), PersonMongoKey)(PersonFormatter.personMongoFormat)
-  }
 
-  private[repositories] def getPersonFromAPI(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
-
+  private[repositories] def getPersonFromAPI(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] =
     httpHandler.getFromApi(urls.designatoryDetailsUrl(nino), APITypes.NpsPersonAPI) flatMap { s =>
       val personDetails = s.as[Person](PersonFormatter.personHodRead)
-      cacheConnector.createOrUpdate(fetchSessionId(hc), personDetails, PersonMongoKey)(PersonFormatter.personMongoFormat)
+      cacheConnector.createOrUpdate(fetchSessionId(hc), personDetails, PersonMongoKey)(
+        PersonFormatter.personMongoFormat)
     }
-  }
 
-  private def fetchSessionId(headerCarrier : HeaderCarrier): String = {
+  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
     headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-  }
 }

@@ -33,10 +33,9 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
+class TotalTaxRepositorySpec extends PlaySpec with MockitoSugar {
 
-class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
-
-  "incomeCategories" must{
+  "incomeCategories" must {
     "return the income categories that is being read from the taxAccountRepository" in {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
       when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
@@ -44,10 +43,25 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
       val sut = createSUT(mockTaxAccountRepository)
       val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5 seconds)
       result must contain theSameElementsAs Seq(
-        IncomeCategory(UkDividendsIncomeCategory, 0, 0, 0,
-          Seq(TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
-            TaxBand(bandType = "B", code = "BR", income = 10000, tax = 500, lowerBand = Some(5000), upperBand = Some(20000), rate = 10))),
-        IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil))
+        IncomeCategory(
+          UkDividendsIncomeCategory,
+          0,
+          0,
+          0,
+          Seq(
+            TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
+            TaxBand(
+              bandType = "B",
+              code = "BR",
+              income = 10000,
+              tax = 500,
+              lowerBand = Some(5000),
+              upperBand = Some(20000),
+              rate = 10)
+          )
+        ),
+        IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
+      )
     }
   }
 
@@ -63,10 +77,9 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
     }
   }
 
-    private val nino: Nino = new Generator(new Random).nextNino
+  private val nino: Nino = new Generator(new Random).nextNino
 
-    private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-
+  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   val json = Json.obj(
     "totalLiability" -> Json.obj(
@@ -77,27 +90,27 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
         "totalIncome" -> Json.obj(),
         "taxBands" -> Json.arr(
           Json.obj(
-            "bandType" -> JsNull,
-            "code" -> JsNull,
-            "income" -> JsNull,
-            "tax" -> JsNull,
+            "bandType"  -> JsNull,
+            "code"      -> JsNull,
+            "income"    -> JsNull,
+            "tax"       -> JsNull,
             "lowerBand" -> JsNull,
             "upperBand" -> JsNull,
-            "rate" -> JsNull
+            "rate"      -> JsNull
           ),
           Json.obj(
-            "bandType" -> "B",
-            "code" -> "BR",
-            "income" -> 10000,
-            "tax" -> 500,
+            "bandType"  -> "B",
+            "code"      -> "BR",
+            "income"    -> 10000,
+            "tax"       -> 500,
             "lowerBand" -> 5000,
             "upperBand" -> 20000,
-            "rate" -> 10
+            "rate"      -> 10
           )
         )
       ),
       "foreignDividends" -> Json.obj(
-        "totalTax" -> 1000.23,
+        "totalTax"           -> 1000.23,
         "totalTaxableIncome" -> 1000.24,
         "totalIncome" -> Json.obj(
           "amount" -> 1000.25
@@ -105,7 +118,7 @@ class TotalTaxRepositorySpec extends PlaySpec  with MockitoSugar{
       )
     ))
 
-    private def createSUT(taxAccountRepository: TaxAccountRepository) =
-      new TotalTaxRepository(taxAccountRepository)
+  private def createSUT(taxAccountRepository: TaxAccountRepository) =
+    new TotalTaxRepository(taxAccountRepository)
 
 }

@@ -36,7 +36,7 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
       "json contains only gross interest" in {
         val jsonBankAccounts = Json.arr(
           Json.obj(
-            "id" -> 0,
+            "id"            -> 0,
             "grossInterest" -> grossInterest1
           )
         )
@@ -59,11 +59,11 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
     "json contains only gross interest" in {
       val jsonBankAccounts = Json.arr(
         Json.obj(
-          "id" -> 0,
+          "id"            -> 0,
           "grossInterest" -> grossInterest1
         ),
         Json.obj(
-          "id" -> 0,
+          "id"            -> 0,
           "grossInterest" -> grossInterest2
         ))
 
@@ -92,12 +92,12 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
 
       val jsonBankAccounts = Json.arr(
         Json.obj(
-          "id" -> 0,
-          "grossInterest" -> grossInterest1,
-          "accountNumber" -> accountNo,
-          "bankName" -> bankName,
-          "sortCode" -> sortCode,
-          "source" -> source,
+          "id"                     -> 0,
+          "grossInterest"          -> grossInterest1,
+          "accountNumber"          -> accountNo,
+          "bankName"               -> bankName,
+          "sortCode"               -> sortCode,
+          "source"                 -> source,
           "numberOfAccountHolders" -> numberOfAccountHolders
         )
       )

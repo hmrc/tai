@@ -28,14 +28,11 @@ import uk.gov.hmrc.tai.service.TaiService
 import scala.concurrent.Future
 
 @Singleton
-class EstimatedPayCalculatorController @Inject()(taiService: TaiService,
-                                                 authentication: AuthenticationPredicate)
-  extends BaseController {
+class EstimatedPayCalculatorController @Inject()(taiService: TaiService, authentication: AuthenticationPredicate)
+    extends BaseController {
 
-  def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) {
-    implicit request =>
-    withJsonBody[PayDetails] {
-      payDetails =>
+  def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    withJsonBody[PayDetails] { payDetails =>
       Future(Ok(Json.toJson(taiService.getCalculatedEstimatedPay(payDetails))))
     }
   }

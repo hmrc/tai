@@ -20,7 +20,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsError, Json}
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
-
 class FileUploadFormattersSpec extends PlaySpec {
 
   "File Upload Formatter" should {
@@ -45,11 +44,14 @@ class FileUploadFormattersSpec extends PlaySpec {
       "Json is valid and files are available" in {
         val file1 = Json.obj("id" -> "abc", "status" -> "AVAILABLE")
         val file2 = Json.obj("id" -> "pqr", "status" -> "AVAILABLE")
-        val json = Json.obj("id" -> "123", "status" -> "OPEN", "files" -> JsArray(Seq(file1, file2)))
+        val json = Json.obj("id"  -> "123", "status" -> "OPEN", "files" -> JsArray(Seq(file1, file2)))
 
         val result = json.as[EnvelopeSummary](FileUploadFormatters.envelopeSummaryReads)
 
-        result mustBe EnvelopeSummary("123", "OPEN", Seq(EnvelopeFile("abc", "AVAILABLE"), EnvelopeFile("pqr", "AVAILABLE")))
+        result mustBe EnvelopeSummary(
+          "123",
+          "OPEN",
+          Seq(EnvelopeFile("abc", "AVAILABLE"), EnvelopeFile("pqr", "AVAILABLE")))
       }
     }
 

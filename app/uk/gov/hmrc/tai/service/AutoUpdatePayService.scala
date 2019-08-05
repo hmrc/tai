@@ -40,40 +40,38 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 @Singleton
-class AutoUpdatePayService @Inject()(nps: NpsConnector,
-                                     des: DesConnector,
-                                     featureTogglesConfig: FeatureTogglesConfig,
-                                     npsConfig: NpsConfig,
-                                     incomeHelper: IncomeHelper) {
+class AutoUpdatePayService @Inject()(
+  nps: NpsConnector,
+  des: DesConnector,
+  featureTogglesConfig: FeatureTogglesConfig,
+  npsConfig: NpsConfig,
+  incomeHelper: IncomeHelper) {
 
   val autoUpdate: Boolean = npsConfig.autoUpdatePayEnabled.getOrElse(false)
   val IabdUpdateSourceInternetCalculated: Int = if (featureTogglesConfig.desUpdateEnabled) 46 else 1
 
   def updateIncomes(
-                     nino: Nino,
-                     taxYear: Int,
-                     allEmployments: List[NpsEmployment],
-                     allNpsEstimatedPays: List[NpsIabdRoot],
-                     version: Int,
-                     rtiData: Option[RtiData]
-                     )(implicit hc: HeaderCarrier): List[RtiCalc] = {
-
+    nino: Nino,
+    taxYear: Int,
+    allEmployments: List[NpsEmployment],
+    allNpsEstimatedPays: List[NpsIabdRoot],
+    version: Int,
+    rtiData: Option[RtiData]
+  )(implicit hc: HeaderCarrier): List[RtiCalc] =
     if (autoUpdate) {
-      updateCeasedAndRtiIncomes( nino, taxYear, allEmployments, allNpsEstimatedPays,
-        version, rtiData) getOrElse Nil
+      updateCeasedAndRtiIncomes(nino, taxYear, allEmployments, allNpsEstimatedPays, version, rtiData) getOrElse Nil
     } else {
       Nil
     }
-  }
 
   private[service] def updateCeasedAndRtiIncomes(
-                                         nino: Nino,
-                                         taxYear: Int,
-                                         allEmployments: List[NpsEmployment],
-                                         allNpsEstimatedPays: List[NpsIabdRoot],
-                                         version: Int,
-                                         rtiData: Option[RtiData]
-                                         )(implicit hc: HeaderCarrier): Try[List[RtiCalc]] = {
+    nino: Nino,
+    taxYear: Int,
+    allEmployments: List[NpsEmployment],
+    allNpsEstimatedPays: List[NpsIabdRoot],
+    version: Int,
+    rtiData: Option[RtiData]
+  )(implicit hc: HeaderCarrier): Try[List[RtiCalc]] =
     Try {
 
       val filteredEmploymentsAndOccPensions = allEmployments.filter { employment =>
@@ -83,8 +81,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
       }
 
       //Split the employments into live and ceased
-      val employmentSplitOnStatus = filteredEmploymentsAndOccPensions.
-        partition(_.employmentStatus.contains(Live.code))
+      val employmentSplitOnStatus = filteredEmploymentsAndOccPensions.partition(_.employmentStatus.contains(Live.code))
 
       val updateCeasedEmployments = getCeasedIncomeFinalSalaries(employmentSplitOnStatus._2, allNpsEstimatedPays)
 
@@ -92,7 +89,8 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
       val filteredEmploymentsForRTIUpdate = employmentSplitOnStatus._1
 
       //Get a tuple with the updated values for this and next year
-      val (otherEmploymentsCY, otherEmploymentsNY, rtiCalcList) = getRtiUpdateAmounts(nino, taxYear, filteredEmploymentsForRTIUpdate, rtiData)
+      val (otherEmploymentsCY, otherEmploymentsNY, rtiCalcList) =
+        getRtiUpdateAmounts(nino, taxYear, filteredEmploymentsForRTIUpdate, rtiData)
       if (npsConfig.postCalcEnabled.contains(true)) {
         updateEmploymentData(
           nino,
@@ -110,14 +108,14 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
 
     }
 
-  }
-
-  private[service] def getCeasedIncomeFinalSalaries(employments: List[NpsEmployment], estimatedPays: List[NpsIabdRoot]): List[IabdUpdateAmount] = {
+  private[service] def getCeasedIncomeFinalSalaries(
+    employments: List[NpsEmployment],
+    estimatedPays: List[NpsIabdRoot]): List[IabdUpdateAmount] = {
 
     def isCeasedEmploymentWithCessationPay(x: NpsEmployment): Boolean =
       !x.employmentStatus.contains(Live.code) &&
-      x.cessationPayThisEmployment.exists(_ > 0) &&
-      x.endDate.exists(i => TaxYear().withinTaxYear(i.localDate)) && ceaseEmploymentAmountDifferent(x, estimatedPays)
+        x.cessationPayThisEmployment.exists(_ > 0) &&
+        x.endDate.exists(i => TaxYear().withinTaxYear(i.localDate)) && ceaseEmploymentAmountDifferent(x, estimatedPays)
 
     employments
       .filter(isCeasedEmploymentWithCessationPay)
@@ -131,81 +129,89 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
   }
 
   private[service] def ceaseEmploymentAmountDifferent(
-                                                       employment: NpsEmployment,
-                                                       estimatedPays: List[NpsIabdRoot]
-                                                     ): Boolean = {
-
-    employment.cessationPayThisEmployment.flatMap { ceasedPay =>
-      estimatedPays
-        .find(_.employmentSequenceNumber.contains(employment.sequenceNumber))
-        .map(_.grossAmount.getOrElse(BigDecimal(0)).intValue != ceasedPay.intValue)
-    }.getOrElse(false)
-
-  }
+    employment: NpsEmployment,
+    estimatedPays: List[NpsIabdRoot]
+  ): Boolean =
+    employment.cessationPayThisEmployment
+      .flatMap { ceasedPay =>
+        estimatedPays
+          .find(_.employmentSequenceNumber.contains(employment.sequenceNumber))
+          .map(_.grossAmount.getOrElse(BigDecimal(0)).intValue != ceasedPay.intValue)
+      }
+      .getOrElse(false)
 
   private[service] def getRtiUpdateAmounts(
-                                          nino: Nino,
-                                          taxYear: Int,
-                                          employments: List[NpsEmployment],
-                                          rtiDataIn: Option[RtiData]
-                                          )(implicit hc: HeaderCarrier):
-  (List[IabdUpdateAmount], List[IabdUpdateAmount], List[RtiCalc]) = {
+    nino: Nino,
+    taxYear: Int,
+    employments: List[NpsEmployment],
+    rtiDataIn: Option[RtiData]
+  )(implicit hc: HeaderCarrier): (List[IabdUpdateAmount], List[IabdUpdateAmount], List[RtiCalc]) = {
 
     val rtiData = if (employments.isEmpty) {
       None
     } else {
       rtiDataIn
     }
-    val updateAmounts = rtiData.map(_.employments.flatMap { rti =>
+    val updateAmounts =
+      rtiData
+        .map(_.employments.flatMap { rti =>
+          //Check to see if this is an employment we want to update
+          val foundEmployment = findEmployment(
+            rti,
+            employments
+          )
+          foundEmployment.map {
+            employment =>
+              val lastPaymentDate = rti.payments.lastOption.map(_.paidOn)
+              val taxablePayYTD = rti.payments.lastOption.map(_.taxablePayYTD)
 
-      //Check to see if this is an employment we want to update
-      val foundEmployment = findEmployment(
-        rti,
-        employments
-      )
-        foundEmployment.map { employment =>
+              val (calEstPayCY, calEstPayNY) = estimatedPay(rti, employment)
 
-        val lastPaymentDate = rti.payments.lastOption.map(_.paidOn)
-        val taxablePayYTD = rti.payments.lastOption.map(_.taxablePayYTD)
+              val (npsUpdateAmountCY, npsUpdateAmountNY) =
+                getUpdateAmounts(employment.sequenceNumber, calEstPayCY, calEstPayNY)
 
-        val (calEstPayCY, calEstPayNY) = estimatedPay(rti, employment)
+              val rtiCalc = new RtiCalc(
+                employmentId = employment.sequenceNumber,
+                employmentType = employment.employmentType,
+                employmentStatus = employment.employmentStatus.getOrElse(0),
+                employerName = employment.employerName.getOrElse(""),
+                totalPayToDate = taxablePayYTD.getOrElse(BigDecimal(0)),
+                calculationResult = calEstPayCY,
+                paymentDate = lastPaymentDate,
+                payFrequency = rti.payments.lastOption.map(_.payFrequency)
+              )
 
-        val (npsUpdateAmountCY, npsUpdateAmountNY) = getUpdateAmounts(employment.sequenceNumber, calEstPayCY,
-          calEstPayNY)
-
-        val rtiCalc = new RtiCalc(employmentId = employment.sequenceNumber,
-          employmentType = employment.employmentType,
-          employmentStatus = employment.employmentStatus.getOrElse(0),
-          employerName = employment.employerName.getOrElse(""),
-          totalPayToDate = taxablePayYTD.getOrElse(BigDecimal(0)),
-          calculationResult = calEstPayCY,
-          paymentDate = lastPaymentDate,
-          payFrequency = rti.payments.lastOption.map(_.payFrequency))
-
-        (npsUpdateAmountCY, npsUpdateAmountNY, Some(rtiCalc))
-      }
-    }).getOrElse(Nil)
+              (npsUpdateAmountCY, npsUpdateAmountNY, Some(rtiCalc))
+          }
+        })
+        .getOrElse(Nil)
 
     (updateAmounts.flatMap(_._1), updateAmounts.flatMap(_._2), updateAmounts.flatMap(_._3))
   }
 
-  private[service] def getUpdateAmounts(sequenceNo: Int, calEstPayCY: Option[BigDecimal], calcEstPayNY: Option[BigDecimal]):
-    (Option[IabdUpdateAmount], Option[IabdUpdateAmount]) = {
-
+  private[service] def getUpdateAmounts(
+    sequenceNo: Int,
+    calEstPayCY: Option[BigDecimal],
+    calcEstPayNY: Option[BigDecimal]): (Option[IabdUpdateAmount], Option[IabdUpdateAmount]) =
     (npsConfig.updateSourceEnabled, calEstPayCY, calcEstPayNY) match {
       case (Some(true), Some(estPayCY), Some(estPayNY)) =>
-        (Some(IabdUpdateAmount(
-          employmentSequenceNumber = sequenceNo,
-          grossAmount = estPayCY.intValue(),
-          source = Some(IabdUpdateSourceInternetCalculated)
-        )), Some(IabdUpdateAmount(
-          employmentSequenceNumber = sequenceNo,
-          grossAmount = estPayNY.intValue(),
-          source = Some(IabdUpdateSourceInternetCalculated)
-        )))
+        (
+          Some(
+            IabdUpdateAmount(
+              employmentSequenceNumber = sequenceNo,
+              grossAmount = estPayCY.intValue(),
+              source = Some(IabdUpdateSourceInternetCalculated)
+            )),
+          Some(
+            IabdUpdateAmount(
+              employmentSequenceNumber = sequenceNo,
+              grossAmount = estPayNY.intValue(),
+              source = Some(IabdUpdateSourceInternetCalculated)
+            )))
 
       case (_, Some(estPayCY), Some(estPayNY)) =>
-        (Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())),
+        (
+          Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayCY.intValue())),
           Some(IabdUpdateAmount(employmentSequenceNumber = sequenceNo, grossAmount = estPayNY.intValue())))
 
       case (_, Some(estPayCY), None) =>
@@ -213,7 +219,6 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
 
       case _ => (None, None)
     }
-  }
 
   def estimatedPay(rtiEmp: RtiEmployment, npsEmployment: NpsEmployment): (Option[BigDecimal], Option[BigDecimal]) = {
 
@@ -229,8 +234,11 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     (getFinalEstPayWithDefault(estPayCY, rtiEmp), getFinalEstPayWithDefault(estPayNY, rtiEmp))
   }
 
-  private[service] def getMidYearEstimatedPay(payFrequency: PayFrequency.Value, rtiEmp: RtiEmployment,
-    start: NpsDate, employmentType: Int): (Option[BigDecimal], Option[BigDecimal]) = {
+  private[service] def getMidYearEstimatedPay(
+    payFrequency: PayFrequency.Value,
+    rtiEmp: RtiEmployment,
+    start: NpsDate,
+    employmentType: Int): (Option[BigDecimal], Option[BigDecimal]) = {
 
     val remainingDays = Days.daysBetween(start.localDate, TaxYear().end).getDays + 1
 
@@ -266,7 +274,6 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
         }
         (estPay, None)
       case _ =>
-
         val estPay = Some {
           rtiEmp.taxablePayYTD.max {
             if (employmentType == Income.Live.code) {
@@ -280,8 +287,10 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     }
   }
 
-  private[service] def getContinuousEstimatedPay(payFrequency: PayFrequency.Value, rtiEmp: RtiEmployment,
-                                        employmentType: Int): (Option[BigDecimal]) = {
+  private[service] def getContinuousEstimatedPay(
+    payFrequency: PayFrequency.Value,
+    rtiEmp: RtiEmployment,
+    employmentType: Int): (Option[BigDecimal]) =
     payFrequency match {
       case ((Weekly | Fortnightly | FourWeekly)) =>
         rtiEmp.payments.lastOption.flatMap { pmt =>
@@ -316,14 +325,11 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
           }
         }
     }
-  }
 
-
-  private[service] def getEstPayWithMonthNo(pmt: RtiPayment, noOfMonths: Int): Option[BigDecimal] = {
+  private[service] def getEstPayWithMonthNo(pmt: RtiPayment, noOfMonths: Int): Option[BigDecimal] =
     pmt.monthOfTaxYear.map { monthNo =>
       pmt.taxablePayYTD / monthNo * noOfMonths
     }
-  }
 
   private[service] def getRemainingBiAnnual(lastPmt: RtiPayment): Int = {
     val daysBetween = Days.daysBetween(lastPmt.paidOn, TaxYear().end).getDays + 1
@@ -331,7 +337,7 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     if (daysBetween > SIX_MONTHS.days) SIX_MONTHS.remainingBiAnnual else 0
   }
 
-  private[service] def getRemainingQuarter(daysBetween: Int): Int = {
+  private[service] def getRemainingQuarter(daysBetween: Int): Int =
     daysBetween match {
       case _ if daysBetween > NINE_MONTHS.days =>
         NINE_MONTHS.remainingQuarter
@@ -341,20 +347,17 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
         THREE_MONTHS.remainingQuarter
       case _ => 0
     }
-  }
 
-  private[service] def getFinalEstPayWithDefault(estPay: Option[BigDecimal], rtiEmp: RtiEmployment):
-  Option[BigDecimal] = {
-
+  private[service] def getFinalEstPayWithDefault(
+    estPay: Option[BigDecimal],
+    rtiEmp: RtiEmployment): Option[BigDecimal] =
     for {
       estimatedPay <- estPay
-      payment <-  rtiEmp.payments.lastOption
+      payment      <- rtiEmp.payments.lastOption
       largestAmount = estimatedPay.max(payment.taxablePayYTD)
     } yield largestAmount
 
-  }
-
-  private[service] def compareTaxDistrictNos(employmentTaxDistrictNo: String, officeNo: String): Boolean = {
+  private[service] def compareTaxDistrictNos(employmentTaxDistrictNo: String, officeNo: String): Boolean =
     if (employmentTaxDistrictNo == officeNo) {
       true
     } else {
@@ -366,49 +369,49 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
         case _: Exception => false
       }
     }
-  }
 
   private[service] def findEmployment(
-                                       rtiEmp: RtiEmployment,
-                                       npsEmployments: List[NpsEmployment]
-                                       ): Option[NpsEmployment] = {
+    rtiEmp: RtiEmployment,
+    npsEmployments: List[NpsEmployment]
+  ): Option[NpsEmployment] =
     npsEmployments.filter(e =>
-      e.payeNumber == rtiEmp.payeRef && compareTaxDistrictNos(e.taxDistrictNumber, rtiEmp.officeRefNo)
-    ) match {
+      e.payeNumber == rtiEmp.payeRef && compareTaxDistrictNos(e.taxDistrictNumber, rtiEmp.officeRefNo)) match {
       case x if x.size > 1 => x.find(_.worksNumber == rtiEmp.currentPayId)
-      case x => x.headOption
+      case x               => x.headOption
     }
-  }
 
-  def updateEmploymentData(nino: Nino, taxYear: Int,
-                           ceasedUpdated: List[IabdUpdateAmount],
-                           currentYearUpdated: List[IabdUpdateAmount],
-                           nextYearUpdated: List[IabdUpdateAmount],
-                           rtiCalcs: List[RtiCalc],
-                           version: Int,
-                           iabdPays: List[NpsIabdRoot])
-    (implicit hc: HeaderCarrier): Future[Seq[HttpResponse]] = {
+  def updateEmploymentData(
+    nino: Nino,
+    taxYear: Int,
+    ceasedUpdated: List[IabdUpdateAmount],
+    currentYearUpdated: List[IabdUpdateAmount],
+    nextYearUpdated: List[IabdUpdateAmount],
+    rtiCalcs: List[RtiCalc],
+    version: Int,
+    iabdPays: List[NpsIabdRoot])(implicit hc: HeaderCarrier): Future[Seq[HttpResponse]] = {
 
     val filteredOther = currentYearUpdated.filter { iabd =>
-
       val totalPayToDate = rtiCalcs.find(_.employmentId == iabd.employmentSequenceNumber).map(_.totalPayToDate)
 
-      val payRecord = iabdPays.find(x => x.`type` == IabdType.NewEstimatedPay.code &&
-        x.employmentSequenceNumber.contains(iabd.employmentSequenceNumber))
+      val payRecord = iabdPays.find(
+        x =>
+          x.`type` == IabdType.NewEstimatedPay.code &&
+            x.employmentSequenceNumber.contains(iabd.employmentSequenceNumber))
       val originalAmount = payRecord.flatMap(_.grossAmount)
       val newAmount = Some(iabd.grossAmount)
       val source = payRecord.flatMap(_.source)
 
       forceUpdateEmploymentData(totalPayToDate, originalAmount) || (!IABD_TYPES_DO_NOT_OVERWRITE.contains(source) &&
-        newAmount != originalAmount)
+      newAmount != originalAmount)
     }
 
     //Only update Next Year if current year is being updated
-    val filteredNY = nextYearUpdated.filter { iabd => filteredOther.exists(x => x.employmentSequenceNumber == iabd.employmentSequenceNumber)}
+    val filteredNY = nextYearUpdated.filter { iabd =>
+      filteredOther.exists(x => x.employmentSequenceNumber == iabd.employmentSequenceNumber)
+    }
     val updateThisYear = ceasedUpdated ::: filteredOther
     if (updateThisYear.nonEmpty) {
       Logger.info("Auto Update for User: " + nino.nino)
-
 
       val updateEmpData: Future[HttpResponse] =
         if (featureTogglesConfig.desUpdateEnabled)
@@ -416,17 +419,27 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
         else
           nps.updateEmploymentData(nino, taxYear, IabdType.NewEstimatedPay.code, version, updateThisYear)
 
-
       updateEmpData.map(Seq.apply(_)).flatMap { r1 =>
         val updateEmpDataNextYear: Future[HttpResponse] =
           if (featureTogglesConfig.desUpdateEnabled)
-            des.updateEmploymentDataToDes(nino = nino, year = taxYear + 1, iabdType = IabdType.NewEstimatedPay.code, version = version + 1, updateAmounts = filteredNY)
+            des.updateEmploymentDataToDes(
+              nino = nino,
+              year = taxYear + 1,
+              iabdType = IabdType.NewEstimatedPay.code,
+              version = version + 1,
+              updateAmounts = filteredNY)
           else
-            nps.updateEmploymentData(nino = nino, year = taxYear + 1, iabdType = IabdType.NewEstimatedPay.code, version = version + 1, updateAmounts = filteredNY)
-                                                                                     
-        updateEmpDataNextYear.map(Seq.apply(_))
-          .recover{ case NonFatal(_) => Seq.empty}
-          .map (r2 => r1 ++ r2)
+            nps.updateEmploymentData(
+              nino = nino,
+              year = taxYear + 1,
+              iabdType = IabdType.NewEstimatedPay.code,
+              version = version + 1,
+              updateAmounts = filteredNY)
+
+        updateEmpDataNextYear
+          .map(Seq.apply(_))
+          .recover { case NonFatal(_) => Seq.empty }
+          .map(r2 => r1 ++ r2)
       }
 
     } else {
@@ -434,16 +447,14 @@ class AutoUpdatePayService @Inject()(nps: NpsConnector,
     }
   }
 
-  def forceUpdateEmploymentData(totalPayToDate: Option[BigDecimal], originalAmount: Option[BigDecimal]): Boolean ={
-    val result: Option[Boolean] = for{
+  def forceUpdateEmploymentData(totalPayToDate: Option[BigDecimal], originalAmount: Option[BigDecimal]): Boolean = {
+    val result: Option[Boolean] = for {
       t <- totalPayToDate
       o <- originalAmount
-    }yield{
+    } yield {
       t > o
     }
     result.getOrElse(false)
   }
 
-
 }
-

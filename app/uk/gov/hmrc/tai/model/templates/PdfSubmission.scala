@@ -18,18 +18,19 @@ package uk.gov.hmrc.tai.model.templates
 
 import org.joda.time.LocalDateTime
 
-case class PdfSubmission(customerId: String, //Needs to be the nino without suffix as DMS doesn't use suffix
-                         formId: String,
-                         numberOfPages: Int,
-                         attachmentCount: Int = 0,
-                         hmrcReceivedAt: LocalDateTime = LocalDateTime.now(),
-                         submissionMark: String = "",
-                         casKey: String = "",
-                         businessArea: String = "PSA",
-                         classificationType: String = "PSA-DFS TES",
-                         source: String = "TAI",
-                         target: String = "DMS",
-                         store: Boolean = true) {
+case class PdfSubmission(
+  customerId: String, //Needs to be the nino without suffix as DMS doesn't use suffix
+  formId: String,
+  numberOfPages: Int,
+  attachmentCount: Int = 0,
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(),
+  submissionMark: String = "",
+  casKey: String = "",
+  businessArea: String = "PSA",
+  classificationType: String = "PSA-DFS TES",
+  source: String = "TAI",
+  target: String = "DMS",
+  store: Boolean = true) {
 
   val xmlCreatedAt: LocalDateTime = LocalDateTime.now()
   val submissionReference: String = xmlCreatedAt.toString("ssMMyyddmmHH")

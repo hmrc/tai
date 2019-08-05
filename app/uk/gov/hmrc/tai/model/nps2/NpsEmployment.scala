@@ -18,13 +18,13 @@ package uk.gov.hmrc.tai.model.nps2
 
 import org.joda.time.LocalDate
 
-case class NpsEmployment (
-                           employerName: Option[String],
-                           isPrimary: Boolean,
-                           sequenceNumber: Int,
-                           worksNumber: Option[String],
-                           districtNumber: Int,
-                           iabds: List[Iabd] = Nil,
-                           cessationPay: Option[BigDecimal],
-                           start: LocalDate
-                           )
+case class NpsEmployment(
+  employerName: Option[String],
+  isPrimary: Boolean,
+  sequenceNumber: Int,
+  worksNumber: Option[String],
+  districtNumber: Int,
+  iabds: List[Iabd] = Nil,
+  cessationPay: Option[BigDecimal],
+  start: LocalDate
+)

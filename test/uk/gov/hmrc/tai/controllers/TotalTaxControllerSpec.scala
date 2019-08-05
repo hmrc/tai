@@ -42,95 +42,93 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class TotalTaxControllerSpec extends PlaySpec
-  with MockitoSugar
-  with NpsExceptions
-  with MockAuthenticationPredicate{
+class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
 
   "totalTax" must {
     "return the total tax details for the given year" in {
-        val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
-          .thenReturn(Future.successful(totalTax))
+      val mockTotalTaxService = mock[TotalTaxService]
+      when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        .thenReturn(Future.successful(totalTax))
 
-        val sut = createSUT(mockTotalTaxService)
-        val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        status(result) mustBe OK
+      val sut = createSUT(mockTotalTaxService)
+      val result = sut.totalTax(nino, TaxYear())(FakeRequest())
+      status(result) mustBe OK
 
-        val expectedJson = Json.obj(
-          "data" -> Json.obj(
-            "amount" -> 1000,
-            "incomeCategories" -> Json.arr(
-              Json.obj(
-                "incomeCategoryType" -> "UkDividendsIncomeCategory",
-                "totalTax" -> 10,
-                "totalTaxableIncome" -> 20,
-                "totalIncome" -> 30,
-                "taxBands" -> Json.arr(
-                  Json.obj(
-                    "bandType" -> "",
-                    "code" -> "",
-                    "income" -> 0,
-                    "tax" -> 0,
-                    "rate" -> 0
-                  ),
-                  Json.obj(
-                    "bandType" -> "B",
-                    "code" -> "BR",
-                    "income" -> 10000,
-                    "tax" -> 500,
-                    "lowerBand" -> 5000,
-                    "upperBand" -> 20000,
-                    "rate" -> 10
-                  )
+      val expectedJson = Json.obj(
+        "data" -> Json.obj(
+          "amount" -> 1000,
+          "incomeCategories" -> Json.arr(
+            Json.obj(
+              "incomeCategoryType" -> "UkDividendsIncomeCategory",
+              "totalTax"           -> 10,
+              "totalTaxableIncome" -> 20,
+              "totalIncome"        -> 30,
+              "taxBands" -> Json.arr(
+                Json.obj(
+                  "bandType" -> "",
+                  "code"     -> "",
+                  "income"   -> 0,
+                  "tax"      -> 0,
+                  "rate"     -> 0
+                ),
+                Json.obj(
+                  "bandType"  -> "B",
+                  "code"      -> "BR",
+                  "income"    -> 10000,
+                  "tax"       -> 500,
+                  "lowerBand" -> 5000,
+                  "upperBand" -> 20000,
+                  "rate"      -> 10
                 )
               )
-            ),
+            )
+          ),
           "reliefsGivingBackTax" -> Json.obj(
             "amount" -> 100,
             "taxAdjustmentComponents" -> Json.arr(
               Json.obj(
-                "taxAdjustmentType" -> "EnterpriseInvestmentSchemeRelief",
+                "taxAdjustmentType"   -> "EnterpriseInvestmentSchemeRelief",
                 "taxAdjustmentAmount" -> 100
               )
             )
           ),
-            "otherTaxDue" -> Json.obj(
-              "amount" -> 100,
-              "taxAdjustmentComponents" -> Json.arr(
-                Json.obj(
-                  "taxAdjustmentType" -> "ExcessGiftAidTax",
-                  "taxAdjustmentAmount" -> 100
-                )
-              )
-            ),
-            "alreadyTaxedAtSource" -> Json.obj(
-              "amount" -> 100,
-              "taxAdjustmentComponents" -> Json.arr(
-                Json.obj(
-                  "taxAdjustmentType" -> "TaxOnBankBSInterest",
-                  "taxAdjustmentAmount" -> 100
-                )
-              )
-            ),
-            "taxReliefComponent" -> Json.obj(
-              "amount" -> 100,
-              "taxAdjustmentComponents" -> Json.arr(
-                Json.obj(
-                  "taxAdjustmentType" -> "PersonalPensionPaymentRelief",
-                  "taxAdjustmentAmount" -> 100
-                )
+          "otherTaxDue" -> Json.obj(
+            "amount" -> 100,
+            "taxAdjustmentComponents" -> Json.arr(
+              Json.obj(
+                "taxAdjustmentType"   -> "ExcessGiftAidTax",
+                "taxAdjustmentAmount" -> 100
               )
             )
           ),
-          "links" -> Json.arr())
-        contentAsJson(result) mustBe expectedJson
-      }
+          "alreadyTaxedAtSource" -> Json.obj(
+            "amount" -> 100,
+            "taxAdjustmentComponents" -> Json.arr(
+              Json.obj(
+                "taxAdjustmentType"   -> "TaxOnBankBSInterest",
+                "taxAdjustmentAmount" -> 100
+              )
+            )
+          ),
+          "taxReliefComponent" -> Json.obj(
+            "amount" -> 100,
+            "taxAdjustmentComponents" -> Json.arr(
+              Json.obj(
+                "taxAdjustmentType"   -> "PersonalPensionPaymentRelief",
+                "taxAdjustmentAmount" -> 100
+              )
+            )
+          )
+        ),
+        "links" -> Json.arr()
+      )
+      contentAsJson(result) mustBe expectedJson
+    }
 
     "return the bad request exception" when {
       "hod throws coding calculation error for cy+1" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException(CodingCalculationCYPlusOne)))
 
         val sut = createSUT(mockTotalTaxService)
@@ -140,7 +138,7 @@ class TotalTaxControllerSpec extends PlaySpec
 
       "hod throws bad request for cy" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException("Cannot perform a Coding Calculation for CY")))
 
         val sut = createSUT(mockTotalTaxService)
@@ -152,7 +150,7 @@ class TotalTaxControllerSpec extends PlaySpec
     "return Locked exception" when {
       "hod throws locked exception" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino),Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTotalTaxService)
@@ -177,18 +175,42 @@ class TotalTaxControllerSpec extends PlaySpec
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
-  val reliefsGivingBackTax = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
+  val reliefsGivingBackTax = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
   val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
   val alreadyTaxedAtSource = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
   val taxReliefComponents = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
 
-  val totalTax = TotalTax(BigDecimal(1000), Seq(
-    IncomeCategory(UkDividendsIncomeCategory, 10, 20, 30, Seq(
-      TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
-      TaxBand(bandType = "B", code = "BR", income = 10000, tax = 500, lowerBand = Some(5000), upperBand = Some(20000), rate = 10)))),
-    reliefsGivingBackTax, otherTaxDue, alreadyTaxedAtSource, None, taxReliefComponents)
+  val totalTax = TotalTax(
+    BigDecimal(1000),
+    Seq(
+      IncomeCategory(
+        UkDividendsIncomeCategory,
+        10,
+        20,
+        30,
+        Seq(
+          TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
+          TaxBand(
+            bandType = "B",
+            code = "BR",
+            income = 10000,
+            tax = 500,
+            lowerBand = Some(5000),
+            upperBand = Some(20000),
+            rate = 10)
+        )
+      )),
+    reliefsGivingBackTax,
+    otherTaxDue,
+    alreadyTaxedAtSource,
+    None,
+    taxReliefComponents
+  )
 
-  private def createSUT(totalTaxService: TotalTaxService, authentication: AuthenticationPredicate =
-                        loggedInAuthenticationPredicate) = new TotalTaxController(totalTaxService, authentication)
+  private def createSUT(
+    totalTaxService: TotalTaxService,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new TotalTaxController(totalTaxService, authentication)
 
 }

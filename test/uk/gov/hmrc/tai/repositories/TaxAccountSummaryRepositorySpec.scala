@@ -36,9 +36,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxAccountSummaryRepositorySpec extends PlaySpec
-  with MockitoSugar
-  with FakeTaiPlayApplication {
+class TaxAccountSummaryRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
 
   "TaxAccountSummary" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
@@ -47,10 +45,11 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(taxAccountSummaryNpsJson))
         val mockCodingComponentRepository = mock[CodingComponentRepository]
-        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(
-          Seq(
-            codingComponent
-          )))
+        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+          Future.successful(
+            Seq(
+              codingComponent
+            )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
@@ -64,10 +63,11 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(taxAccountSummaryNpsJson))
         val mockCodingComponentRepository = mock[CodingComponentRepository]
-        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(
-          Seq(
-            codingComponent.copy(componentType = OutstandingDebt)
-          )))
+        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+          Future.successful(
+            Seq(
+              codingComponent.copy(componentType = OutstandingDebt)
+            )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
@@ -81,10 +81,11 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(taxAccountSummaryNpsJson))
         val mockCodingComponentRepository = mock[CodingComponentRepository]
-        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(
-          Seq(
-            codingComponent.copy(componentType = EstimatedTaxYouOweThisYear)
-          )))
+        when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+          Future.successful(
+            Seq(
+              codingComponent.copy(componentType = EstimatedTaxYouOweThisYear)
+            )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val responseFuture = sut.taxAccountSummary(nino, TaxYear())
@@ -99,13 +100,12 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(taxAccountSummaryNpsJson))
           val mockCodingComponentRepository = mock[CodingComponentRepository]
-          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(
-            Seq(
-              codingComponent,
-              codingComponent.copy(componentType = OutstandingDebt),
-              codingComponent.copy(componentType = EstimatedTaxYouOweThisYear),
-              codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
-            )))
+          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(Seq(
+            codingComponent,
+            codingComponent.copy(componentType = OutstandingDebt),
+            codingComponent.copy(componentType = EstimatedTaxYouOweThisYear),
+            codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
+          )))
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
@@ -121,10 +121,11 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
           when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(taxAccountSummaryNpsJson))
           val mockCodingComponentRepository = mock[CodingComponentRepository]
-          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(
-            Seq(
-              codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
-            )))
+          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+            Future.successful(
+              Seq(
+                codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
+              )))
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val responseFuture = sut.taxAccountSummary(nino, TaxYear())
@@ -144,24 +145,28 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
 
         val result = Await.result(sut.taxAdjustmentComponents(nino, TaxYear()), 5.seconds)
 
-        result mustBe Some(TaxAdjustment(3400.5, Seq(
-          TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
-          TaxAdjustmentComponent(ConcessionalRelief, 100.5),
-          TaxAdjustmentComponent(MaintenancePayments, 200),
-          TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
-          TaxAdjustmentComponent(DoubleTaxationRelief, 400),
-          TaxAdjustmentComponent(ExcessGiftAidTax, 100),
-          TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
-          TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
-          TaxAdjustmentComponent(ChildBenefit, 300),
-          TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
-          TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
-          TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
-          TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300),
-          TaxAdjustmentComponent(PersonalPensionPayment, 600),
-          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
-          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
-        )))
+        result mustBe Some(
+          TaxAdjustment(
+            3400.5,
+            Seq(
+              TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
+              TaxAdjustmentComponent(ConcessionalRelief, 100.5),
+              TaxAdjustmentComponent(MaintenancePayments, 200),
+              TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
+              TaxAdjustmentComponent(DoubleTaxationRelief, 400),
+              TaxAdjustmentComponent(ExcessGiftAidTax, 100),
+              TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
+              TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
+              TaxAdjustmentComponent(ChildBenefit, 300),
+              TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
+              TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
+              TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
+              TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300),
+              TaxAdjustmentComponent(PersonalPensionPayment, 600),
+              TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+              TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+            )
+          ))
       }
     }
 
@@ -188,13 +193,17 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
 
       val result = Await.result(sut.reliefsGivingBackTaxComponents(nino, TaxYear()), 5.seconds)
 
-      result mustBe Some(TaxAdjustment(1100.5, Seq(
-        TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
-        TaxAdjustmentComponent(ConcessionalRelief, 100.5),
-        TaxAdjustmentComponent(MaintenancePayments, 200),
-        TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
-        TaxAdjustmentComponent(DoubleTaxationRelief, 400)
-      )))
+      result mustBe Some(
+        TaxAdjustment(
+          1100.5,
+          Seq(
+            TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
+            TaxAdjustmentComponent(ConcessionalRelief, 100.5),
+            TaxAdjustmentComponent(MaintenancePayments, 200),
+            TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
+            TaxAdjustmentComponent(DoubleTaxationRelief, 400)
+          )
+        ))
     }
 
     "return empty list " when {
@@ -220,12 +229,16 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
 
       val result = Await.result(sut.otherTaxDueComponents(nino, TaxYear()), 5.seconds)
 
-      result mustBe Some(TaxAdjustment(700, Seq(
-        TaxAdjustmentComponent(ExcessGiftAidTax, 100),
-        TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
-        TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
-        TaxAdjustmentComponent(ChildBenefit, 300)
-      )))
+      result mustBe Some(
+        TaxAdjustment(
+          700,
+          Seq(
+            TaxAdjustmentComponent(ExcessGiftAidTax, 100),
+            TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
+            TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
+            TaxAdjustmentComponent(ChildBenefit, 300)
+          )
+        ))
     }
 
     "return empty list " when {
@@ -251,12 +264,16 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
 
       val result = Await.result(sut.alreadyTaxedAtSourceComponents(nino, TaxYear()), 5.seconds)
 
-      result mustBe Some(TaxAdjustment(700, Seq(
-        TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
-        TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
-        TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
-        TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
-      )))
+      result mustBe Some(
+        TaxAdjustment(
+          700,
+          Seq(
+            TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
+            TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
+            TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
+            TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
+          )
+        ))
     }
 
     "return empty list " when {
@@ -305,19 +322,25 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
       when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val codingComponentRepository = mock[CodingComponentRepository]
-      when(codingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(Seq(
-        CodingComponent(domain.GiftAidPayments, None, 100, "", Some(100))
-      )))
+      when(codingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+        Future.successful(
+          Seq(
+            CodingComponent(domain.GiftAidPayments, None, 100, "", Some(100))
+          )))
       val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
       val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
 
-      result mustBe Some(TaxAdjustment(1000, Seq(
-        TaxAdjustmentComponent(PersonalPensionPayment, 600),
-        TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
-        TaxAdjustmentComponent(GiftAidPaymentsRelief, 200),
-        TaxAdjustmentComponent(GiftAidPayments, 100)
-      )))
+      result mustBe Some(
+        TaxAdjustment(
+          1000,
+          Seq(
+            TaxAdjustmentComponent(PersonalPensionPayment, 600),
+            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200),
+            TaxAdjustmentComponent(GiftAidPayments, 100)
+          )
+        ))
     }
 
     "return tax relief components excluding gift aid payment" in {
@@ -325,16 +348,21 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
       when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val codingComponentRepository = mock[CodingComponentRepository]
-      when(codingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(Seq.empty[CodingComponent]))
+      when(codingComponentRepository.codingComponents(any(), any())(any()))
+        .thenReturn(Future.successful(Seq.empty[CodingComponent]))
       val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
       val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
 
-      result mustBe Some(TaxAdjustment(900, Seq(
-        TaxAdjustmentComponent(PersonalPensionPayment, 600),
-        TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
-        TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
-      )))
+      result mustBe Some(
+        TaxAdjustment(
+          900,
+          Seq(
+            TaxAdjustmentComponent(PersonalPensionPayment, 600),
+            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+          )
+        ))
     }
 
     "return empty list" when {
@@ -343,7 +371,8 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
         when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(Json.obj()))
         val codingComponentRepository = mock[CodingComponentRepository]
-        when(codingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(Seq.empty[CodingComponent]))
+        when(codingComponentRepository.codingComponents(any(), any())(any()))
+          .thenReturn(Future.successful(Seq.empty[CodingComponent]))
         val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
         val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
@@ -363,62 +392,66 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec
     "totalLiability" -> Json.obj(
       "totalLiability" -> 1111,
       "basicRateExtensions" -> Json.obj(
-        "personalPensionPayment" -> 600,
+        "personalPensionPayment"       -> 600,
         "personalPensionPaymentRelief" -> 100,
-        "giftAidPaymentsRelief" -> 200
+        "giftAidPaymentsRelief"        -> 200
       ),
       "reliefsGivingBackTax" -> Json.obj(
         "enterpriseInvestmentSchemeRelief" -> 100,
-        "concessionalRelief" -> 100.50,
-        "maintenancePayments" -> 200,
-        "marriedCouplesAllowance" -> 300,
-        "doubleTaxationRelief" -> 400
+        "concessionalRelief"               -> 100.50,
+        "maintenancePayments"              -> 200,
+        "marriedCouplesAllowance"          -> 300,
+        "doubleTaxationRelief"             -> 400
       ),
       "otherTaxDue" -> Json.obj(
-        "excessGiftAidTax" -> 100,
-        "excessWidowsAndOrphans" -> 100,
+        "excessGiftAidTax"          -> 100,
+        "excessWidowsAndOrphans"    -> 100,
         "pensionPaymentsAdjustment" -> 200,
-        "childBenefit" -> 300
+        "childBenefit"              -> 300
       ),
       "alreadyTaxedAtSource" -> Json.obj(
-        "taxOnBankBSInterest" -> 100,
-        "taxCreditOnUKDividends" -> 100,
-        "taxCreditOnForeignInterest" -> 200,
+        "taxOnBankBSInterest"               -> 100,
+        "taxCreditOnUKDividends"            -> 100,
+        "taxCreditOnForeignInterest"        -> 200,
         "taxCreditOnForeignIncomeDividends" -> 300
       ),
       "nonSavings" -> Json.obj(
         "totalIncome" -> Json.obj(
-          "iabdSummaries" -> JsArray(Seq(Json.obj(
-            "amount" -> 100,
-            "type" -> 19,
-            "npsDescription" -> "Non-Coded Income",
-            "employmentId" -> JsNull
-          ),
+          "iabdSummaries" -> JsArray(Seq(
             Json.obj(
-              "amount" -> 100,
-              "type" -> 84,
+              "amount"         -> 100,
+              "type"           -> 19,
+              "npsDescription" -> "Non-Coded Income",
+              "employmentId"   -> JsNull
+            ),
+            Json.obj(
+              "amount"         -> 100,
+              "type"           -> 84,
               "npsDescription" -> "Job-Seeker Allowance",
-              "employmentId" -> JsNull
-            ))
-
-          )
+              "employmentId"   -> JsNull
+            )
+          ))
         ),
-        "taxBands" -> JsArray(Seq(Json.obj(
-          "bandType" -> "B",
-          "income" -> 1000,
-          "taxCode" -> "BR",
-          "rate" -> 40
-        ),
-          Json.obj(
-            "bandType" -> "D0",
-            "taxCode" -> "BR",
-            "income" -> 1000,
-            "rate" -> 20
-          )))
+        "taxBands" -> JsArray(
+          Seq(
+            Json.obj(
+              "bandType" -> "B",
+              "income"   -> 1000,
+              "taxCode"  -> "BR",
+              "rate"     -> 40
+            ),
+            Json.obj(
+              "bandType" -> "D0",
+              "taxCode"  -> "BR",
+              "income"   -> 1000,
+              "rate"     -> 20
+            )))
       )
     )
   )
 
-  private def createSUT(taxAccountRepository: TaxAccountRepository, codingComponentRepository: CodingComponentRepository) =
+  private def createSUT(
+    taxAccountRepository: TaxAccountRepository,
+    codingComponentRepository: CodingComponentRepository) =
     new TaxAccountSummaryRepository(taxAccountRepository, codingComponentRepository)
 }

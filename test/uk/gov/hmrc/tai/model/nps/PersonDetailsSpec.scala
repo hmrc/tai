@@ -26,7 +26,6 @@ import uk.gov.hmrc.tai.model.TaiRoot
 
 import scala.util.Random
 
-
 class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
   "PersonDetails" should {
@@ -45,7 +44,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       "a blank person (except for nino) represented as json is supplied" in {
 
         val json = Json.obj(
-          "etag" -> "0",
+          "etag"   -> "0",
           "person" -> Json.obj("nino" -> nino)
         )
 
@@ -60,15 +59,34 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     "return a taiRoot object containing person details" when {
       "a person is supplied" in {
 
-        val person = Person(Some("firstName"), Some("middleName"), Some("lastName"), Some("initials"), Some("title"), Some("honours"), Some("sex"),
-          Some(DateTime.parse("1900-01-01")), Nino(nino.nino), Some(true), None)
+        val person = Person(
+          Some("firstName"),
+          Some("middleName"),
+          Some("lastName"),
+          Some("initials"),
+          Some("title"),
+          Some("honours"),
+          Some("sex"),
+          Some(DateTime.parse("1900-01-01")),
+          Nino(nino.nino),
+          Some(true),
+          None
+        )
 
         val sut = PersonDetails("1", person)
 
         val result = sut.toTaiRoot
 
-        result mustBe TaiRoot(nino.nino, 1, "title", "firstName", Some("middleName"),
-          "lastName", "firstName lastName", true, None)
+        result mustBe TaiRoot(
+          nino.nino,
+          1,
+          "title",
+          "firstName",
+          Some("middleName"),
+          "lastName",
+          "firstName lastName",
+          true,
+          None)
       }
 
       "a person represented as json is supplied" in {
@@ -76,19 +94,29 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val json = Json.obj(
           "etag" -> "1",
           "person" -> Json.obj(
-            "nino" -> nino,
-            "title" -> "testTitle",
-            "firstName" -> "testFirstName",
-            "middleName" -> "testMiddleName",
-            "lastName" -> "testLastName",
-            "manualCorrespondenceInd" -> true)
+            "nino"                    -> nino,
+            "title"                   -> "testTitle",
+            "firstName"               -> "testFirstName",
+            "middleName"              -> "testMiddleName",
+            "lastName"                -> "testLastName",
+            "manualCorrespondenceInd" -> true
+          )
         )
 
         val sut = json.as[PersonDetails]
 
         val result = sut.toTaiRoot
 
-        result mustBe TaiRoot(nino.nino, 1, "testTitle", "testFirstName", Some("testMiddleName"), "testLastName", "testFirstName testLastName", true, None)
+        result mustBe TaiRoot(
+          nino.nino,
+          1,
+          "testTitle",
+          "testFirstName",
+          Some("testMiddleName"),
+          "testLastName",
+          "testFirstName testLastName",
+          true,
+          None)
       }
     }
 
@@ -105,7 +133,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       "supplied etag data (represented as json) is not a number" in {
 
         val json = Json.obj(
-          "etag" -> "",
+          "etag"   -> "",
           "person" -> Json.obj("nino" -> nino)
         )
 
@@ -115,8 +143,6 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       }
     }
   }
-
-
 
   private val nino: Nino = new Generator(new Random).nextNino
 

@@ -20,10 +20,10 @@ import org.joda.time.LocalDate
 import play.api.libs.json.Json
 
 case class CalculatedPay(
-                          grossAnnualPay : Option[BigDecimal],
-                          netAnnualPay : Option[BigDecimal],
-                          startDate : Option[LocalDate] = None,
-                          annualAmount : Option[BigDecimal])
+  grossAnnualPay: Option[BigDecimal],
+  netAnnualPay: Option[BigDecimal],
+  startDate: Option[LocalDate] = None,
+  annualAmount: Option[BigDecimal])
 
 object CalculatedPay {
   implicit val formats = Json.format[CalculatedPay]

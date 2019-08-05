@@ -34,21 +34,22 @@ object TaxCodeHistoryFactory extends TaxCodeHistoryConstants {
     TaxCodeHistory(nino.toString, Seq(taxCodeRecord1, taxCodeRecord2))
   }
 
-  def createTaxCodeHistoryJson(nino: Nino): JsObject = {
-    createTaxCodeHistoryJson(nino, Seq(
-      TaxCodeRecordFactory.createPrimaryEmploymentJson(),
-      TaxCodeRecordFactory.createSecondaryEmploymentJson(
-        taxCode = "1100L",
-        employerName = "Employer 2",
-        payrollNumber = "456"
+  def createTaxCodeHistoryJson(nino: Nino): JsObject =
+    createTaxCodeHistoryJson(
+      nino,
+      Seq(
+        TaxCodeRecordFactory.createPrimaryEmploymentJson(),
+        TaxCodeRecordFactory.createSecondaryEmploymentJson(
+          taxCode = "1100L",
+          employerName = "Employer 2",
+          payrollNumber = "456"
+        )
       )
-    ))
-  }
+    )
 
-  def createTaxCodeHistoryJson(nino: Nino, records: Seq[JsValue]): JsObject = {
+  def createTaxCodeHistoryJson(nino: Nino, records: Seq[JsValue]): JsObject =
     Json.obj(
-      "nino" -> nino.toString,
+      "nino"          -> nino.toString,
       "taxCodeRecord" -> records
     )
-  }
 }

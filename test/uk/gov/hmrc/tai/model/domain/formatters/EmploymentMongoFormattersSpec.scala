@@ -80,7 +80,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
       "adjustment type doesn't match" in {
 
         val json = Json.obj(
-          "type" -> "INVALID",
+          "type"   -> "INVALID",
           "amount" -> 100
         )
 
@@ -110,32 +110,48 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
 
     "un-marshall and marshal valid Employment json and object" when {
       "given a valid Employment object and json" in {
-        val employmentDetails = List(Employment("TEST", Some("12345"), new LocalDate("2017-05-26"), None,
-          List(AnnualAccount("", TaxYear(2017), Available,
-            List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
-            List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10)))))), "", "", 2, Some(100), false, false))
+        val employmentDetails = List(
+          Employment(
+            "TEST",
+            Some("12345"),
+            new LocalDate("2017-05-26"),
+            None,
+            List(AnnualAccount(
+              "",
+              TaxYear(2017),
+              Available,
+              List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
+              List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10))))
+            )),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false
+          ))
 
         val json = Json.arr(
           Json.obj(
-            "name" -> "TEST",
+            "name"          -> "TEST",
             "payrollNumber" -> "12345",
-            "startDate" -> "2017-05-26",
+            "startDate"     -> "2017-05-26",
             "annualAccounts" -> Json.arr(
               Json.obj(
-                "key" -> "",
-                "taxYear" -> 2017,
+                "key"            -> "",
+                "taxYear"        -> 2017,
                 "realTimeStatus" -> "Available",
                 "payments" -> Json.arr(
                   Json.obj(
-                    "date" -> "2017-05-26",
-                    "amountYearToDate" -> 10,
-                    "taxAmountYearToDate" -> 10,
+                    "date"                              -> "2017-05-26",
+                    "amountYearToDate"                  -> 10,
+                    "taxAmountYearToDate"               -> 10,
                     "nationalInsuranceAmountYearToDate" -> 10,
-                    "amount" -> 10,
-                    "taxAmount" -> 10,
-                    "nationalInsuranceAmount" -> 10,
-                    "payFrequency" -> "Monthly",
-                    "duplicate" -> true
+                    "amount"                            -> 10,
+                    "taxAmount"                         -> 10,
+                    "nationalInsuranceAmount"           -> 10,
+                    "payFrequency"                      -> "Monthly",
+                    "duplicate"                         -> true
                   )
                 ),
                 "endOfTaxYearUpdates" -> Json.arr(
@@ -143,7 +159,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
                     "date" -> "2017-05-26",
                     "adjustments" -> Json.arr(
                       Json.obj(
-                        "type" -> "NationalInsuranceAdjustment",
+                        "type"   -> "NationalInsuranceAdjustment",
                         "amount" -> 10
                       )
                     )
@@ -151,11 +167,11 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
                 )
               )
             ),
-            "taxDistrictNumber" -> "",
-            "payeNumber" -> "",
-            "sequenceNumber" -> 2,
-            "cessationPay" -> 100,
-            "hasPayrolledBenefit" -> false,
+            "taxDistrictNumber"            -> "",
+            "payeNumber"                   -> "",
+            "sequenceNumber"               -> 2,
+            "cessationPay"                 -> 100,
+            "hasPayrolledBenefit"          -> false,
             "receivingOccupationalPension" -> false
           )
         )
@@ -171,7 +187,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
 
   private def getAdjustmentJson(adjustmentType: AdjustmentType) =
     Json.obj(
-      "type" -> adjustmentType,
+      "type"   -> adjustmentType,
       "amount" -> 100
     )
 }

@@ -84,7 +84,11 @@ class PersonDetailsTemplateSpec extends PlaySpec {
   private val dateOfBirth = LocalDate.parse("2017-02-01")
   private val dateOfBirthString: String = dateOfBirth.toString("d MMMM yyyy")
 
-  private val personDetails = Person(Nino(nino.nino), "test", "tester", Some(dateOfBirth),
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
     Address("line1", "line2", "line3", "postcode", "country"))
 
   val personDetailsTemplate: Html = uk.gov.hmrc.tai.templates.html.PersonDetails(personDetails)

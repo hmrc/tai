@@ -42,8 +42,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
       "there is no non-tax-code income present" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
         val mockBbsiRepository = mock[BbsiRepository]
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-          thenReturn(Future.successful(Json.arr()))
+        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
@@ -57,10 +56,13 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
       "there is non-tax-code income present and bank-accounts are not present" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
         val mockBbsiRepository = mock[BbsiRepository]
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68,
-          69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-          thenReturn(Future.successful(json))
+        val json = taxAccountJsonWithIabds(
+          npsIabdSummaries(
+            1,
+            Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
+              81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
+            100))
+        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
         when(mockBbsiRepository.bbsiDetails(any(), any())(any())).thenReturn(Future.successful(Seq.empty[BankAccount]))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
@@ -98,33 +100,33 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
           OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "desc")
         )
 
-        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
       }
 
       "non-tax-code income and bank accounts are present" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
         val mockBbsiRepository = mock[BbsiRepository]
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(82), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-          thenReturn(Future.successful(json))
+        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any())).thenReturn(Future.successful(Seq(bankAccount, bankAccount)))
+        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
+          .thenReturn(Future.successful(Seq(bankAccount, bankAccount)))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
         val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
 
-        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc",
-          Seq(bankAccount, bankAccount)))
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq(bankAccount, bankAccount)))
       }
 
-      "bypass any bank account retrieval and return no untaxed interest" when{
+      "bypass any bank account retrieval and return no untaxed interest" when {
         "no UntaxedInterestIncome is present" in {
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           val mockBbsiRepository = mock[BbsiRepository]
           val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(70), 100))
-          when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-            thenReturn(Future.successful(json))
+          when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
           val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
@@ -138,15 +140,16 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
         val mockBbsiRepository = mock[BbsiRepository]
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(82), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).
-          thenReturn(Future.successful(json))
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any())).thenReturn(Future.failed(new RuntimeException("Error")))
+        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
+          .thenReturn(Future.failed(new RuntimeException("Error")))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
         val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
 
-        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
       }
     }
   }
@@ -161,21 +164,24 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
               "totalTaxableIncome" -> JsNumber(123)
             )
           ),
-          "incomeSources" -> JsArray(Seq(Json.obj(
-            "employmentId" -> JsNumber(1),
-            "taxCode" -> JsString("1150L"),
-            "name" -> JsString("Employer1"),
-            "basisOperation" -> JsNumber(1),
-            "employmentStatus" -> JsNumber(1)
-          ),
-            Json.obj(
-              "employmentId" -> JsNumber(2),
-              "taxCode" -> JsString("1100L"),
-              "name" -> JsString("Employer2"),
-              "basisOperation" -> JsNumber(2),
-              "employmentStatus" -> JsNumber(1)
+          "incomeSources" -> JsArray(
+            Seq(
+              Json.obj(
+                "employmentId"     -> JsNumber(1),
+                "taxCode"          -> JsString("1150L"),
+                "name"             -> JsString("Employer1"),
+                "basisOperation"   -> JsNumber(1),
+                "employmentStatus" -> JsNumber(1)
+              ),
+              Json.obj(
+                "employmentId"     -> JsNumber(2),
+                "taxCode"          -> JsString("1100L"),
+                "name"             -> JsString("Employer2"),
+                "basisOperation"   -> JsNumber(2),
+                "employmentStatus" -> JsNumber(1)
+              )
             ))
-          ))
+        )
 
         val iabdJson = Json.arr()
 
@@ -188,10 +194,35 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
         val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
 
-        result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None),
-          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-            "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None))
+        result mustBe Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            None
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            None)
+        )
       }
 
       "iabd returns data for different employment" in {
@@ -202,45 +233,48 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
               "totalTaxableIncome" -> JsNumber(123)
             )
           ),
-          "incomeSources" -> JsArray(Seq(Json.obj(
-            "employmentId" -> JsNumber(1),
-            "taxCode" -> JsString("1150L"),
-            "name" -> JsString("Employer1"),
-            "basisOperation" -> JsNumber(1),
-            "employmentStatus" -> JsNumber(1)
-          ),
-            Json.obj(
-              "employmentId" -> JsNumber(2),
-              "taxCode" -> JsString("1100L"),
-              "name" -> JsString("Employer2"),
-              "basisOperation" -> JsNumber(2),
-              "employmentStatus" -> JsNumber(1)
+          "incomeSources" -> JsArray(
+            Seq(
+              Json.obj(
+                "employmentId"     -> JsNumber(1),
+                "taxCode"          -> JsString("1150L"),
+                "name"             -> JsString("Employer1"),
+                "basisOperation"   -> JsNumber(1),
+                "employmentStatus" -> JsNumber(1)
+              ),
+              Json.obj(
+                "employmentId"     -> JsNumber(2),
+                "taxCode"          -> JsString("1100L"),
+                "name"             -> JsString("Employer2"),
+                "basisOperation"   -> JsNumber(2),
+                "employmentStatus" -> JsNumber(1)
+              )
             ))
-          ))
+        )
 
         val iabdJson = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> JsNull,
+            "nino"            -> nino.withoutSuffix,
+            "taxYear"         -> 2017,
+            "type"            -> 10,
+            "source"          -> 15,
+            "grossAmount"     -> JsNull,
+            "receiptDate"     -> JsNull,
+            "captureDate"     -> JsNull,
             "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "netAmount"       -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 10,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> JsNull,
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           )
         )
 
@@ -253,10 +287,35 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
         val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
 
-        result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None),
-          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-            "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None))
+        result mustBe Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            None
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            None)
+        )
       }
 
       "iabd returns data for same employment" in {
@@ -267,46 +326,49 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
               "totalTaxableIncome" -> JsNumber(123)
             )
           ),
-          "incomeSources" -> JsArray(Seq(Json.obj(
-            "employmentId" -> JsNumber(1),
-            "taxCode" -> JsString("1150L"),
-            "name" -> JsString("Employer1"),
-            "basisOperation" -> JsNumber(1),
-            "employmentStatus" -> JsNumber(1)
-          ),
-            Json.obj(
-              "employmentId" -> JsNumber(2),
-              "taxCode" -> JsString("1100L"),
-              "name" -> JsString("Employer2"),
-              "basisOperation" -> JsNumber(2),
-              "employmentStatus" -> JsNumber(1)
+          "incomeSources" -> JsArray(
+            Seq(
+              Json.obj(
+                "employmentId"     -> JsNumber(1),
+                "taxCode"          -> JsString("1150L"),
+                "name"             -> JsString("Employer1"),
+                "basisOperation"   -> JsNumber(1),
+                "employmentStatus" -> JsNumber(1)
+              ),
+              Json.obj(
+                "employmentId"     -> JsNumber(2),
+                "taxCode"          -> JsString("1100L"),
+                "name"             -> JsString("Employer2"),
+                "basisOperation"   -> JsNumber(2),
+                "employmentStatus" -> JsNumber(1)
+              )
             ))
-          ))
+        )
 
         val iabdJson = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> JsNull,
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 10,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 2,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 18,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> JsNull,
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 18,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           )
         )
 
@@ -319,10 +381,36 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
         val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
 
-        result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), Some(ManualTelephone)),
-          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-            "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), Some(AgentContact)))
+        result mustBe Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            Some(ManualTelephone)
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            Some(AgentContact)
+          )
+        )
       }
 
       "iabd returns data for same employment but code not present" in {
@@ -333,46 +421,49 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
               "totalTaxableIncome" -> JsNumber(123)
             )
           ),
-          "incomeSources" -> JsArray(Seq(Json.obj(
-            "employmentId" -> JsNumber(1),
-            "taxCode" -> JsString("1150L"),
-            "name" -> JsString("Employer1"),
-            "basisOperation" -> JsNumber(1),
-            "employmentStatus" -> JsNumber(1)
-          ),
-            Json.obj(
-              "employmentId" -> JsNumber(2),
-              "taxCode" -> JsString("1100L"),
-              "name" -> JsString("Employer2"),
-              "basisOperation" -> JsNumber(2),
-              "employmentStatus" -> JsNumber(1)
+          "incomeSources" -> JsArray(
+            Seq(
+              Json.obj(
+                "employmentId"     -> JsNumber(1),
+                "taxCode"          -> JsString("1150L"),
+                "name"             -> JsString("Employer1"),
+                "basisOperation"   -> JsNumber(1),
+                "employmentStatus" -> JsNumber(1)
+              ),
+              Json.obj(
+                "employmentId"     -> JsNumber(2),
+                "taxCode"          -> JsString("1100L"),
+                "name"             -> JsString("Employer2"),
+                "basisOperation"   -> JsNumber(2),
+                "employmentStatus" -> JsNumber(1)
+              )
             ))
-          ))
+        )
 
         val iabdJson = Json.arr(
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 1,
-            "taxYear" -> 2017,
-            "type" -> 10,
-            "source" -> 15,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> JsNull,
-            "captureDate" -> "10/04/2017",
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 10,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> "10/04/2017",
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           ),
           Json.obj(
-            "nino" -> nino.withoutSuffix,
+            "nino"                     -> nino.withoutSuffix,
             "employmentSequenceNumber" -> 2,
-            "taxYear" -> 2017,
-            "type" -> 27,
-            "source" -> 418,
-            "grossAmount" -> JsNull,
-            "receiptDate" -> "10/04/2017",
-            "captureDate" -> "10/04/2017",
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount" -> 100
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 418,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> "10/04/2017",
+            "captureDate"              -> "10/04/2017",
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
           )
         )
 
@@ -385,35 +476,63 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
         val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
 
-        result mustBe Seq(TaxCodeIncome(EmploymentIncome, Some(1), BigDecimal(0),
-          "EmploymentIncome", "1150L", "Employer1", Week1Month1BasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), Some(ManualTelephone),
-          None, Some(LocalDate.parse("2017-04-10"))),
-          TaxCodeIncome(EmploymentIncome, Some(2), BigDecimal(0),
-            "EmploymentIncome", "1100L", "Employer2", OtherBasisOperation, Live, BigDecimal(0), BigDecimal(0), BigDecimal(0), None,
-            Some(LocalDate.parse("2017-04-10")), Some(LocalDate.parse("2017-04-10"))))
+        result mustBe Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            Some(ManualTelephone),
+            None,
+            Some(LocalDate.parse("2017-04-10"))
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            None,
+            Some(LocalDate.parse("2017-04-10")),
+            Some(LocalDate.parse("2017-04-10"))
+          )
+        )
       }
     }
   }
 
   private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
 
-  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] = {
+  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
     types.map { tp =>
       Json.obj(
-        "amount" -> amount,
-        "type" -> tp,
-        "npsDescription" -> "desc",
-        "employmentId" -> empId,
+        "amount"             -> amount,
+        "type"               -> tp,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> empId,
         "estimatesPaySource" -> 1
       )
     }
-  }
 
-  private def taxAccountJsonWithIabds(incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-                                      allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject = {
+  private def taxAccountJsonWithIabds(
+    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
-      "nino" -> nino.nino,
+      "nino"         -> nino.nino,
       "totalLiability" -> Json.obj(
         "nonSavings" -> Json.obj(
           "totalIncome" -> Json.obj(
@@ -425,14 +544,13 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         )
       )
     )
-  }
 
   private val nino: Nino = new Generator(new Random).nextNino
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
-  private def createSut(taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
-                        bbsiRepository: BbsiRepository = mock[BbsiRepository],
-                        iabdRepository: IabdRepository = mock[IabdRepository]) = {
+  private def createSut(
+    taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
+    bbsiRepository: BbsiRepository = mock[BbsiRepository],
+    iabdRepository: IabdRepository = mock[IabdRepository]) =
     new IncomeRepository(taxAccountRepository, bbsiRepository, iabdRepository)
-  }
 }

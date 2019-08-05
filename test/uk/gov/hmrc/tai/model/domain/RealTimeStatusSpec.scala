@@ -19,10 +19,9 @@ package uk.gov.hmrc.tai.model.domain
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
 
-
 class RealTimeStatusSpec extends PlaySpec {
 
-"RealTimeFormat" should {
+  "RealTimeFormat" should {
     "create a valid object" when {
       "given a valid json value" in {
 

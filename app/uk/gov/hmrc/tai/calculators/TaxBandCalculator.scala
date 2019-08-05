@@ -21,22 +21,24 @@ import scala.annotation.tailrec
 
 object TaxBandCalculator {
 
-  def recreateTaxBandsNewTaxableIncome(newTaxableIncome : Option[BigDecimal] = None, oldTaxBands : Option[List[TaxBand]],
-                                        startingPoint: BigDecimal = BigDecimal(0)): Option[List[TaxBand]] = {
+  def recreateTaxBandsNewTaxableIncome(
+    newTaxableIncome: Option[BigDecimal] = None,
+    oldTaxBands: Option[List[TaxBand]],
+    startingPoint: BigDecimal = BigDecimal(0)): Option[List[TaxBand]] =
     if (oldTaxBands.isDefined && newTaxableIncome.isDefined) {
       val sortedTaxBandsOption = oldTaxBands.map(_.sortBy(_.rate))
-      sortedTaxBandsOption.map(sortedTaxBands => recreateTaxBands(newTaxableIncome, sortedTaxBands, Nil, startingPoint).flatten)
+      sortedTaxBandsOption.map(sortedTaxBands =>
+        recreateTaxBands(newTaxableIncome, sortedTaxBands, Nil, startingPoint).flatten)
     } else {
       oldTaxBands
     }
-  }
 
   @tailrec
-  private[calculators] def recreateTaxBands(remainingTaxableIncome : Option[BigDecimal] = None,
-                               oldTaxBands : List[TaxBand],
-                               newTaxBands : List[Option[TaxBand]],
-                               startingPoint: BigDecimal) : List[Option[TaxBand]] = {
-
+  private[calculators] def recreateTaxBands(
+    remainingTaxableIncome: Option[BigDecimal] = None,
+    oldTaxBands: List[TaxBand],
+    newTaxBands: List[Option[TaxBand]],
+    startingPoint: BigDecimal): List[Option[TaxBand]] =
     if (oldTaxBands.nonEmpty) {
       val oldRemaining = remainingTaxableIncome.getOrElse(BigDecimal(0))
 
@@ -45,18 +47,18 @@ object TaxBandCalculator {
         oldTaxBand.copy(income = newIncome, tax = newTax)
       }
 
-      val newList : List[Option[TaxBand]] =  newTaxBands :+ newTaxBand
+      val newList: List[Option[TaxBand]] = newTaxBands :+ newTaxBand
       val newRemaining = newTaxBand.map(newIncome => oldRemaining - newIncome.income.getOrElse(BigDecimal(0)))
       recreateTaxBands(newRemaining, oldTaxBands.drop(1), newList, startingPoint)
 
     } else {
       newTaxBands
     }
-  }
 
-
-  private[calculators] def recreateTaxBand(oldTaxBand : TaxBand, remainingTaxableIncome : BigDecimal,
-      startingPoint: BigDecimal) : (Option[BigDecimal], Option[BigDecimal]) = {
+  private[calculators] def recreateTaxBand(
+    oldTaxBand: TaxBand,
+    remainingTaxableIncome: BigDecimal,
+    startingPoint: BigDecimal): (Option[BigDecimal], Option[BigDecimal]) = {
 
     val remaining = getIncomeForThisBand(oldTaxBand, remainingTaxableIncome, startingPoint)
 
@@ -72,8 +74,10 @@ object TaxBandCalculator {
     }
   }
 
-
-  private[calculators] def getIncomeForThisBand(taxBand: TaxBand, remainingTaxableIncome : BigDecimal, startingPoint: BigDecimal) : BigDecimal = {
+  private[calculators] def getIncomeForThisBand(
+    taxBand: TaxBand,
+    remainingTaxableIncome: BigDecimal,
+    startingPoint: BigDecimal): BigDecimal = {
     val lowerBand = taxBand.lowerBand.getOrElse(BigDecimal(0))
     val upperBand = taxBand.upperBand.getOrElse(BigDecimal(0))
 
@@ -81,7 +85,7 @@ object TaxBandCalculator {
       taxBand.upperBand match {
         case Some(_) if startingPoint >= upperBand => BigDecimal(0)
         case Some(_) if startingPoint >= lowerBand => upperBand - startingPoint
-        case _ => upperBand - lowerBand
+        case _                                     => upperBand - lowerBand
       }
 
     //First adjust the maximum income we will use in this tax band based on the max income
@@ -91,6 +95,5 @@ object TaxBandCalculator {
       maxIncome
     }
   }
-
 
 }

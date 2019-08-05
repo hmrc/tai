@@ -89,9 +89,11 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
           taxAmount = 1500,
           nationalInsuranceAmount = 600,
           payFrequency = Quarterly,
-          duplicate = None)
+          duplicate = None
+        )
 
-        val annualAccount = getJson("rtiSingleEmploymentSinglePayment").as[Seq[AnnualAccount]](annualAccountHodReads).head
+        val annualAccount =
+          getJson("rtiSingleEmploymentSinglePayment").as[Seq[AnnualAccount]](annualAccountHodReads).head
         annualAccount mustBe AnnualAccount("0000-0000-0000", TaxYear(2016), Available, Seq(payment), Nil)
       }
 
@@ -106,17 +108,19 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
           taxAmount = 1500,
           nationalInsuranceAmount = 600,
           payFrequency = Monthly,
-          duplicate = None)
+          duplicate = None
+        )
 
         val eyu = EndOfTaxYearUpdate(
           date = new LocalDate("2016-06-17"),
           Seq(
-            Adjustment(TaxAdjustment,-27.99),
-            Adjustment(NationalInsuranceAdjustment,12.3)
+            Adjustment(TaxAdjustment, -27.99),
+            Adjustment(NationalInsuranceAdjustment, 12.3)
           )
         )
 
-        val annualAccount = getJson("rtiSingleEmploymentSinglePaymentOneEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
+        val annualAccount =
+          getJson("rtiSingleEmploymentSinglePaymentOneEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
         annualAccount mustBe AnnualAccount("0000-0000-0000", TaxYear(2016), Available, Seq(payment), Seq(eyu))
       }
     }
@@ -128,7 +132,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
 
     "return payments in chronological order" in {
-      val annualAccount = getJson("rtiSingleEmploymentMultiplePayments").as[Seq[AnnualAccount]](annualAccountHodReads).head
+      val annualAccount =
+        getJson("rtiSingleEmploymentMultiplePayments").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.payments.size mustBe 3
       annualAccount.payments(0).date mustBe new LocalDate("2016-04-30")
       annualAccount.payments(1).date mustBe new LocalDate("2016-06-09")
@@ -136,7 +141,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
 
     "return end of tax year updates in chronological order" in {
-      val annualAccount = getJson("rtiSingleEmploymentSinglePaymentMutipleEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
+      val annualAccount =
+        getJson("rtiSingleEmploymentSinglePaymentMutipleEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.endOfTaxYearUpdates.size mustBe 3
       annualAccount.endOfTaxYearUpdates(0).date mustBe new LocalDate("2016-06-09")
       annualAccount.endOfTaxYearUpdates(1).date mustBe new LocalDate("2016-06-17")
@@ -167,13 +173,13 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "a field key is wrong" in {
 
         val incorrectJson = Json.obj(
-          "aaa" -> "2017-05-26",
-        "amountYearToDate" -> 2000,
-        "taxAmountYearToDate" -> 1200,
-        "nationalInsuranceAmountYearToDate" -> 1500,
-        "amount" -> 200,
-        "taxAmount" -> 100,
-        "nationalInsuranceAmount" -> 150
+          "aaa"                               -> "2017-05-26",
+          "amountYearToDate"                  -> 2000,
+          "taxAmountYearToDate"               -> 1200,
+          "nationalInsuranceAmountYearToDate" -> 1500,
+          "amount"                            -> 200,
+          "taxAmount"                         -> 100,
+          "nationalInsuranceAmount"           -> 150
         )
 
         an[JsResultException] mustBe thrownBy(incorrectJson.as[Payment](paymentHodReads))
@@ -182,13 +188,13 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "a key is wrong" in {
         val incorrectJson =
           Json.obj(
-            "date" -> "aaa",
-            "amountYearToDate" -> 2000,
-            "taxAmountYearToDate" -> 1200,
+            "date"                              -> "aaa",
+            "amountYearToDate"                  -> 2000,
+            "taxAmountYearToDate"               -> 1200,
             "nationalInsuranceAmountYearToDate" -> 1500,
-            "amount" -> 200,
-            "taxAmount" -> 100,
-            "nationalInsuranceAmount" -> 150
+            "amount"                            -> 200,
+            "taxAmount"                         -> 100,
+            "nationalInsuranceAmount"           -> 150
           )
 
         an[JsResultException] mustBe thrownBy(incorrectJson.as[Payment](paymentHodReads))
@@ -199,17 +205,20 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
   "EndOfTaxYearUpdate reads" should {
 
     "read rti json with a single adjustment, and convert it to TotalTaxDelta adjustment object" in {
-      val result: EndOfTaxYearUpdate = getJson("rtiEyuFragmentSingleAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
+      val result: EndOfTaxYearUpdate =
+        getJson("rtiEyuFragmentSingleAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
       result mustBe sampleEndOfTaxYearUpdate
     }
 
     "read rti json with multip[le adjustments convert adjustment objects" in {
-      val result: EndOfTaxYearUpdate = getJson("rtiEyuFragmentMultipleAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
+      val result: EndOfTaxYearUpdate =
+        getJson("rtiEyuFragmentMultipleAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
       result mustBe sampleEndOfTaxYearUpdateMultipleAdjusts
     }
 
     "read rti json with multip[le adjustments and ignore those of zero value" in {
-      val result: EndOfTaxYearUpdate = getJson("rtiEyuFragmentZeroAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
+      val result: EndOfTaxYearUpdate =
+        getJson("rtiEyuFragmentZeroAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
       result mustBe sampleEndOfTaxYearUpdateTwoAdjusts
     }
   }
@@ -227,7 +236,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  val samplePayment = Payment(date = new LocalDate(2017, 5, 26),
+  val samplePayment = Payment(
+    date = new LocalDate(2017, 5, 26),
     amountYearToDate = 2000,
     taxAmountYearToDate = 1200,
     nationalInsuranceAmountYearToDate = 300,
@@ -235,37 +245,62 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     taxAmount = 100,
     nationalInsuranceAmount = 150,
     payFrequency = Irregular,
-    duplicate = None)
+    duplicate = None
+  )
 
-  val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(new LocalDate(2016,6,4), Seq(Adjustment(TaxAdjustment,-20.99)))
-  val sampleEndOfTaxYearUpdateMultipleAdjusts = EndOfTaxYearUpdate(new LocalDate(2016,6,4), Seq(
-    Adjustment(TaxAdjustment,-20.99),
-    Adjustment(IncomeAdjustment,-21.99),
-    Adjustment(NationalInsuranceAdjustment,44.2)))
-  val sampleEndOfTaxYearUpdateTwoAdjusts = EndOfTaxYearUpdate(new LocalDate(2016,6,4), Seq(
-    Adjustment(TaxAdjustment,-20.99),
-    Adjustment(NationalInsuranceAdjustment,44.2)))
+  val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
+  val sampleEndOfTaxYearUpdateMultipleAdjusts = EndOfTaxYearUpdate(
+    new LocalDate(2016, 6, 4),
+    Seq(
+      Adjustment(TaxAdjustment, -20.99),
+      Adjustment(IncomeAdjustment, -21.99),
+      Adjustment(NationalInsuranceAdjustment, 44.2)))
+  val sampleEndOfTaxYearUpdateTwoAdjusts = EndOfTaxYearUpdate(
+    new LocalDate(2016, 6, 4),
+    Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
 
-
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] = {
+  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
       (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError <- errors
-      message: String <- error.messages
+      error: ValidationError                       <- errors
+      message: String                              <- error.messages
     } yield {
       path.toString() + " -> " + message
     }
-  }
 
-  val sampleSingleEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false, false))
-  val sampleDualEmployment = List(Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, None, true, false),
-    Employment("EMPLOYER2", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, Some(100), false, false)
+  val sampleSingleEmployment = List(
+    Employment(
+      "EMPLOYER1",
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      Some(100),
+      false,
+      false))
+  val sampleDualEmployment = List(
+    Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, None, true, false),
+    Employment(
+      "EMPLOYER2",
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      Some(100),
+      false,
+      false)
   )
 
-  private def getJson(fileName: String):JsValue = {
+  private def getJson(fileName: String): JsValue = {
     val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
-    val file : File = new File(jsonFilePath)
-    val source:BufferedSource = scala.io.Source.fromFile(file)
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString(""))
     jsVal
   }

@@ -27,14 +27,12 @@ import uk.gov.hmrc.tai.service.FileUploadService
 import scala.concurrent.Future
 
 @Singleton
-class FileUploadController @Inject()(fileUploadService: FileUploadService) extends BaseController
-  with ApiFormats {
+class FileUploadController @Inject()(fileUploadService: FileUploadService) extends BaseController with ApiFormats {
 
   def fileUploadCallback(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withJsonBody[FileUploadCallback] {
-      fileUploadCallback =>
-        fileUploadService.fileUploadCallback(fileUploadCallback)
-        Future.successful(Ok)
+    withJsonBody[FileUploadCallback] { fileUploadCallback =>
+      fileUploadService.fileUploadCallback(fileUploadCallback)
+      Future.successful(Ok)
     }
   }
 }

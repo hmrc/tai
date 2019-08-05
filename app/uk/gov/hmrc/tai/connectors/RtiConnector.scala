@@ -34,12 +34,13 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class RtiConnector @Inject()(httpClient: HttpClient,
-                             metrics: Metrics,
-                             auditor: Auditor,
-                             rtiConfig: DesConfig,
-                             urls: RtiUrls) extends BaseConnector(auditor, metrics, httpClient) {
-
+class RtiConnector @Inject()(
+  httpClient: HttpClient,
+  metrics: Metrics,
+  auditor: Auditor,
+  rtiConfig: DesConfig,
+  urls: RtiUrls)
+    extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = rtiConfig.originatorId
 
@@ -48,10 +49,12 @@ class RtiConnector @Inject()(httpClient: HttpClient,
     nino.value.take(BASIC_NINO_LENGTH)
   }
 
-  def createHeader: HeaderCarrier = HeaderCarrier(extraHeaders =
-    Seq("Environment" -> rtiConfig.environment,
-      "Authorization" -> rtiConfig.authorization,
-      "Gov-Uk-Originator-Id" -> originatorId))
+  def createHeader: HeaderCarrier =
+    HeaderCarrier(
+      extraHeaders = Seq(
+        "Environment"          -> rtiConfig.environment,
+        "Authorization"        -> rtiConfig.authorization,
+        "Gov-Uk-Originator-Id" -> originatorId))
 
   def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {
     implicit val hc: HeaderCarrier = createHeader
@@ -68,18 +71,17 @@ class RtiConnector @Inject()(httpClient: HttpClient,
     val timerContext = metrics.startTimer(APITypes.RTIAPI)
     val ninoWithoutSuffix = withoutSuffix(nino)
     val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))
-    futureResponse.flatMap {
-      res =>
-        timerContext.stop()
-        res.status match {
-          case Status.OK =>
-            metrics.incrementSuccessCounter(APITypes.RTIAPI)
-            val rtiData = res.json
-            Future.successful(rtiData)
-          case _ =>
-            Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
-            Future.failed(new HttpException(res.body, res.status))
-        }
+    futureResponse.flatMap { res =>
+      timerContext.stop()
+      res.status match {
+        case Status.OK =>
+          metrics.incrementSuccessCounter(APITypes.RTIAPI)
+          val rtiData = res.json
+          Future.successful(rtiData)
+        case _ =>
+          Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
+          Future.failed(new HttpException(res.body, res.status))
+      }
     }
   }
 }

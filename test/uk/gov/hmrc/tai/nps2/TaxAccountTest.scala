@@ -27,38 +27,38 @@ import play.api.libs.json.Json
 
 class TaxAccountTest extends WordSpec with Matchers with NpsFormatter {
 
-  def parseNpsTaxAccount(f: File): Try[TaxAccount] = for {
-    text <- Try( fromFile(f).mkString )
-    json <- Try( Json.parse(text) )
-    obj  <- Try( json.as[TaxAccount] )
-  } yield obj
+  def parseNpsTaxAccount(f: File): Try[TaxAccount] =
+    for {
+      text <- Try(fromFile(f).mkString)
+      json <- Try(Json.parse(text))
+      obj  <- Try(json.as[TaxAccount])
+    } yield obj
 
   val qaData = {
     new java.io.File("test/data/QAData")
-  }.listFiles.map(f =>
-    f.getAbsolutePath -> parseNpsTaxAccount(f)
-  ).toMap
+  }.listFiles.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
 
   val otherData = {
     val files = {
       new java.io.File("test/data")
-    }.listFiles.collect{
-      case x if x.isDirectory => x.listFiles
-    }.flatten.filter(
-      _.getName.endsWith("NpsTaxAccount.json")
-    )
-    files.map(f =>
-      f.getAbsolutePath -> parseNpsTaxAccount(f)
-    ).toMap
+    }.listFiles
+      .collect {
+        case x if x.isDirectory => x.listFiles
+      }
+      .flatten
+      .filter(
+        _.getName.endsWith("NpsTaxAccount.json")
+      )
+    files.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
   }
 
   "NPS TaxAccount JSON Parsing" should {
     "be able to parse the QA data" in {
-      qaData.filter(_._2.isFailure) should be (Map.empty)
+      qaData.filter(_._2.isFailure) should be(Map.empty)
     }
 
     "be able to parse all the other files" in {
-      otherData.filter(_._2.isFailure) should be (Map.empty)
+      otherData.filter(_._2.isFailure) should be(Map.empty)
     }
   }
 }

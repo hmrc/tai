@@ -40,8 +40,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthen
         val nino = ninoGenerator
 
         val model = TaxFreeAmountComparisonFactory.create
-        val expectedJson = Json.obj("data" -> TaxFreeAmountComparisonFactory.createJson,
-        "links" -> Json.arr())
+        val expectedJson = Json.obj("data" -> TaxFreeAmountComparisonFactory.createJson, "links" -> Json.arr())
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(Matchers.eq(nino))(Matchers.any()))
           .thenReturn(Future.successful(model))
@@ -72,6 +71,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthen
 
   private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
 
-  val testController = new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate)
+  val testController =
+    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate)
 
 }

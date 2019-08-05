@@ -20,10 +20,10 @@ import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class IncorrectBankAccount(
-                                 personDetails: Person,
-                                 taxYear: TaxYear,
-                                 bankAccount: BankAccount,
-                                 interest: Option[BigDecimal] = None) {
+  personDetails: Person,
+  taxYear: TaxYear,
+  bankAccount: BankAccount,
+  interest: Option[BigDecimal] = None) {
 
   private val dateFormat = "d MMMM yyyy"
   val displayableTaxYearRange: String =

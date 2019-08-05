@@ -34,16 +34,16 @@ trait CodingComponentAPIFormatters {
       (JsPath \ "description").write[String] and
       (JsPath \ "iabdCategory").write[String] and
       (JsPath \ "inputAmount").writeNullable[BigDecimal]
-    ) (unapplyCodingComponentForApiJson _)
+  )(unapplyCodingComponentForApiJson _)
 
-  private def unapplyCodingComponentForApiJson(t: CodingComponent):
-  (TaxComponentType, Option[Int], BigDecimal, String, String, Option[BigDecimal]) = {
+  private def unapplyCodingComponentForApiJson(
+    t: CodingComponent): (TaxComponentType, Option[Int], BigDecimal, String, String, Option[BigDecimal]) = {
     val iabdCategory = t.componentType match {
-      case _: AllowanceComponentType => "Allowance"
-      case _: BenefitComponentType => "Benefit"
-      case _: DeductionComponentType => "Deduction"
+      case _: AllowanceComponentType        => "Allowance"
+      case _: BenefitComponentType          => "Benefit"
+      case _: DeductionComponentType        => "Deduction"
       case _: NonTaxCodeIncomeComponentType => "NonTaxCodeIncome"
-      case _ => throw new RuntimeException("Unrecognised coding Component type")
+      case _                                => throw new RuntimeException("Unrecognised coding Component type")
     }
     (t.componentType, t.employmentId, t.amount, t.description, iabdCategory, t.inputAmount)
   }

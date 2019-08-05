@@ -27,7 +27,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.io.Source
 import scala.util.Random
 
-
 object RTIData {
 
   private lazy val RtiData = "AutoUpdate/RtiData.json"
@@ -36,7 +35,7 @@ object RTIData {
 
   val nino = new Generator(new Random).nextNino
 
-  private def getRTIData(fileName: String):RtiData = {
+  private def getRTIData(fileName: String): RtiData = {
     val jsonFilePath = basePath + fileName
     val source = Source.fromFile(jsonFilePath).mkString("").replace("$NINO", nino.nino)
     val jsVal = Json.parse(source)
@@ -45,9 +44,9 @@ object RTIData {
     updatePmtDateToThisYear(rtiData)
   }
 
-  private def getRTIEmployment(fileName: String):RtiEmployment = {
+  private def getRTIEmployment(fileName: String): RtiEmployment = {
     val jsonFilePath = basePath + fileName
-    val file : File = new File(jsonFilePath)
+    val file: File = new File(jsonFilePath)
     val source = scala.io.Source.fromFile(file).mkString("").replace("$NINO", nino.nino)
     val jsVal = Json.parse(source)
     val result = Json.fromJson[RtiEmployment](jsVal)
@@ -56,15 +55,16 @@ object RTIData {
 
   def getRtiData = getRTIData(RtiData)
 
-  def updatePmtDateToThisYear(oldData : RtiData) = oldData.copy(
-    employments = oldData.employments.map{ employment =>
-      employment.copy(payments = employment.payments.map{ inYear =>
+  def updatePmtDateToThisYear(oldData: RtiData) = oldData.copy(
+    employments = oldData.employments.map { employment =>
+      employment.copy(payments = employment.payments.map { inYear =>
         //We can finally try to change the value for the payment data
-        inYear.copy(paidOn = new LocalDate(
-          TaxYear().year,
-          inYear.paidOn.getMonthOfYear,
-          inYear.paidOn.getDayOfWeek
-        ))
+        inYear.copy(
+          paidOn = new LocalDate(
+            TaxYear().year,
+            inYear.paidOn.getMonthOfYear,
+            inYear.paidOn.getDayOfWeek
+          ))
       })
     }
   )

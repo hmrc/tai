@@ -20,7 +20,7 @@ import uk.gov.hmrc.tai.model.nps2.Income
 import uk.gov.hmrc.tai.model.rti.{RtiEmployment, RtiPayment}
 
 case class Employment(nps: Income, rti: Option[RtiEmployment]) {
-  
+
   val payments: List[RtiPayment] = rti.map(_.payments).getOrElse(Nil)
 
   val isPrimary: Boolean = nps.employmentRecord.exists(emp => emp.isPrimary)

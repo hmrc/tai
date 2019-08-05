@@ -40,5 +40,3 @@ class DateTimeHelperSpec extends UnitSpec with MockitoSugar with ScalaFutures {
     }
   }
 }
-
-

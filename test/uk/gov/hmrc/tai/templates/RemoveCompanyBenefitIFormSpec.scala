@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
 
 import scala.util.Random
 
-class RemoveCompanyBenefitIFormSpec extends PlaySpec{
+class RemoveCompanyBenefitIFormSpec extends PlaySpec {
 
   "RemoveCompanyBenefitIForm" must {
     "display the correct static content of remove company benefit iform" when {
@@ -73,7 +73,9 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec{
         val telephoneNumberQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(5)")
 
         telephoneNumberQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Can we contact you by telephone?"
-        telephoneNumberQuestionTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.telephoneContactAllowed
+        telephoneNumberQuestionTableRow
+          .select("td:nth-of-type(2)")
+          .text() mustBe removeCompanyBenefitModel.telephoneContactAllowed
 
         val telephoneNumberTableRow = yourDetailsTable.select("tr:nth-of-type(6)")
 
@@ -94,7 +96,7 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec{
       }
     }
     "display the 'What do you want to tell us?' section of the remove company benefit iform" when {
-      "an removeCompanyBenefitModel is provided" in{
+      "an removeCompanyBenefitModel is provided" in {
 
         val sut = createSUT(removeCompanyBenefitModel)
 
@@ -104,17 +106,23 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec{
 
         val incorrectCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
 
-        incorrectCompanyBenefitSection.select("td:nth-of-type(1)").text() mustBe "Do you have a company benefit that is incorrect?"
+        incorrectCompanyBenefitSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have a company benefit that is incorrect?"
         incorrectCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isUpdate
 
         val missingCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
 
-        missingCompanyBenefitSection.select("td:nth-of-type(1)").text() mustBe "Do you have a company benefit that is missing?"
+        missingCompanyBenefitSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have a company benefit that is missing?"
         missingCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isAdd
 
         val endedCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
 
-        endedCompanyBenefitSection.select("td:nth-of-type(1)").text() mustBe "Do you have a company benefit that has ended?"
+        endedCompanyBenefitSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have a company benefit that has ended?"
         endedCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isEnd
       }
     }
@@ -154,24 +162,25 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec{
   private val nino = new Generator(new Random()).nextNino
   private val removeCompanyBenefitModel: RemoveCompanyBenefitViewModel =
     RemoveCompanyBenefitViewModel(
-    nino.nino,
-    "firstname",
-    "lastname",
-    "3 April 1984",
-    "Yes",
-    "1234567889",
-    "addressLine1",
-    "addressLine2",
-    "addressLine3",
-    "postcode",
-    "No",
-    "No",
-    "Yes",
-    "Mileage",
-    "10030",
-    "On or after 6 April 2017",
-    "I no longer get this benefit"
-  )
-  private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html = uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)
+      nino.nino,
+      "firstname",
+      "lastname",
+      "3 April 1984",
+      "Yes",
+      "1234567889",
+      "addressLine1",
+      "addressLine2",
+      "addressLine3",
+      "postcode",
+      "No",
+      "No",
+      "Yes",
+      "Mileage",
+      "10030",
+      "On or after 6 April 2017",
+      "I no longer get this benefit"
+    )
+  private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html =
+    uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)
 
 }

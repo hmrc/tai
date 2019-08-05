@@ -63,8 +63,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
 
       sut.incrementSuccessCounter(APITypes.CompanyCarAPI)
 
-      verify(mockCounter, times(1))
-        .inc
+      verify(mockCounter, times(1)).inc
     }
   }
 }

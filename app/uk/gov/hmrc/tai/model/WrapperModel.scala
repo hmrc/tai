@@ -18,13 +18,13 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.json.Json
 
-case class TaxCodeIncomeSummaryWrapper(version :Int, income : TaxCodeIncomeSummary)
+case class TaxCodeIncomeSummaryWrapper(version: Int, income: TaxCodeIncomeSummary)
 
 object TaxCodeIncomeSummaryWrapper {
   implicit val formats = Json.format[TaxCodeIncomeSummaryWrapper]
 }
 
-case class TaxCodeIncomeListWrapper(version :Int, income : List[TaxCodeIncomeSummary])
+case class TaxCodeIncomeListWrapper(version: Int, income: List[TaxCodeIncomeSummary])
 
 object TaxCodeIncomeListWrapper {
   implicit val formats = Json.format[TaxCodeIncomeListWrapper]

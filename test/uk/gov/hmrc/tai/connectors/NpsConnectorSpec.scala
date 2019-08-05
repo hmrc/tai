@@ -38,9 +38,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class NpsConnectorSpec extends PlaySpec
-  with MockitoSugar
-  with FakeTaiPlayApplication {
+class NpsConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
 
   "NpsConnector" should {
     "fetch the path url" when {
@@ -50,13 +48,14 @@ class NpsConnectorSpec extends PlaySpec
           .thenReturn("")
 
         val sut = createSUT(mock[Metrics], mock[HttpClient], mock[Auditor], mock[IabdUpdateAmountFormats], mockConfig)
-        sut.npsPathUrl(SuccessTestNino, "path") mustBe s"/person/${SuccessTestNino}/path"
+        sut.npsPathUrl(SuccessTestNino, "path") mustBe s"/person/$SuccessTestNino/path"
       }
     }
 
     "return employments with success" when {
       "given a nino and a year" in {
-        val expectedResult: (List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule]) = (Nil, Nil, 0, Nil)
+        val expectedResult: (List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule]) =
+          (Nil, Nil, 0, Nil)
 
         val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
@@ -82,7 +81,8 @@ class NpsConnectorSpec extends PlaySpec
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
         val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[IabdUpdateAmountFormats], mock[NpsConfig])
-        Await.result(sut.getEmploymentDetails(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe Json.parse("[]")
+        Await.result(sut.getEmploymentDetails(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe Json.parse(
+          "[]")
       }
     }
 
@@ -131,7 +131,10 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
         val expectedResult: (NpsTaxAccount, Int, JsValue) =
-          (NpsTaxAccount(None, None, None, None, None, None, None, None, None, None, None, None, None), 0, Json.parse("[]"))
+          (
+            NpsTaxAccount(None, None, None, None, None, None, None, None, None, None, None, None, None),
+            0,
+            Json.parse("[]"))
 
         Await.result(sut.getCalculatedTaxAccount(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe expectedResult
       }
@@ -147,7 +150,8 @@ class NpsConnectorSpec extends PlaySpec
         when(mockMetrics.startTimer(any())).thenReturn((new Timer).time)
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-        Await.result(sut.getCalculatedTaxAccountRawResponse(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe (SuccesfulGetResponseWithObject)
+        Await
+          .result(sut.getCalculatedTaxAccountRawResponse(SuccessTestNino, 2017)(HeaderCarrier()), Duration.Inf) mustBe (SuccesfulGetResponseWithObject)
       }
     }
 
@@ -184,7 +188,12 @@ class NpsConnectorSpec extends PlaySpec
         when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
 
-        val resp = sut.updateEmploymentData(nino = SuccessTestNino, 2016, 1, 25, List(IabdUpdateAmount(1, 200, Some(100), Some("10/4/2016"), Some(1))))(HeaderCarrier())
+        val resp = sut.updateEmploymentData(
+          nino = SuccessTestNino,
+          2016,
+          1,
+          25,
+          List(IabdUpdateAmount(1, 200, Some(100), Some("10/4/2016"), Some(1))))(HeaderCarrier())
         val result: HttpResponse = Await.result(resp, 5 seconds)
         result.status mustBe 200
       }
@@ -199,13 +208,17 @@ class NpsConnectorSpec extends PlaySpec
 
   implicit val formats = Json.format[(List[NpsEmployment], Int)]
 
-  private val SuccesfulGetResponseWithObject: HttpResponse = HttpResponse(200, Some(Json.parse("[]")), Map("ETag" -> Seq("0")))
-  private val mockHttpResponse = HttpResponse(
-    responseStatus = 200,
-    responseString = Some("Success"))
+  private val SuccesfulGetResponseWithObject: HttpResponse =
+    HttpResponse(200, Some(Json.parse("[]")), Map("ETag" -> Seq("0")))
+  private val mockHttpResponse = HttpResponse(responseStatus = 200, responseString = Some("Success"))
 
   private val SuccesfulPostResponseWithObject: HttpResponse = HttpResponse(200)
 
-  private def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, formats: IabdUpdateAmountFormats, config: NpsConfig) =
+  private def createSUT(
+    metrics: Metrics,
+    httpClient: HttpClient,
+    audit: Auditor,
+    formats: IabdUpdateAmountFormats,
+    config: NpsConfig) =
     new NpsConnector(metrics, httpClient, audit, formats, config)
 }

@@ -51,7 +51,8 @@ class EmploymentSpec extends PlaySpec {
 
   private val fixedDate = LocalDate.parse("2017-12-12")
 
-  private val testIabd = Iabd(amount = 10,
+  private val testIabd = Iabd(
+    amount = 10,
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
@@ -88,7 +89,7 @@ class EmploymentSpec extends PlaySpec {
     payeRef = "payRef",
     name = "name",
     worksNumber = Some("1234"),
-    taxCode="AB1234",
+    taxCode = "AB1234",
     potentialUnderpayment = 20.20,
     employmentRecord = Some(testNpsEmployment),
     basisOperation = Some(BasisOperation.Week1Month1)
@@ -103,14 +104,25 @@ class EmploymentSpec extends PlaySpec {
     payeRef = "payRef",
     name = "name",
     worksNumber = Some("1234"),
-    taxCode="AB1234",
+    taxCode = "AB1234",
     potentialUnderpayment = 20.20,
     employmentRecord = Some(testNpsEmployment2),
     basisOperation = Some(BasisOperation.Week1Month1)
   )
 
-  private val payment = RtiPayment(PayFrequency.FourWeekly, new LocalDate(2017, 4, 20), new LocalDate(2017, 4, 20),
-    BigDecimal(20), BigDecimal(20000), BigDecimal(0), BigDecimal(0), None, isOccupationalPension = false, None, Some(10))
+  private val payment = RtiPayment(
+    PayFrequency.FourWeekly,
+    new LocalDate(2017, 4, 20),
+    new LocalDate(2017, 4, 20),
+    BigDecimal(20),
+    BigDecimal(20000),
+    BigDecimal(0),
+    BigDecimal(0),
+    None,
+    isOccupationalPension = false,
+    None,
+    Some(10)
+  )
 
   private val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 

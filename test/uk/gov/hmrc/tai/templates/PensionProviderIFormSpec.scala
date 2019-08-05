@@ -78,7 +78,9 @@ class PensionProviderIFormSpec extends PlaySpec {
 
         val telephoneNumberQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(5)")
         telephoneNumberQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Can we contact you by telephone?"
-        telephoneNumberQuestionTableRow.select("td:nth-of-type(2)").text() mustBe addPensionModel.telephoneContactAllowed
+        telephoneNumberQuestionTableRow
+          .select("td:nth-of-type(2)")
+          .text() mustBe addPensionModel.telephoneContactAllowed
 
         val telephoneNumberTableRow = yourDetailsTable.select("tr:nth-of-type(6)")
         telephoneNumberTableRow.select("td:nth-of-type(1)").text() mustBe "Telephone number"
@@ -103,15 +105,21 @@ class PensionProviderIFormSpec extends PlaySpec {
         val whatDoYouWantToTellUsSection = doc.select("table:nth-of-type(3) > tbody")
 
         val incorrectEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
-        incorrectEmploymentOrPensionSection.select("td:nth-of-type(1)").text() mustBe "Do you have an employment or pension that is incorrect?"
+        incorrectEmploymentOrPensionSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have an employment or pension that is incorrect?"
         incorrectEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe addPensionModel.isUpdate
 
         val missingEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
-        missingEmploymentOrPensionSection.select("td:nth-of-type(1)").text() mustBe "Do you have an employment or pension that is missing?"
+        missingEmploymentOrPensionSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have an employment or pension that is missing?"
         missingEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe addPensionModel.isAdd
 
         val endedEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
-        endedEmploymentOrPensionSection.select("td:nth-of-type(1)").text() mustBe "Do you have an employment or pension that has ended?"
+        endedEmploymentOrPensionSection
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Do you have an employment or pension that has ended?"
         endedEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe addPensionModel.isEnd
 
         val employmentOrPensionMissing = whatDoYouWantToTellUsSection.select("tr:nth-of-type(4)")
@@ -157,8 +165,12 @@ class PensionProviderIFormSpec extends PlaySpec {
         val yourPensionDetailsTable = doc.select("table:nth-of-type(4) > tbody")
         val employmentOrPensionEndedQuestionTableRow = yourPensionDetailsTable.select("tr:nth-of-type(4)")
 
-        employmentOrPensionEndedQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Tell us what is incorrect and why:"
-        employmentOrPensionEndedQuestionTableRow.select("td:nth-of-type(2)").text() mustBe s"I want to add a pension provider for which I got first payment " +
+        employmentOrPensionEndedQuestionTableRow
+          .select("td:nth-of-type(1)")
+          .text() mustBe "Tell us what is incorrect and why:"
+        employmentOrPensionEndedQuestionTableRow
+          .select("td:nth-of-type(2)")
+          .text() mustBe s"I want to add a pension provider for which I got first payment " +
           s"on ${addPensionModel.startDate}"
       }
     }
@@ -188,5 +200,6 @@ class PensionProviderIFormSpec extends PlaySpec {
     ""
   )
 
-  private def createSUT(viewModel: EmploymentPensionViewModel): Html = uk.gov.hmrc.tai.templates.html.PensionProviderIForm(viewModel)
+  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
+    uk.gov.hmrc.tai.templates.html.PensionProviderIForm(viewModel)
 }

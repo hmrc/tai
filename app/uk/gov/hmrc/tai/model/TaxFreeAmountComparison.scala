@@ -26,10 +26,8 @@ final case class TaxFreeAmountComparison(previous: Seq[CodingComponent], next: S
 object TaxFreeAmountComparison extends CodingComponentAPIFormatters {
 
   implicit val writes: Writes[TaxFreeAmountComparison] = (
-
     (JsPath \ "previous").write(Writes.seq[CodingComponent](codingComponentWrites)) and
-    (JsPath \ "current").write(Writes.seq[CodingComponent](codingComponentWrites))
-
-    )(unlift(TaxFreeAmountComparison.unapply))
+      (JsPath \ "current").write(Writes.seq[CodingComponent](codingComponentWrites))
+  )(unlift(TaxFreeAmountComparison.unapply))
 
 }

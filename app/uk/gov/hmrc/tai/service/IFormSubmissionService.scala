@@ -30,9 +30,10 @@ import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 @Singleton
-class IFormSubmissionService @Inject()(personRepository: PersonRepository,
-                                       pdfService: PdfService,
-                                       fileUploadService: FileUploadService){
+class IFormSubmissionService @Inject()(
+  personRepository: PersonRepository,
+  pdfService: PdfService,
+  fileUploadService: FileUploadService) {
 
   private def iformFilename(envelopeId: String, iformSubmissionKey: String) =
     s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"
@@ -40,19 +41,26 @@ class IFormSubmissionService @Inject()(personRepository: PersonRepository,
   private def metadataFilename(envelopeId: String, iformSubmissionKey: String) =
     s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"
 
-  def uploadIForm(nino: Nino, iformSubmissionKey: String, iformId: String, iformGenerationFunc: (Person) => Future[String])
-                 (implicit hc: HeaderCarrier) : Future[String] = {
+  def uploadIForm(
+    nino: Nino,
+    iformSubmissionKey: String,
+    iformId: String,
+    iformGenerationFunc: (Person) => Future[String])(implicit hc: HeaderCarrier): Future[String] =
     for {
-      person <- personRepository.getPerson(nino)
-      formData <- iformGenerationFunc(person)
-      pdf <- pdfService.generatePdf(formData)
+      person     <- personRepository.getPerson(nino)
+      formData   <- iformGenerationFunc(person)
+      pdf        <- pdfService.generatePdf(formData)
       envelopeId <- fileUploadService.createEnvelope()
       metadata = PdfSubmissionMetadata(PdfSubmission(nino.withoutSuffix, iformId, 2)).toString().getBytes
-      _ <- fileUploadService.uploadFile(pdf, envelopeId, iformFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(metadata, envelopeId, metadataFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationXml)
+      _ <- fileUploadService
+            .uploadFile(pdf, envelopeId, iformFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationPdf)
+      _ <- fileUploadService.uploadFile(
+            metadata,
+            envelopeId,
+            metadataFilename(envelopeId, iformSubmissionKey),
+            MimeContentType.ApplicationXml)
     } yield {
       Logger.info(s"Envelope Id for $iformSubmissionKey - " + envelopeId)
       envelopeId
     }
-  }
 }

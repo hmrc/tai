@@ -41,10 +41,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaiControllerTest extends PlaySpec
-  with MockitoSugar
-  with MongoFormatter
-  with MockAuthenticationPredicate{
+class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter with MockAuthenticationPredicate {
 
   "getTaiRoot" should {
 
@@ -59,8 +56,18 @@ class TaiControllerTest extends PlaySpec
     }
 
     "return the TaiRoot for the supplied nino " in {
-      val data = sessionData.copy(taiRoot =
-        Some(TaiRoot(nino.nino, 1, "Mr", "TestFName", Some("TestMName"), "TestLName", "TestFName TestLName", manualCorrespondenceInd = false, Some(false))))
+      val data = sessionData.copy(
+        taiRoot = Some(
+          TaiRoot(
+            nino.nino,
+            1,
+            "Mr",
+            "TestFName",
+            Some("TestMName"),
+            "TestLName",
+            "TestFName TestLName",
+            manualCorrespondenceInd = false,
+            Some(false))))
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.personDetails(any())(any()))
@@ -91,8 +98,18 @@ class TaiControllerTest extends PlaySpec
       }
     }
     "return cached data" in {
-      val data = sessionData.copy(taiRoot =
-        Some(TaiRoot(nino.nino, 1, "Mr", "TestFName", Some("TestMName"), "TestLName", "TestFName TestLName", manualCorrespondenceInd = false, Some(false))))
+      val data = sessionData.copy(
+        taiRoot = Some(
+          TaiRoot(
+            nino.nino,
+            1,
+            "Mr",
+            "TestFName",
+            Some("TestMName"),
+            "TestLName",
+            "TestFName TestLName",
+            manualCorrespondenceInd = false,
+            Some(false))))
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -109,10 +126,11 @@ class TaiControllerTest extends PlaySpec
 
     "return Bad Request error from Hods for the supplied nino and year" in {
       val badRequestErrorResponse = Json.obj(
-        "message" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "statusCode" -> 400,
+        "message"          -> "Cannot complete a Coding Calculation without a Primary Employment",
+        "statusCode"       -> 400,
         "appStatusMessage" -> "Cannot complete a Coding Calculation without a Primary Employment",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -128,10 +146,11 @@ class TaiControllerTest extends PlaySpec
 
     "return Not Found error from Hods for the supplied nino and year" in {
       val notFoundErrorResponse = Json.obj(
-        "message" -> "Not Found Exception",
-        "statusCode" -> 404,
+        "message"          -> "Not Found Exception",
+        "statusCode"       -> 404,
         "appStatusMessage" -> "Not Found Exception",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -146,10 +165,11 @@ class TaiControllerTest extends PlaySpec
 
     "return Service Unavailable error from Hods for the supplied nino and year" in {
       val serviceUnavailableErrorResponse = Json.obj(
-        "message" -> "Service Unavailable",
-        "statusCode" -> 503,
+        "message"          -> "Service Unavailable",
+        "statusCode"       -> 503,
         "appStatusMessage" -> "Service Unavailable",
-        "requestUri" -> s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -164,10 +184,11 @@ class TaiControllerTest extends PlaySpec
 
     "return Internal Server error from Hods for the supplied nino and year" in {
       val internalServerErrorResponse = Json.obj(
-        "message" -> "Internal Server error",
-        "statusCode" ->  500,
+        "message"          -> "Internal Server error",
+        "statusCode"       -> 500,
         "appStatusMessage" -> "Internal Server error",
-        "requestUri" ->  s"nps/person/${nino.nino}/tax-account/2014/calculation")
+        "requestUri"       -> s"nps/person/${nino.nino}/tax-account/2014/calculation"
+      )
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.taiData(any(), any())(any()))
@@ -185,16 +206,19 @@ class TaiControllerTest extends PlaySpec
     "return NOT AUTHORISED" when {
       "the user is not logged in" in {
         val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.updateTaiData(nino)(FakeRequest("PUT","/",
-          FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
+        val result = sut.updateTaiData(nino)(
+          FakeRequest("PUT", "/", FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
         ScalaFutures.whenReady(result.failed) { e =>
           e mustBe a[MissingBearerToken]
         }
       }
     }
     "return successful when data saved in cache" in {
-      val fakeRequest = FakeRequest(method = "Put", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(sessionData))
+      val fakeRequest = FakeRequest(
+        method = "Put",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = Json.toJson(sessionData))
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.updateTaiData(any(), any())(any()))
@@ -209,8 +233,11 @@ class TaiControllerTest extends PlaySpec
     }
 
     "return failure when data couldn't be saved in cache" in {
-      val fakeRequest = FakeRequest(method = "Put", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(sessionData))
+      val fakeRequest = FakeRequest(
+        method = "Put",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = Json.toJson(sessionData))
 
       val mockTaxAccountService = mock[TaxAccountService]
       when(mockTaxAccountService.updateTaiData(any(), any())(any()))
@@ -232,7 +259,9 @@ class TaiControllerTest extends PlaySpec
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
 
-  private def createSUT(taxAccountService: TaxAccountService, metrics: Metrics,
-                        authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-              new TaiController(taxAccountService, metrics, authentication)
+  private def createSUT(
+    taxAccountService: TaxAccountService,
+    metrics: Metrics,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new TaiController(taxAccountService, metrics, authentication)
 }

@@ -48,7 +48,7 @@ class AnnualAccountSpec extends PlaySpec {
 
       "there is one employment between nps and rti" in {
         val employment = rtiSampleEmployments.sample.get
-        val rtiData = RtiData(nino.nino,TaxYear(2016),"blerg",employments = List(employment))
+        val rtiData = RtiData(nino.nino, TaxYear(2016), "blerg", employments = List(employment))
 
         val income = testIncome(employment.officeRefNo.toInt, employment.payeRef)
         val taxAccount = TaxAccount(id = None, date = None, tax = 1564.45, incomes = List(income))
@@ -58,18 +58,18 @@ class AnnualAccountSpec extends PlaySpec {
 
       "there are multiple employments between nps and rti with the same paye ref and matching tax district and office ref no" in {
         val employment = rtiSampleEmployments.sample.get
-        val rtiData = RtiData(nino.nino,TaxYear(2016),"blerg",employments = List(employment))
+        val rtiData = RtiData(nino.nino, TaxYear(2016), "blerg", employments = List(employment))
         val income = testIncome(employment.officeRefNo.toInt, employment.payeRef)
-        val taxAccount = TaxAccount(id = None, date = None, tax = 1564.45, incomes = List(income,income))
+        val taxAccount = TaxAccount(id = None, date = None, tax = 1564.45, incomes = List(income, income))
 
         sut(nps = Some(taxAccount), rti = Some(rtiData)) mustBe List()
       }
 
       "there are multiple employments between nps and rti with matching works number and current pay id" in {
         val employment = rtiSampleEmployments.sample.get.copy(currentPayId = Some("1234"))
-        val rtiData = RtiData(nino.nino,TaxYear(2016),"blerg",employments = List(employment))
+        val rtiData = RtiData(nino.nino, TaxYear(2016), "blerg", employments = List(employment))
         val income = testIncome(employment.officeRefNo.toInt, employment.payeRef)
-        val taxAccount = TaxAccount(id = None, date = None, tax = 1564.45, incomes = List(income,income))
+        val taxAccount = TaxAccount(id = None, date = None, tax = 1564.45, incomes = List(income, income))
 
         sut(nps = Some(taxAccount), rti = Some(rtiData)) mustBe List(Employment(income, Some(employment)))
       }
@@ -101,13 +101,12 @@ class AnnualAccountSpec extends PlaySpec {
     payeRef = payeRef,
     name = "name",
     worksNumber = Some("1234"),
-    taxCode="AB1234",
+    taxCode = "AB1234",
     potentialUnderpayment = 20.20,
     employmentRecord = Some(testNpsEmployment),
     basisOperation = Some(BasisOperation.Week1Month1)
   )
 
-  def sut(nps: Option[TaxAccount] = None,
-          rti: Option[RtiData] = None,
-          rtiStatus: Option[RtiStatus] = None) = AnnualAccount(TaxYear(2016), nps, rti, rtiStatus).employments
+  def sut(nps: Option[TaxAccount] = None, rti: Option[RtiData] = None, rtiStatus: Option[RtiStatus] = None) =
+    AnnualAccount(TaxYear(2016), nps, rti, rtiStatus).employments
 }

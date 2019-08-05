@@ -17,4 +17,3 @@
 package uk.gov.hmrc.tai.model.fileupload
 
 case class EnvelopeFile(fileId: String, status: String)
-

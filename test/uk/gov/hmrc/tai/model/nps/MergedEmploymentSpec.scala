@@ -43,7 +43,8 @@ class MergedEmploymentSpec extends PlaySpec {
       "an NpsIncomeSource with employment type set to None" in {
         val incomeSourceName = "testIncomeSource"
         val employmentType = 123
-        val sut = createSUT(NpsIncomeSource(name = Some(incomeSourceName), employmentType = Some(employmentType)), None, None)
+        val sut =
+          createSUT(NpsIncomeSource(name = Some(incomeSourceName), employmentType = Some(employmentType)), None, None)
         val result = sut.orderField
         result mustBe s"$employmentType-$incomeSourceName"
       }
@@ -55,17 +56,21 @@ class MergedEmploymentSpec extends PlaySpec {
       "an empty NpsIncomeSource object is provided" in {
         val sut = createSUT(NpsIncomeSource(), None, None)
         val result = sut.toTaxCodeIncomeSummary
-        result mustBe TaxCodeIncomeSummary(name = "", taxCode = "", tax = Tax(),
+        result mustBe TaxCodeIncomeSummary(
+          name = "",
+          taxCode = "",
+          tax = Tax(),
           employmentType = Some(TaiConstants.PrimaryEmployment),
-          incomeType = Some(0), isEditable = true, isLive = true)
+          incomeType = Some(0),
+          isEditable = true,
+          isLive = true)
       }
     }
   }
 
-  private def createSUT(incomeSource : NpsIncomeSource,
-                        employment :Option[NpsEmployment]=None,
-                        adjustedNetIncome : Option[BigDecimal]=None) = {
-
+  private def createSUT(
+    incomeSource: NpsIncomeSource,
+    employment: Option[NpsEmployment] = None,
+    adjustedNetIncome: Option[BigDecimal] = None) =
     MergedEmployment(incomeSource, employment, adjustedNetIncome)
-  }
 }

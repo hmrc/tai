@@ -46,7 +46,6 @@ case object PersonalPensionPaymentRelief extends TaxReliefComponent
 case object GiftAidPayments extends TaxReliefComponent
 case object GiftAidPaymentsRelief extends TaxReliefComponent
 
-
 object TaxAdjustmentType {
   implicit val formatTaxAdjustmentType = new Format[TaxAdjustmentType] {
     override def writes(taxAdjustmentType: TaxAdjustmentType): JsValue = JsString(taxAdjustmentType.toString)
@@ -83,17 +82,15 @@ object TaxReliefComponent {
   implicit val formatTaxReliefComponent = new Format[TaxReliefComponent] {
     override def reads(json: JsValue): JsResult[TaxReliefComponent] = ???
 
-    override def writes(taxReliefComponent: TaxReliefComponent): JsValue =  JsString(taxReliefComponent.toString)
+    override def writes(taxReliefComponent: TaxReliefComponent): JsValue = JsString(taxReliefComponent.toString)
   }
 }
 
-case class TaxAdjustmentComponent(taxAdjustmentType: TaxAdjustmentType,
-                                  taxAdjustmentAmount: BigDecimal)
+case class TaxAdjustmentComponent(taxAdjustmentType: TaxAdjustmentType, taxAdjustmentAmount: BigDecimal)
 
 object TaxAdjustmentComponent {
   implicit val format: Format[TaxAdjustmentComponent] = Json.format[TaxAdjustmentComponent]
 }
-
 
 case class TaxAdjustment(amount: BigDecimal, taxAdjustmentComponents: Seq[TaxAdjustmentComponent])
 

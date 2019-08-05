@@ -72,8 +72,8 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
         val mockCacheConnector = mock[CacheConnector]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
           .thenReturn(Future.successful(carBenefitSeqFromCache))
-        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any())).
-          thenReturn(Future.successful(carBenefitFromCompanyCarService))
+        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any()))
+          .thenReturn(Future.successful(carBenefitFromCompanyCarService))
 
         val mockCompanyCarConnector = mock[CompanyCarConnector]
         when(mockCompanyCarConnector.carBenefits(any(), any())(any()))
@@ -83,8 +83,10 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
         Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitFromCompanyCarService
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[Seq[CompanyCarBenefit]](Matchers.eq(sessionId), Matchers.eq(carBenefitFromCompanyCarService),
-          Matchers.eq(sut.CarBenefitKey))(any())
+          .createOrUpdate[Seq[CompanyCarBenefit]](
+            Matchers.eq(sessionId),
+            Matchers.eq(carBenefitFromCompanyCarService),
+            Matchers.eq(sut.CarBenefitKey))(any())
       }
 
       "return the non-empty list coming from the company car service and save it in the cache" in {
@@ -106,8 +108,10 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
         Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[Seq[CompanyCarBenefit]](Matchers.eq(sessionId), Matchers.eq(carBenefitSeqWithVersion),
-          Matchers.eq(sut.CarBenefitKey))(any())
+          .createOrUpdate[Seq[CompanyCarBenefit]](
+            Matchers.eq(sessionId),
+            Matchers.eq(carBenefitSeqWithVersion),
+            Matchers.eq(sut.CarBenefitKey))(any())
       }
     }
   }

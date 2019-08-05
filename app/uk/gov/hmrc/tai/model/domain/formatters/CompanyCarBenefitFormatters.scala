@@ -48,15 +48,23 @@ trait CompanyCarBenefitFormatters {
         case _ => false
       }
 
-      val dateFuelBenefitMadeAvailable = if(hasActiveFuelBenefit) (fuelBenefit \ "dateMadeAvailable").asOpt[LocalDate] else None
+      val dateFuelBenefitMadeAvailable =
+        if (hasActiveFuelBenefit) (fuelBenefit \ "dateMadeAvailable").asOpt[LocalDate] else None
 
-      JsSuccess(CompanyCar(carSeqNo, makeModel, hasActiveFuelBenefit, dateMadeAvailable, dateFuelBenefitMadeAvailable, dateWithdrawn))
+      JsSuccess(
+        CompanyCar(
+          carSeqNo,
+          makeModel,
+          hasActiveFuelBenefit,
+          dateMadeAvailable,
+          dateFuelBenefitMadeAvailable,
+          dateWithdrawn))
     }
   }
 
   val companyCarRemoveWrites: Writes[WithdrawCarAndFuel] = (
-  (JsPath \ "version").write[Int] and
-    (JsPath \ "removeCarAndFuel" \ "car" \ "withdrawDate").write[LocalDate] and
+    (JsPath \ "version").write[Int] and
+      (JsPath \ "removeCarAndFuel" \ "car" \ "withdrawDate").write[LocalDate] and
       (JsPath \ "removeCarAndFuel" \ "fuel" \ "withdrawDate").writeNullable[LocalDate]
   )(unlift(WithdrawCarAndFuel.unapply))
 

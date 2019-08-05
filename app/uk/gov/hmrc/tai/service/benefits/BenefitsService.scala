@@ -38,73 +38,85 @@ import scala.util.Success
 import scala.util.control.NonFatal
 
 @Singleton
-class BenefitsService @Inject()(taxAccountService: TaxAccountService,
-                                companyCarBenefitRepository: CompanyCarBenefitRepository,
-                                companyCarConnector: CompanyCarConnector,
-                                taxComponentService: CodingComponentService,
-                                iFormSubmissionService: IFormSubmissionService,
-                                fileUploadService: FileUploadService,
-                                pdfService: PdfService,
-                                auditable: Auditor) {
+class BenefitsService @Inject()(
+  taxAccountService: TaxAccountService,
+  companyCarBenefitRepository: CompanyCarBenefitRepository,
+  companyCarConnector: CompanyCarConnector,
+  taxComponentService: CodingComponentService,
+  iFormSubmissionService: IFormSubmissionService,
+  fileUploadService: FileUploadService,
+  pdfService: PdfService,
+  auditable: Auditor) {
 
-  def companyCarBenefits(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
+  def companyCarBenefits(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     benefits(nino, TaxYear()).map(_.companyCarBenefits)
-  }
 
-  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int)(implicit hc: HeaderCarrier): Future[Option[CompanyCarBenefit]] = {
+  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int)(
+    implicit hc: HeaderCarrier): Future[Option[CompanyCarBenefit]] =
     companyCarBenefits(nino).map(allCars => allCars.find(_.employmentSeqNo == employmentSeqNum))
-  }
 
-  def withdrawCompanyCarAndFuel(nino: Nino, employmentSeqNum: Int, carSeqNum: Int, removeCarAndFuel: WithdrawCarAndFuel)
-                               (implicit hc: HeaderCarrier): Future[String] = {
+  def withdrawCompanyCarAndFuel(
+    nino: Nino,
+    employmentSeqNum: Int,
+    carSeqNum: Int,
+    removeCarAndFuel: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] =
     companyCarConnector.withdrawCarBenefit(nino, TaxYear(), employmentSeqNum, carSeqNum, removeCarAndFuel).andThen {
       case Success(_) => taxAccountService.invalidateTaiCacheData()
     }
-  }
 
-  def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] = {
+  def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] =
     taxComponentService.codingComponents(nino, taxYear).map(filterBenefits).flatMap {
-      case b@Benefits(Seq(), otherbenefits) => Future.successful(b)
-      case b => reconcileCompanyCarsInBenefits(b, nino, taxYear)
+      case b @ Benefits(Seq(), otherbenefits) => Future.successful(b)
+      case b                                  => reconcileCompanyCarsInBenefits(b, nino, taxYear)
     }
-  }
 
-  def removeCompanyBenefits(nino: Nino, empId: Int, removeCompanyBenefit: RemoveCompanyBenefit)(implicit hc: HeaderCarrier): Future[String] = {
-    iFormSubmissionService.uploadIForm(nino, IFormConstants.RemoveCompanyBenefitSubmissionKey, "TES1", (person: Person) => {
-      Future.successful(RemoveCompanyBenefitIForm(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit)).toString)
-    }) map { envelopeId =>
+  def removeCompanyBenefits(nino: Nino, empId: Int, removeCompanyBenefit: RemoveCompanyBenefit)(
+    implicit hc: HeaderCarrier): Future[String] =
+    iFormSubmissionService.uploadIForm(
+      nino,
+      IFormConstants.RemoveCompanyBenefitSubmissionKey,
+      "TES1",
+      (person: Person) => {
+        Future.successful(
+          RemoveCompanyBenefitIForm(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit)).toString)
+      }
+    ) map { envelopeId =>
       Logger.info("Envelope Id for RemoveCompanyBenefit- " + envelopeId)
 
-      auditable.sendDataEvent(transactionName = IFormConstants.RemoveCompanyBenefitAuditTxnName, detail = Map(
-        "nino" -> nino.nino,
-        "envelope Id" -> envelopeId,
-        "telephone contact allowed" -> removeCompanyBenefit.contactByPhone,
-        "telephone number" -> removeCompanyBenefit.phoneNumber.getOrElse(""),
-        "Company Benefit Name" -> removeCompanyBenefit.benefitType,
-        "Amount Received" -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
-        "Date Ended" -> removeCompanyBenefit.stopDate,
-        "What you told us" -> removeCompanyBenefit.whatYouToldUs.length.toString
-      ))
+      auditable.sendDataEvent(
+        transactionName = IFormConstants.RemoveCompanyBenefitAuditTxnName,
+        detail = Map(
+          "nino"                      -> nino.nino,
+          "envelope Id"               -> envelopeId,
+          "telephone contact allowed" -> removeCompanyBenefit.contactByPhone,
+          "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
+          "Company Benefit Name"      -> removeCompanyBenefit.benefitType,
+          "Amount Received"           -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
+          "Date Ended"                -> removeCompanyBenefit.stopDate,
+          "What you told us"          -> removeCompanyBenefit.whatYouToldUs.length.toString
+        )
+      )
 
       envelopeId
     }
-  }
 
   private def filterBenefits(codingComponents: Seq[CodingComponent]): Benefits = {
 
     val benefits = codingComponents.filter {
       _.componentType match {
         case _: BenefitComponentType => true
-        case _ => false
+        case _                       => false
       }
     }
 
     val genericBenefits = benefits.collect {
-      case CodingComponent(componentType: BenefitComponentType, employmentId, amount, _, _) if componentType != CarBenefit =>
+      case CodingComponent(componentType: BenefitComponentType, employmentId, amount, _, _)
+          if componentType != CarBenefit =>
         GenericBenefit(componentType, employmentId, amount)
     }
     val companyCars = codingComponents.collect {
-      case CodingComponent(componentType: BenefitComponentType, employmentId, amount, _, _) if componentType == CarBenefit =>
+      case CodingComponent(componentType: BenefitComponentType, employmentId, amount, _, _)
+          if componentType == CarBenefit =>
         CompanyCarBenefit(
           employmentSeqNo = employmentId.getOrElse(0),
           grossAmount = amount,
@@ -114,29 +126,32 @@ class BenefitsService @Inject()(taxAccountService: TaxAccountService,
     Benefits(companyCars, genericBenefits)
   }
 
-  private def reconcileCompanyCarsInBenefits(benefits:Benefits, nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] = {
-    companyCarBenefitRepository.carBenefit(nino, taxYear).map{c: Seq[CompanyCarBenefit] =>
+  private def reconcileCompanyCarsInBenefits(benefits: Benefits, nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier): Future[Benefits] =
+    companyCarBenefitRepository.carBenefit(nino, taxYear).map { c: Seq[CompanyCarBenefit] =>
       val reconciledBenefits = reconcileCarBenefits(benefits.companyCarBenefits, c)
       benefits.copy(companyCarBenefits = reconciledBenefits)
     } recover {
       case NonFatal(e) => {
-        Logger.warn(s"The PAYE company car service returned an expection in response to the request for nino ${nino.nino} " +
-          s"and ${taxYear.toString}. Returning car benefit details WITHOUT company car information.", e)
+        Logger.warn(
+          s"The PAYE company car service returned an expection in response to the request for nino ${nino.nino} " +
+            s"and ${taxYear.toString}. Returning car benefit details WITHOUT company car information.",
+          e
+        )
         benefits
       }
     }
-  }
 
-  private def reconcileCarBenefits(carBenefitsFromCodingComponents:Seq[CompanyCarBenefit],
-                                   carBenefitsFromRepository:Seq[CompanyCarBenefit]): Seq[CompanyCarBenefit] = {
-    carBenefitsFromCodingComponents.map{carBenefit =>
+  private def reconcileCarBenefits(
+    carBenefitsFromCodingComponents: Seq[CompanyCarBenefit],
+    carBenefitsFromRepository: Seq[CompanyCarBenefit]): Seq[CompanyCarBenefit] =
+    carBenefitsFromCodingComponents.map { carBenefit =>
       val matchedCarBenefit = carBenefitsFromRepository.find(_.employmentSeqNo == carBenefit.employmentSeqNo)
-      matchedCarBenefit match{
+      matchedCarBenefit match {
         case None => carBenefit
-        case Some(CompanyCarBenefit(_, _, companyCars,  version)) => carBenefit.copy(companyCars = companyCars, version = version)
+        case Some(CompanyCarBenefit(_, _, companyCars, version)) =>
+          carBenefit.copy(companyCars = companyCars, version = version)
       }
     }
-  }
-
 
 }

@@ -60,8 +60,8 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
         val mockCacheConnector = mock[CacheConnector]
         when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any())).
-          thenReturn(Future.successful(Seq(expectedBankAccount1, expectedBankAccount2)))
+        when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any()))
+          .thenReturn(Future.successful(Seq(expectedBankAccount1, expectedBankAccount2)))
 
         val mockBbsiConnector = mock[BbsiConnector]
         when(mockBbsiConnector.bankAccounts(any(), any())(any()))
@@ -75,7 +75,8 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
         verify(mockCacheConnector, times(1))
           .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdateSeq[BankAccount](any(), Matchers.eq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(any())
+          .createOrUpdateSeq[BankAccount](any(), Matchers.eq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(
+            any())
         verify(mockBbsiConnector, times(1))
           .bankAccounts(any(), any())(any())
       }

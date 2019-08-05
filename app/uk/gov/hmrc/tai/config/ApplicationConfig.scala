@@ -42,42 +42,52 @@ class PayeConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Env
 }
 
 @Singleton
-class FileUploadConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+class FileUploadConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
   lazy val baseURL: String = baseUrl("file-upload")
   lazy val frontendBaseURL: String = baseUrl("file-upload-frontend")
   lazy val callbackUrl: String = runModeConfiguration.getString(s"$rootServices.file-upload.callbackUrl").getOrElse("")
 }
 
 @Singleton
-class CitizenDetailsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+class CitizenDetailsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
   lazy val baseURL: String = baseUrl("citizen-details")
 }
 
 @Singleton
-class DesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) with HodConfig {
+class DesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) with HodConfig {
   lazy val baseURL: String = baseUrl("des-hod")
   lazy val environment: String = runModeConfiguration.getString(s"$rootServices.des-hod.env").getOrElse("local")
-  lazy val authorization: String = "Bearer " + runModeConfiguration.getString(s"$rootServices.des-hod.authorizationToken").getOrElse("local")
-  lazy val daPtaOriginatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.da-pta.originatorId").getOrElse("")
+  lazy val authorization: String = "Bearer " + runModeConfiguration
+    .getString(s"$rootServices.des-hod.authorizationToken")
+    .getOrElse("local")
+  lazy val daPtaOriginatorId: String =
+    runModeConfiguration.getString(s"$rootServices.des-hod.da-pta.originatorId").getOrElse("")
   lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.originatorId").getOrElse("")
 }
 
 @Singleton
-class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) with HodConfig {
-  lazy val optionalPath: Option[String] = runModeConfiguration.getConfig(s"$rootServices.nps-hod").flatMap(_.getString("path"))
+class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) with HodConfig {
+  lazy val optionalPath: Option[String] =
+    runModeConfiguration.getConfig(s"$rootServices.nps-hod").flatMap(_.getString("path"))
   lazy val path: String = optionalPath.fold("")(path => s"$path")
 
   override lazy val baseURL: String = s"${baseUrl("nps-hod")}$path"
   override lazy val environment = ""
   override lazy val authorization = ""
-  override lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("local")
+  override lazy val originatorId: String =
+    runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("local")
   lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
   lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
   lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")
 }
 
 @Singleton
-class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
   lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getBoolean("cy-plus-one.enabled")
   lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getString("cy-plus-one.startDayMonth")
 }
@@ -89,13 +99,15 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration, playEnv: En
 }
 
 @Singleton
-class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
   def desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
   def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
   def confirmedAPIEnabled: Boolean = runModeConfiguration.getBoolean("tai.confirmedAPI.enabled").getOrElse(false)
 }
 
 @Singleton
-class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
+class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
   def cacheMetricsEnabled: Boolean = runModeConfiguration.getBoolean("tai.cacheMetrics.enabled").getOrElse(false)
 }

@@ -35,12 +35,15 @@ class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
     "always return success" in {
       val json = Json.obj(
         "envelopeId" -> "0b215ey97-11d4-4006-91db-c067e74fc653",
-        "fileId" -> "file-id-1",
-        "status" -> "ERROR",
-        "reason" -> "VirusDetected")
+        "fileId"     -> "file-id-1",
+        "status"     -> "ERROR",
+        "reason"     -> "VirusDetected")
 
-      val fakeRequest = FakeRequest(method = "POST", uri = "",
-        headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = json)
+      val fakeRequest = FakeRequest(
+        method = "POST",
+        uri = "",
+        headers = FakeHeaders(Seq("Content-type" -> "application/json")),
+        body = json)
 
       val mockFileUploadService = mock[FileUploadService]
       when(mockFileUploadService.fileUploadCallback(Matchers.eq(json.as[FileUploadCallback]))(any()))

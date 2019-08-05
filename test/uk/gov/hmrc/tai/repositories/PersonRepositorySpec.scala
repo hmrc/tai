@@ -35,9 +35,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class PersonRepositorySpec extends PlaySpec
-  with MockitoSugar
-  with FakeTaiPlayApplication {
+class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
 
   "The getPerson method" should {
 
@@ -50,7 +48,8 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(Some(person)))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+          .thenReturn(Future.successful(Some(person)))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
@@ -76,9 +75,12 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(person))
-        when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+          .thenReturn(Future.successful(None))
+        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
+          .thenReturn(Future.successful(person))
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
@@ -101,11 +103,11 @@ class PersonRepositorySpec extends PlaySpec
         val jsonWithMissingFields = Json.obj(
           "etag" -> "000",
           "person" -> Json.obj(
-            "nino" -> nino.nino,
+            "nino"    -> nino.nino,
             "address" -> Json.obj()
           )
         )
-        val expectedPersonFromPartialJson = Person(nino,"", "", None,Address("","","","",""),false,false)
+        val expectedPersonFromPartialJson = Person(nino, "", "", None, Address("", "", "", "", ""), false, false)
 
         val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
         implicit val formats = PersonFormatter.personMongoFormat
@@ -113,8 +115,10 @@ class PersonRepositorySpec extends PlaySpec
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any())).thenReturn(Future.successful(expectedPersonFromPartialJson))
+        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+          .thenReturn(Future.successful(None))
+        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
+          .thenReturn(Future.successful(expectedPersonFromPartialJson))
         when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(jsonWithMissingFields))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
@@ -134,8 +138,9 @@ class PersonRepositorySpec extends PlaySpec
   private val personMongoKey = "PersonData"
   private val dateOfBirth = LocalDate.parse("2017-02-01")
 
-  private def createSUT(cacheConnector: CacheConnector,
-                        citizenDetailsUrls: CitizenDetailsUrls,
-                        httpHandler: HttpHandler) =
+  private def createSUT(
+    cacheConnector: CacheConnector,
+    citizenDetailsUrls: CitizenDetailsUrls,
+    httpHandler: HttpHandler) =
     new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 }

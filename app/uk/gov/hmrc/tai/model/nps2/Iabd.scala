@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-case class Iabd (
-                  amount: BigDecimal,
-                  iabdType: IabdType,
-                  source: IabdUpdateSource,
-                  description: String,
-                  employmentSequence: Option[Int]
-                  )
+case class Iabd(
+  amount: BigDecimal,
+  iabdType: IabdType,
+  source: IabdUpdateSource,
+  description: String,
+  employmentSequence: Option[Int]
+)

@@ -81,5 +81,6 @@ class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
-  private def testCodingComponentService(iabdRepository: CodingComponentRepository) = new CodingComponentService(iabdRepository)
+  private def testCodingComponentService(iabdRepository: CodingComponentRepository) =
+    new CodingComponentService(iabdRepository)
 }

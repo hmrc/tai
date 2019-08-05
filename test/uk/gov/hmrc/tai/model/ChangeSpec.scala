@@ -18,8 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import java.lang.IllegalArgumentException
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{ JsNumber, JsObject, JsString, JsValue, Json }
-
+import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
 
 class ChangeSpec extends PlaySpec {
   "changeReads" should {
@@ -41,15 +40,13 @@ class ChangeSpec extends PlaySpec {
   "changeWrites" should {
     "return valid json" when {
       "given a valid Change[A,B]" in {
-        val json = Json.toJson(Change[Int, String] (12, "the value"))
+        val json = Json.toJson(Change[Int, String](12, "the value"))
         json mustBe validJson
       }
     }
   }
 
-  val validJson = JsObject(Map(
-    "currentYear" -> JsNumber(12),
-    "currentYearPlusOne" -> JsString("the value")))
+  val validJson = JsObject(Map("currentYear" -> JsNumber(12), "currentYearPlusOne" -> JsString("the value")))
 
   val invalidJson = JsString("the value")
 }
