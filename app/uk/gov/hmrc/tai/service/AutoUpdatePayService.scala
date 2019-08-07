@@ -160,27 +160,28 @@ class AutoUpdatePayService @Inject()(
             rti,
             employments
           )
-          foundEmployment.map { employment =>
-            val lastPaymentDate = rti.payments.lastOption.map(_.paidOn)
-            val taxablePayYTD = rti.payments.lastOption.map(_.taxablePayYTD)
+          foundEmployment.map {
+            employment =>
+              val lastPaymentDate = rti.payments.lastOption.map(_.paidOn)
+              val taxablePayYTD = rti.payments.lastOption.map(_.taxablePayYTD)
 
-            val (calEstPayCY, calEstPayNY) = estimatedPay(rti, employment)
+              val (calEstPayCY, calEstPayNY) = estimatedPay(rti, employment)
 
-            val (npsUpdateAmountCY, npsUpdateAmountNY) =
-              getUpdateAmounts(employment.sequenceNumber, calEstPayCY, calEstPayNY)
+              val (npsUpdateAmountCY, npsUpdateAmountNY) =
+                getUpdateAmounts(employment.sequenceNumber, calEstPayCY, calEstPayNY)
 
-            val rtiCalc = new RtiCalc(
-              employmentId = employment.sequenceNumber,
-              employmentType = employment.employmentType,
-              employmentStatus = employment.employmentStatus.getOrElse(0),
-              employerName = employment.employerName.getOrElse(""),
-              totalPayToDate = taxablePayYTD.getOrElse(BigDecimal(0)),
-              calculationResult = calEstPayCY,
-              paymentDate = lastPaymentDate,
-              payFrequency = rti.payments.lastOption.map(_.payFrequency)
-            )
+              val rtiCalc = new RtiCalc(
+                employmentId = employment.sequenceNumber,
+                employmentType = employment.employmentType,
+                employmentStatus = employment.employmentStatus.getOrElse(0),
+                employerName = employment.employerName.getOrElse(""),
+                totalPayToDate = taxablePayYTD.getOrElse(BigDecimal(0)),
+                calculationResult = calEstPayCY,
+                paymentDate = lastPaymentDate,
+                payFrequency = rti.payments.lastOption.map(_.payFrequency)
+              )
 
-            (npsUpdateAmountCY, npsUpdateAmountNY, Some(rtiCalc))
+              (npsUpdateAmountCY, npsUpdateAmountNY, Some(rtiCalc))
           }
         })
         .getOrElse(Nil)

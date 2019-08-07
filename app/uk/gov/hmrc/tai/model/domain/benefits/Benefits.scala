@@ -62,7 +62,6 @@ object WithdrawCarAndFuel {
 
 case class RemoveCompanyBenefit(
   benefitType: String,
-  whatYouToldUs: String,
   stopDate: String,
   valueOfBenefit: Option[String],
   contactByPhone: String,

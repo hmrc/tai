@@ -37,9 +37,8 @@ case class RemoveCompanyBenefitViewModel(
   isEnd: String,
   companyBenefitName: String,
   amountReceived: String,
-  endDate: String,
-  whatYouToldUs: String
-)
+  endDate: String)
+
 object RemoveCompanyBenefitViewModel {
 
   def apply(person: Person, removeCompanyBenefit: RemoveCompanyBenefit): RemoveCompanyBenefitViewModel =
@@ -59,7 +58,6 @@ object RemoveCompanyBenefitViewModel {
       isEnd = Yes,
       companyBenefitName = removeCompanyBenefit.benefitType,
       amountReceived = removeCompanyBenefit.valueOfBenefit.getOrElse(""),
-      endDate = removeCompanyBenefit.stopDate,
-      whatYouToldUs = removeCompanyBenefit.whatYouToldUs
+      endDate = removeCompanyBenefit.stopDate
     )
 }

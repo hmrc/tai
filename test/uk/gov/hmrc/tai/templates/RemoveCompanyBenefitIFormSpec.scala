@@ -149,12 +149,6 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
 
         benefitEndedTableRow.select("td:nth-of-type(1)").text() mustBe "Company benefit ended on"
         benefitEndedTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.endDate
-
-        val whatYouToldUsTableRow = yourBenefitDetailsTable.select("tr:nth-of-type(4)")
-
-        whatYouToldUsTableRow.select("td:nth-of-type(1)").text() mustBe "Tell us what is incorrect and why"
-        whatYouToldUsTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.whatYouToldUs
-
       }
     }
   }
@@ -177,8 +171,7 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
       "Yes",
       "Mileage",
       "10030",
-      "On or after 6 April 2017",
-      "I no longer get this benefit"
+      "On or after 6 April 2017"
     )
   private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html =
     uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)

@@ -543,13 +543,8 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
     "return an envelopeId" when {
       "given valid inputs" in {
         val employmentId = 1
-        val removeCompanyBenefit = RemoveCompanyBenefit(
-          "Mileage",
-          "Remove Company Benefit",
-          "On Or After 6 April 2017",
-          Some("1200"),
-          "Yes",
-          Some("123456789"))
+        val removeCompanyBenefit =
+          RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
@@ -583,13 +578,8 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
     }
     "send remove company benefit journey audit event" in {
       val employmentId = 1
-      val removeCompanyBenefit = RemoveCompanyBenefit(
-        "Mileage",
-        "Remove Company Benefit",
-        "On Or After 6 April 2017",
-        Some("1200"),
-        "Yes",
-        Some("123456789"))
+      val removeCompanyBenefit =
+        RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
       val map = Map(
         "nino"                      -> randomNino.nino,
         "envelope Id"               -> "1",
@@ -597,8 +587,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
         "Company Benefit Name"      -> removeCompanyBenefit.benefitType,
         "Amount Received"           -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
-        "Date Ended"                -> removeCompanyBenefit.stopDate,
-        "What you told us"          -> removeCompanyBenefit.whatYouToldUs.length.toString
+        "Date Ended"                -> removeCompanyBenefit.stopDate
       )
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
