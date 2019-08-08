@@ -231,7 +231,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "employmentId"                  -> 1,
               "amount"                        -> 1100,
               "description"                   -> EmploymentIncome.toString,
-              "taxCode"                       -> "1150L",
+              "taxCode"                       -> "1150LX",
               "name"                          -> "Employer1",
               "basisOperation"                -> "Week1Month1BasisOperation",
               "status"                        -> Live.toString,
