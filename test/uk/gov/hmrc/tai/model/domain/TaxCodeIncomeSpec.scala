@@ -14,26 +14,65 @@
  * limitations under the License.
  */
 
+package uk.gov.hmrc.tai.model.domain
+
+import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.model.domain.EmploymentIncome
-import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
+import uk.gov.hmrc.tai.model.domain.income.OtherBasisOperation
 
 class TaxCodeIncomeSpec extends PlaySpec {
+
+  val taxCodeIncome = TaxCodeIncomeFactory.create
 
   "TaxCodeIncomeSource taxCodeWithEmergencySuffix" must {
     "return the taxCode WITH X suffix" when {
       "the basis operation is week1Month1" in {
-        val sut = taxCodeIncomeSource
-        sut.taxCodeWithEmergencySuffix mustBe "K100X"
+        taxCodeIncome.taxCodeWithEmergencySuffix mustBe "K100X"
       }
     }
     "return the taxCode WITHOUT X suffix" when {
       "the basis operation is NOT week1Month1" in {
-        val sut = taxCodeIncomeSource.copy(basisOperation = OtherBasisOperation)
-        sut.taxCodeWithEmergencySuffix mustBe "K100"
+        val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation)
+        model.taxCodeWithEmergencySuffix mustBe "K100"
       }
     }
   }
-  val taxCodeIncomeSource =
-    TaxCodeIncome(EmploymentIncome, None, 0, "", "K100", "", Week1Month1BasisOperation, Live, 0, 0, 0)
+
+  "TaxCodeIncome Writes" must {
+    "write the taxCode correctly" when {
+      "BasisOfOperation is Week1Month1" in {
+
+        val expectedJson = TaxCodeIncomeFactory.createJson
+        Json.toJson(taxCodeIncome) mustEqual expectedJson
+      }
+    }
+    "write the taxCode correctly" when {
+      "BasisOfOperation is Other" in {
+
+        val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation)
+
+        val expectedJson = TaxCodeIncomeFactory.createJson
+        val updatedJson = expectedJson
+          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation))
+
+        Json.toJson(model) mustEqual updatedJson
+      }
+    }
+    "Handle nulls correctly" when {
+      "updateNotificationDate is not null" in {
+        val date: Option[LocalDate] = Some(LocalDate.now())
+
+        val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation, updateNotificationDate = date)
+
+        val expectedJson = TaxCodeIncomeFactory.createJson
+        val updatedJson = expectedJson
+          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)) + ("updateNotificationDate" -> Json
+          .toJson(date))
+
+        Json.toJson(model) mustEqual updatedJson
+      }
+    }
+  }
 }

@@ -137,6 +137,5 @@ object TaxCodeIncome {
         }
       )
   }
-
-  implicit val format: Format[TaxCodeIncome] = Json.format[TaxCodeIncome]
+  implicit val reads: Reads[TaxCodeIncome] = Json.reads[TaxCodeIncome]
 }
