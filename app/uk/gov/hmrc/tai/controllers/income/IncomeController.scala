@@ -25,7 +25,6 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome, TaxCodeIncomeStatus}
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
@@ -41,7 +40,7 @@ class IncomeController @Inject()(
   taxAccountService: TaxAccountService,
   employmentService: EmploymentService,
   authentication: AuthenticationPredicate)
-    extends BaseController with ApiFormats with TaxCodeIncomeSourceAPIFormatters with ControllerErrorHandler {
+    extends BaseController with ApiFormats with ControllerErrorHandler {
 
   def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     incomeService.untaxedInterest(nino).map {
@@ -54,7 +53,7 @@ class IncomeController @Inject()(
     incomeService.taxCodeIncomes(nino, year).map {
       case Seq() => NotFound
       case taxCodeIncomes =>
-        Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes)(Writes.seq(taxCodeIncomeSourceWrites)), Nil)))
+        Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes), Nil)))
     } recoverWith taxAccountErrorHandler
   }
 

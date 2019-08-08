@@ -112,5 +112,31 @@ case class TaxCodeIncome(
 }
 
 object TaxCodeIncome {
+
+  implicit val writes = new Writes[TaxCodeIncome] {
+    override def writes(o: TaxCodeIncome): JsValue =
+      JsObject(
+        List(
+          "componentType"                 -> Json.toJson(o.componentType),
+          "employmentId"                  -> Json.toJson(o.employmentId),
+          "amount"                        -> Json.toJson(o.amount),
+          "description"                   -> Json.toJson(o.description),
+          "taxCode"                       -> Json.toJson(o.taxCodeWithEmergencySuffix),
+          "name"                          -> Json.toJson(o.name),
+          "basisOperation"                -> Json.toJson(o.basisOperation),
+          "status"                        -> Json.toJson(o.status),
+          "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
+          "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
+          "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),
+          "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
+          "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
+          "updateActionDate"              -> Json.toJson(o.updateActionDate)
+        ).filter {
+          case (_, JsNull) => false
+          case _           => true
+        }
+      )
+  }
+
   implicit val format: Format[TaxCodeIncome] = Json.format[TaxCodeIncome]
 }

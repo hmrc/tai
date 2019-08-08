@@ -87,7 +87,7 @@ class IncomeService @Inject()(
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] =
-    incomeRepository.taxCodeIncomes(nino, year).map(_.map(t => t.copy(taxCode = t.taxCodeWithEmergencySuffix)))
+    incomeRepository.taxCodeIncomes(nino, year)
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     incomeRepository.incomes(nino, year)
