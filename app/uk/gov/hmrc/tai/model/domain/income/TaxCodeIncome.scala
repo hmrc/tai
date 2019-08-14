@@ -113,7 +113,7 @@ case class TaxCodeIncome(
 
 object TaxCodeIncome {
 
-  implicit val writes = new Writes[TaxCodeIncome] {
+  implicit val format = new Format[TaxCodeIncome] {
     override def writes(o: TaxCodeIncome): JsValue =
       JsObject(
         List(
@@ -136,6 +136,7 @@ object TaxCodeIncome {
           case _           => true
         }
       )
+
+    override def reads(json: JsValue): JsResult[TaxCodeIncome] = ???
   }
-  implicit val reads: Reads[TaxCodeIncome] = Json.reads[TaxCodeIncome]
 }

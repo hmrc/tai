@@ -47,8 +47,6 @@ class TaxCodeIncomeSpec extends PlaySpec {
         val expectedJson = TaxCodeIncomeFactory.createJson
         Json.toJson(taxCodeIncome) mustEqual expectedJson
       }
-    }
-    "write the taxCode correctly" when {
       "BasisOfOperation is Other" in {
 
         val model = taxCodeIncome.copy(basisOperation = OtherBasisOperation)
@@ -60,6 +58,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
         Json.toJson(model) mustEqual updatedJson
       }
     }
+
     "Handle nulls correctly" when {
       "updateNotificationDate is not null" in {
         val date: Option[LocalDate] = Some(LocalDate.now())
