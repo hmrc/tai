@@ -6,6 +6,7 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport.scalafmtOnCompile
+import play.sbt.PlayImport.PlayKeys
 
 trait MicroService {
 
@@ -49,7 +50,8 @@ trait MicroService {
       retrieveManaged := true,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
       routesGenerator := InjectedRoutesGenerator,
-      scalafmtOnCompile := true
+      scalafmtOnCompile := true,
+      PlayKeys.playDefaultPort := 9331
     )
     .settings(inConfig(ITTestPhases.TemplateTest)(Defaults.testSettings): _*)
     .configs(IntegrationTest)

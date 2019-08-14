@@ -92,8 +92,7 @@ class BenefitsService @Inject()(
           "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
           "Company Benefit Name"      -> removeCompanyBenefit.benefitType,
           "Amount Received"           -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
-          "Date Ended"                -> removeCompanyBenefit.stopDate,
-          "What you told us"          -> removeCompanyBenefit.whatYouToldUs.length.toString
+          "Date Ended"                -> removeCompanyBenefit.stopDate
         )
       )
 

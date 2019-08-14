@@ -30,72 +30,42 @@ class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
   "RemoveCompanyBenefitViewModel 'RemoveCompanyBenefit' apply method" must {
     "generate a view model with date of birth" when {
       "date of birth is present in person" in {
-        val removeCompanyBenefit = RemoveCompanyBenefit(
-          "Mileage",
-          "I no longer get this benefit",
-          "On or after 6 April 2017",
-          Some("10030"),
-          "Yes",
-          Some("1234567889"))
+        val removeCompanyBenefit =
+          RemoveCompanyBenefit("Mileage", "On or after 6 April 2017", Some("10030"), "Yes", Some("1234567889"))
         val sut = RemoveCompanyBenefitViewModel(person = person, removeCompanyBenefit = removeCompanyBenefit)
         sut mustBe removeCompanyBenefitModel
       }
     }
     "generate a view model with the correct yes/no combination" in {
-      val removeCompanyBenefit = RemoveCompanyBenefit(
-        "Mileage",
-        "I no longer get this benefit",
-        "On or after 6 April 2017",
-        Some("10030"),
-        "Yes",
-        Some("0201223223"))
+      val removeCompanyBenefit =
+        RemoveCompanyBenefit("Mileage", "On or after 6 April 2017", Some("10030"), "Yes", Some("0201223223"))
       val sut = RemoveCompanyBenefitViewModel(person = person, removeCompanyBenefit = removeCompanyBenefit)
       sut.isAdd mustBe No
       sut.isEnd mustBe Yes
       sut.isUpdate mustBe No
     }
     "generate a view model with 'benefit name' 'what you told us' 'stop date' 'amount received' 'phone contact allowed' and 'phone number' when all of them were provided" in {
-      val removeCompanyBenefit = RemoveCompanyBenefit(
-        "Mileage",
-        "I no longer get this benefit",
-        "On or after 6 April 2017",
-        Some("10030"),
-        "Yes",
-        Some("0201223223"))
+      val removeCompanyBenefit =
+        RemoveCompanyBenefit("Mileage", "On or after 6 April 2017", Some("10030"), "Yes", Some("0201223223"))
       val sut = RemoveCompanyBenefitViewModel(person = person, removeCompanyBenefit = removeCompanyBenefit)
       sut.companyBenefitName mustBe "Mileage"
-      sut.whatYouToldUs mustBe "I no longer get this benefit"
       sut.endDate mustBe "On or after 6 April 2017"
       sut.amountReceived mustBe "10030"
       sut.telephoneContactAllowed mustBe "Yes"
       sut.telephoneNumber mustBe "0201223223"
     }
     "generate a view model with 'benefit name' 'what you told us' 'stop date' 'phone contact allowed' and 'phone number' when amount is not provided" in {
-      val removeCompanyBenefit = RemoveCompanyBenefit(
-        "Mileage",
-        "I no longer get this benefit",
-        "Before 6 April 2017",
-        None,
-        "Yes",
-        Some("0201223223"))
+      val removeCompanyBenefit = RemoveCompanyBenefit("Mileage", "Before 6 April 2017", None, "Yes", Some("0201223223"))
       val sut = RemoveCompanyBenefitViewModel(person = person, removeCompanyBenefit = removeCompanyBenefit)
       sut.companyBenefitName mustBe "Mileage"
-      sut.whatYouToldUs mustBe "I no longer get this benefit"
       sut.endDate mustBe "Before 6 April 2017"
       sut.telephoneContactAllowed mustBe "Yes"
       sut.telephoneNumber mustBe "0201223223"
     }
     "generate a view model with 'benefit name' 'what you told us' 'stop date' 'amount received' 'phone contact allowed' when phone number is not provided" in {
-      val removeCompanyBenefit = RemoveCompanyBenefit(
-        "Mileage",
-        "I no longer get this benefit",
-        "Before 6 April 2017",
-        Some("11000"),
-        "No",
-        None)
+      val removeCompanyBenefit = RemoveCompanyBenefit("Mileage", "Before 6 April 2017", Some("11000"), "No", None)
       val sut = RemoveCompanyBenefitViewModel(person = person, removeCompanyBenefit = removeCompanyBenefit)
       sut.companyBenefitName mustBe "Mileage"
-      sut.whatYouToldUs mustBe "I no longer get this benefit"
       sut.endDate mustBe "Before 6 April 2017"
       sut.amountReceived mustBe "11000"
       sut.telephoneContactAllowed mustBe "No"
@@ -127,8 +97,7 @@ class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
     "Yes",
     "Mileage",
     "10030",
-    "On or after 6 April 2017",
-    "I no longer get this benefit"
+    "On or after 6 April 2017"
   )
 
 }

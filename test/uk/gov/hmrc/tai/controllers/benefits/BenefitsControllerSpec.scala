@@ -152,13 +152,8 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
     "return an envelope Id" when {
       "called with valid remove company benefit request" in {
         val envelopeId = "envelopeId"
-        val removeCompanyBenefit = RemoveCompanyBenefit(
-          "Mileage",
-          "Remove Company Benefit",
-          "On Or After 6 April 2017",
-          Some("1200"),
-          "Yes",
-          Some("123456789"))
+        val removeCompanyBenefit =
+          RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
         val nino = randomNino
         val employmentId = 1
 
