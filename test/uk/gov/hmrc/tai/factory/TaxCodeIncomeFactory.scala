@@ -33,8 +33,8 @@ object TaxCodeIncomeFactory {
       Week1Month1BasisOperation,
       Live,
       0,
-      0,
-      0)
+      1,
+      2)
 
   def createJson: JsObject =
     Json.obj(
@@ -47,7 +47,7 @@ object TaxCodeIncomeFactory {
       "basisOperation"                -> Week1Month1BasisOperation,
       "status"                        -> Live,
       "inYearAdjustmentIntoCY"        -> 0,
-      "totalInYearAdjustment"         -> 0,
-      "inYearAdjustmentIntoCYPlusOne" -> 0
+      "totalInYearAdjustment"         -> 1,
+      "inYearAdjustmentIntoCYPlusOne" -> 2
     )
 }

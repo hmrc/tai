@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 sealed trait BasisOperation
@@ -111,9 +112,9 @@ case class TaxCodeIncome(
   }
 }
 
-object TaxCodeIncome {
+object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
 
-  implicit val format = new Format[TaxCodeIncome] {
+  implicit val writes = new Writes[TaxCodeIncome] {
     override def writes(o: TaxCodeIncome): JsValue =
       JsObject(
         List(
@@ -136,7 +137,6 @@ object TaxCodeIncome {
           case _           => true
         }
       )
-
-    override def reads(json: JsValue): JsResult[TaxCodeIncome] = ???
   }
+  implicit val reads: Reads[TaxCodeIncome] = taxCodeIncomeSourceReads
 }
