@@ -44,7 +44,13 @@ class EmploymentRepository @Inject()(
     for {
       _           <- employmentsForYear(nino, TaxYear())
       employments <- fetchEmploymentFromCache
-    } yield employments.find(_.sequenceNumber == id)
+    } yield {
+      employments.find(_.sequenceNumber == id) orElse {
+        val sequenceNumbers = employments.map(_.sequenceNumber).mkString(", ")
+        Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+        None
+      }
+    }
 
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache.flatMap { allEmployments =>
