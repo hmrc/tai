@@ -19,7 +19,8 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.joda.time.LocalDate
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
+import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
@@ -103,8 +104,39 @@ case class TaxCodeIncome(
   inYearAdjustmentIntoCYPlusOne: BigDecimal,
   iabdUpdateSource: Option[IabdUpdateSource] = None,
   updateNotificationDate: Option[LocalDate] = None,
-  updateActionDate: Option[LocalDate] = None)
+  updateActionDate: Option[LocalDate] = None) {
 
-object TaxCodeIncome {
-  implicit val format: Format[TaxCodeIncome] = Json.format[TaxCodeIncome]
+  lazy val taxCodeWithEmergencySuffix: String = basisOperation match {
+    case Week1Month1BasisOperation => taxCode + TaiConstants.EmergencyTaxCode
+    case _                         => taxCode
+  }
+}
+
+object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
+
+  implicit val writes = new Writes[TaxCodeIncome] {
+    override def writes(o: TaxCodeIncome): JsValue =
+      JsObject(
+        List(
+          "componentType"                 -> Json.toJson(o.componentType),
+          "employmentId"                  -> Json.toJson(o.employmentId),
+          "amount"                        -> Json.toJson(o.amount),
+          "description"                   -> Json.toJson(o.description),
+          "taxCode"                       -> Json.toJson(o.taxCodeWithEmergencySuffix),
+          "name"                          -> Json.toJson(o.name),
+          "basisOperation"                -> Json.toJson(o.basisOperation),
+          "status"                        -> Json.toJson(o.status),
+          "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
+          "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
+          "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),
+          "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
+          "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
+          "updateActionDate"              -> Json.toJson(o.updateActionDate)
+        ).filter {
+          case (_, JsNull) => false
+          case _           => true
+        }
+      )
+  }
+  implicit val reads: Reads[TaxCodeIncome] = taxCodeIncomeSourceReads
 }

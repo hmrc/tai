@@ -338,6 +338,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           ))
 
       result mustBe expectedResult
+
     }
 
     "return empty json when there are no matching live employments" in {
