@@ -97,7 +97,7 @@ class PensionProviderService @Inject()(
     incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier) = { person: Person =>
     {
       for {
-        Some(existingEmployment) <- employmentRepository.employment(nino, id)
+        Right(existingEmployment) <- employmentRepository.employment(nino, id)
         templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
       } yield EmploymentIForm(templateModel).toString
     }
