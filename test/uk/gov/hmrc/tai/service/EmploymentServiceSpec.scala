@@ -28,6 +28,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -62,7 +63,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
     "return employment for passed nino, year and id" in {
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
-        .thenReturn(Future.successful(Some(employment)))
+        .thenReturn(Future.successful(Right(employment)))
 
       val sut = createSut(
         mockEmploymentRepository,
@@ -77,10 +78,10 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
       verify(mockEmploymentRepository, times(1)).employment(any(), Matchers.eq(2))(any())
     }
 
-    "return None when employment doesn't exist" in {
+    "return the an Error Type when the employment doesn't exist" in {
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
       val sut = createSut(
         mockEmploymentRepository,
@@ -102,7 +103,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(employment)))
+          .thenReturn(Future.successful(Right(employment)))
 
         val mockPersonRepository = mock[PersonRepository]
         when(mockPersonRepository.getPerson(any())(any()))
@@ -146,7 +147,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
-        .thenReturn(Future.successful(Some(employment)))
+        .thenReturn(Future.successful(Right(employment)))
 
       val mockPersonRepository = mock[PersonRepository]
       when(mockPersonRepository.getPerson(any())(any()))
