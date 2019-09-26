@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CacheConnector, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.TaiRoot
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
-import uk.gov.hmrc.tai.model.error.EmploymentNotFound
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
@@ -1527,7 +1527,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
       Await.result(sut.employment(Nino(nino.nino), 4), 5 seconds) mustBe Right(emp1)
     }
-    "return appropriate error type when there is no employment found for that ID" in {
+    "return Employment not found error type when there is no employment found for that ID" in {
       val emp1 = Employment(
         "TEST",
         Some("12345"),
@@ -1566,8 +1566,27 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
       Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentNotFound)
     }
+
+    "return Employment stubbed account error type when RTI is down and there is no data in the cache" in {
+
+      val mockRtiConnector = mock[RtiConnector]
+      when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+        .thenReturn(Future.failed(new HttpException("rti down", 503)))
+
+      val mockCacheConnector = mock[CacheConnector]
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any())).thenReturn(Future.successful(Nil))
+
+      val mockNpsConnector = mock[NpsConnector]
+      when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+        .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+      val sut = createSUT(mockRtiConnector, mockCacheConnector, mockNpsConnector, mock[Auditor])
+      Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentAccountStubbed)
+    }
+
     "get the current year employments from the hod" when {
-      "data is in the cache for a year other than the current one and it does not contain the required employment" in {
+      "data is in the cache for a year other than the current one and it does not contain the required employment " in {
         val emp2015 = Employment(
           "TEST",
           Some("12345"),
