@@ -74,11 +74,11 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         mock[Auditor])
       val employments = Await.result(sut.employment(nino, 2)(HeaderCarrier()), 5.seconds)
 
-      employments mustBe Some(employment)
+      employments mustBe Right(employment)
       verify(mockEmploymentRepository, times(1)).employment(any(), Matchers.eq(2))(any())
     }
 
-    "return the an Error Type when the employment doesn't exist" in {
+    "return the correct Error Type when the employment doesn't exist" in {
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
         .thenReturn(Future.successful(Left(EmploymentNotFound)))
@@ -92,7 +92,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         mock[Auditor])
       val employments = Await.result(sut.employment(nino, 5)(HeaderCarrier()), 5.seconds)
 
-      employments mustBe None
+      employments mustBe Left(EmploymentNotFound)
     }
   }
 
