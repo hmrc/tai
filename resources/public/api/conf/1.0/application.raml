@@ -45,6 +45,7 @@ mediaType: [ application/json, application/hal+json ]
                     type: !include "schemas/employmentSchema.json"
                     example: !include "examples/employmentExample.json"                      
               404:
+              502:
         /endDate:
           put:
             description: Allows the consumer to update the end date for the employment

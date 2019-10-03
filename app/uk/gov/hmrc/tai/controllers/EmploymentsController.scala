@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 
 @Singleton
 class EmploymentsController @Inject()(employmentService: EmploymentService, authentication: AuthenticationPredicate)
@@ -40,9 +41,9 @@ class EmploymentsController @Inject()(employmentService: EmploymentService, auth
         Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
       }
       .recover {
-        case _: NotFoundException    => NotFound
+        case ex: NotFoundException   => NotFound(ex.getMessage)
         case ex: BadRequestException => BadRequest(ex.getMessage)
-        case _                       => InternalServerError
+        case ex                      => InternalServerError(ex.getMessage)
       }
   }
 
@@ -50,12 +51,14 @@ class EmploymentsController @Inject()(employmentService: EmploymentService, auth
     employmentService
       .employment(nino, id)
       .map {
-        case Some(employment) => Ok(Json.toJson(ApiResponse(employment, Nil)))
-        case None             => NotFound
+        case Right(employment)        => Ok(Json.toJson(ApiResponse(employment, Nil)))
+        case Left(EmploymentNotFound) => NotFound("Employment not found")
+        case Left(EmploymentAccountStubbed) =>
+          BadGateway("Employment contains stub annual account data due to RTI unavailability")
       }
       .recover {
-        case _: NotFoundException => NotFound
-        case _                    => InternalServerError
+        case _: NotFoundException => NotFound("Employment not found")
+        case error                => InternalServerError(error.getMessage)
       }
   }
 

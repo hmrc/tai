@@ -188,7 +188,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(employment)))
+          .thenReturn(Future.successful(Right(employment)))
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
 
