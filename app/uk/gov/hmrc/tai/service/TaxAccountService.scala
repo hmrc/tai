@@ -56,18 +56,15 @@ class TaxAccountService @Inject()(
   def version(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[Option[Int]] =
     taiData(nino, year).map(_.taiRoot.map(_.version))
 
-  def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-
   private def unencryptedCachedSession(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[SessionData] =
-    cacheConnector.find[SessionData](fetchSessionId(hc)).flatMap {
+    cacheConnector.find[SessionData](nino).flatMap {
       case Some(sd) => Future.successful(sd)
       case _        => newCachedSession(nino, year)
     }
 
-  def invalidateTaiCacheData()(implicit hc: HeaderCarrier): Unit =
+  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.removeById(fetchSessionId(hc))
+      cacheConnector.removeById(nino)
     } else {
       ()
     }
@@ -80,7 +77,7 @@ class TaxAccountService @Inject()(
 
   def updateTaiData(nino: Nino, sessionData: SessionData)(implicit hc: HeaderCarrier): Future[SessionData] =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.createOrUpdate[SessionData](fetchSessionId(hc), sessionData)
+      cacheConnector.createOrUpdate[SessionData](nino, sessionData)
     } else {
       Future.successful(sessionData)
     }

@@ -26,6 +26,8 @@ import uk.gov.hmrc.cache.model.Cache
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
@@ -44,7 +46,14 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
     Play.current.configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdate[T](id: String, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
+  private def cacheId(nino: Nino)(implicit hc: HeaderCarrier): String = {
+    val sessionId = hc.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
+    sessionId + "-" + nino
+  }
+
+  def createOrUpdate[T](nino: Nino, data: T, key: String = defaultKey)(
+    implicit writes: Writes[T],
+    hc: HeaderCarrier): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[T]()
       Json.toJson(Protected(data))(jsonEncryptor)
@@ -52,10 +61,11 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       Json.toJson(data)
     }
 
-    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => data)
+    cacheRepository.repo.createOrUpdate(cacheId(nino), key, jsonData).map(_ => data)
   }
 
-  def createOrUpdateJson(id: String, json: JsValue, key: String = defaultKey): Future[JsValue] = {
+  def createOrUpdateJson(nino: Nino, json: JsValue, key: String = defaultKey)(
+    implicit hc: HeaderCarrier): Future[JsValue] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[JsValue]()
       Json.toJson(Protected(json))(jsonEncryptor)
@@ -63,24 +73,25 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       json
     }
 
-    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => json)
+    cacheRepository.repo.createOrUpdate(cacheId(nino), key, jsonData).map(_ => json)
   }
 
-  def createOrUpdateSeq[T](id: String, data: Seq[T], key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[Seq[T]] = {
+  def createOrUpdateSeq[T](nino: Nino, data: Seq[T], key: String = defaultKey)(
+    implicit writes: Writes[T],
+    hc: HeaderCarrier): Future[Seq[T]] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[Seq[T]]()
       Json.toJson(Protected(data))(jsonEncryptor)
     } else {
       Json.toJson(data)
     }
-    cacheRepository.repo.createOrUpdate(id, key, jsonData).map(_ => data)
+    cacheRepository.repo.createOrUpdate(cacheId(nino), key, jsonData).map(_ => data)
   }
 
-  def find[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
+  def find[T](nino: Nino, key: String = defaultKey)(implicit reads: Reads[T], hc: HeaderCarrier): Future[Option[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[T]()
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[Protected[T]](jsonDecryptor).isSuccess) {
@@ -94,7 +105,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
         }
       }
     } else {
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[T].isSuccess) {
@@ -109,12 +120,13 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def findJson(id: String, key: String = defaultKey): Future[Option[JsValue]] = find[JsValue](id, key)
+  def findJson(nino: Nino, key: String = defaultKey)(implicit hc: HeaderCarrier): Future[Option[JsValue]] =
+    find[JsValue](nino, key)
 
-  def findSeq[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
+  def findSeq[T](nino: Nino, key: String = defaultKey)(implicit reads: Reads[T], hc: HeaderCarrier): Future[Seq[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
@@ -130,7 +142,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
         }
       }
     } else {
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
@@ -147,10 +159,12 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def findOptSeq[T](id: String, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
+  def findOptSeq[T](nino: Nino, key: String = defaultKey)(
+    implicit reads: Reads[T],
+    hc: HeaderCarrier): Future[Option[Seq[T]]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
@@ -164,7 +178,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
         }
       }
     } else {
-      cacheRepository.repo.findById(id) map {
+      cacheRepository.repo.findById(cacheId(nino)) map {
         case Some(cache) =>
           cache.data flatMap { json =>
             if ((json \ key).validate[Seq[T]].isSuccess) {
@@ -179,9 +193,9 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def removeById(id: String): Future[Boolean] =
+  def removeById(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     for {
-      writeResult <- cacheRepository.repo.removeById(id)
+      writeResult <- cacheRepository.repo.removeById(cacheId(nino))
     } yield {
       if (writeResult.writeErrors.nonEmpty) {
         val errorMessages = writeResult.writeErrors.map(_.errmsg)

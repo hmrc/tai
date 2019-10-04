@@ -33,12 +33,12 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
   def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
-    cacheConnector.findOptSeq[BankAccount](fetchSessionId(hc), BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
+    cacheConnector.findOptSeq[BankAccount](nino, BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc) flatMap {
       case None =>
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
-          accountsWithId <- cacheConnector.createOrUpdateSeq(fetchSessionId(hc), populateId(accounts), BBSIKey)(
-                             BbsiMongoFormatters.bbsiFormat)
+          accountsWithId <- cacheConnector
+                             .createOrUpdateSeq(nino, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }
@@ -51,7 +51,4 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
       .map { case (account: BankAccount, index: Int) => (account, index + 1) }
       .foldLeft(Seq.empty[BankAccount])(updateIds)
   }
-
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
 }

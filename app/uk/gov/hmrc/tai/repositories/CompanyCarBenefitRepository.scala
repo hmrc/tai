@@ -32,7 +32,7 @@ class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, comp
     extends MongoConstants {
 
   def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
-    cacheConnector.find[Seq[CompanyCarBenefit]](fetchSessionId(hc), CarBenefitKey) flatMap {
+    cacheConnector.find[Seq[CompanyCarBenefit]](nino, CarBenefitKey) flatMap {
       case None => {
         val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)
         val version = companyCarConnector.ninoVersion(nino)
@@ -43,12 +43,9 @@ class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, comp
         } yield cc.map(cc => CompanyCarBenefit(cc.employmentSeqNo, cc.grossAmount, cc.companyCars, Some(ver)))
 
         companyCarBenefitsWithVersion.flatMap { result =>
-          cacheConnector.createOrUpdate(fetchSessionId(hc), result, CarBenefitKey).map(_ => result)
+          cacheConnector.createOrUpdate(nino, result, CarBenefitKey).map(_ => result)
         }
       }
       case Some(seq) => Future.successful(seq)
     }
-
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
 }

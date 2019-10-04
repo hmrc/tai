@@ -61,7 +61,7 @@ class BenefitsService @Inject()(
     carSeqNum: Int,
     removeCarAndFuel: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] =
     companyCarConnector.withdrawCarBenefit(nino, TaxYear(), employmentSeqNum, carSeqNum, removeCarAndFuel).andThen {
-      case Success(_) => taxAccountService.invalidateTaiCacheData()
+      case Success(_) => taxAccountService.invalidateTaiCacheData(nino)
     }
 
   def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] =

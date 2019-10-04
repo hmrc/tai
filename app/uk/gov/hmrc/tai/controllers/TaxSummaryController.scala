@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Request, Result}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, Result}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
-import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps2.IabdType._
@@ -32,9 +32,6 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
 
 import scala.concurrent.Future
-import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
 @Singleton
 class TaxSummaryController @Inject()(
@@ -44,12 +41,13 @@ class TaxSummaryController @Inject()(
   authentication: AuthenticationPredicate)
     extends BaseController with MongoFormatter {
 
-  def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] = authentication.async { implicit request =>
-    taiService
-      .getCalculatedTaxAccountPartial(nino, year)
-      .map(summaryDetails => Ok(Json.toJson(summaryDetails)))
-      .recoverWith(convertToErrorResponse)
-  }
+  def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] =
+    authentication.async { implicit request =>
+      taiService
+        .getCalculatedTaxAccountPartial(nino, year)
+        .map(summaryDetails => Ok(Json.toJson(summaryDetails)))
+        .recoverWith(convertToErrorResponse)
+    }
 
   def getTaxSummary(nino: Nino, year: Int): Action[AnyContent] = authentication.async { implicit request =>
     {
@@ -73,12 +71,12 @@ class TaxSummaryController @Inject()(
   def updateEmployments(nino: Nino, year: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[IabdUpdateEmploymentsRequest] { editIabd =>
       val updateEmploymentsResponse = taiService.updateEmployments(nino, year, NewEstimatedPay.code, editIabd)
-      taxAccountService.invalidateTaiCacheData()
+      taxAccountService.invalidateTaiCacheData(nino)
       updateEmploymentsResponse.map(response => Ok(Json.toJson(response)))
     }
   }
 
-  private def convertToErrorResponse(implicit request: Request[_]): PartialFunction[Throwable, Future[Result]] =
+  private def convertToErrorResponse: PartialFunction[Throwable, Future[Result]] =
     PartialFunction[Throwable, Future[Result]] {
       case ex: BadRequestException => Future.successful(BadRequest(ex.message))
       case ex: HttpException       => throw ex

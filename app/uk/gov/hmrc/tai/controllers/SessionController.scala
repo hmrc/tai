@@ -21,13 +21,14 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.repositories.SessionRepository
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
 class SessionController @Inject()(sessionRepository: SessionRepository, authentication: AuthenticationPredicate)
     extends BaseController {
 
-  def invalidateCache(): Action[AnyContent] = authentication.async { implicit request =>
-    for (success <- sessionRepository.invalidateCache()) yield if (success) Accepted else InternalServerError
+  def invalidateCache(nino: String): Action[AnyContent] = authentication.async { implicit request =>
+    for (success <- sessionRepository.invalidateCache(Nino(nino))) yield if (success) Accepted else InternalServerError
   }
 }

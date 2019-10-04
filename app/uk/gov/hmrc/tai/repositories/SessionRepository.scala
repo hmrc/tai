@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.CacheConnector
 
@@ -24,13 +25,6 @@ import scala.concurrent.Future
 
 @Singleton
 class SessionRepository @Inject()(cacheConnector: CacheConnector) {
-
-  def invalidateCache()(implicit hc: HeaderCarrier): Future[Boolean] =
-    cacheConnector.removeById(
-      hc.sessionId
-        .map(_.value)
-        .getOrElse(
-          throw new RuntimeException("Error while fetching session id")
-        ))
-
+  def invalidateCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+    cacheConnector.removeById(nino)
 }

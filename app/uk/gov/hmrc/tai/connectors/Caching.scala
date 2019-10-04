@@ -22,14 +22,16 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.domain.Nino
+
 import scala.concurrent.Future
 
 @Singleton
 class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig) {
 
-  def cacheFromApi(mongoKey: String, jsonFromApi: => Future[JsValue])(implicit hc: HeaderCarrier): Future[JsValue] = {
-    val sessionId = fetchSessionId(hc)
-    cacheConnector.findJson(sessionId, mongoKey).flatMap {
+  def cacheFromApi(nino: Nino, mongoKey: String, jsonFromApi: => Future[JsValue])(
+    implicit hc: HeaderCarrier): Future[JsValue] =
+    cacheConnector.findJson(nino, mongoKey).flatMap {
       case Some(jsonFromCache) => {
         if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheHitCounter()
@@ -40,12 +42,7 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
         if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheMissCounter()
 
-        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(sessionId, _, mongoKey))
+        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(nino, _, mongoKey))
       }
     }
-  }
-
-  def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-
 }

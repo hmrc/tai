@@ -18,8 +18,9 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.tai.connectors.CacheConnector
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.domain.Nino
+
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -57,6 +58,6 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector) {
         true
     }
 
-  def sessionId(implicit hc: HeaderCarrier): String =
-    hc.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while retrieving session id"))
+  def sessionId(implicit hc: HeaderCarrier): Nino =
+    Nino(hc.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while retrieving session id")))
 }
