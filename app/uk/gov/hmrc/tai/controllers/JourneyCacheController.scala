@@ -29,7 +29,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
     extends BaseController {
 
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.currentCache(journeyName) map {
+    repository.currentCache(request.nino, journeyName) map {
       case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
       case _                             => NotFound
     } recover {
@@ -39,7 +39,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
 
   def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async {
     implicit request =>
-      repository.currentCache(journeyName, key) map {
+      repository.currentCache(request.nino, journeyName, key) map {
         case Some(value) if value.trim != "" => Ok(Json.toJson(value))
         case _                               => NotFound
       } recover {
@@ -49,7 +49,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
 
   def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[Map[String, String]] { cache =>
-      repository.cached(journeyName, cache) map { cache =>
+      repository.cached(request.nino, journeyName, cache) map { cache =>
         Created(Json.toJson(cache))
       } recover {
         case _ => InternalServerError
@@ -58,7 +58,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
   }
 
   def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.flush(journeyName) map { res =>
+    repository.flush(request.nino, journeyName) map { res =>
       NoContent
     } recover {
       case _ => InternalServerError

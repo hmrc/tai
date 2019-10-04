@@ -17,18 +17,18 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.repositories.SessionRepository
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.repositories.SessionRepository
 
 @Singleton
 class SessionController @Inject()(sessionRepository: SessionRepository, authentication: AuthenticationPredicate)
     extends BaseController {
 
-  def invalidateCache(nino: String): Action[AnyContent] = authentication.async { implicit request =>
-    for (success <- sessionRepository.invalidateCache(Nino(nino))) yield if (success) Accepted else InternalServerError
+  def invalidateCache: Action[AnyContent] = authentication.async { implicit request =>
+    for (success <- sessionRepository.invalidateCache(request.nino))
+      yield if (success) Accepted else InternalServerError
   }
 }
