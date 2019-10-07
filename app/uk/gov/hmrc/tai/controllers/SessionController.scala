@@ -20,6 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.SessionRepository
 
@@ -28,7 +29,7 @@ class SessionController @Inject()(sessionRepository: SessionRepository, authenti
     extends BaseController {
 
   def invalidateCache: Action[AnyContent] = authentication.async { implicit request =>
-    for (success <- sessionRepository.invalidateCache(request.nino))
+    for (success <- sessionRepository.invalidateCache(CacheId(request.nino)))
       yield if (success) Accepted else InternalServerError
   }
 }

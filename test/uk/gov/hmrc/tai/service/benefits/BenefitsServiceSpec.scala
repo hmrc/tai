@@ -345,7 +345,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
         Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
 
-        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
+        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(nino)(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }

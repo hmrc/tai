@@ -24,7 +24,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
@@ -49,9 +48,9 @@ class TaxAccountRepositorySpec
   val cacheConnector = mock[CacheConnector]
 
   val taxAccountConnector = mock[TaxAccountConnector]
-  val sessionId = "1212"
+  val cacheId = CacheId(nino)
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("1212")))
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "updateTaxCodeAmount" should {
     "update tax code amount" in {
@@ -123,7 +122,7 @@ class TaxAccountRepositorySpec
 
           val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-          when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+          when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
             .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
 
           val sut = createSUT(cache, taxAccountConnector)
@@ -140,12 +139,12 @@ class TaxAccountRepositorySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+      when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(None))
 
       when(
         cacheConnector.createOrUpdateJson(
-          Matchers.eq(sessionId),
+          Matchers.eq(cacheId),
           Matchers.eq(taxAccountJsonResponse),
           Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))).thenReturn(Future.successful(taxAccountJsonResponse))
 

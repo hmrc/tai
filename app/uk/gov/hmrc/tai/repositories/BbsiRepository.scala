@@ -19,12 +19,12 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
+import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector, CacheId}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -32,16 +32,21 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
-    cacheConnector.findOptSeq[BankAccount](nino, BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc) flatMap {
+  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
+    val cacheId = CacheId(nino)
+
+    cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc) flatMap {
       case None =>
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
           accountsWithId <- cacheConnector
-                             .createOrUpdateSeq(nino, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc)
+                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(
+                               BbsiMongoFormatters.bbsiFormat,
+                               hc)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }
+  }
 
   private def populateId(accounts: Seq[BankAccount]): Seq[BankAccount] = {
 

@@ -36,15 +36,6 @@ import uk.gov.hmrc.tai.service.TaiService
 class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Estimated pay calculator controller" should {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TaiService], notLoggedInAuthenticationPredicate)
-        val result = sut.calculateFullYearEstimatedPay().apply(createRequest(payDetails))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an OK response with CalculatedPay json" when {
       "given a valid request" in {
 

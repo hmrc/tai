@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.connectors
 
-import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
 
-import scala.concurrent.Future
+sealed abstract case class CacheId(value: String)
 
-@Singleton
-class SessionRepository @Inject()(cacheConnector: CacheConnector) {
-  def invalidateCache(cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Boolean] =
-    cacheConnector.removeById(cacheId)
+object CacheId {
+  def apply(nino: Nino)(implicit hc: HeaderCarrier): CacheId =
+    new CacheId(
+      hc.sessionId
+        .map(s => s"${s.value} - $nino")
+        .getOrElse(throw new RuntimeException("Error while fetching session id"))) {}
 }

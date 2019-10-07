@@ -34,13 +34,15 @@ import scala.util.Random
 
 class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
 
+  implicit val hc = HeaderCarrier()
+
   "Bbsi Repository" must {
 
     "return accounts" when {
       "data exist in cache" in {
         val mockBbsiConnector = mock[BbsiConnector]
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
+        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any(), hc))
           .thenReturn(Future.successful(Some(Seq(bankAccount))))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
@@ -48,7 +50,7 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
 
         result mustBe Seq(bankAccount)
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any(), hc)
         verify(mockBbsiConnector, never())
           .bankAccounts(any(), any())(any())
       }
@@ -58,9 +60,9 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
         val expectedBankAccount2 = bankAccount.copy(id = 2)
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
+        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any(), hc))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any()))
+        when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any(), hc))
           .thenReturn(Future.successful(Seq(expectedBankAccount1, expectedBankAccount2)))
 
         val mockBbsiConnector = mock[BbsiConnector]
@@ -73,19 +75,18 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
         result mustBe Seq(expectedBankAccount1, expectedBankAccount2)
 
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any(), hc)
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[BankAccount](any(), Matchers.eq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(
-            any())
+            any(),
+            hc)
         verify(mockBbsiConnector, times(1))
           .bankAccounts(any(), any())(any())
       }
     }
-
   }
 
   private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   private val nino = new Generator(new Random).nextNino
 
   private def createSUT(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) =

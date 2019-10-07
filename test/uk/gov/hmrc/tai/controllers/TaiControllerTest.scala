@@ -45,16 +45,6 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter w
 
   "getTaiRoot" should {
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.getTaiRoot(nino)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return the TaiRoot for the supplied nino " in {
       val data = sessionData.copy(
         taiRoot = Some(
@@ -88,15 +78,6 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter w
   }
 
   "taiData" should {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.taiData(nino)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return cached data" in {
       val data = sessionData.copy(
         taiRoot = Some(
@@ -203,16 +184,6 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter w
   }
 
   "updateTaiData" should {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.updateTaiData(nino)(
-          FakeRequest("PUT", "/", FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return successful when data saved in cache" in {
       val fakeRequest = FakeRequest(
         method = "Put",
@@ -255,7 +226,6 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter w
 
   }
 
-  val nino = new Generator(new Random).nextNino
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
 

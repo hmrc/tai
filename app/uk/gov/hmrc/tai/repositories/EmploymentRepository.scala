@@ -22,7 +22,7 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{CacheConnector, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
@@ -70,20 +70,20 @@ class EmploymentRepository @Inject()(
       }
     }
 
-  def checkAndUpdateCache(nino: Nino, employments: Seq[Employment])(
+  def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     val employmentsWithKnownAccountState =
       employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
     if (employmentsWithKnownAccountState.nonEmpty) {
-      modifyCache(nino, employmentsWithKnownAccountState).map(_ => employments)
+      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
     } else {
       Future.successful(employments)
     }
   }
 
-  def modifyCache(nino: Nino, employments: Seq[Employment])(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def modifyCache(cacheId: CacheId, employments: Seq[Employment])(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     for {
-      currentCacheEmployments <- cacheConnector.findSeq[Employment](nino, EmploymentMongoKey)(
+      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
                                   EmploymentMongoFormatters.formatEmployment,
                                   hc)
       modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
@@ -91,7 +91,7 @@ class EmploymentRepository @Inject()(
         modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
       updateCache = unmodifiedEmployments ++ modifiedEmployments
       cachedEmployments <- cacheConnector
-                            .createOrUpdateSeq[Employment](nino, updateCache, EmploymentMongoKey)(
+                            .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
                               EmploymentMongoFormatters.formatEmployment,
                               hc)
     } yield cachedEmployments
@@ -119,7 +119,9 @@ class EmploymentRepository @Inject()(
                  } recover {
                    case error: HttpException => stubAccounts(error.responseCode, employments, taxYear)
                  }
-      employmentDomainResult <- checkAndUpdateCache(nino, unifiedEmployments(employments, accounts, nino, taxYear))
+      employmentDomainResult <- checkAndUpdateCache(
+                                 CacheId(nino),
+                                 unifiedEmployments(employments, accounts, nino, taxYear))
     } yield {
       employmentDomainResult
     }
@@ -199,5 +201,6 @@ class EmploymentRepository @Inject()(
     }
 
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    cacheConnector.findSeq[Employment](nino, EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment, hc)
+    cacheConnector
+      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment, hc)
 }

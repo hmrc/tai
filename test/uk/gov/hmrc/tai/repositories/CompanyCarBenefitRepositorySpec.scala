@@ -24,7 +24,7 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CompanyCarConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CompanyCarConnector}
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -35,17 +35,19 @@ import scala.util.Random
 
 class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
 
+  implicit val hc = HeaderCarrier()
+
   "carBenefit" when {
     "there is car benefit in the cache as an empty list" must {
       "return empty list" in {
         val carBenefitSeq = Nil
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
+        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any(), hc))
           .thenReturn(Future.successful(Some(carBenefitSeq)))
 
         val sut = createSUT(mockCacheConnector, mock[CompanyCarConnector])
-        Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeq
+        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeq
       }
     }
 
@@ -56,11 +58,11 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
           CompanyCarBenefit(20, 20, Nil, Some(sampleNinoVersion)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
+        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any(), hc))
           .thenReturn(Future.successful(Some(carBenefitSeqWithVersion)))
 
         val sut = createSUT(mockCacheConnector, mock[CompanyCarConnector])
-        Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
+        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
       }
     }
 
@@ -70,9 +72,9 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
         val carBenefitFromCompanyCarService = Nil
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
+        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any(), hc))
           .thenReturn(Future.successful(carBenefitSeqFromCache))
-        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any()))
+        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any(), hc))
           .thenReturn(Future.successful(carBenefitFromCompanyCarService))
 
         val mockCompanyCarConnector = mock[CompanyCarConnector]
@@ -80,13 +82,13 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(carBenefitFromCompanyCarService))
 
         val sut = createSUT(mockCacheConnector, mockCompanyCarConnector)
-        Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitFromCompanyCarService
+        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitFromCompanyCarService
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](
-            Matchers.eq(sessionId),
+            Matchers.eq(cacheId),
             Matchers.eq(carBenefitFromCompanyCarService),
-            Matchers.eq(sut.CarBenefitKey))(any())
+            Matchers.eq(sut.CarBenefitKey))(any(), hc)
       }
 
       "return the non-empty list coming from the company car service and save it in the cache" in {
@@ -95,9 +97,9 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
         val carBenefitSeqWithVersion = Seq(CompanyCarBenefit(10, 10, Nil, Some(sampleNinoVersion)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
+        when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any(), hc))
           .thenReturn(Future.successful(carBenefitSeqFromCache))
-        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any()))
+        when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any(), hc))
           .thenReturn(Future.successful(carBenefitSeqWithVersion))
 
         val mockCompanyCarConnector = mock[CompanyCarConnector]
@@ -105,22 +107,21 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(carBenefitSeq))
 
         val sut = createSUT(mockCacheConnector, mockCompanyCarConnector)
-        Await.result(sut.carBenefit(randomNino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
+        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](
-            Matchers.eq(sessionId),
+            Matchers.eq(cacheId),
             Matchers.eq(carBenefitSeqWithVersion),
-            Matchers.eq(sut.CarBenefitKey))(any())
+            Matchers.eq(sut.CarBenefitKey))(any(), hc)
       }
     }
   }
 
-  private val sessionId = "TEST-SESSION"
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId(sessionId)))
+  private val cacheId = CacheId(nino)
   private val sampleNinoVersion = 4
 
-  private def randomNino = new Generator(new Random).nextNino
+  private def nino = new Generator(new Random).nextNino
 
   private def createSUT(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector) =
     new CompanyCarBenefitRepository(cacheConnector, companyCarConnector) {

@@ -44,15 +44,6 @@ class TaxAccountSummaryControllerSpec
     extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
 
   "taxAccountSummaryForYear" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TaxAccountSummaryService], notLoggedInAuthenticationPredicate)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear().next)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
@@ -92,8 +83,6 @@ class TaxAccountSummaryControllerSpec
       }
     }
   }
-
-  val nino = new Generator(new Random).nextNino
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 

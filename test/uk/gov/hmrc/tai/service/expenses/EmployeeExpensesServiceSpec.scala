@@ -53,7 +53,6 @@ class EmployeeExpensesServiceSpec
     iabdConnector = mockIabdConnector,
     featureTogglesConfig = mockFeaturesToggle)
 
-  private val nino = new Generator(new Random).nextNino
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100)
   private val iabd = 56
 

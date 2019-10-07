@@ -17,45 +17,47 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.CacheConnector
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
-  def currentCache(nino: Nino, journeyName: String)(implicit hc: HeaderCarrier): Future[Option[Map[String, String]]] =
-    cacheConnector.find[Map[String, String]](nino, journeyName + JourneyCacheSuffix)
+  def currentCache(cacheId: CacheId, journeyName: String)(
+    implicit hc: HeaderCarrier): Future[Option[Map[String, String]]] =
+    cacheConnector.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
 
-  def currentCache(nino: Nino, journeyName: String, key: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
-    currentCache(nino, journeyName).map({
+  def currentCache(cacheId: CacheId, journeyName: String, key: String)(
+    implicit hc: HeaderCarrier): Future[Option[String]] =
+    currentCache(cacheId, journeyName).map({
       case Some(cache) => cache.get(key)
       case _           => None
     })
 
-  def cached(nino: Nino, journeyName: String, cache: Map[String, String])(
+  def cached(cacheId: CacheId, journeyName: String, cache: Map[String, String])(
     implicit hc: HeaderCarrier): Future[Map[String, String]] =
-    currentCache(nino, journeyName).flatMap(existingCache => {
+    currentCache(cacheId, journeyName).flatMap(existingCache => {
       val toCache =
         existingCache match {
           case Some(existing) => existing ++ cache
           case _              => cache
         }
-      cacheConnector.createOrUpdate[Map[String, String]](nino, toCache, journeyName + JourneyCacheSuffix)
+      cacheConnector.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
     })
 
-  def cached(nino: Nino, journeyName: String, key: String, value: String)(
+  def cached(cacheId: CacheId, journeyName: String, key: String, value: String)(
     implicit hc: HeaderCarrier): Future[Map[String, String]] =
-    cached(nino, journeyName, Map(key -> value))
+    cached(cacheId, journeyName, Map(key -> value))
 
-  def flush(nino: Nino, journeyName: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def flush(cacheId: CacheId, journeyName: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     cacheConnector
-      .createOrUpdate[Map[String, String]](nino, Map.empty[String, String], journeyName + JourneyCacheSuffix) map { _ =>
-      true
+      .createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map {
+      _ =>
+        true
     }
 }

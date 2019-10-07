@@ -80,17 +80,6 @@ class CodingComponentControllerSpec
       }
     }
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-
-        val sut = createSUT(mock[CodingComponentService], notLoggedInAuthenticationPredicate)
-        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "throw an exception" when {
       "an exception is thrown by the handler which is not a BadRequestException" in {
         val mockCodingComponentService = mock[CodingComponentService]
@@ -133,8 +122,6 @@ class CodingComponentControllerSpec
       }
     }
   }
-
-  val nino = new Generator(new Random).nextNino
 
   private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 

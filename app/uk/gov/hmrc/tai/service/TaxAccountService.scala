@@ -24,13 +24,13 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protecte
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, MongoConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsConnector, DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsConnector, DesConnector, NpsConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -57,14 +57,14 @@ class TaxAccountService @Inject()(
     taiData(nino, year).map(_.taiRoot.map(_.version))
 
   private def unencryptedCachedSession(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[SessionData] =
-    cacheConnector.find[SessionData](nino).flatMap {
+    cacheConnector.find[SessionData](CacheId(nino)).flatMap {
       case Some(sd) => Future.successful(sd)
       case _        => newCachedSession(nino, year)
     }
 
   def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.removeById(nino)
+      cacheConnector.removeById(CacheId(nino))
     } else {
       ()
     }
@@ -77,7 +77,7 @@ class TaxAccountService @Inject()(
 
   def updateTaiData(nino: Nino, sessionData: SessionData)(implicit hc: HeaderCarrier): Future[SessionData] =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.createOrUpdate[SessionData](nino, sessionData)
+      cacheConnector.createOrUpdate[SessionData](CacheId(nino), sessionData)
     } else {
       Future.successful(sessionData)
     }

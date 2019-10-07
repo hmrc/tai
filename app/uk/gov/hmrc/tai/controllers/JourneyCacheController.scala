@@ -22,6 +22,7 @@ import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 @Singleton
@@ -29,7 +30,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
     extends BaseController {
 
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.currentCache(request.nino, journeyName) map {
+    repository.currentCache(CacheId(request.nino), journeyName) map {
       case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
       case _                             => NotFound
     } recover {
@@ -39,7 +40,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
 
   def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async {
     implicit request =>
-      repository.currentCache(request.nino, journeyName, key) map {
+      repository.currentCache(CacheId(request.nino), journeyName, key) map {
         case Some(value) if value.trim != "" => Ok(Json.toJson(value))
         case _                               => NotFound
       } recover {
@@ -49,7 +50,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
 
   def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[Map[String, String]] { cache =>
-      repository.cached(request.nino, journeyName, cache) map { cache =>
+      repository.cached(CacheId(request.nino), journeyName, cache) map { cache =>
         Created(Json.toJson(cache))
       } recover {
         case _ => InternalServerError
@@ -58,7 +59,7 @@ class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authe
   }
 
   def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.flush(request.nino, journeyName) map { res =>
+    repository.flush(CacheId(request.nino), journeyName) map { res =>
       NoContent
     } recover {
       case _ => InternalServerError

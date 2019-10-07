@@ -24,30 +24,24 @@ import org.scalatestplus.play.PlaySpec
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.MissingBearerToken
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.SessionRepository
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Session Controller" must {
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[SessionRepository], notLoggedInAuthenticationPredicate)
-        val result = sut.invalidateCache()(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return Accepted" when {
       "invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache()(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(cacheId)(Matchers.any()))
           .thenReturn(Future.successful(true))
 
         val sut = createSUT(mockSessionRepository)
@@ -60,7 +54,7 @@ class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenti
     "return Internal Server Error" when {
       "not able to invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache()(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(cacheId)(Matchers.any()))
           .thenReturn(Future.successful(false))
 
         val sut = createSUT(mockSessionRepository)
@@ -70,6 +64,8 @@ class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenti
       }
     }
   }
+
+  val cacheId = CacheId(nino)(HeaderCarrier())
 
   private def createSUT(
     sessionRepository: SessionRepository,

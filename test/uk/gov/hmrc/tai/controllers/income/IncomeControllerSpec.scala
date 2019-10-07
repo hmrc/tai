@@ -98,16 +98,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
   )
 
   "untaxedInterest" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.untaxedInterest(nino)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return OK with untaxed interest" when {
       "untaxed interest is returned by income service" in {
         when(mockIncomeService.untaxedInterest(any())(any()))
@@ -154,16 +144,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
   }
 
   "taxCodeIncomesForYear" must {
-
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.taxCodeIncomesForYear(nino, TaxYear().next)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
 
     "return Not Found" when {
       "Nil is returned by income service" in {
@@ -297,14 +277,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return NotAuthorized when the user is not logged in" in {
-      val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-      val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
-      ScalaFutures.whenReady(result.failed) { e =>
-        e mustBe a[MissingBearerToken]
-      }
-    }
-
     "return NotFound when a NotFoundException occurs" in {
 
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
@@ -365,14 +337,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return NotAuthorized when the user is not logged in" in {
-      val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-      val result = sut.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest())
-      ScalaFutures.whenReady(result.failed) { e =>
-        e mustBe a[MissingBearerToken]
-      }
-    }
-
     "return NotFound when a NotFoundException occurs" in {
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
@@ -397,16 +361,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
   }
 
   "incomes" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.income(nino, TaxYear())(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return Ok with income" when {
       "income returned by IncomeService" in {
 
@@ -447,18 +401,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
   "updateTaxCodeIncome" must {
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.updateTaxCodeIncome(nino, TaxYear(), 1)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return a bad request" when {
       "an invalid update amount is provided" in {
         val SUT = setup(Future.successful(InvalidAmount("")), mockTaxAccountService)
@@ -466,7 +408,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
       }
     }
 
@@ -478,7 +420,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
       }
 
       "any exception has been thrown" in {
@@ -486,13 +428,12 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData()(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
       }
     }
   }
 
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  private val nino = new Generator(new Random).nextNino
 
   private val untaxedInterest =
     UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])

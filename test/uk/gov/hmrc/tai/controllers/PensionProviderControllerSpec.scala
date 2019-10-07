@@ -39,19 +39,6 @@ import scala.concurrent.Future
 class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "addPensionProvider" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new PensionProviderController(
-          mock[PensionProviderService],
-          authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.addPensionProvider(nextNino)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return envelope Id" when {
       "called with valid add pension request" in {
         val envelopeId = "envelopId"
@@ -77,19 +64,6 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
   }
 
   "incorrectPensionProvider" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new PensionProviderController(
-          mock[PensionProviderService],
-          authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.incorrectPensionProvider(nextNino, 1)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope Id" when {
       "called with valid incorrect pension provider request" in {
         val envelopeId = "envelopeId"

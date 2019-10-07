@@ -30,8 +30,10 @@ import scala.concurrent.Future
 class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig) {
 
   def cacheFromApi(nino: Nino, mongoKey: String, jsonFromApi: => Future[JsValue])(
-    implicit hc: HeaderCarrier): Future[JsValue] =
-    cacheConnector.findJson(nino, mongoKey).flatMap {
+    implicit hc: HeaderCarrier): Future[JsValue] = {
+    val cacheId = CacheId(nino)
+
+    cacheConnector.findJson(cacheId, mongoKey).flatMap {
       case Some(jsonFromCache) => {
         if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheHitCounter()
@@ -42,7 +44,8 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
         if (cacheMetricsConfig.cacheMetricsEnabled)
           metrics.incrementCacheMissCounter()
 
-        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(nino, _, mongoKey))
+        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(cacheId, _, mongoKey))
       }
     }
+  }
 }

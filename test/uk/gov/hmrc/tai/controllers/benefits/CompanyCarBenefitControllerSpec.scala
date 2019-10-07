@@ -41,18 +41,6 @@ import scala.util.Random
 class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "companyCarBenefits" must {
-
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val nino = randomNino
-        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefits(nino)(FakeRequest())
-
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return NotFound" when {
       "company car benefit service returns Nil" in {
         val mockCompanyCarService = mock[BenefitsService]
@@ -154,17 +142,6 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
     }
   }
   "companyCarBenefitForEmployment" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val nino = randomNino
-        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefitForEmployment(nino, employmentSeqNum)(FakeRequest())
-
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return NotFound" when {
       "company car benefit service returns Nil" in {
         val mockCompanyCarService = mock[BenefitsService]
@@ -223,18 +200,6 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
   }
 
   "removeCompanyCarAndFuel" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val nino = randomNino
-        val sut = new CompanyCarBenefitController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, 1)(
-          FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).withHeaders(("content-type", "application/json")))
-
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
 
     "return OK when called with correct parameters" in {
       val carWithdrawDate = new LocalDate(2017, 4, 24)
