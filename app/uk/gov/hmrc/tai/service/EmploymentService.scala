@@ -29,8 +29,9 @@ import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
+
 import scala.concurrent.Future
 
 @Singleton
@@ -59,15 +60,16 @@ class EmploymentService @Inject()(
   def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     employmentRepository.employmentsForYear(nino, year)
 
-  def employment(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Option[Employment]] =
+  def employment(nino: Nino, id: Int)(
+    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
     employmentRepository.employment(nino, id)
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
   def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier): Future[String] =
     for {
-      person                   <- personRepository.getPerson(nino)
-      Some(existingEmployment) <- employment(nino, id)
+      person                    <- personRepository.getPerson(nino)
+      Right(existingEmployment) <- employment(nino, id)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
       endEmploymentHtml = EmploymentIForm(templateModel).toString
       pdf        <- pdfService.generatePdf(endEmploymentHtml)
@@ -138,7 +140,7 @@ class EmploymentService @Inject()(
       "TES1",
       (person: Person) => {
         for {
-          Some(existingEmployment) <- employment(nino, id)
+          Right(existingEmployment) <- employment(nino, id)
           templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, existingEmployment)
         } yield EmploymentIForm(templateModel).toString
       }

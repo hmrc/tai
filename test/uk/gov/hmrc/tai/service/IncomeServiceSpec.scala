@@ -338,6 +338,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           ))
 
       result mustBe expectedResult
+
     }
 
     "return empty json when there are no matching live employments" in {
@@ -677,7 +678,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           when(mockEmploymentSvc.employment(any(), any())(any()))
             .thenReturn(
               Future.successful(
-                Some(
+                Right(
                   Employment(
                     "",
                     None,
@@ -740,7 +741,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           when(mockEmploymentSvc.employment(any(), any())(any()))
             .thenReturn(
               Future.successful(
-                Some(
+                Right(
                   Employment(
                     "",
                     None,
@@ -819,7 +820,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           when(mockEmploymentSvc.employment(any(), any())(any()))
             .thenReturn(
               Future.successful(
-                Some(
+                Right(
                   Employment(
                     "",
                     None,
@@ -899,7 +900,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           when(mockEmploymentSvc.employment(any(), any())(any()))
             .thenReturn(
               Future.successful(
-                Some(
+                Right(
                   Employment(
                     "",
                     None,
@@ -964,7 +965,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
           when(mockEmploymentSvc.employment(any(), any())(any()))
             .thenReturn(
               Future.successful(
-                Some(
+                Right(
                   Employment(
                     "",
                     None,

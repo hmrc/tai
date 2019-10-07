@@ -27,8 +27,9 @@ import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound, EmploymentRetrievalError}
+
 import scala.concurrent.Future
 
 @Singleton
@@ -40,11 +41,24 @@ class EmploymentRepository @Inject()(
 
   private val EmploymentMongoKey = "EmploymentData"
 
-  def employment(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Option[Employment]] =
-    for {
-      _           <- employmentsForYear(nino, TaxYear())
-      employments <- fetchEmploymentFromCache(nino)
-    } yield employments.find(_.sequenceNumber == id)
+  def employment(nino: Nino, id: Int)(
+    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
+    employmentsForYear(nino, TaxYear()) flatMap { empForYear =>
+      if (empForYear.exists(_.annualAccounts.exists(_.realTimeStatus == TemporarilyUnavailable))) {
+        Future.successful(Left(EmploymentAccountStubbed))
+      } else {
+        fetchEmploymentFromCache(nino) map { emp =>
+          emp.find(_.sequenceNumber == id) match {
+            case Some(employment) => Right(employment)
+            case None => {
+              val sequenceNumbers = emp.map(_.sequenceNumber).mkString(", ")
+              Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+              Left(EmploymentNotFound)
+            }
+          }
+        }
+      }
+    }
 
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino).flatMap { allEmployments =>

@@ -34,7 +34,6 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeSourceAPIFormatters
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, InvalidAmount}
@@ -44,9 +43,7 @@ import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountServ
 import scala.concurrent.Future
 import scala.util.Random
 
-class IncomeControllerSpec
-    extends PlaySpec with MockitoSugar with TaxCodeIncomeSourceAPIFormatters with MockAuthenticationPredicate
-    with ApiFormats {
+class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ApiFormats {
 
   val employmentId = 1
   val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
@@ -234,7 +231,7 @@ class IncomeControllerSpec
               "employmentId"                  -> 1,
               "amount"                        -> 1100,
               "description"                   -> EmploymentIncome.toString,
-              "taxCode"                       -> "1150L",
+              "taxCode"                       -> "1150LX",
               "name"                          -> "Employer1",
               "basisOperation"                -> "Week1Month1BasisOperation",
               "status"                        -> Live.toString,

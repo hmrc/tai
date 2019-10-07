@@ -32,6 +32,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerExcep
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
@@ -141,7 +142,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
       "called with valid nino, year and id" in {
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Some(emp)))
+          .thenReturn(Future.successful(Right(emp)))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nextNino, 2)(FakeRequest())
@@ -173,7 +174,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
       "called with valid nino, year and id but id doesn't present" in {
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.successful(None))
+          .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nextNino, 3)(FakeRequest())
@@ -208,6 +209,21 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
       }
     }
+
+    "return bad gateway" when {
+      "RTI stubbed account exists" in {
+        val mockEmploymentService = mock[EmploymentService]
+        when(mockEmploymentService.employment(any(), any())(any()))
+          .thenReturn(Future.successful(Left(EmploymentAccountStubbed)))
+
+        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
+        val result = sut.employment(nextNino, 3)(FakeRequest())
+
+        status(result) mustBe BAD_GATEWAY
+        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
+      }
+    }
+
   }
 
   "endEmployment" must {

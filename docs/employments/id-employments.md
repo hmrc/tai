@@ -45,9 +45,13 @@ Employment by Id
   * **Code:** 401 UNAUTHORIZED <br />
     **Content:** `{"statusCode":401,"message":"Authorisation refused for access to GET /tai/$NINO/tax-summary/2014"}`
 
-  OR when a user does not exist
+  OR when an employment does not exist
 
   * **Code:** 404 NOT_FOUND <br />
+
+  OR when a employment contains stub annual account data due to RTI being unavailable
+
+  * **Code:** 502 BAD_GATEWAY <br />
 
   OR anything else
 
