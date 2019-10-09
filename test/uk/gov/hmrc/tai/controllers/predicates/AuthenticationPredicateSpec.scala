@@ -16,63 +16,87 @@
 
 package uk.gov.hmrc.tai.controllers.predicates
 
-//import org.scalatest.concurrent.ScalaFutures
-//import org.scalatest.mock.MockitoSugar
-//import org.scalatestplus.play.PlaySpec
-//import play.api.http.Status
-//import play.api.libs.json.JsValue
-//import play.api.mvc.{Action, AnyContent}
-//import play.api.test.FakeRequest
-//import play.api.test.Helpers._
-//import uk.gov.hmrc.auth.core.MissingBearerToken
-//import uk.gov.hmrc.play.bootstrap.controller.BaseController
-//import uk.gov.hmrc.tai.mocks.{MockAuthorisedUser, MockUnauthorisedUser}
+import org.mockito.Matchers.any
+import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import play.api.http.Status
+import play.api.mvc.{Action, AnyContent}
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.auth.core.{AuthorisedFunctions, MissingBearerToken}
+import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
+import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
-import scala.concurrent.Future
-//
-//class AuthenticationPredicateSpec extends PlaySpec with MockitoSugar {
-//
-//  "async for get" must {
-//    "return UNAUTHORIZED when called with an Unauthenticated user" in {
-//      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser)
-//      val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
-//      ScalaFutures.whenReady(result.failed) { e =>
-//        e mustBe a[MissingBearerToken]
-//      }
-//    }
-//
-//    "return OK when called with an Authenticated user" in {
-//      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser)
-//      val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
-//      status(result) mustBe Status.OK
-//    }
-//  }
-//
-//  "async for post" must {
-//    "return UNAUTHORIZED when called with an Unauthenticated user" in {
-//      object TestAuthenticationPredicate extends AuthenticationPredicate(MockUnauthorisedUser)
-//      val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
-//      ScalaFutures.whenReady(result.failed) { e =>
-//        e mustBe a[MissingBearerToken]
-//      }
-//    }
-//
-//    "return OK when called with an Authenticated user" in {
-//      object TestAuthenticationPredicate extends AuthenticationPredicate(MockAuthorisedUser)
-//      val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
-//      status(result) mustBe Status.OK
-//    }
-//  }
-//
-//  private class SUT(val authentication: AuthenticationPredicate) extends BaseController {
-//    def get: Action[AnyContent] = authentication.async { implicit request =>
-//      Future.successful(Ok)
-//    }
-//
-//    def post: Action[JsValue] = authentication.async(parse.json) { implicit request =>
-//      withJsonBody[String] { _ =>
-//        Future.successful(Ok)
-//      }
-//    }
-//  }
-//}
+import scala.util.Random
+import scala.concurrent.{ExecutionContext, Future}
+
+class AuthenticationPredicateSpec
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
+
+  class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+    def get: Action[AnyContent] = authentication.async { implicit request =>
+      Future.successful(Ok)
+    }
+  }
+
+  object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
+
+  "return UNAUTHORIZED when called with an Unauthenticated user" in {
+    val mockAuthService = mock[AuthorisedFunctions]
+
+    when(mockAuthService.authorised(any()))
+      .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
+        override def retrieve[A](retrieval: Retrieval[A]) =
+          new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
+            override def apply[B](
+              body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =
+              Future.failed(new MissingBearerToken)
+          }
+      })
+
+    object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
+    val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
+
+    whenReady(result.failed) { e =>
+      e mustBe a[MissingBearerToken]
+    }
+  }
+
+  "return OK and contain the user's NINO when called with an Authenticated user" in {
+    class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+      def get: Action[AnyContent] = authentication.async { implicit request =>
+        request.nino mustBe nino
+        Future.successful(Ok)
+      }
+    }
+
+    val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
+
+    status(result) mustBe Status.OK
+  }
+
+  "return OK and contain the trusted helper's NINO when called with an Authenticated user" in {
+    val principalNino = new Generator(Random).nextNino
+    val trustedHelperAuthSuccessResponse =
+      new ~(Some(nino.value), Some(TrustedHelper("principal name", "attorney name", "return url", principalNino)))
+
+    setupMockAuthRetrievalSuccess(trustedHelperAuthSuccessResponse)
+
+    class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+      def get: Action[AnyContent] = authentication.async { implicit request =>
+        request.nino mustBe principalNino
+        Future.successful(Ok)
+      }
+    }
+
+    val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
+    status(result) mustBe Status.OK
+  }
+}

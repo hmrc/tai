@@ -62,17 +62,4 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
           }
       })
 
-  def setupMockAuthorisationException(exception: AuthorisationException = new MissingBearerToken): Unit =
-    when(mockAuthService.authorised(any()))
-      .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
-        override def apply[A](body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext) =
-          Future.failed(exception)
-        override def retrieve[A](retrieval: Retrieval[A]) =
-          new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
-            override def apply[B](
-              body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =
-              Future.failed(exception)
-          }
-      })
-
 }
