@@ -16,27 +16,28 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, JsString, Json}
+import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
-
-import scala.concurrent.Future
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 
-import scala.util.Random
+import scala.concurrent.Future
 
 class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+
+  private def createSUT(
+    repository: JourneyCacheRepository,
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new JourneyCacheController(repository, authentication)
 
   "JourneyCacheController" must {
 
@@ -45,7 +46,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
     "supply a named journey cache on GET request" in {
       val mockRepository = mock[JourneyCacheRepository]
 
-      when(mockRepository.currentCache(cacheId, any())(any()))
+      when(mockRepository.currentCache(Meq(cacheId), any()))
         .thenReturn(Future.successful(Some(testMap)))
 
       val sut = createSUT(mockRepository)
@@ -58,7 +59,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
     "supply an individual cache entry on GET request" in {
       val mockRepository = mock[JourneyCacheRepository]
 
-      when(mockRepository.currentCache(cacheId, any(), any())(any()))
+      when(mockRepository.currentCache(Meq(cacheId), any(), any()))
         .thenReturn(Future.successful(Some("value3")))
 
       val sut = createSUT(mockRepository)
@@ -73,7 +74,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
         .withHeaders(("content-type", "application/json"))
 
       val mockRepository = mock[JourneyCacheRepository]
-      when(mockRepository.cached(cacheId, any(), any())(any()))
+      when(mockRepository.cached(Meq(cacheId), any(), any()))
         .thenReturn(Future.successful(testMap))
 
       val sut = createSUT(mockRepository)
@@ -87,7 +88,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
     "accept and process a DELETE cache flush instruction" in {
       val mockRepository = mock[JourneyCacheRepository]
-      when(mockRepository.flush(cacheId, any())(any()))
+      when(mockRepository.flush(Meq(cacheId), any()))
         .thenReturn(Future.successful(true))
 
       val sut = createSUT(mockRepository)
@@ -99,7 +100,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(cacheId, any())(any()))
+        when(mockRepository.currentCache(Meq(cacheId), any()))
           .thenReturn(Future.successful(None))
           .thenReturn(Future.successful(Some(Map.empty[String, String])))
 
@@ -113,7 +114,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
       "an individual value is not found within an existing cache" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(any(), any())(any()))
+        when(mockRepository.currentCache(any(), any()))
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockRepository)
@@ -123,7 +124,7 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
       "an individual value is found within an existing cache, but is the empty string" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(cacheId, any(), any())(any()))
+        when(mockRepository.currentCache(Meq(cacheId), any(), any()))
           .thenReturn(Future.successful(Some(" ")))
 
         val sut = createSUT(mockRepository)
@@ -138,13 +139,13 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
         val failResult = Future.failed(new HttpException("something broke", BAD_GATEWAY))
 
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(cacheId, any())(any()))
+        when(mockRepository.currentCache(Meq(cacheId), any()))
           .thenReturn(failResult)
-        when(mockRepository.currentCache(cacheId, any(), any())(any()))
+        when(mockRepository.currentCache(Meq(cacheId), any(), any()))
           .thenReturn(failResult)
-        when(mockRepository.cached(cacheId, any(), any())(any()))
+        when(mockRepository.cached(Meq(cacheId), any(), any()))
           .thenReturn(failResult)
-        when(mockRepository.flush(cacheId, any())(any()))
+        when(mockRepository.flush(Meq(cacheId), any()))
           .thenReturn(failResult)
 
         val sut = createSUT(mockRepository)
@@ -164,12 +165,4 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
       }
     }
   }
-
-  private def createSUT(
-    repository: JourneyCacheRepository,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new JourneyCacheController(repository, authentication)
-
-  private implicit val hc = HeaderCarrier()
-  val cacheId = CacheId(nino)
 }

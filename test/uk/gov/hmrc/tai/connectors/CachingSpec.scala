@@ -41,7 +41,7 @@ class CachingSpec extends PlaySpec with MockitoSugar {
         val sut = cacheTest
         val jsonFromCache = Json.obj("aaa"  -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
-        when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(mongoKey))(Matchers.eq(hc)))
+        when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(mongoKey)))
           .thenReturn(Future.successful(Some(jsonFromCache)))
         val result = Await.result(sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromCache
@@ -54,12 +54,11 @@ class CachingSpec extends PlaySpec with MockitoSugar {
       "the key is not present in the cache" in {
         val sut = cacheTest
         val jsonFromFunction = Json.obj("c" -> "d")
-        when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(mongoKey))(Matchers.eq(hc)))
+        when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(mongoKey)))
           .thenReturn(Future.successful(None))
         when(
           cacheConnector
-            .createOrUpdateJson(Matchers.eq(cacheId), Matchers.eq(jsonFromFunction), Matchers.eq(mongoKey))(
-              Matchers.eq(hc)))
+            .createOrUpdateJson(Matchers.eq(cacheId), Matchers.eq(jsonFromFunction), Matchers.eq(mongoKey)))
           .thenReturn(Future.successful(jsonFromFunction))
         val result = Await.result(sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
         result mustBe jsonFromFunction

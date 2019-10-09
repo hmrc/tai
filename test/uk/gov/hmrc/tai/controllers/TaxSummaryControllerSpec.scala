@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import data.NpsData
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -39,8 +38,6 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   "getTaxSummary" must {
     "return tax Summary details successfully from NPS for the supplied nino and year" in {
@@ -247,7 +244,7 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       )
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Matchers.eq(nino))(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
     }
 
     "update the estimated pay must be failed when nps is throwing BadRequestException " in {
@@ -296,12 +293,12 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       val mockTaxAccountService = mock[TaxAccountService]
       doThrow(new RuntimeException(""))
         .when(mockTaxAccountService)
-        .invalidateTaiCacheData(Matchers.eq(nino))(any())
+        .invalidateTaiCacheData(Meq(nino))(any())
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       the[RuntimeException] thrownBy sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
 
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(nino)(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
     }
   }
 

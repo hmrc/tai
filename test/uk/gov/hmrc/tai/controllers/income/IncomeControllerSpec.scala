@@ -18,18 +18,14 @@ package uk.gov.hmrc.tai.controllers.income
 
 import org.joda.time.LocalDate
 import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
@@ -41,7 +37,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ApiFormats {
 
@@ -408,7 +403,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
       }
     }
 
@@ -420,7 +415,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
       }
 
       "any exception has been thrown" in {
@@ -428,12 +423,10 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(nino)(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
       }
     }
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
   private val untaxedInterest =
     UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])

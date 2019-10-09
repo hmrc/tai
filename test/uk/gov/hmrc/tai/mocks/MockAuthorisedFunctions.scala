@@ -25,6 +25,8 @@ import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, MissingBearerToken}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,9 +41,12 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
 
   val nino = new Generator(Random).nextNino
 
+  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+  val cacheId = CacheId(nino)
+
   val testAuthSuccessResponse = new ~(Some(nino.value), None)
 
-  override def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuthService)
     setupMockAuthRetrievalSuccess(testAuthSuccessResponse)

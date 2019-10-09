@@ -48,7 +48,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
           .thenReturn(Future.successful(Nil))
 
         val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefits(randomNino)(FakeRequest())
+        val result = sut.companyCarBenefits(nino)(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
     }
@@ -74,7 +74,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
           .thenReturn(Future.successful(companyCarSeq))
 
         val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefits(randomNino)(FakeRequest())
+        val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK
         val expectedJson =
@@ -116,7 +116,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
           .thenReturn(Future.successful(companyCarSeq))
 
         val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefits(randomNino)(FakeRequest())
+        val result = sut.companyCarBenefits(nino)(FakeRequest())
 
         status(result) mustBe OK
 
@@ -149,7 +149,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
           .thenReturn(Future.successful(None))
 
         val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefitForEmployment(randomNino, employmentSeqNum)(FakeRequest())
+        val result = sut.companyCarBenefitForEmployment(nino, employmentSeqNum)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
       }
@@ -175,7 +175,7 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
           .thenReturn(Future.successful(Some(companyCarBenefit)))
 
         val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate)
-        val result = sut.companyCarBenefitForEmployment(randomNino, employmentSeqNum)(FakeRequest())
+        val result = sut.companyCarBenefitForEmployment(nino, employmentSeqNum)(FakeRequest())
 
         status(result) mustBe OK
         val expectedJson =
@@ -204,7 +204,6 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
     "return OK when called with correct parameters" in {
       val carWithdrawDate = new LocalDate(2017, 4, 24)
       val fuelWithdrawDate = Some(new LocalDate(2017, 4, 24))
-      val nino = randomNino
       val carSeqNum = 10
       val employmentSeqNum = 11
       val removeCarAndFuel = WithdrawCarAndFuel(10, carWithdrawDate, fuelWithdrawDate)
@@ -226,11 +225,6 @@ class CompanyCarBenefitControllerSpec extends PlaySpec with MockitoSugar with Mo
     }
   }
 
-  def randomNino = new Generator(new Random).nextNino
-
   def employmentSeqNum = 10
   val sampleVersion = Some(1)
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
 }

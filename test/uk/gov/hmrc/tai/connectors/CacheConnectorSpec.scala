@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
@@ -29,30 +28,25 @@ import uk.gov.hmrc.cache.model.{Cache, Id}
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.DatabaseUpdate
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class CacheConnectorSpec
-    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with MongoFormatter with BeforeAndAfterEach {
+    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with MongoFormatter with BeforeAndAfterEach
+    with MockAuthenticationPredicate {
 
   lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(
     Play.current.configuration.underlying).JsonCrypto
 
-  implicit val hc = HeaderCarrier()
-  val nino = new Generator(new Random).nextNino
-
-  val cacheId = CacheId(nino)
   val cacheIdValue = cacheId.value
   val emptyKey = ""
 
@@ -159,7 +153,7 @@ class CacheConnectorSpec
 
         data mustBe Some("DATA")
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache and encryption is enabled" in {
@@ -175,7 +169,7 @@ class CacheConnectorSpec
 
         data mustBe Some("DATA")
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache" in {
@@ -188,7 +182,7 @@ class CacheConnectorSpec
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache and encryption is enabled" in {
@@ -201,7 +195,7 @@ class CacheConnectorSpec
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -218,7 +212,7 @@ class CacheConnectorSpec
 
         data mustBe Some(sessionData)
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion" in {
@@ -232,7 +226,7 @@ class CacheConnectorSpec
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -250,7 +244,7 @@ class CacheConnectorSpec
 
         data mustBe List(sessionData, sessionData)
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache and encryption is enabled" in {
@@ -266,7 +260,7 @@ class CacheConnectorSpec
 
         data mustBe List(sessionData, sessionData)
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion" in {
@@ -281,7 +275,7 @@ class CacheConnectorSpec
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion and encryption is enabled" in {
@@ -297,7 +291,7 @@ class CacheConnectorSpec
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache" in {
@@ -310,7 +304,7 @@ class CacheConnectorSpec
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache and encryption is enabled" in {
@@ -323,7 +317,7 @@ class CacheConnectorSpec
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Matchers.eq(Id(cacheIdValue)), any())(any())
+        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -338,7 +332,7 @@ class CacheConnectorSpec
         val result = Await.result(sut.removeById(cacheId), atMost)
 
         result mustBe true
-        verify(cacheRepository, times(1)).removeById(Matchers.eq(Id("ABC")), any())(any())
+        verify(cacheRepository, times(1)).removeById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -456,8 +450,7 @@ class CacheConnectorSpec
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(
-          cacheRepository.createOrUpdate(Matchers.eq(Id(cacheIdValue)), Matchers.eq("KeyName"), Matchers.eq(jsonData)))
+        when(cacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), Meq(jsonData)))
           .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
@@ -470,7 +463,7 @@ class CacheConnectorSpec
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(cacheRepository.createOrUpdate(Matchers.eq(Id(cacheIdValue)), Matchers.eq("KeyName"), any()))
+        when(cacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), any()))
           .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
@@ -488,7 +481,7 @@ class CacheConnectorSpec
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj(mongoKey -> "DATA")
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(json)))
-        when(cacheRepository.findById(Matchers.eq(Id(cacheIdValue)), any())(any()))
+        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
@@ -502,7 +495,7 @@ class CacheConnectorSpec
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(Matchers.eq(Id(cacheIdValue)), any())(any())).thenReturn(Future.successful(None))
+        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
 
@@ -517,7 +510,7 @@ class CacheConnectorSpec
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj("wrong-key" -> "DATA")
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(json)))
-        when(cacheRepository.findById(Matchers.eq(Id(cacheIdValue)), any())(any()))
+        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)

@@ -19,13 +19,14 @@ package uk.gov.hmrc.tai.repositories
 import java.io.File
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
@@ -42,7 +43,7 @@ import scala.util.Random
 
 class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
-  private implicit val hc = HeaderCarrier()
+  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
 
@@ -501,18 +502,18 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             false))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[Employment](Matchers.eq(cacheId), any[Seq[Employment]](), Matchers.eq("EmploymentData"))(
-            any(),
-            hc)
+            any())
       }
     }
 
@@ -567,9 +568,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(cachedEmployments))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
@@ -604,12 +606,12 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         )
 
         verify(mockCacheConnector, times(1))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[Employment](
             Matchers.eq(cacheId),
             employmentsCaptor.capture(),
-            Matchers.eq("EmploymentData"))(any(), hc)
+            Matchers.eq("EmploymentData"))(any())
 
         employmentsCaptor.getValue must contain(expectedEmp1)
         employmentsCaptor.getValue must contain(expectedEmp2)
@@ -634,20 +636,21 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(cachedEmployments))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[Employment](
             Matchers.eq(cacheId),
             employmentsCaptor.capture(),
-            Matchers.eq("EmploymentData"))(any(), hc)
+            Matchers.eq("EmploymentData"))(any())
 
         val actualCached = employmentsCaptor.getValue
         actualCached must contain(cachedEmployments.head)
@@ -717,19 +720,20 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
         Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[Employment](
             Matchers.eq(cacheId),
             employmentsCaptor.capture(),
-            Matchers.eq("EmploymentData"))(any(), hc)
+            Matchers.eq("EmploymentData"))(any())
 
         val actualCached = employmentsCaptor.getValue
         actualCached must contain(emp1)
@@ -801,16 +805,17 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
         Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
 
         verify(mockCacheConnector, times(0))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
         verify(mockCacheConnector, times(0))
-          .createOrUpdateSeq[Employment](Matchers.eq(cacheId), any(), Matchers.eq("EmploymentData"))(any(), hc)
+          .createOrUpdateSeq[Employment](Matchers.eq(cacheId), any(), Matchers.eq("EmploymentData"))(any())
       }
     }
   }
@@ -831,8 +836,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.failed(new HttpException("rti down", 404)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -858,7 +864,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.failed(new HttpException("rti down", 500)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -877,8 +883,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(getJson("rtiDualEmploymentDualPayment")))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any())).thenReturn(Future.successful(Nil))
 
       val mockNpsConnector = mock[NpsConnector]
       when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -888,11 +894,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val employments = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5.seconds)
 
       verify(mockCacheConnector, times(1))
-        .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any(), hc)
+        .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
       verify(mockCacheConnector, times(1))
         .createOrUpdateSeq[Employment](Matchers.eq(cacheId), Matchers.eq(employments), Matchers.eq("EmploymentData"))(
-          any(),
-          hc)
+          any())
     }
   }
 
@@ -964,7 +969,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             false))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(employmentsForYear))
 
         val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -995,8 +1000,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.failed(new HttpException("data not found", 404)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1043,8 +1049,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.failed(new HttpException("data not found", 404)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1090,8 +1097,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1142,8 +1150,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePaymentDualEyu")))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1216,8 +1225,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(getJson("rtiDualEmploymentDualPayment")))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1232,7 +1242,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     "result in an exception" when {
       "data is not present in cache or the hods for the given year" in {
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1272,7 +1282,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val employmentsForYear = List(cyEmployment, pyEmployment)
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -1330,7 +1340,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       )
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -1428,7 +1438,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       )
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -1472,9 +1482,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(employments2017))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1524,7 +1535,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       )
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -1564,7 +1575,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       )
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
@@ -1578,8 +1589,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.failed(new HttpException("rti down", 503)))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
-      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any())).thenReturn(Future.successful(Nil))
 
       val mockNpsConnector = mock[NpsConnector]
       when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1608,9 +1619,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         )
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any(), hc))
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(List(emp2015)))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any(), hc)).thenReturn(Future.successful(Nil))
+        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+          .thenReturn(Future.successful(Nil))
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))

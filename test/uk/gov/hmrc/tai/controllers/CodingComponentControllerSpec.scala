@@ -123,8 +123,6 @@ class CodingComponentControllerSpec
     }
   }
 
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private def createSUT(
     codingComponentService: CodingComponentService,
     predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =

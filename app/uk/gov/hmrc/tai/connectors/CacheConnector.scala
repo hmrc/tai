@@ -26,7 +26,6 @@ import uk.gov.hmrc.cache.model.Cache
 import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
@@ -45,9 +44,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
     Play.current.configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T],
-    hc: HeaderCarrier): Future[T] = {
+  def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[T]()
       Json.toJson(Protected(data))(jsonEncryptor)
@@ -58,8 +55,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
     cacheRepository.repo.createOrUpdate(cacheId.value, key, jsonData).map(_ => data)
   }
 
-  def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey)(
-    implicit hc: HeaderCarrier): Future[JsValue] = {
+  def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[JsValue]()
       Json.toJson(Protected(json))(jsonEncryptor)
@@ -71,8 +67,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
   }
 
   def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
-    implicit writes: Writes[T],
-    hc: HeaderCarrier): Future[Seq[T]] = {
+    implicit writes: Writes[T]): Future[Seq[T]] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[Seq[T]]()
       Json.toJson(Protected(data))(jsonEncryptor)
@@ -82,9 +77,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
     cacheRepository.repo.createOrUpdate(cacheId.value, key, jsonData).map(_ => data)
   }
 
-  def find[T](cacheId: CacheId, key: String = defaultKey)(
-    implicit reads: Reads[T],
-    hc: HeaderCarrier): Future[Option[T]] =
+  def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[T]()
       cacheRepository.repo.findById(cacheId.value) map {
@@ -116,12 +109,10 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def findJson(cacheId: CacheId, key: String = defaultKey)(implicit hc: HeaderCarrier): Future[Option[JsValue]] =
+  def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
 
-  def findSeq[T](cacheId: CacheId, key: String = defaultKey)(
-    implicit reads: Reads[T],
-    hc: HeaderCarrier): Future[Seq[T]] =
+  def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
       cacheRepository.repo.findById(cacheId.value) map {
@@ -157,9 +148,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(
-    implicit reads: Reads[T],
-    hc: HeaderCarrier): Future[Option[Seq[T]]] =
+  def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
       cacheRepository.repo.findById(cacheId.value) map {
@@ -191,7 +180,7 @@ class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig:
       }
     }
 
-  def removeById(cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def removeById(cacheId: CacheId): Future[Boolean] =
     for {
       writeResult <- cacheRepository.repo.removeById(cacheId.value)
     } yield {

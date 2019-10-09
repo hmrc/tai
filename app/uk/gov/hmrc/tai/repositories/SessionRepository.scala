@@ -24,6 +24,6 @@ import scala.concurrent.Future
 
 @Singleton
 class SessionRepository @Inject()(cacheConnector: CacheConnector) {
-  def invalidateCache(cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def invalidateCache(cacheId: CacheId): Future[Boolean] =
     cacheConnector.removeById(cacheId)
 }

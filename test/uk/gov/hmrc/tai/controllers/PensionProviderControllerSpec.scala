@@ -45,7 +45,6 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
         val pensionProvider =
           AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(pensionProvider)
-        val nino = nextNino
 
         val mockPensionProviderService = mock[PensionProviderService]
         when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
@@ -68,7 +67,6 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
       "called with valid incorrect pension provider request" in {
         val envelopeId = "envelopeId"
         val pensionProvider = IncorrectPensionProvider("whatYouToldUs", "Yes", Some("123123"))
-        val nino = nextNino
         val id = 1
         val mockPensionProviderService = mock[PensionProviderService]
         when(
@@ -86,7 +84,4 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
       }
     }
   }
-
-  private def nextNino = new Generator().nextNino
-  private implicit val hc = HeaderCarrier()
 }

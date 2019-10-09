@@ -81,19 +81,17 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  def modifyCache(cacheId: CacheId, employments: Seq[Employment])(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
     for {
       currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
-                                  EmploymentMongoFormatters.formatEmployment,
-                                  hc)
+                                  EmploymentMongoFormatters.formatEmployment)
       modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
       unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
         modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
       updateCache = unmodifiedEmployments ++ modifiedEmployments
       cachedEmployments <- cacheConnector
                             .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
-                              EmploymentMongoFormatters.formatEmployment,
-                              hc)
+                              EmploymentMongoFormatters.formatEmployment)
     } yield cachedEmployments
 
   def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
@@ -202,5 +200,5 @@ class EmploymentRepository @Inject()(
 
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     cacheConnector
-      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment, hc)
+      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment)
 }

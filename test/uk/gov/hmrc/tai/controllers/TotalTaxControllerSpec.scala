@@ -161,8 +161,6 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
     }
   }
 
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   val reliefsGivingBackTax = Some(
     TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
   val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))

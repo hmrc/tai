@@ -58,9 +58,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(Some(sessionData())))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenReturn(Future.successful(sessionData()))
 
         val mockNpsConnector = mock[NpsConnector]
@@ -92,7 +92,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         result.nino mustBe nino.nino
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Meq(cacheId), any())(any(), Meq(hc))
+          .find[SessionData](Meq(cacheId), any())(any())
       }
 
       "cacheConnector returns None" in {
@@ -101,9 +101,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -135,9 +135,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           gatekeeperTaiRoot)
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Meq(cacheId), any())(any(), Meq(hc))
+          .find[SessionData](Meq(cacheId), any())(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Meq(cacheId), any(), any())(any(), Meq(hc))
+          .createOrUpdate[SessionData](Meq(cacheId), any(), any())(any())
       }
     }
 
@@ -148,9 +148,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -190,9 +190,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful(taxSummaryDetails))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -227,7 +227,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Meq(cacheId), Meq(sessionData()), any())(any(), Meq(hc))
+          .createOrUpdate[SessionData](Meq(cacheId), Meq(sessionData()), any())(any())
       }
     }
 
@@ -238,9 +238,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -283,9 +283,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -333,9 +333,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.find[SessionData](any(), any())(any()))
         .thenReturn(Future.successful(Some(sd)))
-      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
         .thenReturn(Future.successful(sd))
 
       val mockNpsConnector = mock[NpsConnector]
@@ -380,9 +380,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(Some(sd)))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenReturn(Future.successful(sd))
 
         val mockNpsConnector = mock[NpsConnector]
@@ -424,9 +424,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.find[SessionData](any(), any())(any()))
         .thenReturn(Future.successful(None))
-      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
         .thenAnswer(reflectedSessionAnswer)
 
       val mockNpsConnector = mock[NpsConnector]
@@ -462,9 +462,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -507,9 +507,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockDesConnector = mock[DesConnector]
@@ -560,9 +560,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         .thenReturn(Future.successful(taxSummaryDetails))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.find[SessionData](any(), any())(any()))
         .thenReturn(Future.successful(None))
-      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+      when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
         .thenAnswer(reflectedSessionAnswer)
 
       val mockNpsConnector = mock[NpsConnector]
@@ -609,9 +609,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -658,9 +658,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockNpsConnector = mock[NpsConnector]
@@ -709,9 +709,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockDesConnector = mock[DesConnector]
@@ -744,9 +744,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
 
         data mustBe sessionData()
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any(), Meq(hc))
+          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any(), Meq(hc))
+          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
       }
     }
 
@@ -757,9 +757,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           .thenReturn(Future.successful((employments, Nil, npsEmployment, Nil, Nil)))
 
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.find[SessionData](any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.find[SessionData](any(), any())(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any(), Meq(hc)))
+        when(mockCacheConnector.createOrUpdate[SessionData](any(), any(), any())(any()))
           .thenAnswer(reflectedSessionAnswer)
 
         val mockDesConnector = mock[DesConnector]
@@ -790,9 +790,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
 
         data mustBe sessionData()
         verify(mockCacheConnector, never())
-          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any(), Meq(hc))
+          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any(), Meq(hc))
+          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
       }
     }
   }
@@ -801,7 +801,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
     "remove the session data" when {
       "cache is enabled" in {
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.removeById(any())(Meq(hc)))
+        when(mockCacheConnector.removeById(any()))
           .thenReturn(Future.successful(true))
 
         val mockMongoConfig = mock[MongoConfig]
@@ -825,14 +825,14 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         sut.invalidateTaiCacheData(nino)(hc)
 
         verify(mockCacheConnector, times(1))
-          .removeById(any())(Meq(hc))
+          .removeById(any())
       }
     }
 
     "not call remove data operation" when {
       "cache is disabled" in {
         val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.removeById(any())(Meq(hc)))
+        when(mockCacheConnector.removeById(any()))
           .thenReturn(Future.successful(true))
 
         val mockMongoConfig = mock[MongoConfig]
@@ -856,7 +856,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         sut.invalidateTaiCacheData(nino)(hc)
 
         verify(mockCacheConnector, never())
-          .createOrUpdate(any(), any(), any())(any(), Meq(hc))
+          .createOrUpdate(any(), any(), any())(any())
       }
     }
   }

@@ -40,8 +40,6 @@ import scala.util.Random
 
 class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
 
   private def controller(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =

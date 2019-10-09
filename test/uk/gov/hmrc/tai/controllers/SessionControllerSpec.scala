@@ -16,32 +16,29 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.mockito.Matchers.any
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.test.FakeRequest
+import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.CacheId
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.SessionRepository
 
 import scala.concurrent.Future
-import scala.util.Random
 
-class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class SessionControllerSpec
+    extends PlaySpec with FakeTaiPlayApplication with MockitoSugar with MockAuthenticationPredicate {
+
+  private def createSUT(sessionRepository: SessionRepository) =
+    new SessionController(sessionRepository, loggedInAuthenticationPredicate)
 
   "Session Controller" must {
 
     "return Accepted" when {
       "invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache(cacheId)(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(any()))
           .thenReturn(Future.successful(true))
 
         val sut = createSUT(mockSessionRepository)
@@ -54,7 +51,7 @@ class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenti
     "return Internal Server Error" when {
       "not able to invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache(cacheId)(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(any()))
           .thenReturn(Future.successful(false))
 
         val sut = createSUT(mockSessionRepository)
@@ -65,10 +62,4 @@ class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenti
     }
   }
 
-  val cacheId = CacheId(nino)(HeaderCarrier())
-
-  private def createSUT(
-    sessionRepository: SessionRepository,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new SessionController(sessionRepository, authentication)
 }

@@ -349,8 +349,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
     }
   }
 
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private def createSUT(
     bbsiService: BbsiService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =

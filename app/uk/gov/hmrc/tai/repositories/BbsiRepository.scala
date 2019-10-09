@@ -35,14 +35,12 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
   def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
     val cacheId = CacheId(nino)
 
-    cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat, hc) flatMap {
+    cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
           accountsWithId <- cacheConnector
-                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(
-                               BbsiMongoFormatters.bbsiFormat,
-                               hc)
+                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }

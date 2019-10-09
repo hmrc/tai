@@ -84,8 +84,6 @@ class TaxAccountSummaryControllerSpec
     }
   }
 
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   val taxAccountSummary = TaxAccountSummary(1111, 0, 12.34, 0, 0, 0, 0)
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222, 1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(

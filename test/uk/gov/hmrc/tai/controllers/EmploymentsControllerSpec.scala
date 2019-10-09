@@ -307,6 +307,4 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
   private val emp =
     Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
-
-  private implicit val hc = HeaderCarrier()
 }

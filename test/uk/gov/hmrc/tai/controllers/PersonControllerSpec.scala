@@ -91,8 +91,6 @@ class PersonControllerSpec extends PlaySpec with MockAuthenticationPredicate wit
     }
   }
 
-  implicit val hc = HeaderCarrier()
-
   val person = Person(
     nino,
     "firstname",

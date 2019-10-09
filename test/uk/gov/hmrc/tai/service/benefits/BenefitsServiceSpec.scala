@@ -18,9 +18,9 @@ package uk.gov.hmrc.tai.service.benefits
 
 import org.joda.time.LocalDate
 import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
@@ -345,7 +345,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
         Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
 
-        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(nino)(any())
+        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }
