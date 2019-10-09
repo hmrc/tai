@@ -22,11 +22,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 sealed abstract case class CacheId(value: String)
 
 object CacheId {
-  def apply(nino: Nino)(implicit hc: HeaderCarrier): CacheId = {
-    println(hc)
+  def apply(nino: Nino)(implicit hc: HeaderCarrier): CacheId =
     new CacheId(
       hc.sessionId
         .map(s => s"${s.value} - $nino")
         .getOrElse(throw new RuntimeException("Error while fetching session id"))) {}
-  }
 }

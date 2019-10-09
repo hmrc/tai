@@ -27,11 +27,12 @@ import uk.gov.hmrc.tai.repositories.SessionRepository
 
 import scala.concurrent.Future
 
-class SessionControllerSpec
-    extends PlaySpec with FakeTaiPlayApplication with MockitoSugar with MockAuthenticationPredicate {
+class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   private def createSUT(sessionRepository: SessionRepository) =
     new SessionController(sessionRepository, loggedInAuthenticationPredicate)
+
+  val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
   "Session Controller" must {
 
@@ -42,7 +43,7 @@ class SessionControllerSpec
           .thenReturn(Future.successful(true))
 
         val sut = createSUT(mockSessionRepository)
-        val result = sut.invalidateCache()(FakeRequest())
+        val result = sut.invalidateCache(fakeRequest)
 
         status(result) mustBe ACCEPTED
       }
@@ -55,7 +56,7 @@ class SessionControllerSpec
           .thenReturn(Future.successful(false))
 
         val sut = createSUT(mockSessionRepository)
-        val result = sut.invalidateCache()(FakeRequest())
+        val result = sut.invalidateCache(fakeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }

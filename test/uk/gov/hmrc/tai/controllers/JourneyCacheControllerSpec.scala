@@ -16,17 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
-import uk.gov.hmrc.tai.connectors.CacheId
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 
@@ -34,10 +31,10 @@ import scala.concurrent.Future
 
 class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
-  private def createSUT(
-    repository: JourneyCacheRepository,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new JourneyCacheController(repository, authentication)
+  private def createSUT(repository: JourneyCacheRepository) =
+    new JourneyCacheController(repository, loggedInAuthenticationPredicate)
+
+  val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
   "JourneyCacheController" must {
 
@@ -46,11 +43,11 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
     "supply a named journey cache on GET request" in {
       val mockRepository = mock[JourneyCacheRepository]
 
-      when(mockRepository.currentCache(Meq(cacheId), any()))
+      when(mockRepository.currentCache(any(), any()))
         .thenReturn(Future.successful(Some(testMap)))
 
       val sut = createSUT(mockRepository)
-      val result = sut.currentCache("testjourney")(FakeRequest())
+      val result = sut.currentCache("testjourney")(fakeRequest)
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.obj("key1" -> "value1", "key2" -> "value2")
@@ -59,11 +56,11 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
     "supply an individual cache entry on GET request" in {
       val mockRepository = mock[JourneyCacheRepository]
 
-      when(mockRepository.currentCache(Meq(cacheId), any(), any()))
+      when(mockRepository.currentCache(any(), any(), any()))
         .thenReturn(Future.successful(Some("value3")))
 
       val sut = createSUT(mockRepository)
-      val result = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
+      val result = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
       status(result) mustBe OK
       contentAsJson(result) mustBe JsString("value3")
     }
@@ -71,10 +68,10 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
     "accept and persist a valid POST'ed cache" in {
       val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
       val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-        .withHeaders(("content-type", "application/json"))
+        .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test"))
 
       val mockRepository = mock[JourneyCacheRepository]
-      when(mockRepository.cached(Meq(cacheId), any(), any()))
+      when(mockRepository.cached(any(), any(), any()))
         .thenReturn(Future.successful(testMap))
 
       val sut = createSUT(mockRepository)
@@ -88,11 +85,11 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
     "accept and process a DELETE cache flush instruction" in {
       val mockRepository = mock[JourneyCacheRepository]
-      when(mockRepository.flush(Meq(cacheId), any()))
+      when(mockRepository.flush(any(), any()))
         .thenReturn(Future.successful(true))
 
       val sut = createSUT(mockRepository)
-      val result = sut.flush("testjourney")(FakeRequest("DELETE", ""))
+      val result = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
       status(result) mustBe NO_CONTENT
     }
 
@@ -100,35 +97,35 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
 
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(Meq(cacheId), any()))
+        when(mockRepository.currentCache(any(), any()))
           .thenReturn(Future.successful(None))
           .thenReturn(Future.successful(Some(Map.empty[String, String])))
 
         val sut = createSUT(mockRepository)
-        val result = sut.currentCache("testjourney")(FakeRequest())
+        val result = sut.currentCache("testjourney")(fakeRequest)
         status(result) mustBe NOT_FOUND
 
-        val emptyMapResult = sut.currentCache("testjourney")(FakeRequest())
+        val emptyMapResult = sut.currentCache("testjourney")(fakeRequest)
         status(emptyMapResult) mustBe NOT_FOUND
       }
 
       "an individual value is not found within an existing cache" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(any(), any()))
+        when(mockRepository.currentCache(any(), any(), any()))
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockRepository)
-        val result = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
+        val result = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
         status(result) mustBe NOT_FOUND
       }
 
       "an individual value is found within an existing cache, but is the empty string" in {
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(Meq(cacheId), any(), any()))
+        when(mockRepository.currentCache(any(), any(), any()))
           .thenReturn(Future.successful(Some(" ")))
 
         val sut = createSUT(mockRepository)
-        val result = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
+        val result = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
         status(result) mustBe NOT_FOUND
       }
     }
@@ -139,28 +136,29 @@ class JourneyCacheControllerSpec extends PlaySpec with MockitoSugar with MockAut
         val failResult = Future.failed(new HttpException("something broke", BAD_GATEWAY))
 
         val mockRepository = mock[JourneyCacheRepository]
-        when(mockRepository.currentCache(Meq(cacheId), any()))
+        when(mockRepository.currentCache(any(), any()))
           .thenReturn(failResult)
-        when(mockRepository.currentCache(Meq(cacheId), any(), any()))
+        when(mockRepository.currentCache(any(), any(), any()))
           .thenReturn(failResult)
-        when(mockRepository.cached(Meq(cacheId), any(), any()))
+        when(mockRepository.cached(any(), any(), any()))
           .thenReturn(failResult)
-        when(mockRepository.flush(Meq(cacheId), any()))
+        when(mockRepository.flush(any(), any()))
           .thenReturn(failResult)
 
         val sut = createSUT(mockRepository)
-        val result1 = sut.currentCache("testjourney")(FakeRequest())
+        val result1 = sut.currentCache("testjourney")(fakeRequest)
         status(result1) mustBe INTERNAL_SERVER_ERROR
 
-        val result2 = sut.currentCacheValue("testjourney", "key3")(FakeRequest())
+        val result2 = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
         status(result2) mustBe INTERNAL_SERVER_ERROR
 
         val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
         val result3 = sut.cached("testjourney")(
-          FakeRequest("POST", "/", FakeHeaders(), cacheJson).withHeaders(("content-type", "application/json")))
+          FakeRequest("POST", "/", FakeHeaders(), cacheJson)
+            .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test")))
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
-        val result4 = sut.flush("testjourney")(FakeRequest("DELETE", ""))
+        val result4 = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }

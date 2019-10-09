@@ -29,8 +29,6 @@ class SessionController @Inject()(sessionRepository: SessionRepository, authenti
     extends BaseController {
 
   def invalidateCache: Action[AnyContent] = authentication.async { implicit request =>
-    println("*" * 50)
-    println(request.request)
     for (success <- sessionRepository.invalidateCache(CacheId(request.nino)))
       yield if (success) Accepted else InternalServerError
   }
