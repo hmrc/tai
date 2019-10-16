@@ -49,9 +49,9 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     hc.withExtraHeaders("Gov-Uk-Originator-Id" -> originatorId)
 
   def getFromNps[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
-    implicit val hc = basicNpsHeaders(HeaderCarrier())
+    val headerCarrier: HeaderCarrier = basicNpsHeaders(hc)
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url)
+    val futureResponse = httpClient.GET[HttpResponse](url)(implicitly, headerCarrier, implicitly)
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {
