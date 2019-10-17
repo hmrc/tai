@@ -73,8 +73,8 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
         .thenReturn("orgId")
 
       val sut = createSUT(mock[HttpClient], mockMetrics, mock[Auditor], mockConfig, mock[RtiUrls])
-
-      val headers = sut.createHeader
+      val hc = HeaderCarrier()
+      val headers = sut.createHeader(hc)
       headers.extraHeaders mustBe List(
         ("Environment", "env"),
         ("Authorization", "auth"),

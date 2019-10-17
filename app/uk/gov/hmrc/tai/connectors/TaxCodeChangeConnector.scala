@@ -41,18 +41,16 @@ class TaxCodeChangeConnector @Inject()(
 
   override val originatorId = config.originatorId
 
-  implicit private val header: HeaderCarrier = {
-    val commonHeaderValues = Seq(
+  def createHeader(hc: HeaderCarrier): HeaderCarrier =
+    hc.withExtraHeaders(
       "Environment"   -> config.environment,
       "Authorization" -> config.authorization,
       "Content-Type"  -> TaiConstants.contentType)
 
-    HeaderCarrier(extraHeaders = commonHeaderValues)
-  }
-
-  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
+  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
+    val headerCarrier: HeaderCarrier = createHeader(hc)
 
-    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI).map(_._1)
+    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI)(headerCarrier, implicitly).map(_._1)
   }
 }

@@ -49,28 +49,30 @@ class RtiConnector @Inject()(
     nino.value.take(BASIC_NINO_LENGTH)
   }
 
-  def createHeader: HeaderCarrier =
-    HeaderCarrier(
-      extraHeaders = Seq(
-        "Environment"          -> rtiConfig.environment,
-        "Authorization"        -> rtiConfig.authorization,
-        "Gov-Uk-Originator-Id" -> originatorId))
+  def createHeader(hc: HeaderCarrier): HeaderCarrier =
+    hc.withExtraHeaders(
+      "Environment"          -> rtiConfig.environment,
+      "Authorization"        -> rtiConfig.authorization,
+      "Gov-Uk-Originator-Id" -> originatorId)
 
   def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {
-    implicit val hc: HeaderCarrier = createHeader
+    val headerCarrier: HeaderCarrier = createHeader(hc)
     val ninoWithoutSuffix = withoutSuffix(nino)
     getFromRTIWithStatus[RtiData](
       urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
       APITypes.RTIAPI,
       ninoWithoutSuffix
-    )(hc, formatRtiData)
+    )(headerCarrier, formatRtiData)
   }
 
   def getRTIDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    implicit val hc: HeaderCarrier = createHeader
+    val headerCarrier: HeaderCarrier = createHeader(hc)
     val timerContext = metrics.startTimer(APITypes.RTIAPI)
     val ninoWithoutSuffix = withoutSuffix(nino)
-    val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))
+    val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))(
+      implicitly,
+      headerCarrier,
+      implicitly)
     futureResponse.flatMap { res =>
       timerContext.stop()
       res.status match {
