@@ -24,6 +24,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -59,8 +60,8 @@ class TaxCodeChangeConnectorSpec
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
-
+        val hc = HeaderCarrier()
+        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear)(hc), 10.seconds)
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(testNino)
       }
 
@@ -85,7 +86,8 @@ class TaxCodeChangeConnectorSpec
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        val hc = HeaderCarrier()
+        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear)(hc), 10.seconds)
 
         result mustEqual TaxCodeHistory(
           testNino.nino,
@@ -116,8 +118,9 @@ class TaxCodeChangeConnectorSpec
       )
 
       val connector = createSut()
+      val hc = HeaderCarrier()
       val ex = the[JsResultException] thrownBy Await
-        .result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        .result(connector.taxCodeHistory(testNino, taxYear, taxYear)(hc), 10.seconds)
       ex.getMessage must include("ValidationError")
     }
   }
