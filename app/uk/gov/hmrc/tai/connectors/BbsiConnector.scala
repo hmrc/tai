@@ -33,15 +33,16 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 @Singleton
 class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig) {
 
-  def createHeader(hc: HeaderCarrier): HeaderCarrier =
-    hc.withExtraHeaders(
-      "Environment"   -> config.environment,
-      "Authorization" -> s"Bearer ${config.authorization}",
-      "Content-Type"  -> TaiConstants.contentType)
+  def createHeader: HeaderCarrier =
+    HeaderCarrier(
+      extraHeaders = Seq(
+        "Environment"   -> config.environment,
+        "Authorization" -> s"Bearer ${config.authorization}",
+        "Content-Type"  -> TaiConstants.contentType))
 
   def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
-    val headerCarrier: HeaderCarrier = createHeader(hc)
-    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI)(headerCarrier) map { json =>
+    implicit val hc: HeaderCarrier = createHeader
+    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map { json =>
       json.as[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
     }
   }
