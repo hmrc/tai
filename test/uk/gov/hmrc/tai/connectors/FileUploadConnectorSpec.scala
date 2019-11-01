@@ -20,9 +20,11 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.codahale.metrics.Timer
 import com.codahale.metrics.Timer.Context
+import org.junit.After
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
@@ -42,7 +44,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class FileUploadConnectorSpec extends PlaySpec with MockitoSugar {
+class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
   implicit val hc = HeaderCarrier()
 
@@ -478,6 +480,31 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar {
         result mustBe None
       }
     }
+
+    "Retry 5 times when no good result and maxAttempts configured to 5 retries" in {
+      val mockMetrics = mock[Metrics]
+      val mockHttpClient = mock[HttpClient]
+      val mockWsClient = mock[WSClient]
+      val mockUrls = mock[FileUploadUrls]
+      val mockConfig = mock[FileUploadConfig]
+
+      val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
+
+      val mockWSRequest = mock[WSRequest]
+      val mockResponse = createMockResponse(404, envelopeStatusResponse("AVAILABLE", "AVAILABLE"))
+
+      when(mockWsClient.url(any())).thenReturn(mockWSRequest)
+      when(mockWSRequest.get()).thenReturn(Future.successful(mockResponse))
+      when(mockConfig.maxAttempts).thenReturn(5)
+      when(mockConfig.firstRetryMilliseconds).thenReturn(20)
+
+      assertThrows[RuntimeException] {
+        Await.result(sut.envelope(envelopeId), Duration.Inf)
+      }
+
+      verify(mockWsClient, times(5)).url(any())
+
+    }
   }
 
   private def createMockResponse(status: Int, body: String): WSResponse = {
@@ -515,4 +542,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar {
     urls: FileUploadUrls,
     config: FileUploadConfig) =
     new FileUploadConnector(metrics, HttpClient, wsClient, urls, config)
+
+  @After
+  def validate() = validateMockitoUsage()
 }

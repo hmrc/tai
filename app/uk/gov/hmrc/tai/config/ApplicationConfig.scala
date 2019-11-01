@@ -47,6 +47,8 @@ class FileUploadConfig @Inject()(val runModeConfiguration: Configuration, playEn
   lazy val baseURL: String = baseUrl("file-upload")
   lazy val frontendBaseURL: String = baseUrl("file-upload-frontend")
   lazy val callbackUrl: String = runModeConfiguration.getString(s"$rootServices.file-upload.callbackUrl").getOrElse("")
+  lazy val firstRetryMilliseconds: Int = runModeConfiguration.getInt("file-upload.firstRetryMilliseconds").getOrElse(20)
+  lazy val maxAttempts: Int = runModeConfiguration.getInt("file-upload.maxAttempts").getOrElse(5)
 }
 
 @Singleton
