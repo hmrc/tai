@@ -90,14 +90,32 @@ class FileUploadConnector @Inject()(
     contentType: MimeContentType,
     envelopeId: String,
     fileId: String,
-    awsClient: AhcWSClient)(implicit hc: HeaderCarrier) = {
+    awsClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url: String = urls.fileUrl(envelopeId, fileId)
-    uploadFileCall(byteArray, fileName, contentType, url, awsClient).recover {
+    envelope(envelopeId).flatMap(envelopeSummary =>
+      envelopeSummary match {
+        case Some(es) if es.isOpen  =>
+          uploadFileCall(byteArray, fileName, contentType, url, awsClient).recover {
+            case _: RuntimeException =>
+              Logger.warn("FileUploadConnector.uploadFile - call to upload file failed")
+              metrics.incrementFailedCounter(FusUploadFile)
+              throw new RuntimeException("File upload failed")
+          }
+        case Some(es) if !es.isOpen  =>
+          Logger.warn(s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
+          metrics.incrementFailedCounter(FusUploadFile)
+          throw new RuntimeException("Incorrect Envelope State")
+        case _ =>
+          Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
+          metrics.incrementFailedCounter(FusUploadFile)
+          throw new RuntimeException("Could Not Read Envelope State")
+      }
+
+    ).recover {
       case _: RuntimeException =>
-        Logger.warn("FileUploadConnector.uploadFile - call to upload file failed")
+        Logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
         metrics.incrementFailedCounter(FusUploadFile)
-        awsClient.close()
-        throw new RuntimeException("File upload failed")
+        throw new RuntimeException("Unable to find Envelope")
     }
   }
 
@@ -106,7 +124,7 @@ class FileUploadConnector @Inject()(
     fileName: String,
     contentType: MimeContentType,
     url: String,
-    ahcWSClient: AhcWSClient)(implicit hc: HeaderCarrier) = {
+    ahcWSClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(FusUploadFile)
     val multipartFormData = Source(
       FilePart("attachment", fileName, Some(contentType.description), Source(ByteString(byteArray) :: Nil)) :: DataPart(

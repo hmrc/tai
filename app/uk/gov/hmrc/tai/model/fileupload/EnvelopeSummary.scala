@@ -16,4 +16,9 @@
 
 package uk.gov.hmrc.tai.model.fileupload
 
-case class EnvelopeSummary(envelopeId: String, status: String, files: Seq[EnvelopeFile])
+case class EnvelopeSummary(envelopeId: String, status: String, files: Seq[EnvelopeFile]) {
+
+  private val STATUS_OPEN = "OPEN"
+
+  def isOpen = this.status.equals(STATUS_OPEN)
+}
