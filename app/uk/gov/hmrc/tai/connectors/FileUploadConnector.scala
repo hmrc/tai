@@ -46,8 +46,7 @@ class FileUploadConnector @Inject()(
   httpClient: HttpClient,
   wsClient: WSClient,
   urls: FileUploadUrls,
-  config: FileUploadConfig)
-{
+  config: FileUploadConfig) {
   val as = ActorSystem()
 
   def routingRequest(envelopeId: String): JsValue =
@@ -92,31 +91,29 @@ class FileUploadConnector @Inject()(
     fileId: String,
     awsClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url: String = urls.fileUrl(envelopeId, fileId)
-    envelope(envelopeId).flatMap(envelopeSummary =>
-      envelopeSummary match {
-        case Some(es) if es.isOpen  =>
-          uploadFileCall(byteArray, fileName, contentType, url, awsClient).recover {
-            case _: RuntimeException =>
-              Logger.warn("FileUploadConnector.uploadFile - call to upload file failed")
-              metrics.incrementFailedCounter(FusUploadFile)
-              throw new RuntimeException("File upload failed")
-          }
-        case Some(es) if !es.isOpen  =>
-          Logger.warn(s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
+    envelope(envelopeId)
+      .flatMap(envelopeSummary =>
+        envelopeSummary match {
+          case Some(es) if es.isOpen =>
+            uploadFileCall(byteArray, fileName, contentType, url, awsClient).recover {
+              case _: RuntimeException =>
+                Logger.warn("FileUploadConnector.uploadFile - call to upload file failed")
+                throw new RuntimeException("File upload failed")
+            }
+          case Some(es) if !es.isOpen =>
+            Logger.warn(
+              s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
+            throw new RuntimeException("Incorrect Envelope State")
+          case _ =>
+            Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
+            throw new RuntimeException("Could Not Read Envelope State")
+      })
+      .recover {
+        case _: RuntimeException =>
+          Logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
           metrics.incrementFailedCounter(FusUploadFile)
-          throw new RuntimeException("Incorrect Envelope State")
-        case _ =>
-          Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
-          metrics.incrementFailedCounter(FusUploadFile)
-          throw new RuntimeException("Could Not Read Envelope State")
+          throw new RuntimeException("Unable to find Envelope")
       }
-
-    ).recover {
-      case _: RuntimeException =>
-        Logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
-        metrics.incrementFailedCounter(FusUploadFile)
-        throw new RuntimeException("Unable to find Envelope")
-    }
   }
 
   def uploadFileCall(

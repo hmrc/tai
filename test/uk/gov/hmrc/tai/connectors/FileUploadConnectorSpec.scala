@@ -180,10 +180,14 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any())).thenReturn(mockTimeContext)
 
-        val mockHttpClient = mock[HttpClient]
         val mockUrls = mock[FileUploadUrls]
+        when(mockUrls.envelopesUrl).thenReturn("envelope")
+        when(mockUrls.fileUrl(any(), any())).thenReturn("file")
+
+        val mockHttpClient = mock[HttpClient]
         val mockConfig = mock[FileUploadConfig]
         val mockWSRequest = mock[WSRequest]
+        val mockWSRequest2 = mock[WSRequest]
 
         when(mockWSRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
           .thenReturn(Future.successful(mockWSResponse))
@@ -193,6 +197,10 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         val mockWsClient = mock[AhcWSClient]
         val mockAhcWSClient: AhcWSClient = mock[AhcWSClient]
         when(mockAhcWSClient.url(any())).thenReturn(mockWSRequest)
+
+        val mockResponse = createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "OPEN", "TEST" -> "Data"))
+        when(mockWsClient.url(any())).thenReturn(mockWSRequest2)
+        when(mockWSRequest2.get()).thenReturn(Future.successful(mockResponse))
 
         val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
         val result = Await.result(
@@ -207,28 +215,70 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
       }
     }
     "throw runtime exception" when {
-      "file upload service return status other than OK" in {
-        val mockMetrics = mock[Metrics]
+
+      def setup(mockResponse: WSResponse, mockMetrics: Metrics, ahcWSClient: AhcWSClient) = {
         val mockHttpClient = mock[HttpClient]
         val mockWsClient = mock[WSClient]
-        val ahcWSClient: AhcWSClient = mock[AhcWSClient]
         val mockUrls = mock[FileUploadUrls]
         val mockConfig = mock[FileUploadConfig]
         val mockTimerContext = mock[Timer.Context]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
-        val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
         val mockWSResponse = createMockResponse(BAD_REQUEST, "")
         val mockWSRequest = mock[WSRequest]
+
+        val mockWSRequest2 = mock[WSRequest]
+
+        when(mockWsClient.url(any())).thenReturn(mockWSRequest2)
+        when(mockWSRequest2.get()).thenReturn(Future.successful(mockResponse))
 
         when(mockWSRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
           .thenReturn(Future.successful(mockWSResponse))
         when(ahcWSClient.url(any())).thenReturn(mockWSRequest)
         when(mockWSRequest.withHeaders(any())).thenReturn(mockWSRequest)
 
+        createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
+      }
+
+      "file upload service return status other than OK on uploadfile" in {
+        val mockMetrics = mock[Metrics]
+        val ahcWSClient = mock[AhcWSClient]
+
+        val sut = setup(
+          createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "OPEN", "TEST" -> "Data")),
+          mockMetrics,
+          ahcWSClient)
+
         the[RuntimeException] thrownBy Await
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
         verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
+      }
+
+      "file upload service returns non-open summary" in {
+        val mockMetrics = mock[Metrics]
+        val ahcWSClient = mock[AhcWSClient]
+
+        val sut = setup(
+          createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "CLOSED", "TEST" -> "Data")),
+          mockMetrics,
+          ahcWSClient)
+
+        the[RuntimeException] thrownBy Await
+          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
+      }
+
+      "file upload service returns none" in {
+        val mockMetrics = mock[Metrics]
+        val ahcWSClient = mock[AhcWSClient]
+
+        val sut =
+          setup(createMockResponse(400, envelopeStatusResponse("AVAILABLE", "AVAILABLE")), mockMetrics, ahcWSClient)
+
+        the[RuntimeException] thrownBy Await
+          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
+
       }
 
       "any error occurred" in {
