@@ -44,15 +44,6 @@ import scala.util.Random
 class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Bbsi details" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.bbsiDetails(nino)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return OK" in {
       val expectedJson =
         Json.obj(
@@ -110,15 +101,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
   }
 
   "bbsiAccount" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.bbsiAccount(nino, 1)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return bank account" in {
       val expectedJson =
         Json.obj(
@@ -181,17 +163,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
   }
 
   "close bank account" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.closeBankAccount(nino, 1)(
-          FakeRequest("PUT", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -272,15 +243,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
   }
 
   "remove bank account" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.removeAccount(nino, 1)(FakeRequest("DELETE", "/"))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -323,18 +285,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
   }
 
   "update bank account" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[BbsiService], notLoggedInAuthenticationPredicate)
-        val result = sut.updateAccountInterest(nino, 1)(
-          FakeRequest("PUT", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope id" in {
       val envelopeId = "123456"
 
@@ -398,9 +348,6 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
       }
     }
   }
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  private val nino = new Generator(new Random).nextNino
 
   private def createSUT(
     bbsiService: BbsiService,

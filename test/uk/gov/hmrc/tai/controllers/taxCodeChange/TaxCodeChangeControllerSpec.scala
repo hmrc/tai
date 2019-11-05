@@ -41,8 +41,6 @@ import scala.util.Random
 class TaxCodeChangeControllerSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
   "hasTaxCodeChanged" should {
 
     "return true" when {

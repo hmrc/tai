@@ -159,21 +159,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
         ex.message mustBe "Account is locked"
       }
     }
-
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[TotalTaxService], notLoggedInAuthenticationPredicate)
-        val result = sut.totalTax(nino, TaxYear())(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
   }
-
-  val nino = new Generator(new Random).nextNino
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
   val reliefsGivingBackTax = Some(
     TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))

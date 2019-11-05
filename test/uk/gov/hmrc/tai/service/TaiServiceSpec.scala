@@ -307,7 +307,6 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
         val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
 
-        println(sut)
         val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
         result mustBe false
       }

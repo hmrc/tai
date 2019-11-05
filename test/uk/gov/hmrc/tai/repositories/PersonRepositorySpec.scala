@@ -20,13 +20,13 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 
@@ -36,6 +36,16 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+  val nino = new Generator(new Random).nextNino
+  val cacheId = CacheId(nino)
+  val address = Address("line1", "line2", "line3", "postcode", "country")
+  val personMongoKey = "PersonData"
+  val dateOfBirth = LocalDate.parse("2017-02-01")
+
+  def createSUT(cacheConnector: CacheConnector, citizenDetailsUrls: CitizenDetailsUrls, httpHandler: HttpHandler) =
+    new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 
   "The getPerson method" should {
 
@@ -48,7 +58,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
           .thenReturn(Future.successful(Some(person)))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
@@ -58,7 +68,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         result mustBe person
 
         verify(mockCacheConnector, times(1))
-          .find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any())
+          .find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any())
 
         verify(mockHttpHandler, never())
           .getFromApi(any(), any())(any())
@@ -75,7 +85,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
           .thenReturn(Future.successful(person))
@@ -115,7 +125,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(sessionId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
           .thenReturn(Future.successful(expectedPersonFromPartialJson))
@@ -130,17 +140,4 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
       }
     }
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-  private val sessionId = "testSession"
-  private val nino: Nino = new Generator(new Random).nextNino
-  private val address: Address = Address("line1", "line2", "line3", "postcode", "country")
-  private val personMongoKey = "PersonData"
-  private val dateOfBirth = LocalDate.parse("2017-02-01")
-
-  private def createSUT(
-    cacheConnector: CacheConnector,
-    citizenDetailsUrls: CitizenDetailsUrls,
-    httpHandler: HttpHandler) =
-    new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 }

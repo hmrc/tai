@@ -20,15 +20,12 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
@@ -38,20 +35,10 @@ import uk.gov.hmrc.tai.service.EmploymentService
 
 import scala.concurrent.Future
 import scala.language.postfixOps
-import scala.util.Random
 
 class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "employments" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.employments(nextNino, TaxYear().prev)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return Ok" when {
       "called with a valid nino and year" in {
         val mockEmploymentService = mock[EmploymentService]
@@ -60,7 +47,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
-        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe OK
       }
     }
@@ -88,7 +75,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           "links" -> Json.arr()
         )
 
-        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         contentAsJson(result) mustBe jsonResult
       }
     }
@@ -100,7 +87,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
-        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
       "the employments service returns a bad request exception" in {
@@ -110,7 +97,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
-        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe "no employments recorded for this individual"
 
@@ -122,22 +109,13 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
-        val result = sut.employments(nextNino, TaxYear("2017"))(FakeRequest())
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
 
   "employment" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 2)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return ok" when {
       "called with valid nino, year and id" in {
         val mockEmploymentService = mock[EmploymentService]
@@ -145,7 +123,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.successful(Right(emp)))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 2)(FakeRequest())
+        val result = sut.employment(nino, 2)(FakeRequest())
 
         val jsonResult = Json.obj(
           "data" -> Json.obj(
@@ -177,7 +155,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 3)(FakeRequest())
+        val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
@@ -189,7 +167,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.failed(new NotFoundException("")))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 3)(FakeRequest())
+        val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
@@ -203,7 +181,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.failed(new InternalServerException("")))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 3)(FakeRequest())
+        val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
@@ -217,7 +195,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.successful(Left(EmploymentAccountStubbed)))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nextNino, 3)(FakeRequest())
+        val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe BAD_GATEWAY
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
@@ -227,17 +205,6 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   "endEmployment" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.endEmployment(nextNino, 3)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope Id" when {
       "given a valid request" in {
         val employment = EndEmployment(new LocalDate("2017-05-05"), "Yes", Some("123456789"))
@@ -249,7 +216,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
           .thenReturn(Future.successful(envelopeId))
 
         val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.endEmployment(nextNino, 3)(
+        val result = sut.endEmployment(nino, 3)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
 
@@ -260,23 +227,11 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   "addEmployment" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.addEmployment(nextNino)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return envelop Id" when {
       "called with valid add employment request" in {
         val envelopeId = "envelopId"
         val employment = AddEmployment("employerName", new LocalDate("2017-05-05"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(employment)
-        val nino = nextNino
 
         val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.addEmployment(Matchers.eq(nino), Matchers.eq(employment))(any()))
@@ -294,22 +249,10 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   "incorrectEmployment" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.incorrectEmployment(nextNino, 1)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope Id" when {
       "called with valid incorrect employment request" in {
         val envelopeId = "envelopeId"
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
-        val nino = nextNino
         val id = 1
 
         val mockEmploymentService = mock[EmploymentService]
@@ -329,22 +272,10 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   "updateEmploymentsForPreviousYear" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new EmploymentsController(mock[EmploymentService], notLoggedInAuthenticationPredicate)
-        val result = sut.updatePreviousYearIncome(nextNino, TaxYear().prev)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope Id" when {
       "called with valid incorrect employment request" in {
         val envelopeId = "envelopeId"
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
-        val nino = nextNino
         val taxYear = TaxYear(2016)
 
         val mockEmploymentService = mock[EmploymentService]
@@ -364,10 +295,6 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
     }
   }
 
-  private def nextNino = new Generator(new Random).nextNino
-
   private val emp =
     Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
-
-  private implicit val hc = HeaderCarrier()
 }

@@ -31,7 +31,7 @@ import scala.concurrent.Future
 class TaxAccountRepository @Inject()(cache: Caching, taxAccountConnector: TaxAccountConnector) extends MongoConstants {
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cache.cacheFromApi(s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))
+    cache.cacheFromApi(nino, s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))
 
   def taxAccountForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
     taxAccountConnector.taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)

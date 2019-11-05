@@ -19,12 +19,11 @@ package uk.gov.hmrc.tai.service
 import com.codahale.metrics.Timer
 import data.NpsData
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.Json
@@ -34,7 +33,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, MongoConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsConnector, DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, Person, PersonDetails}
@@ -48,6 +47,8 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatter {
+
+  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("some session id")))
 
   "taiData" must {
     "return a session data instance" when {
@@ -91,7 +92,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         result.nino mustBe nino.nino
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Matchers.eq("TESTING"), any())(any())
+          .find[SessionData](Meq(cacheId), any())(any())
       }
 
       "cacheConnector returns None" in {
@@ -134,9 +135,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           gatekeeperTaiRoot)
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Matchers.eq("TESTING"), any())(any())
+          .find[SessionData](Meq(cacheId), any())(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Matchers.eq("TESTING"), any(), any())(any())
+          .createOrUpdate[SessionData](Meq(cacheId), any(), any())(any())
       }
     }
 
@@ -226,7 +227,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Matchers.eq("TESTING"), Matchers.eq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](Meq(cacheId), Meq(sessionData()), any())(any())
       }
     }
 
@@ -273,7 +274,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         verify(mockCitizenDetailsConnector, times(1))
           .getPersonDetails(any())(any(), any())
         verify(mockCacheConnector, never())
-          .find[SessionData](nino.nino)
+          .find[SessionData](cacheId)
       }
 
       "cache is enabled" in {
@@ -315,7 +316,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
         verify(mockCitizenDetailsConnector, times(1)).getPersonDetails(any())(any(), any())
-        verify(mockCacheConnector, times(1)).find[SessionData](nino.nino)
+        verify(mockCacheConnector, times(1)).find[SessionData](cacheId)
       }
     }
   }
@@ -362,7 +363,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
       )
 
       val version =
-        Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
+        Await.result(sut.version(nino, year)(hc), 5.seconds)
 
       version mustBe Some(1)
     }
@@ -409,53 +410,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
         )
 
         val version =
-          Await.result(sut.version(nino, year)(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))), 5.seconds)
+          Await.result(sut.version(nino, year)(hc), 5.seconds)
 
         version mustBe None
-      }
-    }
-  }
-
-  "fetchSessionId" must {
-    "return the session id" in {
-      val sessionIdValue = "ABCD1234"
-
-      val sut = createSut(
-        mock[TaiService],
-        mock[CacheConnector],
-        mock[CitizenDetailsConnector],
-        mock[NpsConnector],
-        mock[DesConnector],
-        mock[Metrics],
-        mock[NpsConfig],
-        mock[MongoConfig],
-        mock[FeatureTogglesConfig]
-      )
-
-      val sessionId = sut.fetchSessionId(HeaderCarrier(sessionId = Some(SessionId(sessionIdValue))))
-
-      sessionId mustBe sessionIdValue
-    }
-
-    "throw an exception" when {
-      "session is none" in {
-        val headerCarrier: HeaderCarrier = HeaderCarrier(sessionId = None)
-
-        val sut = createSut(
-          mock[TaiService],
-          mock[CacheConnector],
-          mock[CitizenDetailsConnector],
-          mock[NpsConnector],
-          mock[DesConnector],
-          mock[Metrics],
-          mock[NpsConfig],
-          mock[MongoConfig],
-          mock[FeatureTogglesConfig]
-        )
-
-        val ex = the[RuntimeException] thrownBy sut.fetchSessionId(headerCarrier)
-
-        ex.getMessage mustBe "Error while fetching session id"
       }
     }
   }
@@ -787,9 +744,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
 
         data mustBe sessionData()
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](any(), Matchers.eq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Matchers.eq(Protected(sessionData())), any())(any())
+          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
       }
     }
 
@@ -833,9 +790,9 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
 
         data mustBe sessionData()
         verify(mockCacheConnector, never())
-          .createOrUpdate[SessionData](any(), Matchers.eq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Matchers.eq(Protected(sessionData())), any())(any())
+          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
       }
     }
   }
@@ -865,7 +822,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           mock[FeatureTogglesConfig]
         )
 
-        sut.invalidateTaiCacheData()(hc)
+        sut.invalidateTaiCacheData(nino)(hc)
 
         verify(mockCacheConnector, times(1))
           .removeById(any())
@@ -896,7 +853,7 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
           mock[FeatureTogglesConfig]
         )
 
-        sut.invalidateTaiCacheData()(hc)
+        sut.invalidateTaiCacheData(nino)(hc)
 
         verify(mockCacheConnector, never())
           .createOrUpdate(any(), any(), any())(any())
@@ -904,8 +861,8 @@ class TaxAccountServiceSpec extends PlaySpec with MockitoSugar with MongoFormatt
     }
   }
 
-  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TESTING")))
   private val nino = new Generator(new Random).nextNino
+  private val cacheId = CacheId(nino)
   private val year = TaxYear().year
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
 

@@ -65,20 +65,8 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
       }
     }
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val nino = randomNino
-        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.benefits(nino, TaxYear().next)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return Benefits case class with carBenefits and other benefits" when {
       "benefit service returns car benefits and other benefits" in {
-        val nino = randomNino
         val mockBenefitService = mock[BenefitsService]
         val carBenefits = Seq(
           CompanyCarBenefit(
@@ -171,19 +159,6 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
-      }
-    }
-
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val nino = randomNino
-        val sut = new BenefitsController(mock[BenefitsService], notLoggedInAuthenticationPredicate)
-        val result = sut.removeCompanyBenefits(nino, 1)(
-          FakeRequest("POST", "/", FakeHeaders(), Json.toJson("")).withHeaders(("content-type", "application/json")))
-
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
       }
     }
   }

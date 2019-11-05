@@ -34,6 +34,7 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)
 
   def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cache.cacheFromApi(
+      nino,
       s"$IabdMongoKey${taxYear.year}",
       iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)))
 }

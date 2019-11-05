@@ -40,14 +40,11 @@ import scala.util.Random
 
 class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
 
   private def controller(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new EmployeeExpensesController(authentication, employeeExpensesService = mockEmployeeExpensesService)
 
-  private val nino = new Generator(new Random).nextNino
   private val iabd = 56
   private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount = 100)
 
@@ -114,23 +111,6 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
         status(result) mustBe BAD_REQUEST
-      }
-    }
-
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), JsNull)
-          .withHeaders(("content-type", "application/json"))
-
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
-
-        val result =
-          controller(notLoggedInAuthenticationPredicate).updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
-
-        whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
       }
     }
 

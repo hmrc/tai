@@ -17,17 +17,16 @@
 package uk.gov.hmrc.tai.controllers
 
 import data.NpsData
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
@@ -37,23 +36,10 @@ import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
-  private implicit val hc = HeaderCarrier()
-
   "getTaxSummary" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut =
-          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.getTaxSummary(nino, 2014)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return tax Summary details successfully from NPS for the supplied nino and year" in {
       val taxSummaryDetails = NpsData.getTaxSummary
       val nino = taxSummaryDetails.nino
@@ -150,17 +136,6 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
   }
 
   "getTaxSummaryPartial" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut =
-          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.getTaxSummaryPartial(nino, 2014)(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
-
     "return tax Summary details successfully for the supplied nino and year" in {
       val taxSummaryDetails = NpsData.getTaxSummary
       val nino = taxSummaryDetails.nino
@@ -227,17 +202,6 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
   }
 
   "updateEmployments " must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut =
-          createSUT(mock[TaiService], mock[TaxAccountService], mock[Metrics], notLoggedInAuthenticationPredicate)
-        val result = sut.updateEmployments(new Nino(nino.nino), 2014)(
-          FakeRequest("POST", "/", FakeHeaders(Seq("Content-type" -> "application/json")), JsNull))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "update the estimated pay when user is doing edit employments successfully " in {
       val updateEmployment1 = EmploymentAmount("test1", "desc", 1, newAmount = 123, oldAmount = 222)
       val updateEmployment2 = EmploymentAmount("test2", "desc", 2, newAmount = 200, oldAmount = 333)
@@ -258,7 +222,7 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       val mockTaxAccountService = mock[TaxAccountService]
       doNothing()
         .when(mockTaxAccountService)
-        .invalidateTaiCacheData()
+        .invalidateTaiCacheData(nino)
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       val summaryDetails = sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
@@ -280,7 +244,7 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       )
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
     }
 
     "update the estimated pay must be failed when nps is throwing BadRequestException " in {
@@ -329,15 +293,15 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       val mockTaxAccountService = mock[TaxAccountService]
       doThrow(new RuntimeException(""))
         .when(mockTaxAccountService)
-        .invalidateTaiCacheData()(any())
+        .invalidateTaiCacheData(Meq(nino))(any())
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       the[RuntimeException] thrownBy sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
 
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData()(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
+
   private def createSUT(
     taiService: TaiService,
     taxAccountService: TaxAccountService,

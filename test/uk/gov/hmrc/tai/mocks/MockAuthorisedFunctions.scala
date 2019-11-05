@@ -16,35 +16,50 @@
 
 package uk.gov.hmrc.tai.mocks
 
-import org.scalatest.mock.MockitoSugar
-import uk.gov.hmrc.auth.core.authorise.{EmptyPredicate, Predicate}
-import uk.gov.hmrc.auth.core.{AuthorisedFunctions, MissingBearerToken}
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, Suite}
+import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, MissingBearerToken}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.auth.MicroserviceAuthConnector
+import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
-trait MockAuthorisedFunctions extends AuthorisedFunctions with MockitoSugar {
-  override val authConnector: MicroserviceAuthConnector = mock[MicroserviceAuthConnector]
-}
+trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
+  self: Suite =>
 
-object MockAuthorisedUser extends MockAuthorisedFunctions {
-  override def authorised(predicate: Predicate): AuthorisedFunction = new AuthorisedFunction(predicate) {
-    override def apply[A](
-      body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] = body
+  val mockAuthService = mock[AuthorisedFunctions]
+
+  val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService)
+
+  val nino = new Generator(Random).nextNino
+
+  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+  val cacheId = CacheId(nino)
+
+  val testAuthSuccessResponse = new ~(Some(nino.value), None)
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockAuthService)
+    setupMockAuthRetrievalSuccess(testAuthSuccessResponse)
   }
-}
 
-object MockUnauthorisedUser extends MockAuthorisedFunctions {
-  override def authorised(predicate: Predicate): AuthorisedFunction = new AuthorisedFunction(predicate) {
-    override def apply[A](
-      body: => Future[A])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[A] =
-      Future.failed(new MissingBearerToken)
-  }
-}
+  def setupMockAuthRetrievalSuccess[X, Y](retrievalValue: X ~ Y): Unit =
+    when(mockAuthService.authorised(any()))
+      .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
+        override def retrieve[A](retrieval: Retrieval[A]) =
+          new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
+            override def apply[B](body: A => Future[B])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[B] =
+              body.apply(retrievalValue.asInstanceOf[A])
+          }
+      })
 
-trait MockAuthenticationPredicate {
-  val loggedInAuthenticationPredicate = new AuthenticationPredicate(MockAuthorisedUser)
-  val notLoggedInAuthenticationPredicate = new AuthenticationPredicate(MockUnauthorisedUser)
 }

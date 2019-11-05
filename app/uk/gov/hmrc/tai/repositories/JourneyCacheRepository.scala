@@ -17,46 +17,42 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.CacheConnector
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
+
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
-  def currentCache(journeyName: String)(implicit hc: HeaderCarrier): Future[Option[Map[String, String]]] =
-    cacheConnector.find[Map[String, String]](sessionId, journeyName + JourneyCacheSuffix)
+  def currentCache(cacheId: CacheId, journeyName: String): Future[Option[Map[String, String]]] =
+    cacheConnector.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
 
-  def currentCache(journeyName: String, key: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
-    currentCache(journeyName).map({
+  def currentCache(cacheId: CacheId, journeyName: String, key: String): Future[Option[String]] =
+    currentCache(cacheId, journeyName).map({
       case Some(cache) => cache.get(key)
       case _           => None
     })
 
-  def cached(journeyName: String, cache: Map[String, String])(implicit hc: HeaderCarrier): Future[Map[String, String]] =
-    currentCache(journeyName).flatMap(existingCache => {
+  def cached(cacheId: CacheId, journeyName: String, cache: Map[String, String]): Future[Map[String, String]] =
+    currentCache(cacheId, journeyName).flatMap(existingCache => {
       val toCache =
         existingCache match {
           case Some(existing) => existing ++ cache
           case _              => cache
         }
-      cacheConnector.createOrUpdate[Map[String, String]](sessionId, toCache, journeyName + JourneyCacheSuffix)
+      cacheConnector.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
     })
 
-  def cached(journeyName: String, key: String, value: String)(implicit hc: HeaderCarrier): Future[Map[String, String]] =
-    cached(journeyName, Map(key -> value))
+  def cached(cacheId: CacheId, journeyName: String, key: String, value: String): Future[Map[String, String]] =
+    cached(cacheId, journeyName, Map(key -> value))
 
-  def flush(journeyName: String)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def flush(cacheId: CacheId, journeyName: String): Future[Boolean] =
     cacheConnector
-      .createOrUpdate[Map[String, String]](sessionId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map {
+      .createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map {
       _ =>
         true
     }
-
-  def sessionId(implicit hc: HeaderCarrier): String =
-    hc.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while retrieving session id"))
 }

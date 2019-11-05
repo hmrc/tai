@@ -90,18 +90,7 @@ class PersonControllerSpec extends PlaySpec with MockAuthenticationPredicate wit
       thrown.getMessage mustBe ("an example not found exception")
     }
   }
-  "return NOT AUTHORISED" when {
-    "the user is not logged in" in {
-      val sut = createSUT(authenticationPredicate = notLoggedInAuthenticationPredicate)
-      val result = sut.person(nino)(FakeRequest())
-      ScalaFutures.whenReady(result.failed) { e =>
-        e mustBe a[MissingBearerToken]
-      }
-    }
-  }
 
-  implicit val hc = HeaderCarrier()
-  val nino = new Generator(new Random).nextNino
   val person = Person(
     nino,
     "firstname",

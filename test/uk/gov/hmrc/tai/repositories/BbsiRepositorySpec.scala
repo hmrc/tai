@@ -21,18 +21,15 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
+class BbsiRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "Bbsi Repository" must {
 
@@ -81,12 +78,9 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar {
           .bankAccounts(any(), any())(any())
       }
     }
-
   }
 
   private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  private val nino = new Generator(new Random).nextNino
 
   private def createSUT(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) =
     new BbsiRepository(cacheConnector, bbsiConnector)

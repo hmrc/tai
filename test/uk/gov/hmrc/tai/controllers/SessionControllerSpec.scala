@@ -16,15 +16,12 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.mockito.Matchers.any
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.test.FakeRequest
+import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.SessionRepository
 
@@ -32,26 +29,21 @@ import scala.concurrent.Future
 
 class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
-  "Session Controller" must {
+  private def createSUT(sessionRepository: SessionRepository) =
+    new SessionController(sessionRepository, loggedInAuthenticationPredicate)
 
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = createSUT(mock[SessionRepository], notLoggedInAuthenticationPredicate)
-        val result = sut.invalidateCache()(FakeRequest())
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
+  val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
+
+  "Session Controller" must {
 
     "return Accepted" when {
       "invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache()(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(any()))
           .thenReturn(Future.successful(true))
 
         val sut = createSUT(mockSessionRepository)
-        val result = sut.invalidateCache()(FakeRequest())
+        val result = sut.invalidateCache(fakeRequest)
 
         status(result) mustBe ACCEPTED
       }
@@ -60,19 +52,15 @@ class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenti
     "return Internal Server Error" when {
       "not able to invalidate the cache" in {
         val mockSessionRepository = mock[SessionRepository]
-        when(mockSessionRepository.invalidateCache()(Matchers.any()))
+        when(mockSessionRepository.invalidateCache(any()))
           .thenReturn(Future.successful(false))
 
         val sut = createSUT(mockSessionRepository)
-        val result = sut.invalidateCache()(FakeRequest())
+        val result = sut.invalidateCache(fakeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
 
-  private def createSUT(
-    sessionRepository: SessionRepository,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new SessionController(sessionRepository, authentication)
 }

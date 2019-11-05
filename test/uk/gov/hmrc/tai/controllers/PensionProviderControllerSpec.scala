@@ -39,26 +39,12 @@ import scala.concurrent.Future
 class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
   "addPensionProvider" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new PensionProviderController(
-          mock[PensionProviderService],
-          authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.addPensionProvider(nextNino)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return envelope Id" when {
       "called with valid add pension request" in {
         val envelopeId = "envelopId"
         val pensionProvider =
           AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(pensionProvider)
-        val nino = nextNino
 
         val mockPensionProviderService = mock[PensionProviderService]
         when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
@@ -77,24 +63,10 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
   }
 
   "incorrectPensionProvider" must {
-    "return NOT AUTHORISED" when {
-      "the user is not logged in" in {
-        val sut = new PensionProviderController(
-          mock[PensionProviderService],
-          authentication = notLoggedInAuthenticationPredicate)
-        val result = sut.incorrectPensionProvider(nextNino, 1)(
-          FakeRequest("POST", "/", FakeHeaders(), JsNull)
-            .withHeaders(("content-type", "application/json")))
-        ScalaFutures.whenReady(result.failed) { e =>
-          e mustBe a[MissingBearerToken]
-        }
-      }
-    }
     "return an envelope Id" when {
       "called with valid incorrect pension provider request" in {
         val envelopeId = "envelopeId"
         val pensionProvider = IncorrectPensionProvider("whatYouToldUs", "Yes", Some("123123"))
-        val nino = nextNino
         val id = 1
         val mockPensionProviderService = mock[PensionProviderService]
         when(
@@ -112,7 +84,4 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
       }
     }
   }
-
-  private def nextNino = new Generator().nextNino
-  private implicit val hc = HeaderCarrier()
 }

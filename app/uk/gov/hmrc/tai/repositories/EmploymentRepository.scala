@@ -22,7 +22,7 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{CacheConnector, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
@@ -47,7 +47,7 @@ class EmploymentRepository @Inject()(
       if (empForYear.exists(_.annualAccounts.exists(_.realTimeStatus == TemporarilyUnavailable))) {
         Future.successful(Left(EmploymentAccountStubbed))
       } else {
-        fetchEmploymentFromCache map { emp =>
+        fetchEmploymentFromCache(nino) map { emp =>
           emp.find(_.sequenceNumber == id) match {
             case Some(employment) => Right(employment)
             case None => {
@@ -61,7 +61,7 @@ class EmploymentRepository @Inject()(
     }
 
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    fetchEmploymentFromCache.flatMap { allEmployments =>
+    fetchEmploymentFromCache(nino).flatMap { allEmployments =>
       allEmployments
         .filter(_.annualAccounts.exists(_.taxYear == year))
         .map(e => e.copy(annualAccounts = e.annualAccounts.filter(_.taxYear == year))) match {
@@ -70,26 +70,27 @@ class EmploymentRepository @Inject()(
       }
     }
 
-  def checkAndUpdateCache(employments: Seq[Employment])(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+  def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
+    implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     val employmentsWithKnownAccountState =
       employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
     if (employmentsWithKnownAccountState.nonEmpty) {
-      modifyCache(employmentsWithKnownAccountState).map(_ => employments)
+      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
     } else {
       Future.successful(employments)
     }
   }
 
-  def modifyCache(employments: Seq[Employment])(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
     for {
-      currentCacheEmployments <- cacheConnector.findSeq[Employment](fetchSessionId(hc), EmploymentMongoKey)(
+      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
                                   EmploymentMongoFormatters.formatEmployment)
       modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
       unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
         modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
       updateCache = unmodifiedEmployments ++ modifiedEmployments
       cachedEmployments <- cacheConnector
-                            .createOrUpdateSeq[Employment](fetchSessionId(hc), updateCache, EmploymentMongoKey)(
+                            .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
                               EmploymentMongoFormatters.formatEmployment)
     } yield cachedEmployments
 
@@ -116,7 +117,9 @@ class EmploymentRepository @Inject()(
                  } recover {
                    case error: HttpException => stubAccounts(error.responseCode, employments, taxYear)
                  }
-      employmentDomainResult <- checkAndUpdateCache(unifiedEmployments(employments, accounts, nino, taxYear))
+      employmentDomainResult <- checkAndUpdateCache(
+                                 CacheId(nino),
+                                 unifiedEmployments(employments, accounts, nino, taxYear))
     } yield {
       employmentDomainResult
     }
@@ -195,13 +198,7 @@ class EmploymentRepository @Inject()(
       duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
     }
 
-  private def fetchEmploymentFromCache(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    cacheConnector.findSeq[Employment](fetchSessionId(hc), EmploymentMongoKey)(
-      EmploymentMongoFormatters.formatEmployment)
-
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId
-      .map(_.value)
-      .getOrElse(throw new RuntimeException("Error while fetching session id"))
-
+  private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+    cacheConnector
+      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment)
 }

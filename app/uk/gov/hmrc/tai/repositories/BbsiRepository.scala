@@ -19,12 +19,12 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
+import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector, CacheId}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -32,16 +32,19 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
-    cacheConnector.findOptSeq[BankAccount](fetchSessionId(hc), BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
+  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
+    val cacheId = CacheId(nino)
+
+    cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
-          accountsWithId <- cacheConnector.createOrUpdateSeq(fetchSessionId(hc), populateId(accounts), BBSIKey)(
-                             BbsiMongoFormatters.bbsiFormat)
+          accountsWithId <- cacheConnector
+                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }
+  }
 
   private def populateId(accounts: Seq[BankAccount]): Seq[BankAccount] = {
 
@@ -51,7 +54,4 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
       .map { case (account: BankAccount, index: Int) => (account, index + 1) }
       .foldLeft(Seq.empty[BankAccount])(updateIds)
   }
-
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
@@ -42,6 +42,8 @@ import scala.util.Random
 class TaxAccountRepositorySpec
     extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with HodsSource with MongoConstants {
 
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+
   val nino = new Generator(new Random).nextNino
   val metrics = mock[Metrics]
   val cacheConfig = mock[CacheMetricsConfig]
@@ -49,9 +51,7 @@ class TaxAccountRepositorySpec
   val cacheConnector = mock[CacheConnector]
 
   val taxAccountConnector = mock[TaxAccountConnector]
-  val sessionId = "1212"
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("1212")))
+  val cacheId = CacheId(nino)
 
   "updateTaxCodeAmount" should {
     "update tax code amount" in {
@@ -123,7 +123,7 @@ class TaxAccountRepositorySpec
 
           val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-          when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+          when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
             .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
 
           val sut = createSUT(cache, taxAccountConnector)
@@ -140,12 +140,12 @@ class TaxAccountRepositorySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(cacheConnector.findJson(Matchers.eq(sessionId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+      when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(None))
 
       when(
         cacheConnector.createOrUpdateJson(
-          Matchers.eq(sessionId),
+          Matchers.eq(cacheId),
           Matchers.eq(taxAccountJsonResponse),
           Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))).thenReturn(Future.successful(taxAccountJsonResponse))
 

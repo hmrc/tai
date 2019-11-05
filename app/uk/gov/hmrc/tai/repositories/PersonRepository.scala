@@ -19,11 +19,11 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.enums.APITypes
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -31,24 +31,22 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDe
 
   private val PersonMongoKey = "PersonData"
 
-  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] =
-    getPersonFromStorage().flatMap { person: Option[Person] =>
+  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
+    val cacheId = CacheId(nino)
+    getPersonFromStorage(cacheId).flatMap { person: Option[Person] =>
       person match {
         case Some(personalDetails) => Future.successful(personalDetails)
-        case _                     => getPersonFromAPI(nino)
+        case _                     => getPersonFromAPI(nino, cacheId)
       }
     }
+  }
 
-  private[repositories] def getPersonFromStorage()(implicit hc: HeaderCarrier): Future[Option[Person]] =
-    cacheConnector.find(fetchSessionId(hc), PersonMongoKey)(PersonFormatter.personMongoFormat)
+  private[repositories] def getPersonFromStorage(cacheId: CacheId): Future[Option[Person]] =
+    cacheConnector.find(cacheId, PersonMongoKey)(PersonFormatter.personMongoFormat)
 
-  private[repositories] def getPersonFromAPI(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] =
+  private[repositories] def getPersonFromAPI(nino: Nino, cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Person] =
     httpHandler.getFromApi(urls.designatoryDetailsUrl(nino), APITypes.NpsPersonAPI) flatMap { s =>
       val personDetails = s.as[Person](PersonFormatter.personHodRead)
-      cacheConnector.createOrUpdate(fetchSessionId(hc), personDetails, PersonMongoKey)(
-        PersonFormatter.personMongoFormat)
+      cacheConnector.createOrUpdate(cacheId, personDetails, PersonMongoKey)(PersonFormatter.personMongoFormat)
     }
-
-  private def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
 }

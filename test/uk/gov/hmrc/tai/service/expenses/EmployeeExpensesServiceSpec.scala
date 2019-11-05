@@ -40,8 +40,6 @@ import scala.util.Random
 class EmployeeExpensesServiceSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
   private val mockDesConnector = mock[DesConnector]
   private val mockNpsConnector = mock[NpsConnector]
   private val mockIabdConnector = mock[IabdConnector]
@@ -53,7 +51,6 @@ class EmployeeExpensesServiceSpec
     iabdConnector = mockIabdConnector,
     featureTogglesConfig = mockFeaturesToggle)
 
-  private val nino = new Generator(new Random).nextNino
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100)
   private val iabd = 56
 

@@ -24,13 +24,13 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protecte
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, MongoConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsConnector, DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsConnector, DesConnector, NpsConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -56,18 +56,15 @@ class TaxAccountService @Inject()(
   def version(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[Option[Int]] =
     taiData(nino, year).map(_.taiRoot.map(_.version))
 
-  def fetchSessionId(headerCarrier: HeaderCarrier): String =
-    headerCarrier.sessionId.map(_.value).getOrElse(throw new RuntimeException("Error while fetching session id"))
-
   private def unencryptedCachedSession(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[SessionData] =
-    cacheConnector.find[SessionData](fetchSessionId(hc)).flatMap {
+    cacheConnector.find[SessionData](CacheId(nino)).flatMap {
       case Some(sd) => Future.successful(sd)
       case _        => newCachedSession(nino, year)
     }
 
-  def invalidateTaiCacheData()(implicit hc: HeaderCarrier): Unit =
+  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.removeById(fetchSessionId(hc))
+      cacheConnector.removeById(CacheId(nino))
     } else {
       ()
     }
@@ -80,7 +77,7 @@ class TaxAccountService @Inject()(
 
   def updateTaiData(nino: Nino, sessionData: SessionData)(implicit hc: HeaderCarrier): Future[SessionData] =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.createOrUpdate[SessionData](fetchSessionId(hc), sessionData)
+      cacheConnector.createOrUpdate[SessionData](CacheId(nino), sessionData)
     } else {
       Future.successful(sessionData)
     }
