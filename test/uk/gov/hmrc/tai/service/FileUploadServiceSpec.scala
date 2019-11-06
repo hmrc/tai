@@ -82,7 +82,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
         val mockFileUploadConnector = mock[FileUploadConnector]
         when(mockFileUploadConnector.closeEnvelope(any())(any()))
           .thenReturn(Future.successful("123"))
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -101,7 +101,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "CLOSED", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -148,7 +148,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "OPEN", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
         when(mockFileUploadConnector.closeEnvelope(any())(any()))
           .thenReturn(Future.successful("123"))
@@ -175,7 +175,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "CLOSED", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -188,7 +188,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
         val envelopeSummary = EnvelopeSummary("123", "", Nil)
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -202,7 +202,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "", Seq(EnvelopeFile("123", "PROGRESS"), EnvelopeFile("123", "PROGRESS")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -213,7 +213,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
 
       "envelope is not available" in {
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -227,7 +227,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "PROGRESS")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
@@ -243,7 +243,7 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
           EnvelopeSummary("123", "OPEN", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(Matchers.eq("123"), any(), any())(any()))
+        when(mockFileUploadConnector.envelope(Matchers.eq("123"))(any()))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])

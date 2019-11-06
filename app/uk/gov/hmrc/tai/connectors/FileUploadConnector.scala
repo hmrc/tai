@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.connectors
 
 import akka.actor.ActorSystem
+import akka.pattern.retry
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
@@ -34,11 +36,9 @@ import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.enums.APITypes._
 import uk.gov.hmrc.tai.model.fileupload.EnvelopeSummary
 import uk.gov.hmrc.tai.model.fileupload.formatters.FileUploadFormatters
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import akka.pattern.Patterns.after
 
 @Singleton
 class FileUploadConnector @Inject()(
@@ -47,7 +47,8 @@ class FileUploadConnector @Inject()(
   wsClient: WSClient,
   urls: FileUploadUrls,
   config: FileUploadConfig) {
-  val as = ActorSystem()
+
+  implicit val scheduler = ActorSystem().scheduler
 
   def routingRequest(envelopeId: String): JsValue =
     Json.obj("envelopeId" -> envelopeId, "application" -> "TAI", "destination" -> "DMS")
@@ -95,24 +96,20 @@ class FileUploadConnector @Inject()(
       .flatMap(envelopeSummary =>
         envelopeSummary match {
           case Some(es) if es.isOpen =>
-            uploadFileCall(byteArray, fileName, contentType, url, awsClient).recover {
-              case _: RuntimeException =>
-                Logger.warn("FileUploadConnector.uploadFile - call to upload file failed")
-                throw new RuntimeException("File upload failed")
-            }
+            uploadFileCall(byteArray, fileName, contentType, url, awsClient)
           case Some(es) if !es.isOpen =>
             Logger.warn(
               s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
-            throw new RuntimeException("Incorrect Envelope State")
+            Future.failed(new RuntimeException("Incorrect Envelope State"))
           case _ =>
             Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
-            throw new RuntimeException("Could Not Read Envelope State")
+            Future.failed(new RuntimeException("Could Not Read Envelope State"))
       })
-      .recover {
+      .recoverWith {
         case _: RuntimeException =>
           Logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
           metrics.incrementFailedCounter(FusUploadFile)
-          throw new RuntimeException("Unable to find Envelope")
+          Future.failed(new RuntimeException("Unable to find Envelope"))
       }
   }
 
@@ -173,36 +170,23 @@ class FileUploadConnector @Inject()(
       }
   }
 
-  def retry(envelopeId: String, firstRetryMs: Int, attempt: Int, factor: Int = 2)(
-    implicit hc: HeaderCarrier): Future[Option[EnvelopeSummary]] =
-    attempt match {
-      case attempt: Int if attempt < config.maxAttempts =>
-        val nextTry = firstRetryMs * factor
-        val nextAttempt = attempt + 1
-
-        after(nextTry.milliseconds, as.scheduler, defaultContext, Future.successful(1)).flatMap { _ =>
-          envelope(envelopeId, nextTry, nextAttempt)
+  def envelope(envId: String)(implicit hc: HeaderCarrier): Future[Option[EnvelopeSummary]] = {
+    def internal(envId: String): Future[Option[EnvelopeSummary]] =
+      wsClient.url(s"${urls.envelopesUrl}/$envId").get() flatMap { response =>
+        response.status match {
+          case OK =>
+            Future.successful(response.json.asOpt[EnvelopeSummary](FileUploadFormatters.envelopeSummaryReads))
+          case NOT_FOUND =>
+            Future.failed(new RuntimeException(s"Could not find envelope with id: $envId"))
+          case _ =>
+            Logger.warn(
+              s"FileUploadConnector.envelopeStatus - failed to read envelope status, Api failed with status [${response.status}]")
+            Future.successful(None)
         }
-
-      case _ =>
-        Future.failed(
-          new RuntimeException(s"[FileUploadConnector][retry] envelope[$envelopeId] failed at attempt: $attempt"))
-    }
-
-  def envelope(envId: String, nextTry: Int = config.firstRetryMilliseconds, attempt: Int = 1)(
-    implicit hc: HeaderCarrier): Future[Option[EnvelopeSummary]] =
-    wsClient.url(s"${urls.envelopesUrl}/$envId").get() flatMap { response =>
-      response.status match {
-        case OK =>
-          Future.successful(response.json.asOpt[EnvelopeSummary](FileUploadFormatters.envelopeSummaryReads))
-        case NOT_FOUND =>
-          retry(envId, nextTry, attempt)
-        case _ =>
-          Logger.warn(
-            s"FileUploadConnector.envelopeStatus - failed to read envelope status, Api failed with status [${response.status}]")
-          Future.successful(None)
       }
-    }
+
+    retry(() => internal(envId), config.maxAttempts - 1, config.intervalMs.milliseconds)
+  }
 
   private def envelopeId(response: HttpResponse): Option[String] =
     response.header("Location").map(path => path.split("/").reverse.head)

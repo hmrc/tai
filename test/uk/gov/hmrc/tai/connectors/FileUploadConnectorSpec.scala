@@ -546,7 +546,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
       when(mockWsClient.url(any())).thenReturn(mockWSRequest)
       when(mockWSRequest.get()).thenReturn(Future.successful(mockResponse))
       when(mockConfig.maxAttempts).thenReturn(5)
-      when(mockConfig.firstRetryMilliseconds).thenReturn(20)
+      when(mockConfig.intervalMs).thenReturn(20)
 
       assertThrows[RuntimeException] {
         Await.result(sut.envelope(envelopeId), Duration.Inf)

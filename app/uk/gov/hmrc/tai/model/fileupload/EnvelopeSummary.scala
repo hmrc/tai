@@ -20,5 +20,5 @@ case class EnvelopeSummary(envelopeId: String, status: String, files: Seq[Envelo
 
   private val STATUS_OPEN = "OPEN"
 
-  def isOpen = this.status.equals(STATUS_OPEN)
+  val isOpen = status == STATUS_OPEN
 }
