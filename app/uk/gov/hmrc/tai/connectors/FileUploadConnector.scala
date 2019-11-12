@@ -171,7 +171,7 @@ class FileUploadConnector @Inject()(
   }
 
   def envelope(envId: String)(implicit hc: HeaderCarrier): Future[Option[EnvelopeSummary]] = {
-    def internal(envId: String): Future[Option[EnvelopeSummary]] =
+    def internal: Future[Option[EnvelopeSummary]] =
       wsClient.url(s"${urls.envelopesUrl}/$envId").get() flatMap { response =>
         response.status match {
           case OK =>
@@ -185,7 +185,7 @@ class FileUploadConnector @Inject()(
         }
       }
 
-    retry(() => internal(envId), config.maxAttempts - 1, config.intervalMs.milliseconds)
+    retry(() => internal, config.maxAttempts - 1, config.intervalMs.milliseconds)
   }
 
   private def envelopeId(response: HttpResponse): Option[String] =
