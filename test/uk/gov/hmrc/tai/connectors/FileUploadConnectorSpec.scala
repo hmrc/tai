@@ -24,7 +24,7 @@ import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
 import play.api.libs.json.{JsArray, JsValue, Json}
@@ -36,7 +36,6 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
-import uk.gov.hmrc.tai.model.enums.APITypes._
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
 import scala.concurrent.duration._
@@ -47,34 +46,6 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
 
   implicit val hc = HeaderCarrier()
 
-  def setupWSClient(mockResponse: WSResponse = mock[WSResponse], failed: Boolean = false): AhcWSClient = {
-    val mockRequest = mock[WSRequest]
-    val mockClient = mock[AhcWSClient]
-
-    if (!failed) {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
-        .thenReturn(Future.successful(mockResponse))
-      when(mockRequest.get())
-        .thenReturn(Future.successful(mockResponse))
-    } else {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
-        .thenReturn(Future.failed(new RuntimeException("Error")))
-      when(mockRequest.get())
-        .thenReturn(Future.failed(new RuntimeException("Error")))
-    }
-    when(mockRequest.withHeaders(any())).thenReturn(mockRequest)
-    when(mockClient.url(any())).thenReturn(mockRequest)
-
-    mockClient
-  }
-
-  def setupMetrics: (Metrics, Timer.Context) = {
-    val m = mock[Metrics]
-    val tc = mock[Timer.Context]
-    when(m.startTimer(any())).thenReturn(tc)
-    (m, tc)
-  }
-
   "createEnvelope" must {
     "return an envelope id" in {
       val mockHttpClient = mock[HttpClient]
@@ -82,9 +53,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         .thenReturn(Future.successful(
           HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
 
-      val mockMetrics = setupMetrics._1
-
-      val sut = createSut(mockMetrics, mockHttpClient)
+      val sut = createSut(mockHttpClient)
       Await.result(sut.createEnvelope, 5 seconds) mustBe "4142477f-9242-4a98-9c8b-73295cfb170c"
     }
     "call the file upload service create envelope endpoint" in {
@@ -104,9 +73,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         .thenReturn(Future.successful(
           HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
 
-      val mockMetrics = setupMetrics._1
-
-      val sut = createSut(mockMetrics, mockHttpClient, urls = mockUrls, config = mockConfig)
+      val sut = createSut(mockHttpClient, urls = mockUrls, config = mockConfig)
       Await.result(sut.createEnvelope, 5.seconds)
 
       verify(mockHttpClient, times(1))
@@ -117,9 +84,8 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(CREATED)))
-        val mockMetrics = setupMetrics._1
 
-        val sut = createSut(mockMetrics, mockHttpClient)
+        val sut = createSut(mockHttpClient)
         val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
@@ -140,42 +106,10 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(400)))
 
-        val sut = createSut(setupMetrics._1, mockHttpClient)
+        val sut = createSut(mockHttpClient)
         val ex = the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
 
         ex.getMessage mustBe "File upload envelope creation failed"
-      }
-    }
-    "update metrics for the status of the create envelope call" when {
-      "the call is successful" in {
-
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(
-            HttpResponse(CREATED, None, Map("Location" -> Seq(s"localhost:8898/file-upload/envelopes/$envelopeId")))))
-
-        val (mockMetrics, mockTimeContext) = setupMetrics
-        val sut = createSut(mockMetrics, mockHttpClient)
-        Await.result(sut.createEnvelope, 5.seconds)
-
-        verify(mockMetrics, times(1))
-          .incrementSuccessCounter(FusCreateEnvelope)
-        verify(mockMetrics, times(1))
-          .startTimer(Matchers.eq(FusCreateEnvelope))
-        verify(mockTimeContext, times(1))
-          .stop()
-      }
-      "the call failed" in {
-        val mockMetrics = mock[Metrics]
-
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(400)))
-
-        val sut = createSut(mockMetrics, mockHttpClient)
-        the[RuntimeException] thrownBy Await.result(sut.createEnvelope, 5 seconds)
-
-        verify(mockMetrics, times(1)).incrementFailedCounter(FusCreateEnvelope)
       }
     }
   }
@@ -184,77 +118,62 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
 
     "return Success" when {
       "File upload service successfully upload the file" in {
-        val (mockMetrics, mockTimeContext) = setupMetrics
-
         val mockUrls = mock[FileUploadUrls]
         when(mockUrls.envelopesUrl).thenReturn("envelope")
         when(mockUrls.fileUrl(any(), any())).thenReturn("file")
-
-        val mockConfig = mock[FileUploadConfig]
 
         val mockOkClient = setupWSClient(createMockResponse(OK, ""))
         val mockOpenTestClient =
           setupWSClient(createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "OPEN", "TEST" -> "Data")))
 
-        val sut = createSut(mockMetrics, wsClient = mockOpenTestClient, urls = mockUrls, config = mockConfig)
+        val sut = createSut(wsClient = mockOpenTestClient, urls = mockUrls)
         val result = Await.result(
           sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mockOkClient),
           5 seconds)
 
         result.status mustBe OK
-        verify(mockMetrics, times(1)).incrementSuccessCounter(Matchers.eq(FusUploadFile))
-        verify(mockOkClient, times(1)).url(any())
-        verify(mockMetrics, times(1)).startTimer(Matchers.eq(FusUploadFile))
-        verify(mockTimeContext, times(1)).stop()
       }
     }
     "throw runtime exception" when {
 
       "file upload service return status other than OK on uploadfile" in {
-        val mockMetrics = setupMetrics._1
         val ahcWSClient = setupWSClient(createMockResponse(BAD_REQUEST, ""))
         val wsClient =
           setupWSClient(createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "OPEN", "TEST" -> "Data")))
 
-        val sut = createSut(mockMetrics, wsClient = wsClient)
+        val sut = createSut(wsClient = wsClient)
 
         the[RuntimeException] thrownBy Await
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
-        verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
       }
 
       "file upload service returns non-open summary" in {
-        val mockMetrics = mock[Metrics]
         val ahcWSClient = setupWSClient(createMockResponse(BAD_REQUEST, ""))
         val wsClient =
           setupWSClient(createMockResponse(200, Json.obj("id" -> envelopeId, "status" -> "CLOSED", "TEST" -> "Data")))
-        val sut = createSut(mockMetrics, wsClient = wsClient)
+        val sut = createSut(wsClient = wsClient)
 
         the[RuntimeException] thrownBy Await
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
-        verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
       }
 
       "file upload service returns none" in {
-        val mockMetrics = mock[Metrics]
         val ahcWSClient = setupWSClient(createMockResponse(BAD_REQUEST, ""))
         val wsClient = setupWSClient(createMockResponse(400, envelopeStatusResponse("AVAILABLE", "AVAILABLE")))
-        val sut = createSut(mockMetrics, wsClient = wsClient)
+        val sut = createSut(wsClient = wsClient)
 
         the[RuntimeException] thrownBy Await
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
-        verify(mockMetrics, times(1)).incrementFailedCounter(Matchers.eq(FusUploadFile))
-
       }
 
       "any error occurred" in {
         val mockWsClient = setupWSClient(failed = true)
         val sut = createSut(wsClient = mockWsClient)
 
-        val ahcWSClient: AhcWSClient = mock[AhcWSClient]
-
         the[RuntimeException] thrownBy Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+          .result(
+            sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, mock[AhcWSClient]),
+            5 seconds)
       }
     }
 
@@ -267,9 +186,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
         .thenReturn(
           Future.successful(HttpResponse(CREATED, None, Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
 
-      val mockMetrics = setupMetrics._1
-
-      val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mock[FileUploadUrls], mock[FileUploadConfig])
+      val sut = createSut(mockHttpClient)
 
       Await.result(sut.closeEnvelope(envelopeId), 5 seconds) mustBe envelopeId
     }
@@ -288,41 +205,32 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
       when(mockUrls.routingUrl)
         .thenReturn(uploadEndpoint)
 
-      val mockMetrics = setupMetrics._1
-
-      val sut = createSut(mockMetrics, mockHttpClient, mock[WSClient], mockUrls, mock[FileUploadConfig])
+      val sut = createSut(mockHttpClient, urls = mockUrls)
       Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
       verify(mockHttpClient, times(1))
         .POST(Matchers.eq(uploadEndpoint), any(), any())(any(), any(), any(), any())
-      verify(mockMetrics, times(1))
-        .startTimer(Matchers.eq(FusCloseEnvelope))
     }
     "throw a runtime exception" when {
       "the success response does not contain a location header" in {
-        val mockMetrics = setupMetrics._1
         val mockHttpClient = mock[HttpClient]
-        val mockWsClient = mock[WSClient]
-        val mockUrls = mock[FileUploadUrls]
-        val mockConfig = mock[FileUploadConfig]
-
-        val sut = createSut(mockMetrics, mockHttpClient, mockWsClient, mockUrls, mockConfig)
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(CREATED)))
+
+        val sut = createSut(mockHttpClient)
 
         val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
 
         ex.getMessage mustBe "File upload envelope routing request failed"
       }
       "the call to the file upload service routing request endpoint fails" in {
-        val mockMetrics = setupMetrics
         val mockHttpClient = mock[HttpClient]
-
-        val sut = createSut(mockMetrics._1, mockHttpClient)
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.failed(new RuntimeException("call failed")))
+
+        val sut = createSut(mockHttpClient)
 
         val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
 
@@ -330,48 +238,17 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
 
       }
       "the call to the file upload service returns a failure response" in {
-        val mockMetrics = setupMetrics
         val mockHttpClient = mock[HttpClient]
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(400)))
 
-        val sut = createSut(mockMetrics._1, mockHttpClient)
+        val sut = createSut(mockHttpClient)
 
         val ex = the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
 
         ex.getMessage mustBe "File upload envelope routing request failed"
 
-      }
-    }
-    "update metrics for the status of the close envelope call" when {
-
-      "the call is successful" in {
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(
-            HttpResponse(CREATED, None, Map("Location" -> Seq(s"/file-routing/requests/$envelopeId")))))
-
-        val mockMetrics = setupMetrics._1
-
-        val sut = createSut(mockMetrics, mockHttpClient)
-
-        Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
-        verify(mockMetrics, times(1)).startTimer(FusCloseEnvelope)
-        verify(mockMetrics, times(1)).incrementSuccessCounter(FusCloseEnvelope)
-      }
-
-      "the call failed" in {
-        val mockMetrics = mock[Metrics]
-        val mockHttpClient = mock[HttpClient]
-        val sut = createSut(mockMetrics, mockHttpClient)
-
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(400)))
-
-        the[RuntimeException] thrownBy Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
-
-        verify(mockMetrics, times(1)).incrementFailedCounter(FusCloseEnvelope)
       }
     }
   }
@@ -477,13 +354,40 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
   private val fileName = "fileName.pdf"
   private val contentType = MimeContentType.ApplicationPdf
 
+  private def setupWSClient(mockResponse: WSResponse = mock[WSResponse], failed: Boolean = false): AhcWSClient = {
+    val mockRequest = mock[WSRequest]
+    val mockClient = mock[AhcWSClient]
+
+    if (!failed) {
+      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+        .thenReturn(Future.successful(mockResponse))
+      when(mockRequest.get())
+        .thenReturn(Future.successful(mockResponse))
+    } else {
+      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+        .thenReturn(Future.failed(new RuntimeException("Error")))
+      when(mockRequest.get())
+        .thenReturn(Future.failed(new RuntimeException("Error")))
+    }
+    when(mockRequest.withHeaders(any())).thenReturn(mockRequest)
+    when(mockClient.url(any())).thenReturn(mockRequest)
+
+    mockClient
+  }
+
+  private def setupMetrics: Metrics = {
+    val m = mock[Metrics]
+    val tc = mock[Timer.Context]
+    when(m.startTimer(any())).thenReturn(tc)
+    m
+  }
+
   private def createSut(
-    metrics: Metrics = mock[Metrics],
     HttpClient: HttpClient = mock[HttpClient],
     wsClient: WSClient = mock[WSClient],
     urls: FileUploadUrls = mock[FileUploadUrls],
     config: FileUploadConfig = mock[FileUploadConfig]) =
-    new FileUploadConnector(metrics, HttpClient, wsClient, urls, config)
+    new FileUploadConnector(setupMetrics, HttpClient, wsClient, urls, config)
 
   @After
   def validate() = validateMockitoUsage()
