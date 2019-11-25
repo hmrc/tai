@@ -3,8 +3,6 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 import org.mockito.Mockito
 import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.cache.model.Cache
-import uk.gov.hmrc.cache.repository.CacheRepository
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -15,7 +13,6 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
