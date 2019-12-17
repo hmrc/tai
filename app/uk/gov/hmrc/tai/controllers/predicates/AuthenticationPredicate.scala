@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.controllers.predicates
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -42,7 +43,9 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
         .recover {
-          case e: AuthorisationException => Unauthorized(e.getMessage)
+          case e: AuthorisationException =>
+            Logger.warn("Failed to authorise: " + e.reason)
+            Unauthorized(e.getMessage)
         }
     }
 
@@ -56,7 +59,9 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
         .recover {
-          case e: AuthorisationException => Unauthorized(e.getMessage)
+          case e: AuthorisationException =>
+            Logger.warn("Failed to authorise: " + e.reason)
+            Unauthorized(e.getMessage)
         }
     }
 }
