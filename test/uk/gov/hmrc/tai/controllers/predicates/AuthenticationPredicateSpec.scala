@@ -25,7 +25,7 @@ import play.api.http.Status
 import play.api.mvc.{Action, AnyContent}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.{AuthorisedFunctions, MissingBearerToken}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
@@ -48,26 +48,40 @@ class AuthenticationPredicateSpec
 
   object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
 
-  "return UNAUTHORIZED when called with an Unauthenticated user" in {
-    val mockAuthService = mock[AuthorisedFunctions]
+  val authErrors = Seq[RuntimeException](
+    new InsufficientConfidenceLevel,
+    new InsufficientEnrolments,
+    new UnsupportedAffinityGroup,
+    new UnsupportedCredentialRole,
+    new UnsupportedAuthProvider,
+    new IncorrectCredentialStrength,
+    new InternalError,
+    new InvalidBearerToken,
+    new BearerTokenExpired,
+    new MissingBearerToken,
+    new SessionRecordNotFound
+  )
 
-    when(mockAuthService.authorised(any()))
-      .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
-        override def retrieve[A](retrieval: Retrieval[A]) =
-          new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
-            override def apply[B](
-              body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =
-              Future.failed(new MissingBearerToken)
-          }
-      })
+  authErrors.foreach(error => {
+    s"return UNAUTHORIZED when auth throws a ${error}" in {
+      val mockAuthService = mock[AuthorisedFunctions]
 
-    object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
-    val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
+      when(mockAuthService.authorised(any()))
+        .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
+          override def retrieve[A](retrieval: Retrieval[A]) =
+            new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
+              override def apply[B](
+                body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =
+                Future.failed(error)
+            }
+        })
 
-    whenReady(result.failed) { e =>
-      e mustBe a[MissingBearerToken]
+      object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
+      val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
+
+      status(result) mustBe Status.UNAUTHORIZED
     }
-  }
+  })
 
   "return OK and contain the user's NINO when called with an Authenticated user" in {
     class SUT(val authentication: AuthenticationPredicate) extends BaseController {
