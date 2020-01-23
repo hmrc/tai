@@ -32,7 +32,7 @@ import uk.gov.hmrc.tai.util.IFormConstants
 import scala.concurrent.Future
 
 @Singleton
-class gPensionProviderService @Inject()(
+class PensionProviderService @Inject()(
   iFormSubmissionService: IFormSubmissionService,
   employmentRepository: EmploymentRepository,
   auditable: Auditor) {
