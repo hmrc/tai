@@ -51,7 +51,6 @@ Deprecated API Endpoints (Not advised to use)
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
 | ```/tai/:nino``` | GET | Returns the ```TaiRoot``` for the given nino. [More...](docs/tai-root.md)  |
-| ```/tai/:nino/tax-summary/:taxYear``` | GET | Returns a the ```Tax Summary``` for the given nino. [More...](docs/tax-summary.md)  |
 | ```/tai/:nino/incomes/:taxYear/update``` | POST | Update ```Income``` IABDTypes  for the given list of incomes. [More...](docs/update-incomes-iabd.md)  |
 | ```/tai/:nino/incomes/:taxYear/update-without-saving ``` | POST | Update the ```Income``` IABDTypes  for the given list of incomes. [More...](docs/update-incomes-iabd.md)  |
 | ```/tai/calculator/annualise-income ``` | POST | Annualises year to date incomes for a given amount, a start date and an end date. [More...](docs/annualise-income.md)  |
