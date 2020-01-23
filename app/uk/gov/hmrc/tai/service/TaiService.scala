@@ -62,25 +62,6 @@ class TaiService @Inject()(
       personDetails.toTaiRoot
     }
 
-//  def getCalculatedTaxAccountPartial(nino: Nino, taxYear: Int)(
-//    implicit hc: HeaderCarrier): Future[TaxSummaryDetails] = {
-//
-//    val employmentsFuture = nps.getEmployments(nino, taxYear)
-//    val iabdsFuture =
-//      if (featureTogglesConfig.desEnabled) des.getIabdsFromDes(nino, taxYear) else nps.getIabds(nino, taxYear)
-//    val taxAccountFuture =
-//      if (featureTogglesConfig.desEnabled) des.getCalculatedTaxAccountFromDes(nino, taxYear)
-//      else nps.getCalculatedTaxAccount(nino, taxYear)
-//
-//    for {
-//      (employments, _, _, _)      <- employmentsFuture
-//      iabds                       <- iabdsFuture
-//      (taxAccount, newVersion, _) <- taxAccountFuture
-//    } yield {
-//      taxAccount.toTaxSummary(newVersion, employments, iabds)
-//    }
-//  }
-
   def getAutoUpdateResults(nino: Nino, taxYear: Int)(implicit hc: HeaderCarrier): Future[(
     List[NpsEmployment],
     List[RtiCalc],
