@@ -48,10 +48,4 @@ class TaxSummaryController @Inject()(
       updateEmploymentsResponse.map(response => Ok(Json.toJson(response)))
     }
   }
-
-  private def convertToErrorResponse: PartialFunction[Throwable, Future[Result]] =
-    PartialFunction[Throwable, Future[Result]] {
-      case ex: BadRequestException => Future.successful(BadRequest(ex.message))
-      case ex: HttpException       => throw ex
-    }
 }
