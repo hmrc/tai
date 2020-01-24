@@ -85,8 +85,7 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featu
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 
-  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String =
-    if (featureTogglesConfig.desEnabled) desTaxAccountURL(nino, taxYear) else npsTaxAccountURL(nino, taxYear)
+  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = desTaxAccountURL(nino, taxYear)
 }
 
 @Singleton
