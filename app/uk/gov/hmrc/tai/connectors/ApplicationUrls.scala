@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
+import play.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
@@ -85,7 +86,11 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featu
   def taxAccountHistoricSnapshotUrl(nino: Nino, iocdSeqNo: Int): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 
-  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = desTaxAccountURL(nino, taxYear)
+  def taxAccountUrl(nino: Nino, taxYear: TaxYear): String = {
+    lazy val url = s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/${taxYear.year}"
+    Logger.debug(s"Tax Account URL is $url")
+    url
+  }
 }
 
 @Singleton
