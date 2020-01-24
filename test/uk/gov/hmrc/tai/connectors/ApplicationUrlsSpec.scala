@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,14 +151,14 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
 
     "toggled for confirmed" must {
       "return the correct DES url" when {
-        "given argument values" in {
+        "given argument values" ignore {
           featureToggle(true, true)
           taxAccountUrls
             .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
         }
       }
       "return the correct NPS url" when {
-        "given argument values" in {
+        "given argument values" ignore {
           featureToggle(false, true)
           taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
         }
