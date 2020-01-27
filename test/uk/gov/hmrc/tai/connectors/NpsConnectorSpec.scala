@@ -26,7 +26,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
@@ -219,6 +219,7 @@ class NpsConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplic
     httpClient: HttpClient,
     audit: Auditor,
     formats: IabdUpdateAmountFormats,
-    config: NpsConfig) =
-    new NpsConnector(metrics, httpClient, audit, formats, config)
+    config: NpsConfig,
+    mockDESConfig: DesConfig = mock[DesConfig]) =
+    new NpsConnector(metrics, httpClient, audit, formats, config, mockDESConfig)
 }

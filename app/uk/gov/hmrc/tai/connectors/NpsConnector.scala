@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -43,16 +43,18 @@ class NpsConnector @Inject()(
   httpClient: HttpClient,
   auditor: Auditor,
   formats: IabdUpdateAmountFormats,
-  config: NpsConfig)
+  config: NpsConfig,
+  descConfig: DesConfig)
     extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
   override val originatorId = config.originatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
+  def desPathUrl(nino: Nino, path: String) = s"${descConfig.baseURL}/person/$nino/$path"
 
   def getEmployments(nino: Nino, year: Int)(implicit hc: HeaderCarrier)
     : Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
-    val urlToRead = npsPathUrl(nino, s"employment/$year")
+    val urlToRead = desPathUrl(nino, s"employment/$year")
     val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI)
     json.map { x =>
       (x._1.as[List[NpsEmployment]], x._1.as[List[model.nps2.NpsEmployment]], x._2, Nil)
