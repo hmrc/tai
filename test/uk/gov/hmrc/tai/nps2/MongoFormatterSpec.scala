@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package uk.gov.hmrc.tai.nps2
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter
-import uk.gov.hmrc.tai.model.nps2.Income.IncomeType
+import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, IncomeType, Status}
 import uk.gov.hmrc.tai.model.nps2.{Component, Iabd, Income, MongoFormatter, NpsEmployment, TaxBand, TaxDetail, TaxObject}
-import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class MongoFormatterSpec extends PlaySpec with MongoFormatter {
 
@@ -74,6 +74,101 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
 
         Json.toJson(totalLiabilityMap) mustBe json
       }
+    }
+
+    "Income Writes" when {
+
+      "converts Income to Json where where many fields are not present" in {
+
+        Json.toJson(defaultIncome) mustEqual defaultIncomeJson
+
+      }
+
+      "converts Income to json where incomeType is pension" in {
+
+        val json = defaultIncomeJson ++ Json.obj("pensionIndicator" -> true)
+        Json.toJson(defaultIncome.copy(incomeType = IncomeType.Pension)) mustEqual json
+
+      }
+
+      "converts Income to json where incomeType is JSA" in {
+
+        val json = defaultIncomeJson ++ Json.obj("jsaIndicator" -> true)
+        Json.toJson(defaultIncome.copy(incomeType = IncomeType.JobSeekersAllowance)) mustEqual json
+
+      }
+
+      "converts Income to json where incomeType is OtherIncome" in {
+
+        val json = defaultIncomeJson ++ Json.obj("otherIncomeSourceIndicator" -> true)
+        Json.toJson(defaultIncome.copy(incomeType = IncomeType.OtherIncome)) mustEqual json
+
+      }
+
+      "converts Income to Json where all the fields are present" in {
+        val json = Json.obj(
+          "employmentId"                -> 1,
+          "employmentType"              -> 1,
+          "employmentStatus"            -> 1,
+          "employmentTaxDistrictNumber" -> 111,
+          "employmentPayeRef"           -> "some paye ref",
+          "pensionIndicator"            -> false,
+          "jsaIndicator"                -> false,
+          "otherIncomeSourceIndicator"  -> false,
+          "name"                        -> "some name",
+          "endDate"                     -> JsNull,
+          "worksNumber"                 -> "1234",
+          "taxCode"                     -> "AB1234",
+          "potentialUnderpayment"       -> 20.2,
+          "employmentRecord" -> Json.obj(
+            "employerName"      -> "Company Plc",
+            "employmentType"    -> 1,
+            "sequenceNumber"    -> 1,
+            "worksNumber"       -> "1234",
+            "taxDistrictNumber" -> "1",
+            "iabds" -> Json.arr(
+              Json.obj(
+                "grossAmount" -> 10,
+                "type"        -> 1,
+                "source"      -> 16,
+                "typeDescription" ->
+                  "dummyDescription",
+                "employmentSequenceNumber" -> 32
+              )
+            ),
+            "cessationPayThisEmployment" -> 2200.22,
+            "startDate"                  -> "12/12/2017"
+          ),
+          "basisOperation" -> "Week1Month1"
+        )
+
+        val income = Income(
+          employmentId = Some(1),
+          isPrimary = true,
+          incomeType = IncomeType.Employment,
+          status = Status(Some(1), None),
+          taxDistrict = Some(111),
+          payeRef = "some paye ref",
+          name = "some name",
+          worksNumber = Some("1234"),
+          taxCode = "AB1234",
+          potentialUnderpayment = 20.2,
+          employmentRecord = Some(
+            NpsEmployment(
+              Some("Company Plc"),
+              isPrimary = true,
+              sequenceNumber = 1,
+              worksNumber = Some("1234"),
+              districtNumber = 1,
+              iabds = List(testIabd),
+              cessationPay = Some(2200.22),
+              start = new LocalDate(2017, 12, 12)
+            )),
+          basisOperation = Some(BasisOperation.Week1Month1)
+        )
+        Json.toJson(income) mustEqual json
+      }
+
     }
 
     "provide Json formatting of Income" when {
@@ -337,6 +432,38 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
     iabds = List(testIabd),
     cessationPay = Some(2200.22),
     start = fixedDate
+  )
+
+  private val defaultIncome = Income(
+    employmentId = None,
+    isPrimary = false,
+    incomeType = IncomeType.Employment,
+    status = Status(Some(1), None),
+    taxDistrict = None,
+    payeRef = "some paye ref",
+    name = "some name",
+    worksNumber = None,
+    taxCode = "AB1234",
+    potentialUnderpayment = 20.2,
+    employmentRecord = None,
+    basisOperation = None
+  )
+
+  private val defaultIncomeJson = Json.obj(
+    "employmentId"                -> JsNull,
+    "employmentType"              -> 2,
+    "employmentStatus"            -> 1,
+    "employmentTaxDistrictNumber" -> JsNull,
+    "employmentPayeRef"           -> "some paye ref",
+    "pensionIndicator"            -> false,
+    "jsaIndicator"                -> false,
+    "otherIncomeSourceIndicator"  -> false,
+    "name"                        -> "some name",
+    "endDate"                     -> JsNull,
+    "worksNumber"                 -> JsNull,
+    "taxCode"                     -> "AB1234",
+    "potentialUnderpayment"       -> 20.2,
+    "employmentRecord"            -> JsNull
   )
 
   private def stripFormatting(string: String): String =

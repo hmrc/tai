@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,33 +41,6 @@ class TaxSummaryController @Inject()(
   authentication: AuthenticationPredicate)
     extends BaseController with MongoFormatter {
 
-  def getTaxSummaryPartial(nino: Nino, year: Int): Action[AnyContent] =
-    authentication.async { implicit request =>
-      taiService
-        .getCalculatedTaxAccountPartial(nino, year)
-        .map(summaryDetails => Ok(Json.toJson(summaryDetails)))
-        .recoverWith(convertToErrorResponse)
-    }
-
-  def getTaxSummary(nino: Nino, year: Int): Action[AnyContent] = authentication.async { implicit request =>
-    {
-      taxAccountService.taxSummaryDetails(nino, year).map(td => Ok(Json.toJson(td)))
-    } recoverWith {
-      case NpsError(body, NOT_FOUND) =>
-        Logger.warn(s"Tax Account - No tax Account data returned from NPS for nino $nino")
-        Future.failed(new NotFoundException(body))
-      case NpsError(body, BAD_REQUEST) =>
-        Logger.warn(s"Tax Account - Bad Request returned from NPS for nino $nino")
-        Future.successful(BadRequest(body))
-      case NpsError(body, INTERNAL_SERVER_ERROR) =>
-        Logger.warn(s"Tax Account - Internal Server error returned from NPS for nino $nino")
-        Future.failed(new InternalServerException(body))
-      case NpsError(body, status) =>
-        Logger.warn(s"Tax Account - Service Unavailable returned from NPS for nino $nino")
-        Future.failed(new HttpException(body, status))
-    }
-  }
-
   def updateEmployments(nino: Nino, year: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[IabdUpdateEmploymentsRequest] { editIabd =>
       val updateEmploymentsResponse = taiService.updateEmployments(nino, year, NewEstimatedPay.code, editIabd)
@@ -75,10 +48,4 @@ class TaxSummaryController @Inject()(
       updateEmploymentsResponse.map(response => Ok(Json.toJson(response)))
     }
   }
-
-  private def convertToErrorResponse: PartialFunction[Throwable, Future[Result]] =
-    PartialFunction[Throwable, Future[Result]] {
-      case ex: BadRequestException => Future.successful(BadRequest(ex.message))
-      case ex: HttpException       => throw ex
-    }
 }

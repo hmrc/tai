@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,25 +61,6 @@ class TaiService @Inject()(
     cid.getPersonDetails(nino).map { personDetails =>
       personDetails.toTaiRoot
     }
-
-  def getCalculatedTaxAccountPartial(nino: Nino, taxYear: Int)(
-    implicit hc: HeaderCarrier): Future[TaxSummaryDetails] = {
-
-    val employmentsFuture = nps.getEmployments(nino, taxYear)
-    val iabdsFuture =
-      if (featureTogglesConfig.desEnabled) des.getIabdsFromDes(nino, taxYear) else nps.getIabds(nino, taxYear)
-    val taxAccountFuture =
-      if (featureTogglesConfig.desEnabled) des.getCalculatedTaxAccountFromDes(nino, taxYear)
-      else nps.getCalculatedTaxAccount(nino, taxYear)
-
-    for {
-      (employments, _, _, _)      <- employmentsFuture
-      iabds                       <- iabdsFuture
-      (taxAccount, newVersion, _) <- taxAccountFuture
-    } yield {
-      taxAccount.toTaxSummary(newVersion, employments, iabds)
-    }
-  }
 
   def getAutoUpdateResults(nino: Nino, taxYear: Int)(implicit hc: HeaderCarrier): Future[(
     List[NpsEmployment],
