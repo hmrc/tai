@@ -59,10 +59,8 @@ class EmploymentRepository @Inject()(
   //TODO: Ensure this has tests, if not, add them!
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino).flatMap { allEmployments =>
-      allEmployments.filter(
-        e =>
-          e.startDate.isAfter(year.start) &&
-            ((e.endDate.isDefined && year.start.isBefore(e.endDate.get)) || e.endDate.isEmpty)) match {
+      allEmployments
+        .filterNot(e => e.startDate.isAfter(year.end) || (e.endDate.isDefined && e.endDate.get.isBefore(year.start))) match {
         case Nil                     => employmentsFromHod(nino, year)
         case employmentsForGivenYear => Future.successful(employmentsForGivenYear)
       }
@@ -71,20 +69,22 @@ class EmploymentRepository @Inject()(
   //TODO: Do we care about the realTimeStatus of the accounts?
   def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-//    val employmentsWithKnownAccountState =
-//      employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
-//    if (employmentsWithKnownAccountState.nonEmpty) {
-//      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
-//    } else {
-    Future.successful(employments)
-//    }
+    if (employments.nonEmpty) {
+      modifyCache(cacheId, employments).map(_ => employments)
+    } else {
+      Future.successful(employments)
+    }
 
   def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
     for {
-      cachedEmployments <- cacheConnector
-                            .createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
-                              EmploymentMongoFormatters.formatEmployment)
-    } yield cachedEmployments
+      cachedEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
+                            EmploymentMongoFormatters.formatEmployment)
+      newCachedEmployments <- cacheConnector
+                               .createOrUpdateSeq[Employment](
+                                 cacheId,
+                                 cachedEmployments ++ employments,
+                                 EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment)
+    } yield newCachedEmployments
 
   def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     val employmentsFuture: Future[JsValue] = npsConnector.getEmploymentDetails(nino, taxYear.year)

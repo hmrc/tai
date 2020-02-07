@@ -513,7 +513,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Some("12345"),
           LocalDate.parse("2017-07-24"),
           None,
-//          List(AnnualAccount("tdNo-payeNumber-12345", cty, Available, Nil, Nil)),
           "tdNo",
           "payeNumber",
           1,
@@ -526,7 +525,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Some("12346"),
           LocalDate.parse("2017-07-24"),
           None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, Available, Nil, Nil)),
           "tdNo",
           "payeNumber",
           2,
@@ -543,7 +541,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
-//            List(AnnualAccount("tdNo-payeNumber-12345", pty, Available, Nil, Nil)),
             "tdNo",
             "payeNumber",
             1,
@@ -568,7 +565,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Some("12346"),
           LocalDate.parse("2017-07-24"),
           None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, Available, Nil, Nil)),
           "tdNo",
           "payeNumber",
           2,
@@ -581,9 +577,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Some("12345"),
           LocalDate.parse("2017-07-24"),
           None,
-//          List(
-//            AnnualAccount("tdNo-payeNumber-12345", pty, Available, Nil, Nil),
-//            AnnualAccount("tdNo-payeNumber-12345", cty, Available, Nil, Nil)),
           "tdNo",
           "payeNumber",
           1,
@@ -646,163 +639,165 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       }
     }
 
-    "selectively ignore supplied AnnualAccount data" when {
+    //TODO: Account for this behaviour when producing new endpoint.
+//    "selectively ignore supplied AnnualAccount data" when {
+//
+//      "real time status is TemporarilyUnavailable" in {
+//        val cty = TaxYear()
+//
+//        val emp1 = Employment(
+//          "TEST",
+//          Some("12345"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12345", cty, Available, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          1,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp2 = Employment(
+//          "TEST",
+//          Some("12346"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, Unavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          2,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp3 = Employment(
+//          "TEST",
+//          Some("12347"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, Available, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          3,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp4 = Employment(
+//          "TEST",
+//          Some("12348"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          4,
+//          Some(100),
+//          false,
+//          false
+//        )
+//
+//        val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
+//
+//        val mockCacheConnector = mock[CacheConnector]
+//        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+//        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+//          .thenReturn(Future.successful(Nil))
+//
+//        val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
+//        Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
+//
+//        verify(mockCacheConnector, times(1))
+//          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
+//        verify(mockCacheConnector, times(1))
+//          .createOrUpdateSeq[Employment](
+//            Matchers.eq(cacheId),
+//            employmentsCaptor.capture(),
+//            Matchers.eq("EmploymentData"))(any())
+//
+//        val actualCached = employmentsCaptor.getValue
+//        actualCached must contain(emp1)
+//        actualCached must contain(emp2)
+//        actualCached must contain(emp3)
+//        actualCached must not contain (emp4)
+//        actualCached.size mustBe 3
+//      }
+//    }
 
-      "real time status is TemporarilyUnavailable" in {
-        val cty = TaxYear()
-
-        val emp1 = Employment(
-          "TEST",
-          Some("12345"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12345", cty, Available, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          1,
-          Some(100),
-          false,
-          false
-        )
-        val emp2 = Employment(
-          "TEST",
-          Some("12346"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, Unavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          2,
-          Some(100),
-          false,
-          false
-        )
-        val emp3 = Employment(
-          "TEST",
-          Some("12347"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, Available, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          3,
-          Some(100),
-          false,
-          false
-        )
-        val emp4 = Employment(
-          "TEST",
-          Some("12348"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          4,
-          Some(100),
-          false,
-          false
-        )
-
-        val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
-          .thenReturn(Future.successful(Nil))
-
-        val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
-        Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
-
-        verify(mockCacheConnector, times(1))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
-        verify(mockCacheConnector, times(1))
-          .createOrUpdateSeq[Employment](
-            Matchers.eq(cacheId),
-            employmentsCaptor.capture(),
-            Matchers.eq("EmploymentData"))(any())
-
-        val actualCached = employmentsCaptor.getValue
-        actualCached must contain(emp1)
-        actualCached must contain(emp2)
-        actualCached must contain(emp3)
-        actualCached must not contain (emp4)
-        actualCached.size mustBe 3
-      }
-    }
-
-    "bypass caching entirely" when {
-
-      "all records are found to have realtime status of TemporarilyUnavailable" in {
-        val cty = TaxYear()
-
-        val emp1 = Employment(
-          "TEST",
-          Some("12345"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12345", cty, TemporarilyUnavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          1,
-          Some(100),
-          false,
-          false
-        )
-        val emp2 = Employment(
-          "TEST",
-          Some("12346"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          2,
-          Some(100),
-          false,
-          false
-        )
-        val emp3 = Employment(
-          "TEST",
-          Some("12347"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          3,
-          Some(100),
-          false,
-          false
-        )
-        val emp4 = Employment(
-          "TEST",
-          Some("12348"),
-          LocalDate.parse("2017-07-24"),
-          None,
-//          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
-          "tdNo",
-          "payeNumber",
-          4,
-          Some(100),
-          false,
-          false
-        )
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
-          .thenReturn(Future.successful(Nil))
-
-        val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
-        Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
-
-        verify(mockCacheConnector, times(0))
-          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
-        verify(mockCacheConnector, times(0))
-          .createOrUpdateSeq[Employment](Matchers.eq(cacheId), any(), Matchers.eq("EmploymentData"))(any())
-      }
-    }
+    //TODO: Consider when reintroducing the annual accounts in the new endpoint.
+//    "bypass caching entirely" when {
+//
+//      "all records are found to have realtime status of TemporarilyUnavailable" in {
+//        val cty = TaxYear()
+//
+//        val emp1 = Employment(
+//          "TEST",
+//          Some("12345"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12345", cty, TemporarilyUnavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          1,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp2 = Employment(
+//          "TEST",
+//          Some("12346"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          2,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp3 = Employment(
+//          "TEST",
+//          Some("12347"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          3,
+//          Some(100),
+//          false,
+//          false
+//        )
+//        val emp4 = Employment(
+//          "TEST",
+//          Some("12348"),
+//          LocalDate.parse("2017-07-24"),
+//          None,
+////          List(AnnualAccount("tdNo-payeNumber-12346", cty, TemporarilyUnavailable, Nil, Nil)),
+//          "tdNo",
+//          "payeNumber",
+//          4,
+//          Some(100),
+//          false,
+//          false
+//        )
+//
+//        val mockCacheConnector = mock[CacheConnector]
+//        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+//        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
+//          .thenReturn(Future.successful(Nil))
+//
+//        val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
+//        Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
+//
+//        verify(mockCacheConnector, times(0))
+//          .findSeq[Employment](Matchers.eq(cacheId), Matchers.eq("EmploymentData"))(any())
+//        verify(mockCacheConnector, times(0))
+//          .createOrUpdateSeq[Employment](Matchers.eq(cacheId), any(), Matchers.eq("EmploymentData"))(any())
+//      }
+//    }
   }
 
   "employmentsFromHod" should {
@@ -943,9 +938,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Employment(
             "EMPLOYER1",
             Some("12345"),
-            LocalDate.now(),
+            new LocalDate(2017, 4, 10),
             None,
-//            List(AnnualAccount("", TaxYear(2017), Available, Nil, Nil)),
             "",
             "",
             2,
@@ -1240,30 +1234,20 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     }
 
     "return the employment for passed year" in {
-      val cyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-//        List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
+      val cyEmployment =
+        Employment("TEST", Some("12345"), currentTaxYear.start, None, "", "", 2, Some(100), false, false)
       val pyEmployment = Employment(
         "TEST",
         Some("12345"),
-        LocalDate.now(),
-        None,
-//        List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+        previousTaxYear.start,
+        Some(previousTaxYear.end),
         "",
         "",
         2,
         Some(100),
         false,
-        false)
+        false
+      )
 
       val employmentsForYear = List(cyEmployment, pyEmployment)
 
@@ -1283,9 +1267,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val pyEmployment = Employment(
         "TEST",
         Some("12345"),
-        LocalDate.now(),
-        None,
-//        List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+        previousTaxYear.start,
+        Some(previousTaxYear.end),
         "",
         "",
         2,
@@ -1293,18 +1276,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         false,
         false)
 
-      val cyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-//        List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
+      val cyEmployment =
+        Employment("TEST", Some("12345"), currentTaxYear.start, None, "", "", 2, Some(100), false, false)
 
       val employmentsForYear = List(
         Employment(
@@ -1312,9 +1285,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           Some("12345"),
           LocalDate.now(),
           None,
-//          List(
-//            AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
           "",
           "",
           2,
@@ -1322,7 +1292,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           false,
           false
         ),
-        cyEmployment
+        cyEmployment,
+        pyEmployment
       )
 
       val mockCacheConnector = mock[CacheConnector]
@@ -1340,9 +1311,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Employment(
           "TEST",
           Some("12345"),
-          LocalDate.now(),
-          None,
-//          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
+          currentTaxYear.start,
+          Some(currentTaxYear.start.plusMonths(3)),
           "",
           "",
           2,
@@ -1352,9 +1322,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Employment(
           "TEST1",
           Some("123456"),
-          LocalDate.now(),
+          currentTaxYear.start.plusMonths(3),
           None,
-//          List(AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil)),
           "",
           "",
           2,
@@ -1367,9 +1336,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Employment(
           "TEST",
           Some("12345"),
-          LocalDate.now(),
-          None,
-//          List(AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
+          previousTaxYear.end.minusMonths(3),
+          Some(previousTaxYear.end),
           "",
           "",
           2,
@@ -1380,9 +1348,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Employment(
           "TEST1",
           Some("123456"),
-          LocalDate.now(),
-          None,
-//          List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+          previousTaxYear.end.minusMonths(6),
+          Some(previousTaxYear.end.minusMonths(3)),
           "",
           "",
           2,
@@ -1391,42 +1358,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           false)
       )
 
-      val employmentsForYear = List(
-        Employment(
-          "TEST",
-          Some("12345"),
-          LocalDate.now(),
-          None,
-//          List(
-//            AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
-          "",
-          "",
-          2,
-          Some(100),
-          false,
-          false
-        ),
-        Employment(
-          "TEST1",
-          Some("123456"),
-          LocalDate.now(),
-          None,
-//          List(
-//            AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
-          "",
-          "",
-          2,
-          Some(100),
-          false,
-          false
-        )
-      )
+      val employments = cyEmployment.union(pyEmployment)
 
       val mockCacheConnector = mock[CacheConnector]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
-        .thenReturn(Future.successful(employmentsForYear))
+        .thenReturn(Future.successful(employments))
 
       val sut = createSUT(mock[RtiConnector], mockCacheConnector, mock[NpsConnector], mock[Auditor])
       val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear)(hc), 5.seconds)
@@ -1570,34 +1506,31 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentNotFound)
     }
 
-    "return Employment stubbed account error type when RTI is down and there is no data in the cache" in {
-
-      val mockRtiConnector = mock[RtiConnector]
-      when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-        .thenReturn(Future.failed(new HttpException("rti down", 503)))
-
-      val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any())).thenReturn(Future.successful(Nil))
-
-      val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-        .thenReturn(Future.successful(getJson("npsSingleEmployment")))
-
-      val sut = createSUT(mockRtiConnector, mockCacheConnector, mockNpsConnector, mock[Auditor])
-      Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentAccountStubbed)
-    }
+//    "return Employment stubbed account error type when RTI is down and there is no data in the cache" in {
+//
+//      val mockRtiConnector = mock[RtiConnector]
+//      when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+//        .thenReturn(Future.failed(new HttpException("rti down", 503)))
+//
+//      val mockCacheConnector = mock[CacheConnector]
+//      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+//      when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any())).thenReturn(Future.successful(Nil))
+//
+//      val mockNpsConnector = mock[NpsConnector]
+//      when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+//        .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+//
+//      val sut = createSUT(mockRtiConnector, mockCacheConnector, mockNpsConnector, mock[Auditor])
+//      Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentAccountStubbed)
+//    }
 
     "get the current year employments from the hod" when {
       "data is in the cache for a year other than the current one and it does not contain the required employment " in {
         val emp2015 = Employment(
           "TEST",
           Some("12345"),
-          LocalDate.now(),
-          None,
-//          List(
-//            AnnualAccount("", TaxYear(2015), Available, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
+          TaxYear(2015).start,
+          Some(TaxYear(2015).end),
           "",
           "",
           4,
