@@ -423,7 +423,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
     Some("12345"),
     LocalDate.now(),
     None,
-    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
+//    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
     "",
     "",
     2,

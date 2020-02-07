@@ -153,14 +153,15 @@ class IncomeService @Inject()(
     taxCodeIncome.getOrElse(0)
   }
 
-  def retrieveEmploymentAmountYearToDate(nino: Nino, employment: Option[Employment]): BigDecimal = {
-
-    val amountYearToDate = for {
-      employment          <- employment
-      latestAnnualAccount <- employment.latestAnnualAccount
-      latestPayment       <- latestAnnualAccount.latestPayment
-    } yield latestPayment.amountYearToDate
-
-    amountYearToDate.getOrElse(0)
-  }
+  //TODO: Only used in test, confirm no impact then remove
+//  def retrieveEmploymentAmountYearToDate(nino: Nino, employment: Option[Employment]): BigDecimal = {
+//
+//    val amountYearToDate = for {
+//      employment          <- employment
+//      latestAnnualAccount <- employment.latestAnnualAccount
+//      latestPayment       <- latestAnnualAccount.latestPayment
+//    } yield latestPayment.amountYearToDate
+//
+//    amountYearToDate.getOrElse(0)
+//  }
 }

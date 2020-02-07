@@ -64,7 +64,6 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
             "name"                         -> "company name",
             "payrollNumber"                -> "888",
             "startDate"                    -> "2017-05-26",
-            "annualAccounts"               -> Json.arr(),
             "taxDistrictNumber"            -> "",
             "payeNumber"                   -> "",
             "sequenceNumber"               -> 2,
@@ -296,5 +295,5 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   private val emp =
-    Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
+    Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, "", "", 2, Some(100), false, true)
 }

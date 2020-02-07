@@ -24,7 +24,7 @@ case class Employment(
   payrollNumber: Option[String],
   startDate: LocalDate,
   endDate: Option[LocalDate],
-  annualAccounts: Seq[AnnualAccount],
+//  annualAccounts: Option[Seq[AnnualAccount]],
   taxDistrictNumber: String,
   payeNumber: String,
   sequenceNumber: Int,
@@ -36,7 +36,7 @@ case class Employment(
 
   lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
 
-  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
+//  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 }
 
 case class AddEmployment(

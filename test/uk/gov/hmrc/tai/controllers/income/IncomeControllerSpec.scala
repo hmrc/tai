@@ -243,7 +243,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
-      Nil,
       "",
       "",
       2,
@@ -251,8 +250,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       hasPayrolledBenefit = false,
       receivingOccupationalPension = true
     )
-    val employments = Seq(employment, employment.copy(sequenceNumber = 1))
-    val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return tax code incomes and employments JSON" in {
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
@@ -301,7 +298,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
-      Nil,
       "",
       "",
       2,

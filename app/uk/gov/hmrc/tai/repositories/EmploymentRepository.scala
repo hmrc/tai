@@ -44,159 +44,88 @@ class EmploymentRepository @Inject()(
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
     employmentsForYear(nino, TaxYear()) flatMap { empForYear =>
-      if (empForYear.exists(_.annualAccounts.exists(_.realTimeStatus == TemporarilyUnavailable))) {
-        Future.successful(Left(EmploymentAccountStubbed))
-      } else {
-        fetchEmploymentFromCache(nino) map { emp =>
-          emp.find(_.sequenceNumber == id) match {
-            case Some(employment) => Right(employment)
-            case None => {
-              val sequenceNumbers = emp.map(_.sequenceNumber).mkString(", ")
-              Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
-              Left(EmploymentNotFound)
-            }
+      fetchEmploymentFromCache(nino) map { emp =>
+        emp.find(_.sequenceNumber == id) match {
+          case Some(employment) => Right(employment)
+          case None => {
+            val sequenceNumbers = emp.map(_.sequenceNumber).mkString(", ")
+            Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+            Left(EmploymentNotFound)
           }
         }
       }
     }
 
+  //TODO: Ensure this has tests, if not, add them!
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino).flatMap { allEmployments =>
-      allEmployments
-        .filter(_.annualAccounts.exists(_.taxYear == year))
-        .map(e => e.copy(annualAccounts = e.annualAccounts.filter(_.taxYear == year))) match {
+      allEmployments.filter(
+        e =>
+          e.startDate.isAfter(year.start) &&
+            ((e.endDate.isDefined && year.start.isBefore(e.endDate.get)) || e.endDate.isEmpty)) match {
         case Nil                     => employmentsFromHod(nino, year)
         case employmentsForGivenYear => Future.successful(employmentsForGivenYear)
       }
     }
 
+  //TODO: Do we care about the realTimeStatus of the accounts?
   def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
-    implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
-    val employmentsWithKnownAccountState =
-      employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
-    if (employmentsWithKnownAccountState.nonEmpty) {
-      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
-    } else {
-      Future.successful(employments)
-    }
-  }
+    implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+//    val employmentsWithKnownAccountState =
+//      employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
+//    if (employmentsWithKnownAccountState.nonEmpty) {
+//      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
+//    } else {
+    Future.successful(employments)
+//    }
 
   def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
     for {
-      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
-                                  EmploymentMongoFormatters.formatEmployment)
-      modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
-      unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
-        modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
-      updateCache = unmodifiedEmployments ++ modifiedEmployments
       cachedEmployments <- cacheConnector
-                            .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
+                            .createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
                               EmploymentMongoFormatters.formatEmployment)
     } yield cachedEmployments
 
-  def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
-    currentCacheEmployments.find(_.key == employment.key) match {
-      case Some(cachedEmployment) => mergedEmployment(cachedEmployment, employment)
-      case None                   => employment
-    }
-
-  def mergedEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
-
   def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
-    implicit val ty = taxYear
     val employmentsFuture: Future[JsValue] = npsConnector.getEmploymentDetails(nino, taxYear.year)
-    val accountsFuture: Future[JsValue] = rtiConnector.getRTIDetails(nino, taxYear)
 
     for {
       employments <- employmentsFuture map {
                       _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
                     }
-      accounts <- accountsFuture map {
-                   _.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
-                 } recover {
-                   case error: HttpException => stubAccounts(error.responseCode, employments, taxYear)
-                 }
-      employmentDomainResult <- checkAndUpdateCache(
-                                 CacheId(nino),
-                                 unifiedEmployments(employments, accounts, nino, taxYear))
+      employmentDomainResult <- checkAndUpdateCache(CacheId(nino), employments)
     } yield {
       employmentDomainResult
     }
   }
 
-  def stubAccounts(respCode: Int, employments: Seq[Employment], taxYear: TaxYear): Seq[AnnualAccount] = {
-    val rtiStatus = respCode match {
-      case 404 => Unavailable
-      case _   => TemporarilyUnavailable
-    }
-    employments.map(emp => AnnualAccount(emp.key, taxYear, rtiStatus, Nil, Nil))
-  }
-
-  def unifiedEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Seq[Employment] = {
-
-    val accountAssignedEmployments = accounts flatMap { account =>
-      associatedEmployment(account, employments, nino, taxYear)
-    }
-    val unified = combinedDuplicates(accountAssignedEmployments)
-    val nonUnified = employments.filterNot(emp => unified.map(_.key).contains(emp.key)) map { emp =>
-      emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
-    }
-    unified ++ nonUnified
-  }
-
-  def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Option[Employment] =
-    employments.filter(emp => emp.employerDesignation == account.employerDesignation) match {
-      case Seq(single) =>
-        Logger.warn(s"single match found for $nino for $taxYear")
-        Some(single.copy(annualAccounts = Seq(account)))
-      case Nil =>
-        Logger.warn(s"no match found for $nino for $taxYear")
-        monitorAndAuditAssociatedEmployment(None, account, employments, nino.nino, taxYear.twoDigitRange)
-      case many =>
-        Logger.warn(s"multiple matches found for $nino for $taxYear")
-        monitorAndAuditAssociatedEmployment(
-          many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account))),
-          account,
-          employments,
-          nino.nino,
-          taxYear.twoDigitRange)
-    }
-
-  def monitorAndAuditAssociatedEmployment(
-    emp: Option[Employment],
-    account: AnnualAccount,
-    employments: Seq[Employment],
-    nino: String,
-    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
-    if (emp.isDefined) {
-      emp
-    } else {
-      val employerKey = employments.map { employment =>
-        s"${employment.name} : ${employment.key}; "
-      }.mkString
-
-      auditor.sendDataEvent(
-        transactionName = "NPS RTI Data Mismatch",
-        detail = Map(
-          "nino"                -> nino,
-          "tax year"            -> taxYear,
-          "NPS Employment Keys" -> employerKey,
-          "RTI Account Key"     -> account.key)
-      )
-
-      Logger.warn(
-        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
-      None
-    }
-
-  def combinedDuplicates(employments: Seq[Employment]): Seq[Employment] =
-    employments.map(_.key).distinct map { distinctKey =>
-      val duplicates = employments.filter(_.key == distinctKey)
-      duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
-    }
+  //TODO: Ensure that new binding logic mimics this behavour and then remove properly.
+//  def monitorAndAuditAssociatedEmployment(
+//    emp: Option[Employment],
+//    account: AnnualAccount,
+//    employments: Seq[Employment],
+//    nino: String,
+//    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
+//    if (emp.isDefined) {
+//      emp
+//    } else {
+//      val employerKey = employments.map { employment =>
+//        s"${employment.name} : ${employment.key}; "
+//      }.mkString
+//
+//      auditor.sendDataEvent(
+//        transactionName = "NPS RTI Data Mismatch",
+//        detail = Map(
+//          "nino"                -> nino,
+//          "tax year"            -> taxYear,
+//          "NPS Employment Keys" -> employerKey,
+//          "RTI Account Key"     -> account.key)
+//      )
+//
+//      Logger.warn(
+//        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
+//      None
+//    }
 
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     cacheConnector

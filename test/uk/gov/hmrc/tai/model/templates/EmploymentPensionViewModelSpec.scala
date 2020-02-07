@@ -278,7 +278,6 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     Some("12345"),
     LocalDate.parse("2017-04-04"),
     None,
-    Seq.empty[AnnualAccount],
     "33",
     "44",
     1,

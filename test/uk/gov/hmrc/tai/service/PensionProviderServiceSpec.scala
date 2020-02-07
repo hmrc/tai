@@ -178,7 +178,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
           Some("12345"),
           LocalDate.now(),
           None,
-          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
+//          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
           "",
           "",
           2,

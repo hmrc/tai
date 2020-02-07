@@ -70,7 +70,6 @@ trait EmploymentHodFormatters {
           payrollNumber,
           startDate,
           endDate,
-          Nil,
           taxDistrictNumber,
           payeNumber,
           sequenceNumber,

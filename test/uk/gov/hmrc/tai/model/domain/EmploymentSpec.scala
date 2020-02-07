@@ -57,7 +57,6 @@ class EmploymentSpec extends PlaySpec {
       Some("64765"),
       new LocalDate(2016, 4, 6),
       None,
-      Nil,
       "754",
       "AZ00070",
       2,
@@ -65,45 +64,22 @@ class EmploymentSpec extends PlaySpec {
       false,
       false))
   val singleEmploymentWithMissingPayrollNumber = List(
-    Employment("XXX PPPP", None, new LocalDate(2016, 4, 6), None, Nil, "754", "AZ00070", 2, Some(100), false, false))
+    Employment("XXX PPPP", None, new LocalDate(2016, 4, 6), None, "754", "AZ00070", 2, Some(100), false, false))
   val singleEmploymentWithEmptyStringPayrollNumber = List(
-    Employment(
-      "XXX PPPP",
-      Some(""),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      false,
-      false))
+    Employment("XXX PPPP", Some(""), new LocalDate(2016, 4, 6), None, "754", "AZ00070", 2, Some(100), false, false))
+
   val dualEmployment = List(
     Employment(
       "XXX PPPP",
       Some("64765"),
       new LocalDate(2016, 4, 6),
       None,
-      Nil,
       "754",
       "AZ00070",
       2,
       Some(100),
       false,
       false),
-    Employment(
-      "XXX PPPP",
-      Some("64766"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      false,
-      false)
+    Employment("XXX PPPP", Some("64766"), new LocalDate(2016, 4, 6), None, "754", "AZ00070", 2, Some(100), false, false)
   )
-
 }
