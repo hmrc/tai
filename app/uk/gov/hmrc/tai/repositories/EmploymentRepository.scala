@@ -33,11 +33,7 @@ import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound
 import scala.concurrent.Future
 
 @Singleton
-class EmploymentRepository @Inject()(
-  rtiConnector: RtiConnector,
-  cacheConnector: CacheConnector,
-  npsConnector: NpsConnector,
-  auditor: Auditor) {
+class EmploymentRepository @Inject()(cacheConnector: CacheConnector, npsConnector: NpsConnector, auditor: Auditor) {
 
   private val EmploymentMongoKey = "EmploymentData"
 
@@ -99,7 +95,7 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  //TODO: Ensure that new binding logic mimics this behavour and then remove properly.
+  //TODO: Ensure that new binding logic mimics this behaviour and then remove properly.
 //  def monitorAndAuditAssociatedEmployment(
 //    emp: Option[Employment],
 //    account: AnnualAccount,
