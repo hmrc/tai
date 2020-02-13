@@ -43,6 +43,24 @@ case class OldEmployment(override val name: String,
     lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 }
 
+object OldEmployment {
+   def apply(annualAccount: AnnualAccount, employment: Employment): OldEmployment = {
+
+    OldEmployment(employment.name,
+      employment.payrollNumber,
+      employment.startDate,
+      employment.endDate,
+      Option(Seq(annualAccount)),
+      employment.taxDistrictNumber,
+      employment.payeNumber,
+      employment.sequenceNumber,
+      employment.cessationPay,
+      employment.hasPayrolledBenefit,
+      employment.receivingOccupationalPension)
+  }
+}
+
+
 case class Employment(
   name: String,
   payrollNumber: Option[String],

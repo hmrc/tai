@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import uk.gov.hmrc.tai.model.domain.Employment
+import uk.gov.hmrc.tai.model.domain.{Employment, OldEmployment}
 
 case class EmploymentCollection(employments: Seq[Employment])
+
+case class OldEmploymentCollection(employments: Seq[OldEmployment])

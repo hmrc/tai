@@ -8,7 +8,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection}
+import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection, OldEmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.{Employment, EndEmployment}
 import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -20,11 +20,14 @@ class OldEmploymentsController @Inject()(employmentService: EmploymentService, a
   extends BaseController with ApiFormats{
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
+
+        //TODO: When switch on, return 503 with error message.
     implicit request =>
       employmentService.employments(nino, year)
         .map { employments: Seq[Employment] =>
           //TODO: Need to perform the model choice and merge here.
-          Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
+
+          Ok(Json.toJson(ApiResponse(OldEmploymentCollection(employments), Nil)))
         }
     .recover {
       case ex: NotFoundException   => NotFound(ex.getMessage)
@@ -34,6 +37,7 @@ class OldEmploymentsController @Inject()(employmentService: EmploymentService, a
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
+    //TODO: When switch on, return 503 with error message.
     employmentService
       .employment(nino, id)
       .map {
