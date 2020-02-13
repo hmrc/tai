@@ -19,12 +19,35 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 
+case class OldEmployment(override val name: String,
+                         override val payrollNumber: Option[String],
+                         override val startDate: LocalDate,
+                         override val endDate: Option[LocalDate],
+                         annualAccounts: Option[Seq[AnnualAccount]],
+                         override val taxDistrictNumber: String,
+                         override val payeNumber: String,
+                         override val sequenceNumber: Int,
+                         override val cessationPay: Option[BigDecimal],
+                         override val hasPayrolledBenefit: Boolean,
+                         override val receivingOccupationalPension: Boolean) extends
+  Employment(name,
+    payrollNumber,
+    startDate,
+    endDate,
+    taxDistrictNumber,
+    payeNumber,
+    sequenceNumber,
+    cessationPay,
+    hasPayrolledBenefit,
+    receivingOccupationalPension) {
+    lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
+}
+
 case class Employment(
   name: String,
   payrollNumber: Option[String],
   startDate: LocalDate,
   endDate: Option[LocalDate],
-//  annualAccounts: Option[Seq[AnnualAccount]],
   taxDistrictNumber: String,
   payeNumber: String,
   sequenceNumber: Int,
@@ -35,8 +58,6 @@ case class Employment(
   lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
 
   lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
-
-//  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 }
 
 case class AddEmployment(

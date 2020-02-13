@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers
+package uk.gov.hmrc.tai.controllers.employments
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection}
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 
 @Singleton
 class EmploymentsController @Inject()(employmentService: EmploymentService, authentication: AuthenticationPredicate)
@@ -54,7 +54,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService, auth
         case Right(employment)        => Ok(Json.toJson(ApiResponse(employment, Nil)))
         case Left(EmploymentNotFound) => NotFound("Employment not found")
         case Left(EmploymentAccountStubbed) =>
-          BadGateway("Employment contains stub annual account data due to RTI unavailability")
+          BadGateway("Employment contains stub annual account data due to RTI unavailability") //TODO: Can we remove this?
       }
       .recover {
         case _: NotFoundException => NotFound("Employment not found")
