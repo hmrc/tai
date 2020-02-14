@@ -19,47 +19,47 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
 
-case class OldEmployment(override val name: String,
-                         override val payrollNumber: Option[String],
-                         override val startDate: LocalDate,
-                         override val endDate: Option[LocalDate],
-                         annualAccounts: Option[Seq[AnnualAccount]],
-                         override val taxDistrictNumber: String,
-                         override val payeNumber: String,
-                         override val sequenceNumber: Int,
-                         override val cessationPay: Option[BigDecimal],
-                         override val hasPayrolledBenefit: Boolean,
-                         override val receivingOccupationalPension: Boolean) extends
-  Employment(name,
-    payrollNumber,
-    startDate,
-    endDate,
-    taxDistrictNumber,
-    payeNumber,
-    sequenceNumber,
-    cessationPay,
-    hasPayrolledBenefit,
-    receivingOccupationalPension) {
-    lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
+case class OldEmployment(
+  name: String,
+  payrollNumber: Option[String],
+  startDate: LocalDate,
+  endDate: Option[LocalDate],
+  annualAccounts: Seq[AnnualAccount],
+  taxDistrictNumber: String,
+  payeNumber: String,
+  sequenceNumber: Int,
+  cessationPay: Option[BigDecimal],
+  hasPayrolledBenefit: Boolean,
+  receivingOccupationalPension: Boolean)
+    extends EmploymentIdentifiers {
+  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 }
 
 object OldEmployment {
-   def apply(annualAccount: AnnualAccount, employment: Employment): OldEmployment = {
-
-    OldEmployment(employment.name,
+  def apply(annualAccount: AnnualAccount, employment: Employment): OldEmployment =
+    OldEmployment(
+      employment.name,
       employment.payrollNumber,
       employment.startDate,
       employment.endDate,
-      Option(Seq(annualAccount)),
+      Seq(annualAccount),
       employment.taxDistrictNumber,
       employment.payeNumber,
       employment.sequenceNumber,
       employment.cessationPay,
       employment.hasPayrolledBenefit,
-      employment.receivingOccupationalPension)
-  }
+      employment.receivingOccupationalPension
+    )
 }
 
+trait EmploymentIdentifiers {
+  val payrollNumber: Option[String]
+  val taxDistrictNumber: String
+  val payeNumber: String
+
+  lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
+  lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
+}
 
 case class Employment(
   name: String,
@@ -71,12 +71,8 @@ case class Employment(
   sequenceNumber: Int,
   cessationPay: Option[BigDecimal],
   hasPayrolledBenefit: Boolean,
-  receivingOccupationalPension: Boolean) {
-
-  lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
-
-  lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
-}
+  receivingOccupationalPension: Boolean)
+    extends EmploymentIdentifiers {}
 
 case class AddEmployment(
   employerName: String,

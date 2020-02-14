@@ -62,7 +62,11 @@ trait ApiFormats {
 
   implicit val employmentFormat: Format[Employment] = Json.format[Employment]
 
+  implicit val oldEmploymentFormat: Format[OldEmployment] = Json.format[OldEmployment]
+
   implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
+
+  implicit val oldEmploymentCollectionFormat: Format[OldEmploymentCollection] = Json.format[OldEmploymentCollection]
 
   implicit val companyCarBenefitSeqWrites = new Writes[Seq[CompanyCarBenefit]] {
     override def writes(o: Seq[CompanyCarBenefit]): JsValue = Json.obj(
