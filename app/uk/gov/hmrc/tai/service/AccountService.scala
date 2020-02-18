@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
+import com.google.inject.Inject
 import javax.inject.Singleton
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -25,8 +26,8 @@ import uk.gov.hmrc.tai.repositories.AnnualAccountRepository
 
 import scala.concurrent.Future
 
-//@Singleton
-class AnnualAccountService(
+@Singleton
+class AnnualAccountService @Inject()(
   accountRepository: AnnualAccountRepository
 ) {
 

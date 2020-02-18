@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome, TaxCodeIncomeStatus}
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType}
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, OldEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
@@ -71,6 +71,16 @@ class IncomeController @Inject()(
     implicit request =>
       incomeService.nonMatchingCeasedEmployments(nino, year).map { result =>
         Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
+      } recoverWith taxAccountErrorHandler
+  }
+
+  def nonMatchingCeasedOldEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
+    implicit request =>
+      incomeService.nonMatchingCeasedEmployments(nino, year).map { result =>
+        val oldResult = result.map { e =>
+          OldEmployment(e)
+        }
+        Ok(Json.toJson(ApiResponse(Json.toJson(oldResult), Seq.empty[ApiLink])))
       } recoverWith taxAccountErrorHandler
   }
 

@@ -26,10 +26,12 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.builders.OldEmploymentBuilder
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, EmploymentCollection, OldEmploymentCollection}
-import uk.gov.hmrc.tai.model.domain.{Employment, EndEmployment}
-import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Employment, EndEmployment}
+import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound, EmploymentRetrievalError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{AnnualAccountService, EmploymentService}
+
+import scala.concurrent.Future
 
 //TODO: Renamme - this controller can work for both Old and New CombinedEmploymentAccount information formats. Maybe even so far as to remove the OldEmploymentsModel and replacing it with a Contract case class.
 @Singleton
@@ -48,6 +50,7 @@ class OldEmploymentsController @Inject()(
         accounts    <- accountService.annualAccounts(nino, year)
       } yield OldEmploymentBuilder.build(employments, accounts, year)
 
+      //TODO: Do we need to cache the OldEmployments
       oldEmployments
         .map { oes =>
           Ok(Json.toJson(ApiResponse(OldEmploymentCollection(oes), Nil)))
@@ -61,17 +64,27 @@ class OldEmploymentsController @Inject()(
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     //TODO: When switch on, return 503 with error message.
-    employmentService
-      .employment(nino, id)
-      .map {
-        case Right(employment)        => Ok(Json.toJson(ApiResponse(employment, Nil))) //TODO: Weld to Account Info
-        case Left(EmploymentNotFound) => NotFound("EmploymentNotFound")
-        case Left(EmploymentAccountStubbed) =>
-          BadGateway("Employment contains stub annual account data due to RTI unavailability") //TODO: Can we remove this?
+
+    employmentService.employment(nino, id).flatMap { e =>
+      e match {
+        case Left(_) => Future.successful(NotFound("EmploymentNotFound"))
+        case Right(emp) => {
+
+          val oldEmployments = accountService.annualAccounts(nino, TaxYear()).map { acc =>
+            OldEmploymentBuilder.build(Seq(emp), acc, TaxYear())
+          }
+
+          oldEmployments.map { oe =>
+            oe match {
+              case Seq(single) => Ok(Json.toJson(ApiResponse(single, Nil)))
+              case many        => InternalServerError("Many accounts found for this employment")
+              case _           => InternalServerError("Unknown Issue")
+            }
+          }
+        }
       }
-      .recover {
-        case _: NotFoundException => NotFound("Employment not found")
-        case error                => InternalServerError(error.getMessage)
-      }
+    }
+
   }
+
 }

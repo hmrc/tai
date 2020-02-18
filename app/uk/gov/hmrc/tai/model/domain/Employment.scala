@@ -50,6 +50,21 @@ object OldEmployment {
       employment.hasPayrolledBenefit,
       employment.receivingOccupationalPension
     )
+
+  def apply(employment: Employment): OldEmployment =
+    OldEmployment(
+      employment.name,
+      employment.payrollNumber,
+      employment.startDate,
+      employment.endDate,
+      Nil,
+      employment.taxDistrictNumber,
+      employment.payeNumber,
+      employment.sequenceNumber,
+      employment.cessationPay,
+      employment.hasPayrolledBenefit,
+      employment.receivingOccupationalPension
+    )
 }
 
 trait EmploymentIdentifiers {
