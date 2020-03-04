@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsString, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -78,6 +78,9 @@ class RtiConnector @Inject()(
           metrics.incrementSuccessCounter(APITypes.RTIAPI)
           val rtiData = res.json
           Future.successful(rtiData)
+        //TODO: Verify if this is appropriate behaviour to add as it didn't exist prior
+        case Status.NOT_FOUND =>
+          Future.successful(JsString(""))
         case _ =>
           Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
           Future.failed(new HttpException(res.body, res.status))

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import uk.gov.hmrc.tai.model.domain.Employment
+import uk.gov.hmrc.tai.model.domain.{Employment, OldEmployment}
 
 case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
+
+case class OldIncomeSource(taxCodeIncome: TaxCodeIncome, employment: OldEmployment)

@@ -25,14 +25,12 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome, TaxCodeIncomeStatus}
+import uk.gov.hmrc.tai.model.domain.income.{OldIncomeSource, TaxCodeIncomeStatus}
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, OldEmployment, TaxCodeIncomeComponentType}
+import uk.gov.hmrc.tai.model.domain.{OldEmployment, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
-
-import scala.concurrent.Future
 
 @Singleton
 class IncomeController @Inject()(
@@ -64,6 +62,18 @@ class IncomeController @Inject()(
     status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async { implicit request =>
     incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).map { result =>
       Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
+    } recoverWith taxAccountErrorHandler
+  }
+
+  def oldMatchedTaxCodeIncomesForYear(
+    nino: Nino,
+    year: TaxYear,
+    incomeType: TaxCodeIncomeComponentType,
+    status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async { implicit request =>
+    incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).map { result =>
+      val oldIncomeSource =
+        result.map(incomeSource => OldIncomeSource(incomeSource.taxCodeIncome, OldEmployment(incomeSource.employment)))
+      Ok(Json.toJson(ApiResponse(Json.toJson(oldIncomeSource), Nil)))
     } recoverWith taxAccountErrorHandler
   }
 
