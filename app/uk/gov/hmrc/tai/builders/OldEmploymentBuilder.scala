@@ -35,7 +35,7 @@ object OldEmploymentBuilder {
   def assignEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount]): Seq[OldEmployment] =
     accounts.flatMap(account => {
       employments.filter(emp => emp.employerDesignation == account.employerDesignation) match {
-        case Seq(single) if (single.key == account.key) => Some(OldEmployment(account, single))
+        case Seq(single) => Some(OldEmployment(account, single))
         case many =>
           Logger.warn(s"multiple matches found")
           many.find(e => e.key == account.key).map(e => OldEmployment(account, e))
