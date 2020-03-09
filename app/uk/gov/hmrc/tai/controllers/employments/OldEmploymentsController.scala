@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.builders.OldEmploymentBuilder
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse, OldEmploymentCollection}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.{AnnualAccountService, EmploymentService}
+import uk.gov.hmrc.tai.service.{AnnualAccountService, EmploymentService, OldEmploymentService}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -35,8 +35,7 @@ import scala.concurrent.{Await, Future}
 //TODO: Renamme - this controller can work for both Old and New CombinedEmploymentAccount information formats. Maybe even so far as to remove the OldEmploymentsModel and replacing it with a Contract case class.
 @Singleton
 class OldEmploymentsController @Inject()(
-  employmentService: EmploymentService,
-  accountService: AnnualAccountService,
+  oldEmploymentService: OldEmploymentService,
   authentication: AuthenticationPredicate)
     extends BaseController with ApiFormats {
 
@@ -47,12 +46,12 @@ class OldEmploymentsController @Inject()(
       {
 
         try {
-          val employments = Await.result(employmentService.employments(nino, year), Duration.Inf)
-          val accounts = Await.result(accountService.annualAccounts(nino, year), Duration.Inf)
-          val oldEmployments = OldEmploymentBuilder.build(employments, accounts, year)
-
-          Future.successful(Ok(Json.toJson(ApiResponse(OldEmploymentCollection(oldEmployments), Nil))))
-
+//          val employments = Await.result(employmentService.employments(nino, year), Duration.Inf)
+//          val accounts = Await.result(accountService.annualAccounts(nino, year), Duration.Inf)
+//          val oldEmployments = OldEmploymentBuilder.build(employments, accounts, year)
+          oldEmploymentService.employments(nino, year).map { oes =>
+            Ok(Json.toJson(ApiResponse(OldEmploymentCollection(oes), Nil)))
+          }
         } catch {
           case ex: NotFoundException   => Future.successful(NotFound(ex.getMessage))
           case ex: BadRequestException => Future.successful(BadRequest(ex.getMessage))
@@ -79,25 +78,31 @@ class OldEmploymentsController @Inject()(
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     //TODO: When switch on, return 503 with error message.
 
-    employmentService.employment(nino, id).flatMap { e =>
+    oldEmploymentService.employment(nino, id).map { e =>
       e match {
-        case Left(_) => Future.successful(NotFound("EmploymentNotFound"))
-        case Right(emp) => {
-
-          val oldEmployments = accountService.annualAccounts(nino, TaxYear()).map { acc =>
-            OldEmploymentBuilder.build(Seq(emp), acc, TaxYear())
-          }
-
-          oldEmployments.map { oe =>
-            oe match {
-              case Seq(single) => Ok(Json.toJson(ApiResponse(single, Nil)))
-              case many        => InternalServerError("Many accounts found for this employment")
-              case _           => InternalServerError("Unknown Issue")
-            }
-          }
-        }
+        case Right(oe)     => Ok(Json.toJson(ApiResponse(oe, Nil)))
+        case Left(message) => InternalServerError(message)
       }
     }
+//    employmentService.employment(nino, id).flatMap { e =>
+//      e match {
+//        case Left(_) => Future.successful(NotFound("EmploymentNotFound"))
+//        case Right(emp) => {
+//
+//          val oldEmployments = accountService.annualAccounts(nino, TaxYear()).map { acc =>
+//            OldEmploymentBuilder.build(Seq(emp), acc, TaxYear())
+//          }
+//
+//          oldEmployments.map { oe =>
+//            oe match {
+//              case Seq(single) => Ok(Json.toJson(ApiResponse(single, Nil)))
+//              case many        => InternalServerError("Many accounts found for this employment")
+//              case _           => InternalServerError("Unknown Issue")
+//            }
+//          }
+//        }
+//      }
+//    }
 
   }
 
