@@ -23,6 +23,9 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.domain.Nino
+import play.api.mvc.Results.Unauthorized
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,37 +34,56 @@ import scala.concurrent.Future
 case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)
 
 @Singleton
-class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions) extends BaseController {
+class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions)
+    extends ActionBuilder[AuthenticatedRequest] with BaseController {
 
-  def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
-    Action.async { implicit request: Request[AnyContent] =>
-      authorisedFunctions
-        .authorised(ConfidenceLevel.L100)
-        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
-          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
-          case _                       => throw new RuntimeException("Can't find valid credentials for user")
-        }
-        .recover {
-          case e: AuthorisationException =>
-            Logger.warn("Failed to authorise: " + e.reason)
-            Unauthorized(e.getMessage)
-        }
-    }
+  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
+    implicit val rh = request.asInstanceOf[RequestHeader]
+    implicit val hc = HeaderCarrierConverter.fromHeadersAndSessionAndRequest(rh.headers, request = Some(rh))
 
-  def async[A](bodyParser: BodyParser[A])(action: AuthenticatedRequest[A] => Future[Result]): Action[A] =
-    Action.async(bodyParser) { implicit request =>
-      authorisedFunctions
-        .authorised(ConfidenceLevel.L100)
-        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
-          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
-          case _                       => throw new RuntimeException("Can't find valid credentials for user")
-        }
-        .recover {
-          case e: AuthorisationException =>
-            Logger.warn("Failed to authorise: " + e.reason)
-            Unauthorized(e.getMessage)
-        }
-    }
+    authorisedFunctions
+      .authorised(ConfidenceLevel.L100)
+      .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
+        case _ ~ Some(trustedHelper) => block(AuthenticatedRequest(request, trustedHelper.principalNino))
+        case Some(nino) ~ _          => block(AuthenticatedRequest(request, Nino(nino)))
+        case _                       => throw new RuntimeException("Can't find valid credentials for user")
+      }
+      .recover {
+        case e: AuthorisationException =>
+          Logger.warn("Failed to authorise: " + e.reason)
+          Unauthorized(e.getMessage)
+      }
+  }
+
+//  def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
+//    Action.async { implicit request: Request[AnyContent] =>
+//      authorisedFunctions
+//        .authorised(ConfidenceLevel.L100)
+//        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
+//          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
+//          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
+//          case _                       => throw new RuntimeException("Can't find valid credentials for user")
+//        }
+//        .recover {
+//          case e: AuthorisationException =>
+//            Logger.warn("Failed to authorise: " + e.reason)
+//            Unauthorized(e.getMessage)
+//        }
+//    }
+//
+//  def async[A](bodyParser: BodyParser[A])(action: AuthenticatedRequest[A] => Future[Result]): Action[A] =
+//    Action.async(bodyParser) { implicit request =>
+//      authorisedFunctions
+//        .authorised(ConfidenceLevel.L100)
+//        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
+//          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
+//          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
+//          case _                       => throw new RuntimeException("Can't find valid credentials for user")
+//        }
+//        .recover {
+//          case e: AuthorisationException =>
+//            Logger.warn("Failed to authorise: " + e.reason)
+//            Unauthorized(e.getMessage)
+//        }
+//    }
 }
