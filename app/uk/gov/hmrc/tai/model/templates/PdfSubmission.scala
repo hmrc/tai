@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.templates
 
+import java.util.UUID
+
 import org.joda.time.LocalDateTime
 
 case class PdfSubmission(
@@ -33,7 +35,7 @@ case class PdfSubmission(
   store: Boolean = true) {
 
   val xmlCreatedAt: LocalDateTime = LocalDateTime.now()
-  val submissionReference: String = xmlCreatedAt.toString("ssMMyyddmmHH")
+  val submissionReference: String = UUID.randomUUID().toString
   val reconciliationId: String = submissionReference
   val fileFormat: String = "pdf"
   val mimeType: String = "application/pdf"
