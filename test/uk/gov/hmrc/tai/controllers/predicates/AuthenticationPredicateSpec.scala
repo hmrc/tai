@@ -99,7 +99,9 @@ class AuthenticationPredicateSpec
   "return OK and contain the trusted helper's NINO when called with an Authenticated user" in {
     val principalNino = new Generator(Random).nextNino
     val trustedHelperAuthSuccessResponse =
-      new ~(Some(nino.value), Some(TrustedHelper("principal name", "attorney name", "return url", principalNino)))
+      new ~(
+        Some(nino.value),
+        Some(TrustedHelper("principal name", "attorney name", "return url", principalNino.toString())))
 
     setupMockAuthRetrievalSuccess(trustedHelperAuthSuccessResponse)
 
