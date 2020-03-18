@@ -29,10 +29,9 @@ object OldEmploymentBuilder {
     val nonunited = provideEmptyAccount(employments.filterNot(e => united.map(_.key).contains(e.key)), taxYear)
 
     united ++ nonunited
-
   }
 
-  def assignEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount]): Seq[OldEmployment] =
+  private def assignEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount]): Seq[OldEmployment] =
     accounts.flatMap(account => {
       employments.filter(emp => emp.employerDesignation == account.employerDesignation) match {
         case Seq(single) => Some(OldEmployment(account, single))
@@ -42,17 +41,16 @@ object OldEmploymentBuilder {
         case _ =>
           Logger.warn(s"no match found")
           None
-        //TODO: restore auditing.
       }
     })
 
-  def combineDuplicates(oldEmployments: Seq[OldEmployment]): Seq[OldEmployment] =
+  private def combineDuplicates(oldEmployments: Seq[OldEmployment]): Seq[OldEmployment] =
     oldEmployments.map(_.key).distinct map { distinctKey =>
       val duplicates = oldEmployments.filter(_.key == distinctKey)
       duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
     }
 
-  def provideEmptyAccount(employments: Seq[Employment], taxYear: TaxYear): Seq[OldEmployment] =
+  private def provideEmptyAccount(employments: Seq[Employment], taxYear: TaxYear): Seq[OldEmployment] =
     employments.map { e =>
       OldEmployment(AnnualAccount(e.key, taxYear, Unavailable, Nil, Nil), e)
     }
