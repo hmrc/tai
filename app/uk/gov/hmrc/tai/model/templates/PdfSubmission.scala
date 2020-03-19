@@ -20,6 +20,8 @@ import java.util.UUID
 
 import org.joda.time.LocalDateTime
 
+import scala.util.Random
+
 case class PdfSubmission(
   customerId: String, //Needs to be the nino without suffix as DMS doesn't use suffix
   formId: String,
@@ -35,7 +37,10 @@ case class PdfSubmission(
   store: Boolean = true) {
 
   val xmlCreatedAt: LocalDateTime = LocalDateTime.now()
-  val submissionReference: String = UUID.randomUUID().toString
+  val submissionReference: String = {
+    val maxSubmissionReferenceLength = 12
+    Random.alphanumeric.take(maxSubmissionReferenceLength).mkString
+  }
   val reconciliationId: String = submissionReference
   val fileFormat: String = "pdf"
   val mimeType: String = "application/pdf"

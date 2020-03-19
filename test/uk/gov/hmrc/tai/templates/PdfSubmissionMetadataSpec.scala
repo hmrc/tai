@@ -93,7 +93,6 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
     }
 
     "populate the correct attribute details for the submission_reference attribute" when {
-
       "the pdf submission xml is generated" in {
 
         val sut = createSUT(pdfSubmission)
@@ -104,7 +103,9 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         section.select("attribute_name").text() mustBe "submission_reference"
         section.select("attribute_type").text() mustBe "string"
-        section.select("attribute_value").text().nonEmpty mustBe true
+
+        val maxSubmissionReferenceLength = 12
+        section.select("attribute_value").text().length() mustBe maxSubmissionReferenceLength
       }
     }
 
