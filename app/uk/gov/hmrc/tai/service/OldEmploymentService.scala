@@ -38,10 +38,15 @@ class OldEmploymentService @Inject()(
 
   def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[OldEmployment]] = {
 
-    val employments = Await.result(employmentRepository.employmentsForYear(nino, year), Duration.Inf)
-    val accounts = Await.result(accountRepository.annualAccounts(nino, year), Duration.Inf)
+    val employmentsFuture = employmentRepository.employmentsForYear(nino, year)
+    val accountsFuture = accountRepository.annualAccounts(nino, year)
 
-    Future.successful(OldEmploymentBuilder.build(employments, accounts, year))
+    for {
+      employments <- employmentsFuture
+      accounts    <- accountsFuture
+    } yield {
+      OldEmploymentBuilder.build(employments, accounts, year)
+    }
   }
 
   def employment(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Either[String, OldEmployment]] =

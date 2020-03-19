@@ -78,7 +78,6 @@ class RtiConnector @Inject()(
           metrics.incrementSuccessCounter(APITypes.RTIAPI)
           val rtiData = res.json
           Future.successful(rtiData)
-        //TODO: Verify if this is appropriate behaviour to add as it didn't exist prior
         case Status.NOT_FOUND =>
           Future.successful(JsString(""))
         case _ =>

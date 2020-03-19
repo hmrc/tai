@@ -85,5 +85,5 @@ GET           /:nino/tax-account/:year/tax-code/latest                          
 GET           /:nino/tax-account/tax-free-amount-comparison                                                           @uk.gov.hmrc.tai.controllers.taxCodeChange.TaxCodeChangeIabdComparisonController.taxCodeChangeIabdComparison(nino: Nino)
 
 # Annual Account Endpoints
-GET           /v2/:nino/annual-accounts/:year                                                                         @uk.gov.hmrc.tai.controllers.AnnualAccountController.getAccounts(nino: Nino, year: TaxYear)
-GET           /v2/:nino/annual-accounts/:year/employment/:emp                                                         @uk.gov.hmrc.tai.controllers.AnnualAccountController.getAccountsForEmployment(nino: Nino, year: TaxYear, emp: Int)
+GET           /v2/:nino/annual-accounts/:year                                                                         @uk.gov.hmrc.tai.controllers.AnnualAccountController.getAccounts(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+GET           /v2/:nino/annual-accounts/:year/employment/:emp                                                         @uk.gov.hmrc.tai.controllers.AnnualAccountController.getAccountsForEmployment(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, emp: Int)

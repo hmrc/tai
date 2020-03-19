@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.tai.builders
 
 import org.joda.time.LocalDate
@@ -11,9 +27,18 @@ class OldEmploymentBuilderSpec extends PlaySpec with MockitoSugar {
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
 
-
   private def buildEmployment(taxDistrictNumber: String, payeNumber: String, payrollNumber: Option[String] = None) =
-    Employment("name", payrollNumber, LocalDate.now().minusMonths(1), None, taxDistrictNumber, payeNumber, 0, None, false, false)
+    Employment(
+      "name",
+      payrollNumber,
+      LocalDate.now().minusMonths(1),
+      None,
+      taxDistrictNumber,
+      payeNumber,
+      0,
+      None,
+      false,
+      false)
 
   private def buildAnnualAccount(key: String) =
     AnnualAccount(key, currentTaxYear, Available, Nil, Nil)
@@ -47,7 +72,8 @@ class OldEmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
       val account = buildAnnualAccount("A-1-a")
 
-      val result = OldEmploymentBuilder.build(Seq(employmentA1a, employmentA1b, employmentA1c), Seq(account), currentTaxYear)
+      val result =
+        OldEmploymentBuilder.build(Seq(employmentA1a, employmentA1b, employmentA1c), Seq(account), currentTaxYear)
 
       result.contains(OldEmployment(account, employmentA1a)) mustBe true
       result.contains(OldEmployment(account, employmentA1b)) mustBe false
@@ -62,7 +88,8 @@ class OldEmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
       val account = buildAnnualAccount("A-2-a")
 
-      val result = OldEmploymentBuilder.build(Seq(employmentA1a, employmentA1b, employmentA1c), Seq(account), currentTaxYear)
+      val result =
+        OldEmploymentBuilder.build(Seq(employmentA1a, employmentA1b, employmentA1c), Seq(account), currentTaxYear)
 
       result.contains(OldEmployment(account, employmentA1a)) mustBe false
       result.contains(OldEmployment(account, employmentA1b)) mustBe false
@@ -83,7 +110,5 @@ class OldEmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       result.length mustBe 1
     }
   }
-
-
 
 }

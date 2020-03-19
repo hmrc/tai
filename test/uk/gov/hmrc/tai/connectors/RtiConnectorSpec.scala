@@ -166,6 +166,28 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
 
       }
     }
+
+    "return an empty json value" when {
+      "no employment found" in {
+        val mockAudit = mock[Auditor]
+        val mockTimerContext = mock[Timer.Context]
+
+        val mockMetrics = mock[Metrics]
+        when(mockMetrics.startTimer(any()))
+          .thenReturn(mockTimerContext)
+
+        val mockUrls = mock[RtiUrls]
+        val mockConfig = mock[DesConfig]
+        val mockClient = mock[HttpClient]
+        when(mockClient.GET[HttpResponse](any())(any(), any(), any()))
+          .thenReturn(Future.successful(NotFoundHttpResponse))
+
+        val sut = createSUT(mockClient, mockMetrics, mockAudit, mockConfig, mockUrls)
+        val result = sut.getRTIDetails(Nino(nino.nino), TaxYear())
+        Await.result(result, 5 seconds) mustEqual JsString("")
+      }
+    }
+
     "return an error response from RTI Details" when {
       "it returns a bad request Http response for GET transactions" in {
         val mockHttpClient = mock[HttpClient]
