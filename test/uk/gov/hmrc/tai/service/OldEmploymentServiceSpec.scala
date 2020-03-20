@@ -17,18 +17,15 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{when}
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Employment, OldEmployment, Unavailable}
-import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{AnnualAccountRepository, EmploymentRepository, PersonRepository}
+import uk.gov.hmrc.tai.repositories.{AnnualAccountRepository, EmploymentRepository}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
