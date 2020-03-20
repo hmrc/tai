@@ -236,6 +236,62 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
     }
   }
 
+  "oldMatchedTaxCodeIncomesForYear" must {
+
+    val employment = Employment(
+      "company name",
+      Some("888"),
+      new LocalDate(TaxYear().next.year, 5, 26),
+      None,
+      "",
+      "",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true
+    )
+
+    "return tax code incomes and employments JSON" in {
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+        .thenReturn(Future.successful(Seq(IncomeSource(taxCodeIncomes(1), employment))))
+
+      val sut = createSUT(
+        incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
+        authentication = loggedInAuthenticationPredicate)
+      val result = sut.oldMatchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      val expectedJson = Json.obj(
+        "data"  -> Json.arr(Json.toJson(OldIncomeSource(taxCodeIncomes(1), OldEmployment(employment)))),
+        "links" -> Json.arr()
+      )
+
+      contentAsJson(result) mustBe expectedJson
+    }
+
+    "return NotFound when a NotFoundException occurs" in {
+
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+        .thenReturn(Future.failed(new NotFoundException("Error")))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.oldMatchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+    }
+
+    "return BadRequest when a BadRequestException occurs" in {
+
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+        .thenReturn(Future.failed(new BadRequestException("Error")))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.oldMatchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
   "matchedTaxCodeIncomesForYear" must {
 
     val employment = Employment(
@@ -287,6 +343,69 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
       val SUT = createSUT(mockIncomeService)
       val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+    }
+  }
+
+  "nonMatchingCeasedOldEmployments" must {
+    val employment = Employment(
+      "company name",
+      Some("888"),
+      new LocalDate(TaxYear().next.year, 5, 26),
+      None,
+      "",
+      "",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true
+    )
+
+    "return non matching ceased employments JSON" in {
+      val employments =
+        Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+
+      val oldEmployments = employments.map { x =>
+        OldEmployment(x)
+      }
+
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(employments))
+
+      val nextTaxYear = TaxYear().next
+      val sut = createSUT(
+        incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
+        authentication = loggedInAuthenticationPredicate)
+      val result = sut.nonMatchingCeasedOldEmployments(nino, nextTaxYear)(FakeRequest())
+
+      val expectedJson = Json.obj(
+        "data"  -> oldEmployments,
+        "links" -> Json.arr()
+      )
+
+      contentAsJson(result) mustBe expectedJson
+    }
+
+    "return NotFound when a NotFoundException occurs" in {
+
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.failed(new NotFoundException("Error")))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.nonMatchingCeasedOldEmployments(nino, TaxYear().next)(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+    }
+
+    "return BadRequest when a BadRequestException occurs" in {
+
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.failed(new BadRequestException("Error")))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.nonMatchingCeasedOldEmployments(nino, TaxYear().next)(FakeRequest())
 
       status(result) mustBe BAD_REQUEST
     }

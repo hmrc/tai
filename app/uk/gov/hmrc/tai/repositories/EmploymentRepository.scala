@@ -52,7 +52,6 @@ class EmploymentRepository @Inject()(cacheConnector: CacheConnector, npsConnecto
       }
     }
 
-  //TODO: Ensure this has tests, if not, add them!
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino).flatMap { allEmployments =>
       allEmployments
@@ -62,7 +61,6 @@ class EmploymentRepository @Inject()(cacheConnector: CacheConnector, npsConnecto
       }
     }
 
-  //TODO: Do we care about the realTimeStatus of the accounts?
   def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     if (employments.nonEmpty) {
@@ -94,34 +92,6 @@ class EmploymentRepository @Inject()(cacheConnector: CacheConnector, npsConnecto
       employmentDomainResult
     }
   }
-
-  //TODO: Ensure that new binding logic mimics this behaviour and then remove properly.
-//  def monitorAndAuditAssociatedEmployment(
-//    emp: Option[Employment],
-//    account: AnnualAccount,
-//    employments: Seq[Employment],
-//    nino: String,
-//    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
-//    if (emp.isDefined) {
-//      emp
-//    } else {
-//      val employerKey = employments.map { employment =>
-//        s"${employment.name} : ${employment.key}; "
-//      }.mkString
-//
-//      auditor.sendDataEvent(
-//        transactionName = "NPS RTI Data Mismatch",
-//        detail = Map(
-//          "nino"                -> nino,
-//          "tax year"            -> taxYear,
-//          "NPS Employment Keys" -> employerKey,
-//          "RTI Account Key"     -> account.key)
-//      )
-//
-//      Logger.warn(
-//        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
-//      None
-//    }
 
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     cacheConnector

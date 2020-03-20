@@ -42,26 +42,35 @@ class OldEmploymentsController @Inject()(
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = (authentication andThen rtiIsolator).async {
     implicit request =>
       {
-        try {
-          oldEmploymentService.employments(nino, year).map { oes =>
+        oldEmploymentService
+          .employments(nino, year)
+          .map { oes =>
             Ok(Json.toJson(ApiResponse(OldEmploymentCollection(oes), Nil)))
           }
-        } catch {
-          case ex: NotFoundException   => Future.successful(NotFound(ex.getMessage))
-          case ex: BadRequestException => Future.successful(BadRequest(ex.getMessage))
-          case ex: Throwable           => Future.successful(InternalServerError(ex.getMessage))
-        }
+          .recover {
+            case ex: NotFoundException   => NotFound(ex.getMessage)
+            case ex: BadRequestException => BadRequest(ex.getMessage)
+            case ex: Throwable           => InternalServerError(ex.getMessage)
+          }
       }
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = (authentication andThen rtiIsolator).async {
     implicit request =>
-      oldEmploymentService.employment(nino, id).map { e =>
-        e match {
-          case Right(oe)     => Ok(Json.toJson(ApiResponse(oe, Nil)))
-          case Left(message) => InternalServerError(message)
+      oldEmploymentService
+        .employment(nino, id)
+        .map { e =>
+          e match {
+            case Right(oe)                                             => Ok(Json.toJson(ApiResponse(oe, Nil)))
+            case Left(message) if message.equals("EmploymentNotFound") => NotFound
+            case Left(message)                                         => InternalServerError(message)
+          }
         }
-      }
+        .recover {
+          case ex: NotFoundException   => NotFound(ex.getMessage)
+          case ex: BadRequestException => BadRequest(ex.getMessage)
+          case ex: Throwable           => InternalServerError(ex.getMessage)
+        }
   }
 
 }

@@ -32,7 +32,6 @@ import scala.concurrent.{Await, Future}
 
 class OldEmploymentService @Inject()(
   employmentRepository: EmploymentRepository,
-  personRepository: PersonRepository,
   accountRepository: AnnualAccountRepository
 ) {
 
@@ -53,8 +52,8 @@ class OldEmploymentService @Inject()(
     employments(nino, TaxYear()) map { empsForYear =>
       empsForYear.filter(oe => oe.sequenceNumber == id) match {
         case Seq(single) => Right(single)
-        case many        => Left("Many accounts found for this employment")
         case Nil         => Left("EmploymentNotFound")
+        case many        => Left("Many accounts found for this employment")
         case _           => Left("Unknown Issue")
       }
     }

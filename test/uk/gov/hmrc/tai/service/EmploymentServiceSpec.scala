@@ -418,18 +418,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
   private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
-  private val employment = Employment(
-    "TEST",
-    Some("12345"),
-    LocalDate.now(),
-    None,
-//    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
-    "",
-    "",
-    2,
-    Some(100),
-    false,
-    false)
+  private val employment = Employment("TEST", Some("12345"), LocalDate.now(), None, "", "", 2, Some(100), false, false)
 
   private def createSut(
     employmentRepository: EmploymentRepository,

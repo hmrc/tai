@@ -54,36 +54,4 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
           Unauthorized(e.getMessage)
       }
   }
-
-//  def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
-//    Action.async { implicit request: Request[AnyContent] =>
-//      authorisedFunctions
-//        .authorised(ConfidenceLevel.L100)
-//        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-//          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
-//          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
-//          case _                       => throw new RuntimeException("Can't find valid credentials for user")
-//        }
-//        .recover {
-//          case e: AuthorisationException =>
-//            Logger.warn("Failed to authorise: " + e.reason)
-//            Unauthorized(e.getMessage)
-//        }
-//    }
-//
-//  def async[A](bodyParser: BodyParser[A])(action: AuthenticatedRequest[A] => Future[Result]): Action[A] =
-//    Action.async(bodyParser) { implicit request =>
-//      authorisedFunctions
-//        .authorised(ConfidenceLevel.L100)
-//        .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-//          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
-//          case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
-//          case _                       => throw new RuntimeException("Can't find valid credentials for user")
-//        }
-//        .recover {
-//          case e: AuthorisationException =>
-//            Logger.warn("Failed to authorise: " + e.reason)
-//            Unauthorized(e.getMessage)
-//        }
-//    }
 }

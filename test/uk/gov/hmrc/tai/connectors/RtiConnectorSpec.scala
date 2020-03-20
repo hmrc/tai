@@ -211,28 +211,7 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
 
         ex.getMessage mustBe "\"bad request\""
       }
-      "it returns a not found Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(NotFoundHttpResponse))
 
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"not found\""
-      }
       "it returns a internal server error Http response for GET transactions" in {
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))

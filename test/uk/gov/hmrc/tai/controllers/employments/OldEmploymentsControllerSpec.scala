@@ -160,22 +160,10 @@ class OldEmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockA
     }
 
     "return not found" when {
-      "called with valid nino, year and id but id doesn't present" in {
+      "called with valid nino, year and id but id doesn't exist" in {
         val mockEmploymentService = mock[OldEmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Left("Not Found")))
-
-        val sut = new OldEmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, getRtiIsolator())
-        val result = sut.employment(nino, 3)(FakeRequest())
-
-        status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
-      }
-
-      "throw not found exception" in {
-        val mockEmploymentService = mock[OldEmploymentService]
-        when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.failed(new NotFoundException("")))
+          .thenReturn(Future.successful(Left("EmploymentNotFound")))
 
         val sut = new OldEmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, getRtiIsolator())
         val result = sut.employment(nino, 3)(FakeRequest())
@@ -188,8 +176,10 @@ class OldEmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockA
     "return internal server" when {
       "employment service throws an error" in {
         val mockEmploymentService = mock[OldEmploymentService]
-        when(mockEmploymentService.employment(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new InternalServerException("")))
+        when(mockEmploymentService.employment(any(), any())(any()))
+          .thenCallRealMethod()
 
         val sut = new OldEmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, getRtiIsolator())
         val result = sut.employment(nino, 3)(FakeRequest())

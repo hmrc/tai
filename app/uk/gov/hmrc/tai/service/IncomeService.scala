@@ -47,14 +47,13 @@ class IncomeService @Inject()(
         .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
         .filter(_.endDate.isDefined)
 
-//    for {
-    val taxCodeIncome = Await.result(taxCodeIncomes(nino, year), Duration.Inf)
-    val filteredTaxCodeIncomes =
-      taxCodeIncome.filter(income => income.status != Live && income.componentType == EmploymentIncome)
-    val employment = Await.result(employmentService.employments(nino, year), Duration.Inf)
-    val result = filterNonMatchingCeasedEmploymentsWithEndDate(employment, filteredTaxCodeIncomes)
-//    } yield result
-    Future.successful(result)
+    for {
+      taxCodeIncome <- taxCodeIncomes(nino, year)
+      filteredTaxCodeIncomes = taxCodeIncome.filter(income =>
+        income.status != Live && income.componentType == EmploymentIncome)
+      employment <- employmentService.employments(nino, year)
+      result = filterNonMatchingCeasedEmploymentsWithEndDate(employment, filteredTaxCodeIncomes)
+    } yield result
   }
 
   def matchedTaxCodeIncomesForYear(
@@ -77,18 +76,12 @@ class IncomeService @Inject()(
       else
         taxCodeIncomes.filter(income => income.componentType == incomeType && income.status == status)
 
-//    for {
-//      taxCodeIncomes <- taxCodeIncomes(nino, year)
-//      filteredTaxCodeIncomes = filterTaxCodeIncomes(taxCodeIncomes)
-//      employments <- employments(filteredTaxCodeIncomes, nino, year)
-//      result = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
-//    } yield result
-
-    val taxCodeIncome = Await.result(taxCodeIncomes(nino, year), Duration.Inf)
-    val filteredTaxCodeIncomes = filterTaxCodeIncomes(taxCodeIncome)
-    val employment = Await.result(employments(filteredTaxCodeIncomes, nino, year), Duration.Inf)
-    val result = filterMatchingEmploymentsToIncomeSource(employment, filteredTaxCodeIncomes)
-    Future.successful(result)
+    for {
+      taxCodeIncomes <- taxCodeIncomes(nino, year)
+      filteredTaxCodeIncomes = filterTaxCodeIncomes(taxCodeIncomes)
+      employments <- employments(filteredTaxCodeIncomes, nino, year)
+      result = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
+    } yield result
   }
 
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
@@ -160,16 +153,4 @@ class IncomeService @Inject()(
 
     taxCodeIncome.getOrElse(0)
   }
-
-  //TODO: Only used in test, confirm no impact then remove
-//  def retrieveEmploymentAmountYearToDate(nino: Nino, employment: Option[Employment]): BigDecimal = {
-//
-//    val amountYearToDate = for {
-//      employment          <- employment
-//      latestAnnualAccount <- employment.latestAnnualAccount
-//      latestPayment       <- latestAnnualAccount.latestPayment
-//    } yield latestPayment.amountYearToDate
-//
-//    amountYearToDate.getOrElse(0)
-//  }
 }

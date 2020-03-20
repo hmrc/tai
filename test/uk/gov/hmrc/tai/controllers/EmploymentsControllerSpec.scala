@@ -127,10 +127,9 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
 
         val jsonResult = Json.obj(
           "data" -> Json.obj(
-            "name"          -> "company name",
-            "payrollNumber" -> "888",
-            "startDate"     -> "2017-05-26",
-//            "annualAccounts"               -> Json.arr(),
+            "name"                         -> "company name",
+            "payrollNumber"                -> "888",
+            "startDate"                    -> "2017-05-26",
             "taxDistrictNumber"            -> "",
             "payeNumber"                   -> "",
             "sequenceNumber"               -> 2,
@@ -187,21 +186,6 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
       }
     }
-
-    "return bad gateway" when {
-      "RTI stubbed account exists" in {
-        val mockEmploymentService = mock[EmploymentService]
-        when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Left(EmploymentAccountStubbed)))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nino, 3)(FakeRequest())
-
-        status(result) mustBe BAD_GATEWAY
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
-      }
-    }
-
   }
 
   "endEmployment" must {
