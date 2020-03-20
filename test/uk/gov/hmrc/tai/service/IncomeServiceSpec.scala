@@ -177,7 +177,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
-//      Nil,
       "",
       "",
       2,
@@ -327,7 +326,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
               payrollNumber = Some("888"),
               startDate = LocalDate.parse(s"${TaxYear().next.year}-05-26"),
               endDate = None,
-//              annualAccounts = Seq.empty,
               taxDistrictNumber = "",
               payeNumber = "",
               sequenceNumber = 1,
@@ -450,7 +448,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
-//      Nil,
       "",
       "",
       2,
@@ -598,7 +595,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
         Some("888"),
         new LocalDate(2017, 5, 26),
         None,
-//        Nil,
         "",
         "",
         2,
@@ -684,7 +680,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     None,
                     LocalDate.now(),
                     None,
-//                    Seq.empty[AnnualAccount],
                     "",
                     "",
                     0,
@@ -747,7 +742,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     None,
                     LocalDate.now(),
                     None,
-//                    Seq.empty[AnnualAccount],
                     "",
                     "",
                     0,
@@ -826,7 +820,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     None,
                     LocalDate.now(),
                     None,
-//                    Seq.empty[AnnualAccount],
                     "",
                     "",
                     0,
@@ -906,7 +899,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     None,
                     LocalDate.now(),
                     None,
-//                    Seq.empty[AnnualAccount],
                     "",
                     "",
                     0,
@@ -971,7 +963,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     None,
                     LocalDate.now(),
                     None,
-//                    Seq.empty[AnnualAccount],
                     "",
                     "",
                     0,
@@ -1080,40 +1071,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
         val result = SUT.retrieveTaxCodeIncomeAmount(nino, requiredEmploymentId, taxCodeIncomes)
 
         result mustBe 0
-      }
-    }
-  }
-
-  "retrieveEmploymentAmountYearToDate" must {
-
-    "return the amount YTD" when {
-      "payment information has be found" in {
-
-        val payment = Payment(LocalDate.now(), 1234.56, 0, 0, 0, 0, 0, Weekly, None)
-        val annualAccount = AnnualAccount("", TaxYear(), Available, Seq(payment), Nil)
-
-        val SUT = createSUT()
-
-//        val result = SUT.retrieveEmploymentAmountYearToDate(
-//          nino,
-//          Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
-//
-//        result mustBe 1234.56
-      }
-    }
-
-    "return zero" when {
-      "payment information cannot be found" in {
-
-        val annualAccount = AnnualAccount("", TaxYear(), Available, Nil, Nil)
-
-        val SUT = createSUT()
-
-//        val result = SUT.retrieveEmploymentAmountYearToDate(
-//          nino,
-//          Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
-//
-//        result mustBe 0
       }
     }
   }

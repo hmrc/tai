@@ -116,13 +116,6 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             Some("12345"),
             new LocalDate("2017-05-26"),
             None,
-//            List(AnnualAccount(
-//              "",
-//              TaxYear(2017),
-//              Available,
-//              List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
-//              List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10))))
-//            )),
             "",
             "",
             2,
@@ -136,37 +129,6 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             "name"          -> "TEST",
             "payrollNumber" -> "12345",
             "startDate"     -> "2017-05-26",
-//            "annualAccounts" -> Json.arr(
-//              Json.obj(
-//                "key"            -> "",
-//                "taxYear"        -> 2017,
-//                "realTimeStatus" -> "Available",
-//                "payments" -> Json.arr(
-//                  Json.obj(
-//                    "date"                              -> "2017-05-26",
-//                    "amountYearToDate"                  -> 10,
-//                    "taxAmountYearToDate"               -> 10,
-//                    "nationalInsuranceAmountYearToDate" -> 10,
-//                    "amount"                            -> 10,
-//                    "taxAmount"                         -> 10,
-//                    "nationalInsuranceAmount"           -> 10,
-//                    "payFrequency"                      -> "Monthly",
-//                    "duplicate"                         -> true
-//                  )
-//                ),
-//                "endOfTaxYearUpdates" -> Json.arr(
-//                  Json.obj(
-//                    "date" -> "2017-05-26",
-//                    "adjustments" -> Json.arr(
-//                      Json.obj(
-//                        "type"   -> "NationalInsuranceAdjustment",
-//                        "amount" -> 10
-//                      )
-//                    )
-//                  )
-//                )
-//              )
-//            ),
             "taxDistrictNumber"            -> "",
             "payeNumber"                   -> "",
             "sequenceNumber"               -> 2,

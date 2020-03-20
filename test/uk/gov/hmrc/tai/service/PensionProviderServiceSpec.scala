@@ -172,13 +172,11 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
           "lastname",
           Some(new LocalDate("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
-        val currentTaxYear = TaxYear()
         val employment = Employment(
           "TEST",
           Some("12345"),
           LocalDate.now(),
           None,
-//          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
           "",
           "",
           2,

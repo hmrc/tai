@@ -53,8 +53,6 @@ class EmploymentsController @Inject()(employmentService: EmploymentService, auth
       .map {
         case Right(employment)        => Ok(Json.toJson(ApiResponse(employment, Nil)))
         case Left(EmploymentNotFound) => NotFound("Employment not found")
-//        case Left(EmploymentAccountStubbed) =>
-//          BadGateway("Employment contains stub annual account data due to RTI unavailability") //TODO: Can we remove this?
       }
       .recover {
         case _: NotFoundException => NotFound("Employment not found")
