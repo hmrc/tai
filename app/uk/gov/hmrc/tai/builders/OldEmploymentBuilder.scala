@@ -52,7 +52,6 @@ object OldEmploymentBuilder {
 
   private def provideEmptyAccount(employments: Seq[Employment], taxYear: TaxYear): Seq[OldEmployment] =
     employments.map { e =>
-//      OldEmployment(AnnualAccount(e.key, taxYear, Unavailable, Nil, Nil), e)
-      OldEmployment(e)
+      OldEmployment(AnnualAccount(e.key, taxYear, Unavailable, Nil, Nil), e)
     }
 }
