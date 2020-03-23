@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.model.templates
 import java.util.UUID
 
 import org.joda.time.LocalDateTime
+import org.joda.time.format.DateTimeFormat
 
 import scala.util.Random
 
@@ -35,13 +36,15 @@ case class PdfSubmission(
   source: String = "TAI",
   target: String = "DMS",
   store: Boolean = true) {
-
   val xmlCreatedAt: LocalDateTime = LocalDateTime.now()
   val submissionReference: String = {
     val maxSubmissionReferenceLength = 12
     Random.alphanumeric.take(maxSubmissionReferenceLength).mkString
   }
-  val reconciliationId: String = submissionReference
+  val reconciliationId: String = {
+    val dateFormatter = DateTimeFormat.forPattern("yyyyMMddHHmmss")
+    s"$submissionReference-${dateFormatter.print(System.currentTimeMillis())}"
+  }
   val fileFormat: String = "pdf"
   val mimeType: String = "application/pdf"
 }
