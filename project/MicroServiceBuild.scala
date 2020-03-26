@@ -21,7 +21,7 @@ private object AppDependencies {
   val compile = Seq(
     filters,
     ws,
-    "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
+    "uk.gov.hmrc" %% "bootstrap-play-25" % "5.1.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
     "uk.gov.hmrc" %% "json-encryption" % "3.2.0",
     "uk.gov.hmrc" %% "mongo-caching" % "5.7.0" exclude("uk.gov.hmrc","time_2.11"),

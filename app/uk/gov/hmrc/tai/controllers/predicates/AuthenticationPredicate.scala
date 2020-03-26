@@ -38,7 +38,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
       authorisedFunctions
         .authorised(ConfidenceLevel.L100)
         .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
+          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, Nino(trustedHelper.principalNino)))
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
@@ -54,7 +54,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
       authorisedFunctions
         .authorised(ConfidenceLevel.L100)
         .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
-          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, trustedHelper.principalNino))
+          case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, Nino(trustedHelper.principalNino)))
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
