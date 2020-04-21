@@ -106,6 +106,7 @@ class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, pl
   def desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
   def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
   def confirmedAPIEnabled: Boolean = runModeConfiguration.getBoolean("tai.confirmedAPI.enabled").getOrElse(false)
+  def rtiEnabled: Boolean = runModeConfiguration.getBoolean("tai.rti.call.enabled").getOrElse(true)
 }
 
 @Singleton

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
+import com.sun.org.apache.xalan.internal.utils.FeatureManager.Feature
 import play.api.Logger
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
@@ -28,6 +29,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound, EmploymentRetrievalError}
 
 import scala.concurrent.Future
@@ -37,7 +39,8 @@ class EmploymentRepository @Inject()(
   rtiConnector: RtiConnector,
   cacheConnector: CacheConnector,
   npsConnector: NpsConnector,
-  auditor: Auditor) {
+  auditor: Auditor,
+  featureToggle: FeatureTogglesConfig) {
 
   private val EmploymentMongoKey = "EmploymentData"
 
@@ -105,32 +108,36 @@ class EmploymentRepository @Inject()(
 
   def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     implicit val ty = taxYear
-    val employmentsFuture: Future[JsValue] = npsConnector.getEmploymentDetails(nino, taxYear.year)
-    val accountsFuture: Future[JsValue] = rtiConnector.getRTIDetails(nino, taxYear)
+
+    def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
+      if (featureToggle.rtiEnabled) {
+        rtiConnector.getRTIDetails(nino, taxYear) map (_.as[Seq[AnnualAccount]](
+          EmploymentHodFormatters.annualAccountHodReads)) recover {
+          case error: HttpException => {
+            val rtiStatus = error.responseCode match {
+              case 404 => Unavailable
+              case _   => TemporarilyUnavailable
+            }
+
+            stubAccounts(rtiStatus, employments, taxYear)
+          }
+        }
+      } else {
+        Future.successful(stubAccounts(TemporarilyUnavailable, employments, taxYear))
+      }
+
+    def stubAccounts(rtiStatus: RealTimeStatus, employments: Seq[Employment], taxYear: TaxYear): Seq[AnnualAccount] =
+      employments.map(emp => AnnualAccount(emp.key, taxYear, rtiStatus, Nil, Nil))
 
     for {
-      employments <- employmentsFuture map {
+      employments <- npsConnector.getEmploymentDetails(nino, taxYear.year) map {
                       _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
                     }
-      accounts <- accountsFuture map {
-                   _.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
-                 } recover {
-                   case error: HttpException => stubAccounts(error.responseCode, employments, taxYear)
-                 }
+      accounts <- rtiAnnualAccounts(employments)
       employmentDomainResult <- checkAndUpdateCache(
                                  CacheId(nino),
                                  unifiedEmployments(employments, accounts, nino, taxYear))
-    } yield {
-      employmentDomainResult
-    }
-  }
-
-  def stubAccounts(respCode: Int, employments: Seq[Employment], taxYear: TaxYear): Seq[AnnualAccount] = {
-    val rtiStatus = respCode match {
-      case 404 => Unavailable
-      case _   => TemporarilyUnavailable
-    }
-    employments.map(emp => AnnualAccount(emp.key, taxYear, rtiStatus, Nil, Nil))
+    } yield employmentDomainResult
   }
 
   def unifiedEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
