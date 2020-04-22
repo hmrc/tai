@@ -88,7 +88,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           AnnualAccount("taxDistrict2-payeRefemployer2", TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments = createSUT().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+        val unifiedEmployments =
+          testController().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
 
         unifiedEmployments must contain(
           Employment(
@@ -156,7 +157,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val accounts =
           List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil))
 
-        val unifiedEmployments = createSUT().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+        val unifiedEmployments =
+          testController().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
 
         unifiedEmployments must contain(
           Employment(
@@ -209,7 +211,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           AnnualAccount("taxDistrict2-payeRefemployer2-payrollNo1", TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments = createSUT().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+        val unifiedEmployments =
+          testController().unifiedEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
 
         unifiedEmployments must contain(
           Employment(
@@ -285,7 +288,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil))
 
-        val unified = createSUT().unifiedEmployments(employments, accounts, nino, ty)
+        val unified = testController().unifiedEmployments(employments, accounts, nino, ty)
 
         unified mustBe List(
           Employment(
@@ -347,7 +350,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
         val accounts = Nil
 
-        val unified = createSUT().unifiedEmployments(employments, accounts, nino, ty)
+        val unified = testController().unifiedEmployments(employments, accounts, nino, ty)
 
         unified mustBe List(
           Employment(
@@ -414,7 +417,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil)
         )
 
-        val unified = createSUT().unifiedEmployments(employments, accounts, nino, ty)
+        val unified = testController().unifiedEmployments(employments, accounts, nino, ty)
 
         unified mustBe List(
           Employment(
@@ -472,7 +475,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val sut = testController(cacheConnector = mockCacheConnector)
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
 
         verify(mockCacheConnector, times(1))
@@ -539,7 +542,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val sut = testController(cacheConnector = mockCacheConnector)
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
 
         val expectedEmp1 = Employment(
@@ -607,7 +610,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val sut = testController(cacheConnector = mockCacheConnector)
         Await.result(sut.checkAndUpdateCache(cacheId, employment), 5.seconds)
 
         verify(mockCacheConnector, times(1))
@@ -690,7 +693,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val sut = testController(cacheConnector = mockCacheConnector)
         Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
 
         verify(mockCacheConnector, times(1))
@@ -773,7 +776,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
           .thenReturn(Future.successful(Nil))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
+        val sut = testController(cacheConnector = mockCacheConnector)
         Await.result(sut.checkAndUpdateCache(cacheId, List(emp1, emp2, emp3, emp4)), 5.seconds)
 
         verify(mockCacheConnector, times(0))
@@ -816,11 +819,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsDualEmployments")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result: Seq[Employment] = Await.result(sut.employmentsFromHod(nino, TaxYear(2017))(hc), 5 seconds)
+        val result: Seq[Employment] = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
 
         result.flatMap(_.annualAccounts) mustBe annualAccountRtiDown
       }
@@ -853,11 +856,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsDualEmployments")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
 
         result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
 
@@ -881,7 +884,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         val mockFeatureToggle = mock[FeatureTogglesConfig]
         when(mockFeatureToggle.rtiEnabled).thenReturn(false)
 
-        val sut = createSUT(npsConnector = mockNpsConnector, featureToggle = mockFeatureToggle)
+        val sut = testController(npsConnector = mockNpsConnector, featureToggle = mockFeatureToggle)
         val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
 
         result.map(emp => emp.annualAccounts mustBe annualAccountRtiTempDown)
@@ -903,7 +906,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(getJson("npsDualEmployments")))
 
       val sut =
-        createSUT(rtiConnector = mockRtiConnector, cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
+        testController(
+          rtiConnector = mockRtiConnector,
+          cacheConnector = mockCacheConnector,
+          npsConnector = mockNpsConnector)
       val employments = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5.seconds)
 
       verify(mockCacheConnector, times(1))
@@ -956,7 +962,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       val account = AnnualAccount("", currentTaxYear, Available, Nil, Nil)
       val employmentsForYear = List(cyEmployment, pyEmployment)
 
-      val sut = createSUT()
+      val sut = testController()
 
       sut.monitorAndAuditAssociatedEmployment(emp, account, employmentsForYear, nino.nino, "2017") mustBe emp
       sut.monitorAndAuditAssociatedEmployment(None, account, employmentsForYear, nino.nino, "2017") mustBe None
@@ -985,8 +991,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(employmentsForYear))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector)
-        val employment = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5.seconds)
+        val sut = testController(cacheConnector = mockCacheConnector)
+        val employment = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
 
         employment mustBe employmentsForYear
       }
@@ -1021,11 +1027,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe employmentsForYear
       }
 
@@ -1073,11 +1079,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsDualEmployments")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe employmentsForYear
       }
 
@@ -1124,11 +1130,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe expectedEmploymentDetails
       }
 
@@ -1180,11 +1186,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe expectedEmploymentDetails
       }
 
@@ -1258,11 +1264,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsDualEmployments")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5 seconds)
+        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe expectedEmploymentDetails
       }
     }
@@ -1276,8 +1282,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.failed(new NotFoundException("nothing")))
 
-        val sut = createSUT(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
-        the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, TaxYear(2017))(hc), 5.seconds)
+        val sut = testController(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
+        the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
       }
     }
 
@@ -1313,9 +1319,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
-      val sut = createSUT(cacheConnector = mockCacheConnector)
-      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear)(hc), 5.seconds)
-      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear)(hc), 5.seconds)
+      val sut = testController(cacheConnector = mockCacheConnector)
+      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
 
       cyEmploymentDetails mustBe List(cyEmployment)
       pyEmploymentDetails mustBe List(pyEmployment)
@@ -1371,8 +1377,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
-      val sut = createSUT(cacheConnector = mockCacheConnector)
-      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear)(hc), 5.seconds)
+      val sut = testController(cacheConnector = mockCacheConnector)
+      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
 
       pyEmploymentDetails mustBe List(pyEmployment)
     }
@@ -1469,9 +1475,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(employmentsForYear))
 
-      val sut = createSUT(cacheConnector = mockCacheConnector)
-      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear)(hc), 5.seconds)
-      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear)(hc), 5.seconds)
+      val sut = testController(cacheConnector = mockCacheConnector)
+      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
 
       cyEmploymentDetails mustBe cyEmployment
       pyEmploymentDetails mustBe pyEmployment
@@ -1519,7 +1525,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-        val sut = createSUT(
+        val sut = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
@@ -1569,7 +1575,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
-      val sut = createSUT(cacheConnector = mockCacheConnector)
+      val sut = testController(cacheConnector = mockCacheConnector)
       Await.result(sut.employment(Nino(nino.nino), 4), 5 seconds) mustBe Right(emp1)
     }
     "return Employment not found error type when there is no employment found for that ID" in {
@@ -1609,7 +1615,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
-      val sut = createSUT(cacheConnector = mockCacheConnector)
+      val sut = testController(cacheConnector = mockCacheConnector)
       Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentNotFound)
     }
 
@@ -1628,7 +1634,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
       val sut =
-        createSUT(rtiConnector = mockRtiConnector, cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
+        testController(
+          rtiConnector = mockRtiConnector,
+          cacheConnector = mockCacheConnector,
+          npsConnector = mockNpsConnector)
       Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentAccountStubbed)
     }
 
@@ -1664,11 +1673,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         when(mockRtiConnector.getRTIDetails(any(), any())(any()))
           .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
 
-        val sut = createSUT(
+        val controller = testController(
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        Await.result(sut.employment(Nino(nino.nino), 3), 5 seconds)
+        Await.result(controller.employment(Nino(nino.nino), 3), 5 seconds)
 
         verify(mockNpsConnector, times(1))
           .getEmploymentDetails(org.mockito.Matchers.eq(Nino(nino.nino)), org.mockito.Matchers.eq(TaxYear().year))(
@@ -1697,7 +1706,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     manualCorrespondenceInd = false,
     deceasedIndicator = None)
 
-  private def createSUT(
+  private def testController(
     rtiConnector: RtiConnector = mockRtiConnector,
     cacheConnector: CacheConnector = mockCacheConnector,
     npsConnector: NpsConnector = mockNpsConnector,
