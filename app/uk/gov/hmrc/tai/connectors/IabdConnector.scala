@@ -38,10 +38,6 @@ class IabdConnector @Inject()(
   def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
-    } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
-      val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
     } else {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
