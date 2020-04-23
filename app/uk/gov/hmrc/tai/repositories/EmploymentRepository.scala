@@ -44,14 +44,27 @@ class EmploymentRepository @Inject()(
 
   private val EmploymentMongoKey = "EmploymentData"
 
+  //TODO test
+  private def onlyAccountsForGivenYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
+    employments.collect {
+      case employment if employment.hasAnnualAccountsForYear(year) =>
+        employment.copy(annualAccounts = employment.annualAccountsForYear(year))
+    }
+
+  private def stubAccounts(
+    rtiStatus: RealTimeStatus,
+    employments: Seq[Employment],
+    taxYear: TaxYear): Seq[AnnualAccount] =
+    employments.map(_.stubbedAccount(rtiStatus, taxYear))
+
   //TODO can this be tidied
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
-    // TODO could move predicate as it is used in a couple of places
     employmentsForYear(nino, TaxYear()) flatMap { empForYear =>
-      if (empForYear.exists(_.annualAccounts.exists(_.realTimeStatus == TemporarilyUnavailable))) {
+      if (empForYear.exists(_.hasTempUnavailableStubAccount)) {
         Future.successful(Left(EmploymentAccountStubbed))
       } else {
+        //TODO use the employments above?
         fetchEmploymentFromCache(nino) map { emp =>
           emp.find(_.sequenceNumber == id) match {
             case Some(employment) => Right(employment)
@@ -77,82 +90,12 @@ class EmploymentRepository @Inject()(
 
   //TODO check for annual account in the taxyear
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    fetchEmploymentFromCache(nino) flatMap { allEmployments =>
-      allEmployments
-        .filter(_.annualAccounts.exists(_.taxYear == year))
-        .map(e => e.copy(annualAccounts = e.annualAccounts.filter(_.taxYear == year))) match {
+    fetchEmploymentFromCache(nino) flatMap { employments =>
+      onlyAccountsForGivenYear(employments, year) match {
         case Nil               => employmentsFromHod(nino, year)
-        case cachedEmployments => evaluteCachedEmployments(nino, year, cachedEmployments)
+        case cachedEmployments => checkIfCallToRtiIsRequired(nino, year, cachedEmployments)
       }
     }
-
-  private def evaluteCachedEmployments(nino: Nino, taxYear: TaxYear, cachedEmployments: Seq[Employment])(
-    implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    // TODO separate object for caching which in turn calls the main cache
-    if (cachedEmployments.flatMap(_.annualAccounts).exists(_.realTimeStatus == TemporarilyUnavailable)) {
-      subsequentRTICall(nino, taxYear, cachedEmployments) flatMap {
-        case Right(accounts) =>
-          modifyCache(CacheId(nino), unifiedEmployments(cachedEmployments, accounts, nino, taxYear))
-        case Left(_) => Future.successful(cachedEmployments)
-      }
-    } else {
-      Future.successful(cachedEmployments)
-    }
-
-//  def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
-//    implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
-//    val employmentsWithKnownAccountState =
-//      employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
-//    if (employmentsWithKnownAccountState.nonEmpty) {
-//      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
-//    } else {
-//      Future.successful(employments)
-//    }
-//  }
-
-  //TODO replace Left String with type
-  private def subsequentRTICall(nino: Nino, taxYear: TaxYear, employmentsWithStub: Seq[Employment])(
-    implicit hc: HeaderCarrier): Future[Either[String, Seq[AnnualAccount]]] =
-    if (featureToggle.rtiEnabled) {
-      rtiConnector.getRTIDetails(nino, taxYear) map { jsonAccounts =>
-        Right(jsonAccounts.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
-      } recover {
-        case error: HttpException => {
-          error.responseCode match {
-            case 404 => Right(stubAccounts(Unavailable, employmentsWithStub, taxYear))
-            case _   => Left("No update required")
-          }
-        }
-      }
-    } else Future.successful(Left("No update required"))
-
-  private def stubAccounts(
-    rtiStatus: RealTimeStatus,
-    employments: Seq[Employment],
-    taxYear: TaxYear): Seq[AnnualAccount] =
-    employments.map(emp => AnnualAccount(emp.key, taxYear, rtiStatus, Nil, Nil))
-
-  def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
-    for {
-      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
-                                  EmploymentMongoFormatters.formatEmployment)
-      modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
-      unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
-        modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
-      updateCache = unmodifiedEmployments ++ modifiedEmployments
-      cachedEmployments <- cacheConnector
-                            .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
-                              EmploymentMongoFormatters.formatEmployment)
-    } yield cachedEmployments
-
-  def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
-    currentCacheEmployments.find(_.key == employment.key) match {
-      case Some(cachedEmployment) => mergedEmployment(cachedEmployment, employment)
-      case None                   => employment
-    }
-
-  def mergedEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
 
   def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     implicit val ty = taxYear
@@ -183,9 +126,73 @@ class EmploymentRepository @Inject()(
     } yield employmentDomainResult
   }
 
+  private def checkIfCallToRtiIsRequired(nino: Nino, taxYear: TaxYear, cachedEmployments: Seq[Employment])(
+    implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+    if (cachedEmployments.exists(_.hasTempUnavailableStubAccount)) {
+      subsequentRTICall(nino, taxYear, cachedEmployments) flatMap {
+        case Right(accounts) =>
+          modifyCache(CacheId(nino), unifiedEmployments(cachedEmployments, accounts, nino, taxYear))
+        case Left(_) => Future.successful(cachedEmployments)
+      }
+    } else {
+      Future.successful(cachedEmployments)
+    }
+
+//  def checkAndUpdateCache(cacheId: CacheId, employments: Seq[Employment])(
+//    implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+//    val employmentsWithKnownAccountState =
+//      employments.filterNot(_.annualAccounts.map(_.realTimeStatus).contains(TemporarilyUnavailable))
+//    if (employmentsWithKnownAccountState.nonEmpty) {
+//      modifyCache(cacheId, employmentsWithKnownAccountState).map(_ => employments)
+//    } else {
+//      Future.successful(employments)
+//    }
+//  }
+
+  //TODO replace Left String with type
+  //TODO can both TRI calls become a HOF
+  private def subsequentRTICall(nino: Nino, taxYear: TaxYear, employmentsWithStub: Seq[Employment])(
+    implicit hc: HeaderCarrier): Future[Either[String, Seq[AnnualAccount]]] =
+    if (featureToggle.rtiEnabled) {
+      rtiConnector.getRTIDetails(nino, taxYear) map { jsonAccounts =>
+        Right(jsonAccounts.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+      } recover {
+        case error: HttpException => {
+          error.responseCode match {
+            case 404 => Right(stubAccounts(Unavailable, employmentsWithStub, taxYear))
+            case _   => Left("No update required")
+          }
+        }
+      }
+    } else Future.successful(Left("No update required"))
+
+  def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
+    for {
+
+      //TODO when being called from the employmentsFromHOD a call to the cache here is not required.
+      //TODO can this be made into a HOF
+      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
+                                  EmploymentMongoFormatters.formatEmployment)
+      modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
+      unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
+        modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
+      updateCache = unmodifiedEmployments ++ modifiedEmployments
+      cachedEmployments <- cacheConnector
+                            .createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
+                              EmploymentMongoFormatters.formatEmployment)
+    } yield cachedEmployments
+
+  def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
+    currentCacheEmployments.find(_.key == employment.key) match {
+      case Some(cachedEmployment) => mergedEmployment(cachedEmployment, employment)
+      case None                   => employment
+    }
+
+  def mergedEmployment(prevEmp: Employment, newEmp: Employment): Employment =
+    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
+
   def unifiedEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Seq[Employment] = {
-
     val accountAssignedEmployments = accounts flatMap { account =>
       associatedEmployment(account, employments, nino, taxYear)
     }
