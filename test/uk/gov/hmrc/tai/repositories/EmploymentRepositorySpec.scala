@@ -787,292 +787,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 //    }
 //  }
 
-  "employmentsFromHod" should {
-    "return hod data" when {
-
-      //TODO refactor
-      "rti data is unavailable" in {
-
-        val annualAccount1 = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Unavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccount2 = AnnualAccount(
-          key = "00-00-00",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Unavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccountRtiDown = Seq(annualAccount1, annualAccount2)
-
-        val expectedEmployment1 = Employment(
-          name = "EMPLOYER1",
-          payrollNumber = Some("0"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount1),
-          taxDistrictNumber = "0",
-          payeNumber = "0",
-          sequenceNumber = 1,
-          cessationPay = None,
-          hasPayrolledBenefit = false,
-          receivingOccupationalPension = false
-        )
-
-        val expectedEmployment2 = Employment(
-          name = "EMPLOYER2",
-          payrollNumber = Some("00"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount2),
-          taxDistrictNumber = "00",
-          payeNumber = "00",
-          sequenceNumber = 2,
-          cessationPay = Some(100),
-          hasPayrolledBenefit = true,
-          receivingOccupationalPension = false
-        )
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.failed(new HttpException("rti down", 404)))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(Seq(expectedEmployment1, expectedEmployment2)))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result: Seq[Employment] = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
-
-        result.flatMap(_.annualAccounts) mustBe annualAccountRtiDown
-      }
-
-      "rti is temporarily unavailable" in {
-
-        // TODO refactor to share data or construct
-        val annualAccount1 = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = TemporarilyUnavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccount2 = AnnualAccount(
-          key = "00-00-00",
-          taxYear = TaxYear(2017),
-          realTimeStatus = TemporarilyUnavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccountRtiTempDown = Seq(annualAccount1, annualAccount2)
-
-        val expectedEmployment1 = Employment(
-          name = "EMPLOYER1",
-          payrollNumber = Some("0"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount1),
-          taxDistrictNumber = "0",
-          payeNumber = "0",
-          sequenceNumber = 1,
-          cessationPay = None,
-          hasPayrolledBenefit = false,
-          receivingOccupationalPension = false
-        )
-
-        val expectedEmployment2 = Employment(
-          name = "EMPLOYER2",
-          payrollNumber = Some("00"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount2),
-          taxDistrictNumber = "00",
-          payeNumber = "00",
-          sequenceNumber = 2,
-          cessationPay = Some(100),
-          hasPayrolledBenefit = true,
-          receivingOccupationalPension = false
-        )
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.failed(new HttpException("rti down", 500)))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(Seq(expectedEmployment1, expectedEmployment2)))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
-
-        result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
-
-      }
-
-      //TODO refactor same test as above
-      "the featureToggle to use RTI is set to false" in {
-
-        val annualAccount1 = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = TemporarilyUnavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccount2 = AnnualAccount(
-          key = "00-00-00",
-          taxYear = TaxYear(2017),
-          realTimeStatus = TemporarilyUnavailable,
-          payments = Nil,
-          endOfTaxYearUpdates = Nil)
-
-        val annualAccountRtiTempDown = Seq(annualAccount1, annualAccount2)
-
-        val expectedEmployment1 = Employment(
-          name = "EMPLOYER1",
-          payrollNumber = Some("0"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount1),
-          taxDistrictNumber = "0",
-          payeNumber = "0",
-          sequenceNumber = 1,
-          cessationPay = None,
-          hasPayrolledBenefit = false,
-          receivingOccupationalPension = false
-        )
-
-        val expectedEmployment2 = Employment(
-          name = "EMPLOYER2",
-          payrollNumber = Some("00"),
-          startDate = new LocalDate(2016, 4, 6),
-          endDate = None,
-          annualAccounts = List(annualAccount2),
-          taxDistrictNumber = "00",
-          payeNumber = "00",
-          sequenceNumber = 2,
-          cessationPay = Some(100),
-          hasPayrolledBenefit = true,
-          receivingOccupationalPension = false
-        )
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(Seq(expectedEmployment1, expectedEmployment2)))
-
-        val mockFeatureToggle = mock[FeatureTogglesConfig]
-        when(mockFeatureToggle.rtiEnabled).thenReturn(false)
-
-        val sut = testController(
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector,
-          featureToggle = mockFeatureToggle)
-        val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
-
-        result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
-      }
-
-    }
-
-    "the real time status is Available" in {
-
-      // TODO refactor to share data or construct
-
-      val payments =
-        List(Payment(new LocalDate("2017-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
-
-      val annualAccount1 = AnnualAccount(
-        key = "0-0-0",
-        taxYear = TaxYear(2017),
-        realTimeStatus = Available,
-        payments = payments,
-        endOfTaxYearUpdates = Nil)
-
-      val annualAccount2 = AnnualAccount(
-        key = "00-00-00",
-        taxYear = TaxYear(2017),
-        realTimeStatus = Available,
-        payments = payments,
-        endOfTaxYearUpdates = Nil)
-
-      val annualAccountRtiTempDown = Seq(annualAccount1, annualAccount2)
-
-      val expectedEmployment1 = Employment(
-        name = "EMPLOYER1",
-        payrollNumber = Some("0"),
-        startDate = new LocalDate(2016, 4, 6),
-        endDate = None,
-        annualAccounts = List(annualAccount1),
-        taxDistrictNumber = "0",
-        payeNumber = "0",
-        sequenceNumber = 1,
-        cessationPay = None,
-        hasPayrolledBenefit = false,
-        receivingOccupationalPension = false
-      )
-
-      val expectedEmployment2 = Employment(
-        name = "EMPLOYER2",
-        payrollNumber = Some("00"),
-        startDate = new LocalDate(2016, 4, 6),
-        endDate = None,
-        annualAccounts = List(annualAccount2),
-        taxDistrictNumber = "00",
-        payeNumber = "00",
-        sequenceNumber = 2,
-        cessationPay = Some(100),
-        hasPayrolledBenefit = true,
-        receivingOccupationalPension = false
-      )
-
-      val mockRtiConnector = mock[RtiConnector]
-      when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-        .thenReturn(Future.successful(getJson("rtiDualEmploymentDualPayment")))
-
-      val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-      when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-        .thenReturn(Future.successful(Seq(expectedEmployment1, expectedEmployment2)))
-
-      val mockNpsConnector = mock[NpsConnector]
-      when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-        .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-      val sut = testController(
-        rtiConnector = mockRtiConnector,
-        cacheConnector = mockCacheConnector,
-        npsConnector = mockNpsConnector)
-      val result = Await.result(sut.employmentsFromHod(nino, TaxYear(2017)), 5 seconds)
-
-      result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
-    }
-  }
-
   "monitorAndAuditAssociatedEmployment" should {
     "return the supplied Employment option" in {
       val emp = Some(
@@ -1123,9 +837,415 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   }
 
   "employmentsForYear" should {
-
     "return the employment domain model" when {
-      "data is present in cache for the same year" in {
+      "there is no data in the cache" when {
+        "the featureToggle to use RTI is set to false" in {
+
+          val annualAccount1 = AnnualAccount(
+            key = "0-0-0",
+            taxYear = TaxYear(2017),
+            realTimeStatus = TemporarilyUnavailable,
+            payments = Nil,
+            endOfTaxYearUpdates = Nil)
+
+          val annualAccount2 = AnnualAccount(
+            key = "00-00-00",
+            taxYear = TaxYear(2017),
+            realTimeStatus = TemporarilyUnavailable,
+            payments = Nil,
+            endOfTaxYearUpdates = Nil)
+
+          val annualAccountRtiTempDown = Seq(annualAccount1, annualAccount2)
+
+          val expectedEmployment1 = Employment(
+            name = "EMPLOYER1",
+            payrollNumber = Some("0"),
+            startDate = new LocalDate(2016, 4, 6),
+            endDate = None,
+            annualAccounts = List(annualAccount1),
+            taxDistrictNumber = "0",
+            payeNumber = "0",
+            sequenceNumber = 1,
+            cessationPay = None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
+
+          val expectedEmployment2 = Employment(
+            name = "EMPLOYER2",
+            payrollNumber = Some("00"),
+            startDate = new LocalDate(2016, 4, 6),
+            endDate = None,
+            annualAccounts = List(annualAccount2),
+            taxDistrictNumber = "00",
+            payeNumber = "00",
+            sequenceNumber = 2,
+            cessationPay = Some(100),
+            hasPayrolledBenefit = true,
+            receivingOccupationalPension = false
+          )
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsDualEmployments")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(Seq(expectedEmployment1, expectedEmployment2)))
+
+          val mockFeatureToggle = mock[FeatureTogglesConfig]
+          when(mockFeatureToggle.rtiEnabled).thenReturn(false)
+
+          val sut = testController(
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector,
+            featureToggle = mockFeatureToggle)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+
+          result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
+        }
+
+        "there is no annualAccount data due to a 404" in {
+          val unavailPlaceholderAccount = List(AnnualAccount("0-0-0", TaxYear(2017), Unavailable, Nil, Nil))
+
+          val expectedEmployment1 = Employment(
+            "EMPLOYER1",
+            Some("0"),
+            new LocalDate(2016, 4, 6),
+            None,
+            unavailPlaceholderAccount,
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
+
+          val employmentsForYear = List(expectedEmployment1)
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.failed(new HttpException("data not found", 404)))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(employmentsForYear))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe employmentsForYear
+        }
+
+        "there is no annual account data due to an exception" in {
+
+          val annualAccount1 = AnnualAccount(
+            key = "0-0-0",
+            taxYear = TaxYear(2017),
+            realTimeStatus = TemporarilyUnavailable,
+            payments = Nil,
+            endOfTaxYearUpdates = Nil)
+
+          val annualAccountRtiTempDown = Seq(annualAccount1)
+
+          val expectedEmployment1 = Employment(
+            name = "EMPLOYER1",
+            payrollNumber = Some("0"),
+            startDate = new LocalDate(2016, 4, 6),
+            endDate = None,
+            annualAccounts = List(annualAccount1),
+            taxDistrictNumber = "0",
+            payeNumber = "0",
+            sequenceNumber = 1,
+            cessationPay = None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.failed(new HttpException("Service Unavailable", 503)))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(Seq(expectedEmployment1)))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+
+          result.flatMap(_.annualAccounts) mustBe annualAccountRtiTempDown
+
+        }
+
+        "there is no annualAccountData, and there are two employments returned from the hods for the given year" in {
+          val unavailPlaceholderAccount1 = List(AnnualAccount("0-0-0", TaxYear(2017), Unavailable, Nil, Nil))
+          val unavailPlaceholderAccount2 = List(AnnualAccount("00-00-00", TaxYear(2017), Unavailable, Nil, Nil))
+
+          val employmentsForYear = List(
+            Employment(
+              "EMPLOYER1",
+              Some("0"),
+              new LocalDate(2016, 4, 6),
+              None,
+              unavailPlaceholderAccount1,
+              "0",
+              "0",
+              1,
+              None,
+              false,
+              false),
+            Employment(
+              "EMPLOYER2",
+              Some("00"),
+              new LocalDate(2016, 4, 6),
+              None,
+              unavailPlaceholderAccount2,
+              "00",
+              "00",
+              2,
+              Some(100),
+              true,
+              false)
+          )
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.failed(new HttpException("data not found", 404)))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(employmentsForYear))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsDualEmployments")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe employmentsForYear
+        }
+
+        "data from hods includes corresponding annual account data (a single payment, and a single end tax year update)" in {
+          val eyus = List(
+            EndOfTaxYearUpdate(
+              new LocalDate("2016-06-17"),
+              List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
+
+          val payments =
+            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
+
+          val annualAccount = AnnualAccount(
+            key = "0-0-0",
+            taxYear = TaxYear(2017),
+            realTimeStatus = Available,
+            payments = payments,
+            endOfTaxYearUpdates = eyus)
+          val expectedEmploymentDetails = List(
+            Employment(
+              "EMPLOYER1",
+              Some("0"),
+              new LocalDate(2016, 4, 6),
+              None,
+              Seq(annualAccount),
+              "0",
+              "0",
+              2,
+              None,
+              false,
+              false))
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(expectedEmploymentDetails))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe expectedEmploymentDetails
+        }
+
+        "data from hods includes corresponding annual account data (a single payment, and two end tax year updates)" in {
+          val eyus = List(
+            EndOfTaxYearUpdate(
+              new LocalDate("2016-06-17"),
+              List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))),
+            EndOfTaxYearUpdate(
+              new LocalDate("2016-06-17"),
+              List(Adjustment(TaxAdjustment, -28.99), Adjustment(NationalInsuranceAdjustment, 13.3)))
+          )
+
+          val payments =
+            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
+
+          val annualAccount = AnnualAccount(
+            key = "0-0-0",
+            taxYear = TaxYear(2017),
+            realTimeStatus = Available,
+            payments = payments,
+            endOfTaxYearUpdates = eyus)
+
+          val expectedEmploymentDetails = List(
+            Employment(
+              "EMPLOYER1",
+              Some("0"),
+              new LocalDate(2016, 4, 6),
+              None,
+              Seq(annualAccount),
+              "0",
+              "0",
+              2,
+              None,
+              false,
+              false))
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePaymentDualEyu")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(expectedEmploymentDetails))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe expectedEmploymentDetails
+        }
+
+        "data from hods includes corresponding annual account data (two employments, each with a single payment, " +
+          "and a single end tax year update)" in {
+          val eyus1 = List(
+            EndOfTaxYearUpdate(
+              new LocalDate("2016-06-17"),
+              List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
+          val eyus2 = List(
+            EndOfTaxYearUpdate(
+              new LocalDate("2016-06-17"),
+              List(Adjustment(TaxAdjustment, -66.6), Adjustment(NationalInsuranceAdjustment, 66.6))))
+
+          val payments1 =
+            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually, None))
+          val payments2 =
+            List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
+
+          val annualAccount1 = AnnualAccount(
+            key = "0-0-0",
+            taxYear = TaxYear(2017),
+            realTimeStatus = Available,
+            payments = payments1,
+            endOfTaxYearUpdates = eyus1)
+
+          val annualAccount2 = AnnualAccount(
+            key = "00-00-00",
+            taxYear = TaxYear(2017),
+            realTimeStatus = Available,
+            payments = payments2,
+            endOfTaxYearUpdates = eyus2)
+
+          val expectedEmploymentDetails = List(
+            Employment(
+              "EMPLOYER1",
+              Some("0"),
+              new LocalDate(2016, 4, 6),
+              None,
+              Seq(annualAccount1),
+              "0",
+              "0",
+              1,
+              None,
+              false,
+              false),
+            Employment(
+              "EMPLOYER2",
+              Some("00"),
+              new LocalDate(2016, 4, 6),
+              None,
+              Seq(annualAccount2),
+              "00",
+              "00",
+              2,
+              Some(100),
+              true,
+              false)
+          )
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("rtiDualEmploymentDualPayment")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(expectedEmploymentDetails))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsDualEmployments")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe expectedEmploymentDetails
+        }
+      }
+
+      "result in an exception" when {
+        "data is not present in cache or the hods for the given year" in {
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.failed(new NotFoundException("nothing")))
+
+          val sut = testController(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
+          the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+        }
+      }
+    }
+
+    "data is present in cache " when {
+      "for the same year" in {
         val employmentsForYear = List(
           Employment(
             "EMPLOYER1",
@@ -1150,502 +1270,110 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         employment mustBe employmentsForYear
       }
 
-      "data is not present in cache for the given year and there is no annualAccount data" in {
-        val unavailPlaceholderAccount = List(AnnualAccount("0-0-0", TaxYear(2017), Unavailable, Nil, Nil))
-
-        val expectedEmployment1 = Employment(
-          "EMPLOYER1",
-          Some("0"),
-          new LocalDate(2016, 4, 6),
-          None,
-          unavailPlaceholderAccount,
-          "0",
-          "0",
-          2,
-          None,
-          false,
-          false)
-
-        val employmentsForYear = List(expectedEmployment1)
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.failed(new HttpException("data not found", 404)))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(employmentsForYear))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsSingleEmployment")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe employmentsForYear
-      }
-
-      "data is not present in cache, there is no annualAccountData, and there are two employments returned from the hods for the given year" in {
-        val unavailPlaceholderAccount1 = List(AnnualAccount("0-0-0", TaxYear(2017), Unavailable, Nil, Nil))
-        val unavailPlaceholderAccount2 = List(AnnualAccount("00-00-00", TaxYear(2017), Unavailable, Nil, Nil))
-
-        val employmentsForYear = List(
-          Employment(
-            "EMPLOYER1",
-            Some("0"),
-            new LocalDate(2016, 4, 6),
-            None,
-            unavailPlaceholderAccount1,
-            "0",
-            "0",
-            1,
-            None,
-            false,
-            false),
-          Employment(
-            "EMPLOYER2",
-            Some("00"),
-            new LocalDate(2016, 4, 6),
-            None,
-            unavailPlaceholderAccount2,
-            "00",
-            "00",
-            2,
-            Some(100),
-            true,
-            false)
-        )
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.failed(new HttpException("data not found", 404)))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(employmentsForYear))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe employmentsForYear
-      }
-
-      "data is not present in cache for the given year, and data from hods includes corresponding annual account data " +
-        "(a single payment, and a single end tax year update)" in {
-        val eyus = List(
-          EndOfTaxYearUpdate(
-            new LocalDate("2016-06-17"),
-            List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
-
-        val payments =
-          List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
-
-        val annualAccount = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Available,
-          payments = payments,
-          endOfTaxYearUpdates = eyus)
-        val expectedEmploymentDetails = List(
-          Employment(
-            "EMPLOYER1",
-            Some("0"),
-            new LocalDate(2016, 4, 6),
-            None,
-            Seq(annualAccount),
-            "0",
-            "0",
-            2,
-            None,
-            false,
-            false))
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(expectedEmploymentDetails))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsSingleEmployment")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe expectedEmploymentDetails
-      }
-
-      "data is not present in cache for the given year, and data from hods includes corresponding annual account data " +
-        "(a single payment, and two end tax year updates)" in {
-        val eyus = List(
-          EndOfTaxYearUpdate(
-            new LocalDate("2016-06-17"),
-            List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))),
-          EndOfTaxYearUpdate(
-            new LocalDate("2016-06-17"),
-            List(Adjustment(TaxAdjustment, -28.99), Adjustment(NationalInsuranceAdjustment, 13.3)))
-        )
-
-        val payments =
-          List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
-
-        val annualAccount = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Available,
-          payments = payments,
-          endOfTaxYearUpdates = eyus)
-
-        val expectedEmploymentDetails = List(
-          Employment(
-            "EMPLOYER1",
-            Some("0"),
-            new LocalDate(2016, 4, 6),
-            None,
-            Seq(annualAccount),
-            "0",
-            "0",
-            2,
-            None,
-            false,
-            false))
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePaymentDualEyu")))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(expectedEmploymentDetails))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsSingleEmployment")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe expectedEmploymentDetails
-      }
-
-      "data is not present in cache for the given year, and data from hods includes corresponding annual account data " +
-        "(two employments, each with a single payment, and a single end tax year update)" in {
-        val eyus1 = List(
-          EndOfTaxYearUpdate(
-            new LocalDate("2016-06-17"),
-            List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
-        val eyus2 = List(
-          EndOfTaxYearUpdate(
-            new LocalDate("2016-06-17"),
-            List(Adjustment(TaxAdjustment, -66.6), Adjustment(NationalInsuranceAdjustment, 66.6))))
-
-        val payments1 =
-          List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually, None))
-        val payments2 =
-          List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
-
-        val annualAccount1 = AnnualAccount(
-          key = "0-0-0",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Available,
-          payments = payments1,
-          endOfTaxYearUpdates = eyus1)
-
-        val annualAccount2 = AnnualAccount(
-          key = "00-00-00",
-          taxYear = TaxYear(2017),
-          realTimeStatus = Available,
-          payments = payments2,
-          endOfTaxYearUpdates = eyus2)
-
-        val expectedEmploymentDetails = List(
-          Employment(
-            "EMPLOYER1",
-            Some("0"),
-            new LocalDate(2016, 4, 6),
-            None,
-            Seq(annualAccount1),
-            "0",
-            "0",
-            1,
-            None,
-            false,
-            false),
-          Employment(
-            "EMPLOYER2",
-            Some("00"),
-            new LocalDate(2016, 4, 6),
-            None,
-            Seq(annualAccount2),
-            "00",
-            "00",
-            2,
-            Some(100),
-            true,
-            false)
-        )
-
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("rtiDualEmploymentDualPayment")))
-
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-        when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
-          .thenReturn(Future.successful(expectedEmploymentDetails))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsDualEmployments")))
-
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe expectedEmploymentDetails
-      }
-    }
-
-    "result in an exception" when {
-      "data is not present in cache or the hods for the given year" in {
-        val mockCacheConnector = mock[CacheConnector]
-        when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.failed(new NotFoundException("nothing")))
-
-        val sut = testController(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
-        the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
-      }
-    }
-
-    "return the employment for passed year" in {
-      val cyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
-      val pyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
-
-      val employmentsForYear = List(cyEmployment, pyEmployment)
-
-      val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
-        .thenReturn(Future.successful(employmentsForYear))
-
-      val sut = testController(cacheConnector = mockCacheConnector)
-      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
-      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
-
-      cyEmploymentDetails mustBe List(cyEmployment)
-      pyEmploymentDetails mustBe List(pyEmployment)
-    }
-
-    "return the employment for previous year only" in {
-      val pyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
-
-      val cyEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        2,
-        Some(100),
-        false,
-        false)
-
-      val employmentsForYear = List(
-        Employment(
+      "for a passed year" in {
+        val cyEmployment = Employment(
           "TEST",
           Some("12345"),
           LocalDate.now(),
           None,
-          List(
-            AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-            AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
           "",
           "",
           2,
           Some(100),
           false,
-          false
-        ),
-        cyEmployment
-      )
+          false)
+        val pyEmployment = Employment(
+          "TEST",
+          Some("12345"),
+          LocalDate.now(),
+          None,
+          List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+          "",
+          "",
+          2,
+          Some(100),
+          false,
+          false)
 
-      val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
-        .thenReturn(Future.successful(employmentsForYear))
+        val employmentsForYear = List(cyEmployment, pyEmployment)
 
-      val sut = testController(cacheConnector = mockCacheConnector)
-      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
+        val mockCacheConnector = mock[CacheConnector]
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
+          .thenReturn(Future.successful(employmentsForYear))
 
-      pyEmploymentDetails mustBe List(pyEmployment)
-    }
+        val sut = testController(cacheConnector = mockCacheConnector)
+        val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+        val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
 
-//    "return sequence of employment for passed year" in {
-//      val cyEmployment = List(
-//        Employment(
-//          "TEST",
-//          Some("12345"),
-//          LocalDate.now(),
-//          None,
-//          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false),
-//        Employment(
-//          "TEST1",
-//          Some("123456"),
-//          LocalDate.now(),
-//          None,
-//          List(AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false)
-//      )
-//
-//      val pyEmployment = List(
-//        Employment(
-//          "TEST",
-//          Some("12345"),
-//          LocalDate.now(),
-//          None,
-//          List(AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false),
-//        Employment(
-//          "TEST1",
-//          Some("123456"),
-//          LocalDate.now(),
-//          None,
-//          List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false)
-//      )
-//
-//      val employmentsForYear = List(
-//        Employment(
-//          "TEST",
-//          Some("12345"),
-//          LocalDate.now(),
-//          None,
-//          List(
-//            AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false
-//        ),
-//        Employment(
-//          "TEST1",
-//          Some("123456"),
-//          LocalDate.now(),
-//          None,
-//          List(
-//            AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil),
-//            AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
-//          "",
-//          "",
-//          2,
-//          Some(100),
-//          false,
-//          false
-//        )
-//      )
-//
-//      val mockCacheConnector = mock[CacheConnector]
-//      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
-//        .thenReturn(Future.successful(employmentsForYear))
-//
-//      val sut = testController(cacheConnector = mockCacheConnector)
-//      val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
-//      val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
-//
-//      cyEmploymentDetails mustBe cyEmployment
-//      pyEmploymentDetails mustBe pyEmployment
-//    }
+        cyEmploymentDetails mustBe List(cyEmployment)
+        pyEmploymentDetails mustBe List(pyEmployment)
+      }
 
-    "return get data from the hod" when {
-      "data is in the cache, but not for the requested year" in {
-        val employments2017 = List(
+      "for a previous year only" in {
+        val pyEmployment = Employment(
+          "TEST",
+          Some("12345"),
+          LocalDate.now(),
+          None,
+          List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+          "",
+          "",
+          2,
+          Some(100),
+          false,
+          false)
+
+        val cyEmployment = Employment(
+          "TEST",
+          Some("12345"),
+          LocalDate.now(),
+          None,
+          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
+          "",
+          "",
+          2,
+          Some(100),
+          false,
+          false)
+
+        val employmentsForYear = List(
           Employment(
             "TEST",
             Some("12345"),
             LocalDate.now(),
             None,
-            List(AnnualAccount("", TaxYear(2017), TemporarilyUnavailable, Nil, Nil)),
+            List(
+              AnnualAccount("", currentTaxYear, Available, Nil, Nil),
+              AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false
+          ),
+          cyEmployment
+        )
+
+        val mockCacheConnector = mock[CacheConnector]
+        when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
+          .thenReturn(Future.successful(employmentsForYear))
+
+        val sut = testController(cacheConnector = mockCacheConnector)
+        val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
+
+        pyEmploymentDetails mustBe List(pyEmployment)
+      }
+
+      "return sequence of employment for passed year" in {
+        val cyEmployment = List(
+          Employment(
+            "TEST",
+            Some("12345"),
+            LocalDate.now(),
+            None,
+            List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
             "",
             "",
             2,
@@ -1657,7 +1385,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             Some("123456"),
             LocalDate.now(),
             None,
-            List(AnnualAccount("", TaxYear(2017), Available, Nil, Nil)),
+            List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
             "",
             "",
             2,
@@ -1666,32 +1394,137 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             false)
         )
 
-        val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getRTIDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
+        val pyEmployment = List(
+          Employment(
+            "TEST",
+            Some("12345"),
+            LocalDate.now(),
+            None,
+            List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false),
+          Employment(
+            "TEST1",
+            Some("123456"),
+            LocalDate.now(),
+            None,
+            List(AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false)
+        )
+
+        val employmentsForYear = List(
+          Employment(
+            "TEST",
+            Some("12345"),
+            LocalDate.now(),
+            None,
+            List(
+              AnnualAccount("", currentTaxYear, Available, Nil, Nil),
+              AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false
+          ),
+          Employment(
+            "TEST1",
+            Some("123456"),
+            LocalDate.now(),
+            None,
+            List(
+              AnnualAccount("", currentTaxYear, Available, Nil, Nil),
+              AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false
+          )
+        )
 
         val mockCacheConnector = mock[CacheConnector]
         when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
-          .thenReturn(Future.successful(employments2017))
-        when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.successful(employmentsForYear))
 
-        val mockNpsConnector = mock[NpsConnector]
-        when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
-          .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+        val sut = testController(cacheConnector = mockCacheConnector)
+        val cyEmploymentDetails = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+        val pyEmploymentDetails = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
 
-        val sut = testController(
-          rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
-          npsConnector = mockNpsConnector)
-        Await.result(sut.employmentsForYear(Nino(nino.nino), TaxYear(2015)), 5.seconds)
+        cyEmploymentDetails mustBe cyEmployment
+        pyEmploymentDetails mustBe pyEmployment
+      }
 
-        verify(mockNpsConnector, times(1))
-          .getEmploymentDetails(Matchers.eq(Nino(nino.nino)), Matchers.eq(2015))(any())
+      //TODO modify cache might be causing issues here
+      "return data from the hod" when {
+        "data is in the cache, but not for the requested year" in {
+          val employments2017 = List(
+            Employment(
+              "TEST",
+              Some("12345"),
+              LocalDate.now(),
+              None,
+              List(AnnualAccount("", TaxYear(2017), TemporarilyUnavailable, Nil, Nil)),
+              "",
+              "",
+              2,
+              Some(100),
+              false,
+              false),
+            Employment(
+              "TEST1",
+              Some("123456"),
+              LocalDate.now(),
+              None,
+              List(AnnualAccount("", TaxYear(2017), Available, Nil, Nil)),
+              "",
+              "",
+              2,
+              Some(100),
+              false,
+              false)
+          )
+
+          val mockRtiConnector = mock[RtiConnector]
+          when(mockRtiConnector.getRTIDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("rtiSingleEmploymentSinglePayment")))
+
+          val mockCacheConnector = mock[CacheConnector]
+          when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
+            .thenReturn(Future.successful(employments2017))
+          when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
+            .thenReturn(Future.successful(employments2017))
+
+          val mockNpsConnector = mock[NpsConnector]
+          when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
+            .thenReturn(Future.successful(getJson("npsSingleEmployment")))
+
+          val sut = testController(
+            rtiConnector = mockRtiConnector,
+            cacheConnector = mockCacheConnector,
+            npsConnector = mockNpsConnector)
+
+          val result = Await.result(sut.employmentsForYear(Nino(nino.nino), TaxYear(2015)), 5.seconds)
+          result mustBe List("")
+
+          verify(mockNpsConnector, times(1))
+            .getEmploymentDetails(Matchers.eq(Nino(nino.nino)), Matchers.eq(2015))(any())
+        }
       }
     }
-
   }
+
   "employment" must {
     "return a specific employment by ID" in {
       val emp1 = Employment(

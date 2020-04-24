@@ -44,19 +44,6 @@ class EmploymentRepository @Inject()(
 
   private val EmploymentMongoKey = "EmploymentData"
 
-  //TODO test
-  private def onlyAccountsForGivenYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
-    employments.collect {
-      case employment if employment.hasAnnualAccountsForYear(year) =>
-        employment.copy(annualAccounts = employment.annualAccountsForYear(year))
-    }
-
-  private def stubAccounts(
-    rtiStatus: RealTimeStatus,
-    employments: Seq[Employment],
-    taxYear: TaxYear): Seq[AnnualAccount] =
-    employments.map(_.stubbedAccount(rtiStatus, taxYear))
-
   //TODO can this be tidied
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
@@ -97,7 +84,14 @@ class EmploymentRepository @Inject()(
       }
     }
 
-  def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+  //TODO test
+  private def onlyAccountsForGivenYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
+    employments.collect {
+      case employment if employment.hasAnnualAccountsForYear(year) =>
+        employment.copy(annualAccounts = employment.annualAccountsForYear(year))
+    }
+
+  private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     implicit val ty = taxYear
 
     def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
@@ -125,6 +119,12 @@ class EmploymentRepository @Inject()(
       employmentDomainResult <- modifyCache(CacheId(nino), unifiedEmployments(employments, accounts, nino, taxYear))
     } yield employmentDomainResult
   }
+
+  private def stubAccounts(
+    rtiStatus: RealTimeStatus,
+    employments: Seq[Employment],
+    taxYear: TaxYear): Seq[AnnualAccount] =
+    employments.map(_.stubbedAccount(rtiStatus, taxYear))
 
   private def checkIfCallToRtiIsRequired(nino: Nino, taxYear: TaxYear, cachedEmployments: Seq[Employment])(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
