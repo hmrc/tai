@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import org.joda.time.LocalDate
+import play.api.Logger
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
@@ -48,6 +49,7 @@ case object Ceased extends TaxCodeIncomeStatus
 
 object TaxCodeIncomeStatus {
 
+  // TODO move this to the reads
   def apply(value: String): TaxCodeIncomeStatus = value match {
     case "Live"              => Live
     case "NotLive"           => NotLive
@@ -56,10 +58,26 @@ object TaxCodeIncomeStatus {
     case _                   => throw new IllegalArgumentException("Invalid TaxCodeIncomeStatus")
   }
 
-  implicit val formatTaxCodeIncomeSourceStatusType: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
-    override def reads(json: JsValue): JsSuccess[TaxCodeIncomeStatus] = ???
+  implicit val employmentStatus: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
+    override def reads(json: JsValue): JsResult[TaxCodeIncomeStatus] = json.as[Int] match {
+      case 1 => JsSuccess(Live)
+      case 2 => JsSuccess(PotentiallyCeased)
+      case 3 => JsSuccess(Ceased)
+      case default => {
+        Logger.warn(s"Invalid Employment Status Reads -> $default")
+        throw new RuntimeException("Invalid employment status reads")
+      }
+    }
 
-    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
+    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = taxCodeIncomeStatus match {
+      case Live              => JsNumber(1)
+      case PotentiallyCeased => JsNumber(2)
+      case Ceased            => JsNumber(3)
+      case default => {
+        Logger.warn(s"Invalid Employment Status Writes -> $default")
+        throw new RuntimeException("Invalid employment status writes")
+      }
+    }
   }
 }
 
@@ -98,6 +116,7 @@ case class TaxCodeIncome(
   taxCode: String,
   name: String,
   basisOperation: BasisOperation,
+  // TODO: Remove this and have it exist in the employment object
   status: TaxCodeIncomeStatus,
   inYearAdjustmentIntoCY: BigDecimal,
   totalInYearAdjustment: BigDecimal,

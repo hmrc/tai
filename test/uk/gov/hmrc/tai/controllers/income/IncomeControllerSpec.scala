@@ -209,7 +209,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1150LX",
               "name"                          -> "Employer1",
               "basisOperation"                -> "Week1Month1BasisOperation",
-              "status"                        -> Live.toString,
+              "status"                        -> 1,
               "inYearAdjustmentIntoCY"        -> 0,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0
@@ -222,7 +222,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1100L",
               "name"                          -> "Employer2",
               "basisOperation"                -> "OtherBasisOperation",
-              "status"                        -> PotentiallyCeased.toString,
+              "status"                        -> 2,
               "inYearAdjustmentIntoCY"        -> 321.12,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0
@@ -240,6 +240,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     val employment = Employment(
       "company name",
+      Live,
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
@@ -298,6 +299,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
   "nonMatchingCeasedEmployments" must {
     val employment = Employment(
       "company name",
+      Live,
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,

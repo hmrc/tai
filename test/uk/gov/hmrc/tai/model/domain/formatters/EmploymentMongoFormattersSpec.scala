@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsString, Json}
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatters {
@@ -113,6 +114,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
         val employmentDetails = List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             new LocalDate("2017-05-26"),
             None,
@@ -133,9 +135,10 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
 
         val json = Json.arr(
           Json.obj(
-            "name"          -> "TEST",
-            "payrollNumber" -> "12345",
-            "startDate"     -> "2017-05-26",
+            "name"             -> "TEST",
+            "employmentStatus" -> 1,
+            "payrollNumber"    -> "12345",
+            "startDate"        -> "2017-05-26",
             "annualAccounts" -> Json.arr(
               Json.obj(
                 "key"            -> "",

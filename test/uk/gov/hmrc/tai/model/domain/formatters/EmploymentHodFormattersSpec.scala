@@ -23,6 +23,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{Payment, _}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -271,6 +272,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
   val sampleSingleEmployment = List(
     Employment(
       "EMPLOYER1",
+      Live,
       Some("0000"),
       new LocalDate(2016, 4, 6),
       None,
@@ -282,9 +284,22 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       false,
       false))
   val sampleDualEmployment = List(
-    Employment("EMPLOYER1", Some("0000"), new LocalDate(2016, 4, 6), None, Nil, "000", "00000", 2, None, true, false),
+    Employment(
+      "EMPLOYER1",
+      Live,
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      None,
+      true,
+      false),
     Employment(
       "EMPLOYER2",
+      Live,
       Some("0000"),
       new LocalDate(2016, 4, 6),
       None,

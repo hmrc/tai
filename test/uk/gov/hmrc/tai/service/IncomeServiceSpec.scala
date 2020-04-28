@@ -174,6 +174,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
     val employment = Employment(
       "company name",
+      Live,
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
@@ -192,11 +193,11 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
-            taxCodeIncomes :+ taxCodeIncome.copy(status = Ceased)
+            taxCodeIncomes
           ))
 
       when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
-        .thenReturn(Future.successful(employments))
+        .thenReturn(Future.successful(employments :+ employment.copy(employmentStatus = Ceased)))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = Await.result(
@@ -210,44 +211,44 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
     "return a list of ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
       when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(
           Future.successful(
             Seq(
-              taxCodeIncome.copy(status = Ceased),
-              taxCodeIncome.copy(status = Live)
+              employment.copy(employmentStatus = Ceased),
+              employment.copy(employmentStatus = Live)
             )))
-
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
-        .thenReturn(Future.successful(employments))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = Await.result(
         sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Ceased)(HeaderCarrier()),
         5.seconds)
 
-      val expectedResult = Seq(IncomeSource(taxCodeIncomes(1).copy(status = Ceased), employment))
+      val expectedResult = Seq(IncomeSource(taxCodeIncome, employment.copy(employmentStatus = Ceased)))
 
       result mustBe expectedResult
     }
 
     "return a list of potentially ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
       when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(
           Future.successful(
             Seq(
-              taxCodeIncome.copy(status = PotentiallyCeased),
-              taxCodeIncome.copy(status = Live)
+              employment.copy(employmentStatus = PotentiallyCeased),
+              employment.copy(employmentStatus = Live)
             )))
-
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
-        .thenReturn(Future.successful(employments))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = Await.result(
         sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()),
         5.seconds)
 
-      val expectedResult = Seq(IncomeSource(taxCodeIncomes(1).copy(status = PotentiallyCeased), employment))
+      val expectedResult = Seq(IncomeSource(taxCodeIncome, employment.copy(employmentStatus = PotentiallyCeased)))
 
       result mustBe expectedResult
     }
@@ -256,14 +257,17 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
-            Seq(
-              taxCodeIncome.copy(status = Ceased),
-              taxCodeIncome.copy(status = PotentiallyCeased),
-              taxCodeIncome.copy(status = Live)
-            )))
+            taxCodeIncomes
+          ))
 
       when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
-        .thenReturn(Future.successful(employments))
+        .thenReturn(
+          Future.successful(
+            Seq(
+              employment.copy(employmentStatus = Ceased),
+              employment.copy(employmentStatus = PotentiallyCeased),
+              employment.copy(employmentStatus = Live)
+            )))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = Await.result(
@@ -272,8 +276,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
       val expectedResult =
         Seq(
-          IncomeSource(taxCodeIncomes(1).copy(status = Ceased), employment),
-          IncomeSource(taxCodeIncomes(1).copy(status = PotentiallyCeased), employment)
+          IncomeSource(taxCodeIncomes(1), employment.copy(employmentStatus = Ceased)),
+          IncomeSource(taxCodeIncomes(1), employment.copy(employmentStatus = PotentiallyCeased))
         )
 
       result mustBe expectedResult
@@ -324,6 +328,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             ),
             Employment(
               name = "company name",
+              employmentStatus = Live,
               payrollNumber = Some("888"),
               startDate = LocalDate.parse(s"${TaxYear().next.year}-05-26"),
               endDate = None,
@@ -447,6 +452,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
     val employment = Employment(
       "company name",
+      Live,
       Some("888"),
       new LocalDate(TaxYear().next.year, 5, 26),
       None,
@@ -595,6 +601,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
       val mockEmploymentService = mock[EmploymentService]
       val emp = Employment(
         "company name",
+        Live,
         Some("888"),
         new LocalDate(2017, 5, 26),
         None,
@@ -681,6 +688,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                 Right(
                   Employment(
                     "",
+                    Live,
                     None,
                     LocalDate.now(),
                     None,
@@ -744,6 +752,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                 Right(
                   Employment(
                     "",
+                    Live,
                     None,
                     LocalDate.now(),
                     None,
@@ -823,6 +832,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                 Right(
                   Employment(
                     "",
+                    Live,
                     None,
                     LocalDate.now(),
                     None,
@@ -903,6 +913,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                 Right(
                   Employment(
                     "",
+                    Live,
                     None,
                     LocalDate.now(),
                     None,
@@ -968,6 +979,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                 Right(
                   Employment(
                     "",
+                    Live,
                     None,
                     LocalDate.now(),
                     None,
@@ -1096,7 +1108,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val result = SUT.retrieveEmploymentAmountYearToDate(
           nino,
-          Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
+          Some(
+            Employment("", Live, None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
 
         result mustBe 1234.56
       }
@@ -1111,7 +1124,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
         val result = SUT.retrieveEmploymentAmountYearToDate(
           nino,
-          Some(Employment("", None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
+          Some(
+            Employment("", Live, None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
 
         result mustBe 0
       }

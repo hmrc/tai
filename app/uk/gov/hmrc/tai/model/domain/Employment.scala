@@ -18,9 +18,11 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 
 case class Employment(
   name: String,
+  employmentStatus: TaxCodeIncomeStatus,
   payrollNumber: Option[String],
   startDate: LocalDate,
   endDate: Option[LocalDate],

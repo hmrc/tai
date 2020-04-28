@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.model.templates
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, _}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -275,6 +276,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
   private val existingEmployment = Employment(
     "fake employer",
+    Live,
     Some("12345"),
     LocalDate.parse("2017-04-04"),
     None,
