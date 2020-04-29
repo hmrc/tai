@@ -39,8 +39,12 @@ case class Employment(
 
   lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 
-  //TODO test new methods
-  def hasTempUnavailableStubAccount: Boolean = annualAccounts.exists(_.realTimeStatus == TemporarilyUnavailable)
+  //TODO test new methods and convert to val
+  def hasTempUnavailableStubAccount: Boolean = annualAccounts.exists(_.isTemporaryUnavailableStub)
+
+  def nonTempAccountForYear(year: TaxYear) =
+    annualAccounts.filter(annualAccount =>
+      annualAccount.taxYear == year && annualAccount.realTimeStatus != TemporarilyUnavailable)
 
   def hasAnnualAccountsForYear(year: TaxYear): Boolean = annualAccounts.exists(_.taxYear == year)
 

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class AnnualAccount(
@@ -35,6 +34,9 @@ case class AnnualAccount(
   }
 
   lazy val latestPayment: Option[Payment] = if (payments.isEmpty) None else Some(payments.max)
+
+  val isTemporaryUnavailableStub: Boolean = realTimeStatus == TemporarilyUnavailable
+
 }
 
 object AnnualAccount {
