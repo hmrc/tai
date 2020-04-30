@@ -1629,7 +1629,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.failed(new HttpException("rti down", 503)))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Seq(employment)))
       when(
         mockCacheConnector
           .createOrUpdateSeq[Employment](any(), any(), any())(any()))

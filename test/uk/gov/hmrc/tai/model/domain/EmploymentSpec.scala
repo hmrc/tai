@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentSpec extends PlaySpec {
 
@@ -49,7 +50,85 @@ class EmploymentSpec extends PlaySpec {
         desig mustBe "754-AZ00070"
       }
     }
+
+    "return true if any annual account exists, with a status of temporarily unavailable, for the requested year" in {
+      val accounts =
+        Seq(createAnnualAccount(TemporarilyUnavailable), createAnnualAccount(Available, taxYear))
+
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.tempUnavailableStubExistsForYear(taxYear) mustBe true
+    }
+
+    "return true if no annual account exists, with a status of temporarily unavailable, for the requested year" in {
+      val accounts =
+        Seq(createAnnualAccount(TemporarilyUnavailable, TaxYear(2019)), createAnnualAccount(Available))
+
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.tempUnavailableStubExistsForYear(taxYear) mustBe false
+    }
+
+    "return all annual accounts that do not have a status of temporarily unavailable for the request year" in {
+      val expectedAccount1 = createAnnualAccount(Available)
+      val expectedAccount2 = createAnnualAccount(Unavailable)
+
+      val accounts =
+        Seq(
+          createAnnualAccount(TemporarilyUnavailable, TaxYear(2019)),
+          createAnnualAccount(TemporarilyUnavailable),
+          expectedAccount1,
+          expectedAccount2,
+          createAnnualAccount(Available, TaxYear(2019))
+        )
+
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.nonTempAccountForYear(taxYear) mustBe Seq(expectedAccount1, expectedAccount2)
+    }
+
+    "return true if an annual accounts exist for a particular year" in {
+      val accounts = Seq(createAnnualAccount(Available, TaxYear(2019)), createAnnualAccount(Available))
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.hasAnnualAccountsForYear(taxYear) mustBe true
+    }
+
+    "return false if annual accounts don't exist for a particular year" in {
+      val accounts = Seq(createAnnualAccount(Available, TaxYear(2019)), createAnnualAccount(Unavailable, TaxYear(2018)))
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.hasAnnualAccountsForYear(taxYear) mustBe false
+    }
+
+    "return all annual accounts for the request year" in {
+      val expectedAccount1 = createAnnualAccount(Available)
+      val expectedAccount2 = createAnnualAccount(Unavailable)
+      val expectedAccount3 = createAnnualAccount(TemporarilyUnavailable)
+
+      val accounts =
+        Seq(
+          createAnnualAccount(TemporarilyUnavailable, TaxYear(2019)),
+          expectedAccount1,
+          expectedAccount2,
+          expectedAccount3,
+          createAnnualAccount(Available, TaxYear(2018))
+        )
+
+      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
+
+      employmentWithAccount.annualAccountsForYear(taxYear) mustBe Seq(
+        expectedAccount1,
+        expectedAccount2,
+        expectedAccount3)
+    }
+
   }
+
+  val taxYear = TaxYear()
+
+  def createAnnualAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear = taxYear): AnnualAccount =
+    AnnualAccount("0-0-0", taxYear, rtiStatus, Nil, Nil)
 
   val singleEmploymentWithAllRefs = List(
     Employment(

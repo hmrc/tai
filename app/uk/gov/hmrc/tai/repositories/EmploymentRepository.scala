@@ -43,9 +43,10 @@ class EmploymentRepository @Inject()(
   private val EmploymentMongoKey = "EmploymentData"
 
   def employment(nino: Nino, id: Int)(
-    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
-    employmentsForYear(nino, TaxYear()) map { empForYear =>
-      if (empForYear.exists(_.hasTempUnavailableStubAccount)) {
+    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
+    val taxYear = TaxYear()
+    employmentsForYear(nino, taxYear) map { empForYear =>
+      if (empForYear.exists(_.tempUnavailableStubExistsForYear(taxYear))) {
         Left(EmploymentAccountStubbed)
       } else {
         empForYear.find(_.sequenceNumber == id) match {
@@ -58,6 +59,7 @@ class EmploymentRepository @Inject()(
         }
       }
     }
+  }
 
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
 
@@ -84,7 +86,7 @@ class EmploymentRepository @Inject()(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
 
     def isCallToRtiRequired(employmentsForYear: Seq[Employment]): Boolean =
-      employmentsForYear.exists(_.hasTempUnavailableStubAccount) && featureToggle.rtiEnabled
+      employmentsForYear.exists(_.tempUnavailableStubExistsForYear(taxYear)) && featureToggle.rtiEnabled
 
     def subsequentRTICall(nino: Nino, taxYear: TaxYear, employmentsWithStub: Seq[Employment])(
       implicit hc: HeaderCarrier): Future[Either[String, Seq[AnnualAccount]]] =
@@ -146,7 +148,6 @@ class EmploymentRepository @Inject()(
     taxYear: TaxYear): Seq[AnnualAccount] =
     employments.map(_.stubbedAccount(rtiStatus, taxYear))
 
-  //TODO recover
   private def addEmploymentsToCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] =
     cacheConnector.createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
       EmploymentMongoFormatters.formatEmployment)
