@@ -35,8 +35,6 @@ case class AnnualAccount(
 
   lazy val latestPayment: Option[Payment] = if (payments.isEmpty) None else Some(payments.max)
 
-  val isTemporaryUnavailableStub: Boolean = realTimeStatus == TemporarilyUnavailable
-
 }
 
 object AnnualAccount {

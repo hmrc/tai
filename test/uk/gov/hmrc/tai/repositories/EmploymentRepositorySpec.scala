@@ -1124,32 +1124,33 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       "the cache contains employments but not for the requested year" when {
         "a request is made the employment returned has a different key which is and added to the cache" in {
 
-          val cachedEmploymentsFor2018 = List(
-            Employment(
-              "employer1",
-              Some("1"),
-              LocalDate.now(),
-              None,
-              List(AnnualAccount("1", TaxYear(2018), Available, Nil, Nil)),
-              "",
-              "",
-              2,
-              Some(100),
-              false,
-              false),
-            Employment(
-              "employer2",
-              Some("2"),
-              LocalDate.now(),
-              None,
-              List(AnnualAccount("2", TaxYear(2018), Available, Nil, Nil)),
-              "",
-              "",
-              2,
-              Some(100),
-              false,
-              false)
-          )
+          val cachedEmployment1 = Employment(
+            "employer1",
+            Some("1"),
+            LocalDate.now(),
+            None,
+            List(AnnualAccount("1", TaxYear(2018), Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false)
+
+          val cachedEmployment2 = Employment(
+            "employer2",
+            Some("2"),
+            LocalDate.now(),
+            None,
+            List(AnnualAccount("2", TaxYear(2018), Available, Nil, Nil)),
+            "",
+            "",
+            2,
+            Some(100),
+            false,
+            false)
+
+          val cachedEmploymentsFor2018 = List(cachedEmployment1, cachedEmployment2)
 
           val expectedAnnualAccount = AnnualAccount(
             "0-0-0",
@@ -1164,6 +1165,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount))
           val updatedCacheContents = cachedEmploymentsFor2018 ++ Seq(expectedEmployment)
+
+          val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getRTIDetails(any(), any())(any()))
@@ -1200,8 +1203,11 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           verify(mockCacheConnector, times(1))
             .createOrUpdateSeq[Employment](
               Matchers.eq(CacheId(nino)),
-              Matchers.eq(updatedCacheContents),
+              employmentsCaptor.capture(),
               Matchers.eq("EmploymentData"))(any())
+
+          employmentsCaptor.getValue mustBe Seq(cachedEmployment1, cachedEmployment2, expectedEmployment)
+
         }
 
         "a request is made the employment which is returned has the same key as one of the cached employments. It is" +
@@ -1316,7 +1322,6 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           )
 
           val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount))
-
           val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
           val mockCacheConnector = mock[CacheConnector]
@@ -1343,15 +1348,12 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               employmentsCaptor.capture(),
               Matchers.eq("EmploymentData"))(any())
 
-          val actualCached = employmentsCaptor.getValue
-          actualCached.size mustBe 1
-          val cachedEmp1 = actualCached.filter(_.name == "EMPLOYER1")
-
-          cachedEmp1.flatMap(_.annualAccounts) mustBe Seq(expectedAnnualAccount)
+          employmentsCaptor.getValue mustBe Seq(expectedEmployment)
 
         }
 
-        "a subsequent call is made to RTI and an AnnualAccount with a status of Unavailable is returned" in {
+        "a subsequent call is made to RTI and an AnnualAccount with a status of Unavailable is returned and the stubbed account" +
+          "is removed from the cache" in {
 
           val cachedAnnualAccount = createStubbedAnnualAccount(TemporarilyUnavailable, "00")
           val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
@@ -1365,6 +1367,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           )
 
           val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount))
+          val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
           val mockCacheConnector = mock[CacheConnector]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -1387,8 +1390,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           verify(mockCacheConnector, times(1))
             .createOrUpdateSeq[Employment](
               Matchers.eq(CacheId(nino)),
-              Matchers.eq(Seq(expectedEmployment)),
+              employmentsCaptor.capture(),
               Matchers.eq("EmploymentData"))(any())
+
+          employmentsCaptor.getValue mustBe Seq(expectedEmployment)
 
         }
 
@@ -1396,6 +1401,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val cachedAnnualAccount = createStubbedAnnualAccount(TemporarilyUnavailable, "00")
           val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
+          val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
 
           val mockCacheConnector = mock[CacheConnector]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -1408,7 +1414,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val sut = testController(rtiConnector = mockRtiConnector, cacheConnector = mockCacheConnector)
 
           val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
-          result.map(_ mustBe cachedEmployment)
+          result mustBe Seq(cachedEmployment)
 
           verify(mockNpsConnector, times(0))
             .getEmploymentDetails(Matchers.eq(nino), any())(any())

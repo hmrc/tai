@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import com.sksamuel.scapegoat.inspections.collections.PreferSeqEmpty
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
@@ -72,7 +71,10 @@ class EmploymentRepository @Inject()(
       case Nil => employmentsFromHod(nino, year) flatMap (addEmploymentsToCache(CacheId(nino), _))
       case (employments) =>
         onlyAccountsForGivenYear(employments, year) match {
-          case Nil                => employmentsFromHod(nino, year) flatMap (modifyCache(CacheId(nino), _))
+          case Nil =>
+            employmentsFromHod(nino, year) flatMap { unifiedEmployments =>
+              modifyCache(CacheId(nino), unifiedEmployments).map(_ => unifiedEmployments)
+            }
           case employmentsForYear => employmentsFromCache(employmentsForYear, nino, year)
         }
     }
@@ -99,7 +101,7 @@ class EmploymentRepository @Inject()(
       subsequentRTICall(nino, taxYear, employmentsForYear) flatMap {
         case Right(accounts) =>
           val unifiedEmps = unifiedEmployments(employmentsForYear, accounts, nino, taxYear)
-          modifyCachev2(CacheId(nino), unifiedEmps, taxYear)
+          modifyCache(CacheId(nino), unifiedEmps, Some(taxYear)).map(_ => unifiedEmps)
         case Left(_) => Future.successful(employmentsForYear)
       }
     } else {
@@ -149,64 +151,39 @@ class EmploymentRepository @Inject()(
     cacheConnector.createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
       EmploymentMongoFormatters.formatEmployment)
 
-  private def modifyCachev2(
-    cacheId: CacheId,
-    employments: Seq[Employment],
-    taxYear: TaxYear): Future[Seq[Employment]] = {
+  private def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
+    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
 
-    def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment = {
-
-      def mergedEmployment(prevEmp: Employment, newEmp: Employment): Employment = {
-        val nonTempStubbedAccounts = prevEmp.nonTempAccountForYear(taxYear)
-        val updatedEmp = newEmp.copy(annualAccounts = newEmp.annualAccounts ++ nonTempStubbedAccounts)
-        updatedEmp
-      }
-
-      currentCacheEmployments.find(_.key == employment.key) match {
-        case Some(cachedEmployment) => mergedEmployment(cachedEmployment, employment)
-        case None                   => employment
-      }
-    }
-
-    for {
-      //TODO is removing stubbed employments correct
-      //TODO do we need to go back to the cache?
-      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
-                                  EmploymentMongoFormatters.formatEmployment)
-      modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
-      unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
-        modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
-      updateCache = unmodifiedEmployments ++ modifiedEmployments
-      _ <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
-            EmploymentMongoFormatters.formatEmployment)
-    } yield employments
-
+  private def mergeEmployment(prevEmp: Employment, newEmp: Employment, taxYear: TaxYear): Employment = {
+    val accountsFromOtherYears = prevEmp.annualAccounts.filterNot(_.taxYear == taxYear)
+    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ accountsFromOtherYears)
   }
 
-  //TODO this needs to return the modified again
-  private def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] = {
+  private def modifyCache(
+    cacheId: CacheId,
+    employments: Seq[Employment],
+    taxYear: Option[TaxYear] = None): Future[Seq[Employment]] = {
 
     def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
       currentCacheEmployments.find(_.key == employment.key) match {
-        case Some(cachedEmployment) => mergedEmployment(cachedEmployment, employment)
-        case None                   => employment
+        case Some(cachedEmployment) => {
+          taxYear.fold(mergeEmployment(cachedEmployment, employment)) { taxYear =>
+            mergeEmployment(cachedEmployment, employment, taxYear)
+          }
+        }
+        case None => employment
       }
 
-    def mergedEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
-
     for {
-      //TODO is removing stubbed employments correct
-      //TODO do we need to go back to the cache?
       currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
                                   EmploymentMongoFormatters.formatEmployment)
       modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
       unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
         modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
       updateCache = unmodifiedEmployments ++ modifiedEmployments
-      _ <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
-            EmploymentMongoFormatters.formatEmployment)
-    } yield employments
+      cachedEmployments <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
+                            EmploymentMongoFormatters.formatEmployment)
+    } yield cachedEmployments
 
   }
 
