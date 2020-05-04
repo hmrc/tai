@@ -63,7 +63,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         val jsonResult = Json.obj(
           "data" -> Json.obj("employments" -> Json.arr(Json.obj(
             "name"                         -> "company name",
-            "employmentStatus"             -> 1,
+            "employmentStatus"             -> Live.toString,
             "payrollNumber"                -> "888",
             "startDate"                    -> "2017-05-26",
             "annualAccounts"               -> Json.arr(),
@@ -130,7 +130,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         val jsonResult = Json.obj(
           "data" -> Json.obj(
             "name"                         -> "company name",
-            "employmentStatus"             -> 1,
+            "employmentStatus"             -> Live.toString,
             "payrollNumber"                -> "888",
             "startDate"                    -> "2017-05-26",
             "annualAccounts"               -> Json.arr(),

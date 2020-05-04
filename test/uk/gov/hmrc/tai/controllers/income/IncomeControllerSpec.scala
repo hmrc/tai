@@ -209,7 +209,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1150LX",
               "name"                          -> "Employer1",
               "basisOperation"                -> "Week1Month1BasisOperation",
-              "status"                        -> 1,
+              "status"                        -> Live.toString,
               "inYearAdjustmentIntoCY"        -> 0,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0
@@ -222,7 +222,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1100L",
               "name"                          -> "Employer2",
               "basisOperation"                -> "OtherBasisOperation",
-              "status"                        -> 2,
+              "status"                        -> PotentiallyCeased.toString,
               "inYearAdjustmentIntoCY"        -> 321.12,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0

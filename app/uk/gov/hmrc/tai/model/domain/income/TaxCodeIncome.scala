@@ -69,15 +69,7 @@ object TaxCodeIncomeStatus {
       }
     }
 
-    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = taxCodeIncomeStatus match {
-      case Live              => JsNumber(1)
-      case PotentiallyCeased => JsNumber(2)
-      case Ceased            => JsNumber(3)
-      case default => {
-        Logger.warn(s"Invalid Employment Status Writes -> $default")
-        throw new RuntimeException("Invalid employment status writes")
-      }
-    }
+    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
   }
 }
 
