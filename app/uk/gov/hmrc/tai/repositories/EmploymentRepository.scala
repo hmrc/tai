@@ -111,7 +111,7 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  private def rtiCall(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier) =
+  private def rtiCall(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[AnnualAccount]] =
     rtiConnector
       .getRTIDetails(nino, taxYear) map (_.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
 
@@ -152,16 +152,13 @@ class EmploymentRepository @Inject()(
     cacheConnector.createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
       EmploymentMongoFormatters.formatEmployment)
 
-  private def modifyCache(cacheId: CacheId, employments: Seq[Employment]) = {
+  private def modifyCache(cacheId: CacheId, employments: Seq[Employment]): Future[Seq[Employment]] = {
 
     def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
       newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-      currentCacheEmployments.find(_.key == employment.key) match {
-        case Some(cachedEmployment) => mergeEmployment(cachedEmployment, employment)
-        case None                   => employment
-    }
+      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment))
 
     mergeEmployments(cacheId, employments, amendEmployment)
   }
@@ -174,10 +171,7 @@ class EmploymentRepository @Inject()(
     }
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-      currentCacheEmployments.find(_.key == employment.key) match {
-        case Some(cachedEmployment) => mergeEmployment(cachedEmployment, employment, taxYear)
-        case None                   => employment
-    }
+      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment, taxYear))
 
     mergeEmployments(cacheId, employments, amendEmployment)
   }
@@ -202,7 +196,7 @@ class EmploymentRepository @Inject()(
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier): Option[Employment] =
-      employments.filter(emp => emp.employerDesignation == account.employerDesignation) match {
+      employments.filter(_.employerDesignation == account.employerDesignation) match {
         case Seq(single) =>
           Logger.warn(s"single match found for $nino for $taxYear")
           Some(single.copy(annualAccounts = Seq(account)))
