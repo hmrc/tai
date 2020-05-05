@@ -103,7 +103,7 @@ class EmploymentRepository @Inject()(
       subsequentRTICall(nino, taxYear, employmentsForYear) flatMap {
         case Right(accounts) =>
           val unifiedEmps = unifiedEmployments(employmentsForYear, accounts, nino, taxYear)
-          modifyCache(CacheId(nino), unifiedEmps, Some(taxYear)).map(_ => unifiedEmps)
+          modifyCache(CacheId(nino), unifiedEmps, taxYear).map(_ => unifiedEmps)
         case Left(_) => Future.successful(employmentsForYear)
       }
     } else {
@@ -152,29 +152,40 @@ class EmploymentRepository @Inject()(
     cacheConnector.createOrUpdateSeq[Employment](cacheId, employments, EmploymentMongoKey)(
       EmploymentMongoFormatters.formatEmployment)
 
-  private def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
+  private def modifyCache(cacheId: CacheId, employments: Seq[Employment]) = {
 
-  private def mergeEmployment(prevEmp: Employment, newEmp: Employment, taxYear: TaxYear): Employment = {
-    val accountsFromOtherYears = prevEmp.annualAccounts.filterNot(_.taxYear == taxYear)
-    newEmp.copy(annualAccounts = newEmp.annualAccounts ++ accountsFromOtherYears)
+    def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
+      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
+
+    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
+      currentCacheEmployments.find(_.key == employment.key) match {
+        case Some(cachedEmployment) => mergeEmployment(cachedEmployment, employment)
+        case None                   => employment
+    }
+
+    mergeEmployments(cacheId, employments, amendEmployment)
   }
 
-  private def modifyCache(
+  private def modifyCache(cacheId: CacheId, employments: Seq[Employment], taxYear: TaxYear): Future[Seq[Employment]] = {
+
+    def mergeEmployment(prevEmp: Employment, newEmp: Employment, taxYear: TaxYear): Employment = {
+      val accountsFromOtherYears = prevEmp.annualAccounts.filterNot(_.taxYear == taxYear)
+      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ accountsFromOtherYears)
+    }
+
+    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
+      currentCacheEmployments.find(_.key == employment.key) match {
+        case Some(cachedEmployment) => mergeEmployment(cachedEmployment, employment, taxYear)
+        case None                   => employment
+    }
+
+    mergeEmployments(cacheId, employments, amendEmployment)
+  }
+
+  private def mergeEmployments(
     cacheId: CacheId,
     employments: Seq[Employment],
-    taxYear: Option[TaxYear] = None): Future[Seq[Employment]] = {
-
-    def amendEmployment(employment: Employment, currentCacheEmployments: Seq[Employment]): Employment =
-      currentCacheEmployments.find(_.key == employment.key) match {
-        case Some(cachedEmployment) => {
-          taxYear.fold(mergeEmployment(cachedEmployment, employment)) { taxYear =>
-            mergeEmployment(cachedEmployment, employment, taxYear)
-          }
-        }
-        case None => employment
-      }
-
+    amendEmployment: (Employment, Seq[Employment]) => Employment): Future[Seq[Employment]] =
     for {
       currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
                                   EmploymentMongoFormatters.formatEmployment)
@@ -185,8 +196,6 @@ class EmploymentRepository @Inject()(
       cachedEmployments <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
                             EmploymentMongoFormatters.formatEmployment)
     } yield cachedEmployments
-
-  }
 
   def unifiedEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Seq[Employment] = {

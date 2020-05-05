@@ -19,13 +19,13 @@ package uk.gov.hmrc.tai.repositories
 import java.io.File
 
 import org.joda.time.LocalDate
-import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
+import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -1576,7 +1576,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(List(emp1, emp2)))
 
       val sut = testController(cacheConnector = mockCacheConnector)
-      Await.result(sut.employment(Nino(nino.nino), 4), 5 seconds) mustBe Right(expectedEmployment)
+      Await.result(sut.employment(nino, 4), 5 seconds) mustBe Right(expectedEmployment)
     }
     "return Employment not found error type when there is no employment found for that ID" in {
       val emp1 = Employment(
@@ -1616,7 +1616,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(List(emp1, emp2)))
 
       val sut = testController(cacheConnector = mockCacheConnector)
-      Await.result(sut.employment(Nino(nino.nino), 10), 5 seconds) mustBe Left(EmploymentNotFound)
+      Await.result(sut.employment(nino, 10), 5 seconds) mustBe Left(EmploymentNotFound)
     }
 
     "return Employment stubbed account error type when RTI is down and there is no data in the cache" in {
@@ -1683,11 +1683,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           rtiConnector = mockRtiConnector,
           cacheConnector = mockCacheConnector,
           npsConnector = mockNpsConnector)
-        Await.result(controller.employment(Nino(nino.nino), 3), 5 seconds)
+        Await.result(controller.employment(nino, 3), 5 seconds)
 
         verify(mockNpsConnector, times(1))
-          .getEmploymentDetails(org.mockito.Matchers.eq(Nino(nino.nino)), org.mockito.Matchers.eq(TaxYear().year))(
-            any())
+          .getEmploymentDetails(org.mockito.Matchers.eq(nino), org.mockito.Matchers.eq(TaxYear().year))(any())
       }
     }
   }
