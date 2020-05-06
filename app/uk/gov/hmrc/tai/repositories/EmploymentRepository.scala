@@ -38,6 +38,9 @@ class EmploymentRepository @Inject()(
   cacheConnector: CacheConnector,
   npsConnector: NpsConnector,
   auditor: Auditor,
+  employmentBuilder: EmploymentBuilder,
+  employmentCollection: Employments, //TODO rename
+  //TODO move to RTI connector
   featureToggle: FeatureTogglesConfig) {
 
   private val EmploymentMongoKey = "EmploymentData"
@@ -61,18 +64,11 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
-
-    def onlyAccountsForGivenYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
-      employments.collect {
-        case employment if employment.hasAnnualAccountsForYear(year) =>
-          employment.copy(annualAccounts = employment.annualAccountsForYear(year))
-      }
-
+  def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino) flatMap {
       case Nil => employmentsFromHod(nino, year) flatMap (addEmploymentsToCache(CacheId(nino), _))
       case (employments) =>
-        onlyAccountsForGivenYear(employments, year) match {
+        employmentCollection.employmentsWithAccountsForYear(employments, year) match {
           case Nil =>
             employmentsFromHod(nino, year) flatMap { unifiedEmployments =>
               modifyCache(CacheId(nino), unifiedEmployments).map(_ => unifiedEmployments)
@@ -80,7 +76,6 @@ class EmploymentRepository @Inject()(
           case employmentsForYear => employmentsFromCache(employmentsForYear, nino, year)
         }
     }
-  }
 
   private def employmentsFromCache(employmentsForYear: Seq[Employment], nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
@@ -102,7 +97,8 @@ class EmploymentRepository @Inject()(
     if (isCallToRtiRequired(employmentsForYear)) {
       subsequentRTICall(nino, taxYear, employmentsForYear) flatMap {
         case Right(accounts) =>
-          val unifiedEmps = unifiedEmployments(employmentsForYear, accounts, nino, taxYear)
+          val unifiedEmps =
+            employmentBuilder.combineAccountsWithEmployments(employmentsForYear, accounts, nino, taxYear)
           modifyCache(CacheId(nino), unifiedEmps, taxYear).map(_ => unifiedEmps)
         case Left(_) => Future.successful(employmentsForYear)
       }
@@ -139,7 +135,7 @@ class EmploymentRepository @Inject()(
                       _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
                     }
       accounts <- rtiAnnualAccounts(employments)
-    } yield unifiedEmployments(employments, accounts, nino, taxYear)
+    } yield employmentBuilder.combineAccountsWithEmployments(employments, accounts, nino, taxYear)
   }
 
   private def stubAccounts(
@@ -190,71 +186,6 @@ class EmploymentRepository @Inject()(
       cachedEmployments <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
                             EmploymentMongoFormatters.formatEmployment)
     } yield cachedEmployments
-
-  def unifiedEmployments(employments: Seq[Employment], accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Seq[Employment] = {
-
-    def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
-      implicit hc: HeaderCarrier): Option[Employment] =
-      employments.filter(_.employerDesignation == account.employerDesignation) match {
-        case Seq(single) =>
-          Logger.warn(s"single match found for $nino for $taxYear")
-          Some(single.copy(annualAccounts = Seq(account)))
-        case Nil =>
-          Logger.warn(s"no match found for $nino for $taxYear")
-          monitorAndAuditAssociatedEmployment(None, account, employments, nino.nino, taxYear.twoDigitRange)
-        case many =>
-          Logger.warn(s"multiple matches found for $nino for $taxYear")
-          monitorAndAuditAssociatedEmployment(
-            many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account))),
-            account,
-            employments,
-            nino.nino,
-            taxYear.twoDigitRange)
-      }
-
-    def combinedDuplicates(employments: Seq[Employment]): Seq[Employment] =
-      employments.map(_.key).distinct map { distinctKey =>
-        val duplicates = employments.filter(_.key == distinctKey)
-        duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
-      }
-
-    val accountAssignedEmployments = accounts flatMap { account =>
-      associatedEmployment(account, employments, nino, taxYear)
-    }
-    val unified = combinedDuplicates(accountAssignedEmployments)
-    val nonUnified = employments.filterNot(emp => unified.map(_.key).contains(emp.key)) map { emp =>
-      emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
-    }
-    unified ++ nonUnified
-  }
-
-  def monitorAndAuditAssociatedEmployment(
-    emp: Option[Employment],
-    account: AnnualAccount,
-    employments: Seq[Employment],
-    nino: String,
-    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
-    if (emp.isDefined) {
-      emp
-    } else {
-      val employerKey = employments.map { employment =>
-        s"${employment.name} : ${employment.key}; "
-      }.mkString
-
-      auditor.sendDataEvent(
-        transactionName = "NPS RTI Data Mismatch",
-        detail = Map(
-          "nino"                -> nino,
-          "tax year"            -> taxYear,
-          "NPS Employment Keys" -> employerKey,
-          "RTI Account Key"     -> account.key)
-      )
-
-      Logger.warn(
-        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
-      None
-    }
 
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     cacheConnector
