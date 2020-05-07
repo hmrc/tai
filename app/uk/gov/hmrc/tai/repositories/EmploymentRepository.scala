@@ -39,11 +39,17 @@ class EmploymentRepository @Inject()(
   npsConnector: NpsConnector,
   auditor: Auditor,
   employmentBuilder: EmploymentBuilder,
-  employmentCollection: Employments, //TODO rename
   //TODO move to RTI connector
   featureToggle: FeatureTogglesConfig) {
 
   private val EmploymentMongoKey = "EmploymentData"
+
+  //TODO place this into the returned domain
+  private def employmentsWithAccountsForYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
+    employments.collect {
+      case employment if employment.hasAnnualAccountsForYear(year) =>
+        employment.copy(annualAccounts = employment.annualAccountsForYear(year))
+    }
 
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
@@ -68,7 +74,7 @@ class EmploymentRepository @Inject()(
     fetchEmploymentFromCache(nino) flatMap {
       case Nil => employmentsFromHod(nino, year) flatMap (addEmploymentsToCache(CacheId(nino), _))
       case (employments) =>
-        employmentCollection.employmentsWithAccountsForYear(employments, year) match {
+        employmentsWithAccountsForYear(employments, year) match {
           case Nil =>
             employmentsFromHod(nino, year) flatMap { unifiedEmployments =>
               modifyCache(CacheId(nino), unifiedEmployments).map(_ => unifiedEmployments)
