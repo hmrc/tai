@@ -20,13 +20,14 @@ import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, TemporarilyUnavailable, UnAvailableRealTimeStatus, Unavailable}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -39,7 +40,8 @@ class RtiConnector @Inject()(
   metrics: Metrics,
   auditor: Auditor,
   rtiConfig: DesConfig,
-  urls: RtiUrls)
+  urls: RtiUrls,
+  rtiToggle: RtiToggleConfig)
     extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = rtiConfig.originatorId
@@ -66,22 +68,34 @@ class RtiConnector @Inject()(
     )(hc, formatRtiData)
   }
 
-  def getRTIDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def getRTIDetails(nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier): Future[Either[UnAvailableRealTimeStatus, Seq[AnnualAccount]]] = {
     implicit val hc: HeaderCarrier = createHeader
-    val timerContext = metrics.startTimer(APITypes.RTIAPI)
-    val ninoWithoutSuffix = withoutSuffix(nino)
-    val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))
-    futureResponse.flatMap { res =>
-      timerContext.stop()
-      res.status match {
-        case Status.OK =>
-          metrics.incrementSuccessCounter(APITypes.RTIAPI)
-          val rtiData = res.json
-          Future.successful(rtiData)
-        case _ =>
-          Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
-          Future.failed(new HttpException(res.body, res.status))
+
+    if (rtiToggle.rtiEnabled) {
+      val timerContext = metrics.startTimer(APITypes.RTIAPI)
+      val ninoWithoutSuffix = withoutSuffix(nino)
+      val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))
+      futureResponse.flatMap { res =>
+        timerContext.stop()
+        res.status match {
+          case Status.OK =>
+            metrics.incrementSuccessCounter(APITypes.RTIAPI)
+            val rtiData = res.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
+            Future.successful(Right(rtiData))
+          case _ =>
+            Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
+
+            val rtiStatus = res.status match {
+              case 404 => Unavailable
+              case _   => TemporarilyUnavailable
+            }
+
+            Future.successful(Left(rtiStatus))
+        }
       }
+    } else {
+      Future.successful(Left(TemporarilyUnavailable))
     }
   }
 }
