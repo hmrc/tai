@@ -179,7 +179,6 @@ class CitizenDetailsConnectorSpec
         "FName LName",
         manualCorrespondenceInd = false,
         Some(false))
-
     }
 
     "return deceased indicator as true" in {
@@ -242,7 +241,26 @@ class CitizenDetailsConnectorSpec
       citizenDetailsConnector.getEtag(nino).futureValue mustBe Some(ETag(etag))
     }
 
-    "return 500 on an unrecoverable error, possibly bad data received from the upstream API" in {
+    "return a None for bad json" in {
+      val badJson: JsValue = Json.parse(s"""
+                                           |{
+                                           |   "not an etag":"$etag"
+                                           |}
+    """.stripMargin)
+
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(badJson.toString)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+    }
+
+    "return None on an unrecoverable error, possibly bad data received from the upstream API" in {
       server.stubFor(
         get(urlEqualTo(s"/citizen-details/$nino/etag"))
           .willReturn(
@@ -254,7 +272,7 @@ class CitizenDetailsConnectorSpec
       citizenDetailsConnector.getEtag(nino).futureValue mustBe None
     }
 
-    "return 404 when record not found" in {
+    "return None when record not found" in {
       server.stubFor(
         get(urlEqualTo(s"/citizen-details/$nino/etag"))
           .willReturn(
@@ -266,7 +284,7 @@ class CitizenDetailsConnectorSpec
       citizenDetailsConnector.getEtag(nino).futureValue mustBe None
     }
 
-    "return 423 when record was hidden, due to manual correspondence indicator flag being set" in {
+    "return None when record was hidden, due to manual correspondence indicator flag being set" in {
       server.stubFor(
         get(urlEqualTo(s"/citizen-details/$nino/etag"))
           .willReturn(

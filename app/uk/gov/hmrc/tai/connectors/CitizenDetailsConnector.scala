@@ -48,7 +48,7 @@ class CitizenDetailsConnector @Inject()(
     httpClient.GET(urls.etagUrl(nino)) flatMap { response =>
       response.status match {
         case OK =>
-          Future.successful(Some(response.json.as[ETag]))
+          Future.successful(response.json.asOpt[ETag])
         case errorStatus =>
           Logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
           Future.successful(None)
