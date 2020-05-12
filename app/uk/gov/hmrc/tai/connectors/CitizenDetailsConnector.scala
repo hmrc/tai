@@ -17,27 +17,41 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logger
+import play.api.http.Status._
 import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.PersonDetails
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CitizenDetailsConnector @Inject()(
   metrics: Metrics,
   httpClient: HttpClient,
   auditor: Auditor,
-  urls: CitizenDetailsUrls)
+  urls: CitizenDetailsUrls)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId: String = ""
 
   def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] =
     getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)
+
+  def getEtag(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[ETag]] =
+    httpClient.GET(urls.etagUrl(nino)) flatMap { response =>
+      response.status match {
+        case OK =>
+          Future.successful(response.json.asOpt[ETag])
+        case errorStatus =>
+          Logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
+          Future.successful(None)
+      }
+    }
 }

@@ -80,7 +80,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
 
       details.reason match {
         case Some(reason) => Logger.error(s"File upload failed: ${details.status} $reason")
-        case None => Logger.error(s"File upload failed for an unknown reason: ${details.status}")
+        case None         => Logger.error(s"File upload failed for an unknown reason: ${details.status}")
       }
 
       Future.successful(Open)
