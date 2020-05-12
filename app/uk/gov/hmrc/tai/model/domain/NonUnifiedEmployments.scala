@@ -21,10 +21,10 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-case class EmploymentsWithoutAccounts(employments: Seq[Employment]) {
+case class NonUnifiedEmployments(employments: Seq[Employment]) {
 
   def combineAccountsWithEmployments(accounts: Seq[AnnualAccount], nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): EmploymentsWithAccounts = {
+    implicit hc: HeaderCarrier): UnifiedEmployments = {
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier): Option[Employment] =
@@ -60,7 +60,7 @@ case class EmploymentsWithoutAccounts(employments: Seq[Employment]) {
       emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
     }
 
-    EmploymentsWithAccounts(unified ++ nonUnified)
+    UnifiedEmployments(unified ++ nonUnified)
   }
 
   private def monitorAndAuditAssociatedEmployment(

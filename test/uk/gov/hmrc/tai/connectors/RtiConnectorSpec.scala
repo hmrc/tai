@@ -17,20 +17,22 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
+import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsString, Json, Reads}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.rti.RtiData
+import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters.annualAccountHodReads
+import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
@@ -38,7 +40,8 @@ import scala.util.Random
 
 class RtiConnectorSpec extends PlaySpec with MockitoSugar {
 
-  private implicit val hc = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val reads: Reads[Seq[AnnualAccount]] = annualAccountHodReads
 
   "RtiConnector" should {
 
@@ -110,171 +113,119 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
       }
     }
 
-    "return RTI Json" when {
-      "given a valid Nino and TaxYear" in {
-        val fakeRtiData = Json.toJson(RtiData(nino.nino, TaxYear(2017), "req123", Nil))
+    "return a successful response from getPaymentsForYear" when {
+      "a successful Http response is received from RTI" in {
+
+        val taxYearRange = "16-17"
+        val fileName = "1"
+        val fakeRtiData = QaData.paymentDetailsForYear(taxYearRange)(fileName)
         val fakeResponse: HttpResponse = HttpResponse(200, Some(fakeRtiData))
 
-        val mockHttpClient = mock[HttpClient]
+        val expectedPayments = Seq(
+          AnnualAccount(
+            "267-000-000",
+            TaxYear(2016),
+            Available,
+            List(
+              Payment(new LocalDate(2016, 4, 30), 5000.00, 1500.00, 600.00, 5000.00, 1500.00, 600.00, Quarterly, None),
+              Payment(
+                new LocalDate(2016, 7, 31),
+                11000.00,
+                3250.00,
+                1320.00,
+                6000.00,
+                1750.00,
+                720.00,
+                Quarterly,
+                None),
+              Payment(
+                new LocalDate(2016, 10, 31),
+                15000.00,
+                4250.00,
+                1800.00,
+                4000.00,
+                1000.00,
+                480.00,
+                Quarterly,
+                None),
+              Payment(new LocalDate(2017, 2, 28), 19000.00, 5250.00, 2280.00, 4000.00, 1000.00, 480.00, Quarterly, None)
+            ),
+            List()
+          ))
+
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
           .thenReturn(Future.successful(fakeResponse))
 
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val rtiData = Await.result(resp, 5 seconds)
-
-        rtiData mustBe fakeRtiData
+        val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        result mustBe Right(expectedPayments)
       }
     }
 
-    "return a success response from RTI Details" when {
-      "it returns a success Http response for GET transactions with matching nino data" in {
-        val fakeRtiData = Json.toJson(RtiData(nino.nino, TaxYear(2017), "req123", Nil))
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(fakeRtiData))
+    "return a TemporarilyUnavailable response" when {
+      //TODO BadRequest?
+      val exceptionResponses = Seq(BadRequestHttpResponse, UnknownErrorHttpResponse, InternalServerErrorHttpResponse)
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(fakeResponse))
+      exceptionResponses foreach { exceptionResponse =>
+        s"the HTTP exception is $exceptionResponse" in {
+          when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
+            .thenReturn(Future.successful(exceptionResponse))
 
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
+          val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+          result mustBe Left(TemporarilyUnavailable)
+        }
+      }
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+      "the rti toggle is set to false" in {
+        val mockRtiToggle = mock[RtiToggleConfig]
+        when(mockRtiToggle.rtiEnabled).thenReturn(false)
 
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val rtiData = Await.result(resp, 5 seconds)
-
-        rtiData mustBe fakeRtiData
-
+        val result =
+          Await.result(createSUT(rtiToggle = mockRtiToggle).getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        result mustBe Left(TemporarilyUnavailable)
       }
     }
-    "return an error response from RTI Details" when {
-      "it returns a bad request Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(BadRequestHttpResponse))
 
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"bad request\""
-      }
-      "it returns a not found Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
+    "return an Unavailable response" when {
+      "the HTTP exception is a NotFound exception" in {
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
           .thenReturn(Future.successful(NotFoundHttpResponse))
 
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"not found\""
-      }
-      "it returns a internal server error Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(InternalServerErrorHttpResponse))
-
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"internal server error\""
-
-      }
-      "it returns an unknown Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
-
-        val mockHttpPost = mock[HttpPost]
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        val resp = sut.getRTIDetails(Nino(nino.nino), TaxYear(2017))
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"unknown response\""
-
+        val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        result mustBe Left(Unavailable)
       }
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-  private val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse =
+
+  val nino: Nino = new Generator(new Random).nextNino
+
+  lazy val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
+  lazy val UnknownErrorHttpResponse: HttpResponse =
     HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse =
+  lazy val InternalServerErrorHttpResponse: HttpResponse =
     HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
+  val NotFoundHttpResponse: HttpResponse =
+    HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
+
+  val mockHttpClient = mock[HttpClient]
+  val mockRtiToggle = mock[RtiToggleConfig]
 
   private def createSUT(
-    httpClient: HttpClient,
-    metrics: Metrics,
-    audit: Auditor,
-    rtiConfig: DesConfig,
-    rtiUrls: RtiUrls) =
-    new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls) {
+    httpClient: HttpClient = mockHttpClient,
+    metrics: Metrics = mock[Metrics],
+    audit: Auditor = mock[Auditor],
+    rtiConfig: DesConfig = mock[DesConfig],
+    rtiUrls: RtiUrls = mock[RtiUrls],
+    rtiToggle: RtiToggleConfig = mockRtiToggle) = {
+
+    when(mockRtiToggle.rtiEnabled).thenReturn(true)
+
+    val mockTimerContext = mock[Timer.Context]
+
+    when(metrics.startTimer(any()))
+      .thenReturn(mockTimerContext)
+
+    new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls, rtiToggle) {
       override val originatorId: String = "orgId"
     }
+  }
 }

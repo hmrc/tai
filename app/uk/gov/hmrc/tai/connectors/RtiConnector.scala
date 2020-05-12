@@ -31,6 +31,8 @@ import uk.gov.hmrc.tai.model.domain.{AnnualAccount, TemporarilyUnavailable, UnAv
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import Status.{BAD_REQUEST, OK}
+import play.api.libs.openid.Errors.BAD_RESPONSE
 
 import scala.concurrent.Future
 
@@ -68,7 +70,7 @@ class RtiConnector @Inject()(
     )(hc, formatRtiData)
   }
 
-  def getRTIDetails(nino: Nino, taxYear: TaxYear)(
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[UnAvailableRealTimeStatus, Seq[AnnualAccount]]] = {
     implicit val hc: HeaderCarrier = createHeader
 
@@ -79,10 +81,11 @@ class RtiConnector @Inject()(
       futureResponse.flatMap { res =>
         timerContext.stop()
         res.status match {
-          case Status.OK =>
+          case OK =>
             metrics.incrementSuccessCounter(APITypes.RTIAPI)
-            val rtiData = res.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
-            Future.successful(Right(rtiData))
+            val rtiData = res.json
+            val annualAccounts = rtiData.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
+            Future.successful(Right(annualAccounts))
           case _ =>
             Logger.warn(s"RTIAPI - ${res.status} error returned from RTI HODS for $ninoWithoutSuffix")
 
