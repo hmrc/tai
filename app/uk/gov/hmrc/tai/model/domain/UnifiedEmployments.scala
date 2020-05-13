@@ -48,7 +48,6 @@ case class UnifiedEmployments(employments: Seq[Employment]) {
     }
 
     UnifiedEmployments(merge(currentCacheEmployments, amendEmployment))
-
   }
 
   private def merge(

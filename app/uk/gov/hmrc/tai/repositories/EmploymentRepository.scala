@@ -62,20 +62,17 @@ class EmploymentRepository @Inject()(
   def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino) flatMap {
       case Nil =>
-        employmentsFromHod(nino, year) flatMap { employmentsWithAccounts =>
-          addEmploymentsToCache(nino, employmentsWithAccounts.employments)
-        }
-      case (employments) =>
-        val employmentsWithAccounts = UnifiedEmployments(employments)
-        employmentsWithAccounts.withAccountsForYear(employments, year) match {
+        employmentsFromHod(nino, year) flatMap (employmentsWithAccounts =>
+          addEmploymentsToCache(nino, employmentsWithAccounts.employments))
+      case (cachedEmployments) =>
+        UnifiedEmployments(cachedEmployments).withAccountsForYear(cachedEmployments, year) match {
           case Nil =>
             employmentsFromHod(nino, year) flatMap { employmentsWithAccounts =>
               for {
                 currentCacheEmployments <- fetchEmploymentFromCache(nino)
-                mergedEmployments = employmentsWithAccounts.mergeEmployments(currentCacheEmployments).employments
-                _ <- addEmploymentsToCache(nino, mergedEmployments)
-              } yield mergedEmployments
-
+                mergedEmployments = employmentsWithAccounts.mergeEmployments(currentCacheEmployments)
+                _ <- addEmploymentsToCache(nino, mergedEmployments.employments)
+              } yield employmentsWithAccounts.employments
             }
           case employmentsForYear => employmentsFromCache(UnifiedEmployments(employmentsForYear), nino, year)
         }
@@ -87,27 +84,29 @@ class EmploymentRepository @Inject()(
     def isCallToRtiRequired(employmentsForYear: UnifiedEmployments): Boolean =
       employmentsForYear.containsTempAccount(taxYear)
 
-    //TODO rename
-    def combineAndModify(accounts: Seq[AnnualAccount]): Future[Seq[Employment]] = {
-      val employmentsWithAccounts = NonUnifiedEmployments(employmentsForYear.employments)
-        .combineAccountsWithEmployments(accounts, nino, taxYear)
-
+    def modifyCache(employmentsWithAccounts: UnifiedEmployments): Future[Seq[Employment]] =
       for {
         currentCacheEmployments <- fetchEmploymentFromCache(nino)
         mergedEmployments = employmentsWithAccounts
           .mergeEmploymentsForTaxYear(currentCacheEmployments, taxYear)
           .employments
-        cachedEmployments <- addEmploymentsToCache(nino, mergedEmployments)
-      } yield cachedEmployments
-
-    }
+        _ <- addEmploymentsToCache(nino, mergedEmployments)
+      } yield employmentsWithAccounts.employments
 
     if (isCallToRtiRequired(employmentsForYear)) {
       rtiCall(nino, taxYear) flatMap {
-        case Right(accounts) => combineAndModify(accounts)
+        case Right(accounts) => {
+          val employmentsWithAccounts = NonUnifiedEmployments(employmentsForYear.employments)
+            .combineAccountsWithEmployments(accounts, nino, taxYear)
+
+          modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
+        }
         case Left(Unavailable) => {
-          val stubbedAccounts = stubAccounts(Unavailable, employmentsForYear.employments, taxYear)
-          combineAndModify(stubbedAccounts)
+          val unavailableAccounts = stubAccounts(Unavailable, employmentsForYear.employments, taxYear)
+          val employmentsWithAccounts = NonUnifiedEmployments(employmentsForYear.employments)
+            .combineAccountsWithEmployments(unavailableAccounts, nino, taxYear)
+
+          modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
         }
         case Left(TemporarilyUnavailable) => Future.successful(employmentsForYear.employments)
       }
@@ -152,81 +151,4 @@ class EmploymentRepository @Inject()(
   private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     cacheConnector
       .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment)
-//  private def modifyCache(
-//    cacheId: CacheId,
-//    employmentsWithAccounts: EmploymentsWithAccounts): Future[Seq[Employment]] = {
-//
-//    def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-//      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
-//
-//    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-//      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment))
-//
-//    mergeEmployments(cacheId, employmentsWithAccounts.employments, amendEmployment)
-//  }
-//
-//  private def modifyCache(
-//    cacheId: CacheId,
-//    employmentsWithAccounts: EmploymentsWithAccounts,
-//    taxYear: TaxYear): Future[Seq[Employment]] = {
-//
-//    def mergeEmployment(prevEmp: Employment, newEmp: Employment, taxYear: TaxYear): Employment = {
-//      val accountsFromOtherYears = prevEmp.annualAccounts.filterNot(_.taxYear == taxYear)
-//      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ accountsFromOtherYears)
-//    }
-//
-//    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-//      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment, taxYear))
-//
-//    mergeEmployments(cacheId, employmentsWithAccounts.employments, amendEmployment)
-//  }
-//
-//  private def mergeEmployments(
-//    cacheId: CacheId,
-//    employments: Seq[Employment],
-//    amendEmployment: (Employment, Seq[Employment]) => Employment): Future[Seq[Employment]] =
-//    for {
-//      currentCacheEmployments <- cacheConnector.findSeq[Employment](cacheId, EmploymentMongoKey)(
-//                                  EmploymentMongoFormatters.formatEmployment)
-//      modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
-//      unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
-//        modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
-//      updateCache = unmodifiedEmployments ++ modifiedEmployments
-//      cachedEmployments <- cacheConnector.createOrUpdateSeq[Employment](cacheId, updateCache, EmploymentMongoKey)(
-//                            EmploymentMongoFormatters.formatEmployment)
-//    } yield cachedEmployments
-
-//  private def modifyCache(nino: Nino, employmentsWithAccounts: EmploymentsWithAccounts): Future[Seq[Employment]] = {
-//
-//    def mergeEmployment(prevEmp: Employment, newEmp: Employment): Employment =
-//      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ prevEmp.annualAccounts)
-//
-//    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-//      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment))
-//
-//   for {
-//     currentCacheEmployments <- fetchEmploymentFromCache(nino)
-//     mergedEmployments = employmentsWithAccounts.mergeEmployments(currentCacheEmployments, amendEmployment)
-//     cachedEmployments <- addEmploymentsToCache(nino, mergedEmployments)
-//   } yield cachedEmployments
-//
-//  }
-
-//  private def modifyCache(nino: Nino, employmentsWithAccounts: EmploymentsWithAccounts,
-//                           taxYear: TaxYear): Future[Seq[Employment]] = {
-//
-//    def mergeEmployment(prevEmp: Employment, newEmp: Employment, taxYear: TaxYear): Employment = {
-//      val accountsFromOtherYears = prevEmp.annualAccounts.filterNot(_.taxYear == taxYear)
-//      newEmp.copy(annualAccounts = newEmp.annualAccounts ++ accountsFromOtherYears)
-//    }
-//
-//    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-//      currentCacheEmployments.find(_.key == employment.key).fold(employment)(mergeEmployment(_, employment, taxYear))
-//
-//    for {
-//      currentCacheEmployments <- fetchEmploymentFromCache(nino)
-//      mergedEmployments = employmentsWithAccounts.mergeEmployments(currentCacheEmployments, amendEmployment)
-//      cachedEmployments <- addEmploymentsToCache(nino, mergedEmployments)
-//    } yield cachedEmployments
-//  }
 }
