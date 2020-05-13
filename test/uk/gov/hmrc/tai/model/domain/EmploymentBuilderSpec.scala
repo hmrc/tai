@@ -17,24 +17,26 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-class EmploymentBuilderSpec extends PlaySpec {
+class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   trait EmploymentBuilderSetup {
     val nino = new Generator(new Random).nextNino
-    val testEmploymentBuilder = new EmploymentBuilder
+    val testEmploymentBuilder = new EmploymentBuilder(mock[Auditor])
   }
 
   "buildEmploymentsWithAccounts" should {
-    "unify stubbed Employment instances (having Nil accounts), with their corrsesponding AnnualAccount instances" when {
+    "unify stubbed Employment instances (having Nil accounts), with their corresponding AnnualAccount instances" when {
       "each AnnualAccount record has a single matching Employment record by employer designation, " +
         "i.e. taxDistrictNumber and payeNumber match AnnualAccount officeNo and payeRef values respectively. " +
         "(The match is unambiguous - payroll need not figure.)" in new EmploymentBuilderSetup {
@@ -72,7 +74,9 @@ class EmploymentBuilderSpec extends PlaySpec {
         )
 
         val unifiedEmployments =
-          testEmploymentBuilder.combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+          testEmploymentBuilder
+            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+            .employments
 
         unifiedEmployments must contain(
           Employment(
@@ -141,7 +145,9 @@ class EmploymentBuilderSpec extends PlaySpec {
           List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil))
 
         val unifiedEmployments =
-          testEmploymentBuilder.combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+          testEmploymentBuilder
+            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+            .employments
 
         unifiedEmployments must contain(
           Employment(
@@ -195,7 +201,9 @@ class EmploymentBuilderSpec extends PlaySpec {
         )
 
         val unifiedEmployments =
-          testEmploymentBuilder.combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+          testEmploymentBuilder
+            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+            .employments
 
         unifiedEmployments must contain(
           Employment(
@@ -271,7 +279,7 @@ class EmploymentBuilderSpec extends PlaySpec {
           AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil))
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty)
+        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -333,7 +341,7 @@ class EmploymentBuilderSpec extends PlaySpec {
 
         val accounts = Nil
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty)
+        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -400,7 +408,7 @@ class EmploymentBuilderSpec extends PlaySpec {
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil)
         )
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty)
+        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(

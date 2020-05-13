@@ -28,7 +28,6 @@ case class UnifiedEmployments(employments: Seq[Employment]) {
 
   def containsTempAccount(taxYear: TaxYear): Boolean = employments.exists(_.tempUnavailableStubExistsForYear(taxYear))
 
-  //TODO rethink name
   def mergeEmploymentsForTaxYear(currentCacheEmployments: Seq[Employment], taxYear: TaxYear): UnifiedEmployments = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>

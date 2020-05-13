@@ -16,45 +16,20 @@
 
 package uk.gov.hmrc.tai.model.domain
 
+import com.google.inject.Inject
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-class EmploymentBuilder {
+class EmploymentBuilder @Inject()(auditor: Auditor) {
 
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
     accounts: Seq[AnnualAccount],
     nino: Nino,
-    taxYear: TaxYear)(implicit hc: HeaderCarrier): Seq[Employment] = {
-
-    def monitorAndAuditAssociatedEmployment(
-      emp: Option[Employment],
-      account: AnnualAccount,
-      employments: Seq[Employment],
-      nino: String,
-      taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
-      if (emp.isDefined) {
-        emp
-      } else {
-        val employerKey = employments.map { employment =>
-          s"${employment.name} : ${employment.key}; "
-        }.mkString
-
-        //        auditor.sendDataEvent(
-        //          transactionName = "NPS RTI Data Mismatch",
-        //          detail = Map(
-        //            "nino"                -> nino,
-        //            "tax year"            -> taxYear,
-        //            "NPS Employment Keys" -> employerKey,
-        //            "RTI Account Key"     -> account.key)
-        //        )
-
-        Logger.warn(
-          "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
-        None
-      }
+    taxYear: TaxYear)(implicit hc: HeaderCarrier): UnifiedEmployments = {
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier): Option[Employment] =
@@ -84,11 +59,38 @@ class EmploymentBuilder {
     val accountAssignedEmployments = accounts flatMap { account =>
       associatedEmployment(account, employments, nino, taxYear)
     }
+
     val unified = combinedDuplicates(accountAssignedEmployments)
     val nonUnified = employments.filterNot(emp => unified.map(_.key).contains(emp.key)) map { emp =>
       emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
     }
-    unified ++ nonUnified
+
+    UnifiedEmployments(unified ++ nonUnified)
   }
 
+  private def monitorAndAuditAssociatedEmployment(
+    emp: Option[Employment],
+    account: AnnualAccount,
+    employments: Seq[Employment],
+    nino: String,
+    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
+    if (emp.isDefined) {
+      emp
+    } else {
+      val employerKey = employments.map { employment =>
+        s"${employment.name} : ${employment.key}; "
+      }.mkString
+      auditor.sendDataEvent(
+        transactionName = "NPS RTI Data Mismatch",
+        detail = Map(
+          "nino"                -> nino,
+          "tax year"            -> taxYear,
+          "NPS Employment Keys" -> employerKey,
+          "RTI Account Key"     -> account.key)
+      )
+
+      Logger.warn(
+        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
+      None
+    }
 }

@@ -36,7 +36,7 @@ class EmploymentRepository @Inject()(
   rtiConnector: RtiConnector,
   cacheConnector: CacheConnector,
   npsConnector: NpsConnector,
-  auditor: Auditor) {
+  employmentBuilder: EmploymentBuilder) {
 
   private val EmploymentMongoKey = "EmploymentData"
 
@@ -84,6 +84,7 @@ class EmploymentRepository @Inject()(
     def isCallToRtiRequired(employmentsForYear: UnifiedEmployments): Boolean =
       employmentsForYear.containsTempAccount(taxYear)
 
+    //TODO move this higher
     def modifyCache(employmentsWithAccounts: UnifiedEmployments): Future[Seq[Employment]] =
       for {
         currentCacheEmployments <- fetchEmploymentFromCache(nino)
@@ -96,16 +97,14 @@ class EmploymentRepository @Inject()(
     if (isCallToRtiRequired(employmentsForYear)) {
       rtiCall(nino, taxYear) flatMap {
         case Right(accounts) => {
-          val employmentsWithAccounts = NonUnifiedEmployments(employmentsForYear.employments)
-            .combineAccountsWithEmployments(accounts, nino, taxYear)
-
+          val employmentsWithAccounts =
+            employmentBuilder.combineAccountsWithEmployments(employmentsForYear.employments, accounts, nino, taxYear)
           modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
         }
         case Left(Unavailable) => {
           val unavailableAccounts = stubAccounts(Unavailable, employmentsForYear.employments, taxYear)
-          val employmentsWithAccounts = NonUnifiedEmployments(employmentsForYear.employments)
-            .combineAccountsWithEmployments(unavailableAccounts, nino, taxYear)
-
+          val employmentsWithAccounts = employmentBuilder
+            .combineAccountsWithEmployments(employmentsForYear.employments, unavailableAccounts, nino, taxYear)
           modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
         }
         case Left(TemporarilyUnavailable) => Future.successful(employmentsForYear.employments)
@@ -134,7 +133,7 @@ class EmploymentRepository @Inject()(
                       _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
                     }
       accounts <- rtiAnnualAccounts(employments)
-    } yield NonUnifiedEmployments(employments).combineAccountsWithEmployments(accounts, nino, taxYear)
+    } yield employmentBuilder.combineAccountsWithEmployments(employments, accounts, nino, taxYear)
   }
 
   private def stubAccounts(

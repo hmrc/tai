@@ -153,10 +153,12 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
             List()
           ))
 
+        val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
           .thenReturn(Future.successful(fakeResponse))
 
-        val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        val testConnector = createSUT(httpClient = mockHttpClient)
+        val result = Await.result(testConnector.getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe Right(expectedPayments)
       }
     }
@@ -167,10 +169,12 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
 
       exceptionResponses foreach { exceptionResponse =>
         s"the HTTP exception is $exceptionResponse" in {
+          val mockHttpClient = mock[HttpClient]
           when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
             .thenReturn(Future.successful(exceptionResponse))
 
-          val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val testConnector = createSUT(httpClient = mockHttpClient)
+          val result = Await.result(testConnector.getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
           result mustBe Left(TemporarilyUnavailable)
         }
       }
@@ -179,18 +183,20 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
         val mockRtiToggle = mock[RtiToggleConfig]
         when(mockRtiToggle.rtiEnabled).thenReturn(false)
 
-        val result =
-          Await.result(createSUT(rtiToggle = mockRtiToggle).getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        val testConnector = createSUT(rtiToggle = mockRtiToggle)
+        val result = Await.result(testConnector.getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe Left(TemporarilyUnavailable)
       }
     }
 
     "return an Unavailable response" when {
       "the HTTP exception is a NotFound exception" in {
+        val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
           .thenReturn(Future.successful(NotFoundHttpResponse))
 
-        val result = Await.result(createSUT().getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
+        val testConnector = createSUT(httpClient = mockHttpClient)
+        val result = Await.result(testConnector.getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
         result mustBe Left(Unavailable)
       }
     }
@@ -206,23 +212,20 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
   val NotFoundHttpResponse: HttpResponse =
     HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
 
-  val mockHttpClient = mock[HttpClient]
   val mockRtiToggle = mock[RtiToggleConfig]
 
   private def createSUT(
-    httpClient: HttpClient = mockHttpClient,
+    httpClient: HttpClient = mock[HttpClient],
     metrics: Metrics = mock[Metrics],
     audit: Auditor = mock[Auditor],
     rtiConfig: DesConfig = mock[DesConfig],
     rtiUrls: RtiUrls = mock[RtiUrls],
     rtiToggle: RtiToggleConfig = mockRtiToggle) = {
 
-    when(mockRtiToggle.rtiEnabled).thenReturn(true)
-
     val mockTimerContext = mock[Timer.Context]
-
     when(metrics.startTimer(any()))
       .thenReturn(mockTimerContext)
+    when(mockRtiToggle.rtiEnabled).thenReturn(true)
 
     new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls, rtiToggle) {
       override val originatorId: String = "orgId"
