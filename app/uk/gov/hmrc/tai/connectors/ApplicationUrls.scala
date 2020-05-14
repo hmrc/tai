@@ -60,6 +60,7 @@ class PayeUrls @Inject()(config: PayeConfig) {
 @Singleton
 class CitizenDetailsUrls @Inject()(config: CitizenDetailsConfig) {
   def designatoryDetailsUrl(nino: Nino) = s"${config.baseURL}/citizen-details/${nino.nino}/designatory-details"
+  def etagUrl(nino: Nino) = s"${config.baseURL}/citizen-details/${nino.nino}/etag"
 }
 
 @Singleton

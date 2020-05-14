@@ -26,8 +26,8 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.model.domain.MimeContentType
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import scala.concurrent.Future
 
 @Singleton
@@ -77,6 +77,11 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
     } else if (details.status == FileUploadErrorStatus) {
 
       auditor.sendDataEvent(FileUploadFailureAudit, detail = details.toMap)
+
+      details.reason match {
+        case Some(reason) => Logger.error(s"File upload failed: ${details.status} $reason")
+        case None         => Logger.error(s"File upload failed for an unknown reason: ${details.status}")
+      }
 
       Future.successful(Open)
     } else {
