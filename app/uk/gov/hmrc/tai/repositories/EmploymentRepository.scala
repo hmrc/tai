@@ -65,7 +65,7 @@ class EmploymentRepository @Inject()(
         employmentsFromHod(nino, year) flatMap (employmentsWithAccounts =>
           addEmploymentsToCache(nino, employmentsWithAccounts.employments))
       case (cachedEmployments) =>
-        UnifiedEmployments(cachedEmployments).withAccountsForYear(cachedEmployments, year) match {
+        UnifiedEmployments(cachedEmployments).withAccountsForYear(year) match {
           case Nil =>
             employmentsFromHod(nino, year) flatMap { employmentsWithAccounts =>
               for {

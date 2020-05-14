@@ -20,7 +20,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class UnifiedEmployments(employments: Seq[Employment]) {
 
-  def withAccountsForYear(employments: Seq[Employment], year: TaxYear): Seq[Employment] =
+  def withAccountsForYear(year: TaxYear): Seq[Employment] =
     employments.collect {
       case employment if employment.hasAnnualAccountsForYear(year) =>
         employment.copy(annualAccounts = employment.annualAccountsForYear(year))
@@ -28,33 +28,36 @@ case class UnifiedEmployments(employments: Seq[Employment]) {
 
   def containsTempAccount(taxYear: TaxYear): Boolean = employments.exists(_.tempUnavailableStubExistsForYear(taxYear))
 
-  def mergeEmploymentsForTaxYear(currentCacheEmployments: Seq[Employment], taxYear: TaxYear): UnifiedEmployments = {
+  def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): UnifiedEmployments = {
 
-    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-      currentCacheEmployments.find(_.key == employment.key).fold(employment) { currentCacheEmployment =>
-        val accountsFromOtherYears = currentCacheEmployment.annualAccounts.filterNot(_.taxYear == taxYear)
+    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentEmployments) =>
+      currentEmployments.find(_.key == employment.key).fold(employment) { currentEmployment =>
+        val accountsFromOtherYears = currentEmployment.annualAccounts.filterNot(_.taxYear == taxYear)
         employment.copy(annualAccounts = employment.annualAccounts ++ accountsFromOtherYears)
+
     }
 
-    UnifiedEmployments(merge(currentCacheEmployments, amendEmployment))
+    UnifiedEmployments(merge(employmentsToMerge, amendEmployment))
   }
 
-  def mergeEmployments(currentCacheEmployments: Seq[Employment]): UnifiedEmployments = {
+  def mergeEmployments(employmentsToMerge: Seq[Employment]): UnifiedEmployments = {
 
-    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentCacheEmployments) =>
-      currentCacheEmployments.find(_.key == employment.key).fold(employment) { currentCachedEmployment =>
+    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
+      employmentsToMerge.find(_.key == employment.key).fold(employment) { currentCachedEmployment =>
         employment.copy(annualAccounts = employment.annualAccounts ++ currentCachedEmployment.annualAccounts)
     }
 
-    UnifiedEmployments(merge(currentCacheEmployments, amendEmployment))
+    UnifiedEmployments(merge(employmentsToMerge, amendEmployment))
   }
 
   private def merge(
-    currentCacheEmployments: Seq[Employment],
+    employmentsToMerge: Seq[Employment],
     amendEmployment: (Employment, Seq[Employment]) => Employment): Seq[Employment] = {
-    val modifiedEmployments = employments map (amendEmployment(_, currentCacheEmployments))
-    val unmodifiedEmployments = currentCacheEmployments.filterNot(currentCachedEmployment =>
-      modifiedEmployments.map(_.key).contains(currentCachedEmployment.key))
+
+    val modifiedEmployments = employments map (amendEmployment(_, employmentsToMerge))
+    val unmodifiedEmployments =
+      employmentsToMerge.filterNot(employment => modifiedEmployments.map(_.key).contains(employment.key))
+
     unmodifiedEmployments ++ modifiedEmployments
   }
 }

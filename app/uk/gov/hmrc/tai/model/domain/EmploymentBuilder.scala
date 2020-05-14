@@ -39,11 +39,13 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
           Some(single.copy(annualAccounts = Seq(account)))
         case Nil =>
           Logger.warn(s"no match found for $nino for $taxYear")
-          monitorAndAuditAssociatedEmployment(None, account, employments, nino.nino, taxYear.twoDigitRange)
+          auditAssociatedEmployment(account, employments, nino.nino, taxYear.twoDigitRange)
         case many =>
           Logger.warn(s"multiple matches found for $nino for $taxYear")
-          monitorAndAuditAssociatedEmployment(
-            many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account))),
+
+          val combinedEmploymentAndAccount = many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account)))
+
+          combinedEmploymentAndAccount orElse auditAssociatedEmployment(
             account,
             employments,
             nino.nino,
@@ -68,29 +70,26 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
     UnifiedEmployments(unified ++ nonUnified)
   }
 
-  private def monitorAndAuditAssociatedEmployment(
-    emp: Option[Employment],
+  private def auditAssociatedEmployment(
     account: AnnualAccount,
     employments: Seq[Employment],
     nino: String,
-    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] =
-    if (emp.isDefined) {
-      emp
-    } else {
-      val employerKey = employments.map { employment =>
-        s"${employment.name} : ${employment.key}; "
-      }.mkString
-      auditor.sendDataEvent(
-        transactionName = "NPS RTI Data Mismatch",
-        detail = Map(
-          "nino"                -> nino,
-          "tax year"            -> taxYear,
-          "NPS Employment Keys" -> employerKey,
-          "RTI Account Key"     -> account.key)
-      )
+    taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] = {
+    val employerKey = employments.map { employment =>
+      s"${employment.name} : ${employment.key}; "
+    }.mkString
+    auditor.sendDataEvent(
+      transactionName = "NPS RTI Data Mismatch",
+      detail = Map(
+        "nino"                -> nino,
+        "tax year"            -> taxYear,
+        "NPS Employment Keys" -> employerKey,
+        "RTI Account Key"     -> account.key)
+    )
 
-      Logger.warn(
-        "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
-      None
-    }
+    Logger.warn(
+      "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
+    None
+  }
+
 }

@@ -17,29 +17,31 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
+import org.mockito.Matchers
+import org.mockito.Matchers.any
+import org.mockito.Mockito.{times, verify}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
 import scala.util.Random
 
 class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val auditTransactionName = "NPS RTI Data Mismatch"
 
   trait EmploymentBuilderSetup {
     val nino = new Generator(new Random).nextNino
-    val testEmploymentBuilder = new EmploymentBuilder(mock[Auditor])
+    val mockAuditor = mock[Auditor]
+    val testEmploymentBuilder = new EmploymentBuilder(mockAuditor)
   }
 
-  "buildEmploymentsWithAccounts" should {
-    "unify stubbed Employment instances (having Nil accounts), with their corresponding AnnualAccount instances" when {
-      "each AnnualAccount record has a single matching Employment record by employer designation, " +
-        "i.e. taxDistrictNumber and payeNumber match AnnualAccount officeNo and payeRef values respectively. " +
-        "(The match is unambiguous - payroll need not figure.)" in new EmploymentBuilderSetup {
+  "combineAccountsWithEmployments" should {
+    "combine Employment instances (having Nil accounts), with their corresponding AnnualAccount instances" when {
+      "each AnnualAccount record has a single matching Employment record by employer designation" in new EmploymentBuilderSetup {
 
         val employmentsNoPayroll = List(
           Employment(
@@ -109,6 +111,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           ))
 
         unifiedEmployments.size mustBe 2
+
+        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
 
       "an AnnualAccount record has more than one Employment record that matches by employer designation, " +
@@ -164,6 +168,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           )
         )
+
+        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
 
       "multiple AnnualAccount records match the same employment record by employer designation" in new EmploymentBuilderSetup {
@@ -241,6 +247,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         unifiedEmployments.size mustBe 2
+
+        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
     }
 
@@ -309,6 +317,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           )
         )
+
+        verify(mockAuditor, times(1)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
 
       "no AnnualAccount records are available" in new EmploymentBuilderSetup {
@@ -371,6 +381,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           )
         )
+
+        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
 
       "multiple AnnualAccounts exist for one employment record, another record has no corresponding account records, " +
@@ -440,6 +452,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           )
         )
+
+        verify(mockAuditor, times(1)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
       }
     }
   }
