@@ -18,17 +18,20 @@ package uk.gov.hmrc.tai.model.domain
 
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-case class UnifiedEmployments(employments: Seq[Employment]) {
+case class Employments(employments: Seq[Employment]) {
 
-  def withAccountsForYear(year: TaxYear): Seq[Employment] =
-    employments.collect {
+  def accountsForYear(year: TaxYear): Employments = {
+    val accountsForYear = employments.collect {
       case employment if employment.hasAnnualAccountsForYear(year) =>
         employment.copy(annualAccounts = employment.annualAccountsForYear(year))
     }
 
+    Employments(accountsForYear)
+  }
+
   def containsTempAccount(taxYear: TaxYear): Boolean = employments.exists(_.tempUnavailableStubExistsForYear(taxYear))
 
-  def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): UnifiedEmployments = {
+  def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): Employments = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentEmployments) =>
       currentEmployments.find(_.key == employment.key).fold(employment) { currentEmployment =>
@@ -37,17 +40,17 @@ case class UnifiedEmployments(employments: Seq[Employment]) {
 
     }
 
-    UnifiedEmployments(merge(employmentsToMerge, amendEmployment))
+    Employments(merge(employmentsToMerge, amendEmployment))
   }
 
-  def mergeEmployments(employmentsToMerge: Seq[Employment]): UnifiedEmployments = {
+  def mergeEmployments(employmentsToMerge: Seq[Employment]): Employments = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
-      employmentsToMerge.find(_.key == employment.key).fold(employment) { currentCachedEmployment =>
-        employment.copy(annualAccounts = employment.annualAccounts ++ currentCachedEmployment.annualAccounts)
+      employmentsToMerge.find(_.key == employment.key).fold(employment) { currentEmployment =>
+        employment.copy(annualAccounts = employment.annualAccounts ++ currentEmployment.annualAccounts)
     }
 
-    UnifiedEmployments(merge(employmentsToMerge, amendEmployment))
+    Employments(merge(employmentsToMerge, amendEmployment))
   }
 
   private def merge(

@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{Await, Future}
 
-class UnifiedEmploymentsSpec extends PlaySpec {
+class EmploymentsSpec extends PlaySpec {
 
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
@@ -37,7 +37,7 @@ class UnifiedEmploymentsSpec extends PlaySpec {
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
 
-  "UnifiedEmployments" should {
+  "Employments" should {
     "return a sequence of employments with only accounts for a given year" in {
       val annualAccountCTY = createStubbedAnnualAccount()
       val annualAccountPTY = createStubbedAnnualAccount(taxYear = previousTaxYear)
@@ -58,10 +58,10 @@ class UnifiedEmploymentsSpec extends PlaySpec {
 
       val expectedEmployments = Seq(employment.copy(annualAccounts = Seq(annualAccountCTY)))
 
-      val unifiedEmployment = UnifiedEmployments(Seq(employment))
-      val accountsForYear = unifiedEmployment.withAccountsForYear(currentTaxYear)
+      val unifiedEmployment = Employments(Seq(employment))
+      val accountsForYear = unifiedEmployment.accountsForYear(currentTaxYear)
 
-      accountsForYear mustBe expectedEmployments
+      accountsForYear mustBe Employments(expectedEmployments)
     }
 
     "return an empty sequence of employments if no accounts exist for a tax year" in {
@@ -81,10 +81,10 @@ class UnifiedEmploymentsSpec extends PlaySpec {
         false
       )
 
-      val unifiedEmployment = UnifiedEmployments(Seq(employment))
-      val accountsForYear = unifiedEmployment.withAccountsForYear(currentTaxYear)
+      val unifiedEmployment = Employments(Seq(employment))
+      val accountsForYear = unifiedEmployment.accountsForYear(currentTaxYear)
 
-      accountsForYear mustBe List.empty[Employment]
+      accountsForYear mustBe Employments(Nil)
     }
 
     "return true if an employment contains a TemporarilyUnavailable stubbed annual account for a given year" in {
@@ -106,7 +106,7 @@ class UnifiedEmploymentsSpec extends PlaySpec {
         false
       )
 
-      val unifiedEmployment = UnifiedEmployments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment))
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
 
       containsTempAccount mustBe true
@@ -130,7 +130,7 @@ class UnifiedEmploymentsSpec extends PlaySpec {
         false
       )
 
-      val unifiedEmployment = UnifiedEmployments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment))
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
 
       containsTempAccount mustBe false
@@ -159,7 +159,7 @@ class UnifiedEmploymentsSpec extends PlaySpec {
 //        val employment2 =
 //          Employment("Employer2", Some("00"), now, None, Seq(annualAccount2), "", "", 2, Some(100), false, false)
 //
-//        val unifiedEmployment = UnifiedEmployments(Seq(currentEmployment))
+//        val unifiedEmployment = Employments(Seq(currentEmployment))
 //        val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
 //
 //        mergedEmployments mustBe ""

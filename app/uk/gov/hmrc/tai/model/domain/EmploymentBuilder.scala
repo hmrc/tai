@@ -29,7 +29,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
     employments: Seq[Employment],
     accounts: Seq[AnnualAccount],
     nino: Nino,
-    taxYear: TaxYear)(implicit hc: HeaderCarrier): UnifiedEmployments = {
+    taxYear: TaxYear)(implicit hc: HeaderCarrier): Employments = {
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier): Option[Employment] =
@@ -67,7 +67,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
     }
 
-    UnifiedEmployments(unified ++ nonUnified)
+    Employments(unified ++ nonUnified)
   }
 
   private def auditAssociatedEmployment(
@@ -91,5 +91,4 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
     None
   }
-
 }

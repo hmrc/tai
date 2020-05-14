@@ -59,67 +59,57 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  def employmentsForYear(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     fetchEmploymentFromCache(nino) flatMap {
-      case Nil =>
-        employmentsFromHod(nino, year) flatMap (employmentsWithAccounts =>
+      case Employments(Nil) =>
+        employmentsFromHod(nino, taxYear) flatMap (employmentsWithAccounts =>
           addEmploymentsToCache(nino, employmentsWithAccounts.employments))
-      case (cachedEmployments) =>
-        UnifiedEmployments(cachedEmployments).withAccountsForYear(year) match {
-          case Nil =>
-            employmentsFromHod(nino, year) flatMap { employmentsWithAccounts =>
-              for {
-                currentCacheEmployments <- fetchEmploymentFromCache(nino)
-                mergedEmployments = employmentsWithAccounts.mergeEmployments(currentCacheEmployments)
-                _ <- addEmploymentsToCache(nino, mergedEmployments.employments)
-              } yield employmentsWithAccounts.employments
+      case cachedEmployments @ Employments(_) =>
+        cachedEmployments.accountsForYear(taxYear) match {
+          case Employments(Nil) =>
+            employmentsFromHod(nino, taxYear) flatMap { employmentsWithAccounts =>
+              val mergedEmployments = employmentsWithAccounts.mergeEmployments(cachedEmployments.employments)
+              addEmploymentsToCache(nino, mergedEmployments.employments).map(_ => employmentsWithAccounts.employments)
             }
-          case employmentsForYear => employmentsFromCache(UnifiedEmployments(employmentsForYear), nino, year)
+          case employmentsForYear => {
+            if (isCallToRtiRequired(taxYear, employmentsForYear)) {
+              rtiCallMergedWithEmployments(employmentsForYear, nino, taxYear) flatMap { rtiUpdatedEmployments =>
+                if (!rtiUpdatedEmployments.containsTempAccount(taxYear)) {
+                  val mergedEmployments =
+                    rtiUpdatedEmployments.mergeEmploymentsForTaxYear(cachedEmployments.employments, taxYear)
+                  addEmploymentsToCache(nino, mergedEmployments.employments).map(_ => rtiUpdatedEmployments.employments)
+                } else {
+                  Future.successful(employmentsForYear.employments)
+                }
+              }
+            } else {
+              Future.successful(employmentsForYear.employments)
+            }
+          }
         }
     }
 
-  private def employmentsFromCache(employmentsForYear: UnifiedEmployments, nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+  private def isCallToRtiRequired(taxYear: TaxYear, employmentsForYear: Employments): Boolean =
+    employmentsForYear.containsTempAccount(taxYear)
 
-    def isCallToRtiRequired(employmentsForYear: UnifiedEmployments): Boolean =
-      employmentsForYear.containsTempAccount(taxYear)
-
-    //TODO move this higher
-    def modifyCache(employmentsWithAccounts: UnifiedEmployments): Future[Seq[Employment]] =
-      for {
-        currentCacheEmployments <- fetchEmploymentFromCache(nino)
-        mergedEmployments = employmentsWithAccounts
-          .mergeEmploymentsForTaxYear(currentCacheEmployments, taxYear)
-          .employments
-        _ <- addEmploymentsToCache(nino, mergedEmployments)
-      } yield employmentsWithAccounts.employments
-
-    if (isCallToRtiRequired(employmentsForYear)) {
-      rtiCall(nino, taxYear) flatMap {
-        case Right(accounts) => {
-          val employmentsWithAccounts =
-            employmentBuilder.combineAccountsWithEmployments(employmentsForYear.employments, accounts, nino, taxYear)
-          modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
-        }
-        case Left(Unavailable) => {
-          val unavailableAccounts = stubAccounts(Unavailable, employmentsForYear.employments, taxYear)
-          val employmentsWithAccounts = employmentBuilder
-            .combineAccountsWithEmployments(employmentsForYear.employments, unavailableAccounts, nino, taxYear)
-          modifyCache(employmentsWithAccounts) map (_ => employmentsWithAccounts.employments)
-        }
-        case Left(TemporarilyUnavailable) => Future.successful(employmentsForYear.employments)
+  private def rtiCallMergedWithEmployments(cachedEmployments: Employments, nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier): Future[Employments] =
+    rtiCall(nino, taxYear) map {
+      case Right(accounts) =>
+        employmentBuilder.combineAccountsWithEmployments(cachedEmployments.employments, accounts, nino, taxYear)
+      case Left(Unavailable) => {
+        val unavailableAccounts = stubAccounts(Unavailable, cachedEmployments.employments, taxYear)
+        employmentBuilder
+          .combineAccountsWithEmployments(cachedEmployments.employments, unavailableAccounts, nino, taxYear)
       }
-    } else {
-      Future.successful(employmentsForYear.employments)
+      case Left(TemporarilyUnavailable) => cachedEmployments
     }
-  }
 
   private def rtiCall(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[UnAvailableRealTimeStatus, Seq[AnnualAccount]]] =
     rtiConnector.getPaymentsForYear(nino, taxYear)
 
-  private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[UnifiedEmployments] = {
+  private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] = {
     implicit val ty = taxYear
 
     def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
@@ -147,7 +137,8 @@ class EmploymentRepository @Inject()(
     cacheConnector.createOrUpdateSeq[Employment](CacheId(nino), employments, EmploymentMongoKey)(
       EmploymentMongoFormatters.formatEmployment)
 
-  private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Employments] =
     cacheConnector
-      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment)
+      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment) map (Employments(
+      _))
 }

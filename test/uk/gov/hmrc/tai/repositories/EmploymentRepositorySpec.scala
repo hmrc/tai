@@ -127,7 +127,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               Matchers.eq(Seq(annualAccount)),
               Matchers.eq(nino),
               Matchers.eq(TaxYear(2017)))(any()))
-            .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+            .thenReturn(Employments(Seq(expectedEmployment)))
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
@@ -176,7 +176,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 Matchers.eq(Seq(annualAccount)),
                 Matchers.eq(nino),
                 Matchers.eq(TaxYear(2017)))(any()))
-            .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+            .thenReturn(Employments(Seq(expectedEmployment)))
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
@@ -234,7 +234,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 Matchers.eq(Seq(annualAccount)),
                 Matchers.eq(nino),
                 Matchers.eq(TaxYear(2017)))(any()))
-            .thenReturn(UnifiedEmployments(expectedEmployment))
+            .thenReturn(Employments(expectedEmployment))
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -301,7 +301,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 Matchers.eq(Seq(annualAccount)),
                 Matchers.eq(nino),
                 Matchers.eq(TaxYear(2017)))(any()))
-            .thenReturn(UnifiedEmployments(expectedEmploymentDetails))
+            .thenReturn(Employments(expectedEmploymentDetails))
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -391,7 +391,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 Matchers.eq(nino),
                 Matchers.eq(TaxYear(2017))
               )(any()))
-            .thenReturn(UnifiedEmployments(expectedEmploymentDetails))
+            .thenReturn(Employments(expectedEmploymentDetails))
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -759,7 +759,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                   Matchers.eq(nino),
                   Matchers.eq(TaxYear(2017))
                 )(any()))
-              .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+              .thenReturn(Employments(Seq(expectedEmployment)))
 
             val mockRtiConnector = mock[RtiConnector]
             when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -791,7 +791,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             verify(mockRtiConnector, times(1))
               .getPaymentsForYear(Matchers.eq(nino), Matchers.eq(TaxYear(2017)))(any())
 
-            verify(mockCacheConnector, times(2))
+            verify(mockCacheConnector, times(1))
               .findSeq[Employment](Matchers.eq(CacheId(nino)), any())(any())
 
             verify(mockCacheConnector, times(1))
@@ -857,7 +857,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                   Matchers.eq(nino),
                   Matchers.eq(TaxYear(2017))
                 )(any()))
-              .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+              .thenReturn(Employments(Seq(expectedEmployment)))
 
             val mockRtiConnector = mock[RtiConnector]
             when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -889,7 +889,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             verify(mockRtiConnector, times(1))
               .getPaymentsForYear(Matchers.eq(nino), Matchers.eq(TaxYear(2017)))(any())
 
-            verify(mockCacheConnector, times(2))
+            verify(mockCacheConnector, times(1))
               .findSeq[Employment](Matchers.eq(CacheId(nino)), any())(any())
 
             verify(mockCacheConnector, times(1))
@@ -938,7 +938,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                   Matchers.eq(nino),
                   Matchers.eq(TaxYear(2017))
                 )(any()))
-              .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+              .thenReturn(Employments(Seq(expectedEmployment)))
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -999,7 +999,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                   Matchers.eq(nino),
                   Matchers.eq(TaxYear(2017))
                 )(any()))
-              .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+              .thenReturn(Employments(Seq(expectedEmployment)))
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -1097,7 +1097,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                   Matchers.eq(nino),
                   Matchers.eq(TaxYear(2017))
                 )(any()))
-              .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+              .thenReturn(Employments(Seq(expectedEmployment)))
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -1270,7 +1270,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             Matchers.eq(nino),
             Matchers.eq(TaxYear())
           )(any()))
-        .thenReturn(UnifiedEmployments(Seq(employment)))
+        .thenReturn(Employments(Seq(employment)))
 
       val mockCacheConnector = mock[CacheConnector]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Seq(employment)))
@@ -1334,7 +1334,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               Matchers.eq(nino),
               Matchers.eq(TaxYear())
             )(any()))
-          .thenReturn(UnifiedEmployments(Seq(expectedEmployment)))
+          .thenReturn(Employments(Seq(expectedEmployment)))
 
         val mockCacheConnector = mock[CacheConnector]
         when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
