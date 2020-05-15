@@ -31,7 +31,7 @@ class EmploymentsSpec extends PlaySpec {
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
 
-  def createStubbedAnnualAccount(
+  def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
     key: String = "0-0-0",
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
@@ -39,8 +39,8 @@ class EmploymentsSpec extends PlaySpec {
 
   "Employments" should {
     "return a sequence of employments with only accounts for a given year" in {
-      val annualAccountCTY = createStubbedAnnualAccount()
-      val annualAccountPTY = createStubbedAnnualAccount(taxYear = previousTaxYear)
+      val annualAccountCTY = createAnnualAccount()
+      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
       val employment = Employment(
         "TEST",
@@ -65,7 +65,7 @@ class EmploymentsSpec extends PlaySpec {
     }
 
     "return an empty sequence of employments if no accounts exist for a tax year" in {
-      val annualAccountPTY = createStubbedAnnualAccount(taxYear = previousTaxYear)
+      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
       val employment = Employment(
         "TEST",
@@ -89,8 +89,8 @@ class EmploymentsSpec extends PlaySpec {
 
     "return true if an employment contains a TemporarilyUnavailable stubbed annual account for a given year" in {
       val stubbedAnnualAccount =
-        createStubbedAnnualAccount(rtiStatus = TemporarilyUnavailable, taxYear = previousTaxYear)
-      val annualAccountCTY = createStubbedAnnualAccount()
+        createAnnualAccount(rtiStatus = TemporarilyUnavailable, taxYear = previousTaxYear)
+      val annualAccountCTY = createAnnualAccount()
 
       val employment = Employment(
         "TEST",
@@ -113,8 +113,8 @@ class EmploymentsSpec extends PlaySpec {
     }
 
     "return false if an employment does not contain a TemporarilyUnavailable stubbed annual account for a given year" in {
-      val stubbedAnnualAccountCTY = createStubbedAnnualAccount(rtiStatus = TemporarilyUnavailable)
-      val annualAccountPTY = createStubbedAnnualAccount(taxYear = previousTaxYear)
+      val stubbedAnnualAccountCTY = createAnnualAccount(rtiStatus = TemporarilyUnavailable)
+      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
       val employment = Employment(
         "TEST",
@@ -137,66 +137,107 @@ class EmploymentsSpec extends PlaySpec {
     }
 
     "merge employments" when {
-      "the employments have the same key" in {
+      "the employments have the same key and contain different tax year annual account records" in {
+        val now = LocalDate.now()
 
-//        val now = LocalDate.now()
-//
-//        val annualAccount1 = AnnualAccount("0-0-0", TaxYear(2018), Available, Nil, Nil)
-//        val currentEmployment = Employment(
-//          "EMPLOYER1",
-//          Some("0"),
-//          new LocalDate(2016, 4, 6),
-//          None,
-//          Seq(annualAccount1),
-//          "0",
-//          "0",
-//          2,
-//          None,
-//          false,
-//          false)
-//
-//        val annualAccount2 = AnnualAccount("00", TaxYear(2018), Available, Nil, Nil)
+        val annualAccountCTY = createAnnualAccount(taxYear = currentTaxYear)
+        val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
+
+        val employment1 =
+          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountCTY), "0", "0", 2, None, false, false)
+
+        val employment1WithPTYAccount =
+          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountPTY), "0", "0", 2, None, false, false)
+
+        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val employment2 =
+          Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+
+        val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
+
+        val unifiedEmployment = Employments(Seq(employment1, employment2))
+        val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment1WithPTYAccount))
+
+        mergedEmployments mustBe Seq(expectedMergedEmployment, employment2)
+      }
+
+      "the employments have different keys" in {
+        val now = LocalDate.now()
+
+        val annualAccountCTY = createAnnualAccount(taxYear = currentTaxYear)
+        val employment1 =
+          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountCTY), "0", "0", 2, None, false, false)
+
+        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val employment2 =
+          Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+
+        val unifiedEmployment = Employments(Seq(employment1))
+        val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
+
+        mergedEmployments.size mustBe 2
+        mergedEmployments must contain(employment1)
+        mergedEmployments must contain(employment2)
+      }
+
+      //TODO name
+      "gghghgh" in {
+
+        val now = LocalDate.now()
+
+        val annualAccountCTYTempUnavailable =
+          createAnnualAccount(taxYear = currentTaxYear, rtiStatus = TemporarilyUnavailable)
+        val annualAccountCTYAvailable = createAnnualAccount(taxYear = currentTaxYear, rtiStatus = Available)
+        val annualAccountPTYTempUnavailable =
+          createAnnualAccount(taxYear = previousTaxYear, rtiStatus = TemporarilyUnavailable)
+
+        val employment1 =
+          Employment(
+            "EMPLOYER1",
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccountCTYTempUnavailable, annualAccountPTYTempUnavailable),
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
+
+        val employment1WithUpdatedStatus =
+          Employment(
+            "EMPLOYER1",
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccountCTYAvailable),
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
+
+//        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
 //        val employment2 =
-//          Employment("Employer2", Some("00"), now, None, Seq(annualAccount2), "", "", 2, Some(100), false, false)
+//          Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+
+        val expectedEmployments =
+          employment1.copy(annualAccounts = Seq(annualAccountCTYAvailable, annualAccountPTYTempUnavailable))
+
+        val employments = Employments(Seq(employment1))
+        val mergedEmployments =
+          employments.mergeEmploymentsForTaxYear(Seq(employment1WithUpdatedStatus), currentTaxYear)
+
+        mergedEmployments mustBe Seq(expectedEmployments)
+//        mergedEmployments.size mustBe 1
+//        val mergedAccounts = mergedEmployments.map(_.annualAccounts)
 //
-//        val unifiedEmployment = Employments(Seq(currentEmployment))
-//        val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
-//
-//        mergedEmployments mustBe ""
-//        val expectedAnnualAccount = AnnualAccount(
-//          "0-0-0",
-//          TaxYear(2017),
-//          Available,
-//          List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
-//          List(
-//            EndOfTaxYearUpdate(
-//              new LocalDate(2016, 6, 17),
-//              List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
-//        )
-//
-//        val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount))
-//        val cacheUpdatedEmployment1 =
-//          npsSingleEmployment.copy(annualAccounts = Seq(annualAccount1, expectedAnnualAccount))
-//
-//        val updatedCacheContents = Seq(employment2, cacheUpdatedEmployment1)
-//        val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
-//
-//
-//
-//        val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
-//        result mustBe Seq(expectedEmployment)
-//
-//
-//
-//        val actualCached = employmentsCaptor.getValue
-//        actualCached.size mustBe 2
-//        actualCached must contain(employment2)
-//
-//        val cachedEmp1 = actualCached.filter(_.name == "EMPLOYER1")
-//
-//        cachedEmp1.flatMap(_.annualAccounts) mustBe Seq(expectedAnnualAccount, annualAccount1)
+//        mergedAccounts.size mustBe 2
 
       }
+
     }
 
   }

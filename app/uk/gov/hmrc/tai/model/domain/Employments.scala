@@ -31,26 +31,25 @@ case class Employments(employments: Seq[Employment]) {
 
   def containsTempAccount(taxYear: TaxYear): Boolean = employments.exists(_.tempUnavailableStubExistsForYear(taxYear))
 
-  def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): Employments = {
-
-    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, currentEmployments) =>
-      currentEmployments.find(_.key == employment.key).fold(employment) { currentEmployment =>
-        val accountsFromOtherYears = currentEmployment.annualAccounts.filterNot(_.taxYear == taxYear)
-        employment.copy(annualAccounts = employment.annualAccounts ++ accountsFromOtherYears)
-
-    }
-
-    Employments(merge(employmentsToMerge, amendEmployment))
-  }
-
-  def mergeEmployments(employmentsToMerge: Seq[Employment]): Employments = {
+  def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): Seq[Employment] = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
-      employmentsToMerge.find(_.key == employment.key).fold(employment) { currentEmployment =>
-        employment.copy(annualAccounts = employment.annualAccounts ++ currentEmployment.annualAccounts)
+      employmentsToMerge.find(_.key == employment.key).fold(employment) { employmentToMerge =>
+        val accountsFromOtherYears = employment.annualAccounts.filterNot(_.taxYear == taxYear)
+        employment.copy(annualAccounts = employmentToMerge.annualAccounts ++ accountsFromOtherYears)
     }
 
-    Employments(merge(employmentsToMerge, amendEmployment))
+    merge(employmentsToMerge, amendEmployment)
+  }
+
+  def mergeEmployments(employmentsToMerge: Seq[Employment]): Seq[Employment] = {
+
+    val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
+      employmentsToMerge.find(_.key == employment.key).fold(employment) { employmentToMerge =>
+        employment.copy(annualAccounts = employment.annualAccounts ++ employmentToMerge.annualAccounts)
+    }
+
+    merge(employmentsToMerge, amendEmployment)
   }
 
   private def merge(

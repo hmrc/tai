@@ -800,7 +800,12 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 employmentsCaptor.capture(),
                 Matchers.eq("EmploymentData"))(any())
 
-            employmentsCaptor.getValue mustBe Seq(cachedEmployment1, cachedEmployment2, expectedEmployment)
+            val cachedEmployments = employmentsCaptor.getValue
+            cachedEmployments.size mustBe 3
+
+            Seq(cachedEmployment1, cachedEmployment2, expectedEmployment) foreach { expected =>
+              cachedEmployments must contain(expected)
+            }
 
           }
 
@@ -904,7 +909,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val cachedEmp1 = actualCached.filter(_.name == "EMPLOYER1")
 
-            cachedEmp1.flatMap(_.annualAccounts) mustBe Seq(expectedAnnualAccount, annualAccount1)
+            cachedEmp1.flatMap(_.annualAccounts) mustBe Seq(annualAccount1, expectedAnnualAccount)
           }
         }
 
