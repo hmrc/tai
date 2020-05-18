@@ -17,26 +17,34 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.Application
 import play.api.libs.json._
+import play.api.http.Status._
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.TaiRoot
+import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 import uk.gov.hmrc.tai.model.nps._
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar {
+class CitizenDetailsConnectorSpec
+    extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with IntegrationPatience {
 
   "Get data from citizen-details service" must {
     "return person information when requesting " in {
@@ -171,7 +179,6 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar {
         "FName LName",
         manualCorrespondenceInd = false,
         Some(false))
-
     }
 
     "return deceased indicator as true" in {
@@ -220,8 +227,87 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar {
     }
   }
 
+  "getEtag" must {
+    "return an etag on success" in {
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(etagJson.toString)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe Some(ETag(etag))
+    }
+
+    "return a None for bad json" in {
+      val badJson: JsValue = Json.parse(s"""
+                                           |{
+                                           |   "not an etag":"$etag"
+                                           |}
+    """.stripMargin)
+
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(badJson.toString)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+    }
+
+    "return None on an unrecoverable error, possibly bad data received from the upstream API" in {
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+    }
+
+    "return None when record not found" in {
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(NOT_FOUND)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+    }
+
+    "return None when record was hidden, due to manual correspondence indicator flag being set" in {
+      server.stubFor(
+        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+          .willReturn(
+            aResponse()
+              .withStatus(LOCKED)
+          )
+      )
+
+      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+    }
+  }
+
+  val etag = "123"
+  val etagJson: JsValue = Json.parse(s"""
+                                        |{
+                                        |   "etag":"$etag"
+                                        |}
+    """.stripMargin)
+
   implicit val hc = HeaderCarrier()
   private val nino: Nino = new Generator(new Random).nextNino
+
+  private lazy val citizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
 
   def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, urls: CitizenDetailsUrls) =
     new CitizenDetailsConnector(metrics, httpClient, audit, urls)

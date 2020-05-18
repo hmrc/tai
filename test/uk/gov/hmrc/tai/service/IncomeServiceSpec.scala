@@ -20,12 +20,14 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.TaiRoot
+import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.{TaxCodeIncome, _}
 import uk.gov.hmrc.tai.model.domain.response._
@@ -37,7 +39,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class IncomeServiceSpec extends PlaySpec with MockitoSugar {
+class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
   "untaxedInterest" must {
     "return total amount only for passed nino and year" when {
@@ -692,8 +694,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     false,
                     false))))
 
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -713,7 +715,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
-            taxAccountService = mockTaxAccountSvc,
+            citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor
@@ -755,8 +757,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     false,
                     false))))
 
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(Seq.empty))
@@ -776,7 +778,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
-            taxAccountService = mockTaxAccountSvc,
+            citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor
@@ -834,8 +836,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     false,
                     false))))
 
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -855,7 +857,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
-            taxAccountService = mockTaxAccountSvc,
+            citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor
@@ -925,14 +927,14 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             Future.successful(HodUpdateFailure)
           )
 
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             incomeRepository = mockIncomeRepository,
             taxAccountRepository = mockTaxAccountRepository,
-            taxAccountService = mockTaxAccountSvc
+            citizenDetailsConnector = citizenDetailsConnector
           )
 
           val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
@@ -979,8 +981,8 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
                     false,
                     false))))
 
-          val mockTaxAccountSvc = mock[TaxAccountService]
-          when(mockTaxAccountSvc.personDetails(any())(any())).thenReturn(Future.successful(taiRoot))
+          val citizenDetailsConnector = mock[CitizenDetailsConnector]
+          when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -998,7 +1000,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
-            taxAccountService = mockTaxAccountSvc,
+            citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
             taxAccountRepository = mockTaxAccountRepository,
             auditor = mockAuditor
@@ -1021,7 +1023,108 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
             any())
         }
       }
+    }
 
+    "return a IncomeUpdateFailed if there is no etag" in {
+      val taxYear = TaxYear()
+
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(1),
+          BigDecimal(123.45),
+          "",
+          "",
+          "",
+          Week1Month1BasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0)))
+
+      val mockEmploymentSvc = mock[EmploymentService]
+      when(mockEmploymentSvc.employment(any(), any())(any()))
+        .thenReturn(Future.successful(Right(
+          Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+
+      val mockIncomeRepository = mock[IncomeRepository]
+      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+      when(
+        mockTaxAccountRepository
+          .updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
+      ).thenReturn(
+        Future.successful(HodUpdateSuccess)
+      )
+
+      val mockAuditor = mock[Auditor]
+      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+
+      val citizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
+
+      val SUT = createSUT(
+        employmentService = mockEmploymentSvc,
+        citizenDetailsConnector = citizenDetailsConnector,
+        incomeRepository = mockIncomeRepository,
+        taxAccountRepository = mockTaxAccountRepository,
+        auditor = mockAuditor
+      )
+
+      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
+      result.futureValue mustBe IncomeUpdateFailed("Could not find an ETag")
+    }
+
+    "return a IncomeUpdateFailed if there etag is not an int" in {
+      val taxYear = TaxYear()
+
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(1),
+          BigDecimal(123.45),
+          "",
+          "",
+          "",
+          Week1Month1BasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0)))
+
+      val mockEmploymentSvc = mock[EmploymentService]
+      when(mockEmploymentSvc.employment(any(), any())(any()))
+        .thenReturn(Future.successful(Right(
+          Employment("", None, LocalDate.now(), None, Seq.empty[AnnualAccount], "", "", 0, Some(100), false, false))))
+
+      val mockIncomeRepository = mock[IncomeRepository]
+      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+
+      val mockTaxAccountRepository = mock[TaxAccountRepository]
+      when(
+        mockTaxAccountRepository
+          .updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
+      ).thenReturn(
+        Future.successful(HodUpdateSuccess)
+      )
+
+      val mockAuditor = mock[Auditor]
+      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+
+      val citizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))
+
+      val SUT = createSUT(
+        employmentService = mockEmploymentSvc,
+        citizenDetailsConnector = citizenDetailsConnector,
+        incomeRepository = mockIncomeRepository,
+        taxAccountRepository = mockTaxAccountRepository,
+        auditor = mockAuditor
+      )
+
+      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
+      result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
     }
   }
 
@@ -1120,7 +1223,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
   private val nino = new Generator(new Random).nextNino
   private implicit val hc = HeaderCarrier()
-  private val taiRoot = TaiRoot(nino.nino, 1, "", "", None, "", "", false, None)
+  private val etag = ETag("1")
 
   private val account = BankAccount(3, Some("12345678"), Some("234567"), Some("Bank Name"), 1000, None, None)
 
@@ -1130,9 +1233,9 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar {
 
   private def createSUT(
     employmentService: EmploymentService = mock[EmploymentService],
-    taxAccountService: TaxAccountService = mock[TaxAccountService],
+    citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
     incomeRepository: IncomeRepository = mock[IncomeRepository],
     taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
     auditor: Auditor = mock[Auditor]) =
-    new IncomeService(employmentService, taxAccountService, incomeRepository, taxAccountRepository, auditor)
+    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, taxAccountRepository, auditor)
 }

@@ -17,13 +17,16 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
+import uk.gov.hmrc.tai.model.enums.APITypes.FusCreateEnvelope
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
@@ -33,7 +36,7 @@ import scala.concurrent.Future
 @Singleton
 class IncomeService @Inject()(
   employmentService: EmploymentService,
-  taxAccountService: TaxAccountService,
+  citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
   taxAccountRepository: TaxAccountRepository,
   auditor: Auditor) {
@@ -115,15 +118,25 @@ class IncomeService @Inject()(
       )
     }
 
-    for {
-      incomeAmount         <- incomeAmountForEmploymentId(nino, year, employmentId)
-      personDetails        <- taxAccountService.personDetails(nino)
-      incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, personDetails.version, amount)
-    } yield {
-
-      if (incomeUpdateResponse == IncomeUpdateSuccess) auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
-      incomeUpdateResponse
-    }
+    citizenDetailsConnector
+      .getEtag(nino)
+      .flatMap {
+        case Some(version) =>
+          for {
+            incomeAmount         <- incomeAmountForEmploymentId(nino, year, employmentId)
+            incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
+          } yield {
+            if (incomeUpdateResponse == IncomeUpdateSuccess)
+              auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+            incomeUpdateResponse
+          }
+        case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
+      }
+      .recover {
+        case ex: Exception =>
+          Logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
+          IncomeUpdateFailed("Could not parse etag")
+      }
   }
 
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(
