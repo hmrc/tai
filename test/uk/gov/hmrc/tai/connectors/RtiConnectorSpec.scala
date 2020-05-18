@@ -164,7 +164,6 @@ class RtiConnectorSpec extends PlaySpec with MockitoSugar {
     }
 
     "return a TemporarilyUnavailable response" when {
-      //TODO BadRequest?
       val exceptionResponses = Seq(BadRequestHttpResponse, UnknownErrorHttpResponse, InternalServerErrorHttpResponse)
 
       exceptionResponses foreach { exceptionResponse =>

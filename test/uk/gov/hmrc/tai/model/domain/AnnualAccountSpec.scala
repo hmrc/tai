@@ -22,6 +22,16 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class AnnualAccountSpec extends PlaySpec {
 
+  "AnnualAccount" must {
+    "create an instance given correct input" in {
+      val key = "0-0-0"
+      val realTimeStatus = Available
+      val taxYear = TaxYear()
+
+      AnnualAccount(key, taxYear, realTimeStatus) mustBe AnnualAccount(key, taxYear, realTimeStatus, Nil, Nil)
+    }
+  }
+
   "totalIncome" must {
     "return the latest year to date value from the payments" when {
       "there is only one payment" in {

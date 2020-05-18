@@ -51,9 +51,6 @@ case class Employment(
 
   def annualAccountsForYear(year: TaxYear): Seq[AnnualAccount] = annualAccounts.filter(_.taxYear == year)
 
-  def stubbedAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear): AnnualAccount =
-    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
-
 }
 
 case class AddEmployment(
