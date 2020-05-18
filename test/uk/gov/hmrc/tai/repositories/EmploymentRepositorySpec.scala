@@ -87,7 +87,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     )
   )
 
-  def createStubbedAnnualAccount(
+  def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
     key: String = "0-0-0",
     taxYear: TaxYear = TaxYear(2017)): AnnualAccount =
@@ -98,7 +98,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       "there is no data in the cache" when {
         "a call to rti results in an Unavailable response" in {
 
-          val annualAccount = createStubbedAnnualAccount(Unavailable)
+          val annualAccount = createAnnualAccount(Unavailable)
           val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(annualAccount))
 
           val mockRtiConnector = mock[RtiConnector]
@@ -146,7 +146,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
         "a call to rti results in an TemporarilyUnavailable response" in {
 
-          val annualAccount = createStubbedAnnualAccount(TemporarilyUnavailable)
+          val annualAccount = createAnnualAccount(TemporarilyUnavailable)
           val expectedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(annualAccount))
 
           val mockRtiConnector = mock[RtiConnector]
@@ -915,7 +915,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           "a subsequent call is made to RTI, an AnnualAccount with a status of available is returned and the stubbed account is " +
             "removed from the cache" in {
 
-            val cachedAnnualAccount = createStubbedAnnualAccount(TemporarilyUnavailable)
+            val cachedAnnualAccount = createAnnualAccount(TemporarilyUnavailable)
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
 
             val expectedAnnualAccount = AnnualAccount(
@@ -980,7 +980,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           "a subsequent call is made to RTI and an AnnualAccount with a status of Unavailable is returned and the stubbed account" +
             "is removed from the cache" in {
 
-            val cachedAnnualAccount = createStubbedAnnualAccount(TemporarilyUnavailable, "00")
+            val cachedAnnualAccount = createAnnualAccount(TemporarilyUnavailable, "00")
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
@@ -1040,7 +1040,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           "a subsequent call is made to RTI and an AnnualAccount with TemporarilyUnavailable is returned" in {
 
-            val tempUnavailableAccount = createStubbedAnnualAccount(TemporarilyUnavailable, "00")
+            val tempUnavailableAccount = createAnnualAccount(TemporarilyUnavailable, "00")
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(tempUnavailableAccount))
 
             val mockCacheConnector = mock[CacheConnector]
@@ -1072,9 +1072,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         "the cache data contains an employment with two annual accounts for different years with a status of TemporarilyUnavailable" when {
           "a subsequent request is made to RTI a status of available is returned, one annual account should be updated and the other left unmodified " in {
 
-            val cachedAnnualAccount1 = createStubbedAnnualAccount(TemporarilyUnavailable)
+            val cachedAnnualAccount1 = createAnnualAccount(TemporarilyUnavailable)
             val cachedAnnualAccount2 =
-              createStubbedAnnualAccount(rtiStatus = TemporarilyUnavailable, taxYear = TaxYear(2016))
+              createAnnualAccount(rtiStatus = TemporarilyUnavailable, taxYear = TaxYear(2016))
             val cachedEmployment =
               npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount1, cachedAnnualAccount2))
             val expectedAnnualAccount = AnnualAccount(
@@ -1141,7 +1141,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
         "the cached data contains an annualAccount with a status not equal to TemporarilyUnavailable" in {
 
-          val cachedAnnualAccount = createStubbedAnnualAccount(Available, "00")
+          val cachedAnnualAccount = createAnnualAccount(Available, "00")
           val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
 
           val mockCacheConnector = mock[CacheConnector]
@@ -1159,17 +1159,21 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
   "employment" must {
     "return a specific employment by ID" in {
+
+      val annualAccountCY = createAnnualAccount(taxYear = currentTaxYear)
+      val annualAccountPY = createAnnualAccount(taxYear = previousTaxYear)
+
+      val employment1Id = 4
+
       val emp1 = Employment(
         "TEST",
         Some("12345"),
         LocalDate.now(),
         None,
-        List(
-          AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-          AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+        List(annualAccountCY, annualAccountPY),
         "",
         "",
-        4,
+        employment1Id,
         Some(100),
         false,
         false
@@ -1180,9 +1184,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Some("123456"),
         LocalDate.now(),
         None,
-        List(
-          AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil),
-          AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+        List(annualAccountCY, annualAccountPY),
         "",
         "",
         2,
@@ -1191,38 +1193,27 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         false
       )
 
-      val expectedEmployment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
-        "",
-        "",
-        4,
-        Some(100),
-        false,
-        false
-      )
+      val expectedEmployment = emp1.copy(annualAccounts = Seq(annualAccountCY))
 
       val mockCacheConnector = mock[CacheConnector]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
-      val employmentId = 4
       val sut = testRepository(cacheConnector = mockCacheConnector)
 
-      Await.result(sut.employment(nino, employmentId), 5 seconds) mustBe Right(expectedEmployment)
+      Await.result(sut.employment(nino, employment1Id), 5 seconds) mustBe Right(expectedEmployment)
     }
     "return Employment not found error type when there is no employment found for that ID" in {
+
+      val annualAccountCY = createAnnualAccount(taxYear = currentTaxYear)
+      val annualAccountPY = createAnnualAccount(taxYear = previousTaxYear)
+
       val emp1 = Employment(
         "TEST",
         Some("12345"),
         LocalDate.now(),
         None,
-        List(
-          AnnualAccount("", currentTaxYear, Available, Nil, Nil),
-          AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
+        List(annualAccountCY, annualAccountPY),
         "",
         "",
         4,
@@ -1236,9 +1227,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         Some("123456"),
         LocalDate.now(),
         None,
-        List(
-          AnnualAccount("", currentTaxYear, Unavailable, Nil, Nil),
-          AnnualAccount("", previousTaxYear, Available, Nil, Nil)),
+        List(annualAccountCY, annualAccountPY),
         "",
         "",
         2,
@@ -1251,13 +1240,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
+      val notFoundEmploymentId = 5
+
       val sut = testRepository(cacheConnector = mockCacheConnector)
-      Await.result(sut.employment(nino, 10), 5 seconds) mustBe Left(EmploymentNotFound)
+      Await.result(sut.employment(nino, notFoundEmploymentId), 5 seconds) mustBe Left(EmploymentNotFound)
     }
 
     "return Employment stubbed account error type when RTI is Temporarily unavailable" in {
 
-      val annualAccount = createStubbedAnnualAccount(TemporarilyUnavailable, taxYear = TaxYear())
+      val annualAccount = createAnnualAccount(TemporarilyUnavailable, taxYear = TaxYear())
       val employment = npsSingleEmployment.copy(annualAccounts = Seq(annualAccount))
 
       val mockRtiConnector = mock[RtiConnector]
@@ -1299,14 +1290,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     "get the current year employments from the hod" when {
       "data is in the cache for a year other than the current one and it does not contain the required employment" in {
 
+        val annualAccount2018 = createAnnualAccount(taxYear = TaxYear(2018))
+        val annualAccountPY = createAnnualAccount(taxYear = previousTaxYear)
+
         val emp2015 = Employment(
           "TEST",
           Some("12345"),
           LocalDate.now(),
           None,
-          List(
-            AnnualAccount("", TaxYear(2015), Available, Nil, Nil),
-            AnnualAccount("", previousTaxYear, TemporarilyUnavailable, Nil, Nil)),
+          List(annualAccount2018, annualAccountPY),
           "",
           "",
           4,
