@@ -69,24 +69,6 @@ class EmploymentSpec extends PlaySpec {
       employmentWithAccount.tempUnavailableStubExistsForYear(taxYear) mustBe false
     }
 
-    "return all annual accounts that do not have a status of temporarily unavailable for the request year" in {
-      val expectedAccount1 = createAnnualAccount(Available)
-      val expectedAccount2 = createAnnualAccount(Unavailable)
-
-      val accounts =
-        Seq(
-          createAnnualAccount(TemporarilyUnavailable, TaxYear(2019)),
-          createAnnualAccount(TemporarilyUnavailable),
-          expectedAccount1,
-          expectedAccount2,
-          createAnnualAccount(Available, TaxYear(2019))
-        )
-
-      val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
-
-      employmentWithAccount.nonTempAccountForYear(taxYear) mustBe Seq(expectedAccount1, expectedAccount2)
-    }
-
     "return true if an annual accounts exist for a particular year" in {
       val accounts = Seq(createAnnualAccount(Available, TaxYear(2019)), createAnnualAccount(Available))
       val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)

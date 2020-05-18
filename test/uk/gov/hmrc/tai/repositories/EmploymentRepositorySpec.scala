@@ -27,9 +27,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException}
-import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
 import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}

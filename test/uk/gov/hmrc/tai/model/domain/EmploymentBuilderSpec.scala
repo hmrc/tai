@@ -26,6 +26,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
 import scala.util.Random
 
 class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {

@@ -21,7 +21,6 @@ import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._

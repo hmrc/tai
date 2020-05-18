@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status
+import play.api.http.Status.OK
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
@@ -31,8 +32,6 @@ import uk.gov.hmrc.tai.model.domain.{AnnualAccount, TemporarilyUnavailable, UnAv
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import Status.{BAD_REQUEST, OK}
-import play.api.libs.openid.Errors.BAD_RESPONSE
 
 import scala.concurrent.Future
 
