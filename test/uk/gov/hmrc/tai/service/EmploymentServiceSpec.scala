@@ -42,11 +42,11 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
   "EmploymentService" should {
     "return employments for passed nino and year" in {
-      val employmentsForYear = List(employment)
+      val employmentsForYear = Seq(employment)
 
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employmentsForYear(any(), any())(any()))
-        .thenReturn(Future.successful(employmentsForYear))
+        .thenReturn(Future.successful(Employments(employmentsForYear)))
 
       val sut = createSut(
         mockEmploymentRepository,

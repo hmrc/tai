@@ -32,6 +32,23 @@ class EmploymentsSpec extends PlaySpec {
   val previousTaxYear = currentTaxYear.prev
   val now = LocalDate.now()
 
+  val annualAccountCTY = createAnnualAccount()
+  val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
+
+  val employment1 = Employment(
+    "TEST",
+    Some("12345"),
+    LocalDate.now(),
+    None,
+    Seq.empty[AnnualAccount],
+    "1234",
+    "0",
+    1,
+    Some(100),
+    false,
+    false
+  )
+
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
     key: String = "0-0-0",
@@ -40,23 +57,8 @@ class EmploymentsSpec extends PlaySpec {
 
   "Employments" should {
     "return a sequence of employments with only accounts for a given year" in {
-      val annualAccountCTY = createAnnualAccount()
-      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
-      val employment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        Seq(annualAccountCTY, annualAccountPTY),
-        "1234",
-        "",
-        4,
-        Some(100),
-        false,
-        false
-      )
-
+      val employment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
       val expectedEmployments = Seq(employment.copy(annualAccounts = Seq(annualAccountCTY)))
 
       val unifiedEmployment = Employments(Seq(employment))
@@ -66,21 +68,8 @@ class EmploymentsSpec extends PlaySpec {
     }
 
     "return an empty sequence of employments if no accounts exist for a tax year" in {
-      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
-      val employment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        Seq(annualAccountPTY),
-        "1234",
-        "",
-        4,
-        Some(100),
-        false,
-        false
-      )
+      val employment = employment1.copy(annualAccounts = Seq(annualAccountPTY))
 
       val unifiedEmployment = Employments(Seq(employment))
       val accountsForYear = unifiedEmployment.accountsForYear(currentTaxYear)
@@ -93,19 +82,7 @@ class EmploymentsSpec extends PlaySpec {
         createAnnualAccount(rtiStatus = TemporarilyUnavailable, taxYear = previousTaxYear)
       val annualAccountCTY = createAnnualAccount()
 
-      val employment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        Seq(stubbedAnnualAccount, annualAccountCTY),
-        "1234",
-        "",
-        4,
-        Some(100),
-        false,
-        false
-      )
+      val employment = employment1.copy(annualAccounts = Seq(stubbedAnnualAccount, annualAccountCTY))
 
       val unifiedEmployment = Employments(Seq(employment))
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
@@ -115,21 +92,7 @@ class EmploymentsSpec extends PlaySpec {
 
     "return false if an employment does not contain a TemporarilyUnavailable stubbed annual account for a given year" in {
       val stubbedAnnualAccountCTY = createAnnualAccount(rtiStatus = TemporarilyUnavailable)
-      val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
-
-      val employment = Employment(
-        "TEST",
-        Some("12345"),
-        LocalDate.now(),
-        None,
-        Seq(stubbedAnnualAccountCTY, annualAccountPTY),
-        "1234",
-        "",
-        4,
-        Some(100),
-        false,
-        false
-      )
+      val employment = employment1.copy(annualAccounts = Seq(stubbedAnnualAccountCTY, annualAccountPTY))
 
       val unifiedEmployment = Employments(Seq(employment))
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
@@ -137,11 +100,38 @@ class EmploymentsSpec extends PlaySpec {
       containsTempAccount mustBe false
     }
 
+    "return a list of sequence numbers" in {
+      val employment2 = employment1.copy(sequenceNumber = 2)
+      val employment3 = employment1.copy(sequenceNumber = 3)
+
+      val employments = Employments(Seq(employment1, employment2, employment3))
+      employments.sequenceNumbers mustBe Seq(1, 2, 3)
+    }
+
+    "return an empty sequence list if no employments are present" in {
+      val employments = Employments(Seq.empty[Employment])
+      employments.sequenceNumbers mustBe Seq.empty[Int]
+    }
+
+    "return an employment by id when it exists within the collection" in {
+      val employment2 = employment1.copy(sequenceNumber = 2)
+      val employment3 = employment1.copy(sequenceNumber = 3)
+
+      val employments = Employments(Seq(employment1, employment2, employment3))
+      employments.employmentById(2) mustBe Some(employment2)
+    }
+
+    "return None if an employment does not exists in the collection" in {
+      val employment2 = employment1.copy(sequenceNumber = 2)
+      val employment3 = employment1.copy(sequenceNumber = 3)
+
+      val notFoundId = 4
+      val employments = Employments(Seq(employment1, employment2, employment3))
+      employments.employmentById(notFoundId) mustBe None
+    }
+
     "merge employments" when {
       "the employments have the same key and contain different tax year annual account records" in {
-
-        val annualAccountCTY = createAnnualAccount(taxYear = currentTaxYear)
-        val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
 
         val employment1 =
           Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountCTY), "0", "0", 2, None, false, false)

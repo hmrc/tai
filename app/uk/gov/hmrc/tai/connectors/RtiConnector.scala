@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.http.Status
 import play.api.http.Status.OK
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
@@ -27,8 +26,8 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
-import uk.gov.hmrc.tai.model.domain.{AnnualAccount, TemporarilyUnavailable, UnAvailableRealTimeStatus, Unavailable}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -69,8 +68,9 @@ class RtiConnector @Inject()(
     )(hc, formatRtiData)
   }
 
+  //TODO logger error and raise ticket
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[UnAvailableRealTimeStatus, Seq[AnnualAccount]]] = {
+    implicit hc: HeaderCarrier): Future[Either[UnavailableRealTimeStatus, Seq[AnnualAccount]]] = {
     implicit val hc: HeaderCarrier = createHeader
 
     if (rtiToggle.rtiEnabled) {

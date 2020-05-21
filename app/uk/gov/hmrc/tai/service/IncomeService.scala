@@ -63,6 +63,7 @@ class IncomeService @Inject()(
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
     status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier): Future[Seq[IncomeSource]] = {
+
     def filterMatchingEmploymentsToIncomeSource(
       employments: Seq[Employment],
       filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =

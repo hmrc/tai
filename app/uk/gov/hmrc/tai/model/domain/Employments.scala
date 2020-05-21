@@ -29,6 +29,10 @@ case class Employments(employments: Seq[Employment]) {
     Employments(accountsForYear)
   }
 
+  def employmentById(id: Int): Option[Employment] = employments.find(_.sequenceNumber == id)
+
+  def sequenceNumbers: Seq[Int] = employments.map(_.sequenceNumber)
+
   def containsTempAccount(taxYear: TaxYear): Boolean = employments.exists(_.tempUnavailableStubExistsForYear(taxYear))
 
   def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): Seq[Employment] = {

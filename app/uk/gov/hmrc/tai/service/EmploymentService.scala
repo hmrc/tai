@@ -58,7 +58,7 @@ class EmploymentService @Inject()(
     s"$envelopeId-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"
 
   def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    employmentRepository.employmentsForYear(nino, year)
+    employmentRepository.employmentsForYear(nino, year) map (_.employments)
 
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =

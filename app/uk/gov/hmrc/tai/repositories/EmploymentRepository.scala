@@ -42,14 +42,14 @@ class EmploymentRepository @Inject()(
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
     val taxYear = TaxYear()
-    employmentsForYear(nino, taxYear) map { empForYear =>
-      if (empForYear.exists(_.tempUnavailableStubExistsForYear(taxYear))) {
+    employmentsForYear(nino, taxYear) map { employments =>
+      if (employments.containsTempAccount(taxYear)) {
         Left(EmploymentAccountStubbed)
       } else {
-        empForYear.find(_.sequenceNumber == id) match {
+        employments.employmentById(id) match {
           case Some(employment) => Right(employment)
           case None => {
-            val sequenceNumbers = empForYear.map(_.sequenceNumber).mkString(", ")
+            val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
             Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
             Left(EmploymentNotFound)
           }
@@ -58,7 +58,7 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
     fetchEmploymentFromCache(nino) flatMap {
       case Employments(Nil) => hodCallWithCaching(nino, taxYear)
       case cachedEmployments @ Employments(_) =>
@@ -68,28 +68,28 @@ class EmploymentRepository @Inject()(
             if (isCallToRtiRequired(taxYear, employmentsForYear)) {
               rtiCallWithCacheUpdate(nino, taxYear, employmentsForYear, cachedEmployments)
             } else {
-              Future.successful(employmentsForYear.employments)
+              Future.successful(employmentsForYear)
             }
           }
         }
     }
 
   private def hodCallWithCacheMerge(nino: Nino, taxYear: TaxYear, cachedEmployments: Employments)(
-    implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+    implicit hc: HeaderCarrier): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap { employmentsWithAccounts =>
       val mergedEmployments = cachedEmployments.mergeEmployments(employmentsWithAccounts.employments)
-      addEmploymentsToCache(nino, mergedEmployments).map(_ => employmentsWithAccounts.employments)
+      addEmploymentsToCache(nino, mergedEmployments).map(_ => employmentsWithAccounts)
     }
 
-  private def hodCallWithCaching(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  private def hodCallWithCaching(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap (employmentsWithAccounts =>
-      addEmploymentsToCache(nino, employmentsWithAccounts.employments))
+      addEmploymentsToCache(nino, employmentsWithAccounts.employments).map(_ => employmentsWithAccounts))
 
   private def rtiCallWithCacheUpdate(
     nino: Nino,
     taxYear: TaxYear,
     originalEmployments: Employments,
-    cachedEmployments: Employments)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+    cachedEmployments: Employments)(implicit hc: HeaderCarrier): Future[Employments] = {
 
     def rtiCallCombinedWithEmployments(
       originalEmployments: Employments,
@@ -110,9 +110,9 @@ class EmploymentRepository @Inject()(
       if (rtiUpdatedEmployments != originalEmployments) {
         val mergedEmployments =
           cachedEmployments.mergeEmploymentsForTaxYear(rtiUpdatedEmployments.employments, taxYear)
-        addEmploymentsToCache(nino, mergedEmployments).map(_ => rtiUpdatedEmployments.employments)
+        addEmploymentsToCache(nino, mergedEmployments).map(_ => rtiUpdatedEmployments)
       } else {
-        Future.successful(originalEmployments.employments)
+        Future.successful(originalEmployments)
       }
     }
   }
@@ -121,7 +121,7 @@ class EmploymentRepository @Inject()(
     employmentsForYear.containsTempAccount(taxYear)
 
   private def rtiCall(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[UnAvailableRealTimeStatus, Seq[AnnualAccount]]] =
+    implicit hc: HeaderCarrier): Future[Either[UnavailableRealTimeStatus, Seq[AnnualAccount]]] =
     rtiConnector.getPaymentsForYear(nino, taxYear)
 
   private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] = {
