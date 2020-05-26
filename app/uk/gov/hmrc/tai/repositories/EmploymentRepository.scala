@@ -98,12 +98,12 @@ class EmploymentRepository @Inject()(
       rtiCall(nino, taxYear) map {
         case Right(accounts) =>
           employmentBuilder.combineAccountsWithEmployments(originalEmployments.employments, accounts, nino, taxYear)
-        case Left(Unavailable) => {
+        case Left(ResourceNotFoundError) => {
           val unavailableAccounts = stubAccounts(Unavailable, originalEmployments.employments, taxYear)
           employmentBuilder
             .combineAccountsWithEmployments(originalEmployments.employments, unavailableAccounts, nino, taxYear)
         }
-        case Left(TemporarilyUnavailable) => originalEmployments
+        case Left(_) => originalEmployments
       }
 
     rtiCallCombinedWithEmployments(originalEmployments, nino, taxYear) flatMap { rtiUpdatedEmployments =>
@@ -121,7 +121,7 @@ class EmploymentRepository @Inject()(
     employmentsForYear.containsTempAccount(taxYear)
 
   private def rtiCall(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[UnavailableRealTimeStatus, Seq[AnnualAccount]]] =
+    implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
     rtiConnector.getPaymentsForYear(nino, taxYear)
 
   private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] = {
@@ -130,7 +130,10 @@ class EmploymentRepository @Inject()(
     def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
       rtiCall(nino, taxYear) map {
         case Right(accounts) => accounts
-        case Left(rtiStatus) => stubAccounts(rtiStatus, employments, taxYear)
+        case Left(rtiStatus) => {
+          val realTimeStatus = if (rtiStatus == ResourceNotFoundError) Unavailable else TemporarilyUnavailable
+          stubAccounts(realTimeStatus, employments, taxYear)
+        }
       }
 
     for {

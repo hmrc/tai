@@ -96,14 +96,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   "employmentsForYear" should {
     "return the employment domain model" when {
       "there is no data in the cache" when {
-        "a call to rti results in an Unavailable response" in {
+        "a call to rti results in a ResourceNotFound error response" in {
 
           val annualAccount = createAnnualAccount(Unavailable)
           val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(annualAccount)))
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Left(Unavailable)))
+            .thenReturn(Future.successful(Left(ResourceNotFoundError)))
 
           val mockCacheConnector = mock[CacheConnector]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
@@ -141,14 +141,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               Matchers.eq("EmploymentData"))(any())
         }
 
-        "a call to rti results in a TemporarilyUnavailable response" in {
+        "a call to rti results in a ServiceUnavailableError response" in {
 
           val annualAccount = createAnnualAccount(TemporarilyUnavailable)
           val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(annualAccount)))
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Left(TemporarilyUnavailable)))
+            .thenReturn(Future.successful(Left(ServiceUnavailableError)))
 
           val mockNpsConnector = mock[NpsConnector]
           when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1034,7 +1034,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           }
 
-          "a subsequent call is made to RTI and an AnnualAccount with TemporarilyUnavailable is returned" in {
+          "a subsequent call is made to RTI and a ServiceUnavailableError is returned" in {
 
             val tempUnavailableAccount = createAnnualAccount(TemporarilyUnavailable, "00")
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(tempUnavailableAccount))
@@ -1045,7 +1045,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val mockRtiConnector = mock[RtiConnector]
             when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Left(TemporarilyUnavailable)))
+              .thenReturn(Future.successful(Left(ServiceUnavailableError)))
 
             val mockNpsConnector = mock[NpsConnector]
 
@@ -1249,7 +1249,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val mockRtiConnector = mock[RtiConnector]
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-        .thenReturn(Future.successful(Left(TemporarilyUnavailable)))
+        .thenReturn(Future.successful(Left(ServiceUnavailableError)))
 
       val mockEmploymentBuilder = mock[EmploymentBuilder]
       when(

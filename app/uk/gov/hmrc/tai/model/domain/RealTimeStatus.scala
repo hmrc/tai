@@ -20,10 +20,8 @@ import play.api.libs.json.{Format, JsString, JsSuccess, JsValue}
 
 sealed trait RealTimeStatus
 case object Available extends RealTimeStatus
-
-sealed trait UnavailableRealTimeStatus extends RealTimeStatus
-case object TemporarilyUnavailable extends UnavailableRealTimeStatus
-case object Unavailable extends UnavailableRealTimeStatus
+case object TemporarilyUnavailable extends RealTimeStatus
+case object Unavailable extends RealTimeStatus
 
 object RealTimeStatus extends RealTimeStatus {
 
