@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class Employment(
   name: String,
@@ -37,6 +38,15 @@ case class Employment(
   lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
 
   lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
+
+  def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
+    annualAccounts.exists(annualAccount =>
+      annualAccount.realTimeStatus == TemporarilyUnavailable && annualAccount.taxYear == year)
+
+  def hasAnnualAccountsForYear(year: TaxYear): Boolean = annualAccountsForYear(year).nonEmpty
+
+  def annualAccountsForYear(year: TaxYear): Seq[AnnualAccount] = annualAccounts.filter(_.taxYear == year)
+
 }
 
 case class AddEmployment(

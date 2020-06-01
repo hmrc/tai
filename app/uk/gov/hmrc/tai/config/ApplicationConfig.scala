@@ -109,6 +109,12 @@ class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, pl
 }
 
 @Singleton
+class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
+    extends BaseConfig(playEnv) {
+  def rtiEnabled: Boolean = runModeConfiguration.getBoolean("tai.rti.call.enabled").getOrElse(true)
+}
+
+@Singleton
 class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
     extends BaseConfig(playEnv) {
   def cacheMetricsEnabled: Boolean = runModeConfiguration.getBoolean("tai.cacheMetrics.enabled").getOrElse(false)
