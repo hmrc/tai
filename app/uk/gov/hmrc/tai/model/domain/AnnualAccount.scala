@@ -38,4 +38,8 @@ case class AnnualAccount(
 
 object AnnualAccount {
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
+
+  def apply(key: String, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
+    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
+
 }

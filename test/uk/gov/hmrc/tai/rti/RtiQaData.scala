@@ -18,8 +18,9 @@ package uk.gov.hmrc.tai.model.rti
 
 import java.io._
 import play.api.libs.json._
-import scala.util._
 import scala.io.Source._
+import scala.util._
+
 object QaData {
 
   def jsonFile[T](
@@ -43,6 +44,8 @@ object QaData {
       }
 
   def obj(year: String)(nino: String) = json(year)(nino).as[RtiData]
+
+  def paymentDetailsForYear(year: String)(fileName: String) = json(year)(fileName)
 
   def json(year: String): Map[String, JsValue] = {
     val dir = new File(s"test/data/rti/$year")
