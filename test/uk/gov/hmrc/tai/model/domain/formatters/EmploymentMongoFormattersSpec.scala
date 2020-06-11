@@ -136,7 +136,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
         val json = Json.arr(
           Json.obj(
             "name"             -> "TEST",
-            "employmentStatus" -> 1,
+            "employmentStatus" -> Live.toString,
             "payrollNumber"    -> "12345",
             "startDate"        -> "2017-05-26",
             "annualAccounts" -> Json.arr(

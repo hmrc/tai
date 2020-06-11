@@ -59,10 +59,10 @@ object TaxCodeIncomeStatus {
   }
 
   implicit val employmentStatus: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
-    override def reads(json: JsValue): JsResult[TaxCodeIncomeStatus] = json.as[Int] match {
-      case 1 => JsSuccess(Live)
-      case 2 => JsSuccess(PotentiallyCeased)
-      case 3 => JsSuccess(Ceased)
+    override def reads(json: JsValue): JsResult[TaxCodeIncomeStatus] = json.as[String] match {
+      case "Live"              => JsSuccess(Live)
+      case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
+      case "Ceased"            => JsSuccess(Ceased)
       case default => {
         Logger.warn(s"Invalid Employment Status Reads -> $default")
         throw new RuntimeException("Invalid employment status reads")
