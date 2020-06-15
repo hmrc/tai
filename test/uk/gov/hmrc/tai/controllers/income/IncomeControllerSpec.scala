@@ -59,7 +59,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       "1150L",
       "Employer1",
       Week1Month1BasisOperation,
-      Live,
       BigDecimal(0),
       BigDecimal(0),
       BigDecimal(0)
@@ -72,7 +71,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       "1100L",
       "Employer2",
       OtherBasisOperation,
-      Live,
       BigDecimal(321.12),
       BigDecimal(0),
       BigDecimal(0)
@@ -85,7 +83,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       "1100L",
       "Employer2",
       OtherBasisOperation,
-      Live,
       BigDecimal(321.12),
       BigDecimal(0),
       BigDecimal(0)
@@ -173,7 +170,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
             "1150L",
             "Employer1",
             Week1Month1BasisOperation,
-            Live,
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0)
@@ -186,7 +182,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            PotentiallyCeased,
             BigDecimal(321.12),
             BigDecimal(0),
             BigDecimal(0)
@@ -209,7 +204,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1150LX",
               "name"                          -> "Employer1",
               "basisOperation"                -> "Week1Month1BasisOperation",
-              "status"                        -> Live.toString,
               "inYearAdjustmentIntoCY"        -> 0,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0
@@ -222,7 +216,6 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               "taxCode"                       -> "1100L",
               "name"                          -> "Employer2",
               "basisOperation"                -> "OtherBasisOperation",
-              "status"                        -> PotentiallyCeased.toString,
               "inYearAdjustmentIntoCY"        -> 321.12,
               "totalInYearAdjustment"         -> 0,
               "inYearAdjustmentIntoCYPlusOne" -> 0

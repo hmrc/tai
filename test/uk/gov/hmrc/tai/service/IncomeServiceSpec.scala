@@ -84,7 +84,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "1150L",
           "Employer1",
           Week1Month1BasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)
@@ -97,7 +96,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "1100L",
           "Employer2",
           OtherBasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -126,7 +124,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       "1100L",
       "Employer2",
       OtherBasisOperation,
-      Live,
       BigDecimal(321.12),
       BigDecimal(0),
       BigDecimal(0)
@@ -141,7 +138,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1150L",
         "Employer1",
         Week1Month1BasisOperation,
-        Live,
         BigDecimal(0),
         BigDecimal(0),
         BigDecimal(0)
@@ -154,7 +150,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1100L",
         "Employer2",
         OtherBasisOperation,
-        Live,
         BigDecimal(321.12),
         BigDecimal(0),
         BigDecimal(0)
@@ -167,7 +162,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1100L",
         "Employer2",
         OtherBasisOperation,
-        Live,
         BigDecimal(321.12),
         BigDecimal(0),
         BigDecimal(0)
@@ -323,7 +317,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               taxCode = "1150L",
               name = "Employer1",
               basisOperation = Week1Month1BasisOperation,
-              status = Live,
               inYearAdjustmentIntoCY = 0,
               totalInYearAdjustment = 0,
               inYearAdjustmentIntoCYPlusOne = 0
@@ -419,7 +412,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1150L",
         "Employer1",
         Week1Month1BasisOperation,
-        Live,
         BigDecimal(0),
         BigDecimal(0),
         BigDecimal(0)
@@ -432,7 +424,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1100L",
         "Employer2",
         OtherBasisOperation,
-        Live,
         BigDecimal(321.12),
         BigDecimal(0),
         BigDecimal(0)
@@ -445,7 +436,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         "1100L",
         "Employer2",
         OtherBasisOperation,
-        Live,
         BigDecimal(321.12),
         BigDecimal(0),
         BigDecimal(0)
@@ -469,7 +459,12 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "return list of non matching ceased employments when some employments do have an end date" in {
       val employments =
-        Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+        Seq(
+          employment,
+          employment.copy(
+            employmentStatus = Ceased,
+            sequenceNumber = 1,
+            endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
       when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -482,7 +477,11 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
 
       val expectedResult =
-        Seq(employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+        Seq(
+          employment.copy(
+            employmentStatus = Ceased,
+            sequenceNumber = 1,
+            endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
       result mustBe expectedResult
     }
@@ -518,7 +517,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
                 "1100L",
                 "Employer2",
                 OtherBasisOperation,
-                Ceased,
                 BigDecimal(321.12),
                 BigDecimal(0),
                 BigDecimal(0)
@@ -565,7 +563,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
                 "1100L",
                 "Employer2",
                 OtherBasisOperation,
-                Ceased,
                 BigDecimal(321.12),
                 BigDecimal(0),
                 BigDecimal(0)
@@ -623,7 +620,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "1150L",
           "Employer1",
           Week1Month1BasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)
@@ -636,7 +632,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "1100L",
           "Employer2",
           OtherBasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -678,7 +673,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               "",
               "",
               Week1Month1BasisOperation,
-              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0)))
@@ -822,7 +816,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               "",
               "",
               Week1Month1BasisOperation,
-              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0)))
@@ -903,7 +896,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               "",
               "",
               Week1Month1BasisOperation,
-              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0)))
@@ -969,7 +961,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               "",
               "",
               Week1Month1BasisOperation,
-              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0)))
@@ -1049,7 +1040,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "",
           "",
           Week1Month1BasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)))
@@ -1114,7 +1104,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           "",
           "",
           Week1Month1BasisOperation,
-          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)))
@@ -1165,101 +1154,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
       val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
       result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
-    }
-  }
-
-  "retrieveTaxCodeIncomeAmount" must {
-
-    "return an amount" when {
-      "an employment has been found" in {
-
-        val employmentId = 1
-        val requiredEmploymentId = 1
-
-        val taxCodeIncomes = Seq(
-          TaxCodeIncome(
-            EmploymentIncome,
-            Some(employmentId),
-            BigDecimal(12300.45),
-            "",
-            "",
-            "",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)))
-
-        val SUT = createSUT()
-
-        val result = SUT.retrieveTaxCodeIncomeAmount(nino, requiredEmploymentId, taxCodeIncomes)
-
-        result mustBe 12300.45
-      }
-    }
-
-    "return zero" when {
-      "an employment has not been found" in {
-
-        val employmentId = 1
-        val requiredEmploymentId = 2
-
-        val taxCodeIncomes = Seq(
-          TaxCodeIncome(
-            EmploymentIncome,
-            Some(employmentId),
-            BigDecimal(12300.45),
-            "",
-            "",
-            "",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)))
-
-        val SUT = createSUT()
-
-        val result = SUT.retrieveTaxCodeIncomeAmount(nino, requiredEmploymentId, taxCodeIncomes)
-
-        result mustBe 0
-      }
-    }
-  }
-
-  "retrieveEmploymentAmountYearToDate" must {
-
-    "return the amount YTD" when {
-      "payment information has be found" in {
-
-        val payment = Payment(LocalDate.now(), 1234.56, 0, 0, 0, 0, 0, Weekly, None)
-        val annualAccount = AnnualAccount("", TaxYear(), Available, Seq(payment), Nil)
-
-        val SUT = createSUT()
-
-        val result = SUT.retrieveEmploymentAmountYearToDate(
-          nino,
-          Some(
-            Employment("", Live, None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
-
-        result mustBe 1234.56
-      }
-    }
-
-    "return zero" when {
-      "payment information cannot be found" in {
-
-        val annualAccount = AnnualAccount("", TaxYear(), Available, Nil, Nil)
-
-        val SUT = createSUT()
-
-        val result = SUT.retrieveEmploymentAmountYearToDate(
-          nino,
-          Some(
-            Employment("", Live, None, LocalDate.now(), None, Seq(annualAccount), "", "", 0, Some(100), false, false)))
-
-        result mustBe 0
-      }
     }
   }
 

@@ -63,7 +63,6 @@ trait TaxCodeIncomeHodFormatters {
           taxCode,
           name,
           basisOperation,
-          status,
           iyaCy,
           totalIya,
           iyaCyPlusOne))
