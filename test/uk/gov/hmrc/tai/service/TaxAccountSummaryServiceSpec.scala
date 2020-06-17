@@ -105,6 +105,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0)),
@@ -116,6 +117,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0)
@@ -155,6 +157,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(-13.37),
             BigDecimal(10.70),
             BigDecimal(11.10)
@@ -167,6 +170,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(10.32),
             BigDecimal(-5.50),
             BigDecimal(0)
@@ -179,6 +183,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(3.05),
             BigDecimal(-5.20),
             BigDecimal(-11.10)
@@ -221,6 +226,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(12.34),
             BigDecimal(33.30),
             BigDecimal(5.50)
@@ -233,6 +239,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(55.10),
             BigDecimal(-10.10),
             BigDecimal(6.10)
@@ -287,6 +294,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(12.34),
             BigDecimal(0),
             BigDecimal(0)
@@ -299,6 +307,7 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
             "1150L",
             "PensionProvider1",
             OtherBasisOperation,
+            Live,
             BigDecimal(55.12),
             BigDecimal(0),
             BigDecimal(0)

@@ -50,13 +50,13 @@ class IncomeService @Inject()(
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
       employments
-        .filter(emp => emp.employmentStatus != Live)
         .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
         .filter(_.endDate.isDefined)
 
     for {
       taxCodeIncomes <- taxCodeIncomes(nino, year)
-      filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
+      filteredTaxCodeIncomes = taxCodeIncomes.filter(income =>
+        income.status != Live && income.componentType == EmploymentIncome)
       employments <- employmentService.employments(nino, year)
       result = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
     } yield result
@@ -157,4 +157,26 @@ class IncomeService @Inject()(
         case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
       }
     }
+
+  // TODO unused
+  def retrieveTaxCodeIncomeAmount(nino: Nino, employmentId: Int, taxCodeIncomes: Seq[TaxCodeIncome]): BigDecimal = {
+
+    val taxCodeIncome = for {
+      taxCodeIncome <- taxCodeIncomes.find(_.employmentId.contains(employmentId))
+    } yield taxCodeIncome.amount
+
+    taxCodeIncome.getOrElse(0)
+  }
+
+  // TODO unused
+  def retrieveEmploymentAmountYearToDate(nino: Nino, employment: Option[Employment]): BigDecimal = {
+
+    val amountYearToDate = for {
+      employment          <- employment
+      latestAnnualAccount <- employment.latestAnnualAccount
+      latestPayment       <- latestAnnualAccount.latestPayment
+    } yield latestPayment.amountYearToDate
+
+    amountYearToDate.getOrElse(0)
+  }
 }

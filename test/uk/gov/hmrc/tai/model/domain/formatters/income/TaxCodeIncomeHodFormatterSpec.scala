@@ -141,6 +141,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "Employer1",
           Week1Month1BasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)
@@ -168,6 +169,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "PensionProvider1",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -194,6 +196,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0)
@@ -221,6 +224,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -247,6 +251,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -273,6 +278,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -301,6 +307,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -327,6 +334,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -391,6 +399,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
               "1150L",
               "Employer1",
               Week1Month1BasisOperation,
+              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0)
@@ -403,6 +412,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
               "1100L",
               "Employer2",
               OtherBasisOperation,
+              Live,
               BigDecimal(0),
               BigDecimal(0),
               BigDecimal(0))
@@ -434,6 +444,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Live,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -462,6 +473,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          PotentiallyCeased,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -490,6 +502,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Ceased,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))
@@ -521,6 +534,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Ceased,
           BigDecimal(10.20),
           BigDecimal(30.40),
           BigDecimal(10.60))
@@ -549,6 +563,7 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "1150L",
           "",
           OtherBasisOperation,
+          Ceased,
           BigDecimal(0),
           BigDecimal(0),
           BigDecimal(0))

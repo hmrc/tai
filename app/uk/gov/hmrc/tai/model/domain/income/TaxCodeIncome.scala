@@ -108,6 +108,8 @@ case class TaxCodeIncome(
   taxCode: String,
   name: String,
   basisOperation: BasisOperation,
+  // TODO: Remove this and have it exist in the employment object
+  status: TaxCodeIncomeStatus,
   inYearAdjustmentIntoCY: BigDecimal,
   totalInYearAdjustment: BigDecimal,
   inYearAdjustmentIntoCYPlusOne: BigDecimal,
@@ -134,6 +136,7 @@ object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
           "taxCode"                       -> Json.toJson(o.taxCodeWithEmergencySuffix),
           "name"                          -> Json.toJson(o.name),
           "basisOperation"                -> Json.toJson(o.basisOperation),
+          "status"                        -> Json.toJson(o.status),
           "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
           "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
           "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),

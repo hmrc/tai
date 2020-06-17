@@ -23,7 +23,18 @@ import uk.gov.hmrc.tai.model.domain.income.{Live, TaxCodeIncome, Week1Month1Basi
 object TaxCodeIncomeFactory {
 
   def create: TaxCodeIncome =
-    TaxCodeIncome(EmploymentIncome, Some(1), 0, "Test Desc", "K100", "Test Name", Week1Month1BasisOperation, 0, 1, 2)
+    TaxCodeIncome(
+      EmploymentIncome,
+      Some(1),
+      0,
+      "Test Desc",
+      "K100",
+      "Test Name",
+      Week1Month1BasisOperation,
+      Live,
+      0,
+      1,
+      2)
 
   def createJson: JsObject =
     Json.obj(
@@ -34,6 +45,7 @@ object TaxCodeIncomeFactory {
       "taxCode"                       -> "K100X",
       "name"                          -> "Test Name",
       "basisOperation"                -> Week1Month1BasisOperation,
+      "status"                        -> Live,
       "inYearAdjustmentIntoCY"        -> 0,
       "totalInYearAdjustment"         -> 1,
       "inYearAdjustmentIntoCYPlusOne" -> 2

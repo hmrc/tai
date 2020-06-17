@@ -50,6 +50,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
     "1185L",
     "Employer1",
     OtherBasisOperation,
+    Live,
     BigDecimal(0),
     BigDecimal(0),
     BigDecimal(0))
@@ -1407,6 +1408,7 @@ class TaxCodeChangeServiceImplSpec extends PlaySpec with MockitoSugar with TaxCo
             "1000L",
             "Employer1",
             Week1Month1BasisOperation,
+            Live,
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0)
