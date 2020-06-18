@@ -49,7 +49,6 @@ case object Ceased extends TaxCodeIncomeStatus
 
 object TaxCodeIncomeStatus {
 
-  // TODO move this to the reads
   def apply(value: String): TaxCodeIncomeStatus = value match {
     case "Live"              => Live
     case "NotLive"           => NotLive
@@ -108,7 +107,6 @@ case class TaxCodeIncome(
   taxCode: String,
   name: String,
   basisOperation: BasisOperation,
-  // TODO: Remove this and have it exist in the employment object
   status: TaxCodeIncomeStatus,
   inYearAdjustmentIntoCY: BigDecimal,
   totalInYearAdjustment: BigDecimal,

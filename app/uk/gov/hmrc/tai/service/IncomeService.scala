@@ -44,7 +44,6 @@ class IncomeService @Inject()(
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
 
-  // TODO unneeded?
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     def filterNonMatchingCeasedEmploymentsWithEndDate(
       employments: Seq[Employment],
