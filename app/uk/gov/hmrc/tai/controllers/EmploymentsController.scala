@@ -37,7 +37,7 @@ class EmploymentsController @Inject()(employmentService: EmploymentService, auth
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     employmentService
       .employments(nino, year)
-      .map { employments: Seq[Employment] =>
+      .map { employments =>
         Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
       }
       .recover {

@@ -18,9 +18,11 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
+import play.api.Logger
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
+import uk.gov.hmrc.tai.model.domain.income.{Ceased, Live, PotentiallyCeased, TaxCodeIncomeStatus}
 import uk.gov.hmrc.tai.model.domain.{EndOfTaxYearUpdate, _}
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 
@@ -64,9 +66,11 @@ trait EmploymentHodFormatters {
         .asOpt[Boolean]
         .getOrElse(false)
       val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+      val status = employmentStatus(json)
       JsSuccess(
         Employment(
           name,
+          status,
           payrollNumber,
           startDate,
           endDate,
@@ -76,7 +80,22 @@ trait EmploymentHodFormatters {
           sequenceNumber,
           cessationPay,
           payrolledBenefit,
-          receivingOccupationalPension))
+          receivingOccupationalPension
+        ))
+    }
+  }
+
+  private def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
+    val employmentStatus = (json \ "employmentStatus").asOpt[Int]
+
+    employmentStatus match {
+      case Some(1) => Live
+      case Some(2) => PotentiallyCeased
+      case Some(3) => Ceased
+      case default => {
+        Logger.warn(s"Invalid Employment Status -> $default")
+        throw new RuntimeException("Invalid employment status")
+      }
     }
   }
 

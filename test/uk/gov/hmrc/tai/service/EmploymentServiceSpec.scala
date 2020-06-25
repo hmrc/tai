@@ -28,6 +28,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
@@ -42,11 +43,11 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
   "EmploymentService" should {
     "return employments for passed nino and year" in {
-      val employmentsForYear = List(employment)
+      val employmentsForYear = Seq(employment)
 
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employmentsForYear(any(), any())(any()))
-        .thenReturn(Future.successful(employmentsForYear))
+        .thenReturn(Future.successful(Employments(employmentsForYear)))
 
       val sut = createSut(
         mockEmploymentRepository,
@@ -420,6 +421,7 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
 
   private val employment = Employment(
     "TEST",
+    Live,
     Some("12345"),
     LocalDate.now(),
     None,
