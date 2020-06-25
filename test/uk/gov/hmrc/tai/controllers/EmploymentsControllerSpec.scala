@@ -28,6 +28,7 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -62,6 +63,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         val jsonResult = Json.obj(
           "data" -> Json.obj("employments" -> Json.arr(Json.obj(
             "name"                         -> "company name",
+            "employmentStatus"             -> Live.toString,
             "payrollNumber"                -> "888",
             "startDate"                    -> "2017-05-26",
             "annualAccounts"               -> Json.arr(),
@@ -128,6 +130,7 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         val jsonResult = Json.obj(
           "data" -> Json.obj(
             "name"                         -> "company name",
+            "employmentStatus"             -> Live.toString,
             "payrollNumber"                -> "888",
             "startDate"                    -> "2017-05-26",
             "annualAccounts"               -> Json.arr(),
@@ -296,5 +299,17 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
   }
 
   private val emp =
-    Employment("company name", Some("888"), new LocalDate(2017, 5, 26), None, Nil, "", "", 2, Some(100), false, true)
+    Employment(
+      "company name",
+      Live,
+      Some("888"),
+      new LocalDate(2017, 5, 26),
+      None,
+      Nil,
+      "",
+      "",
+      2,
+      Some(100),
+      false,
+      true)
 }

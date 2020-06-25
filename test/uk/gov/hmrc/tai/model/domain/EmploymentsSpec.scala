@@ -22,6 +22,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{Await, Future}
@@ -37,6 +38,7 @@ class EmploymentsSpec extends PlaySpec {
 
   val employment1 = Employment(
     "TEST",
+    Live,
     Some("12345"),
     LocalDate.now(),
     None,
@@ -134,14 +136,50 @@ class EmploymentsSpec extends PlaySpec {
       "the employments have the same key and contain different tax year annual account records" in {
 
         val employment1 =
-          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountCTY), "0", "0", 2, None, false, false)
+          Employment(
+            "EMPLOYER1",
+            Live,
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccountCTY),
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
 
         val employment1WithPTYAccount =
-          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountPTY), "0", "0", 2, None, false, false)
+          Employment(
+            "EMPLOYER1",
+            Live,
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccountPTY),
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
 
         val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
         val employment2 =
-          Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+          Employment(
+            "EMPLOYER2",
+            Live,
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccount2CTY),
+            "01",
+            "01",
+            2,
+            None,
+            false,
+            false)
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
 
@@ -156,11 +194,35 @@ class EmploymentsSpec extends PlaySpec {
 
         val annualAccountCTY = createAnnualAccount(taxYear = currentTaxYear)
         val employment1 =
-          Employment("EMPLOYER1", Some("12345"), now, None, Seq(annualAccountCTY), "0", "0", 2, None, false, false)
+          Employment(
+            "EMPLOYER1",
+            Live,
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccountCTY),
+            "0",
+            "0",
+            2,
+            None,
+            false,
+            false)
 
         val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
         val employment2 =
-          Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+          Employment(
+            "EMPLOYER2",
+            Live,
+            Some("12345"),
+            now,
+            None,
+            Seq(annualAccount2CTY),
+            "01",
+            "01",
+            2,
+            None,
+            false,
+            false)
 
         val unifiedEmployment = Employments(Seq(employment1))
         val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
@@ -182,6 +244,7 @@ class EmploymentsSpec extends PlaySpec {
       val employment1 =
         Employment(
           "EMPLOYER1",
+          Live,
           Some("12345"),
           now,
           None,
@@ -196,6 +259,7 @@ class EmploymentsSpec extends PlaySpec {
       val employment1WithUpdatedStatus =
         Employment(
           "EMPLOYER1",
+          Live,
           Some("12345"),
           now,
           None,
@@ -209,7 +273,19 @@ class EmploymentsSpec extends PlaySpec {
 
       val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
       val employment2 =
-        Employment("EMPLOYER2", Some("12345"), now, None, Seq(annualAccount2CTY), "01", "01", 2, None, false, false)
+        Employment(
+          "EMPLOYER2",
+          Live,
+          Some("12345"),
+          now,
+          None,
+          Seq(annualAccount2CTY),
+          "01",
+          "01",
+          2,
+          None,
+          false,
+          false)
 
       val expectedEmployments =
         employment1.copy(annualAccounts = Seq(annualAccountCTYAvailable, annualAccountPTYTempUnavailable))

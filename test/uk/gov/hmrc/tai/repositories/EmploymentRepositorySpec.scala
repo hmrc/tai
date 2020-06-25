@@ -29,6 +29,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
 import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -47,6 +48,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
   val npsSingleEmployment = Employment(
     "EMPLOYER1",
+    Live,
     Some("0"),
     new LocalDate(2016, 4, 6),
     None,
@@ -61,6 +63,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   val npsDualEmployment = (
     Employment(
       name = "EMPLOYER1",
+      employmentStatus = Live,
       payrollNumber = Some("0"),
       startDate = new LocalDate(2016, 4, 6),
       endDate = None,
@@ -74,6 +77,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
     ),
     Employment(
       name = "EMPLOYER2",
+      employmentStatus = Live,
       payrollNumber = Some("00"),
       startDate = new LocalDate(2016, 4, 6),
       endDate = None,
@@ -207,6 +211,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val expectedEmployments = List(
             Employment(
               "EMPLOYER1",
+              Live,
               Some("0"),
               new LocalDate(2016, 4, 6),
               None,
@@ -274,6 +279,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val expectedEmploymentDetails = List(
             Employment(
               "EMPLOYER1",
+              Live,
               Some("0"),
               new LocalDate(2016, 4, 6),
               None,
@@ -350,6 +356,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val expectedEmploymentDetails = List(
             Employment(
               "EMPLOYER1",
+              Live,
               Some("0"),
               new LocalDate(2016, 4, 6),
               None,
@@ -362,6 +369,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               false),
             Employment(
               "EMPLOYER2",
+              Live,
               Some("00"),
               new LocalDate(2016, 4, 6),
               None,
@@ -429,6 +437,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             val employments = Seq(
               Employment(
                 "EMPLOYER1",
+                Live,
                 Some("12345"),
                 LocalDate.now(),
                 None,
@@ -474,6 +483,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val cyEmployment = Employment(
               "employer1",
+              Live,
               Some("12345"),
               LocalDate.now(),
               None,
@@ -487,6 +497,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val pyEmployment = Employment(
               "employer2",
+              Live,
               Some("123456"),
               LocalDate.now(),
               None,
@@ -533,6 +544,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             val cachedEmployments = List(
               Employment(
                 "employer1",
+                Live,
                 Some("12345"),
                 LocalDate.now(),
                 None,
@@ -550,6 +562,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val expectedEmployment = Employment(
               "employer1",
+              Live,
               Some("12345"),
               LocalDate.now(),
               None,
@@ -594,6 +607,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val cachedEmployments = List(
             Employment(
               "TEST",
+              Live,
               Some("12345"),
               LocalDate.now(),
               None,
@@ -609,6 +623,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             ),
             Employment(
               "TEST1",
+              Live,
               Some("123456"),
               LocalDate.now(),
               None,
@@ -627,6 +642,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val expectedCYEmployments = List(
             Employment(
               "TEST",
+              Live,
               Some("12345"),
               LocalDate.now(),
               None,
@@ -639,6 +655,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               false),
             Employment(
               "TEST1",
+              Live,
               Some("123456"),
               LocalDate.now(),
               None,
@@ -654,6 +671,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val expectedPYEmployments = List(
             Employment(
               "TEST",
+              Live,
               Some("12345"),
               LocalDate.now(),
               None,
@@ -666,6 +684,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               false),
             Employment(
               "TEST1",
+              Live,
               Some("123456"),
               LocalDate.now(),
               None,
@@ -700,6 +719,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val cachedEmployment1 = Employment(
               "employer1",
+              Live,
               Some("1"),
               LocalDate.now(),
               None,
@@ -713,6 +733,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val cachedEmployment2 = Employment(
               "employer2",
+              Live,
               Some("2"),
               LocalDate.now(),
               None,
@@ -813,6 +834,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val employment2 = Employment(
               "employer2",
+              Live,
               Some("00"),
               now,
               None,
@@ -1163,6 +1185,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val emp1 = Employment(
         "TEST",
+        Live,
         Some("12345"),
         LocalDate.now(),
         None,
@@ -1177,6 +1200,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val emp2 = Employment(
         "TEST1",
+        Live,
         Some("123456"),
         LocalDate.now(),
         None,
@@ -1206,6 +1230,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val emp1 = Employment(
         "TEST",
+        Live,
         Some("12345"),
         LocalDate.now(),
         None,
@@ -1220,6 +1245,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val emp2 = Employment(
         "TEST1",
+        Live,
         Some("123456"),
         LocalDate.now(),
         None,
@@ -1291,6 +1317,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
         val emp2015 = Employment(
           "TEST",
+          Live,
           Some("12345"),
           LocalDate.now(),
           None,

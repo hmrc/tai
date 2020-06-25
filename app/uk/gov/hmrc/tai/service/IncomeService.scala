@@ -41,18 +41,21 @@ class IncomeService @Inject()(
   taxAccountRepository: TaxAccountRepository,
   auditor: Auditor) {
 
+  private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
+    taxCodeIncomes.filter(income => income.componentType == incomeType)
+
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
     def filterNonMatchingCeasedEmploymentsWithEndDate(
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
       employments
+        .filter(emp => emp.employmentStatus != Live)
         .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
         .filter(_.endDate.isDefined)
 
     for {
       taxCodeIncomes <- taxCodeIncomes(nino, year)
-      filteredTaxCodeIncomes = taxCodeIncomes.filter(income =>
-        income.status != Live && income.componentType == EmploymentIncome)
+      filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
       employments <- employmentService.employments(nino, year)
       result = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
     } yield result
@@ -66,25 +69,21 @@ class IncomeService @Inject()(
 
     def filterMatchingEmploymentsToIncomeSource(
       employments: Seq[Employment],
-      filteredTaxCodeIncomes: Seq[TaxCodeIncome]): Seq[IncomeSource] =
+      filteredTaxCodeIncomes: Seq[TaxCodeIncome],
+      status: TaxCodeIncomeStatus): Seq[IncomeSource] =
       filteredTaxCodeIncomes.flatMap { income =>
         employments
+          .filter(emp => if (status == NotLive) emp.employmentStatus != Live else emp.employmentStatus == status)
           .filter(emp => income.employmentId.contains(emp.sequenceNumber))
           .map(IncomeSource(income, _))
       }
 
-    def filterTaxCodeIncomes(taxCodeIncomes: Seq[TaxCodeIncome]): Seq[TaxCodeIncome] =
-      if (status == NotLive)
-        taxCodeIncomes.filter(income => income.componentType == incomeType && income.status != Live)
-      else
-        taxCodeIncomes.filter(income => income.componentType == incomeType && income.status == status)
-
     for {
       taxCodeIncomes <- taxCodeIncomes(nino, year)
-      filteredTaxCodeIncomes = filterTaxCodeIncomes(taxCodeIncomes)
+      filteredTaxCodeIncomes = filterIncomesByType(taxCodeIncomes, incomeType)
       employments <- employments(filteredTaxCodeIncomes, nino, year)
-      result = filterMatchingEmploymentsToIncomeSource(employments, filteredTaxCodeIncomes)
-    } yield result
+    } yield
+      filterMatchingEmploymentsToIncomeSource(employments, filterIncomesByType(taxCodeIncomes, incomeType), status)
   }
 
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
@@ -157,24 +156,4 @@ class IncomeService @Inject()(
         case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
       }
     }
-
-  def retrieveTaxCodeIncomeAmount(nino: Nino, employmentId: Int, taxCodeIncomes: Seq[TaxCodeIncome]): BigDecimal = {
-
-    val taxCodeIncome = for {
-      taxCodeIncome <- taxCodeIncomes.find(_.employmentId.contains(employmentId))
-    } yield taxCodeIncome.amount
-
-    taxCodeIncome.getOrElse(0)
-  }
-
-  def retrieveEmploymentAmountYearToDate(nino: Nino, employment: Option[Employment]): BigDecimal = {
-
-    val amountYearToDate = for {
-      employment          <- employment
-      latestAnnualAccount <- employment.latestAnnualAccount
-      latestPayment       <- latestAnnualAccount.latestPayment
-    } yield latestPayment.amountYearToDate
-
-    amountYearToDate.getOrElse(0)
-  }
 }

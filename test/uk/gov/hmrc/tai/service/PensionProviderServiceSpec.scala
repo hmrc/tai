@@ -26,6 +26,7 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
@@ -175,6 +176,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         val currentTaxYear = TaxYear()
         val employment = Employment(
           "TEST",
+          Live,
           Some("12345"),
           LocalDate.now(),
           None,

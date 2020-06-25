@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import org.joda.time.LocalDate
+import play.api.Logger
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
@@ -56,8 +57,16 @@ object TaxCodeIncomeStatus {
     case _                   => throw new IllegalArgumentException("Invalid TaxCodeIncomeStatus")
   }
 
-  implicit val formatTaxCodeIncomeSourceStatusType: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
-    override def reads(json: JsValue): JsSuccess[TaxCodeIncomeStatus] = ???
+  implicit val employmentStatus: Format[TaxCodeIncomeStatus] = new Format[TaxCodeIncomeStatus] {
+    override def reads(json: JsValue): JsResult[TaxCodeIncomeStatus] = json.as[String] match {
+      case "Live"              => JsSuccess(Live)
+      case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
+      case "Ceased"            => JsSuccess(Ceased)
+      case default => {
+        Logger.warn(s"Invalid Employment Status Reads -> $default")
+        throw new RuntimeException("Invalid employment status reads")
+      }
+    }
 
     override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
   }

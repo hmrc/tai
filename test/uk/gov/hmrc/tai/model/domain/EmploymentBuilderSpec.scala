@@ -25,6 +25,7 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
@@ -47,6 +48,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employmentsNoPayroll = List(
           Employment(
             "TestEmp1",
+            Live,
             None,
             LocalDate.parse("2017-07-24"),
             None,
@@ -59,6 +61,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TestEmp2",
+            Live,
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -84,6 +87,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unifiedEmployments must contain(
           Employment(
             "TestEmp1",
+            Live,
             None,
             LocalDate.parse("2017-07-24"),
             None,
@@ -99,6 +103,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unifiedEmployments must contain(
           Employment(
             "TestEmp2",
+            Live,
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -122,6 +127,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employmentsNoPayroll = List(
           Employment(
             "TestEmp1",
+            Live,
             Some("payrollNo88"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -134,6 +140,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TestEmp1",
+            Live,
             Some("payrollNo14"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -157,6 +164,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unifiedEmployments must contain(
           Employment(
             "TestEmp1",
+            Live,
             Some("payrollNo88"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -177,6 +185,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employmentsNoPayroll = List(
           Employment(
             "TestEmp1",
+            Live,
             Some("payrollNo88"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -189,6 +198,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TestEmp2",
+            Live,
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -215,6 +225,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unifiedEmployments must contain(
           Employment(
             "TestEmp1",
+            Live,
             Some("payrollNo88"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -234,6 +245,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unifiedEmployments must contain(
           Employment(
             "TestEmp2",
+            Live,
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -260,6 +272,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employments = List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -272,6 +285,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TEST",
+            Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -293,6 +307,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unified mustBe List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -306,6 +321,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           ),
           Employment(
             "TEST",
+            Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -326,6 +342,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employments = List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -338,6 +355,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TEST",
+            Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -357,6 +375,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unified mustBe List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -370,6 +389,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           ),
           Employment(
             "TEST",
+            Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -391,6 +411,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         val employments = List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -403,6 +424,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false),
           Employment(
             "TEST",
+            Live,
             Some("88888"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -426,6 +448,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         unified mustBe List(
           Employment(
             "TEST",
+            Live,
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
@@ -441,6 +464,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           ),
           Employment(
             "TEST",
+            Live,
             Some("88888"),
             LocalDate.parse("2017-07-24"),
             None,

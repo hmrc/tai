@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentSpec extends PlaySpec {
@@ -115,6 +116,7 @@ class EmploymentSpec extends PlaySpec {
   val singleEmploymentWithAllRefs = List(
     Employment(
       "XXX PPPP",
+      Live,
       Some("64765"),
       new LocalDate(2016, 4, 6),
       None,
@@ -126,10 +128,23 @@ class EmploymentSpec extends PlaySpec {
       false,
       false))
   val singleEmploymentWithMissingPayrollNumber = List(
-    Employment("XXX PPPP", None, new LocalDate(2016, 4, 6), None, Nil, "754", "AZ00070", 2, Some(100), false, false))
+    Employment(
+      "XXX PPPP",
+      Live,
+      None,
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      false,
+      false))
   val singleEmploymentWithEmptyStringPayrollNumber = List(
     Employment(
       "XXX PPPP",
+      Live,
       Some(""),
       new LocalDate(2016, 4, 6),
       None,
@@ -143,6 +158,7 @@ class EmploymentSpec extends PlaySpec {
   val dualEmployment = List(
     Employment(
       "XXX PPPP",
+      Live,
       Some("64765"),
       new LocalDate(2016, 4, 6),
       None,
@@ -155,6 +171,7 @@ class EmploymentSpec extends PlaySpec {
       false),
     Employment(
       "XXX PPPP",
+      Live,
       Some("64766"),
       new LocalDate(2016, 4, 6),
       None,
