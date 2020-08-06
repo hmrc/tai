@@ -18,4 +18,3 @@ package uk.gov.hmrc.tai.model.error
 
 sealed trait EmploymentRetrievalError
 case object EmploymentNotFound extends EmploymentRetrievalError
-case object EmploymentAccountStubbed extends EmploymentRetrievalError

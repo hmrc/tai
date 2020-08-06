@@ -31,7 +31,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
-import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
+import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
@@ -1270,8 +1270,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
     "return Employment stubbed account error type when RTI is Temporarily unavailable" in {
 
-      val annualAccount = createAnnualAccount(TemporarilyUnavailable, taxYear = TaxYear())
-      val employment = npsSingleEmployment.copy(annualAccounts = Seq(annualAccount))
+      val temporaryUnavailableAnnualAccount = createAnnualAccount(TemporarilyUnavailable, taxYear = TaxYear())
+      val employmentWithUnavailableAnnualAccount =
+        npsSingleEmployment.copy(annualAccounts = Seq(temporaryUnavailableAnnualAccount))
 
       val mockRtiConnector = mock[RtiConnector]
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
@@ -1286,14 +1287,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             Matchers.eq(nino),
             Matchers.eq(TaxYear())
           )(any()))
-        .thenReturn(Employments(Seq(employment)))
+        .thenReturn(Employments(Seq(employmentWithUnavailableAnnualAccount)))
 
       val mockCacheConnector = mock[CacheConnector]
-      when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Seq(employment)))
+      when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
+        .thenReturn(Future.successful(Seq(employmentWithUnavailableAnnualAccount)))
       when(
         mockCacheConnector
           .createOrUpdateSeq[Employment](any(), any(), any())(any()))
-        .thenReturn(Future.successful(Seq(employment)))
+        .thenReturn(Future.successful(Seq(employmentWithUnavailableAnnualAccount)))
 
       val mockNpsConnector = mock[NpsConnector]
       when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -1306,7 +1308,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
-      Await.result(sut.employment(nino, 2), 5 seconds) mustBe Left(EmploymentAccountStubbed)
+      Await.result(sut.employment(nino, 2), 5 seconds) mustBe Right(employmentWithUnavailableAnnualAccount)
     }
 
     "get the current year employments from the hod" when {

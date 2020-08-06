@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiCon
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
-import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound, EmploymentRetrievalError}
+import uk.gov.hmrc.tai.model.error.{EmploymentNotFound, EmploymentRetrievalError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
@@ -43,16 +43,12 @@ class EmploymentRepository @Inject()(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
     val taxYear = TaxYear()
     employmentsForYear(nino, taxYear) map { employments =>
-      if (employments.containsTempAccount(taxYear)) {
-        Left(EmploymentAccountStubbed)
-      } else {
-        employments.employmentById(id) match {
-          case Some(employment) => Right(employment)
-          case None => {
-            val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
-            Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
-            Left(EmploymentNotFound)
-          }
+      employments.employmentById(id) match {
+        case Some(employment) => Right(employment)
+        case None => {
+          val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
+          Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+          Left(EmploymentNotFound)
         }
       }
     }
