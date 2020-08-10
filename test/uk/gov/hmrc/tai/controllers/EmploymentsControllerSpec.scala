@@ -20,8 +20,9 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -34,10 +35,28 @@ import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class EmploymentsControllerSpec
+    extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar with MockAuthenticationPredicate {
+
+  implicit val ec = app.injector.instanceOf[ExecutionContext]
+
+  val emp =
+    Employment(
+      "company name",
+      Live,
+      Some("888"),
+      new LocalDate(2017, 5, 26),
+      None,
+      Nil,
+      "",
+      "",
+      2,
+      Some(100),
+      false,
+      true)
 
   "employments" must {
     "return Ok" when {
@@ -282,19 +301,4 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
       }
     }
   }
-
-  private val emp =
-    Employment(
-      "company name",
-      Live,
-      Some("888"),
-      new LocalDate(2017, 5, 26),
-      None,
-      Nil,
-      "",
-      "",
-      2,
-      Some(100),
-      false,
-      true)
 }

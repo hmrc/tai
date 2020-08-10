@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.domain.Nino
@@ -30,8 +29,11 @@ import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
-class EmploymentsController @Inject()(employmentService: EmploymentService, authentication: AuthenticationPredicate)
+class EmploymentsController @Inject()(employmentService: EmploymentService, authentication: AuthenticationPredicate)(
+  implicit ec: ExecutionContext)
     extends BaseController with ApiFormats {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>

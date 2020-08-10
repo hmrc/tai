@@ -1268,7 +1268,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
       Await.result(sut.employment(nino, notFoundEmploymentId), 5 seconds) mustBe Left(EmploymentNotFound)
     }
 
-    "return Employment stubbed account error type when RTI is Temporarily unavailable" in {
+    "return employments with annual accounts with TemporaryUnavailable status type when RTI is temporarily unavailable" in {
 
       val temporaryUnavailableAnnualAccount = createAnnualAccount(TemporarilyUnavailable, taxYear = TaxYear())
       val employmentWithUnavailableAnnualAccount =
