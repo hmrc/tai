@@ -20,7 +20,6 @@ import play.Logger
 import play.api.Play
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
-import play.modules.reactivemongo.MongoDbConnection
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.Cache
 import uk.gov.hmrc.cache.repository.CacheRepository
@@ -37,8 +36,7 @@ class TaiCacheRepository @Inject() extends TimeToLive {
   val repo: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
 }
 @Singleton
-class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig: MongoConfig)
-    extends MongoDbConnection with MongoFormatter {
+class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig: MongoConfig) extends MongoFormatter {
 
   implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(
     Play.current.configuration.underlying).JsonCrypto
