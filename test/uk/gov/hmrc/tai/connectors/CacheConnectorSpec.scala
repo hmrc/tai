@@ -25,7 +25,7 @@ import play.api.Play
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
-import uk.gov.hmrc.cache.repository.CacheRepository
+import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.DatabaseUpdate
@@ -56,7 +56,7 @@ class CacheConnectorSpec
   val mongoKey = "key1"
   val atMost = 5 seconds
 
-  val cacheRepository = mock[CacheRepository]
+  val cacheRepository = mock[CacheMongoRepository]
   val taiCacheRepository = mock[TaiCacheRepository]
 
   def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = {
