@@ -20,8 +20,9 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -30,14 +31,32 @@ import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
-import uk.gov.hmrc.tai.model.error.{EmploymentAccountStubbed, EmploymentNotFound}
+import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class EmploymentsControllerSpec
+    extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar with MockAuthenticationPredicate {
+
+  implicit val ec = app.injector.instanceOf[ExecutionContext]
+
+  val emp =
+    Employment(
+      "company name",
+      Live,
+      Some("888"),
+      new LocalDate(2017, 5, 26),
+      None,
+      Nil,
+      "",
+      "",
+      2,
+      Some(100),
+      false,
+      true)
 
   "employments" must {
     "return Ok" when {
@@ -190,21 +209,6 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
         verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
       }
     }
-
-    "return bad gateway" when {
-      "RTI stubbed account exists" in {
-        val mockEmploymentService = mock[EmploymentService]
-        when(mockEmploymentService.employment(any(), any())(any()))
-          .thenReturn(Future.successful(Left(EmploymentAccountStubbed)))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
-        val result = sut.employment(nino, 3)(FakeRequest())
-
-        status(result) mustBe BAD_GATEWAY
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
-      }
-    }
-
   }
 
   "endEmployment" must {
@@ -297,19 +301,4 @@ class EmploymentsControllerSpec extends PlaySpec with MockitoSugar with MockAuth
       }
     }
   }
-
-  private val emp =
-    Employment(
-      "company name",
-      Live,
-      Some("888"),
-      new LocalDate(2017, 5, 26),
-      None,
-      Nil,
-      "",
-      "",
-      2,
-      Some(100),
-      false,
-      true)
 }
