@@ -37,7 +37,7 @@ class EmploymentRepository @Inject()(
   npsConnector: NpsConnector,
   employmentBuilder: EmploymentBuilder) {
 
-  private val EmploymentMongoKey = "EmploymentData"
+  private def employmentMongoKey(taxYear: TaxYear) = s"EmploymentData-${taxYear.year}"
 
   def employment(nino: Nino, id: Int)(
     implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
@@ -55,7 +55,7 @@ class EmploymentRepository @Inject()(
   }
 
   def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
-    fetchEmploymentFromCache(nino) flatMap {
+    fetchEmploymentFromCache(nino, taxYear) flatMap {
       case Employments(Nil) => hodCallWithCaching(nino, taxYear)
       case cachedEmployments @ Employments(_) =>
         cachedEmployments.accountsForYear(taxYear) match {
@@ -74,12 +74,12 @@ class EmploymentRepository @Inject()(
     implicit hc: HeaderCarrier): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap { employmentsWithAccounts =>
       val mergedEmployments = cachedEmployments.mergeEmployments(employmentsWithAccounts.employments)
-      addEmploymentsToCache(nino, mergedEmployments).map(_ => employmentsWithAccounts)
+      addEmploymentsToCache(nino, mergedEmployments, taxYear).map(_ => employmentsWithAccounts)
     }
 
   private def hodCallWithCaching(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap (employmentsWithAccounts =>
-      addEmploymentsToCache(nino, employmentsWithAccounts.employments).map(_ => employmentsWithAccounts))
+      addEmploymentsToCache(nino, employmentsWithAccounts.employments, taxYear).map(_ => employmentsWithAccounts))
 
   private def rtiCallWithCacheUpdate(
     nino: Nino,
@@ -106,7 +106,7 @@ class EmploymentRepository @Inject()(
       if (rtiUpdatedEmployments != originalEmployments) {
         val mergedEmployments =
           cachedEmployments.mergeEmploymentsForTaxYear(rtiUpdatedEmployments.employments, taxYear)
-        addEmploymentsToCache(nino, mergedEmployments).map(_ => rtiUpdatedEmployments)
+        addEmploymentsToCache(nino, mergedEmployments, taxYear).map(_ => rtiUpdatedEmployments)
       } else {
         Future.successful(originalEmployments)
       }
@@ -146,13 +146,13 @@ class EmploymentRepository @Inject()(
     taxYear: TaxYear): Seq[AnnualAccount] =
     employments map (employment => AnnualAccount(employment.key, taxYear, rtiStatus))
 
-  private def addEmploymentsToCache(nino: Nino, employments: Seq[Employment])(
+  private def addEmploymentsToCache(nino: Nino, employments: Seq[Employment], taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    cacheConnector.createOrUpdateSeq[Employment](CacheId(nino), employments, EmploymentMongoKey)(
+    cacheConnector.createOrUpdateSeq[Employment](CacheId(nino), employments, employmentMongoKey(taxYear))(
       EmploymentMongoFormatters.formatEmployment)
 
-  private def fetchEmploymentFromCache(nino: Nino)(implicit hc: HeaderCarrier): Future[Employments] =
+  private def fetchEmploymentFromCache(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
     cacheConnector
-      .findSeq[Employment](CacheId(nino), EmploymentMongoKey)(EmploymentMongoFormatters.formatEmployment) map (Employments(
+      .findSeq[Employment](CacheId(nino), employmentMongoKey(taxYear))(EmploymentMongoFormatters.formatEmployment) map (Employments(
       _))
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.repositories
 import java.io.File
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.Matchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
 import org.scalatest.mockito.MockitoSugar
@@ -45,6 +45,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
+  val employmentDataKey = s"EmploymentData-${currentTaxYear.year}"
 
   val npsSingleEmployment = Employment(
     "EMPLOYER1",
@@ -94,7 +95,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
     key: String = "0-0-0",
-    taxYear: TaxYear = TaxYear(2017)): AnnualAccount =
+    taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
 
   "employmentsForYear" should {
@@ -111,8 +112,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val mockCacheConnector = mock[CacheConnector]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-          when(mockCacheConnector
-            .createOrUpdateSeq[Employment](Matchers.eq(CacheId(nino)), Matchers.eq(expectedEmployments), any())(any()))
+          when(
+            mockCacheConnector
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(expectedEmployments), any())(any()))
             .thenReturn(Future.successful(expectedEmployments))
 
           val mockNpsConnector = mock[NpsConnector]
@@ -122,10 +124,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           val mockEmploymentBuilder = mock[EmploymentBuilder]
           when(
             mockEmploymentBuilder.combineAccountsWithEmployments(
-              Matchers.eq(Seq(npsSingleEmployment)),
-              Matchers.eq(Seq(annualAccount)),
-              Matchers.eq(nino),
-              Matchers.eq(TaxYear(2017)))(any()))
+              meq(Seq(npsSingleEmployment)),
+              meq(Seq(annualAccount)),
+              meq(nino),
+              meq(currentTaxYear))(any()))
             .thenReturn(Employments(expectedEmployments))
 
           val sut = testRepository(
@@ -134,15 +136,12 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
 
           result mustBe Employments(expectedEmployments)
 
           verify(mockCacheConnector, times(1))
-            .createOrUpdateSeq[Employment](
-              Matchers.eq(CacheId(nino)),
-              Matchers.eq(expectedEmployments),
-              Matchers.eq("EmploymentData"))(any())
+            .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(expectedEmployments), meq(employmentDataKey))(any())
         }
 
         "a call to rti results in a ServiceUnavailableError response" in {
@@ -160,18 +159,19 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val mockCacheConnector = mock[CacheConnector]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
-          when(mockCacheConnector
-            .createOrUpdateSeq[Employment](Matchers.eq(CacheId(nino)), Matchers.eq(expectedEmployments), any())(any()))
+          when(
+            mockCacheConnector
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(expectedEmployments), any())(any()))
             .thenReturn(Future.successful(expectedEmployments))
 
           val mockEmploymentBuilder = mock[EmploymentBuilder]
           when(
             mockEmploymentBuilder
               .combineAccountsWithEmployments(
-                Matchers.eq(Seq(npsSingleEmployment)),
-                Matchers.eq(Seq(annualAccount)),
-                Matchers.eq(nino),
-                Matchers.eq(TaxYear(2017)))(any()))
+                meq(Seq(npsSingleEmployment)),
+                meq(Seq(annualAccount)),
+                meq(nino),
+                meq(currentTaxYear))(any()))
             .thenReturn(Employments(expectedEmployments))
 
           val sut = testRepository(
@@ -180,15 +180,12 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
 
           result mustBe Employments(expectedEmployments)
 
           verify(mockCacheConnector, times(1))
-            .createOrUpdateSeq[Employment](
-              Matchers.eq(CacheId(nino)),
-              Matchers.eq(expectedEmployments),
-              Matchers.eq("EmploymentData"))(any())
+            .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(expectedEmployments), meq(employmentDataKey))(any())
 
         }
 
@@ -203,7 +200,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val annualAccount = AnnualAccount(
             key = "0-0-0",
-            taxYear = TaxYear(2017),
+            taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments,
             endOfTaxYearUpdates = eyus)
@@ -227,10 +224,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           when(
             mockEmploymentBuilder
               .combineAccountsWithEmployments(
-                Matchers.eq(Seq(npsSingleEmployment)),
-                Matchers.eq(Seq(annualAccount)),
-                Matchers.eq(nino),
-                Matchers.eq(TaxYear(2017)))(any()))
+                meq(Seq(npsSingleEmployment)),
+                meq(Seq(annualAccount)),
+                meq(nino),
+                meq(currentTaxYear))(any()))
             .thenReturn(Employments(expectedEmployments))
 
           val mockRtiConnector = mock[RtiConnector]
@@ -251,7 +248,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
 
           result mustBe Employments(expectedEmployments)
         }
@@ -271,7 +268,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val annualAccount = AnnualAccount(
             key = "0-0-0",
-            taxYear = TaxYear(2017),
+            taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments,
             endOfTaxYearUpdates = eyus)
@@ -295,10 +292,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           when(
             mockEmploymentBuilder
               .combineAccountsWithEmployments(
-                Matchers.eq(Seq(npsSingleEmployment)),
-                Matchers.eq(Seq(annualAccount)),
-                Matchers.eq(nino),
-                Matchers.eq(TaxYear(2017)))(any()))
+                meq(Seq(npsSingleEmployment)),
+                meq(Seq(annualAccount)),
+                meq(nino),
+                meq(currentTaxYear))(any()))
             .thenReturn(Employments(expectedEmploymentDetails))
 
           val mockRtiConnector = mock[RtiConnector]
@@ -319,7 +316,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
           result mustBe Employments(expectedEmploymentDetails)
         }
 
@@ -341,14 +338,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
           val annualAccount1 = AnnualAccount(
             key = "0-0-0",
-            taxYear = TaxYear(2017),
+            taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments1,
             endOfTaxYearUpdates = eyus1)
 
           val annualAccount2 = AnnualAccount(
             key = "00-00-00",
-            taxYear = TaxYear(2017),
+            taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments2,
             endOfTaxYearUpdates = eyus2)
@@ -386,10 +383,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           when(
             mockEmploymentBuilder
               .combineAccountsWithEmployments(
-                Matchers.eq(Seq(npsDualEmployment._1, npsDualEmployment._2)),
-                Matchers.eq(Seq(annualAccount1, annualAccount2)),
-                Matchers.eq(nino),
-                Matchers.eq(TaxYear(2017))
+                meq(Seq(npsDualEmployment._1, npsDualEmployment._2)),
+                meq(Seq(annualAccount1, annualAccount2)),
+                meq(nino),
+                meq(currentTaxYear)
               )(any()))
             .thenReturn(Employments(expectedEmploymentDetails))
 
@@ -411,7 +408,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5 seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
           result mustBe Employments(expectedEmploymentDetails)
         }
 
@@ -425,7 +422,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               .thenReturn(Future.failed(new NotFoundException("nothing")))
 
             val sut = testRepository(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
-            the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
           }
         }
       }
@@ -441,7 +438,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
                 Some("12345"),
                 LocalDate.now(),
                 None,
-                List(AnnualAccount("0", TaxYear(2017), Available, Nil, Nil)),
+                List(AnnualAccount("0", currentTaxYear, Available, Nil, Nil)),
                 "",
                 "",
                 2,
@@ -459,21 +456,18 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
 
             result mustBe Employments(employments)
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
               .getPaymentsForYear(any(), any())(any())
 
             verify(mockCacheConnector, times(0))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                Matchers.eq(employments),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(employments), meq(employmentDataKey))(any())
 
           }
         }
@@ -524,16 +518,13 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             result mustBe Employments(List(cyEmployment))
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
               .getPaymentsForYear(any(), any())(any())
 
             verify(mockCacheConnector, times(0))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                Matchers.eq(Seq(cyEmployment)),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(Seq(cyEmployment)), meq(employmentDataKey))(any())
 
           }
         }
@@ -589,16 +580,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             result mustBe Employments(List(expectedEmployment))
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
               .getPaymentsForYear(any(), any())(any())
 
             verify(mockCacheConnector, times(0))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                Matchers.eq(Seq(expectedEmployment)),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(Seq(expectedEmployment)), meq(employmentDataKey))(
+                any())
           }
         }
 
@@ -749,7 +738,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
-              TaxYear(2017),
+              currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
@@ -767,10 +756,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             when(
               mockEmploymentBuilder
                 .combineAccountsWithEmployments(
-                  Matchers.eq(Seq(npsSingleEmployment)),
-                  Matchers.eq(Seq(expectedAnnualAccount)),
-                  Matchers.eq(nino),
-                  Matchers.eq(TaxYear(2017))
+                  meq(Seq(npsSingleEmployment)),
+                  meq(Seq(expectedAnnualAccount)),
+                  meq(nino),
+                  meq(currentTaxYear)
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
@@ -795,23 +784,21 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(1))
-              .getEmploymentDetails(Matchers.eq(nino), Matchers.eq(2017))(any())
+              .getEmploymentDetails(meq(nino), meq(currentTaxYear.year))(any())
 
             verify(mockRtiConnector, times(1))
-              .getPaymentsForYear(Matchers.eq(nino), Matchers.eq(TaxYear(2017)))(any())
+              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any())
 
             verify(mockCacheConnector, times(1))
-              .findSeq[Employment](Matchers.eq(CacheId(nino)), any())(any())
+              .findSeq[Employment](meq(CacheId(nino)), any())(any())
 
             verify(mockCacheConnector, times(1))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                employmentsCaptor.capture(),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), employmentsCaptor.capture(), meq(employmentDataKey))(
+                any())
 
             val cachedEmployments = employmentsCaptor.getValue
             cachedEmployments.size mustBe 3
@@ -853,7 +840,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
-              TaxYear(2017),
+              currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
@@ -873,10 +860,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             when(
               mockEmploymentBuilder
                 .combineAccountsWithEmployments(
-                  Matchers.eq(Seq(npsSingleEmployment)),
-                  Matchers.eq(Seq(expectedAnnualAccount)),
-                  Matchers.eq(nino),
-                  Matchers.eq(TaxYear(2017))
+                  meq(Seq(npsSingleEmployment)),
+                  meq(Seq(expectedAnnualAccount)),
+                  meq(nino),
+                  meq(currentTaxYear)
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
@@ -901,23 +888,21 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(1))
-              .getEmploymentDetails(Matchers.eq(nino), Matchers.eq(2017))(any())
+              .getEmploymentDetails(meq(nino), meq(currentTaxYear.year))(any())
 
             verify(mockRtiConnector, times(1))
-              .getPaymentsForYear(Matchers.eq(nino), Matchers.eq(TaxYear(2017)))(any())
+              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any())
 
             verify(mockCacheConnector, times(1))
-              .findSeq[Employment](Matchers.eq(CacheId(nino)), any())(any())
+              .findSeq[Employment](meq(CacheId(nino)), any())(any())
 
             verify(mockCacheConnector, times(1))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                employmentsCaptor.capture(),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), employmentsCaptor.capture(), meq(employmentDataKey))(
+                any())
 
             val actualCached = employmentsCaptor.getValue
             actualCached.size mustBe 2
@@ -938,7 +923,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
-              TaxYear(2017),
+              currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
@@ -954,10 +939,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             when(
               mockEmploymentBuilder
                 .combineAccountsWithEmployments(
-                  Matchers.eq(Seq(cachedEmployment)),
-                  Matchers.eq(Seq(expectedAnnualAccount)),
-                  Matchers.eq(nino),
-                  Matchers.eq(TaxYear(2017))
+                  meq(Seq(cachedEmployment)),
+                  meq(Seq(expectedAnnualAccount)),
+                  meq(nino),
+                  meq(currentTaxYear)
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
@@ -979,17 +964,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockCacheConnector, times(1))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                employmentsCaptor.capture(),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), employmentsCaptor.capture(), meq(employmentDataKey))(
+                any())
 
             employmentsCaptor.getValue mustBe expectedEmployments
 
@@ -1002,7 +985,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
-              TaxYear(2017),
+              currentTaxYear,
               Unavailable,
               List(),
               List()
@@ -1015,10 +998,10 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             when(
               mockEmploymentBuilder
                 .combineAccountsWithEmployments(
-                  Matchers.eq(Seq(cachedEmployment)),
-                  Matchers.eq(Seq(expectedAnnualAccount)),
-                  Matchers.eq(nino),
-                  Matchers.eq(TaxYear(2017))
+                  meq(Seq(cachedEmployment)),
+                  meq(Seq(expectedAnnualAccount)),
+                  meq(nino),
+                  meq(currentTaxYear)
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
@@ -1040,17 +1023,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockCacheConnector, times(1))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                employmentsCaptor.capture(),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), employmentsCaptor.capture(), meq(employmentDataKey))(
+                any())
 
             employmentsCaptor.getValue mustBe expectedEmployments
 
@@ -1076,14 +1057,14 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(Seq(cachedEmployment))
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockCacheConnector, times(0))
-              .createOrUpdateSeq[Employment](Matchers.eq(CacheId(nino)), any(), Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), any(), meq(employmentDataKey))(any())
           }
         }
 
@@ -1097,7 +1078,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount1, cachedAnnualAccount2))
             val expectedAnnualAccount = AnnualAccount(
               "0-0-0",
-              TaxYear(2017),
+              currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
@@ -1114,9 +1095,9 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               mockEmploymentBuilder
                 .combineAccountsWithEmployments(
                   any(),
-                  Matchers.eq(Seq(expectedAnnualAccount)),
-                  Matchers.eq(nino),
-                  Matchers.eq(TaxYear(2017))
+                  meq(Seq(expectedAnnualAccount)),
+                  meq(nino),
+                  meq(currentTaxYear)
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
@@ -1137,17 +1118,15 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
-              .getEmploymentDetails(Matchers.eq(nino), any())(any())
+              .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockCacheConnector, times(1))
-              .createOrUpdateSeq[Employment](
-                Matchers.eq(CacheId(nino)),
-                employmentsCaptor.capture(),
-                Matchers.eq("EmploymentData"))(any())
+              .createOrUpdateSeq[Employment](meq(CacheId(nino)), employmentsCaptor.capture(), meq(employmentDataKey))(
+                any())
 
             val actualCached = employmentsCaptor.getValue
             actualCached.size mustBe 1
@@ -1167,7 +1146,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             .thenReturn(Future.successful(Seq(cachedEmployment)))
 
           val sut = testRepository(cacheConnector = mockCacheConnector)
-          val result = Await.result(sut.employmentsForYear(nino, TaxYear(2017)), 5.seconds)
+          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
 
           result mustBe Employments(Seq(cachedEmployment))
         }
@@ -1284,8 +1263,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
           .combineAccountsWithEmployments(
             any(),
             any(),
-            Matchers.eq(nino),
-            Matchers.eq(TaxYear())
+            meq(nino),
+            meq(TaxYear())
           )(any()))
         .thenReturn(Employments(Seq(employmentWithUnavailableAnnualAccount)))
 
@@ -1334,7 +1313,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
 
         val expectedAnnualAccount = AnnualAccount(
           "0-0-0",
-          TaxYear(2017),
+          currentTaxYear,
           Available,
           List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
           List(
@@ -1351,8 +1330,8 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
             .combineAccountsWithEmployments(
               any(),
               any(),
-              Matchers.eq(nino),
-              Matchers.eq(TaxYear())
+              meq(nino),
+              meq(TaxYear())
             )(any()))
           .thenReturn(Employments(Seq(expectedEmployment)))
 
@@ -1380,7 +1359,7 @@ class EmploymentRepositorySpec extends PlaySpec with MockitoSugar {
         result mustBe Right(expectedEmployment)
 
         verify(mockNpsConnector, times(1))
-          .getEmploymentDetails(org.mockito.Matchers.eq(nino), org.mockito.Matchers.eq(TaxYear().year))(any())
+          .getEmploymentDetails(meq(nino), meq(TaxYear().year))(any())
       }
     }
   }
