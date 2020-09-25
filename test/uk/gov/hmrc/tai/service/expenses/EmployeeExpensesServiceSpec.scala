@@ -51,7 +51,7 @@ class EmployeeExpensesServiceSpec
     iabdConnector = mockIabdConnector,
     featureTogglesConfig = mockFeaturesToggle)
 
-  private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100)
+  private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
 
   private val validNpsIabd: List[NpsIabdRoot] = List(

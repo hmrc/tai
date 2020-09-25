@@ -59,7 +59,7 @@ class EmployeeExpensesController @Inject()(
             nino = nino,
             taxYear = year,
             version = iabdUpdateExpensesRequest.version,
-            expensesData = UpdateIabdEmployeeExpense(iabdUpdateExpensesRequest.grossAmount),
+            expensesData = UpdateIabdEmployeeExpense(iabdUpdateExpensesRequest.grossAmount, Some(51)),
             iabd = iabd
           )
           .map { value =>

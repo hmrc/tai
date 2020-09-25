@@ -412,7 +412,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               year = taxYear,
               iabdType = iabdType,
               version = 1,
-              expensesData = List(UpdateIabdEmployeeExpense(100)),
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
             )(hc),
             5 seconds
@@ -442,7 +442,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             year = taxYear,
             iabdType = iabdType,
             version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100)),
+            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
             apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
           )(hc)
 
