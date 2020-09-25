@@ -46,6 +46,7 @@ GET           /:nino/employments/year/:year/status/ceased                       
 
 #Expenses
 POST          /:nino/tax-account/:year/expenses/employee-expenses/:iabd                                               @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.updateEmployeeExpensesData(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, iabd: Int)
+POST          /:nino/tax-account/:year/expenses/working-from-home-employee-expenses/:iabd                             @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.updateWorkingFromHomeExpenses(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, iabd: Int)
 GET           /:nino/tax-account/:year/expenses/employee-expenses/:iabd                                               @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int)
 
 #Coding Components

@@ -16,27 +16,22 @@
 
 package uk.gov.hmrc.tai.controllers.expenses
 
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
 
@@ -46,8 +41,8 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
     new EmployeeExpensesController(authentication, employeeExpensesService = mockEmployeeExpensesService)
 
   private val iabd = 56
-  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount = 100)
-
+  val grossAmount = 100
+  private val iabdUpdateExpensesRequest = IabdUpdateExpensesRequest(1, grossAmount)
   private val taxYear = 2017
 
   private val validNpsIabd = List(
@@ -62,12 +57,17 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
 
   "updateEmployeeExpensesData" must {
 
+    val updateIabdEmployeeExpenseInternet =
+      UpdateIabdEmployeeExpense(grossAmount, Some(EmployeeExpensesController.internet))
+
     "return NO CONTENT" when {
       "a valid update amount is provided and a OK response is returned" in {
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -79,7 +79,9 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
           .thenReturn(Future.successful(HttpResponse(204)))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -91,7 +93,9 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
           .thenReturn(Future.successful(HttpResponse(202)))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -105,7 +109,9 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(""))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -119,7 +125,9 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
           .withHeaders(("content-type", "application/json"))
 
-        when(mockEmployeeExpensesService.updateEmployeeExpensesData(any(), any(), any(), any(), any())(any()))
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500)))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -127,7 +135,88 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
+  }
 
+  "updateWorkingFromHomeExpenses" must {
+
+    val updateIabdEmployeeExpenseWFH =
+      UpdateIabdEmployeeExpense(grossAmount, Some(EmployeeExpensesController.workingFromHome))
+
+    "return NO CONTENT" when {
+      "a valid update amount is provided and a OK response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
+
+        val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a NO CONTENT response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(204)))
+
+        val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+
+      "a valid update amount is provided and a ACCEPTED response is returned" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(202)))
+
+        val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
+
+        status(result) mustBe NO_CONTENT
+      }
+    }
+
+    "return BAD REQUEST" when {
+      "invalid update amount is provided" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(""))
+          .withHeaders(("content-type", "application/json"))
+
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200)))
+
+        val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
+
+        status(result) mustBe BAD_REQUEST
+      }
+    }
+
+    "return INTERNAL SERVER ERROR" when {
+      "flat rate expenses update exception has been thrown" in {
+        val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), Json.toJson(iabdUpdateExpensesRequest))
+          .withHeaders(("content-type", "application/json"))
+
+        when(
+          mockEmployeeExpensesService
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(500)))
+
+        val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+      }
+    }
   }
 
   "getEmployeeExpensesData" must {
