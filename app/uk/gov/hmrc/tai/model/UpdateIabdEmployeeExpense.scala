@@ -23,7 +23,7 @@ import play.api.libs.json._
   *
   * @param grossAmount
   */
-case class UpdateIabdEmployeeExpense(grossAmount: Int) {
+case class UpdateIabdEmployeeExpense(grossAmount: Int, source: Option[Int]) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
 }
