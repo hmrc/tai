@@ -23,7 +23,6 @@ import akka.util.ByteString
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
@@ -37,7 +36,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes._
 import uk.gov.hmrc.tai.model.fileupload.EnvelopeSummary
 import uk.gov.hmrc.tai.model.fileupload.formatters.FileUploadFormatters
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 @Singleton
@@ -46,7 +45,7 @@ class FileUploadConnector @Inject()(
   httpClient: HttpClient,
   wsClient: WSClient,
   urls: FileUploadUrls,
-  config: FileUploadConfig) {
+  config: FileUploadConfig)(implicit ec: ExecutionContext) {
 
   implicit val scheduler = ActorSystem().scheduler
 

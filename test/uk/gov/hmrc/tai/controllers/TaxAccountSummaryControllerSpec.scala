@@ -40,8 +40,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
-class TaxAccountSummaryControllerSpec
-    extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
+class TaxAccountSummaryControllerSpec extends ControllerBaseSpec with NpsExceptions {
 
   "taxAccountSummaryForYear" must {
     "return the tax summary for the given year" when {
@@ -89,6 +88,6 @@ class TaxAccountSummaryControllerSpec
   private def createSUT(
     taxAccountSummaryService: TaxAccountSummaryService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaxAccountSummaryController(taxAccountSummaryService, authentication)
+    new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
 
 }

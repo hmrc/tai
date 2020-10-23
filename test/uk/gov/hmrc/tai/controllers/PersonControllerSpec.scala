@@ -39,7 +39,7 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class PersonControllerSpec extends PlaySpec with MockAuthenticationPredicate with MockitoSugar {
+class PersonControllerSpec extends ControllerBaseSpec {
 
   "taxPayer method" should {
     "return 200" when {
@@ -102,5 +102,6 @@ class PersonControllerSpec extends PlaySpec with MockAuthenticationPredicate wit
 
   private def createSUT(
     authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-    personService: PersonService = mock[PersonService]) = new PersonController(authenticationPredicate, personService)
+    personService: PersonService = mock[PersonService]) =
+    new PersonController(authenticationPredicate, personService, cc)
 }

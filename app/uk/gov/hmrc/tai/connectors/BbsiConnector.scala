@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -28,10 +28,9 @@ import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiHodFormatters
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-
 @Singleton
-class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig) {
+class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(
+  implicit ec: ExecutionContext) {
 
   def createHeader: HeaderCarrier =
     HeaderCarrier(

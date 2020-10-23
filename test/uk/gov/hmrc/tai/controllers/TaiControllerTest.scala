@@ -19,29 +19,22 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import play.mvc.Http.Status
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter with MockAuthenticationPredicate {
+class TaiControllerTest extends ControllerBaseSpec {
 
   "getTaiRoot" should {
 
@@ -233,5 +226,5 @@ class TaiControllerTest extends PlaySpec with MockitoSugar with MongoFormatter w
     taxAccountService: TaxAccountService,
     metrics: Metrics,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaiController(taxAccountService, metrics, authentication)
+    new TaiController(taxAccountService, metrics, authentication, cc)
 }

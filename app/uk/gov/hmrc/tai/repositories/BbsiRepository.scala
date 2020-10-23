@@ -23,12 +23,12 @@ import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector, CacheId}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) {
+class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector)(
+  implicit ec: ExecutionContext) {
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 

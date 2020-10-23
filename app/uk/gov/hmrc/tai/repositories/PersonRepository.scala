@@ -22,12 +22,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDetailsUrls, httpHandler: HttpHandler) {
+class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDetailsUrls, httpHandler: HttpHandler)(
+  implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
 

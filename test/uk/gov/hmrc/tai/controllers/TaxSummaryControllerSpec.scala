@@ -37,7 +37,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class TaxSummaryControllerSpec extends ControllerBaseSpec {
 
   "updateEmployments " must {
     "update the estimated pay when user is doing edit employments successfully " in {
@@ -145,5 +145,5 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
     taxAccountService: TaxAccountService,
     metrics: Metrics,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaxSummaryController(taiService, taxAccountService, metrics, authentication)
+    new TaxSummaryController(taiService, taxAccountService, metrics, authentication, cc)
 }

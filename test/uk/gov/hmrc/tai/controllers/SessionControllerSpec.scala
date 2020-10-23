@@ -27,10 +27,10 @@ import uk.gov.hmrc.tai.repositories.SessionRepository
 
 import scala.concurrent.Future
 
-class SessionControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class SessionControllerSpec extends ControllerBaseSpec {
 
   private def createSUT(sessionRepository: SessionRepository) =
-    new SessionController(sessionRepository, loggedInAuthenticationPredicate)
+    new SessionController(sessionRepository, loggedInAuthenticationPredicate, cc)
 
   val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 

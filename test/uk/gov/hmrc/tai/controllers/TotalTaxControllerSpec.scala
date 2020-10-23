@@ -18,20 +18,12 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.Matchers
 import org.mockito.Matchers.any
-import scala.language.postfixOps
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, LockedException}
+import uk.gov.hmrc.http.{BadRequestException, LockedException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -40,9 +32,9 @@ import uk.gov.hmrc.tai.util.NpsExceptions
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
+import scala.language.postfixOps
 
-class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
+class TotalTaxControllerSpec extends ControllerBaseSpec with NpsExceptions {
 
   "totalTax" must {
     "return the total tax details for the given year" in {
@@ -197,6 +189,6 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
   private def createSUT(
     totalTaxService: TotalTaxService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TotalTaxController(totalTaxService, authentication)
+    new TotalTaxController(totalTaxService, authentication, cc)
 
 }

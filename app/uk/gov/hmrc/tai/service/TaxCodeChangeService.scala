@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -31,14 +30,15 @@ import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(
   taxCodeChangeConnector: TaxCodeChangeConnector,
   auditor: Auditor,
-  incomeService: IncomeService)
-    extends TaxCodeChangeService with TaxCodeHistoryConstants {
+  incomeService: IncomeService)(
+  implicit ec: ExecutionContext
+) extends TaxCodeChangeService with TaxCodeHistoryConstants {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     taxCodeHistory(nino, TaxYear())

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import java.nio.file.{Files, Paths}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any

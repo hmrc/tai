@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{HodsSource, TaiConstants}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxAccountConnector @Inject()(
@@ -41,7 +40,7 @@ class TaxAccountConnector @Inject()(
   iabdUrls: IabdUrls,
   IabdUpdateAmountFormats: IabdUpdateAmountFormats,
   httpHandler: HttpHandler,
-  featureTogglesConfig: FeatureTogglesConfig)
+  featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
     extends HodsSource {
 
   def hcWithHodHeaders(implicit hc: HeaderCarrier): HeaderCarrier =

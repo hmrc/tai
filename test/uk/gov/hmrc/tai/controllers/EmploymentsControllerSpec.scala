@@ -20,14 +20,10 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
@@ -35,13 +31,10 @@ import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
-class EmploymentsControllerSpec
-    extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar with MockAuthenticationPredicate {
-
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
+class EmploymentsControllerSpec extends ControllerBaseSpec {
 
   val emp =
     Employment(
@@ -58,14 +51,15 @@ class EmploymentsControllerSpec
       false,
       true)
 
+  val mockEmploymentService: EmploymentService = mock[EmploymentService]
+
+  val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
+
   "employments" must {
     "return Ok" when {
       "called with a valid nino and year" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.successful(Nil))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe OK
@@ -73,11 +67,8 @@ class EmploymentsControllerSpec
     }
     "return a valid API json response" when {
       "called with a valid nino and year" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.successful(List(emp)))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
         val jsonResult = Json.obj(
           "data" -> Json.obj("employments" -> Json.arr(Json.obj(
@@ -102,21 +93,15 @@ class EmploymentsControllerSpec
     }
     "return a non success http response" when {
       "the employments are not found" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new NotFoundException("employment not found")))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
       "the employments service returns a bad request exception" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new BadRequestException("no employments recorded for this individual")))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
@@ -124,11 +109,8 @@ class EmploymentsControllerSpec
 
       }
       "the employments service returns an error" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employments(any(), any())(any()))
           .thenReturn(Future.failed(new InternalServerException("employment service failed")))
-
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -139,11 +121,9 @@ class EmploymentsControllerSpec
   "employment" must {
     "return ok" when {
       "called with valid nino, year and id" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
           .thenReturn(Future.successful(Right(emp)))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nino, 2)(FakeRequest())
 
         val jsonResult = Json.obj(
@@ -172,11 +152,9 @@ class EmploymentsControllerSpec
 
     "return not found" when {
       "called with valid nino, year and id but id doesn't present" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
           .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
@@ -184,11 +162,9 @@ class EmploymentsControllerSpec
       }
 
       "throw not found exception" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
           .thenReturn(Future.failed(new NotFoundException("")))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
@@ -198,11 +174,9 @@ class EmploymentsControllerSpec
 
     "return internal server" when {
       "employment service throws an error" in {
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.employment(any(), any())(any()))
           .thenReturn(Future.failed(new InternalServerException("")))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -218,11 +192,9 @@ class EmploymentsControllerSpec
         val json = Json.toJson(employment)
         val envelopeId = "EnvelopeId"
 
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.endEmployment(any(), any(), any())(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.endEmployment(nino, 3)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
@@ -240,11 +212,9 @@ class EmploymentsControllerSpec
         val employment = AddEmployment("employerName", new LocalDate("2017-05-05"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(employment)
 
-        val mockEmploymentService = mock[EmploymentService]
         when(mockEmploymentService.addEmployment(Matchers.eq(nino), Matchers.eq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.addEmployment(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
@@ -262,12 +232,10 @@ class EmploymentsControllerSpec
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
         val id = 1
 
-        val mockEmploymentService = mock[EmploymentService]
         when(
           mockEmploymentService.incorrectEmployment(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.incorrectEmployment(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment))
             .withHeaders(("content-type", "application/json")))
@@ -285,13 +253,11 @@ class EmploymentsControllerSpec
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
         val taxYear = TaxYear(2016)
 
-        val mockEmploymentService = mock[EmploymentService]
         when(
           mockEmploymentService
             .updatePreviousYearIncome(Matchers.eq(nino), Matchers.eq(taxYear), Matchers.eq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate)
         val result = sut.updatePreviousYearIncome(nino, taxYear)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment))
             .withHeaders(("content-type", "application/json")))

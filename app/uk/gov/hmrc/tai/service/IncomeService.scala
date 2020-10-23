@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IncomeService @Inject()(
@@ -39,7 +38,7 @@ class IncomeService @Inject()(
   citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
   taxAccountRepository: TaxAccountRepository,
-  auditor: Auditor) {
+  auditor: Auditor)(implicit ec: ExecutionContext) {
 
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)

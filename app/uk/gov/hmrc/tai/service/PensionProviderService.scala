@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -29,13 +28,13 @@ import uk.gov.hmrc.tai.repositories.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PensionProviderService @Inject()(
   iFormSubmissionService: IFormSubmissionService,
   employmentRepository: EmploymentRepository,
-  auditable: Auditor) {
+  auditable: Auditor)(implicit ec: ExecutionContext) {
 
   def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] =
     iFormSubmissionService.uploadIForm(

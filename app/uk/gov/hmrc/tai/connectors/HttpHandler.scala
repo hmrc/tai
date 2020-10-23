@@ -93,7 +93,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
     }
 
-    httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, fromLoggingDetails) map { httpResponse =>
+    httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, ec) map { httpResponse =>
       httpResponse status match {
         case OK | CREATED | ACCEPTED | NO_CONTENT => {
           metrics.incrementSuccessCounter(api)

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -26,7 +25,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
@@ -34,8 +33,9 @@ class TaxAccountSummaryService @Inject()(
   taxAccountSummaryRepository: TaxAccountSummaryRepository,
   codingComponentService: CodingComponentService,
   incomeService: IncomeService,
-  totalTaxService: TotalTaxService)
-    extends TaxAccountSummaryHodFormatters {
+  totalTaxService: TotalTaxService)(
+  implicit ec: ExecutionContext
+) extends TaxAccountSummaryHodFormatters {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxAccountSummary] =
     for {

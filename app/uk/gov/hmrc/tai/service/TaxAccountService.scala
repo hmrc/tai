@@ -19,19 +19,16 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.http.Status._
-import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
-import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, MongoConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsConnector, DesConnector, NpsConnector}
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxAccountService @Inject()(
@@ -43,7 +40,7 @@ class TaxAccountService @Inject()(
   metrics: Metrics,
   hodConfig: NpsConfig,
   mongoConfig: MongoConfig,
-  featureTogglesConfig: FeatureTogglesConfig)
+  featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
     extends MongoFormatter {
 
   def taiData(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[SessionData] =
