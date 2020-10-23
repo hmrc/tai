@@ -17,29 +17,28 @@
 package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
-import play.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
+import uk.gov.hmrc.tai.service.{TaiService, TaxAccountService}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class TaxSummaryController @Inject()(
   taiService: TaiService,
   taxAccountService: TaxAccountService,
   metrics: Metrics,
-  authentication: AuthenticationPredicate)
-    extends BaseController with MongoFormatter {
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) with MongoFormatter {
 
   def updateEmployments(nino: Nino, year: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[IabdUpdateEmploymentsRequest] { editIabd =>

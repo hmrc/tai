@@ -18,19 +18,22 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.model.api.ApiResponse
+
+import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeIabdComparisonController @Inject()(
   taxFreeAmountComparisonService: TaxFreeAmountComparisonService,
-  authentication: AuthenticationPredicate)
-    extends BaseController {
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) {
 
   def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>

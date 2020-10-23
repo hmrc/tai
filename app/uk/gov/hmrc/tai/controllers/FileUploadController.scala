@@ -18,8 +18,8 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
-import play.api.mvc.Action
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.service.FileUploadService
@@ -27,7 +27,8 @@ import uk.gov.hmrc.tai.service.FileUploadService
 import scala.concurrent.Future
 
 @Singleton
-class FileUploadController @Inject()(fileUploadService: FileUploadService) extends BaseController with ApiFormats {
+class FileUploadController @Inject()(fileUploadService: FileUploadService, cc: ControllerComponents)
+    extends BackendController(cc) with ApiFormats {
 
   def fileUploadCallback(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withJsonBody[FileUploadCallback] { fileUploadCallback =>

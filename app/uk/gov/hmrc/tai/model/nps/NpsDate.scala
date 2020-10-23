@@ -20,7 +20,6 @@ import org.joda.time.format.DateTimeFormat
 import scala.util.Try
 import org.joda.time.LocalDate
 import play.api.libs.json._
-import play.api.data.validation.ValidationError
 import scala.language.implicitConversions
 
 object NpsDate {
@@ -33,8 +32,8 @@ object NpsDate {
     override def reads(json: JsValue): JsResult[NpsDate] =
       json match {
         case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(new LocalDate(y.toInt, m.toInt, d.toInt)))
-        case JsNull                          => JsError(ValidationError("Cannot convert null to NpsDate"))
-        case invalid                         => JsError(ValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
+        case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
+        case invalid                         => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
       }
   }
 

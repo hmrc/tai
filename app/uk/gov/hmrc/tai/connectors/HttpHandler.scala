@@ -23,16 +23,15 @@ import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient) {
+class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
   def getFromApi(url: String, api: APITypes)(implicit hc: HeaderCarrier): Future[JsValue] = {
 

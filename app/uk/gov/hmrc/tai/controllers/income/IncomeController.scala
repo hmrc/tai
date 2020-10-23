@@ -17,30 +17,31 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.{JsValue, Json, Writes}
-import play.api.mvc.{Action, AnyContent}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.income.{IncomeSource, Live, TaxCodeIncome, TaxCodeIncomeStatus}
+import uk.gov.hmrc.tai.model.domain.TaxCodeIncomeComponentType
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class IncomeController @Inject()(
   incomeService: IncomeService,
   taxAccountService: TaxAccountService,
   employmentService: EmploymentService,
-  authentication: AuthenticationPredicate)
-    extends BaseController with ApiFormats with ControllerErrorHandler {
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     incomeService.untaxedInterest(nino).map {

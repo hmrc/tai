@@ -19,22 +19,25 @@ package uk.gov.hmrc.tai.controllers.income
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HttpException, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.{AmountRequest, CloseAccountRequest}
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BbsiController @Inject()(bbsiService: BbsiService, authentication: AuthenticationPredicate)
-    extends BaseController with ApiFormats with ControllerErrorHandler {
+class BbsiController @Inject()(
+  bbsiService: BbsiService,
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>

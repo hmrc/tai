@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.{DateTime, DateTimeZone}
-import play.api.libs.json.{Format, Json, Reads, Writes}
+import org.joda.time.DateTime
+import play.api.libs.json.Json
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.model.TaiRoot
 

@@ -20,6 +20,8 @@ import org.joda.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.tai.model.domain._
 import play.api.libs.json._
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 

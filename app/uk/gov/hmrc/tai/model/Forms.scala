@@ -18,6 +18,8 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import play.api.libs.json.{Format, Json}
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 
 case class EditIncomeForm(
   name: String,

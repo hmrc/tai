@@ -23,15 +23,16 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)
 
 @Singleton
-class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions) extends BaseController {
+class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions, cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) {
 
   def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request: Request[AnyContent] =>

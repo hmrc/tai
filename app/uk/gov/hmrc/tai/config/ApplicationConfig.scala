@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.config
 
 import com.google.inject.{Inject, Singleton}
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 trait HodConfig {
   val baseURL: String
@@ -27,95 +27,88 @@ trait HodConfig {
   val originatorId: String
 }
 
-abstract class BaseConfig(playEnv: Environment) extends ServicesConfig {
-  override val mode = playEnv.mode
+abstract class BaseConfig(servicesConfig: ServicesConfig)
+
+@Singleton
+class PdfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+  lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
 }
 
 @Singleton
-class PdfConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
-  lazy val baseURL: String = baseUrl("pdf-generator-service")
+class PayeConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+  lazy val baseURL: String = servicesConfig.baseUrl("paye")
 }
 
 @Singleton
-class PayeConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
-  lazy val baseURL: String = baseUrl("paye")
+class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+  lazy val baseURL: String = servicesConfig.baseUrl("file-upload")
+  lazy val frontendBaseURL: String = servicesConfig.baseUrl("file-upload-frontend")
+  lazy val callbackUrl: String = servicesConfig.getConfString("file-upload.callbackUrl", "")
+  lazy val intervalMs: Int = servicesConfig.getConfInt("file-upload.intervalMs", 20)
+  lazy val maxAttempts: Int = servicesConfig.getConfInt("file-upload.maxAttempts", 5)
 }
 
 @Singleton
-class FileUploadConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  lazy val baseURL: String = baseUrl("file-upload")
-  lazy val frontendBaseURL: String = baseUrl("file-upload-frontend")
-  lazy val callbackUrl: String = runModeConfiguration.getString(s"$rootServices.file-upload.callbackUrl").getOrElse("")
-  lazy val intervalMs: Int = runModeConfiguration.getInt("file-upload.intervalMs").getOrElse(20)
-  lazy val maxAttempts: Int = runModeConfiguration.getInt("file-upload.maxAttempts").getOrElse(5)
+class CitizenDetailsConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+  lazy val baseURL: String = servicesConfig.baseUrl("citizen-details")
 }
 
 @Singleton
-class CitizenDetailsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  lazy val baseURL: String = baseUrl("citizen-details")
+class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) with HodConfig {
+  lazy val baseURL: String = servicesConfig.baseUrl("des-hod")
+  lazy val environment: String = servicesConfig.getConfString("des-hod.env", "local")
+  lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
+  lazy val daPtaOriginatorId: String = servicesConfig.getConfString("des-hod.da-pta.originatorId", "")
+  lazy val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
 }
 
 @Singleton
-class DesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) with HodConfig {
-  lazy val baseURL: String = baseUrl("des-hod")
-  lazy val environment: String = runModeConfiguration.getString(s"$rootServices.des-hod.env").getOrElse("local")
-  lazy val authorization: String = "Bearer " + runModeConfiguration
-    .getString(s"$rootServices.des-hod.authorizationToken")
-    .getOrElse("local")
-  lazy val daPtaOriginatorId: String =
-    runModeConfiguration.getString(s"$rootServices.des-hod.da-pta.originatorId").getOrElse("")
-  lazy val originatorId: String = runModeConfiguration.getString(s"$rootServices.des-hod.originatorId").getOrElse("")
-}
+class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) with HodConfig {
+  lazy val path: String = servicesConfig.getConfString("nps.hod.path", "")
 
-@Singleton
-class NpsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) with HodConfig {
-  lazy val optionalPath: Option[String] =
-    runModeConfiguration.getConfig(s"$rootServices.nps-hod").flatMap(_.getString("path"))
-  lazy val path: String = optionalPath.fold("")(path => s"$path")
-
-  override lazy val baseURL: String = s"${baseUrl("nps-hod")}$path"
+  override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
   override lazy val environment = ""
   override lazy val authorization = ""
-  override lazy val originatorId: String =
-    runModeConfiguration.getString(s"$rootServices.nps-hod.originatorId").getOrElse("local")
-  lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getBoolean("auto-update-pay.enabled")
-  lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-update-source.enabled")
-  lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getBoolean("nps-post-calc.enabled")
+  override lazy val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
+  lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("auto-update-pay.enabled")
+  lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-update-source.enabled")
+  lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-post-calc.enabled")
 }
 
 @Singleton
-class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getBoolean("cy-plus-one.enabled")
-  lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getString("cy-plus-one.startDayMonth")
+class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) {
+  lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("cy-plus-one.enabled")
+  lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getOptional[String]("cy-plus-one.startDayMonth")
 }
 
 @Singleton
-class MongoConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment) extends BaseConfig(playEnv) {
-  lazy val mongoEnabled: Boolean = runModeConfiguration.getBoolean("cache.isEnabled").getOrElse(false)
-  lazy val mongoEncryptionEnabled: Boolean = runModeConfiguration.getBoolean("mongo.encryption.enabled").getOrElse(true)
+class MongoConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) {
+  lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
+  lazy val mongoEncryptionEnabled: Boolean =
+    runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
 }
 
 @Singleton
-class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  def desEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.call").getOrElse(false)
-  def desUpdateEnabled: Boolean = runModeConfiguration.getBoolean("tai.des.update.call").getOrElse(false)
-  def confirmedAPIEnabled: Boolean = runModeConfiguration.getBoolean("tai.confirmedAPI.enabled").getOrElse(false)
+class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) {
+  def desEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.call").getOrElse(false)
+  def desUpdateEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.update.call").getOrElse(false)
+  def confirmedAPIEnabled: Boolean =
+    runModeConfiguration.getOptional[Boolean]("tai.confirmedAPI.enabled").getOrElse(false)
 }
 
 @Singleton
-class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  def rtiEnabled: Boolean = runModeConfiguration.getBoolean("tai.rti.call.enabled").getOrElse(true)
+class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) {
+  def rtiEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabled").getOrElse(true)
 }
 
 @Singleton
-class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, playEnv: Environment)
-    extends BaseConfig(playEnv) {
-  def cacheMetricsEnabled: Boolean = runModeConfiguration.getBoolean("tai.cacheMetrics.enabled").getOrElse(false)
+class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+    extends BaseConfig(servicesConfig) {
+  def cacheMetricsEnabled: Boolean =
+    runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
 }
