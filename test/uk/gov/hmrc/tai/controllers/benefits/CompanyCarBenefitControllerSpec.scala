@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -204,11 +203,9 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
 
       val mockCompanyCarService = mock[BenefitsService]
       when(
-        mockCompanyCarService.withdrawCompanyCarAndFuel(
-          Matchers.eq(nino),
-          Matchers.eq(employmentSeqNum),
-          Matchers.eq(carSeqNum),
-          Matchers.eq(removeCarAndFuel))(any())).thenReturn(Future.successful("123456"))
+        mockCompanyCarService
+          .withdrawCompanyCarAndFuel(meq(nino), meq(employmentSeqNum), meq(carSeqNum), meq(removeCarAndFuel))(any()))
+        .thenReturn(Future.successful("123456"))
 
       val sut = new CompanyCarBenefitController(mockCompanyCarService, loggedInAuthenticationPredicate, cc)
       val result = sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum)(fakeRequest)

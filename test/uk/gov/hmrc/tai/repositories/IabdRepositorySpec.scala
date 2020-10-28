@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, Caching, IabdConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -43,9 +40,9 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
       "data is present in cache" in {
 
         val cache = new Caching(cacheConnector, metrics, cacheConfig)
-        when(iabdConnector.iabds(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(iabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(jsonAfterFormat))
-        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}")))
+        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
           .thenReturn(Future.successful(Some(jsonAfterFormat)))
 
         val sut = createTestCache(cache, iabdConnector)
@@ -57,7 +54,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
       "data is not present in cache" in {
         val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-        when(cacheConnector.findJson(any(), Matchers.eq(s"$IabdMongoKey${TaxYear().year}")))
+        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
           .thenReturn(Future.successful(None))
         when(cacheConnector.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
         when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))

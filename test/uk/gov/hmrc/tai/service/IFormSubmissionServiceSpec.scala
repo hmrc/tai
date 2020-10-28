@@ -19,8 +19,7 @@ package uk.gov.hmrc.tai.service
 import java.nio.file.{Files, Paths}
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito._
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
@@ -58,12 +57,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
         any())(any())
     }
 
@@ -87,12 +86,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
         any())(any())
     }
   }

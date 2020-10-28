@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -113,7 +110,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
           val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-          when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+          when(cacheConnector.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
             .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
 
           val sut = createSUT(cache, taxAccountConnector)
@@ -130,16 +127,15 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+      when(cacheConnector.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(None))
 
       when(
-        cacheConnector.createOrUpdateJson(
-          Matchers.eq(cacheId),
-          Matchers.eq(taxAccountJsonResponse),
-          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))).thenReturn(Future.successful(taxAccountJsonResponse))
+        cacheConnector
+          .createOrUpdateJson(meq(cacheId), meq(taxAccountJsonResponse), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+        .thenReturn(Future.successful(taxAccountJsonResponse))
 
-      when(taxAccountConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
+      when(taxAccountConnector.taxAccount(meq(nino), meq(taxYear))(any()))
         .thenReturn(Future.successful(taxAccountJsonResponse))
 
       val sut = createSUT(cache, taxAccountConnector)
@@ -158,7 +154,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
         val jsonResponse = Future.successful(Json.obj())
 
-        when(taxAccountConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        when(taxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
           .thenReturn(jsonResponse)
 
         val result = sut.taxAccountForTaxCodeId(nino, taxCodeId)

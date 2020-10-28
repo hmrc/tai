@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
@@ -34,14 +33,14 @@ class PersonServiceSpec extends BaseSpec {
   "person method" must {
     "return a person model instance, retrieved from the person repository" in {
       val mockRepo = mock[PersonRepository]
-      when(mockRepo.getPerson(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
+      when(mockRepo.getPerson(meq(nino))(any())).thenReturn(Future.successful(person))
       val SUT = createSUT(mockRepo)
       Await.result(SUT.person(nino), 5 seconds) mustBe (person)
     }
 
     "expose any exception thrown by the person repository" in {
       val mockRepo = mock[PersonRepository]
-      when(mockRepo.getPerson(Matchers.eq(nino))(any()))
+      when(mockRepo.getPerson(meq(nino))(any()))
         .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
       val SUT = createSUT(mockRepo)
       val thrown = the[NotFoundException] thrownBy Await.result(SUT.person(nino), 5 seconds)

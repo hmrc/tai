@@ -21,7 +21,7 @@ import java.net.URL
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json, Reads}

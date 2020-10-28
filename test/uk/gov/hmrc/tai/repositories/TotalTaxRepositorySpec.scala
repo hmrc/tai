@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -37,7 +36,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
   "incomeCategories" must {
     "return the income categories that is being read from the taxAccountRepository" in {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
-      when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
       val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5 seconds)
@@ -67,7 +66,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
   "taxFreeAllowance" must {
     "return the tax free allowance amount" in {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
-      when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
       val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5 seconds)

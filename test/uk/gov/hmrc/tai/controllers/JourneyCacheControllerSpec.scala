@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._

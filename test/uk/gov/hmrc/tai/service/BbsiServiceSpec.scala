@@ -17,12 +17,10 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, verify, when}
-import org.mockito.{ArgumentCaptor, Matchers}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.CloseAccountRequest
 import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
@@ -32,7 +30,6 @@ import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
 class BbsiServiceSpec extends BaseSpec {
 
@@ -82,7 +79,7 @@ class BbsiServiceSpec extends BaseSpec {
 
         result mustBe "1"
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq("CloseBankAccountRequest"), any())(any())
+          .sendDataEvent(meq("CloseBankAccountRequest"), any())(any())
       }
     }
 
@@ -122,7 +119,7 @@ class BbsiServiceSpec extends BaseSpec {
         result mustBe "1"
 
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq(IFormConstants.RemoveBankAccountRequest), any())(any())
+          .sendDataEvent(meq(IFormConstants.RemoveBankAccountRequest), any())(any())
       }
     }
     "return exception" when {
@@ -159,7 +156,7 @@ class BbsiServiceSpec extends BaseSpec {
 
         result mustBe "1"
         verify(mockAuditor)
-          .sendDataEvent(Matchers.eq(IFormConstants.UpdateBankAccountRequest), any())(any())
+          .sendDataEvent(meq(IFormConstants.UpdateBankAccountRequest), any())(any())
       }
     }
 

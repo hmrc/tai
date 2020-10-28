@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.audit
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -49,7 +48,7 @@ class AuditorSpec extends BaseSpec {
 
         auditor.sendDataEvent("Test-tx", detail)
 
-        verify(mockAudit, times(1)).sendExplicitAudit(Matchers.eq("Test-tx"), Matchers.eq(detail))(any(), any())
+        verify(mockAudit, times(1)).sendExplicitAudit(meq("Test-tx"), meq(detail))(any(), any())
       }
     }
   }

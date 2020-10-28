@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -40,7 +40,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
         val model = TaxFreeAmountComparisonFactory.create
         val expectedJson = Json.obj("data" -> TaxFreeAmountComparisonFactory.createJson, "links" -> Json.arr())
 
-        when(taxFreeAmountComparisonService.taxFreeAmountComparison(Matchers.eq(nino))(Matchers.any()))
+        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
           .thenReturn(Future.successful(model))
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
@@ -55,7 +55,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       "fetching tax free amount comparison fails :(" in {
         val nino = ninoGenerator
 
-        when(taxFreeAmountComparisonService.taxFreeAmountComparison(Matchers.eq(nino))(Matchers.any()))
+        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
           .thenReturn(Future.failed(new RuntimeException("Its all gone wrong")))
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())

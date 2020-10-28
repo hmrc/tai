@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
 import play.api.http.Status
 import play.api.libs.json.{JsString, Json}
@@ -277,7 +276,7 @@ class BaseConnectorSpec extends BaseSpec {
         Await.result(resp, 5 seconds)
 
         verify(mockAuditor, times(1))
-          .sendDataEvent(Matchers.eq("RTI returned incorrect account"), any())(any())
+          .sendDataEvent(meq("RTI returned incorrect account"), any())(any())
       }
     }
     "return a success response from NPS" when {

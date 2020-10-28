@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._

@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
@@ -195,7 +194,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
       status(result) mustBe 200
       verify(mockTaxAccountService, times(1))
-        .updateTaiData(Matchers.eq(nino), any())(any())
+        .updateTaiData(meq(nino), any())(any())
     }
 
     "return failure when data couldn't be saved in cache" in {
@@ -216,7 +215,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
       ex.getMessage mustBe "FAILED"
       verify(mockTaxAccountService, times(1))
-        .updateTaiData(Matchers.eq(nino), any())(any())
+        .updateTaiData(meq(nino), any())(any())
     }
 
   }

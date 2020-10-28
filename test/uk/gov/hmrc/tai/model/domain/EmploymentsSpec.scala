@@ -17,15 +17,9 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
-import org.mockito.{ArgumentCaptor, Matchers}
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
-import scala.concurrent.{Await, Future}
 
 class EmploymentsSpec extends PlaySpec {
 

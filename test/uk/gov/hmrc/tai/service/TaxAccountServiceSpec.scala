@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service
 import com.codahale.metrics.Timer
 import data.NpsData
 import org.joda.time.LocalDate
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
@@ -85,7 +85,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
         result.nino mustBe nino.nino
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Meq(cacheId), any())(any())
+          .find[SessionData](meq(cacheId), any())(any())
       }
 
       "cacheConnector returns None" in {
@@ -128,9 +128,9 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           gatekeeperTaiRoot)
 
         verify(mockCacheConnector, times(1))
-          .find[SessionData](Meq(cacheId), any())(any())
+          .find[SessionData](meq(cacheId), any())(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Meq(cacheId), any(), any())(any())
+          .createOrUpdate[SessionData](meq(cacheId), any(), any())(any())
       }
     }
 
@@ -220,7 +220,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
         Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](Meq(cacheId), Meq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](meq(cacheId), meq(sessionData()), any())(any())
       }
     }
 
@@ -737,9 +737,9 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
 
         data mustBe sessionData()
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](any(), meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
+          .createOrUpdate[Protected[SessionData]](any(), meq(Protected(sessionData())), any())(any())
       }
     }
 
@@ -783,9 +783,9 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
 
         data mustBe sessionData()
         verify(mockCacheConnector, never())
-          .createOrUpdate[SessionData](any(), Meq(sessionData()), any())(any())
+          .createOrUpdate[SessionData](any(), meq(sessionData()), any())(any())
         verify(mockCacheConnector, never())
-          .createOrUpdate[Protected[SessionData]](any(), Meq(Protected(sessionData())), any())(any())
+          .createOrUpdate[Protected[SessionData]](any(), meq(Protected(sessionData())), any())(any())
       }
     }
   }

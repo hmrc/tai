@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import java.net.URL
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
@@ -149,13 +149,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
           val httpHandlerMock = mock[HttpHandler]
 
-          when(httpHandlerMock.getFromApi(Matchers.any(), Matchers.eq(APITypes.DesTaxAccountAPI))(Matchers.any()))
+          when(httpHandlerMock.getFromApi(any(), meq(APITypes.DesTaxAccountAPI))(any()))
             .thenReturn(Future.successful(json))
           val connector = createSUT(httpHandler = httpHandlerMock)
           Await.result(connector.taxAccountHistory(nino, taxCodeId), 5.seconds)
 
           verify(httpHandlerMock, times(1))
-            .getFromApi(Matchers.any(), Matchers.eq(APITypes.DesTaxAccountAPI))(Matchers.any())
+            .getFromApi(any(), meq(APITypes.DesTaxAccountAPI))(any())
         }
       }
 

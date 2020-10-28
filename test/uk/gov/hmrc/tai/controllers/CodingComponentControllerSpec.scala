@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -43,7 +42,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
         )
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(codingComponentSeq))
 
         val sut = createSUT(mockCodingComponentService)
@@ -75,7 +74,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
       "an exception is thrown by the handler which is not a BadRequestException" in {
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new UnauthorizedException("")))
 
         intercept[UnauthorizedException] {
@@ -88,7 +87,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
       "a BadRequestException is thrown" in {
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new BadRequestException("bad request exception")))
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
         status(result) mustBe 400
@@ -102,7 +101,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
 
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new NotFoundException("not found exception")))
 
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())

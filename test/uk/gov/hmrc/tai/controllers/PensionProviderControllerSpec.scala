@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.Helpers.{contentAsJson, status, _}
@@ -41,7 +40,7 @@ class PensionProviderControllerSpec extends BaseSpec {
         val json = Json.toJson(pensionProvider)
 
         val mockPensionProviderService = mock[PensionProviderService]
-        when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
+        when(mockPensionProviderService.addPensionProvider(meq(nino), meq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val sut =
@@ -65,7 +64,7 @@ class PensionProviderControllerSpec extends BaseSpec {
         val mockPensionProviderService = mock[PensionProviderService]
         when(
           mockPensionProviderService
-            .incorrectPensionProvider(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(pensionProvider))(any()))
+            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)

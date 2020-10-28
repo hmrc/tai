@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
@@ -141,11 +140,8 @@ class BenefitsControllerSpec extends BaseSpec {
         val employmentId = 1
 
         val mockBenefitService = mock[BenefitsService]
-        when(
-          mockBenefitService.removeCompanyBenefits(
-            Matchers.eq(nino),
-            Matchers.eq(employmentId),
-            Matchers.eq(removeCompanyBenefit))(any())).thenReturn(Future.successful(envelopeId))
+        when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(employmentId), meq(removeCompanyBenefit))(any()))
+          .thenReturn(Future.successful(envelopeId))
 
         val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.joda.time.{Days, LocalDate}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{never, times, verify, when}
 import play.api.http.Status.OK
 import uk.gov.hmrc.domain.Nino

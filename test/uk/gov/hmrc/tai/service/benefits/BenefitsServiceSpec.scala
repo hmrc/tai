@@ -17,11 +17,9 @@
 package uk.gov.hmrc.tai.service.benefits
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, UnprocessableEntityException}
+import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain._
@@ -46,7 +44,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty[CodingComponent]))
 
         val sut = createSUT(
@@ -82,7 +80,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -118,7 +116,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -155,7 +153,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -190,7 +188,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -238,7 +236,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -298,7 +296,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -333,7 +331,7 @@ class BenefitsServiceSpec extends BaseSpec {
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
         Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
 
-        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }
@@ -343,7 +341,7 @@ class BenefitsServiceSpec extends BaseSpec {
     "return empty list of other benefits" when {
       "there is no benefits coming from coding components" in {
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponentsWithoutBenefits))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
@@ -356,7 +354,7 @@ class BenefitsServiceSpec extends BaseSpec {
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
@@ -378,7 +376,7 @@ class BenefitsServiceSpec extends BaseSpec {
           createBenefitList(allBenefitTypesExceptCompanyCar)
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
@@ -397,7 +395,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -418,7 +416,7 @@ class BenefitsServiceSpec extends BaseSpec {
             "An exception occurred during processing of PAYE URI  [/paye/<nino>/car-benefits/<tax-year>]")))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -474,7 +472,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(carBenefitsFromRepo))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -524,11 +522,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.RemoveCompanyBenefitSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any()))
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -568,11 +563,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.RemoveCompanyBenefitSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any()))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -593,7 +585,7 @@ class BenefitsServiceSpec extends BaseSpec {
       Await.result(sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.RemoveCompanyBenefitAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())
     }
   }
 

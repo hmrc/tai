@@ -16,12 +16,9 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsArray, JsNull, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
@@ -32,7 +29,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class TaxAccountSummaryRepositorySpec extends BaseSpec {
 

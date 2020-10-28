@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -185,7 +184,7 @@ class IncomeRepositorySpec extends BaseSpec {
         val iabdJson = Json.arr()
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -278,7 +277,7 @@ class IncomeRepositorySpec extends BaseSpec {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -372,7 +371,7 @@ class IncomeRepositorySpec extends BaseSpec {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -467,7 +466,7 @@ class IncomeRepositorySpec extends BaseSpec {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))

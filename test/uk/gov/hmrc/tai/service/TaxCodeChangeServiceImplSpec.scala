@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
 import play.api.libs.json.JsResultException
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
@@ -1187,7 +1185,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         )
 
         verify(mockAudit, times(1))
-          .sendDataEvent(Matchers.eq("TaxCodeChange"), Matchers.eq(expectedDetailMap))(Matchers.any())
+          .sendDataEvent(meq("TaxCodeChange"), meq(expectedDetailMap))(any())
       }
     }
   }

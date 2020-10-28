@@ -17,12 +17,11 @@
 package uk.gov.hmrc.tai.metrics
 
 import com.codahale.metrics.{Counter, MetricRegistry, Timer}
-import org.mockito.Matchers
-import org.scalatest.mock.MockitoSugar
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.APITypes
 import org.mockito.Mockito.{times, verify, when}
-import org.mockito.Matchers.any
+import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 
 class MetricsSpec extends PlaySpec with MockitoSugar {
@@ -44,7 +43,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
         timer.close()
 
         verify(mockMetricRegistry, times(1))
-          .timer(Matchers.eq("bbsi-timer"))
+          .timer(meq("bbsi-timer"))
       }
     }
   }
@@ -52,7 +51,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
     "increment the given success metric" in {
       val mockCounter = mock[Counter]
       val mockMetricRegistry = mock[MetricRegistry]
-      when(mockMetricRegistry.counter(Matchers.eq("company-car-success-counter")))
+      when(mockMetricRegistry.counter(meq("company-car-success-counter")))
         .thenReturn(mockCounter)
 
       val mockMetrics = mock[com.kenshoo.play.metrics.Metrics]

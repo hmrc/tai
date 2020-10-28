@@ -16,12 +16,8 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -31,7 +27,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class CodingComponentServiceSpec extends BaseSpec {
 
@@ -40,7 +35,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       "repository returns json with more than one tax components" in {
         val mockIabdRepository = mock[CodingComponentRepository]
 
-        when(mockIabdRepository.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockIabdRepository.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(codingComponentList))
 
         val service = testCodingComponentService(mockIabdRepository)
@@ -57,7 +52,7 @@ class CodingComponentServiceSpec extends BaseSpec {
 
       val expected = Seq(CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"))
 
-      when(mockIabdRepository.codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(1))(any()))
+      when(mockIabdRepository.codingComponentsForTaxCodeId(meq(nino), meq(1))(any()))
         .thenReturn(Future.successful(expected))
 
       val service = testCodingComponentService(mockIabdRepository)

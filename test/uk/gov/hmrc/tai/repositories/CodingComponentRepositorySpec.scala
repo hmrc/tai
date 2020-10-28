@@ -16,13 +16,9 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json._
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -32,7 +28,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class CodingComponentRepositorySpec extends BaseSpec {
 
@@ -41,7 +36,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
       "iabd connector returns empty list and tax account connector returns json with no NpsComponents of interest" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
 
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
@@ -55,7 +50,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
       "income source has pension available" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
 
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(primaryIncomeDeductionsNpsJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
@@ -82,7 +77,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val json = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
@@ -103,7 +98,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val json = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
@@ -125,7 +120,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)

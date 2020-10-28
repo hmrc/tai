@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -39,7 +38,7 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
   "totalTax" must {
     "return the total tax details for the given year" in {
       val mockTotalTaxService = mock[TotalTaxService]
-      when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(totalTax))
 
       val sut = createSUT(mockTotalTaxService)
@@ -120,7 +119,7 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
     "return the bad request exception" when {
       "hod throws coding calculation error for cy+1" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException(CodingCalculationCYPlusOne)))
 
         val sut = createSUT(mockTotalTaxService)
@@ -130,7 +129,7 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
       "hod throws bad request for cy" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException("Cannot perform a Coding Calculation for CY")))
 
         val sut = createSUT(mockTotalTaxService)
@@ -142,7 +141,7 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
     "return Locked exception" when {
       "hod throws locked exception" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTotalTaxService)

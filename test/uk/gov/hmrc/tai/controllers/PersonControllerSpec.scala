@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -39,7 +38,7 @@ class PersonControllerSpec extends BaseSpec {
     "return 200" when {
       "given a valid nino" in {
         val mockPersonService = mock[PersonService]
-        when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
+        when(mockPersonService.person(meq(nino))(any())).thenReturn(Future.successful(person))
 
         val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
         status(result) mustBe OK
@@ -68,7 +67,7 @@ class PersonControllerSpec extends BaseSpec {
         )
 
         val mockPersonService = mock[PersonService]
-        when(mockPersonService.person(Matchers.eq(nino))(any())).thenReturn(Future.successful(person))
+        when(mockPersonService.person(meq(nino))(any())).thenReturn(Future.successful(person))
 
         val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
         contentAsJson(result) mustBe expectedJson
@@ -76,7 +75,7 @@ class PersonControllerSpec extends BaseSpec {
     }
     "expose any underlying excpetion" in {
       val mockPersonService = mock[PersonService]
-      when(mockPersonService.person(Matchers.eq(nino))(any()))
+      when(mockPersonService.person(meq(nino))(any()))
         .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
 
       val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())

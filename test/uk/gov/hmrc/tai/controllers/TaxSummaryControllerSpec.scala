@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
@@ -78,7 +78,7 @@ class TaxSummaryControllerSpec extends BaseSpec {
       )
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
     }
 
     "update the estimated pay must be failed when nps is throwing BadRequestException " in {
@@ -127,12 +127,12 @@ class TaxSummaryControllerSpec extends BaseSpec {
       val mockTaxAccountService = mock[TaxAccountService]
       doThrow(new RuntimeException(""))
         .when(mockTaxAccountService)
-        .invalidateTaiCacheData(Meq(nino))(any())
+        .invalidateTaiCacheData(meq(nino))(any())
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       the[RuntimeException] thrownBy sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
 
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
     }
   }
 

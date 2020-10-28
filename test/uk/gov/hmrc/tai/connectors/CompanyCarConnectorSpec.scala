@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.http.Status.OK
 import play.api.libs.json.{JsNumber, JsValue, Json}

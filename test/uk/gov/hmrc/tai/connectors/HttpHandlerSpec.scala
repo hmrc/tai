@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json}
@@ -54,7 +53,7 @@ class HttpHandlerSpec extends BaseSpec {
 
         response mustBe Json.toJson(responseBodyObject)
 
-        verify(mockHttp, times(1)).GET(Matchers.eq(testUrl))(any(), any(), any())
+        verify(mockHttp, times(1)).GET(meq(testUrl))(any(), any(), any())
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, times(1)).incrementSuccessCounter(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementFailedCounter(any())

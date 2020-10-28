@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
@@ -45,10 +44,10 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(currentCodingComponents))
 
         val expected = TaxFreeAmountComparison(Seq.empty, currentCodingComponents)
@@ -74,10 +73,10 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.failed(new RuntimeException("Error")))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(currentCodingComponents))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -95,15 +94,15 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val taxCodeChange = stubTaxCodeChange
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -126,15 +125,15 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val taxCodeChange = stubTaxCodeChange
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
           .thenReturn(Future.successful(previousCodingComponents))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)

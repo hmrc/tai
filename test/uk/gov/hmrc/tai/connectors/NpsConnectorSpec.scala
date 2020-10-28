@@ -17,10 +17,9 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -34,7 +33,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration.{Duration, _}
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class NpsConnectorSpec extends BaseSpec {
 

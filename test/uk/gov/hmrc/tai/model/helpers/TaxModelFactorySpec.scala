@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.helpers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{spy, times, verify}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsIabdSummary, NpsReliefsGivingBackTax, NpsTax, NpsTotalLiability, _}
@@ -282,17 +282,17 @@ class TaxModelFactorySpec extends PlaySpec {
         spySUT.create("", 0, incomeSources = Some(incomeSources))
 
         verify(spySUT, times(1)).groupIncomes(
-          Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.any(),
-          Matchers.any(), Matchers.any(), Matchers.eq(Some(incomeSources)))
+          any(), any(), any(),
+          any(), any(), any(),
+          any(), any(), meq(Some(incomeSources)))
 
         verify(spySUT, times(1)).groupItemsThatIncreaseTax(
-          Matchers.any(), Matchers.eq(Some(incomeSources)),
-          Matchers.any(), Matchers.any())
+          any(), meq(Some(incomeSources)),
+          any(), any())
 
         verify(spySUT, times(1)).groupItemsThatDecreaseTax(
-          Matchers.any(), Matchers.eq(Some(incomeSources)),
-          Matchers.any(), Matchers.any(), Matchers.any())
+          any(), meq(Some(incomeSources)),
+          any(), any(), any())
       }
     }
 
@@ -437,7 +437,7 @@ class TaxModelFactorySpec extends PlaySpec {
 
         spySUT.create("", 0, npsEmployments = Some(npsEmployments))
 
-        verify(spySUT, times(1)).groupItemsThatIncreaseTax(Matchers.any(), Matchers.any(), Matchers.any(), Matchers.eq(Some(npsEmployments)))
+        verify(spySUT, times(1)).groupItemsThatIncreaseTax(any(), any(), any(), meq(Some(npsEmployments)))
       }
     }
 

@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -38,7 +37,7 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxAccountSummaryForYearCY1))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -64,7 +63,7 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     "return Locked exception" when {
       "nps throws locked exception" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTaxAccountSummaryService)

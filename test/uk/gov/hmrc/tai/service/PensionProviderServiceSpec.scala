@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
@@ -42,11 +41,9 @@ class PensionProviderServiceSpec extends BaseSpec {
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.AddPensionProviderSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any())).thenReturn(Future.successful("1"))
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -70,11 +67,9 @@ class PensionProviderServiceSpec extends BaseSpec {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.AddPensionProviderSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any())).thenReturn(Future.successful("1"))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+        .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -83,7 +78,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       Await.result(sut.addPensionProvider(nino, pensionProvider), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.AddPensionProviderAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.AddPensionProviderAuditTxnName), meq(map))(any())
     }
   }
 
@@ -114,12 +109,9 @@ class PensionProviderServiceSpec extends BaseSpec {
         val incorrectPensionProvider = IncorrectPensionProvider("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any())).thenReturn(Future.successful("1"))
+        when(mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -142,11 +134,9 @@ class PensionProviderServiceSpec extends BaseSpec {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any())).thenReturn(Future.successful("1"))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+        .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -155,7 +145,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       Await.result(sut.incorrectPensionProvider(nino, 1, pensionProvider), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq(map))(any())
     }
   }
 

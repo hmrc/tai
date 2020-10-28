@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
-import org.mockito.{ArgumentCaptor, Matchers}
+import org.mockito.ArgumentCaptor
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
@@ -54,7 +54,7 @@ class BbsiConnectorSpec extends BaseSpec {
         result mustBe Seq(bankAccount, bankAccount, bankAccount)
 
         verify(mockHttpHandler, times(1))
-          .getFromApi(any(), Matchers.eq(APITypes.BbsiAPI))(captor.capture())
+          .getFromApi(any(), meq(APITypes.BbsiAPI))(captor.capture())
 
         captor.getValue.extraHeaders must contain("Environment"   -> "ist0")
         captor.getValue.extraHeaders must contain("Authorization" -> s"Bearer 123")

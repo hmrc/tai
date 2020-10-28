@@ -27,20 +27,20 @@ trait HodConfig {
   val originatorId: String
 }
 
-abstract class BaseConfig(servicesConfig: ServicesConfig)
+abstract class BaseConfig
 
 @Singleton
-class PdfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+class PdfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
 }
 
 @Singleton
-class PayeConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+class PayeConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("paye")
 }
 
 @Singleton
-class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("file-upload")
   lazy val frontendBaseURL: String = servicesConfig.baseUrl("file-upload-frontend")
   lazy val callbackUrl: String = servicesConfig.getConfString("file-upload.callbackUrl", "")
@@ -49,12 +49,12 @@ class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseCon
 }
 
 @Singleton
-class CitizenDetailsConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) {
+class CitizenDetailsConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("citizen-details")
 }
 
 @Singleton
-class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(servicesConfig) with HodConfig {
+class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("des-hod")
   lazy val environment: String = servicesConfig.getConfString("des-hod.env", "local")
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
@@ -64,7 +64,7 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(ser
 
 @Singleton
 class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) with HodConfig {
+    extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
   override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
@@ -77,23 +77,20 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfi
 }
 
 @Singleton
-class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) {
+class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("cy-plus-one.enabled")
   lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getOptional[String]("cy-plus-one.startDayMonth")
 }
 
 @Singleton
-class MongoConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) {
+class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
 }
 
 @Singleton
-class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) {
+class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def desEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.call").getOrElse(false)
   def desUpdateEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.update.call").getOrElse(false)
   def confirmedAPIEnabled: Boolean =
@@ -101,14 +98,12 @@ class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration, se
 }
 
 @Singleton
-class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) {
+class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def rtiEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabled").getOrElse(true)
 }
 
 @Singleton
-class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
-    extends BaseConfig(servicesConfig) {
+class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
 }

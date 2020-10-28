@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
 import uk.gov.hmrc.tai.model.domain.BankAccount
@@ -43,7 +42,7 @@ class BbsiRepositorySpec extends BaseSpec {
 
         result mustBe Seq(bankAccount)
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockBbsiConnector, never())
           .bankAccounts(any(), any())(any())
       }
@@ -68,10 +67,9 @@ class BbsiRepositorySpec extends BaseSpec {
         result mustBe Seq(expectedBankAccount1, expectedBankAccount2)
 
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdateSeq[BankAccount](any(), Matchers.eq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(
-            any())
+          .createOrUpdateSeq[BankAccount](any(), meq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(any())
         verify(mockBbsiConnector, times(1))
           .bankAccounts(any(), any())(any())
       }

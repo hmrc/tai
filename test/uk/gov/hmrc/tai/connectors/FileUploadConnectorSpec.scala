@@ -20,8 +20,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.codahale.metrics.Timer
 import org.junit.After
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
 import play.api.libs.json.{JsArray, JsValue, Json}
@@ -73,7 +72,7 @@ class FileUploadConnectorSpec extends BaseSpec {
       Await.result(sut.createEnvelope, 5.seconds)
 
       verify(mockHttpClient, times(1))
-        .POST(Matchers.eq("createEnvelopeURL"), Matchers.eq(envelopeBody), any())(any(), any(), any(), any())
+        .POST(meq("createEnvelopeURL"), meq(envelopeBody), any())(any(), any(), any(), any())
     }
     "throw a runtime exception" when {
       "the success response does not contain a location header" in {
@@ -205,7 +204,7 @@ class FileUploadConnectorSpec extends BaseSpec {
       Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
       verify(mockHttpClient, times(1))
-        .POST(Matchers.eq(uploadEndpoint), any(), any())(any(), any(), any(), any())
+        .POST(meq(uploadEndpoint), any(), any())(any(), any(), any(), any())
     }
     "throw a runtime exception" when {
       "the success response does not contain a location header" in {
@@ -355,12 +354,12 @@ class FileUploadConnectorSpec extends BaseSpec {
     val mockClient = mock[AhcWSClient]
 
     if (!failed) {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+      when(mockRequest.post(any[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
         .thenReturn(Future.successful(mockResponse))
       when(mockRequest.get())
         .thenReturn(Future.successful(mockResponse))
     } else {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+      when(mockRequest.post(any[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
         .thenReturn(Future.failed(new RuntimeException("Error")))
       when(mockRequest.get())
         .thenReturn(Future.failed(new RuntimeException("Error")))

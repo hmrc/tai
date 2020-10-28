@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import akka.util.ByteString
 import com.codahale.metrics.Timer
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import uk.gov.hmrc.http.HttpException
@@ -46,7 +46,7 @@ class PdfConnectorSpec extends BaseSpec {
           .thenReturn(mockTimerContext)
 
         val mockWSRequest = mock[WSRequest]
-        when(mockWSRequest.post(anyString())(any()))
+        when(mockWSRequest.post(any[Map[String, Seq[String]]])(any()))
           .thenReturn(Future.successful(mockWSResponse))
 
         val mockWSClient = mock[WSClient]
@@ -61,7 +61,7 @@ class PdfConnectorSpec extends BaseSpec {
         result mustBe htmlAsString.getBytes
 
         verify(mockWSRequest, times(1))
-          .post(anyString())(any())
+          .post(any[Map[String, Seq[String]]])(any())
         verify(mockMetrics, times(1))
           .startTimer(APITypes.PdfServiceAPI)
         verify(mockMetrics, times(1))
@@ -85,7 +85,7 @@ class PdfConnectorSpec extends BaseSpec {
           .thenReturn(mockTimerContext)
 
         val mockWSRequest = mock[WSRequest]
-        when(mockWSRequest.post(anyString())(any()))
+        when(mockWSRequest.post(any[Map[String, Seq[String]]])(any()))
           .thenReturn(Future.successful(mockWSResponse))
 
         val mockWSClient = mock[WSClient]
@@ -98,7 +98,7 @@ class PdfConnectorSpec extends BaseSpec {
         the[HttpException] thrownBy Await.result(result, 5 seconds)
 
         verify(mockWSRequest, times(1))
-          .post(anyString())(any())
+          .post(any[Map[String, Seq[String]]])(any())
         verify(mockMetrics, times(1))
           .startTimer(APITypes.PdfServiceAPI)
         verify(mockMetrics, never())

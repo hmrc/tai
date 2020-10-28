@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -152,7 +151,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         status(result) mustBe OK
         contentAsJson(result) mustBe jsonResult
 
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(2))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(2))(any())
       }
     }
 
@@ -164,7 +163,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
       }
 
       "throw not found exception" in {
@@ -174,7 +173,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
       }
     }
 
@@ -186,7 +185,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockEmploymentService, times(1)).employment(any(), Matchers.eq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
       }
     }
   }
@@ -218,7 +217,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val employment = AddEmployment("employerName", new LocalDate("2017-05-05"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(employment)
 
-        when(mockEmploymentService.addEmployment(Matchers.eq(nino), Matchers.eq(employment))(any()))
+        when(mockEmploymentService.addEmployment(meq(nino), meq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.addEmployment(nino)(
@@ -238,8 +237,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
         val id = 1
 
-        when(
-          mockEmploymentService.incorrectEmployment(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(employment))(any()))
+        when(mockEmploymentService.incorrectEmployment(meq(nino), meq(id), meq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.incorrectEmployment(nino, id)(
@@ -261,7 +259,7 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         when(
           mockEmploymentService
-            .updatePreviousYearIncome(Matchers.eq(nino), Matchers.eq(taxYear), Matchers.eq(employment))(any()))
+            .updatePreviousYearIncome(meq(nino), meq(taxYear), meq(employment))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.updatePreviousYearIncome(nino, taxYear)(

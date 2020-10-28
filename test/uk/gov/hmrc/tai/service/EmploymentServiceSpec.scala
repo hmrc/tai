@@ -19,8 +19,7 @@ package uk.gov.hmrc.tai.service
 import java.nio.file.{Files, Paths}
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -72,7 +71,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val employments = Await.result(sut.employment(nino, 2)(HeaderCarrier()), 5.seconds)
 
       employments mustBe Right(employment)
-      verify(mockEmploymentRepository, times(1)).employment(any(), Matchers.eq(2))(any())
+      verify(mockEmploymentRepository, times(1)).employment(any(), meq(2))(any())
     }
 
     "return the correct Error Type when the employment doesn't exist" in {
@@ -134,7 +133,7 @@ class EmploymentServiceSpec extends BaseSpec {
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
           any(),
-          Matchers.contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
           any())(any())
       }
     }
@@ -175,8 +174,8 @@ class EmploymentServiceSpec extends BaseSpec {
       Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(
-        Matchers.eq("EndEmploymentRequest"),
-        Matchers.eq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20")))(any())
+        meq("EndEmploymentRequest"),
+        meq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20")))(any())
     }
   }
 
@@ -218,7 +217,7 @@ class EmploymentServiceSpec extends BaseSpec {
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
           any(),
-          Matchers.contains(s"1-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          contains(s"1-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
           any())(any())
       }
     }
@@ -255,8 +254,8 @@ class EmploymentServiceSpec extends BaseSpec {
       Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(
-        Matchers.eq(IFormConstants.AddEmploymentAuditTxnName),
-        Matchers.eq(
+        meq(IFormConstants.AddEmploymentAuditTxnName),
+        meq(
           Map(
             "nino"         -> nino.nino,
             "envelope Id"  -> "111",
@@ -274,11 +273,8 @@ class EmploymentServiceSpec extends BaseSpec {
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any()))
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -311,11 +307,8 @@ class EmploymentServiceSpec extends BaseSpec {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.IncorrectEmploymentSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any()))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -333,7 +326,7 @@ class EmploymentServiceSpec extends BaseSpec {
       Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.IncorrectEmploymentAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.IncorrectEmploymentAuditTxnName), meq(map))(any())
     }
   }
 
@@ -343,12 +336,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any()))
+        when(mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -382,11 +371,8 @@ class EmploymentServiceSpec extends BaseSpec {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any()))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -404,7 +390,7 @@ class EmploymentServiceSpec extends BaseSpec {
       Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())
     }
   }
 

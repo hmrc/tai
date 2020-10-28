@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -46,7 +45,7 @@ class FileUploadControllerSpec extends BaseSpec {
         body = json)
 
       val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.fileUploadCallback(Matchers.eq(json.as[FileUploadCallback]))(any()))
+      when(mockFileUploadService.fileUploadCallback(meq(json.as[FileUploadCallback]))(any()))
         .thenReturn(Future.successful(Open))
 
       val sut = createSUT(mockFileUploadService)

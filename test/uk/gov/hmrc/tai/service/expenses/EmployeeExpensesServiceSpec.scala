@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service.expenses
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}

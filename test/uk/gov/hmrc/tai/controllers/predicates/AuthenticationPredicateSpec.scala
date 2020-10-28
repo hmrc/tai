@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers.predicates
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.http.Status
 import play.api.mvc.{Action, AnyContent, InjectedController}

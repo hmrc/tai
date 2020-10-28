@@ -18,8 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
@@ -57,7 +56,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
@@ -92,7 +91,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
           Person(Some(""), None, Some(""), None, Some(""), None, None, None, Nino(nino.nino), Some(true), Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 423, responseString = Some("Record Locked"), responseJson = Some(jsonData))))
 
@@ -112,7 +111,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
 
     "return Internal server error when requesting " in {
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 500, responseString = Some("Internal Server Error"), responseJson = None)))
 
@@ -146,7 +145,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
@@ -191,7 +190,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
