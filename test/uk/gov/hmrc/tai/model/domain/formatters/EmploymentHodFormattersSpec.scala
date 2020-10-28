@@ -20,7 +20,6 @@ import java.io.File
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -262,9 +261,9 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
-      (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError                       <- errors
-      message: String                              <- error.messages
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
+      error: JsonValidationError                       <- errors
+      message: String                                  <- error.messages
     } yield {
       path.toString() + " -> " + message
     }

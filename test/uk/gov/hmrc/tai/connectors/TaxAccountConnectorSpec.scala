@@ -21,11 +21,7 @@ import java.net.URL
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Matchers
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
@@ -35,12 +31,11 @@ import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
+class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
   val featureTogglesConfig = mock[FeatureTogglesConfig]
 
@@ -255,11 +250,9 @@ class TaxAccountConnectorSpec extends PlaySpec with WireMockHelper with MockitoS
   }
 
   private val originatorId = "testOriginatorId"
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
   lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
   lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
   val taxYear = TaxYear(2017)
-  val nino: Nino = new Generator(new Random).nextNino
 
   private val jsonResponse = Json.obj(
     "taxYear"        -> 2017,

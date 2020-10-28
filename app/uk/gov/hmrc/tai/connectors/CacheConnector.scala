@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.Play
+import play.api.{Configuration, Play}
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.DB
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.Cache
-import uk.gov.hmrc.cache.repository.CacheRepository
+import uk.gov.hmrc.cache.repository.{CacheMongoRepository, CacheRepository}
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig

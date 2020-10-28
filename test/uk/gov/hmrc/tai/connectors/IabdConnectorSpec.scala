@@ -19,21 +19,16 @@ package uk.gov.hmrc.tai.connectors
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class IabdConnectorSpec extends PlaySpec with MockitoSugar {
+class IabdConnectorSpec extends BaseSpec {
 
   "IABD Connector" when {
 
@@ -167,8 +162,6 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-  val nino = new Generator(new Random).nextNino
   private val json = Json.arr(
     Json.obj(
       "nino"            -> nino.withoutSuffix,

@@ -26,8 +26,9 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.service.TaiService
+import uk.gov.hmrc.tai.util.BaseSpec
 
-class EstimatedPayCalculatorControllerSpec extends ControllerBaseSpec {
+class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
   "Estimated pay calculator controller" should {
     "return an OK response with CalculatedPay json" when {

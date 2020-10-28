@@ -20,8 +20,6 @@ import com.codahale.metrics.Timer
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -33,18 +31,19 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class BaseConnectorSpec extends PlaySpec with MockitoSugar {
+class BaseConnectorSpec extends BaseSpec {
 
   "BaseConnector" should {
     "get the version from the HttpResponse" when {
       "the HttpResponse contains the ETag header" in {
-        val response: HttpResponse = HttpResponse(200, None, Map("ETag" -> Seq("34")))
+        val response: HttpResponse = HttpResponse(200, "", Map("ETag" -> Seq("34")))
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
@@ -153,7 +152,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
 
         val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakeRtiData)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(fakeResponse))
@@ -193,7 +192,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
             Some(true),
             Some(false)))
 
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakePersonalDetails)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakePersonalDetails), Map[String, Seq[String]]())
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(fakeResponse))
@@ -266,7 +265,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mockAuditor, mockMetrics, mockHttpClient)
 
         val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakeRtiData)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(fakeResponse))
@@ -458,7 +457,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
 
         val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakeRtiData)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(fakeResponse))
@@ -485,7 +484,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
 
         val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakeRtiData)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
           .thenReturn(Future.successful(fakeResponse))
@@ -655,7 +654,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
           PersonDetails("0", Person(None, None, None, None, None, None, None, None, Nino(nino.nino), Some(true), None))
 
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(HttpResponse(Status.LOCKED, None)))
+          .thenReturn(Future.successful(HttpResponse(Status.LOCKED)))
 
         val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(
           HeaderCarrier(),
@@ -856,7 +855,7 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
       "the ETag value is not a valid integer" in {
         val mockHttpClient = mock[HttpClient]
         val sut = createSUT(mock[Auditor], mock[Metrics], mockHttpClient)
-        val response: HttpResponse = HttpResponse(200, None, Map("ETag" -> Seq("BLOM")))
+        val response: HttpResponse = HttpResponse(200, "", Map("ETag" -> Seq("BLOM")))
 
         val ex = the[NumberFormatException] thrownBy sut.getVersionFromHttpHeader(response)
         ex.getMessage mustBe "For input string: \"BLOM\""
@@ -869,15 +868,14 @@ class BaseConnectorSpec extends PlaySpec with MockitoSugar {
   private val responseBodyObject = ResponseObject("ttt", 24)
 
   private val SuccesfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                            -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
+    HttpResponse(200, Json.toJson(responseBodyObject), Map("ETag"                            -> Seq("34")))
+  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
   private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
+    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
   private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
+    HttpResponse(404, JsString("not found"), Map("ETag" -> Seq("34")))
   private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
-  private val nino: Nino = new Generator(new Random).nextNino
+    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
 
   private def createSUT(auditor: Auditor, metrics: Metrics, httpClient: HttpClient) =
     new BaseConnector(auditor, metrics, httpClient) {

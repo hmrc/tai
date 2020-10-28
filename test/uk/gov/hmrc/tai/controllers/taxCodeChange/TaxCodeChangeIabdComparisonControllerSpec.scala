@@ -18,21 +18,19 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthenticationPredicate with MockitoSugar {
+class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
   "taxCodeChangeIabdComparison" should {
     "respond with OK" when {
@@ -72,6 +70,6 @@ class TaxCodeChangeIabdComparisonControllerSpec extends PlaySpec with MockAuthen
   private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
 
   val testController =
-    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate)
+    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate, cc)
 
 }

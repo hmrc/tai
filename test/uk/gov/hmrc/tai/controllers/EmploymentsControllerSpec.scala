@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -30,11 +30,12 @@ import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, I
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 import scala.language.postfixOps
 
-class EmploymentsControllerSpec extends ControllerBaseSpec {
+class EmploymentsControllerSpec extends BaseSpec {
 
   val emp =
     Employment(
@@ -54,6 +55,11 @@ class EmploymentsControllerSpec extends ControllerBaseSpec {
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
 
   val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
+
+  override protected def beforeEach(): Unit = {
+    reset(mockEmploymentService)
+    super.beforeEach()
+  }
 
   "employments" must {
     "return Ok" when {

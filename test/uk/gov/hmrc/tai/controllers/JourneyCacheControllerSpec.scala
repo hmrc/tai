@@ -23,10 +23,11 @@ import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class JourneyCacheControllerSpec extends ControllerBaseSpec {
+class JourneyCacheControllerSpec extends BaseSpec {
 
   private def createSUT(repository: JourneyCacheRepository) =
     new JourneyCacheController(repository, loggedInAuthenticationPredicate, cc)

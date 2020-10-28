@@ -16,17 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
-import uk.gov.hmrc.tai.util.NpsExceptions
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class ControllerErrorHandlerSpec extends PlaySpec with FakeTaiPlayApplication with MockitoSugar with NpsExceptions {
+class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
 
   "ControllerErrorHandler" should {
     "return BAD_REQUEST" when {

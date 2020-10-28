@@ -16,28 +16,24 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import data.NpsData
 import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model._
-import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
+import uk.gov.hmrc.tai.service.{TaiService, TaxAccountService}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TaxSummaryControllerSpec extends ControllerBaseSpec {
+class TaxSummaryControllerSpec extends BaseSpec {
 
   "updateEmployments " must {
     "update the estimated pay when user is doing edit employments successfully " in {

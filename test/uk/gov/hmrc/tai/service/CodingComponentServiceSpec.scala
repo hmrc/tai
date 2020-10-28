@@ -19,8 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -28,13 +26,14 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.CodingComponentRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
+class CodingComponentServiceSpec extends BaseSpec {
 
   "codingComponents" must {
     "return a list of tax components" when {
@@ -71,15 +70,11 @@ class CodingComponentServiceSpec extends PlaySpec with MockitoSugar {
 
   private val codingComponentList = Seq[CodingComponent](
     CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
-    CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description"),
+    CodingComponent(CarFuelBenefit, Some(124), 6666, "some other description"),
     CodingComponent(Commission, Some(125), 777, "some other description"),
     CodingComponent(BalancingCharge, Some(126), 999, "some other description"),
     CodingComponent(NonCodedIncome, Some(1), 100, "Non-Coded-Income")
   )
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private def testCodingComponentService(iabdRepository: CodingComponentRepository) =
     new CodingComponentService(iabdRepository)

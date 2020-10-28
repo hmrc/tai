@@ -20,26 +20,20 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.service.PersonService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class PersonControllerSpec extends ControllerBaseSpec {
+class PersonControllerSpec extends BaseSpec {
 
   "taxPayer method" should {
     "return 200" when {

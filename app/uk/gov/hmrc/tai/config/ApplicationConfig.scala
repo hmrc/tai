@@ -65,7 +65,7 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig(ser
 @Singleton
 class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
     extends BaseConfig(servicesConfig) with HodConfig {
-  lazy val path: String = servicesConfig.getConfString("nps.hod.path", "")
+  lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
   override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
   override lazy val environment = ""

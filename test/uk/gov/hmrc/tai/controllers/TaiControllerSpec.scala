@@ -27,14 +27,16 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TaiControllerTest extends ControllerBaseSpec {
+class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
   "getTaiRoot" should {
 

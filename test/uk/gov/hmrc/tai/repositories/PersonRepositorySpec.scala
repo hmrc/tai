@@ -20,26 +20,20 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+class PersonRepositorySpec extends BaseSpec {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  val nino = new Generator(new Random).nextNino
-  val cacheId = CacheId(nino)
   val address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
   val dateOfBirth = LocalDate.parse("2017-02-01")

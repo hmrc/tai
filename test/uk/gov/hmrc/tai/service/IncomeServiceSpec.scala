@@ -21,8 +21,6 @@ import org.mockito.Matchers
 import org.mockito.Matchers.{any, eq => Meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -33,13 +31,14 @@ import uk.gov.hmrc.tai.model.domain.income.{TaxCodeIncome, _}
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
   "untaxedInterest" must {
     "return total amount only for passed nino and year" when {
@@ -1177,8 +1176,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
   }
 
-  private val nino = new Generator(new Random).nextNino
-  private implicit val hc = HeaderCarrier()
   private val etag = ETag("1")
 
   private val account = BankAccount(3, Some("12345678"), Some("234567"), Some("Bank Name"), 1000, None, None)

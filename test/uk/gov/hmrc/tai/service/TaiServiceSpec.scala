@@ -20,10 +20,8 @@ import data.NpsData
 import org.joda.time.LocalDate
 import org.mockito.Matchers._
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -34,14 +32,14 @@ import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.{IabdType, NpsFormatter, TaxAccount}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
-  private val nino: Nino = new Generator(new Random).nextNino
+class TaiServiceSpec extends BaseSpec with NpsFormatter {
+
   "getTaiRoot" should {
     val version = "101"
     val fakeCidPerson = Person(None, None, None, None, None, None, None, None, Nino(nino.nino), None, None)
@@ -1315,6 +1313,4 @@ class TaiServiceSpec extends PlaySpec with MockitoSugar with NpsFormatter {
   private lazy val totalLiability: NpsTotalLiability = NpsTotalLiability(totalLiability = Some(BigDecimal(11111.12)))
   private lazy val fakeSummary =
     NpsTaxAccount(nino = Some(nino.nino), taxYear = Some(taxYear), totalLiability = Some(totalLiability))
-
-  private implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 }

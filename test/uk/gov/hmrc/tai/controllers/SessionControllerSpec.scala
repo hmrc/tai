@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Mockito.when
 import org.mockito.Matchers.any
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.test.{FakeHeaders, FakeRequest}
+import org.mockito.Mockito.when
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.SessionRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class SessionControllerSpec extends ControllerBaseSpec {
+class SessionControllerSpec extends BaseSpec {
 
   private def createSUT(sessionRepository: SessionRepository) =
     new SessionController(sessionRepository, loggedInAuthenticationPredicate, cc)

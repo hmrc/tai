@@ -16,24 +16,21 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.{ArgumentCaptor, Matchers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
+import org.mockito.{ArgumentCaptor, Matchers}
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class BbsiConnectorSpec extends PlaySpec with MockitoSugar {
+class BbsiConnectorSpec extends BaseSpec {
 
   "BbsiConnector" should {
 
@@ -114,9 +111,6 @@ class BbsiConnectorSpec extends PlaySpec with MockitoSugar {
     source = Some("Customer"),
     numberOfAccountHolders = Some(1)
   )
-
-  private implicit val hc = HeaderCarrier()
-  private val nino = new Generator(new Random).nextNino
 
   private val multipleBankAccounts = Json.obj(
     "nino"    -> nino.nino,

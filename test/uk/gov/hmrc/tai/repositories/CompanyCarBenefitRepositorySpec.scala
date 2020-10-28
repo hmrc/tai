@@ -19,18 +19,16 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CompanyCarConnector}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class CompanyCarBenefitRepositorySpec extends BaseSpec {
 
   "carBenefit" when {
     "there is car benefit in the cache as an empty list" must {

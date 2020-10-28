@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.controllers
-
+package uk.gov.hmrc.tai.connectors
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.mvc.ControllerComponents
-import play.api.test.Helpers.stubControllerComponents
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.ExecutionContext
+import scala.util.Random
 
-trait ControllerBaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar with MockAuthenticationPredicate {
+trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper {
 
-  val cc: ControllerComponents = stubControllerComponents()
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  val nino: Nino = new Generator(new Random).nextNino
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit lazy val cc: ExecutionContext = injector.instanceOf[ExecutionContext]
 }

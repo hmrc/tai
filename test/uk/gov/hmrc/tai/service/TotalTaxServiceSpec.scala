@@ -19,8 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -28,13 +26,14 @@ import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxRepository}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
+class TotalTaxServiceSpec extends BaseSpec {
 
   "totalTax" must {
     "return the income categories that is coming from TotalTaxRepository" in {
@@ -222,10 +221,6 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
 
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   val incomeCategories = Seq(
     IncomeCategory(

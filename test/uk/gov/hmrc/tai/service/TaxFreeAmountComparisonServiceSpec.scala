@@ -16,26 +16,21 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import org.mockito.Matchers.any
 import org.mockito.Matchers
+import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import scala.concurrent.duration._
-import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
-
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
+class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryConstants {
 
   "taxFreeAmountComparison" should {
     "return a sequence of current coding components" when {
@@ -212,10 +207,6 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  private val nino: Nino = new Generator(new Random).nextNino
 
   private def createTestService(
     taxCodeChangeService: TaxCodeChangeServiceImpl,

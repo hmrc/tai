@@ -20,8 +20,6 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{doNothing, verify, when}
 import org.mockito.{ArgumentCaptor, Matchers}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -30,15 +28,13 @@ import uk.gov.hmrc.tai.model.CloseAccountRequest
 import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.BbsiRepository
-import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
-class BbsiServiceSpec extends PlaySpec with MockitoSugar {
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+class BbsiServiceSpec extends BaseSpec {
 
   "Bbsi Service" must {
     "return bank accounts" in {
@@ -213,7 +209,6 @@ class BbsiServiceSpec extends PlaySpec with MockitoSugar {
   }
 
   private val bankAccount = BankAccount(1, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-  private val nino = new Generator(new Random).nextNino
   private def createSUT(
     bbsiRepository: BbsiRepository,
     iFormSubmissionService: IFormSubmissionService,

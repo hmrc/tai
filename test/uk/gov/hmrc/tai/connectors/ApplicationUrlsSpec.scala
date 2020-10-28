@@ -17,16 +17,12 @@
 package uk.gov.hmrc.tai.connectors
 
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.util.Random
-
-class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
+class ApplicationUrlsSpec extends BaseSpec {
 
   val mockConfigNps = mock[NpsConfig]
   val mockConfigDes = mock[DesConfig]
@@ -44,8 +40,6 @@ class ApplicationUrlsSpec extends PlaySpec with MockitoSugar {
     when(mockFeatureToggleConfig.desEnabled).thenReturn(desEnabled)
     when(mockFeatureToggleConfig.confirmedAPIEnabled).thenReturn(confirmedAPIEnabled)
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
 
   "RtiUrls" must {
     "return the correct urls" when {

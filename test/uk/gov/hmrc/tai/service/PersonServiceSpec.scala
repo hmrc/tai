@@ -20,19 +20,16 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class PersonServiceSpec extends PlaySpec with MockitoSugar {
+class PersonServiceSpec extends BaseSpec {
 
   "person method" must {
     "return a person model instance, retrieved from the person repository" in {
@@ -52,8 +49,6 @@ class PersonServiceSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  implicit val hc = HeaderCarrier()
-  val nino: Nino = new Generator(new Random).nextNino
   val person = Person(
     nino,
     "firstname",

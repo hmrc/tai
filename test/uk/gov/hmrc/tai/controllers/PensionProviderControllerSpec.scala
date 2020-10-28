@@ -26,10 +26,11 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
 import uk.gov.hmrc.tai.service.PensionProviderService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class PensionProviderControllerSpec extends ControllerBaseSpec {
+class PensionProviderControllerSpec extends BaseSpec {
 
   "addPensionProvider" must {
     "return envelope Id" when {

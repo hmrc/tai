@@ -19,25 +19,20 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, Caching, IabdConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.MongoConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class IabdRepositorySpec extends PlaySpec with MockitoSugar with MongoConstants {
+class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-  val nino = new Generator(new Random).nextNino
   val cacheConnector = mock[CacheConnector]
   val metrics = mock[Metrics]
   val cacheConfig = mock[CacheMetricsConfig]

@@ -23,11 +23,9 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json, Reads}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -38,15 +36,13 @@ import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters.annualAcc
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.WireMockHelper
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class RtiConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
+class RtiConnectorSpec extends ConnectorBaseSpec {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val reads: Reads[Seq[AnnualAccount]] = annualAccountHodReads
   val mockRtiToggle = mock[RtiToggleConfig]
 
@@ -121,7 +117,7 @@ class RtiConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
     "have get RTI" when {
       "given a valid Nino and TaxYear" in {
         val fakeRtiData = RtiData(nino.withoutSuffix, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakeRtiData)))
+        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
 
         val mockHttpClient = mock[HttpClient]
         when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
@@ -305,16 +301,15 @@ class RtiConnectorSpec extends PlaySpec with WireMockHelper with MockitoSugar {
     }
   }
 
-  val nino: Nino = new Generator(new Random).nextNino
   val taxyear = TaxYear(2017)
 
-  lazy val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
+  lazy val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
   lazy val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
+    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
   lazy val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
+    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
   val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, Some(JsString("not found")), Map("ETag" -> Seq("34")))
+    HttpResponse(404, JsString("not found"), Map("ETag" -> Seq("34")))
 
   private def createSUT(
     httpClient: HttpClient = mock[HttpClient],

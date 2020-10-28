@@ -18,30 +18,20 @@ package uk.gov.hmrc.tai.controllers.income
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
-import uk.gov.hmrc.tai.controllers.benefits.BenefitsController
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.service.{BankAccountNotFound, BbsiService}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class BbsiControllerSpec extends BaseSpec {
 
   "Bbsi details" must {
     "return OK" in {
@@ -352,5 +342,5 @@ class BbsiControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticat
   private def createSUT(
     bbsiService: BbsiService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new BbsiController(bbsiService, authentication)
+    new BbsiController(bbsiService, authentication, cc)
 }

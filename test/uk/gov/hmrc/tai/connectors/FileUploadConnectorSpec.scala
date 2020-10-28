@@ -23,28 +23,24 @@ import org.junit.After
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc.MultipartFormData
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
-
-  implicit val hc = HeaderCarrier()
+class FileUploadConnectorSpec extends BaseSpec {
 
   "createEnvelope" must {
     "return an envelope id" in {

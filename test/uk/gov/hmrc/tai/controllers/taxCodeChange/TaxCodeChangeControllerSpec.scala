@@ -19,27 +19,23 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
 import uk.gov.hmrc.tai.service.TaxCodeChangeServiceImpl
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeControllerSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with TaxCodeHistoryConstants {
+class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants {
 
   "hasTaxCodeChanged" should {
 
@@ -260,8 +256,8 @@ class TaxCodeChangeControllerSpec
               "taxCodeId"        -> 1,
               "taxCode"          -> "code",
               "basisOfOperation" -> "Cumulative",
-              "startDate"        -> LocalDate.now(),
-              "endDate"          -> LocalDate.now().plusDays(1),
+              "startDate"        -> LocalDate.now().toString,
+              "endDate"          -> LocalDate.now().plusDays(1).toString,
               "employerName"     -> "Employer 1",
               "payrollNumber"    -> "1234",
               "pensionIndicator" -> false,
@@ -293,6 +289,6 @@ class TaxCodeChangeControllerSpec
   val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
   val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService)
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, cc)
   private def ninoGenerator = new Generator(new Random).nextNino
 }

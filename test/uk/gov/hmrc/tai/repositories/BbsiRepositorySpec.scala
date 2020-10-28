@@ -19,17 +19,15 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{never, times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class BbsiRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class BbsiRepositorySpec extends BaseSpec {
 
   "Bbsi Repository" must {
 

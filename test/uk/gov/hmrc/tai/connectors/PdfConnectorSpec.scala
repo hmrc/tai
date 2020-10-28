@@ -20,19 +20,17 @@ import akka.util.ByteString
 import com.codahale.metrics.Timer
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import uk.gov.hmrc.http.HttpException
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PdfConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+class PdfConnectorSpec extends BaseSpec {
 
   "PdfConnector" must {
 

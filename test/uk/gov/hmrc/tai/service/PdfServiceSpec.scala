@@ -18,16 +18,15 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.connectors.PdfConnector
-
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.tai.connectors.PdfConnector
+import uk.gov.hmrc.tai.util.BaseSpec
 
-class PdfServiceSpec extends PlaySpec with MockitoSugar {
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
+
+class PdfServiceSpec extends BaseSpec {
 
   "PdfService" should {
     "return the pdf as bytes " when {

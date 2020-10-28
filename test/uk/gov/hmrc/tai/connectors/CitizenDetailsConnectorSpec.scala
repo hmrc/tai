@@ -22,29 +22,21 @@ import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.Application
-import play.api.libs.json._
 import play.api.http.Status._
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.domain.{Generator, Nino}
+import play.api.libs.json._
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 import uk.gov.hmrc.tai.model.nps._
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class CitizenDetailsConnectorSpec
-    extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with IntegrationPatience {
+class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
 
   "Get data from citizen-details service" must {
     "return person information when requesting " in {
@@ -303,9 +295,6 @@ class CitizenDetailsConnectorSpec
                                         |   "etag":"$etag"
                                         |}
     """.stripMargin)
-
-  implicit val hc = HeaderCarrier()
-  private val nino: Nino = new Generator(new Random).nextNino
 
   private lazy val citizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
 

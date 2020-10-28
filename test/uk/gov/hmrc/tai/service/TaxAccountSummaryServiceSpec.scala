@@ -19,8 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.mockito.Matchers
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -29,13 +27,14 @@ import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
+class TaxAccountSummaryServiceSpec extends BaseSpec {
 
   "taxFreeAmountCalculation" must {
     "return zero" when {
@@ -446,10 +445,6 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
       }
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private val totalTaxDetails = TotalTax(0, Seq.empty[IncomeCategory], None, None, None)
 

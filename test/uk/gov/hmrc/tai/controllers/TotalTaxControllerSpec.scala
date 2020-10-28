@@ -28,13 +28,13 @@ import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalT
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TotalTaxService
-import uk.gov.hmrc.tai.util.NpsExceptions
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TotalTaxControllerSpec extends ControllerBaseSpec with NpsExceptions {
+class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
   "totalTax" must {
     "return the total tax details for the given year" in {

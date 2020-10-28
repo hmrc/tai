@@ -19,19 +19,18 @@ package uk.gov.hmrc.tai.service
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.mockito.{Matchers, Mockito}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
+class FileUploadServiceSpec extends BaseSpec {
 
   "FileUploadService" must {
 
@@ -254,8 +253,6 @@ class FileUploadServiceSpec extends PlaySpec with MockitoSugar {
     }
 
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val fileName = "EndEmployment.pdf"
   private val fileId = "EndEmployment"

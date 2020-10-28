@@ -6,7 +6,6 @@ object AppDependencies {
   private val playVersion = "play-26"
   
   private val pegdownVersion = "1.6.0"
-  private val scalatestVersion = "2.2.6"
 
   val compile = Seq(
     filters,
@@ -28,7 +27,7 @@ object AppDependencies {
     "org.jsoup"              %  "jsoup"              % "1.7.3" % scope,
     "org.scalacheck"         %% "scalacheck"         % "1.12.5" % scope,
     "org.mockito"            %  "mockito-core"       % "1.9.5",
-    "com.github.tomakehurst" %  "wiremock"           % "2.15.0" % scope
+    "com.github.tomakehurst" %  "wiremock-jre8"      % "2.27.2" % scope
   )
 
   def apply(): Seq[ModuleID] = compile ++ compileTest

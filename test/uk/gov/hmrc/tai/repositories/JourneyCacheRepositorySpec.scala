@@ -21,25 +21,16 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.tai.connectors.CacheConnector
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 
-import scala.util.Random
-
-class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  val nino = new Generator(Random).nextNino
-  val cacheId = CacheId(Nino(nino.value))
+class JourneyCacheRepositorySpec extends BaseSpec {
 
   private def createSUT(cacheConnector: CacheConnector) = new JourneyCacheRepository(cacheConnector)
 

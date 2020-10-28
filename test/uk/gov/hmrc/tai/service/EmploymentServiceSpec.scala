@@ -22,9 +22,6 @@ import org.joda.time.LocalDate
 import org.mockito.Matchers
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{doNothing, times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
@@ -32,14 +29,13 @@ import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
-import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
+class EmploymentServiceSpec extends BaseSpec {
 
   "EmploymentService" should {
     "return employments for passed nino and year" in {
@@ -411,9 +407,6 @@ class EmploymentServiceSpec extends PlaySpec with MockitoSugar {
         .sendDataEvent(Matchers.eq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), Matchers.eq(map))(any())
     }
   }
-
-  private implicit val hc = HeaderCarrier()
-  private val nino = new Generator(new Random).nextNino
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
 

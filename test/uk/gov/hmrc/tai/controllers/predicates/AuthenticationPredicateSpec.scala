@@ -18,11 +18,8 @@ package uk.gov.hmrc.tai.controllers.predicates
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
-import play.api.mvc.{Action, AnyContent, ControllerComponents, InjectedController}
+import play.api.mvc.{Action, AnyContent, InjectedController}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
@@ -31,22 +28,18 @@ import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
-class AuthenticationPredicateSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
+class AuthenticationPredicateSpec extends BaseSpec {
 
   class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
     def get: Action[AnyContent] = authentication.async { implicit request =>
       Future.successful(Ok)
     }
   }
-
-  val cc: ControllerComponents = stubControllerComponents()
-  implicit lazy val ec: ExecutionContextExecutor = ExecutionContext.Implicits.global
 
   object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService, cc)
 

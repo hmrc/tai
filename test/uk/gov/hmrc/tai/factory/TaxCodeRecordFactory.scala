@@ -58,7 +58,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       "basisOfOperation"  -> basisOfOperation,
       "employerName"      -> employerName,
       "operatedTaxCode"   -> true,
-      "dateOfCalculation" -> dateOfCalculation,
+      "dateOfCalculation" -> dateOfCalculation.toString,
       "payrollNumber"     -> payrollNumber,
       "pensionIndicator"  -> false,
       "employmentType"    -> Primary
@@ -97,7 +97,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       "basisOfOperation"  -> basisOfOperation,
       "employerName"      -> employerName,
       "operatedTaxCode"   -> true,
-      "dateOfCalculation" -> dateOfCalculation,
+      "dateOfCalculation" -> dateOfCalculation.toString,
       "payrollNumber"     -> payrollNumber,
       "pensionIndicator"  -> false,
       "employmentType"    -> Secondary
@@ -117,7 +117,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       "basisOfOperation"  -> basisOfOperation,
       "employerName"      -> employerName,
       "operatedTaxCode"   -> true,
-      "dateOfCalculation" -> dateOfCalculation,
+      "dateOfCalculation" -> dateOfCalculation.toString,
       "payrollNumber"     -> JsNull,
       "pensionIndicator"  -> false,
       "employmentType"    -> employmentType

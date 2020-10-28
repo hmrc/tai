@@ -18,22 +18,18 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.Matchers
 import org.mockito.Mockito._
-
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class CachingSpec extends PlaySpec with MockitoSugar {
+class CachingSpec extends BaseSpec {
 
   "cache" must {
     "return the json from cache" when {
@@ -68,10 +64,6 @@ class CachingSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-
-  val nino = new Generator(Random).nextNino
-  val cacheId = CacheId(nino)
   val mongoKey = "mongoKey1"
 
   def cacheTest = new CachingTest

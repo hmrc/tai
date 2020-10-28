@@ -19,29 +19,33 @@ package uk.gov.hmrc.tai.mocks
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, Suite}
+import org.scalatest._
+import play.api.mvc.ControllerComponents
+import play.api.test.Helpers.stubControllerComponents
+import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
-import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, MissingBearerToken}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
-  self: Suite =>
+  suite: TestSuite =>
+
+  val cc: ControllerComponents = stubControllerComponents()
 
   val mockAuthService = mock[AuthorisedFunctions]
 
-  val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService)
+  lazy val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService, cc)
 
   val nino = new Generator(Random).nextNino
-
-  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
+  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("some session id")))
   val cacheId = CacheId(nino)
 
   val testAuthSuccessResponse = new ~(Some(nino.value), None)
@@ -51,6 +55,7 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
     reset(mockAuthService)
     setupMockAuthRetrievalSuccess(testAuthSuccessResponse)
   }
+  override protected def afterEach(): Unit = super.afterEach()
 
   def setupMockAuthRetrievalSuccess[X, Y](retrievalValue: X ~ Y): Unit =
     when(mockAuthService.authorised(any()))
@@ -61,5 +66,4 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
               body.apply(retrievalValue.asInstanceOf[A])
           }
       })
-
 }
