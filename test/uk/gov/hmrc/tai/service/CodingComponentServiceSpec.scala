@@ -65,7 +65,7 @@ class CodingComponentServiceSpec extends BaseSpec {
 
   private val codingComponentList = Seq[CodingComponent](
     CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
-    CodingComponent(CarFuelBenefit, Some(124), 6666, "some other description"),
+    CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description"),
     CodingComponent(Commission, Some(125), 777, "some other description"),
     CodingComponent(BalancingCharge, Some(126), 999, "some other description"),
     CodingComponent(NonCodedIncome, Some(1), 100, "Non-Coded-Income")
