@@ -61,7 +61,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfte
 
     when(taiCacheRepository.repo).thenReturn(cacheRepository)
 
-    new CacheConnector(taiCacheRepository, mongoConfig)
+    new CacheConnector(taiCacheRepository, mongoConfig, configuration)
   }
 
   override protected def beforeEach(): Unit =

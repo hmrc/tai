@@ -4,6 +4,7 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 import org.mockito.Mockito
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Configuration
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -29,12 +30,13 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
   private val atMost = 5 seconds
 
+  lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   val mockMongo: MongoConfig = mock[MongoConfig]
   Mockito.when(mockMongo.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(), mockMongo) {}
+  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(), mockMongo, configuration) {}
 
     "Cache Connector" should {
       "insert and read the data from mongodb" when {
