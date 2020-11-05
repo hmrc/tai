@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
@@ -28,14 +27,14 @@ import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, Employm
 import uk.gov.hmrc.tai.model.error.{EmploymentNotFound, EmploymentRetrievalError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentRepository @Inject()(
   rtiConnector: RtiConnector,
   cacheConnector: CacheConnector,
   npsConnector: NpsConnector,
-  employmentBuilder: EmploymentBuilder) {
+  employmentBuilder: EmploymentBuilder)(implicit ec: ExecutionContext) {
 
   private def employmentMongoKey(taxYear: TaxYear) = s"EmploymentData-${taxYear.year}"
 

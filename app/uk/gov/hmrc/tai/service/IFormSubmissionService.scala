@@ -26,14 +26,13 @@ import uk.gov.hmrc.tai.model.templates.PdfSubmission
 import uk.gov.hmrc.tai.repositories.PersonRepository
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IFormSubmissionService @Inject()(
   personRepository: PersonRepository,
   pdfService: PdfService,
-  fileUploadService: FileUploadService) {
+  fileUploadService: FileUploadService)(implicit ec: ExecutionContext) {
 
   private def iformFilename(envelopeId: String, iformSubmissionKey: String) =
     s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"

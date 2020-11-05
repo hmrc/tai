@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -32,7 +31,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
@@ -42,7 +41,7 @@ class RtiConnector @Inject()(
   auditor: Auditor,
   rtiConfig: DesConfig,
   urls: RtiUrls,
-  rtiToggle: RtiToggleConfig)
+  rtiToggle: RtiToggleConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId = rtiConfig.originatorId

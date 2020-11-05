@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.Play
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.{Configuration, Play}
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.Cache
@@ -28,18 +27,22 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protecte
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaiCacheRepository @Inject() extends TimeToLive {
-  private val expireAfter: Long = defaultExpireAfter
-  val repo: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
+class TaiCacheRepository @Inject()(implicit ec: ExecutionContext) extends TimeToLive {
+  private lazy val expireAfter: Long = defaultExpireAfter
+  lazy val repo: CacheRepository = CacheRepository("TAI", expireAfter, Cache.mongoFormats)
 }
 @Singleton
-class CacheConnector @Inject()(cacheRepository: TaiCacheRepository, mongoConfig: MongoConfig) extends MongoFormatter {
+class CacheConnector @Inject()(
+  cacheRepository: TaiCacheRepository,
+  mongoConfig: MongoConfig,
+  configuration: Configuration)(implicit ec: ExecutionContext)
+    extends MongoFormatter {
 
-  implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(
-    Play.current.configuration.underlying).JsonCrypto
+  implicit lazy val compositeSymmetricCrypto
+    : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {

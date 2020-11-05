@@ -16,26 +16,20 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
+class TaxAccountSummaryServiceSpec extends BaseSpec {
 
   "taxFreeAmountCalculation" must {
     "return zero" when {
@@ -125,15 +119,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         )
 
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -191,15 +185,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         )
 
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -247,15 +241,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         )
 
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -315,15 +309,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
         )
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -344,15 +338,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
           CodingComponent(PersonalAllowancePA, Some(234), 5000, "PersonalAllowancePA")
         )
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -383,15 +377,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
           CodingComponent(GiftAidPayments, Some(234), 5000, "GiftAid")
         )
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(1111)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -417,15 +411,15 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
           CodingComponent(PersonalAllowancePA, Some(234), 11500, "PersonalAllowancePA")
         )
         val mockcodingComponentService = mock[CodingComponentService]
-        when(mockcodingComponentService.codingComponents(Matchers.eq(nino), any())(any()))
+        when(mockcodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(Matchers.eq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-        when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), any())(any()))
+        when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), any())(any()))
           .thenReturn(Future.successful(BigDecimal(0)))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -446,10 +440,6 @@ class TaxAccountSummaryServiceSpec extends PlaySpec with MockitoSugar {
       }
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private val totalTaxDetails = TotalTax(0, Seq.empty[IncomeCategory], None, None, None)
 

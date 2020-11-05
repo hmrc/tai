@@ -25,11 +25,10 @@ import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)
+class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(implicit ec: ExecutionContext)
     extends MongoConstants with IabdHodFormatters {
 
   def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =

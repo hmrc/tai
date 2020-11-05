@@ -17,29 +17,23 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class BenefitsControllerSpec extends BaseSpec {
 
   "benefits" must {
     "return Benefits case class with empty lists" when {
@@ -50,7 +44,7 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(emptyBenefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -92,7 +86,7 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(benefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -146,13 +140,10 @@ class BenefitsControllerSpec extends PlaySpec with MockitoSugar with MockAuthent
         val employmentId = 1
 
         val mockBenefitService = mock[BenefitsService]
-        when(
-          mockBenefitService.removeCompanyBenefits(
-            Matchers.eq(nino),
-            Matchers.eq(employmentId),
-            Matchers.eq(removeCompanyBenefit))(any())).thenReturn(Future.successful(envelopeId))
+        when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(employmentId), meq(removeCompanyBenefit))(any()))
+          .thenReturn(Future.successful(envelopeId))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
             .withHeaders(("content-type", "application/json")))

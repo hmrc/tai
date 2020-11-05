@@ -33,24 +33,25 @@ package uk.gov.hmrc.tai.controllers.expenses
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
-import uk.gov.hmrc.tai.controllers.predicates.{AuthenticatedRequest, AuthenticationPredicate}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
-import uk.gov.hmrc.tai.model.domain.income.{IabdUpdateSource, Internet}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class EmployeeExpensesController @Inject()(
   authentication: AuthenticationPredicate,
-  employeeExpensesService: EmployeeExpensesService
-) extends BaseController with ApiFormats with ControllerErrorHandler {
+  employeeExpensesService: EmployeeExpensesService,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def updateWorkingFromHomeExpenses(nino: Nino, year: TaxYear, iabd: Int): Action[JsValue] =
     callUpdateEmployeeExpensesData(nino, year, iabd, EmployeeExpensesController.workingFromHome)

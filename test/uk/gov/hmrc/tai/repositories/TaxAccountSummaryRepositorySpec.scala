@@ -16,27 +16,21 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.domain.{CommunityInvestmentTaxCredit, EstimatedTaxYouOweThisYear, OutstandingDebt, UnderPaymentFromPreviousYear}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.domain
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaxAccountSummaryRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+class TaxAccountSummaryRepositorySpec extends BaseSpec {
 
   "TaxAccountSummary" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
@@ -381,10 +375,6 @@ class TaxAccountSummaryRepositorySpec extends PlaySpec with MockitoSugar with Fa
       }
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private val codingComponent = CodingComponent(UnderPaymentFromPreviousYear, Some(1), 100, "", Some(100))
 

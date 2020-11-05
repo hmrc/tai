@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.audit
-
-import com.google.inject.{Inject, Singleton}
+package uk.gov.hmrc.tai.connectors
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.ExecutionContext
+import scala.util.Random
 
-@Singleton
-class Auditor @Inject()(audit: AuditConnector)(implicit ec: ExecutionContext) {
+trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper {
 
-  def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
-    audit.sendExplicitAudit(transactionName, detail)
+  val nino: Nino = new Generator(new Random).nextNino
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit lazy val cc: ExecutionContext = injector.instanceOf[ExecutionContext]
 }

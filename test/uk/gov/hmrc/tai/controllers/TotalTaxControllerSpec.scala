@@ -16,38 +16,29 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
-import scala.language.postfixOps
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, LockedException}
+import uk.gov.hmrc.http.{BadRequestException, LockedException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TotalTaxService
-import uk.gov.hmrc.tai.util.NpsExceptions
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
+import scala.language.postfixOps
 
-class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
+class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
   "totalTax" must {
     "return the total tax details for the given year" in {
       val mockTotalTaxService = mock[TotalTaxService]
-      when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(totalTax))
 
       val sut = createSUT(mockTotalTaxService)
@@ -128,7 +119,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
     "return the bad request exception" when {
       "hod throws coding calculation error for cy+1" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException(CodingCalculationCYPlusOne)))
 
         val sut = createSUT(mockTotalTaxService)
@@ -138,7 +129,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
 
       "hod throws bad request for cy" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new BadRequestException("Cannot perform a Coding Calculation for CY")))
 
         val sut = createSUT(mockTotalTaxService)
@@ -150,7 +141,7 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
     "return Locked exception" when {
       "hod throws locked exception" in {
         val mockTotalTaxService = mock[TotalTaxService]
-        when(mockTotalTaxService.totalTax(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTotalTaxService.totalTax(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTotalTaxService)
@@ -197,6 +188,6 @@ class TotalTaxControllerSpec extends PlaySpec with MockitoSugar with NpsExceptio
   private def createSUT(
     totalTaxService: TotalTaxService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TotalTaxController(totalTaxService, authentication)
+    new TotalTaxController(totalTaxService, authentication, cc)
 
 }

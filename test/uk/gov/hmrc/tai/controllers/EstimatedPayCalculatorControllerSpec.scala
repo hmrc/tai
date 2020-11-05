@@ -17,23 +17,18 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.service.TaiService
+import uk.gov.hmrc.tai.util.BaseSpec
 
-class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
   "Estimated pay calculator controller" should {
     "return an OK response with CalculatedPay json" when {
@@ -65,7 +60,7 @@ class EstimatedPayCalculatorControllerSpec extends PlaySpec with MockitoSugar wi
   private def createSUT(
     taiService: TaiService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new EstimatedPayCalculatorController(taiService, authentication)
+    new EstimatedPayCalculatorController(taiService, authentication, cc)
 
   val date = new LocalDate(2017, 4, 14)
 

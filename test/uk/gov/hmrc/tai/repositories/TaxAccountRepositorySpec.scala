@@ -16,42 +16,29 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{HodsSource, MongoConstants}
+import uk.gov.hmrc.tai.util.{BaseSpec, HodsSource, MongoConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TaxAccountRepositorySpec
-    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with HodsSource with MongoConstants {
+class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConstants {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-
-  val nino = new Generator(new Random).nextNino
   val metrics = mock[Metrics]
   val cacheConfig = mock[CacheMetricsConfig]
   val iabdConnector = mock[IabdConnector]
   val cacheConnector = mock[CacheConnector]
 
   val taxAccountConnector = mock[TaxAccountConnector]
-  val cacheId = CacheId(nino)
 
   "updateTaxCodeAmount" should {
     "update tax code amount" in {
@@ -123,7 +110,7 @@ class TaxAccountRepositorySpec
 
           val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-          when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+          when(cacheConnector.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
             .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
 
           val sut = createSUT(cache, taxAccountConnector)
@@ -140,16 +127,15 @@ class TaxAccountRepositorySpec
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
 
-      when(cacheConnector.findJson(Matchers.eq(cacheId), Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}")))
+      when(cacheConnector.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(None))
 
       when(
-        cacheConnector.createOrUpdateJson(
-          Matchers.eq(cacheId),
-          Matchers.eq(taxAccountJsonResponse),
-          Matchers.eq(s"$TaxAccountBaseKey${taxYear.year}"))).thenReturn(Future.successful(taxAccountJsonResponse))
+        cacheConnector
+          .createOrUpdateJson(meq(cacheId), meq(taxAccountJsonResponse), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+        .thenReturn(Future.successful(taxAccountJsonResponse))
 
-      when(taxAccountConnector.taxAccount(Matchers.eq(nino), Matchers.eq(taxYear))(any()))
+      when(taxAccountConnector.taxAccount(meq(nino), meq(taxYear))(any()))
         .thenReturn(Future.successful(taxAccountJsonResponse))
 
       val sut = createSUT(cache, taxAccountConnector)
@@ -168,7 +154,7 @@ class TaxAccountRepositorySpec
 
         val jsonResponse = Future.successful(Json.obj())
 
-        when(taxAccountConnector.taxAccountHistory(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+        when(taxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
           .thenReturn(jsonResponse)
 
         val result = sut.taxAccountForTaxCodeId(nino, taxCodeId)

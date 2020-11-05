@@ -18,21 +18,24 @@ package uk.gov.hmrc.tai.controllers.benefits
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.model.domain.benefits.WithdrawCarAndFuel
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CompanyCarBenefitController @Inject()(
   companyCarBenefitService: BenefitsService,
-  authentication: AuthenticationPredicate)
-    extends BaseController with ApiFormats with ControllerErrorHandler {
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     companyCarBenefitService.companyCarBenefits(nino).map {

@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.service.{FileUploadService, Open}
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
+import uk.gov.hmrc.tai.util.BaseSpec
 
-class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+
+class FileUploadControllerSpec extends BaseSpec {
 
   "fileUploadCallback" must {
 
@@ -46,7 +45,7 @@ class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
         body = json)
 
       val mockFileUploadService = mock[FileUploadService]
-      when(mockFileUploadService.fileUploadCallback(Matchers.eq(json.as[FileUploadCallback]))(any()))
+      when(mockFileUploadService.fileUploadCallback(meq(json.as[FileUploadCallback]))(any()))
         .thenReturn(Future.successful(Open))
 
       val sut = createSUT(mockFileUploadService)
@@ -57,5 +56,5 @@ class FileUploadControllerSpec extends PlaySpec with MockitoSugar {
   }
 
   private def createSUT(fileUploadService: FileUploadService) =
-    new FileUploadController(fileUploadService)
+    new FileUploadController(fileUploadService, cc)
 }

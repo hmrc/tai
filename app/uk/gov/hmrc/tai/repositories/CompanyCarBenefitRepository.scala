@@ -20,15 +20,15 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CompanyCarConnector}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.util.MongoConstants
 
 @Singleton
-class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector)
+class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector)(
+  implicit ec: ExecutionContext)
     extends MongoConstants {
 
   def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {

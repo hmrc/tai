@@ -17,13 +17,10 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
@@ -33,13 +30,13 @@ import uk.gov.hmrc.tai.model.domain.income.{TaxCodeIncome, _}
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
   "untaxedInterest" must {
     "return total amount only for passed nino and year" when {
@@ -192,7 +189,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return a list of live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             taxCodeIncomes
@@ -212,10 +209,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return a list of ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(
           Future.successful(
             Seq(
@@ -234,10 +231,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return a list of potentially ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(
           Future.successful(
             Seq(
@@ -256,13 +253,13 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return a list of not live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             taxCodeIncomes
           ))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(
           Future.successful(
             Seq(
@@ -286,10 +283,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return empty JSON when no records match" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(taxCodeIncome.copy(employmentId = None))))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -302,10 +299,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return list of live and matched pension TaxCodeIncomes for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -349,10 +346,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return empty json when there are no matching live employments" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -364,10 +361,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return empty json when there are no matching live pensions" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -378,10 +375,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return empty json when there are no TaxCodeIncome records for a given nino" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq(employment)))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -392,10 +389,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
 
     "return empty json when there are no employment records for a given nino" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty[Employment]))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
@@ -476,10 +473,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             sequenceNumber = 1,
             endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -499,10 +496,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     "return empty json when no employments have an end date" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -515,7 +512,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     "return empty json when TaxCodeIncomes do not have an Id" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             Seq(
@@ -534,7 +531,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               )
             )))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -547,10 +544,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     "return empty Json when there are no TaxCodeIncome records for a given nino" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -562,7 +559,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "return empty json when there are no employment records for a given nino" in {
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             Seq(
@@ -581,7 +578,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
               )
             )))
 
-      when(mockEmploymentService.employments(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any[HeaderCarrier]))
+      when(mockEmploymentService.employments(meq(nino), meq(TaxYear().next))(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty[Employment]))
 
       val nextTaxYear = TaxYear().next
@@ -719,7 +716,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
               any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -748,8 +745,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             "employmentId"  -> "1",
             "newAmount"     -> "1234",
             "currentAmount" -> "123.45")
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(
-            any())
+          verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
         }
 
         "the current amount is not provided due to no incomes returned" in {
@@ -783,7 +779,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
               any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -813,8 +809,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             "newAmount"     -> "1234",
             "currentAmount" -> "Unknown")
 
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(
-            any())
+          verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
 
         }
 
@@ -863,7 +858,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
               any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -893,8 +888,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             "newAmount"     -> "1234",
             "currentAmount" -> "Unknown")
 
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(
-            any())
+          verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
 
         }
       }
@@ -941,7 +935,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
-            mockTaxAccountRepository.updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), any(), any(), any(), any())(
+            mockTaxAccountRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
               any())
           ).thenReturn(
             Future.successful(HodUpdateFailure)
@@ -1011,7 +1005,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           val mockTaxAccountRepository = mock[TaxAccountRepository]
           when(
             mockTaxAccountRepository
-              .updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
+              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
@@ -1031,7 +1025,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           result mustBe IncomeUpdateSuccess
           verify(mockTaxAccountRepository, times(1))
-            .updateTaxCodeAmount(Meq(nino), Meq(taxYear), any(), Meq(1), any(), Meq(1234))(any())
+            .updateTaxCodeAmount(meq(nino), meq(taxYear), any(), meq(1), any(), meq(1234))(any())
 
           val auditMap = Map(
             "nino"          -> nino.value,
@@ -1040,8 +1034,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             "newAmount"     -> "1234",
             "currentAmount" -> "123.45")
 
-          verify(mockAuditor).sendDataEvent(Matchers.eq("Update Multiple Employments Data"), Matchers.eq(auditMap))(
-            any())
+          verify(mockAuditor).sendDataEvent(meq("Update Multiple Employments Data"), meq(auditMap))(any())
         }
       }
     }
@@ -1088,7 +1081,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
       when(
         mockTaxAccountRepository
-          .updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
+          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
       )
@@ -1153,7 +1146,7 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
       when(
         mockTaxAccountRepository
-          .updateTaxCodeAmount(any(), Meq[TaxYear](taxYear), Matchers.eq(1), any(), any(), any())(any())
+          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
       )
@@ -1177,8 +1170,6 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with ScalaFutures {
     }
   }
 
-  private val nino = new Generator(new Random).nextNino
-  private implicit val hc = HeaderCarrier()
   private val etag = ETag("1")
 
   private val account = BankAccount(3, Some("12345678"), Some("234567"), Some("Bank Name"), 1000, None, None)

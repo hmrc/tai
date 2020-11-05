@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import data.NpsData
-import org.joda.time.LocalDate
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps._

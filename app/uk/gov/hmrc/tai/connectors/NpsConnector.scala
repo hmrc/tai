@@ -24,7 +24,6 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -35,7 +34,7 @@ import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NpsConnector @Inject()(
@@ -43,7 +42,7 @@ class NpsConnector @Inject()(
   httpClient: HttpClient,
   auditor: Auditor,
   formats: IabdUpdateAmountFormats,
-  config: NpsConfig)
+  config: NpsConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
   override val originatorId = config.originatorId

@@ -25,11 +25,11 @@ import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCarBenefit, WithdrawCarAndF
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls) extends CompanyCarBenefitFormatters {
+class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext)
+    extends CompanyCarBenefitFormatters {
 
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI) map { json =>

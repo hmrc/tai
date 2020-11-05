@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -118,7 +117,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
         unifiedEmployments.size mustBe 2
 
-        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
 
       "an AnnualAccount record has more than one Employment record that matches by employer designation, " +
@@ -178,7 +177,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
 
       "multiple AnnualAccount records match the same employment record by employer designation" in new EmploymentBuilderSetup {
@@ -261,7 +260,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
         unifiedEmployments.size mustBe 2
 
-        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
     }
 
@@ -335,7 +334,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        verify(mockAuditor, times(1)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
 
       "no AnnualAccount records are available" in new EmploymentBuilderSetup {
@@ -403,7 +402,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        verify(mockAuditor, times(0)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
 
       "multiple AnnualAccounts exist for one employment record, another record has no corresponding account records, " +
@@ -478,7 +477,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        verify(mockAuditor, times(1)).sendDataEvent(Matchers.eq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
     }
   }

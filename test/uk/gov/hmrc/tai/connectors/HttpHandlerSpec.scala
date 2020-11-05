@@ -17,24 +17,21 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+class HttpHandlerSpec extends BaseSpec {
 
   "getFromAPI" should {
     "return valid json" when {
@@ -56,7 +53,7 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplica
 
         response mustBe Json.toJson(responseBodyObject)
 
-        verify(mockHttp, times(1)).GET(Matchers.eq(testUrl))(any(), any(), any())
+        verify(mockHttp, times(1)).GET(meq(testUrl))(any(), any(), any())
         verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
         verify(mockMetrics, times(1)).incrementSuccessCounter(APITypes.RTIAPI)
         verify(mockMetrics, never()).incrementFailedCounter(any())
@@ -197,10 +194,10 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplica
     "return json which is coming from http post call" in {
       val mockHttp = mock[HttpClient]
       when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Some(Json.toJson(userInput)))))
-        .thenReturn(Future.successful(HttpResponse(CREATED, Some(Json.toJson(userInput)))))
-        .thenReturn(Future.successful(HttpResponse(ACCEPTED, Some(Json.toJson(userInput)))))
-        .thenReturn(Future.successful(HttpResponse(NO_CONTENT, Some(Json.toJson(userInput)))))
+        .thenReturn(Future.successful(HttpResponse(OK, Json.toJson(userInput), Map[String, Seq[String]]())))
+        .thenReturn(Future.successful(HttpResponse(CREATED, Json.toJson(userInput), Map[String, Seq[String]]())))
+        .thenReturn(Future.successful(HttpResponse(ACCEPTED, Json.toJson(userInput), Map[String, Seq[String]]())))
+        .thenReturn(Future.successful(HttpResponse(NO_CONTENT, Json.toJson(userInput), Map[String, Seq[String]]())))
 
       val SUT = createSUT(mock[Metrics], mockHttp)
       val okResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
@@ -228,7 +225,7 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplica
 
         val SUT = createSUT(mockMetrics, mockHttp)
         when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(NOT_FOUND)))
+          .thenReturn(Future.successful(HttpResponse(NOT_FOUND, "")))
 
         val result = the[HttpException] thrownBy Await
           .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
@@ -243,7 +240,7 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplica
         val SUT = createSUT(mockMetrics, mockHttp)
 
         when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT)))
+          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
 
         val result = the[HttpException] thrownBy Await
           .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
@@ -253,22 +250,20 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplica
     }
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-
   private case class ResponseObject(name: String, age: Int)
   private implicit val responseObjectFormat = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
 
   private val SuccessfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                            -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, Some(JsString("bad request")), Map("ETag" -> Seq("34")))
+    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                      -> Seq("34")))
+  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
   private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, Some(JsString("not found")), Map("ETag"                                           -> Seq("34")))
-  private val LockedHttpResponse: HttpResponse = HttpResponse(423, Some(JsString("locked")), Map("ETag" -> Seq("34")))
+    HttpResponse(404, JsString("not found"), Map("ETag"                                           -> Seq("34")))
+  private val LockedHttpResponse: HttpResponse = HttpResponse(423, JsString("locked"), Map("ETag" -> Seq("34")))
   private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, Some(JsString("internal server error")), Map("ETag" -> Seq("34")))
+    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
   private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, Some(JsString("unknown response")), Map("ETag" -> Seq("34")))
+    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
 
   private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
 }

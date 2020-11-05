@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model
 import org.joda.time.LocalDate
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import org.slf4j._
-import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
@@ -40,7 +39,7 @@ package object rti {
       override def reads(json: JsValue): JsResult[LocalDate] = json match {
         case JsString(dateRegex(y, m, d)) =>
           JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(ValidationError(s"Invalid date format [yyyy-MM-dd]: $invalid"))
+        case invalid => JsError(JsonValidationError(s"Invalid date format [yyyy-MM-dd]: $invalid"))
       }
     },
     new Writes[LocalDate] {

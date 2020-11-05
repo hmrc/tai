@@ -17,23 +17,22 @@
 package uk.gov.hmrc.tai.connectors
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.OK
 import play.api.libs.json.{JsNumber, JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
+class CompanyCarConnectorSpec extends BaseSpec {
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {
@@ -57,7 +56,7 @@ class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
 
-      Await.result(sut.carBenefits(randomNino, taxYear), 5 seconds) mustBe expectedResponse
+      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
     }
 
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
@@ -100,7 +99,7 @@ class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(rawResponse))
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      Await.result(sut.carBenefits(randomNino, taxYear), 5 seconds) mustBe expectedResponse
+      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
     }
   }
 
@@ -118,7 +117,7 @@ class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(HttpResponse(OK, Some(sampleResponse))))
 
       val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      val result = Await.result(sut.withdrawCarBenefit(randomNino, taxYear, 1, 2, removeCarAndFuelModel), 5 seconds)
+      val result = Await.result(sut.withdrawCarBenefit(nino, taxYear, 1, 2, removeCarAndFuelModel), 5 seconds)
 
       result mustBe "4958621783d14007b71d55934d5ccca9"
       verify(mockHttpHandler, times(1))
@@ -128,7 +127,6 @@ class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
 
   "ninoVersion" must {
     "call paye to fetch the version" in {
-      val nino = randomNino
       val expectedResponse = 4
       val response: JsValue = JsNumber(4)
 
@@ -143,11 +141,7 @@ class CompanyCarConnectorSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  def randomNino: Nino = new Generator(new Random).nextNino
-
   private val taxYear = TaxYear(2017)
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def createSUT(httpHandler: HttpHandler, urls: PayeUrls) =
     new CompanyCarConnector(httpHandler, urls)

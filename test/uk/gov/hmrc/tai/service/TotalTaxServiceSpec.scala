@@ -16,33 +16,27 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxRepository}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
+class TotalTaxServiceSpec extends BaseSpec {
 
   "totalTax" must {
     "return the income categories that is coming from TotalTaxRepository" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(0)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
         .thenReturn(Future.successful(None))
@@ -66,9 +60,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
     "return amount that is coming from TaxAccountSummary" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
         .thenReturn(Future.successful(None))
@@ -92,9 +86,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
     "return reliefs giving back tax adjustment component" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any())).thenReturn(
@@ -118,9 +112,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
     "return other tax due component" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
@@ -142,9 +136,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
     "return already taxed at source component" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       val adjustment = TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
@@ -165,9 +159,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
     "return tax on other income" in {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
         .thenReturn(Future.successful(None))
@@ -189,9 +183,9 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
       val mockTotalTaxRepository = mock[TotalTaxRepository]
       val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
       val taxReliefComponents = TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100)))
-      when(mockTotalTaxRepository.incomeCategories(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTotalTaxRepository.incomeCategories(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(incomeCategories))
-      when(mockTaxAccountSummaryRepository.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+      when(mockTaxAccountSummaryRepository.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(BigDecimal(1000)))
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any()))
         .thenReturn(Future.successful(None))
@@ -222,10 +216,6 @@ class TotalTaxServiceSpec extends PlaySpec with MockitoSugar {
 
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   val incomeCategories = Seq(
     IncomeCategory(

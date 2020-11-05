@@ -16,21 +16,18 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CompanyCarConnector}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class CompanyCarBenefitRepositorySpec extends BaseSpec {
 
   "carBenefit" when {
     "there is car benefit in the cache as an empty list" must {
@@ -81,9 +78,9 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar with Mo
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](
-            Matchers.eq(cacheId),
-            Matchers.eq(carBenefitFromCompanyCarService),
-            Matchers.eq(sut.CarBenefitKey))(any())
+            meq(cacheId),
+            meq(carBenefitFromCompanyCarService),
+            meq(sut.CarBenefitKey))(any())
       }
 
       "return the non-empty list coming from the company car service and save it in the cache" in {
@@ -105,10 +102,8 @@ class CompanyCarBenefitRepositorySpec extends PlaySpec with MockitoSugar with Mo
         Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate[Seq[CompanyCarBenefit]](
-            Matchers.eq(cacheId),
-            Matchers.eq(carBenefitSeqWithVersion),
-            Matchers.eq(sut.CarBenefitKey))(any())
+          .createOrUpdate[Seq[CompanyCarBenefit]](meq(cacheId), meq(carBenefitSeqWithVersion), meq(sut.CarBenefitKey))(
+            any())
       }
     }
   }

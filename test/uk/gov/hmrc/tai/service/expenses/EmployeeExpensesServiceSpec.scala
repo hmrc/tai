@@ -16,29 +16,22 @@
 
 package uk.gov.hmrc.tai.service.expenses
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
-import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class EmployeeExpensesServiceSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
+class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
 
   private val mockDesConnector = mock[DesConnector]
   private val mockNpsConnector = mock[NpsConnector]
@@ -118,15 +111,13 @@ class EmployeeExpensesServiceSpec
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
-        whenReady(result) { result =>
-          result mustBe validNpsIabd
+        result.futureValue mustBe validNpsIabd
 
-          verify(mockNpsConnector, times(0))
-            .getIabdsForType(nino, taxYear, iabd)
+        verify(mockNpsConnector, times(0))
+          .getIabdsForType(nino, taxYear, iabd)
 
-          verify(mockDesConnector, times(1))
-            .getIabdsForTypeFromDes(nino, taxYear, iabd)
-        }
+        verify(mockDesConnector, times(1))
+          .getIabdsForTypeFromDes(nino, taxYear, iabd)
       }
 
       "return exception" when {
@@ -138,9 +129,7 @@ class EmployeeExpensesServiceSpec
           val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
           intercept[Exception] {
-            whenReady(result) {
-              _ mustBe an[Exception]
-            }
+            result.futureValue
           }
         }
       }

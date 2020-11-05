@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.audit
+package uk.gov.hmrc.tai.util
 
-import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import play.api.test.Injecting
+import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
 import scala.concurrent.ExecutionContext
 
-@Singleton
-class Auditor @Inject()(audit: AuditConnector)(implicit ec: ExecutionContext) {
+trait BaseSpec
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with Injecting {
 
-  def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
-    audit.sendExplicitAudit(transactionName, detail)
+  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 }

@@ -18,12 +18,10 @@ package uk.gov.hmrc.tai.model.rti
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.data.validation.ValidationError
-import play.api.libs.json.{JsPath, JsResultException, Json}
-import QaData._
-import uk.gov.hmrc.domain.{Generator, Nino}
+import play.api.libs.json.{JsResultException, Json, JsonValidationError}
+import uk.gov.hmrc.tai.model.rti.QaData._
 
-import util.{Random, Success, Try}
+import scala.util.{Success, Try}
 
 class RtiPackageSpec extends PlaySpec {
 
@@ -43,9 +41,9 @@ class RtiPackageSpec extends PlaySpec {
         }
 
         val msg: Seq[String] = for {
-          (_, validations)            <- ex.errors
-          validation: ValidationError <- validations
-          messages: String            <- validation.messages
+          (_, validations)                <- ex.errors
+          validation: JsonValidationError <- validations
+          messages: String                <- validation.messages
         } yield {
           messages
         }
@@ -202,11 +200,12 @@ class RtiPackageSpec extends PlaySpec {
         parsedJson.sequenceNumber must be(3)
       }
 
-      "employment object is converted to json" in {
+      "employment object is converted from json" in {
         val json: String =
           """{"empRefs":{"officeNo":"HMRC","payeRef":"12345","aoRef":"00000"},"payments":{"inYear":[],"eyu":[]},"sequenceNumber":1}"""
         val employmentObject = RtiEmployment("HMRC", "12345", "00000", Nil, Nil, None, 1)
-        Json.toJson(employmentObject).toString must be(json)
+        Json.parse(json).as[RtiEmployment] mustBe employmentObject
+        Json.toJson(employmentObject) mustBe Json.parse(json)
       }
     }
 

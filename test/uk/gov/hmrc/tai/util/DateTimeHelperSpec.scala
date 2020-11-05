@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.util
 
 import org.joda.time.LocalDate
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.play.test.UnitSpec
 
 class DateTimeHelperSpec extends UnitSpec with MockitoSugar with ScalaFutures {

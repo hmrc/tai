@@ -26,11 +26,10 @@ import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls) {
+class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
 
   private implicit val system = ActorSystem()
   private implicit val materializer = ActorMaterializer()

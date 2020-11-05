@@ -16,38 +16,28 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
-import uk.gov.hmrc.tai.util.NpsExceptions
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.concurrent.{Await, Future}
 
-class TaxAccountSummaryControllerSpec
-    extends PlaySpec with MockitoSugar with NpsExceptions with MockAuthenticationPredicate {
+class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
 
   "taxAccountSummaryForYear" must {
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxAccountSummaryForYearCY1))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -73,7 +63,7 @@ class TaxAccountSummaryControllerSpec
     "return Locked exception" when {
       "nps throws locked exception" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -89,6 +79,6 @@ class TaxAccountSummaryControllerSpec
   private def createSUT(
     taxAccountSummaryService: TaxAccountSummaryService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaxAccountSummaryController(taxAccountSummaryService, authentication)
+    new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
 
 }

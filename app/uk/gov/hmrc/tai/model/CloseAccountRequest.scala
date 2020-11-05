@@ -22,5 +22,7 @@ import play.api.libs.json.{Format, Json}
 case class CloseAccountRequest(date: LocalDate, interestEarnedThisTaxYear: Option[BigDecimal])
 
 object CloseAccountRequest {
+  import play.api.libs.json.JodaWrites._
+  import play.api.libs.json.JodaReads._
   implicit val formatCloseAccountRequest: Format[CloseAccountRequest] = Json.format[CloseAccountRequest]
 }

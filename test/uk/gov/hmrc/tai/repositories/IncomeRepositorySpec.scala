@@ -17,11 +17,8 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,13 +26,14 @@ import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
+class IncomeRepositorySpec extends BaseSpec {
 
   "Income" must {
     "return empty sequence of non-tax code income" when {
@@ -186,7 +184,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         val iabdJson = Json.arr()
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -279,7 +277,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -373,7 +371,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -468,7 +466,7 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         )
 
         val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(json))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
@@ -544,9 +542,6 @@ class IncomeRepositorySpec extends PlaySpec with MockitoSugar {
         )
       )
     )
-
-  private val nino: Nino = new Generator(new Random).nextNino
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private def createSut(
     taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],

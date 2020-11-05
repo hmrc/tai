@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.tai.controllers.predicates
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, InjectedController}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
@@ -31,22 +28,20 @@ import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
+import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.util.Random
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
-class AuthenticationPredicateSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ScalaFutures {
+class AuthenticationPredicateSpec extends BaseSpec {
 
-  class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+  class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
     def get: Action[AnyContent] = authentication.async { implicit request =>
       Future.successful(Ok)
     }
   }
 
-  object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
+  object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService, cc)
 
   val authErrors = Seq[RuntimeException](
     new InsufficientConfidenceLevel,
@@ -76,7 +71,7 @@ class AuthenticationPredicateSpec
             }
         })
 
-      object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService)
+      object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService, cc)
       val result = new SUT(TestAuthenticationPredicate).get.apply(FakeRequest())
 
       status(result) mustBe Status.UNAUTHORIZED
@@ -84,7 +79,7 @@ class AuthenticationPredicateSpec
   })
 
   "return OK and contain the user's NINO when called with an Authenticated user" in {
-    class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+    class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
       def get: Action[AnyContent] = authentication.async { implicit request =>
         request.nino mustBe nino
         Future.successful(Ok)
@@ -105,7 +100,7 @@ class AuthenticationPredicateSpec
 
     setupMockAuthRetrievalSuccess(trustedHelperAuthSuccessResponse)
 
-    class SUT(val authentication: AuthenticationPredicate) extends BaseController {
+    class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
       def get: Action[AnyContent] = authentication.async { implicit request =>
         request.nino mustBe principalNino
         Future.successful(Ok)

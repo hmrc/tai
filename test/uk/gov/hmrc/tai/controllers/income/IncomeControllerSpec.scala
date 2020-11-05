@@ -17,17 +17,13 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -35,10 +31,11 @@ import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with ApiFormats {
+class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
   val employmentId = 1
   val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
@@ -142,7 +139,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     "return Not Found" when {
       "Nil is returned by income service" in {
-        when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val SUT = createSUT(mockIncomeService)
@@ -152,7 +149,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       }
 
       "a Not Found Exception occurs" in {
-        when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new NotFoundException("Error")))
 
         val SUT = createSUT(mockIncomeService)
@@ -193,7 +190,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
           )
         )
 
-        when(mockIncomeService.taxCodeIncomes(any(), Matchers.eq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(taxCodeIncomesNoPension))
 
         val SUT = createSUT(mockIncomeService)
@@ -256,7 +253,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return tax code incomes and employments JSON" in {
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
         .thenReturn(Future.successful(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
       val sut = createSUT(
@@ -275,7 +272,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     "return NotFound when a NotFoundException occurs" in {
 
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -286,7 +283,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     "return BadRequest when a BadRequestException occurs" in {
 
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), Matchers.eq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -316,7 +313,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
       val employments =
         Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -336,7 +333,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     "return NotFound when a NotFoundException occurs" in {
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -347,7 +344,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
 
     "return BadRequest when a BadRequestException occurs" in {
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), Matchers.eq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -369,7 +366,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
               OtherNonTaxCodeIncome(Profit, None, 100, "Profit")
             )))
 
-        when(mockIncomeService.incomes(any(), Matchers.eq(TaxYear()))(any()))
+        when(mockIncomeService.incomes(any(), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(income))
 
         val SUT = createSUT(mockIncomeService)
@@ -405,7 +402,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
     }
 
@@ -417,7 +414,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
 
       "any exception has been thrown" in {
@@ -425,7 +422,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(Meq(nino))(any())
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
     }
   }
@@ -438,7 +435,7 @@ class IncomeControllerSpec extends PlaySpec with MockitoSugar with MockAuthentic
     taxAccountService: TaxAccountService = mock[TaxAccountService],
     employmentService: EmploymentService = mock[EmploymentService],
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, taxAccountService, employmentService, authentication)
+    new IncomeController(incomeService, taxAccountService, employmentService, authentication, cc)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)

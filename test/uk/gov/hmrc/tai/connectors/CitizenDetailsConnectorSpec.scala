@@ -18,33 +18,24 @@ package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.Application
-import play.api.libs.json._
 import play.api.http.Status._
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.domain.{Generator, Nino}
+import play.api.libs.json._
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 import uk.gov.hmrc.tai.model.nps._
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class CitizenDetailsConnectorSpec
-    extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with IntegrationPatience {
+class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
 
   "Get data from citizen-details service" must {
     "return person information when requesting " in {
@@ -65,7 +56,7 @@ class CitizenDetailsConnectorSpec
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
@@ -100,7 +91,7 @@ class CitizenDetailsConnectorSpec
           Person(Some(""), None, Some(""), None, Some(""), None, None, None, Nino(nino.nino), Some(true), Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 423, responseString = Some("Record Locked"), responseJson = Some(jsonData))))
 
@@ -120,7 +111,7 @@ class CitizenDetailsConnectorSpec
 
     "return Internal server error when requesting " in {
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 500, responseString = Some("Internal Server Error"), responseJson = None)))
 
@@ -154,7 +145,7 @@ class CitizenDetailsConnectorSpec
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
@@ -199,7 +190,7 @@ class CitizenDetailsConnectorSpec
             Some(false))))
 
       val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](Matchers.any())(Matchers.any(), Matchers.any(), Matchers.any()))
+      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
         .thenReturn(Future.successful(
           HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
 
@@ -303,9 +294,6 @@ class CitizenDetailsConnectorSpec
                                         |   "etag":"$etag"
                                         |}
     """.stripMargin)
-
-  implicit val hc = HeaderCarrier()
-  private val nino: Nino = new Generator(new Random).nextNino
 
   private lazy val citizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
 

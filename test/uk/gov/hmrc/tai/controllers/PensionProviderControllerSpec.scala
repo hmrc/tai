@@ -17,26 +17,19 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers.{contentAsJson, status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
 import uk.gov.hmrc.tai.service.PensionProviderService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class PensionProviderControllerSpec extends BaseSpec {
 
   "addPensionProvider" must {
     "return envelope Id" when {
@@ -47,11 +40,11 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
         val json = Json.toJson(pensionProvider)
 
         val mockPensionProviderService = mock[PensionProviderService]
-        when(mockPensionProviderService.addPensionProvider(Matchers.eq(nino), Matchers.eq(pensionProvider))(any()))
+        when(mockPensionProviderService.addPensionProvider(meq(nino), meq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val sut =
-          new PensionProviderController(mockPensionProviderService, authentication = loggedInAuthenticationPredicate)
+          new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
         val result = sut.addPensionProvider(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json")))
@@ -71,10 +64,10 @@ class PensionProviderControllerSpec extends PlaySpec with MockitoSugar with Mock
         val mockPensionProviderService = mock[PensionProviderService]
         when(
           mockPensionProviderService
-            .incorrectPensionProvider(Matchers.eq(nino), Matchers.eq(id), Matchers.eq(pensionProvider))(any()))
+            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate)
+        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
         val result = sut.incorrectPensionProvider(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider))
             .withHeaders(("content-type", "application/json")))

@@ -23,7 +23,6 @@ import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.nps2
 import uk.gov.hmrc.tai.model.tai.NoOfMonths
 import nps2._
-import play.api.data.validation.ValidationError
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
@@ -429,64 +428,70 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
       "marshall an Income into a JSValue" in {
 
-        val jsonObj = Json.toJson(testIncome)
-        jsonObj.toString() mustBe stripFormatting(
-          """{
-            |"employmentId":1,
-            |"employmentType":1,
-            |"employmentStatus":3,
-            |"employmentTaxDistrictNumber":1,
-            |"employmentPayeRef":"000",
-            |"pensionIndicator":false,
-            |"jsaIndicator":false,
-            |"otherIncomeSourceIndicator":false,
-            |"name":"name",
-            |"endDate":"12/12/2017",
-            |"worksNumber":"1234",
-            |"taxCode":"AB1234",
-            |"potentialUnderpayment":20.2,
-            |"employmentRecord":{
-            |"employerName":"EMPLOYER1",
-            |"employmentType":1,
-            |"sequenceNumber":1,
-            |"worksNumber":"1234",
-            |"taxDistrictNumber":"1",
-            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
-            |"cessationPayThisEmployment":2200.22,
-            |"startDate":"12/12/2017"},
-            |"basisOperation":"Week1Month1"}""".stripMargin
-        )
+        val json = Json
+          .parse(
+            """{
+              |"employmentId":1,
+              |"employmentType":1,
+              |"employmentStatus":3,
+              |"employmentTaxDistrictNumber":1,
+              |"employmentPayeRef":"000",
+              |"pensionIndicator":false,
+              |"jsaIndicator":false,
+              |"otherIncomeSourceIndicator":false,
+              |"name":"name",
+              |"endDate":"12/12/2017",
+              |"worksNumber":"1234",
+              |"taxCode":"AB1234",
+              |"potentialUnderpayment":20.2,
+              |"employmentRecord":{
+              |"employerName":"EMPLOYER1",
+              |"employmentType":1,
+              |"sequenceNumber":1,
+              |"worksNumber":"1234",
+              |"taxDistrictNumber":"1",
+              |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
+              |"cessationPayThisEmployment":2200.22,
+              |"startDate":"12/12/2017"},
+              |"basisOperation":"Week1Month1"}""".stripMargin
+          )
+
+        json.as[Income] mustBe testIncome
+        Json.toJson(testIncome) mustBe json
       }
 
       "marshall an Income into a JSValue for null empId and tax district number" in {
 
-        val jsonObj = Json.toJson(testIncomeNoEmpIdTaxDistrict)
-        jsonObj.toString() mustBe stripFormatting(
-          """{
-            |"employmentId":null,
-            |"employmentType":2,
-            |"employmentStatus":3,
-            |"employmentTaxDistrictNumber":null,
-            |"employmentPayeRef":"000",
-            |"pensionIndicator":false,
-            |"jsaIndicator":false,
-            |"otherIncomeSourceIndicator":false,
-            |"name":"name",
-            |"endDate":"12/12/2017",
-            |"worksNumber":"1234",
-            |"taxCode":"AB1234",
-            |"potentialUnderpayment":20.2,
-            |"employmentRecord":{
-            |"employerName":"EMPLOYER1",
-            |"employmentType":1,
-            |"sequenceNumber":1,
-            |"worksNumber":"1234",
-            |"taxDistrictNumber":"1",
-            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
-            |"cessationPayThisEmployment":2200.22,
-            |"startDate":"12/12/2017"},
-            |"basisOperation":"Week1Month1"}""".stripMargin
-        )
+        val json = Json
+          .parse(
+            """{
+              |"employmentId":null,
+              |"employmentType":2,
+              |"employmentStatus":3,
+              |"employmentTaxDistrictNumber":null,
+              |"employmentPayeRef":"000",
+              |"pensionIndicator":false,
+              |"jsaIndicator":false,
+              |"otherIncomeSourceIndicator":false,
+              |"name":"name",
+              |"endDate":"12/12/2017",
+              |"worksNumber":"1234",
+              |"taxCode":"AB1234",
+              |"potentialUnderpayment":20.2,
+              |"employmentRecord":{
+              |"employerName":"EMPLOYER1",
+              |"employmentType":1,
+              |"sequenceNumber":1,
+              |"worksNumber":"1234",
+              |"taxDistrictNumber":"1",
+              |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
+              |"cessationPayThisEmployment":2200.22,
+              |"startDate":"12/12/2017"},
+              |"basisOperation":"Week1Month1"}""".stripMargin
+          )
+
+        json.as[Income] mustBe testIncomeNoEmpIdTaxDistrict
+        Json.toJson(testIncomeNoEmpIdTaxDistrict) mustBe json
       }
 
       "unmarshall a Json Income string into an Income model" in {
@@ -588,47 +593,9 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     }
 
     "provide Json formatting of TaxAccount" when {
-      "marshall a TaxAccount instance into a JSValue" in {
-        val jsonObj = Json.toJson(testTaxAccount)
-        jsonObj.toString() mustBe stripFormatting(
-          """{
-            |"taxAcccountId":12345,
-            |"date":"12/12/2017",
-            |"totalEstTax":12000.32,
-            |"totalLiability":{
-            |"nonSavings":
-            |{"taxBands":[
-            |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33},
-            |{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}],
-            |"totalTax":123.1,
-            |"totalTaxableIncome":999.1,
-            |"totalIncome":333.1}},
-            |"incomeSources":[{
-            |"employmentId":1,
-            |"employmentType":1,
-            |"employmentStatus":3,
-            |"employmentTaxDistrictNumber":1,
-            |"employmentPayeRef":"000",
-            |"pensionIndicator":false,
-            |"jsaIndicator":false,
-            |"otherIncomeSourceIndicator":false,
-            |"name":"name",
-            |"endDate":"12/12/2017",
-            |"worksNumber":"1234",
-            |"taxCode":"AB1234",
-            |"potentialUnderpayment":20.2,
-            |"employmentRecord":{
-            |"employerName":"EMPLOYER1",
-            |"employmentType":1,
-            |"sequenceNumber":1,
-            |"worksNumber":"1234",
-            |"taxDistrictNumber":"1",
-            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
-            |"cessationPayThisEmployment":2200.22,
-            |"startDate":"12/12/2017"},
-            |"basisOperation":"Week1Month1"}],
-            |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}]}""".stripMargin)
-
+      "correctly format a TaxAccount" in {
+        val taxAccount = TaxAccount(None, None, BigDecimal(1))
+        Json.toJson(taxAccount).as[TaxAccount] mustBe taxAccount
       }
 
       "unmarshall a Json TaxAccount string into a TaxAccount model" in {
@@ -681,9 +648,9 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
-      (path: JsPath, errors: Seq[ValidationError]) <- exception.errors
-      error: ValidationError                       <- errors
-      message: String                              <- error.messages
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
+      error: JsonValidationError                       <- errors
+      message: String                                  <- error.messages
     } yield {
       path.toString() + " -> " + message
     }

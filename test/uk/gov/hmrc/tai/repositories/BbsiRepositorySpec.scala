@@ -16,20 +16,17 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class BbsiRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class BbsiRepositorySpec extends BaseSpec {
 
   "Bbsi Repository" must {
 
@@ -45,7 +42,7 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticat
 
         result mustBe Seq(bankAccount)
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockBbsiConnector, never())
           .bankAccounts(any(), any())(any())
       }
@@ -70,10 +67,9 @@ class BbsiRepositorySpec extends PlaySpec with MockitoSugar with MockAuthenticat
         result mustBe Seq(expectedBankAccount1, expectedBankAccount2)
 
         verify(mockCacheConnector, times(1))
-          .findOptSeq[BankAccount](any(), Matchers.eq(sut.BBSIKey))(any())
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockCacheConnector, times(1))
-          .createOrUpdateSeq[BankAccount](any(), Matchers.eq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(
-            any())
+          .createOrUpdateSeq[BankAccount](any(), meq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(any())
         verify(mockBbsiConnector, times(1))
           .bankAccounts(any(), any())(any())
       }

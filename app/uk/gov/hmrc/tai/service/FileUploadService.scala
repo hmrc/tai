@@ -26,12 +26,12 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.model.domain.MimeContentType
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, auditor: Auditor) {
+class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, auditor: Auditor)(
+  implicit ec: ExecutionContext) {
 
   private val FileUploadSuccessStatus = "AVAILABLE"
   private val FileUploadErrorStatus = "ERROR"

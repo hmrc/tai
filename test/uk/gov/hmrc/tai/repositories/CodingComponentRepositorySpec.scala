@@ -16,33 +16,27 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
+class CodingComponentRepositorySpec extends BaseSpec {
 
   "codingComponents" should {
     "return empty list of coding components" when {
       "iabd connector returns empty list and tax account connector returns json with no NpsComponents of interest" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
 
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
@@ -56,7 +50,7 @@ class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
       "income source has pension available" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
 
-        when(mockTaxAccountRepository.taxAccount(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(primaryIncomeDeductionsNpsJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
@@ -83,7 +77,7 @@ class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val json = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
@@ -104,7 +98,7 @@ class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val json = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
@@ -126,7 +120,7 @@ class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
 
       val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
 
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(Matchers.eq(nino), Matchers.eq(taxCodeId))(any()))
+      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(json))
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
@@ -136,10 +130,6 @@ class CodingComponentRepositorySpec extends PlaySpec with MockitoSugar {
       result mustBe expected
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
   private val emptyJson = Json.arr()
 

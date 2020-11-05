@@ -17,29 +17,20 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+class PersonRepositorySpec extends BaseSpec {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  val nino = new Generator(new Random).nextNino
-  val cacheId = CacheId(nino)
   val address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
   val dateOfBirth = LocalDate.parse("2017-02-01")
@@ -58,7 +49,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(Some(person)))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
@@ -68,7 +59,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         result mustBe person
 
         verify(mockCacheConnector, times(1))
-          .find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any())
+          .find[Person](meq(cacheId), meq(personMongoKey))(any())
 
         verify(mockHttpHandler, never())
           .getFromApi(any(), any())(any())
@@ -85,9 +76,9 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(person))
         when(mockHttpHandler.getFromApi(any(), any())(any()))
           .thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
@@ -102,7 +93,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
           .getFromApi(any(), any())(any())
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate(any(), any(), Matchers.eq(personMongoKey))(any())
+          .createOrUpdate(any(), any(), meq(personMongoKey))(any())
       }
     }
 
@@ -125,9 +116,9 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
         val mockHttpHandler = mock[HttpHandler]
-        when(mockCacheConnector.find[Person](Matchers.eq(cacheId), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
-        when(mockCacheConnector.createOrUpdate[Person](any(), any(), Matchers.eq(personMongoKey))(any()))
+        when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(expectedPersonFromPartialJson))
         when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(jsonWithMissingFields))
 
@@ -136,7 +127,7 @@ class PersonRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayAp
         val result = Await.result(responseFuture, 5 seconds)
 
         verify(mockCacheConnector, times(1))
-          .createOrUpdate(any(), Matchers.eq(expectedPersonFromPartialJson), Matchers.eq(personMongoKey))(any())
+          .createOrUpdate(any(), meq(expectedPersonFromPartialJson), meq(personMongoKey))(any())
       }
     }
   }

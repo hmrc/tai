@@ -16,24 +16,18 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class IabdConnectorSpec extends PlaySpec with MockitoSugar {
+class IabdConnectorSpec extends BaseSpec {
 
   "IABD Connector" when {
 
@@ -49,8 +43,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         when(featureTogglesConfig.desEnabled).thenReturn(false)
         when(mockNpsConfig.originatorId).thenReturn("TEST")
         when(
-          mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
-            Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
+            meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
         val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
@@ -70,8 +64,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(
-            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
-              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
+              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
@@ -90,8 +84,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(featureTogglesConfig.desEnabled).thenReturn(false)
           when(mockNpsConfig.originatorId).thenReturn("TEST")
           when(
-            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.NpsIabdAllAPI))(
-              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
+              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
@@ -114,8 +108,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
         when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
         when(mockDesConfig.originatorId).thenReturn("TEST")
         when(
-          mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
-            Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+          mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
+            meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
         val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
         val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
@@ -135,8 +129,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
           when(
-            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
-              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
+              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
@@ -155,8 +149,8 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
           when(featureTogglesConfig.desEnabled).thenReturn(true)
           when(mockDesConfig.originatorId).thenReturn("TEST")
           when(
-            mockHttpHandler.getFromApi(Matchers.eq("URL"), Matchers.eq(APITypes.DesIabdAllAPI))(
-              Matchers.eq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
+            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
+              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
 
           val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
           val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
@@ -167,8 +161,6 @@ class IabdConnectorSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-  val nino = new Generator(new Random).nextNino
   private val json = Json.arr(
     Json.obj(
       "nino"            -> nino.withoutSuffix,

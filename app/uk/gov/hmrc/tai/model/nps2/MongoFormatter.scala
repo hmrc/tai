@@ -20,6 +20,8 @@ import org.joda.time.LocalDate
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.functional.syntax.{unlift, _}
 import play.api.libs.json._
+import play.api.libs.json.JodaWrites._
+import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps2.Income.IncomeType
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, JsonExtra}

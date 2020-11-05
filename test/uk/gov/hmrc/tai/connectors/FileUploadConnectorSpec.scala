@@ -20,31 +20,26 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.codahale.metrics.Timer
 import org.junit.After
-import org.mockito.Matchers
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED, OK}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc.MultipartFormData
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
-
-  implicit val hc = HeaderCarrier()
+class FileUploadConnectorSpec extends BaseSpec {
 
   "createEnvelope" must {
     "return an envelope id" in {
@@ -77,7 +72,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
       Await.result(sut.createEnvelope, 5.seconds)
 
       verify(mockHttpClient, times(1))
-        .POST(Matchers.eq("createEnvelopeURL"), Matchers.eq(envelopeBody), any())(any(), any(), any(), any())
+        .POST(meq("createEnvelopeURL"), meq(envelopeBody), any())(any(), any(), any(), any())
     }
     "throw a runtime exception" when {
       "the success response does not contain a location header" in {
@@ -209,7 +204,7 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
       Await.result(sut.closeEnvelope(envelopeId), 5.seconds)
 
       verify(mockHttpClient, times(1))
-        .POST(Matchers.eq(uploadEndpoint), any(), any())(any(), any(), any(), any())
+        .POST(meq(uploadEndpoint), any(), any())(any(), any(), any(), any())
     }
     "throw a runtime exception" when {
       "the success response does not contain a location header" in {
@@ -359,12 +354,12 @@ class FileUploadConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutur
     val mockClient = mock[AhcWSClient]
 
     if (!failed) {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+      when(mockRequest.post(any[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
         .thenReturn(Future.successful(mockResponse))
       when(mockRequest.get())
         .thenReturn(Future.successful(mockResponse))
     } else {
-      when(mockRequest.post(anyObject[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
+      when(mockRequest.post(any[Source[MultipartFormData.Part[Source[ByteString, _]], _]]()))
         .thenReturn(Future.failed(new RuntimeException("Error")))
       when(mockRequest.get())
         .thenReturn(Future.failed(new RuntimeException("Error")))

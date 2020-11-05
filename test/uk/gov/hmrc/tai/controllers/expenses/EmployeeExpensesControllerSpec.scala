@@ -16,29 +16,27 @@
 
 package uk.gov.hmrc.tai.controllers.expenses
 
-import org.mockito.Matchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
-import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class EmployeeExpensesControllerSpec extends BaseSpec {
 
   private val mockEmployeeExpensesService = mock[EmployeeExpensesService]
 
   private def controller(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new EmployeeExpensesController(authentication, employeeExpensesService = mockEmployeeExpensesService)
+    new EmployeeExpensesController(authentication, mockEmployeeExpensesService, cc)
 
   private val iabd = 56
   val grossAmount = 100
@@ -68,7 +66,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -82,7 +80,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(204)))
+          .thenReturn(Future.successful(HttpResponse(204, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -96,7 +94,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(202)))
+          .thenReturn(Future.successful(HttpResponse(202, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -112,7 +110,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -128,7 +126,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(500)))
+          .thenReturn(Future.successful(HttpResponse(500, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -150,7 +148,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -164,7 +162,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(204)))
+          .thenReturn(Future.successful(HttpResponse(204, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -178,7 +176,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(202)))
+          .thenReturn(Future.successful(HttpResponse(202, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -194,7 +192,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
 
@@ -210,7 +208,7 @@ class EmployeeExpensesControllerSpec extends PlaySpec with MockitoSugar with Moc
         when(
           mockEmployeeExpensesService
             .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(500)))
+          .thenReturn(Future.successful(HttpResponse(500, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
 

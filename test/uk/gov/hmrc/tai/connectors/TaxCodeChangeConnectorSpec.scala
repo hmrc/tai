@@ -20,56 +20,50 @@ import java.net.URL
 
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Random
 
 class TaxCodeChangeConnectorSpec
-    extends PlaySpec with WireMockHelper with BeforeAndAfterAll with MockitoSugar with TaxCodeHistoryConstants {
+    extends ConnectorBaseSpec with WireMockHelper with BeforeAndAfterAll with TaxCodeHistoryConstants {
 
   "taxCodeHistory" must {
     "return tax code change response" when {
       "payroll number is returned" in {
-        val testNino = randomNino
         val taxYear = TaxYear(2017)
 
         val url = {
-          val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
+          val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
           s"${path.getPath}?${path.getQuery}"
         }
 
-        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(testNino)
+        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
 
         server.stubFor(
           get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
 
-        result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(testNino)
+        result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
       }
 
       "payroll number is not returned" in {
-        val testNino = randomNino
         val taxYear = TaxYear(2017)
 
         val url = {
-          val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
+          val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
           s"${path.getPath}?${path.getQuery}"
         }
 
@@ -78,17 +72,17 @@ class TaxCodeChangeConnectorSpec
           TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Secondary)
         )
 
-        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(testNino, taxCodeRecord)
+        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino, taxCodeRecord)
 
         server.stubFor(
           get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistory(
-          testNino.nino,
+          nino.nino,
           Seq(
             TaxCodeRecordFactory.createPrimaryEmployment(payrollNumber = None),
             TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
@@ -99,11 +93,10 @@ class TaxCodeChangeConnectorSpec
 
     "respond with a JsResultException when given invalid json" in {
 
-      val testNino = randomNino
       val taxYear = TaxYear(2017)
 
       val url = {
-        val path = new URL(urlConfig.taxCodeChangeUrl(testNino, taxYear, taxYear))
+        val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
         s"${path.getPath}?${path.getQuery}"
       }
 
@@ -117,7 +110,7 @@ class TaxCodeChangeConnectorSpec
 
       val connector = createSut()
       val ex = the[JsResultException] thrownBy Await
-        .result(connector.taxCodeHistory(testNino, taxYear, taxYear), 10.seconds)
+        .result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
       ex.getMessage must include("ValidationError")
     }
   }
@@ -132,5 +125,4 @@ class TaxCodeChangeConnectorSpec
     taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
     new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
 
-  private def randomNino: Nino = new Generator(new Random).nextNino
 }

@@ -17,14 +17,9 @@
 package uk.gov.hmrc.tai.service.benefits
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, UnprocessableEntityException}
+import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain._
@@ -33,25 +28,23 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.CompanyCarBenefitRepository
 import uk.gov.hmrc.tai.service._
-import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
+class BenefitsServiceSpec extends BaseSpec {
   "companyCarBenefit" must {
     "return Nil" when {
       "the repository returned Nil" in {
-        val nino = randomNino
 
         val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty[CodingComponent]))
 
         val sut = createSUT(
@@ -64,7 +57,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
     "return sequence of companyCarBenefit" when {
       "the repository returned sequence of companyCarBenefit with no fuel benefit" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             12,
@@ -88,7 +80,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -101,7 +93,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       }
 
       "the repository returned sequence of companyCarBenefit with a fuel benefit" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             12,
@@ -125,7 +116,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -139,7 +130,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
     "return the first matching companyCarBenefit for a given employment sequence number" when {
       "the repository returned sequence of companyCarBenefit with no matching employment sequence number" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             12,
@@ -163,7 +153,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -175,7 +165,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       }
 
       "the repository returned sequence of companyCarBenefit with one matching employment sequence number" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             12,
@@ -199,7 +188,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -211,7 +200,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       }
 
       "the repository returned sequence of multiple companyCarBenefits with one matching employment sequence number" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             12,
@@ -248,7 +236,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -260,7 +248,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       }
 
       "the repository returned sequence of multiple companyCarBenefits with multiple matching employment sequence numbers" in {
-        val nino = randomNino
         val result = Seq(
           CompanyCarBenefit(
             11,
@@ -309,7 +296,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(result))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -329,7 +316,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         val currentTaxYear = TaxYear().year
         val carWithdrawDate = new LocalDate(currentTaxYear, 4, 24)
         val fuelWithdrawDate = Some(new LocalDate(currentTaxYear, 4, 24))
-        val nino = randomNino
         val carSeqNum = 10
         val employmentSeqNum = 11
         val taxYear = TaxYear()
@@ -345,7 +331,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
         Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
 
-        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }
@@ -354,10 +340,8 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
   "benefits" must {
     "return empty list of other benefits" when {
       "there is no benefits coming from coding components" in {
-        val nino = randomNino
-
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponentsWithoutBenefits))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
@@ -366,13 +350,11 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
     }
     "return all types of other benefits" when {
       "there is otherBenefits coming from coding components" in {
-        val nino = randomNino
-
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
@@ -390,13 +372,11 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
     "return empty list of company cars" when {
       "there is no company car coming from coding components" in {
-        val nino = randomNino
-
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar)
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
@@ -407,8 +387,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
     "return the list of company car benefits with the car list and version as empty" when {
       "there is company cars coming from coding components but couldn't match them with the company cars from repository" in {
-        val nino = randomNino
-
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
@@ -417,7 +395,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -429,8 +407,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       }
 
       "the company car repository returns an exception in response to the request for the given NINO and tax year" in {
-        val nino = randomNino
-
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
@@ -440,7 +416,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
             "An exception occurred during processing of PAYE URI  [/paye/<nino>/car-benefits/<tax-year>]")))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -454,8 +430,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
     "return the list of company car benefits and get cars and version from car benefit if there is a matching benefit from repo" when {
       "there is company cars coming from coding components and some matching company cars coming from repository" in {
-        val nino = randomNino
-
         val taxFreeAmountComponents =
           taxFreeAmountComponentsWithoutBenefits ++
             createBenefitList(allBenefitTypesExceptCompanyCar) ++
@@ -498,7 +472,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           .thenReturn(Future.successful(carBenefitsFromRepo))
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
@@ -548,11 +522,8 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(randomNino),
-            Matchers.eq(IFormConstants.RemoveCompanyBenefitSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any()))
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -571,7 +542,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
           mockAuditable
         )
         val result =
-          Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds)
+          Await.result(sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc), 5 seconds)
 
         result mustBe "1"
       }
@@ -581,7 +552,7 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
       val removeCompanyBenefit =
         RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
       val map = Map(
-        "nino"                      -> randomNino.nino,
+        "nino"                      -> nino.nino,
         "envelope Id"               -> "1",
         "telephone contact allowed" -> removeCompanyBenefit.contactByPhone,
         "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
@@ -592,11 +563,8 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(randomNino),
-          Matchers.eq(IFormConstants.RemoveCompanyBenefitSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any()))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -614,10 +582,10 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
         mock[PdfService],
         mockAuditable
       )
-      Await.result(sut.removeCompanyBenefits(randomNino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
+      Await.result(sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.RemoveCompanyBenefitAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())
     }
   }
 
@@ -662,10 +630,6 @@ class BenefitsServiceSpec extends PlaySpec with MockitoSugar {
     CodingComponent(Commission, Some(125), 777, "some other description"),
     CodingComponent(BalancingCharge, Some(126), 999, "some other description")
   )
-
-  private val randomNino = new Generator(new Random).nextNino
-
-  private implicit val hc = HeaderCarrier(sessionId = Some(SessionId("TEST")))
 
   private def createSUT(
     taxAccountService: TaxAccountService = mock[TaxAccountService],

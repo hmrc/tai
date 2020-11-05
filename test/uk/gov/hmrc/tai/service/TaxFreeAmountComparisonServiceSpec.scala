@@ -16,26 +16,20 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import org.mockito.Matchers.any
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import scala.concurrent.duration._
-import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
-
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with TaxCodeHistoryConstants {
+class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryConstants {
 
   "taxFreeAmountComparison" should {
     "return a sequence of current coding components" when {
@@ -50,10 +44,10 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
         val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(currentCodingComponents))
 
         val expected = TaxFreeAmountComparison(Seq.empty, currentCodingComponents)
@@ -79,10 +73,10 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
         val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.failed(new RuntimeException("Error")))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(currentCodingComponents))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -100,15 +94,15 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
         val taxCodeChange = stubTaxCodeChange
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -131,15 +125,15 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
         val taxCodeChange = stubTaxCodeChange
 
-        when(taxCodeChangeService.taxCodeChange(Matchers.eq(nino))(any()))
+        when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.successful(taxCodeChange))
 
-        when(codingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear()))(any()))
+        when(codingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(Seq.empty))
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(Matchers.eq(nino), Matchers.eq(PRIMARY_PREVIOUS_TAX_CODE_ID))(Matchers.any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
           .thenReturn(Future.successful(previousCodingComponents))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
@@ -212,10 +206,6 @@ class TaxFreeAmountComparisonServiceSpec extends PlaySpec with MockitoSugar with
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  private val nino: Nino = new Generator(new Random).nextNino
 
   private def createTestService(
     taxCodeChangeService: TaxCodeChangeServiceImpl,

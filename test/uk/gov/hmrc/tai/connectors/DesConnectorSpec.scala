@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.codahale.metrics.Timer
 import org.joda.time.DateTime
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
@@ -36,14 +36,14 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
-import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, TaiConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
-class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+class DesConnectorSpec extends BaseSpec {
 
   "DesConnector" should {
 
@@ -56,7 +56,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val sut =
           createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
 
-        val result = sut.desPathUrl(Nino(nino), "test")
+        val result = sut.desPathUrl(nino, "test")
 
         result mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/test"
       }
@@ -103,7 +103,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
-        val jsonData = Json.toJson(List(NpsIabdRoot(nino = nino, `type` = iabdType)))
+        val jsonData = Json.toJson(List(NpsIabdRoot(nino = nino.nino, `type` = iabdType)))
         val jsonResponse = Future.successful(
           HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
 
@@ -124,9 +124,9 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
 
-        val response = Await.result(sut.getIabdsForTypeFromDes(Nino(nino), taxYear, iabdType)(hc), 5 seconds)
+        val response = Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType)(hc), 5 seconds)
 
-        response mustBe List(NpsIabdRoot(nino = nino, `type` = iabdType))
+        response mustBe List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
         urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/iabds/tax-year/$taxYear?type=$iabdType"
       }
     }
@@ -147,7 +147,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-        val response = sut.getIabdsForTypeFromDes(Nino(nino), taxYear, iabdType)(hc)
+        val response = sut.getIabdsForTypeFromDes(nino, taxYear, iabdType)(hc)
 
         val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
         ex.getMessage mustBe "Not-Found"
@@ -156,7 +156,8 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "get IABDs from DES api" when {
       "supplied with a valid nino and year" in {
-        val iabdList = List(NpsIabdRoot(nino = nino, `type` = iabdType), NpsIabdRoot(nino = nino, `type` = iabdType))
+        val iabdList =
+          List(NpsIabdRoot(nino = nino.nino, `type` = iabdType), NpsIabdRoot(nino = nino.nino, `type` = iabdType))
         val jsonData = Json.toJson(iabdList)
         val jsonResponse = Future.successful(
           HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
@@ -177,7 +178,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           .thenReturn(mockTimerContext)
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-        val response = Await.result(sut.getIabdsFromDes(Nino(nino), taxYear)(hc), 5 seconds)
+        val response = Await.result(sut.getIabdsFromDes(nino, taxYear)(hc), 5 seconds)
 
         response mustBe iabdList
         urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/iabds/tax-year/$taxYear"
@@ -200,7 +201,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-        val response = sut.getIabdsFromDes(Nino(nino), taxYear)(hc)
+        val response = sut.getIabdsFromDes(nino, taxYear)(hc)
 
         val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
         ex.getMessage mustBe "Not-Found"
@@ -209,7 +210,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "get TaxAccount from DES api" when {
       "supplied with a valid nino and year" in {
-        val taxAccount = NpsTaxAccount(Some(nino), Some(taxYear))
+        val taxAccount = NpsTaxAccount(Some(nino.nino), Some(taxYear))
         val jsonData = Json.toJson(taxAccount)
         val expectedResult: (NpsTaxAccount, Int, JsValue) = (taxAccount, -1, jsonData)
         val jsonResponse = Future.successful(
@@ -232,7 +233,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
 
-        val response = Await.result(sut.getCalculatedTaxAccountFromDes(Nino(nino), taxYear)(hc), 5 seconds)
+        val response = Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear)(hc), 5 seconds)
 
         response mustBe expectedResult
         urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
@@ -255,7 +256,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-        val response = sut.getCalculatedTaxAccountFromDes(Nino(nino), taxYear)(hc)
+        val response = sut.getCalculatedTaxAccountFromDes(nino, taxYear)(hc)
 
         val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
         ex.getMessage mustBe "Not-Found"
@@ -264,7 +265,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
     "get TaxAccount Json from DES api" when {
       "supplied with a valid nino and year" in {
-        val jsonData = Json.toJson(NpsTaxAccount(Some(nino), Some(taxYear)))
+        val jsonData = Json.toJson(NpsTaxAccount(Some(nino.nino), Some(taxYear)))
         val jsonResponse = Future.successful(
           HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
 
@@ -280,7 +281,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(Nino(nino), taxYear)(hc), 5 seconds)
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear)(hc), 5 seconds)
 
         response.json mustBe jsonData
         urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
@@ -298,7 +299,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut =
           createSUT(mockHttpClient, mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(Nino(nino), taxYear)(hc), 5 seconds)
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear)(hc), 5 seconds)
 
         response.status mustBe Status.NOT_FOUND
         response.body mustBe "Not-Found"
@@ -310,7 +311,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val sut =
           createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-        val response = Await.result(sut.updateEmploymentDataToDes(Nino(nino), taxYear, iabdType, 1, Nil)(hc), 5 seconds)
+        val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil)(hc), 5 seconds)
 
         response.status mustBe Status.OK
       }
@@ -333,7 +334,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
         val response =
-          Await.result(sut.updateEmploymentDataToDes(Nino(nino), taxYear, iabdType, 1, updateAmount)(hc), 5 seconds)
+          Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount)(hc), 5 seconds)
 
         response.status mustBe Status.OK
       }
@@ -355,7 +356,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
-        val response = sut.updateEmploymentDataToDes(Nino(nino), taxYear, iabdType, 1, updateAmount)(hc)
+        val response = sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount)(hc)
 
         val ex = the[HttpException] thrownBy Await.result(response, 5 seconds)
         ex.responseCode mustBe Status.INTERNAL_SERVER_ERROR
@@ -408,7 +409,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
           val result = Await.result(
             sut.updateExpensesDataToDes(
-              nino = Nino(nino),
+              nino = nino,
               year = taxYear,
               iabdType = iabdType,
               version = 1,
@@ -438,7 +439,7 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
             createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
 
           val result = sut.updateExpensesDataToDes(
-            nino = Nino(nino),
+            nino = nino,
             year = taxYear,
             iabdType = iabdType,
             version = 1,
@@ -465,11 +466,6 @@ class DesConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
       override val originatorId: String = "testOriginatorId"
       override val daPtaOriginatorId: String = "testOriginatorId"
     }
-
-  private implicit val hc = HeaderCarrier()
-
-  private def randomNino: Nino = new Generator(new Random).nextNino
-  private val nino: String = randomNino.nino
 
   private val taxYear: Int = DateTime.now().getYear
   private val iabdType: Int = 27

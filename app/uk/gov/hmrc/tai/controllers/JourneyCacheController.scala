@@ -18,16 +18,21 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.connectors.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
-class JourneyCacheController @Inject()(repository: JourneyCacheRepository, authentication: AuthenticationPredicate)
-    extends BaseController {
+class JourneyCacheController @Inject()(
+  repository: JourneyCacheRepository,
+  authentication: AuthenticationPredicate,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) {
 
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.currentCache(CacheId(request.nino), journeyName) map {

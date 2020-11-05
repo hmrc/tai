@@ -16,30 +16,18 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
+import uk.gov.hmrc.tai.connectors.CacheConnector
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 
-import scala.util.Random
-
-class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
-
-  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("TEST")))
-  val nino = new Generator(Random).nextNino
-  val cacheId = CacheId(Nino(nino.value))
+class JourneyCacheRepositorySpec extends BaseSpec {
 
   private def createSUT(cacheConnector: CacheConnector) = new JourneyCacheRepository(cacheConnector)
 
@@ -70,8 +58,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
         Await.result(sut.cached(cacheId, "testJourney", testCache), 5 seconds) mustBe testCache
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
-          Matchers.eq(testCache),
-          Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
+          meq(testCache),
+          meq("testJourney" + sut.JourneyCacheSuffix))(any())
       }
 
       "an existing cache is present for the named journey" in {
@@ -114,8 +102,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
-          Matchers.eq(expectedMap),
-          Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
+          meq(expectedMap),
+          meq("testJourney" + sut.JourneyCacheSuffix))(any())
       }
 
       "an existing cache is present for the named journey" in {
@@ -131,8 +119,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
-          Matchers.eq(expectedMap),
-          Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
+          meq(expectedMap),
+          meq("testJourney" + sut.JourneyCacheSuffix))(any())
       }
 
       "an existing cache is present for the named journey, and the supplied value replaces one of the existing values" in {
@@ -148,8 +136,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
-          Matchers.eq(expectedMap),
-          Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
+          meq(expectedMap),
+          meq("testJourney" + sut.JourneyCacheSuffix))(any())
       }
     }
 
@@ -157,9 +145,9 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
       val mockConnector = echoProgrammed(mock[CacheConnector])
-      when(mockConnector.find[Map[String, String]](any(), Matchers.eq("exists_journey_cache"))(any()))
+      when(mockConnector.find[Map[String, String]](any(), meq("exists_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
-      when(mockConnector.find[Map[String, String]](any(), Matchers.eq("doesntexist_journey_cache"))(any()))
+      when(mockConnector.find[Map[String, String]](any(), meq("doesntexist_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
@@ -171,9 +159,9 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
       val mockConnector = echoProgrammed(mock[CacheConnector])
-      when(mockConnector.find[Map[String, String]](any(), Matchers.eq("exists_journey_cache"))(any()))
+      when(mockConnector.find[Map[String, String]](any(), meq("exists_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
-      when(mockConnector.find[Map[String, String]](any(), Matchers.eq("doesntexist_journey_cache"))(any()))
+      when(mockConnector.find[Map[String, String]](any(), meq("doesntexist_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
@@ -192,8 +180,8 @@ class JourneyCacheRepositorySpec extends PlaySpec with MockitoSugar with FakeTai
 
       verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
         any(),
-        Matchers.eq(Map.empty[String, String]),
-        Matchers.eq("testJourney" + sut.JourneyCacheSuffix))(any())
+        meq(Map.empty[String, String]),
+        meq("testJourney" + sut.JourneyCacheSuffix))(any())
     }
   }
 }

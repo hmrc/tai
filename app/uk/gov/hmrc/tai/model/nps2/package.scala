@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 import scala.language.implicitConversions
@@ -45,7 +44,7 @@ package object nps2 {
       override def reads(json: JsValue): JsResult[LocalDate] = json match {
         case JsString(dateRegex(d, m, y)) =>
           JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(ValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
+        case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
       }
     },
     new Writes[LocalDate] {

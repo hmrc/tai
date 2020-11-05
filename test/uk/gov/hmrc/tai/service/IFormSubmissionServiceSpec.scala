@@ -17,23 +17,19 @@
 package uk.gov.hmrc.tai.service
 
 import java.nio.file.{Files, Paths}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Random
 
-class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
+class IFormSubmissionServiceSpec extends BaseSpec {
 
   "IFormSubmissionService" should {
     "create and submit an iform and return an envelope id after submission" in {
@@ -52,7 +48,7 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      val messageId = Await.result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
+      val messageId = Await.result(sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
         Future("")
       })(hc), 5.seconds)
 
@@ -61,12 +57,12 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
         any())(any())
     }
 
@@ -83,31 +79,27 @@ class IFormSubmissionServiceSpec extends PlaySpec with MockitoSugar {
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
       the[RuntimeException] thrownBy Await
-        .result(sut.uploadIForm(nextNino, iformSubmissionKey, iformId, (person: Person) => {
+        .result(sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
           Future("")
         })(hc), 5.seconds)
 
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        Matchers.contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
         any())(any())
     }
   }
 
-  private implicit val hc = HeaderCarrier()
-
-  private def nextNino = new Generator(new Random).nextNino
-
   private val iformSubmissionKey = "testSubmissionKey"
   private val iformId = "testIformId"
 
-  private val person: Person = Person(nextNino, "", "", None, Address("", "", "", "", ""))
+  private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
 

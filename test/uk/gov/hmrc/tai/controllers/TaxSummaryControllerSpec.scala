@@ -16,28 +16,24 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import data.NpsData
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model._
-import uk.gov.hmrc.tai.service.{NpsError, TaiService, TaxAccountService}
+import uk.gov.hmrc.tai.service.{TaiService, TaxAccountService}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthenticationPredicate {
+class TaxSummaryControllerSpec extends BaseSpec {
 
   "updateEmployments " must {
     "update the estimated pay when user is doing edit employments successfully " in {
@@ -82,7 +78,7 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       )
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
     }
 
     "update the estimated pay must be failed when nps is throwing BadRequestException " in {
@@ -131,12 +127,12 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
       val mockTaxAccountService = mock[TaxAccountService]
       doThrow(new RuntimeException(""))
         .when(mockTaxAccountService)
-        .invalidateTaiCacheData(Meq(nino))(any())
+        .invalidateTaiCacheData(meq(nino))(any())
 
       val sut = createSUT(mockTaiService, mockTaxAccountService, mock[Metrics])
       the[RuntimeException] thrownBy sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
 
-      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(Meq(nino))(any())
+      verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
     }
   }
 
@@ -145,5 +141,5 @@ class TaxSummaryControllerSpec extends PlaySpec with MockitoSugar with MockAuthe
     taxAccountService: TaxAccountService,
     metrics: Metrics,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaxSummaryController(taiService, taxAccountService, metrics, authentication)
+    new TaxSummaryController(taiService, taxAccountService, metrics, authentication, cc)
 }

@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.Matchers.{any, eq => Meq}
+import org.mockito.ArgumentMatchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.Play
+import play.api.Configuration
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
@@ -30,22 +28,22 @@ import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.DatabaseUpdate
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
-class CacheConnectorSpec
-    extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with MongoFormatter with BeforeAndAfterEach
-    with MockAuthenticationPredicate {
+class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfterEach with MockAuthenticationPredicate {
 
-  lazy implicit val compositeSymmetricCrypto: CompositeSymmetricCrypto = new ApplicationCrypto(
-    Play.current.configuration.underlying).JsonCrypto
+  implicit lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
+
+  lazy implicit val compositeSymmetricCrypto
+    : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
 
   val cacheIdValue = cacheId.value
   val emptyKey = ""
@@ -63,7 +61,7 @@ class CacheConnectorSpec
 
     when(taiCacheRepository.repo).thenReturn(cacheRepository)
 
-    new CacheConnector(taiCacheRepository, mongoConfig)
+    new CacheConnector(taiCacheRepository, mongoConfig, configuration)
   }
 
   override protected def beforeEach(): Unit =

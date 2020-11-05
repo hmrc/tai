@@ -18,33 +18,30 @@ package uk.gov.hmrc.tai.service
 
 import org.joda.time.{Days, LocalDate}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{never, times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.language.postfixOps
-import util.{Failure, Random, Success}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import play.api.http.Status.OK
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.{DesConnector, NpsConnector}
-import uk.gov.hmrc.tai.model.RtiCalc
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, RtiCalc}
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment, NpsIabdRoot}
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live}
 import uk.gov.hmrc.tai.model.nps2.{IabdType, Income}
 import uk.gov.hmrc.tai.model.rti.{PayFrequency, RtiData, RtiEmployment, RtiPayment}
 import uk.gov.hmrc.tai.model.tai.{NINE_MONTHS, SIX_MONTHS, THREE_MONTHS, TaxYear}
-import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
-import uk.gov.hmrc.tai.model.IabdUpdateAmount
-import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, TaiConstants}
 
 import scala.collection.JavaConversions._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tai.config.{FeatureTogglesConfig, NpsConfig}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
+import scala.util.{Failure, Success}
 
-class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
+class AutoUpdatePayServiceSpec extends BaseSpec {
 
   "updateIncomes" should {
     "not return any updated incomes" when {
@@ -181,7 +178,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockDesConnector = mock[DesConnector]
       when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200)))
+        .thenReturn(Future.successful(HttpResponse(OK, "")))
 
       val sut =
         createSUT(mock[NpsConnector], mockDesConnector, mockFeatureTogglesConfig, mockNpsConfig, mockIncomeHelper)
@@ -270,7 +267,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockDesConnector = mock[DesConnector]
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val mockIncomeHelper = mock[IncomeHelper]
 
@@ -2914,7 +2911,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val iabdRoot = NpsIabdRoot(nino.value, Some(1), IabdType.NewEstimatedPay.code, Some(1000))
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val result: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(
@@ -2976,7 +2973,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val result: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
@@ -3013,7 +3010,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val result: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
@@ -3055,7 +3052,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val iabdRoot = NpsIabdRoot(nino.value, Some(1), IabdType.NewEstimatedPay.code, Some(1000))
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val result: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(
@@ -3111,7 +3108,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val result: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(
@@ -3173,7 +3170,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val resp: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
@@ -3210,7 +3207,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
 
         val resp: Seq[HttpResponse] = Await.result(
           sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
@@ -3248,7 +3245,7 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
         val rtiCalc = RtiCalc(1, None, None, 1, 1, "EmployerName", 35000, None)
 
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(OK, "")))
           .thenReturn(Future.failed(new RuntimeException("second call failed")))
 
         val resp: Seq[HttpResponse] = Await.result(
@@ -3404,7 +3401,6 @@ class AutoUpdatePayServiceSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  private val nino: Nino = new Generator(new Random).nextNino
   private val CurrentYear: Int = TaxYear().year
   private val NextYear: Int = CurrentYear + 1
   private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))

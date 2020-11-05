@@ -17,13 +17,8 @@
 package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -31,12 +26,12 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
-import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
+class PensionProviderServiceSpec extends BaseSpec {
 
   "AddPensionProvider" must {
     "return an envelopeId" when {
@@ -46,11 +41,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.AddPensionProviderSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any())).thenReturn(Future.successful("1"))
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -74,11 +67,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.AddPensionProviderSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any())).thenReturn(Future.successful("1"))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+        .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -87,7 +78,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
       Await.result(sut.addPensionProvider(nino, pensionProvider), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.AddPensionProviderAuditTxnName), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.AddPensionProviderAuditTxnName), meq(map))(any())
     }
   }
 
@@ -118,12 +109,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
         val incorrectPensionProvider = IncorrectPensionProvider("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(
-          mockIFormSubmissionService.uploadIForm(
-            Matchers.eq(nino),
-            Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey),
-            Matchers.eq("TES1"),
-            any())(any())).thenReturn(Future.successful("1"))
+        when(mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -146,11 +134,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
-        mockIFormSubmissionService.uploadIForm(
-          Matchers.eq(nino),
-          Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey),
-          Matchers.eq("TES1"),
-          any())(any())).thenReturn(Future.successful("1"))
+        mockIFormSubmissionService
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+        .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
@@ -159,7 +145,7 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
       Await.result(sut.incorrectPensionProvider(nino, 1, pensionProvider), 5 seconds)
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(Matchers.eq(IFormConstants.IncorrectPensionProviderSubmissionKey), Matchers.eq(map))(any())
+        .sendDataEvent(meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq(map))(any())
     }
   }
 
@@ -185,8 +171,9 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
           "",
           2,
           Some(100),
-          false,
-          false)
+          hasPayrolledBenefit = false,
+          receivingOccupationalPension = false
+        )
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))
@@ -200,9 +187,6 @@ class PensionProviderServiceSpec extends PlaySpec with MockitoSugar {
       }
     }
   }
-
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
-  private val nino = new Generator().nextNino
 
   private def createSut(
     iFormSubmissionService: IFormSubmissionService,

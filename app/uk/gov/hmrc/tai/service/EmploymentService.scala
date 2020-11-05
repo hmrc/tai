@@ -29,10 +29,9 @@ import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentService @Inject()(
@@ -41,7 +40,7 @@ class EmploymentService @Inject()(
   iFormSubmissionService: IFormSubmissionService,
   fileUploadService: FileUploadService,
   pdfService: PdfService,
-  auditable: Auditor) {
+  auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
 

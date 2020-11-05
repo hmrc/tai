@@ -16,32 +16,22 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.Matchers
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.auth.core.MissingBearerToken
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UnauthorizedException}
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UnauthorizedException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
-import uk.gov.hmrc.tai.util.{NpsExceptions, RequestQueryFilter}
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions, RequestQueryFilter}
 
 import scala.concurrent.Future
-import scala.util.Random
 
-class CodingComponentControllerSpec
-    extends PlaySpec with MockitoSugar with RequestQueryFilter with NpsExceptions with MockAuthenticationPredicate {
+class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter with NpsExceptions {
 
   "codingComponentsForYear" must {
     "return OK with sequence of coding components" when {
@@ -52,7 +42,7 @@ class CodingComponentControllerSpec
         )
 
         val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.successful(codingComponentSeq))
 
         val sut = createSUT(mockCodingComponentService)
@@ -84,7 +74,7 @@ class CodingComponentControllerSpec
       "an exception is thrown by the handler which is not a BadRequestException" in {
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new UnauthorizedException("")))
 
         intercept[UnauthorizedException] {
@@ -97,7 +87,7 @@ class CodingComponentControllerSpec
       "a BadRequestException is thrown" in {
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new BadRequestException("bad request exception")))
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
         status(result) mustBe 400
@@ -111,7 +101,7 @@ class CodingComponentControllerSpec
         val mockCodingComponentService = mock[CodingComponentService]
         val sut = createSUT(mockCodingComponentService)
 
-        when(mockCodingComponentService.codingComponents(Matchers.eq(nino), Matchers.eq(TaxYear().next))(any()))
+        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new NotFoundException("not found exception")))
 
         val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest())
@@ -126,5 +116,5 @@ class CodingComponentControllerSpec
   private def createSUT(
     codingComponentService: CodingComponentService,
     predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new CodingComponentController(predicate, codingComponentService)
+    new CodingComponentController(predicate, codingComponentService, cc)
 }
