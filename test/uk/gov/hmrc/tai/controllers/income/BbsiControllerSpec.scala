@@ -88,6 +88,20 @@ class BbsiControllerSpec extends BaseSpec {
       status(result) mustBe OK
       contentAsJson(result) mustBe expectedJson
     }
+
+    "return NotFound" when {
+      "No bank accounts are returned" in {
+
+        val mockBbsiService = mock[BbsiService]
+        when(mockBbsiService.bbsiDetails(any(), any())(any()))
+          .thenReturn(Future.successful(Seq.empty[BankAccount]))
+
+        val sut = createSUT(mockBbsiService)
+        val result = sut.bbsiDetails(nino)(FakeRequest())
+
+        status(result) mustBe NOT_FOUND
+      }
+    }
   }
 
   "bbsiAccount" must {

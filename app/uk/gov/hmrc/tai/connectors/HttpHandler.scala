@@ -85,6 +85,37 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
 
   }
 
+  def getFromApiV2(url: String, api: APITypes)(implicit hc: HeaderCarrier): Future[Either[String, JsValue]] = {
+
+    val timerContext = metrics.startTimer(api)
+
+    httpClient.GET[HttpResponse](url) map { response =>
+      response.status match {
+        case OK =>
+          timerContext.stop()
+          metrics.incrementSuccessCounter(api)
+          Right(response.json)
+        case e @ _ =>
+          timerContext.stop()
+          metrics.incrementFailedCounter(api)
+          Left(s"Connector returned $e: $url")
+      }
+    } recover {
+      case e: LockedException =>
+        timerContext.stop()
+        metrics.incrementSuccessCounter(api)
+        Left(e.responseCode.toString)
+      case e: NotFoundException =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        Left(e.responseCode.toString)
+      case e @ (_: Upstream5xxResponse | _: Exception) =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        Left(e.getMessage)
+    }
+  }
+
   def postToApi[I](url: String, data: I, api: APITypes)(
     implicit hc: HeaderCarrier,
     writes: Writes[I]): Future[HttpResponse] = {

@@ -38,7 +38,8 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
     cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
         for {
-          accounts <- bbsiConnector.bankAccounts(nino, taxYear)
+          accountsOpt <- bbsiConnector.bankAccounts(nino, taxYear)
+          accounts = accountsOpt.getOrElse(Seq.empty[BankAccount])
           accountsWithId <- cacheConnector
                              .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
         } yield accountsWithId

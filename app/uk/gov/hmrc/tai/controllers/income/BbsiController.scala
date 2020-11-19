@@ -41,7 +41,7 @@ class BbsiController @Inject()(
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>
-      Ok(Json.toJson(ApiResponse(accounts, Nil)))
+      if (accounts.nonEmpty) Ok(Json.toJson(ApiResponse(accounts, Nil))) else NotFound
     }
   }
 

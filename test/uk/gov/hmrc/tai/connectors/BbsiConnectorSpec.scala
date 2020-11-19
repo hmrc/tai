@@ -39,8 +39,8 @@ class BbsiConnectorSpec extends BaseSpec {
         val captor = ArgumentCaptor.forClass(classOf[HeaderCarrier])
 
         val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(multipleBankAccounts))
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(Right(multipleBankAccounts)))
 
         val mockDesConfig = mock[DesConfig]
         when(mockDesConfig.environment)
@@ -51,10 +51,10 @@ class BbsiConnectorSpec extends BaseSpec {
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mockDesConfig)
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Seq(bankAccount, bankAccount, bankAccount)
+        result mustBe Some(Seq(bankAccount, bankAccount, bankAccount))
 
         verify(mockHttpHandler, times(1))
-          .getFromApi(any(), meq(APITypes.BbsiAPI))(captor.capture())
+          .getFromApiV2(any(), meq(APITypes.BbsiAPI))(captor.capture())
 
         captor.getValue.extraHeaders must contain("Environment"   -> "ist0")
         captor.getValue.extraHeaders must contain("Authorization" -> s"Bearer 123")
@@ -63,13 +63,13 @@ class BbsiConnectorSpec extends BaseSpec {
 
       "api return bank account" in {
         val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(singleBankAccount))
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(Right(singleBankAccount)))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Seq(bankAccount)
+        result mustBe Some(Seq(bankAccount))
       }
     }
 
@@ -78,28 +78,40 @@ class BbsiConnectorSpec extends BaseSpec {
         val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016", "accounts" -> Json.arr())
 
         val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(json))
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(Right(json)))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Nil
+        result mustBe Some(Nil)
       }
     }
 
-    "return exception" when {
+    "return None" when {
       "api returns invalid json" in {
         val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
 
         val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(json))
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(Right(json)))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
-        val ex = the[RuntimeException] thrownBy Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+        val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        ex.getMessage mustBe "Invalid Json"
+        res mustBe None
+      }
+
+      "api returns a Left" in {
+
+        val mockHttpHandler = mock[HttpHandler]
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(Left("Oops")))
+
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
+        val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+
+        res mustBe None
       }
     }
   }

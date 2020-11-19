@@ -59,7 +59,7 @@ class BbsiRepositorySpec extends BaseSpec {
 
         val mockBbsiConnector = mock[BbsiConnector]
         when(mockBbsiConnector.bankAccounts(any(), any())(any()))
-          .thenReturn(Future.successful(Seq(bankAccount, bankAccount)))
+          .thenReturn(Future.successful(Some(Seq(bankAccount, bankAccount))))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
         val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
@@ -71,6 +71,35 @@ class BbsiRepositorySpec extends BaseSpec {
         verify(mockCacheConnector, times(1))
           .createOrUpdateSeq[BankAccount](any(), meq(Seq(expectedBankAccount1, expectedBankAccount2)), any())(any())
         verify(mockBbsiConnector, times(1))
+          .bankAccounts(any(), any())(any())
+      }
+    }
+
+    "return no bank accounts" when {
+      "BBSI connector returns None" in {
+
+        val emptySeq = Seq.empty[BankAccount]
+
+        val mockCacheConnector = mock[CacheConnector]
+        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
+          .thenReturn(Future.successful(None))
+        when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any()))
+          .thenReturn(Future.successful(emptySeq))
+
+        val mockBbsiConnector = mock[BbsiConnector]
+        when(mockBbsiConnector.bankAccounts(any(), any())(any()))
+          .thenReturn(Future.successful(None))
+
+        val sut = createSUT(mockCacheConnector, mockBbsiConnector)
+        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
+
+        result mustBe emptySeq
+
+        verify(mockCacheConnector)
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
+        verify(mockCacheConnector)
+          .createOrUpdateSeq[BankAccount](any(), meq(emptySeq), any())(any())
+        verify(mockBbsiConnector)
           .bankAccounts(any(), any())(any())
       }
     }
