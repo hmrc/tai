@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector, CacheId}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
@@ -32,18 +32,20 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
+  def bbsiDetails(nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier): Future[Either[HttpResponse, Seq[BankAccount]]] = {
     val cacheId = CacheId(nino)
 
     cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
-        for {
-          accountsOpt <- bbsiConnector.bankAccounts(nino, taxYear)
-          accounts = accountsOpt.getOrElse(Seq.empty[BankAccount])
-          accountsWithId <- cacheConnector
-                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
-        } yield accountsWithId
-      case Some(accounts) => Future.successful(accounts)
+        bbsiConnector.bankAccounts(nino, taxYear) flatMap {
+          case Right(accounts) =>
+            cacheConnector.createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat) map {
+              Right(_)
+            }
+          case Left(response) => Future.successful(Left(response))
+        }
+      case Some(accounts) => Future.successful(Right(accounts))
     }
   }
 

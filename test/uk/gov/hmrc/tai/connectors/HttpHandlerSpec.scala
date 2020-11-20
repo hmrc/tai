@@ -16,22 +16,106 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, get}
 import com.codahale.metrics.Timer
+import com.github.tomakehurst.wiremock.http.Fault
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.{JsString, Json}
+import play.api.test.Injecting
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.util.{BaseSpec, WireMockHelper}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
-class HttpHandlerSpec extends BaseSpec {
+class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting {
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
+  "getFromApiV2" should {
+
+    lazy val sut: HttpHandler = createSUT(inject[Metrics], inject[HttpClient])
+    lazy val url: String = s"http://localhost:${server.port()}/foo"
+
+    "return a 200 response" in {
+
+      val json = """{"message": "Success"}"""
+
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(OK).withBody(json))
+      )
+
+      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+
+      result.status mustBe OK
+      result.json mustBe Json.parse(json)
+    }
+
+    "return a 423 response" in {
+
+      val json = """{"message": "Locked"}"""
+
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(LOCKED).withBody(json))
+      )
+
+      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+
+      result.status mustBe LOCKED
+      result.json mustBe Json.parse(json)
+    }
+
+    "return any other 4xx response" in {
+
+      val json = """{"message": "Not Found"}"""
+
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(NOT_FOUND).withBody(json))
+      )
+
+      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+
+      result.status mustBe NOT_FOUND
+      result.json mustBe Json.parse(json)
+    }
+
+    "return any other 5xx response" in {
+
+      val json = """{"message": "Could not reach hod"}"""
+
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(json))
+      )
+
+      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+
+      result.status mustBe BAD_GATEWAY
+      result.json mustBe Json.parse(json)
+    }
+
+    "handle exceptions" in {
+
+      val json = """{"message": "Could not reach hod"}"""
+
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK))
+      )
+
+      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+
+      result.status mustBe INTERNAL_SERVER_ERROR
+    }
+  }
 
   "getFromAPI" should {
     "return valid json" when {

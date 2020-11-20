@@ -21,7 +21,7 @@ import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.BankAccount
@@ -80,7 +80,7 @@ class BbsiControllerSpec extends BaseSpec {
 
       val mockBbsiService = mock[BbsiService]
       when(mockBbsiService.bbsiDetails(any(), any())(any()))
-        .thenReturn(Future.successful(Seq(bankAccount, bankAccount, bankAccount)))
+        .thenReturn(Future.successful(Right(Seq(bankAccount, bankAccount, bankAccount))))
 
       val sut = createSUT(mockBbsiService)
       val result = sut.bbsiDetails(nino)(FakeRequest())
@@ -94,12 +94,46 @@ class BbsiControllerSpec extends BaseSpec {
 
         val mockBbsiService = mock[BbsiService]
         when(mockBbsiService.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Seq.empty[BankAccount]))
+          .thenReturn(Future.successful(Right(Seq.empty[BankAccount])))
 
         val sut = createSUT(mockBbsiService)
         val result = sut.bbsiDetails(nino)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
+      }
+    }
+
+    "return the correct 4xx status" when {
+      "a 4xx http response is returned" in {
+
+        val json = """{"message": "Wrong Input"}"""
+
+        val mockBbsiService = mock[BbsiService]
+        when(mockBbsiService.bbsiDetails(any(), any())(any()))
+          .thenReturn(Future.successful(Left(HttpResponse(BAD_REQUEST, json))))
+
+        val sut = createSUT(mockBbsiService)
+        val result = sut.bbsiDetails(nino)(FakeRequest())
+
+        status(result) mustBe BAD_REQUEST
+        contentAsJson(result) mustBe Json.parse(json)
+      }
+    }
+
+    "return the correct 5xx status" when {
+      "a 5xx http response is returned" in {
+
+        val json = """{"message": "An error occurred"}"""
+
+        val mockBbsiService = mock[BbsiService]
+        when(mockBbsiService.bbsiDetails(any(), any())(any()))
+          .thenReturn(Future.successful(Left(HttpResponse(INTERNAL_SERVER_ERROR, json))))
+
+        val sut = createSUT(mockBbsiService)
+        val result = sut.bbsiDetails(nino)(FakeRequest())
+
+        status(result) mustBe INTERNAL_SERVER_ERROR
+        contentAsJson(result) mustBe Json.parse(json)
       }
     }
   }

@@ -20,9 +20,11 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.ArgumentCaptor
 import play.api.libs.json.{JsValue, Json}
+import play.api.http.Status._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
+import uk.gov.hmrc.tai.model.domain.formatters.BbsiHodFormatters
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -35,12 +37,15 @@ class BbsiConnectorSpec extends BaseSpec {
   "BbsiConnector" should {
 
     "return Sequence of BankAccounts" when {
+
+      //TODO These tests won't parse the JSON, ".toString()" doesn't work on the json
+
       "api returns bank accounts" in {
         val captor = ArgumentCaptor.forClass(classOf[HeaderCarrier])
 
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApiV2(any(), any())(any()))
-          .thenReturn(Future.successful(Right(multipleBankAccounts)))
+          .thenReturn(Future.successful(HttpResponse(OK, multipleBankAccounts.toString())))
 
         val mockDesConfig = mock[DesConfig]
         when(mockDesConfig.environment)
@@ -51,7 +56,7 @@ class BbsiConnectorSpec extends BaseSpec {
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mockDesConfig)
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Some(Seq(bankAccount, bankAccount, bankAccount))
+        result mustBe Right(Seq(bankAccount, bankAccount, bankAccount))
 
         verify(mockHttpHandler, times(1))
           .getFromApiV2(any(), meq(APITypes.BbsiAPI))(captor.capture())
@@ -64,12 +69,12 @@ class BbsiConnectorSpec extends BaseSpec {
       "api return bank account" in {
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApiV2(any(), any())(any()))
-          .thenReturn(Future.successful(Right(singleBankAccount)))
+          .thenReturn(Future.successful(HttpResponse(OK, singleBankAccount.toString())))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Some(Seq(bankAccount))
+        result mustBe Right(Seq(bankAccount))
       }
     }
 
@@ -79,39 +84,88 @@ class BbsiConnectorSpec extends BaseSpec {
 
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApiV2(any(), any())(any()))
-          .thenReturn(Future.successful(Right(json)))
+          .thenReturn(Future.successful(HttpResponse(OK, json.toString())))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result mustBe Some(Nil)
+        result mustBe Right(Nil)
       }
     }
 
-    "return None" when {
+    "return Left" when {
       "api returns invalid json" in {
         val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
 
         val mockHttpHandler = mock[HttpHandler]
         when(mockHttpHandler.getFromApiV2(any(), any())(any()))
-          .thenReturn(Future.successful(Right(json)))
+          .thenReturn(Future.successful(HttpResponse(OK, json.toString())))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        res mustBe None
+        res.left.get.status mustBe INTERNAL_SERVER_ERROR
+        res.left.get.body mustBe "Could not parse Json"
       }
 
-      "api returns a Left" in {
+      "api returns a LockedException" in {
 
         val mockHttpHandler = mock[HttpHandler]
+        val message = "Account was locked"
+
         when(mockHttpHandler.getFromApiV2(any(), any())(any()))
-          .thenReturn(Future.successful(Left("Oops")))
+          .thenReturn(Future.successful(HttpResponse(LOCKED, message)))
 
         val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        res mustBe None
+        res.left.get.status mustBe LOCKED
+        res.left.get.body mustBe message
+      }
+
+      "api returns a 4xx response" in {
+
+        val mockHttpHandler = mock[HttpHandler]
+        val message = "Bad Request"
+
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, message)))
+
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
+        val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+
+        res.left.get.status mustBe BAD_REQUEST
+        res.left.get.body mustBe message
+      }
+
+      "api returns a 5xx response" in {
+
+        val mockHttpHandler = mock[HttpHandler]
+        val message = "An error occurred"
+
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, message)))
+
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
+        val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+
+        res.left.get.status mustBe INTERNAL_SERVER_ERROR
+        res.left.get.body mustBe message
+      }
+
+      "api throws an exception" in {
+
+        val mockHttpHandler = mock[HttpHandler]
+        val message = "An error occurred"
+
+        when(mockHttpHandler.getFromApiV2(any(), any())(any()))
+          .thenReturn(Future.failed(new Exception(message)))
+
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
+        val res = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+
+        res.left.get.status mustBe INTERNAL_SERVER_ERROR
+        res.left.get.body mustBe message
       }
     }
   }

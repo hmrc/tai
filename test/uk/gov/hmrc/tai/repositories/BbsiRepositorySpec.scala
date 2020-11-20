@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -40,7 +41,7 @@ class BbsiRepositorySpec extends BaseSpec {
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
         val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
 
-        result mustBe Seq(bankAccount)
+        result mustBe Right(Seq(bankAccount))
         verify(mockCacheConnector, times(1))
           .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockBbsiConnector, never())
@@ -59,12 +60,12 @@ class BbsiRepositorySpec extends BaseSpec {
 
         val mockBbsiConnector = mock[BbsiConnector]
         when(mockBbsiConnector.bankAccounts(any(), any())(any()))
-          .thenReturn(Future.successful(Some(Seq(bankAccount, bankAccount))))
+          .thenReturn(Future.successful(Right(Seq(bankAccount, bankAccount))))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
         val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
 
-        result mustBe Seq(expectedBankAccount1, expectedBankAccount2)
+        result mustBe Right(Seq(expectedBankAccount1, expectedBankAccount2))
 
         verify(mockCacheConnector, times(1))
           .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
@@ -88,17 +89,44 @@ class BbsiRepositorySpec extends BaseSpec {
 
         val mockBbsiConnector = mock[BbsiConnector]
         when(mockBbsiConnector.bankAccounts(any(), any())(any()))
-          .thenReturn(Future.successful(None))
+          .thenReturn(Future.successful(Right(Seq.empty[BankAccount])))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
         val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
 
-        result mustBe emptySeq
+        result mustBe Right(emptySeq)
 
         verify(mockCacheConnector)
           .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
         verify(mockCacheConnector)
           .createOrUpdateSeq[BankAccount](any(), meq(emptySeq), any())(any())
+        verify(mockBbsiConnector)
+          .bankAccounts(any(), any())(any())
+      }
+    }
+
+    "return a http response" when {
+      "connector returns a left" in {
+
+        val response = Left(HttpResponse(500, "An error occurred"))
+
+        val mockCacheConnector = mock[CacheConnector]
+        when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
+          .thenReturn(Future.successful(None))
+
+        val mockBbsiConnector = mock[BbsiConnector]
+        when(mockBbsiConnector.bankAccounts(any(), any())(any()))
+          .thenReturn(Future.successful(response))
+
+        val sut = createSUT(mockCacheConnector, mockBbsiConnector)
+        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
+
+        result mustBe response
+
+        verify(mockCacheConnector)
+          .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
+        verify(mockCacheConnector, never())
+          .createOrUpdateSeq[BankAccount](any(), any(), any())(any())
         verify(mockBbsiConnector)
           .bankAccounts(any(), any())(any())
       }

@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.http.Status._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -39,13 +40,21 @@ class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: 
         "Authorization" -> s"Bearer ${config.authorization}",
         "Content-Type"  -> TaiConstants.contentType))
 
-  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Option[Seq[BankAccount]]] = {
+  def bankAccounts(nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier): Future[Either[HttpResponse, Seq[BankAccount]]] = {
     implicit val hc: HeaderCarrier = createHeader
-    httpHandler.getFromApiV2(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map {
-      case Right(json) =>
-        json.asOpt[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
-      case _ =>
-        None
+
+    httpHandler.getFromApiV2(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map { response =>
+      response.status match {
+        case OK =>
+          response.json.asOpt[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads) match {
+            case Some(accounts) => Right(accounts)
+            case None           => Left(HttpResponse(INTERNAL_SERVER_ERROR, "Could not parse Json"))
+          }
+        case _ => Left(response)
+      }
+    } recover {
+      case e => Left(HttpResponse(INTERNAL_SERVER_ERROR, e.getMessage))
     }
   }
 }

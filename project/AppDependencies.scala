@@ -10,12 +10,13 @@ object AppDependencies {
   val compile = Seq(
     filters,
     ws,
-    "uk.gov.hmrc"       %% s"bootstrap-$playVersion" % "1.16.0",
-    "uk.gov.hmrc"       %% "domain"                  % s"5.10.0-$playVersion",
-    "uk.gov.hmrc"       %% "json-encryption"         % s"4.8.0-$playVersion",
-    "uk.gov.hmrc"       %% "mongo-caching"           % s"6.15.0-$playVersion" exclude("uk.gov.hmrc","time_2.11"),
-    "uk.gov.hmrc"       %% "auth-client"             % s"3.2.0-$playVersion",
-    "com.typesafe.play" %% "play-json-joda"          % "2.7.4"
+    "uk.gov.hmrc"                %% s"bootstrap-$playVersion" % "1.16.0",
+    "uk.gov.hmrc"                %% "domain"                  % s"5.10.0-$playVersion",
+    "uk.gov.hmrc"                %% "json-encryption"         % s"4.8.0-$playVersion",
+    "uk.gov.hmrc"                %% "mongo-caching"           % s"6.15.0-$playVersion" exclude("uk.gov.hmrc","time_2.11"),
+    "uk.gov.hmrc"                %% "auth-client"             % s"3.2.0-$playVersion",
+    "com.typesafe.play"          %% "play-json-joda"          % "2.7.4",
+    "com.typesafe.scala-logging" %% "scala-logging"           % "3.9.2"
   )
 
   lazy val scope: String = "test,it"
