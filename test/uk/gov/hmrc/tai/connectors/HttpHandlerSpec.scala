@@ -16,22 +16,23 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, get}
 import com.codahale.metrics.Timer
+import com.github.tomakehurst.wiremock.client.WireMock.{verify => _, _}
 import com.github.tomakehurst.wiremock.http.Fault
+import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.{BaseSpec, WireMockHelper}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -42,20 +43,22 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
-  "getFromApiV2" should {
+  lazy val sut: HttpHandler = createSUT(inject[Metrics], inject[HttpClient])
 
-    lazy val sut: HttpHandler = createSUT(inject[Metrics], inject[HttpClient])
-    lazy val url: String = s"http://localhost:${server.port()}/foo"
+  lazy val url: String = s"http://localhost:${server.port()}"
+  val endpoint = "/foo"
+
+  "getFromApiV2" should {
 
     "return a 200 response" in {
 
       val json = """{"message": "Success"}"""
 
       server.stubFor(
-        get(anyUrl()).willReturn(aResponse().withStatus(OK).withBody(json))
+        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(OK).withBody(json))
       )
 
-      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
 
       result.status mustBe OK
       result.json mustBe Json.parse(json)
@@ -66,10 +69,10 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
       val json = """{"message": "Locked"}"""
 
       server.stubFor(
-        get(anyUrl()).willReturn(aResponse().withStatus(LOCKED).withBody(json))
+        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(LOCKED).withBody(json))
       )
 
-      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
 
       result.status mustBe LOCKED
       result.json mustBe Json.parse(json)
@@ -80,10 +83,10 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
       val json = """{"message": "Not Found"}"""
 
       server.stubFor(
-        get(anyUrl()).willReturn(aResponse().withStatus(NOT_FOUND).withBody(json))
+        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(json))
       )
 
-      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
 
       result.status mustBe NOT_FOUND
       result.json mustBe Json.parse(json)
@@ -94,10 +97,10 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
       val json = """{"message": "Could not reach hod"}"""
 
       server.stubFor(
-        get(anyUrl()).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(json))
+        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(json))
       )
 
-      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
 
       result.status mustBe BAD_GATEWAY
       result.json mustBe Json.parse(json)
@@ -105,13 +108,11 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
 
     "handle exceptions" in {
 
-      val json = """{"message": "Could not reach hod"}"""
-
       server.stubFor(
-        get(anyUrl()).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK))
+        get(urlEqualTo(endpoint)).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK))
       )
 
-      val result = Await.result(sut.getFromApiV2(url, APITypes.BbsiAPI), 5.seconds)
+      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
 
       result.status mustBe INTERNAL_SERVER_ERROR
     }
@@ -130,7 +131,7 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
 
         val mockHttp = mock[HttpClient]
         when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(SuccessfulGetResponseWithObject))
+          .thenReturn(Future.successful(successfulGetResponseWithObject))
 
         val SUT = createSUT(mockMetrics, mockHttp)
         val response = Await.result(SUT.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
@@ -272,62 +273,59 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
   }
 
   "postToApi" should {
-    val mockUrl = "mockUrl"
-    val userInput = "userInput"
+    val userInput = """{"message": "Success"}"""
 
     "return json which is coming from http post call" in {
-      val mockHttp = mock[HttpClient]
-      when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(CREATED, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(ACCEPTED, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(NO_CONTENT, Json.toJson(userInput), Map[String, Seq[String]]())))
 
-      val SUT = createSUT(mock[Metrics], mockHttp)
-      val okResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val createdResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val acceptedResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val noContentResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+      server.importStubs(
+        stubImport()
+          .stub(post("/ok").willReturn(aResponse().withStatus(OK).withBody(userInput)))
+          .stub(post("/created").willReturn(aResponse().withStatus(CREATED).withBody(userInput)))
+          .stub(post("/accepted").willReturn(aResponse().withStatus(ACCEPTED).withBody(userInput)))
+          .stub(post("/no-content").willReturn(aResponse().withStatus(NO_CONTENT)))
+          .build()
+      )
+
+      val okResponse = Await.result(sut.postToApi[String](s"$url/ok", userInput, APITypes.RTIAPI), 5 seconds)
+      val createdResponse = Await.result(sut.postToApi[String](s"$url/created", userInput, APITypes.RTIAPI), 5 seconds)
+      val acceptedResponse =
+        Await.result(sut.postToApi[String](s"$url/accepted", userInput, APITypes.RTIAPI), 5 seconds)
+      val noContentResponse =
+        Await.result(sut.postToApi[String](s"$url/no-content", userInput, APITypes.RTIAPI), 5 seconds)
 
       okResponse.status mustBe OK
-      okResponse.json mustBe Json.toJson(userInput)
+      okResponse.json mustBe Json.parse(userInput)
 
       createdResponse.status mustBe CREATED
-      createdResponse.json mustBe Json.toJson(userInput)
+      createdResponse.json mustBe Json.parse(userInput)
 
       acceptedResponse.status mustBe ACCEPTED
-      acceptedResponse.json mustBe Json.toJson(userInput)
+      acceptedResponse.json mustBe Json.parse(userInput)
 
       noContentResponse.status mustBe NO_CONTENT
-      noContentResponse.json mustBe Json.toJson(userInput)
     }
 
     "return Http exception" when {
       "http response is NOT_FOUND" in {
-        val mockMetrics = mock[Metrics]
-        val mockHttp = mock[HttpClient]
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(NOT_FOUND, "")))
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(NOT_FOUND))
+        )
 
         val result = the[HttpException] thrownBy Await
-          .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+          .result(sut.postToApi[String](s"$url$endpoint", userInput, APITypes.RTIAPI), 5 seconds)
 
         result.responseCode mustBe NOT_FOUND
       }
 
       "http response is GATEWAY_TIMEOUT" in {
-        val mockMetrics = mock[Metrics]
-        val mockHttp = mock[HttpClient]
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-
-        when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(GATEWAY_TIMEOUT))
+        )
 
         val result = the[HttpException] thrownBy Await
-          .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+          .result(sut.postToApi[String](s"$url$endpoint", userInput, APITypes.RTIAPI), 5 seconds)
 
         result.responseCode mustBe GATEWAY_TIMEOUT
       }
@@ -337,17 +335,10 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
   private case class ResponseObject(name: String, age: Int)
   private implicit val responseObjectFormat = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
+  private val responseBodyString = """{"name": "aaa", "age": 24}"""
 
-  private val SuccessfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                      -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, JsString("not found"), Map("ETag"                                           -> Seq("34")))
-  private val LockedHttpResponse: HttpResponse = HttpResponse(423, JsString("locked"), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
+  private val successfulGetResponseWithObject: HttpResponse =
+    HttpResponse(200, responseBodyString, Map("ETag" -> Seq("34")))
 
   private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
 }

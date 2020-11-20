@@ -38,8 +38,6 @@ class BbsiConnectorSpec extends BaseSpec {
 
     "return Sequence of BankAccounts" when {
 
-      //TODO These tests won't parse the JSON, ".toString()" doesn't work on the json
-
       "api returns bank accounts" in {
         val captor = ArgumentCaptor.forClass(classOf[HeaderCarrier])
 
@@ -108,7 +106,7 @@ class BbsiConnectorSpec extends BaseSpec {
         res.left.get.body mustBe "Could not parse Json"
       }
 
-      "api returns a LockedException" in {
+      "api returns locked" in {
 
         val mockHttpHandler = mock[HttpHandler]
         val message = "Account was locked"
