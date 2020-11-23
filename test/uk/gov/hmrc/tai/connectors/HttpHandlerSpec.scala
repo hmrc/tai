@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock.{verify => _, _}
-import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
@@ -47,76 +46,6 @@ class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper wit
 
   lazy val url: String = s"http://localhost:${server.port()}"
   val endpoint = "/foo"
-
-  "getFromApiV2" should {
-
-    "return a 200 response" in {
-
-      val json = """{"message": "Success"}"""
-
-      server.stubFor(
-        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(OK).withBody(json))
-      )
-
-      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
-
-      result.status mustBe OK
-      result.json mustBe Json.parse(json)
-    }
-
-    "return a 423 response" in {
-
-      val json = """{"message": "Locked"}"""
-
-      server.stubFor(
-        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(LOCKED).withBody(json))
-      )
-
-      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
-
-      result.status mustBe LOCKED
-      result.json mustBe Json.parse(json)
-    }
-
-    "return any other 4xx response" in {
-
-      val json = """{"message": "Not Found"}"""
-
-      server.stubFor(
-        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(json))
-      )
-
-      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
-
-      result.status mustBe NOT_FOUND
-      result.json mustBe Json.parse(json)
-    }
-
-    "return any other 5xx response" in {
-
-      val json = """{"message": "Could not reach hod"}"""
-
-      server.stubFor(
-        get(urlEqualTo(endpoint)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(json))
-      )
-
-      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
-
-      result.status mustBe BAD_GATEWAY
-      result.json mustBe Json.parse(json)
-    }
-
-    "handle exceptions" in {
-
-      server.stubFor(
-        get(urlEqualTo(endpoint)).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK))
-      )
-
-      val result = Await.result(sut.getFromApiV2(s"$url$endpoint", APITypes.BbsiAPI), 5.seconds)
-
-      result.status mustBe INTERNAL_SERVER_ERROR
-    }
-  }
 
   "getFromAPI" should {
     "return valid json" when {

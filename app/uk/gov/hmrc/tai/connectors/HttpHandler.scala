@@ -21,7 +21,6 @@ import com.typesafe.scalalogging.LazyLogging
 import play.api.http.Status
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Writes}
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -85,38 +84,6 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
         throw ex
     }
 
-  }
-
-  def getFromApiV2(url: String, api: APITypes)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-
-    val timerContext = metrics.startTimer(api)
-    def loggerMessage(code: Int): String = s"HttpHandler received $code from $url"
-
-    httpClient.GET[HttpResponse](url) map { response =>
-      response.status match {
-        case OK =>
-          timerContext.stop()
-          metrics.incrementSuccessCounter(api)
-          response
-        case LOCKED =>
-          timerContext.stop()
-          metrics.incrementSuccessCounter(api)
-          logger.warn(loggerMessage(LOCKED))
-          HttpResponse(LOCKED, response.body)
-        case code =>
-          timerContext.stop()
-          metrics.incrementFailedCounter(api)
-          logger.error(loggerMessage(code))
-          HttpResponse(code, response.body)
-      }
-    } recover {
-      case e =>
-        val errorMessage = s"Exception in HttpHandler: $e"
-        timerContext.stop()
-        metrics.incrementFailedCounter(api)
-        logger.error(errorMessage, e)
-        HttpResponse(INTERNAL_SERVER_ERROR, errorMessage)
-    }
   }
 
   def postToApi[I](url: String, data: I, api: APITypes)(

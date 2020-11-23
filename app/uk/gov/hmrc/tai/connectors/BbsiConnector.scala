@@ -17,44 +17,68 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
+import com.typesafe.scalalogging.LazyLogging
 import play.api.http.Status._
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.model.domain.formatters.BbsiHodFormatters
+import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
-@Singleton
-class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(
-  implicit ec: ExecutionContext) {
+import scala.concurrent.{ExecutionContext, Future}
 
-  def createHeader: HeaderCarrier =
+@Singleton
+class BbsiConnector @Inject()(metrics: Metrics, http: HttpClient, urls: BbsiUrls, config: DesConfig)(
+  implicit ec: ExecutionContext)
+    extends LazyLogging {
+
+  private val api = APITypes.BbsiAPI
+
+  private def createHeader: HeaderCarrier =
     HeaderCarrier(
       extraHeaders = Seq(
         "Environment"   -> config.environment,
         "Authorization" -> s"Bearer ${config.authorization}",
         "Content-Type"  -> TaiConstants.contentType))
 
-  def bankAccounts(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[HttpResponse, Seq[BankAccount]]] = {
-    implicit val hc: HeaderCarrier = createHeader
+  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
-    httpHandler.getFromApiV2(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map { response =>
+    implicit val hc: HeaderCarrier = createHeader
+    val timerContext = metrics.startTimer(api)
+
+    http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear)) map { response =>
       response.status match {
         case OK =>
-          response.json.asOpt[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads) match {
-            case Some(accounts) => Right(accounts)
-            case None           => Left(HttpResponse(INTERNAL_SERVER_ERROR, "Could not parse Json"))
-          }
-        case _ => Left(response)
+          timerContext.stop()
+          metrics.incrementSuccessCounter(api)
+          response
+        case _ =>
+          timerContext.stop()
+          metrics.incrementFailedCounter(api)
+          logger.error(response.body)
+          response
       }
     } recover {
-      case e => Left(HttpResponse(INTERNAL_SERVER_ERROR, e.getMessage))
+      case e: HttpException =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        logger.error(e.message, e)
+        HttpResponse(e.responseCode, e.message)
+      case e: UpstreamErrorResponse =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        logger.error(e.message, e)
+        HttpResponse(e.statusCode, e.message)
+      case e =>
+        val errorMessage = s"Exception in HttpHandler: $e"
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        logger.error(errorMessage, e)
+        HttpResponse(INTERNAL_SERVER_ERROR, errorMessage)
     }
   }
 }
