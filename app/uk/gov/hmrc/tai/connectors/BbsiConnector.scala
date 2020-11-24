@@ -50,6 +50,11 @@ class BbsiConnector @Inject()(metrics: Metrics, http: HttpClient, urls: BbsiUrls
     implicit val hc: HeaderCarrier = createHeader
     val timerContext = metrics.startTimer(api)
 
+    def stopTimerAndFailMetric(): Unit = {
+      timerContext.stop()
+      metrics.incrementFailedCounter(api)
+    }
+
     http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear)) map { response =>
       response.status match {
         case OK =>
@@ -57,26 +62,22 @@ class BbsiConnector @Inject()(metrics: Metrics, http: HttpClient, urls: BbsiUrls
           metrics.incrementSuccessCounter(api)
           response
         case _ =>
-          timerContext.stop()
-          metrics.incrementFailedCounter(api)
+          stopTimerAndFailMetric()
           logger.error(response.body)
           response
       }
     } recover {
       case e: HttpException =>
-        timerContext.stop()
-        metrics.incrementFailedCounter(api)
+        stopTimerAndFailMetric()
         logger.error(e.message, e)
         HttpResponse(e.responseCode, e.message)
       case e: UpstreamErrorResponse =>
-        timerContext.stop()
-        metrics.incrementFailedCounter(api)
+        stopTimerAndFailMetric()
         logger.error(e.message, e)
         HttpResponse(e.statusCode, e.message)
       case e =>
         val errorMessage = s"Exception in HttpHandler: $e"
-        timerContext.stop()
-        metrics.incrementFailedCounter(api)
+        stopTimerAndFailMetric()
         logger.error(errorMessage, e)
         HttpResponse(INTERNAL_SERVER_ERROR, errorMessage)
     }
