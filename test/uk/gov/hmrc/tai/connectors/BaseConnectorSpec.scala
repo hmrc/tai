@@ -17,74 +17,114 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{times, verify, when}
-import play.api.http.Status
-import play.api.libs.json.{JsString, Json}
+import org.mockito.Mockito.{verify, when, reset => resetMock}
+import play.api.http.Status._
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
-import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
+import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.language.postfixOps
 import scala.util.Random
 
-class BaseConnectorSpec extends BaseSpec {
+class BaseConnectorSpec extends ConnectorBaseSpec {
+
+  lazy val sut: BaseConnector = new BaseConnector(auditor, metrics, httpClient) {
+    override def originatorId: String = "testOriginatorId"
+  }
+
+  lazy val endpoint: String = "/foo"
+  lazy val url: String = s"${server.baseUrl()}$endpoint"
+
+  val apiType: APITypes.Value = APITypes.RTIAPI
+
+  val body: String =
+    """{
+      |"name": "Bob",
+      |"age": 24
+      |}""".stripMargin
+
+  case class ResponseObject(name: String, age: Int)
+  implicit val format: OFormat[ResponseObject] = Json.format[ResponseObject]
+
+  val bodyAsObj: ResponseObject = Json.parse(body).as[ResponseObject]
+
+  val rtiData: RtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
+  val rtiDataBody: String = Json.toJson(rtiData).toString()
+
+  val fakePersonalDetails: PersonDetails = PersonDetails(
+    "4",
+    Person(
+      Some("TestName"),
+      None,
+      None,
+      None,
+      Some("TestTitle"),
+      Some("TestHonours"),
+      None,
+      None,
+      Nino(nino.nino),
+      Some(true),
+      Some(false)))
+
+  val fakePersonalDetailsString: String = Json.toJson(fakePersonalDetails).toString()
+
+  val eTagKey: String = "ETag"
+  val eTag: Int = 34
+
+  val mockAuditor: Auditor = mock[Auditor]
+  val mockMetrics: Metrics = mock[Metrics]
+
+  def sutWithMockedMetrics: BaseConnector = new BaseConnector(mockAuditor, mockMetrics, httpClient) {
+    override val originatorId: String = "testOriginatorId"
+  }
+
+  override def beforeEach(): Unit = {
+    resetMock(mockMetrics, mockAuditor)
+    super.beforeEach()
+  }
 
   "BaseConnector" should {
     "get the version from the HttpResponse" when {
       "the HttpResponse contains the ETag header" in {
-        val response: HttpResponse = HttpResponse(200, "", Map("ETag" -> Seq("34")))
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val response: HttpResponse = HttpResponse(200, "", Map(eTagKey -> Seq(s"$eTag")))
 
-        createSUT(mock[Auditor], mockMetrics, mock[HttpClient]).getVersionFromHttpHeader(response) mustBe 34
-
+        sut.getVersionFromHttpHeader(response) mustBe eTag
       }
     }
 
     "get a default version value" when {
-      "the HttpResonse does not contain the ETag header" in {
-        val response: HttpResponse = HttpResponse(200)
+      "the HttpResponse does not contain the ETag header" in {
+        val response: HttpResponse = HttpResponse(200, "")
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        createSUT(mock[Auditor], mockMetrics, mock[HttpClient]).getVersionFromHttpHeader(response) mustBe -1
+        sut.getVersionFromHttpHeader(response) mustBe -1
       }
     }
 
     "add extra headers for NPS" in {
-      val headers = createSUT(mock[Auditor], mock[Metrics], mock[HttpClient])
-        .extraNpsHeaders(HeaderCarrier(), 23, "testtxID")
+      val headers = sut
+        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
         .headers
 
-      headers must contain("ETag"                 -> "23")
+      headers must contain(eTagKey                -> s"$eTag")
       headers must contain("X-TXID"               -> "testtxID")
       headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
 
     }
 
     "add basic headers for NPS" in {
-      val headers = createSUT(mock[Auditor], mock[Metrics], mock[HttpClient])
-        .extraNpsHeaders(HeaderCarrier(), 23, "testtxID")
+      val headers = sut
+        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
         .headers
 
       headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
@@ -93,793 +133,625 @@ class BaseConnectorSpec extends BaseSpec {
 
     "start and stop a transaction timer" when {
       "making a GET request to NPS" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+        Await.result(sutWithMockedMetrics.getFromNps(url, apiType), 5 seconds)
 
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
-
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
+
       "making a POST request to NPS" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+        Await.result(sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj), 5 seconds)
 
-        val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
-
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
+
       "making a GET request to RTI" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(rtiDataBody)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
+        Await.result(sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino), 5 seconds)
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
-
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
+
       "making a GET request to Citizen Details" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(fakePersonalDetailsString)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val fakePersonalDetails = PersonDetails(
-          "4",
-          Person(
-            Some("Monkey"),
-            None,
-            None,
-            None,
-            Some("King"),
-            Some("Great Sage equal of heaven"),
-            None,
-            None,
-            Nino(nino.nino),
-            Some(true),
-            Some(false)))
+        Await.result(sutWithMockedMetrics.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5 seconds)
 
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakePersonalDetails), Map[String, Seq[String]]())
-
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
-
-        val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(
-          HeaderCarrier(),
-          Json.format[PersonDetails])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
+
       "making a GET request to DES" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+        Await.result(sutWithMockedMetrics.getFromDes(url, apiType), 5 seconds)
 
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
+
       "making a POST request to DES" in {
-        val mockHttpClient = mock[HttpClient]
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
+        Await.result(sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj), 5 seconds)
 
-        val resp = sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
-
-        verify(mockMetrics, times(1)).startTimer(any())
-        verify(mockTimerContext, times(1)).stop()
+        verify(mockMetrics).startTimer(any())
+        verify(mockTimerContext).stop()
       }
     }
+
     "create an audit event" when {
-      "The RTI response does not match the nino that was requested!" in {
-        val mockAuditor = mock[Auditor]
-        val mockHttpClient = mock[HttpClient]
+      "The RTI response does not match the nino that was requested" in {
 
         val mockTimerContext = mock[Timer.Context]
         when(mockTimerContext.stop())
           .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
         when(mockMetrics.startTimer(any()))
           .thenReturn(mockTimerContext)
 
-        val sut = createSUT(mockAuditor, mockMetrics, mockHttpClient)
-
-        val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
-
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(rtiDataBody)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
         val randomNino = new Generator(new Random).nextNino
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, randomNino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        Await.result(resp, 5 seconds)
 
-        verify(mockAuditor, times(1))
-          .sendDataEvent(meq("RTI returned incorrect account"), any())(any())
+        Await.result(sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino), 5 seconds)
+
+        verify(mockAuditor).sendDataEvent(meq("RTI returned incorrect account"), any())(any())
       }
     }
+
     "return a success response from NPS" when {
       "it returns a success Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val (res, resEtag) = Await.result(sut.getFromNps(url, apiType), 5.seconds)
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        val (responseBody, etag) = Await.result(resp, 5 seconds)
-
-        responseBody mustBe responseBodyObject
-        etag mustBe 34
-
+        res mustBe bodyAsObj
+        resEtag mustBe eTag
       }
+
       "it returns a success Http response for POST transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val res = Await.result(sut.postToNps(url, apiType, bodyAsObj), 5.seconds)
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-
-        val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val r = Await.result(resp, 5 seconds)
-
-        r.status mustBe 200
-        r.json.as[ResponseObject] mustBe responseBodyObject
-
+        res.status mustBe OK
+        res.json.as[ResponseObject] mustBe bodyAsObj
+        res.header(eTagKey) mustBe Some(eTag.toString)
       }
     }
 
     "return an error response from NPS" when {
       "it returns a not found http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Not found"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(NOT_FOUND)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(NotFoundHttpResponse))
+        val ex = intercept[NotFoundException] {
+          Await.result(sut.getFromNps(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[NotFoundException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"not found\""
+        ex.responseCode mustBe NOT_FOUND
+        ex.message mustBe exMessage
 
       }
       "it returns an internal server error http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "An error occurred"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(InternalServerErrorHttpResponse))
+        val ex = intercept[InternalServerException] {
+          Await.result(sut.getFromNps(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[InternalServerException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"internal server error\""
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
 
       }
       "it returns an bad request http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Invalid query"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(BAD_REQUEST)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(BadRequestHttpResponse))
+        val ex = intercept[BadRequestException] {
+          Await.result(sut.getFromNps(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[BadRequestException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"bad request\""
+        ex.responseCode mustBe BAD_REQUEST
+        ex.message mustBe exMessage
 
       }
+
       "it returns an unknown http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "There was a conflict"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(CONFLICT)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val ex = intercept[HttpException] {
+          Await.result(sut.getFromNps(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromNps("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"unknown response\""
-
+        ex.responseCode mustBe CONFLICT
+        ex.message mustBe exMessage
       }
+
       "it returns a non success Http response for POST transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "There was a conflict"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(CONFLICT)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val ex = intercept[HttpException] {
+          Await.result(sut.postToNps[ResponseObject](url, apiType, bodyAsObj), 5.seconds)
+        }
 
-        val resp = sut.postToNps[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-        ex.getMessage mustBe "\"unknown response\""
-
+        ex.responseCode mustBe CONFLICT
+        ex.message mustBe exMessage
       }
     }
 
     "return a success response from RTI" when {
       "it returns a success Http response for GET transactions with matching nino data" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(rtiDataBody)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
-        val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
-
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
-
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus) = Await.result(resp, 5 seconds)
-
-        rtiStatus.response mustBe "Success"
-        rtiData.get mustBe fakeRtiData
-
+        resData mustBe Some(rtiData)
+        resStatus.status mustBe OK
       }
+
       "it returns a success Http response for GET transactions with incorrect nino data" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(rtiDataBody)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
-
-        val fakeRtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
-
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
         val randomNino = new Generator(new Random).nextNino
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, randomNino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus: RtiStatus) = Await.result(resp, 5 seconds)
 
-        rtiStatus.response mustBe "Incorrect RTI Payload"
-        rtiData mustBe empty
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino), 5.seconds)
 
+        resData mustBe None
+        resStatus.response mustBe "Incorrect RTI Payload"
       }
     }
+
     "return an error response from RTI" when {
       "it returns a bad request Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Incorrect query"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(BAD_REQUEST)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(BadRequestHttpResponse))
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus: RtiStatus) = Await.result(resp, 5 seconds)
-
-        rtiStatus.response mustBe "\"bad request\""
-        rtiData mustBe empty
-
+        resData mustBe None
+        resStatus.status mustBe BAD_REQUEST
+        resStatus.response mustBe exMessage
       }
+
       "it returns a not found Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Not found"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(NOT_FOUND)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(NotFoundHttpResponse))
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus: RtiStatus) = Await.result(resp, 5 seconds)
-
-        rtiStatus.response mustBe "\"not found\""
-        rtiData mustBe empty
-
+        resData mustBe None
+        resStatus.status mustBe NOT_FOUND
+        resStatus.response mustBe exMessage
       }
+
       "it returns a internal server error Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "An error occurred"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(InternalServerErrorHttpResponse))
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus: RtiStatus) = Await.result(resp, 5 seconds)
-
-        rtiStatus.response mustBe "\"internal server error\""
-        rtiData mustBe empty
-
+        resData mustBe None
+        resStatus.status mustBe INTERNAL_SERVER_ERROR
+        resStatus.response mustBe exMessage
       }
+
       "it returns an unknown Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Access denied"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(FORBIDDEN)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val (resData, resStatus) =
+          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
-        val resp = sut.getFromRTIWithStatus("/testURL", APITypes.NpsTaxAccountAPI, nino.nino)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-        val (rtiData, rtiStatus: RtiStatus) = Await.result(resp, 5 seconds)
-
-        rtiStatus.response mustBe "\"unknown response\""
-        rtiData mustBe empty
+        resData mustBe None
+        resStatus.status mustBe FORBIDDEN
+        resStatus.response mustBe exMessage
 
       }
     }
 
     "return a success response from citizen details" when {
       "it returns a success Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(fakePersonalDetailsString)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val res = Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
 
-        val fakePersonalDetails = PersonDetails(
-          "4",
-          Person(
-            Some("TestName"),
-            None,
-            None,
-            None,
-            Some("TestTitle"),
-            Some("TestHonours"),
-            None,
-            None,
-            Nino(nino.nino),
-            Some(true),
-            Some(false)))
-
-        val fakeResponse: HttpResponse = HttpResponse(200, Some(Json.toJson(fakePersonalDetails)))
-
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(fakeResponse))
-
-        val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(
-          HeaderCarrier(),
-          Json.format[PersonDetails])
-        val personalDetails = Await.result(resp, 5 seconds)
-
-        personalDetails mustBe fakePersonalDetails
+        res mustBe fakePersonalDetails
       }
+
       "it returns a locked Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
 
         val fakePersonalDetails =
           PersonDetails("0", Person(None, None, None, None, None, None, None, None, Nino(nino.nino), Some(true), None))
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(HttpResponse(Status.LOCKED)))
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(LOCKED)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(
-          HeaderCarrier(),
-          Json.format[PersonDetails])
-        val personalDetails = Await.result(resp, 5 seconds)
+        val res = Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
 
-        personalDetails mustBe fakePersonalDetails
+        res mustBe fakePersonalDetails
       }
     }
+
     "return an error response from citizen details" when {
       "it returns an unknown http response" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Access denied"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(FORBIDDEN)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val ex = intercept[HttpException] {
+          Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
+        }
 
-        val resp = sut.getPersonDetailsFromCitizenDetails("/testURL", Nino(nino.nino), APITypes.NpsTaxAccountAPI)(
-          HeaderCarrier(),
-          Json.format[PersonDetails])
-
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-        ex.getMessage mustBe "\"unknown response\""
+        ex.responseCode mustBe FORBIDDEN
+        ex.message mustBe exMessage
       }
     }
+
     "return a success response from DES" when {
       "it returns a success Http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val (resBody, resEtag) = Await.result(sut.getFromDes(url, apiType), 5 seconds)
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-        val (responseBody, etag) = Await.result(resp, 5 seconds)
-
-        responseBody mustBe responseBodyObject
-        etag mustBe 34
-
+        resBody mustBe bodyAsObj
+        resEtag mustBe eTag
       }
+
       "it returns a success Http response for POST transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(body)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        val res = Await.result(sut.postToDes(url, apiType, bodyAsObj), 5.seconds)
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(SuccesfulGetResponseWithObject))
-
-        val resp = Await.result(
-          sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-            HeaderCarrier(),
-            Json.format[ResponseObject]),
-          5 seconds)
-
-        resp.status mustBe 200
-        resp.json.as[ResponseObject] mustBe responseBodyObject
-
+        res.status mustBe OK
+        res.json.as[ResponseObject] mustBe bodyAsObj
+        res.header(eTagKey) mustBe Some(eTag.toString)
       }
     }
+
     "return an error response from DES" when {
       "it returns a not found http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Not found"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(NOT_FOUND)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(NotFoundHttpResponse))
+        val ex = intercept[NotFoundException] {
+          Await.result(sut.getFromDes(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[NotFoundException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"not found\""
-
+        ex.responseCode mustBe NOT_FOUND
+        ex.message mustBe exMessage
       }
+
       "it returns an internal server error http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "An error occurred"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(InternalServerErrorHttpResponse))
+        val ex = intercept[InternalServerException] {
+          Await.result(sut.getFromDes(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[InternalServerException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"internal server error\""
-
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
       }
+
       "it returns an bad request http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Invalid query"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(BAD_REQUEST)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(BadRequestHttpResponse))
+        val ex = intercept[BadRequestException] {
+          Await.result(sut.getFromDes(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[BadRequestException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"bad request\""
-
+        ex.responseCode mustBe BAD_REQUEST
+        ex.message mustBe exMessage
       }
+
       "it returns an unknown http response for GET transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "Access denied"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          get(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(FORBIDDEN)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any[HeaderCarrier], any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val ex = intercept[HttpException] {
+          Await.result(sut.getFromDes(url, apiType), 5.seconds)
+        }
 
-        val resp = sut.getFromDes("/testURL", APITypes.NpsTaxAccountAPI)(HeaderCarrier(), Json.format[ResponseObject])
-
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-
-        ex.getMessage mustBe "\"unknown response\""
-
+        ex.responseCode mustBe FORBIDDEN
+        ex.message mustBe exMessage
       }
+
       "it returns a non success Http response for POST transactions" in {
-        val mockHttpClient = mock[HttpClient]
 
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        val exMessage = "An error occurred"
 
-        val sut = createSUT(mock[Auditor], mockMetrics, mockHttpClient)
+        server.stubFor(
+          post(urlEqualTo(endpoint)).willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(exMessage)
+              .withHeader(eTagKey, s"$eTag"))
+        )
 
-        when(mockHttpClient.POST[ResponseObject, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(UnknownErrorHttpResponse))
+        val ex = intercept[HttpException] {
+          Await.result(sut.postToDes(url, apiType, bodyAsObj), 5.seconds)
+        }
 
-        val resp = sut.postToDes[ResponseObject]("/testURL", APITypes.NpsTaxAccountAPI, responseBodyObject)(
-          HeaderCarrier(),
-          Json.format[ResponseObject])
-
-        val ex = the[HttpException] thrownBy Await.result(resp, 5 seconds)
-        ex.getMessage mustBe "\"unknown response\""
-
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
       }
     }
 
     "throw a NumberFormatException" when {
       "the ETag value is not a valid integer" in {
-        val mockHttpClient = mock[HttpClient]
-        val sut = createSUT(mock[Auditor], mock[Metrics], mockHttpClient)
-        val response: HttpResponse = HttpResponse(200, "", Map("ETag" -> Seq("BLOM")))
+
+        val invalidEtag = "Foobar"
+
+        val response: HttpResponse = HttpResponse(200, "", Map(eTagKey -> Seq(invalidEtag)))
 
         val ex = the[NumberFormatException] thrownBy sut.getVersionFromHttpHeader(response)
-        ex.getMessage mustBe "For input string: \"BLOM\""
+        ex.getMessage mustBe s"""For input string: "$invalidEtag""""
       }
     }
   }
-
-  private case class ResponseObject(name: String, age: Int)
-  private implicit val responseObjectFormat = Json.format[ResponseObject]
-  private val responseBodyObject = ResponseObject("ttt", 24)
-
-  private val SuccesfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Json.toJson(responseBodyObject), Map("ETag"                            -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, JsString("not found"), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
-
-  private def createSUT(auditor: Auditor, metrics: Metrics, httpClient: HttpClient) =
-    new BaseConnector(auditor, metrics, httpClient) {
-
-      override val originatorId: String = "testOriginatorId"
-    }
-
 }
