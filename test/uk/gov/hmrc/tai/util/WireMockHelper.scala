@@ -33,7 +33,8 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
       .configure(
         "microservice.services.des-hod.port"         -> server.port(),
         "microservice.services.nps-hod.port"         -> server.port(),
-        "microservice.services.citizen-details.port" -> server.port()
+        "microservice.services.citizen-details.port" -> server.port(),
+        "microservice.services.paye.port"            -> server.port()
       )
       .build()
 

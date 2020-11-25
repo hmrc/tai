@@ -16,45 +16,56 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.fasterxml.jackson.core.JsonParseException
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
-import play.api.http.Status.OK
-import play.api.libs.json.{JsNumber, JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import play.api.http.Status._
+import play.api.libs.json.{JsResultException, Json}
+import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class CompanyCarConnectorSpec extends BaseSpec {
+class CompanyCarConnectorSpec extends ConnectorBaseSpec {
+
+  val empSeqNumber: Int = 1
+  val carSeqNumber: Int = 24
+
+  private val taxYear = TaxYear(2020)
+
+  lazy val baseUrl = s"/paye/${nino.nino}"
+  lazy val carBenefitUrl = s"$baseUrl/car-benefits/${taxYear.year}"
+  lazy val ninoVersionUrl = s"$baseUrl/version"
+  lazy val removeBenefitUrl = s"$baseUrl/benefits/${taxYear.year}/$empSeqNumber/car/$carSeqNumber/remove"
+
+  lazy val sut: CompanyCarConnector = inject[CompanyCarConnector]
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {
+
       val expectedResponse = Seq(
         CompanyCarBenefit(
-          1,
+          empSeqNumber,
           3333,
-          Seq(CompanyCar(24, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
+          Seq(CompanyCar(carSeqNumber, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
 
-      val fakeResponse: JsValue = Json.arr(
-        Json.obj(
-          "employmentSequenceNumber" -> 1,
+      val body: String = Json
+        .arr(Json.obj(
+          "employmentSequenceNumber" -> empSeqNumber,
           "grossAmount"              -> 3333,
-          "carDetails" -> Json.arr(
-            Json.obj("carSequenceNumber" -> 24, "makeModel" -> "company car", "dateMadeAvailable" -> "2014-06-10"))
+          "carDetails" -> Json.arr(Json.obj(
+            "carSequenceNumber" -> carSeqNumber,
+            "makeModel"         -> "company car",
+            "dateMadeAvailable" -> "2014-06-10"))
         ))
+        .toString()
 
-      val mockHttpHandler = mock[HttpHandler]
-      when(mockHttpHandler.getFromApi(any(), any())(any()))
-        .thenReturn(Future.successful(fakeResponse))
-
-      val sut = createSUT(mockHttpHandler, mock[PayeUrls])
+      server.stubFor(
+        get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+      )
 
       Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
     }
@@ -62,87 +73,405 @@ class CompanyCarConnectorSpec extends BaseSpec {
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
       val expectedResponse = Seq(
         CompanyCarBenefit(
-          1,
+          empSeqNumber,
           3333,
           Seq(
             CompanyCar(
-              24,
+              carSeqNumber,
               "company car",
               true,
               Some(LocalDate.parse("2014-06-10")),
               Some(LocalDate.parse("2017-05-02")),
               None))))
 
-      val rawResponse: JsValue =
-        Json.arr(
-          Json.obj(
-            "employmentSequenceNumber" -> 1,
-            "grossAmount"              -> 3333,
-            "carDetails" -> Json.arr(
-              Json.obj(
-                "carSequenceNumber" -> 24,
-                "makeModel"         -> "company car",
-                "dateMadeAvailable" -> "2014-06-10",
-                "fuelBenefit" ->
-                  Json.obj(
-                    "dateMadeAvailable" -> "2017-05-02",
-                    "benefitAmount"     -> 500,
-                    "actions"           -> Json.obj("foo" -> "bar")
-                  )
+      val rawResponse: String =
+        Json
+          .arr(
+            Json.obj(
+              "employmentSequenceNumber" -> empSeqNumber,
+              "grossAmount"              -> 3333,
+              "carDetails" -> Json.arr(
+                Json.obj(
+                  "carSequenceNumber" -> carSeqNumber,
+                  "makeModel"         -> "company car",
+                  "dateMadeAvailable" -> "2014-06-10",
+                  "fuelBenefit" ->
+                    Json.obj(
+                      "dateMadeAvailable" -> "2017-05-02",
+                      "benefitAmount"     -> 500,
+                      "actions"           -> Json.obj("foo" -> "bar")
+                    )
+                )
               )
             )
           )
+          .toString()
+
+      server.stubFor(
+        get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(rawResponse))
+      )
+
+      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
+    }
+
+    "return an empty sequence of car benefits" in {
+
+      server.stubFor(
+        get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody("[]"))
+      )
+
+      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe Seq.empty[CompanyCarBenefit]
+    }
+
+    "throw" when {
+      "json is invalid" in {
+
+        val invalidResponse: String =
+          Json
+            .arr(
+              Json.obj(
+                "empSeqNum"   -> empSeqNumber,
+                "grossAmount" -> 3333,
+                "carDetails" -> Json.arr(
+                  Json.obj(
+                    "carSeqNum"         -> carSeqNumber,
+                    "makeModel"         -> "company car",
+                    "dateMadeAvailable" -> "2014-06-10",
+                    "fuelBenefit" ->
+                      Json.obj(
+                        "dateMadeAvailable" -> "2017-05-02",
+                        "benefitAmount"     -> 500,
+                        "actions"           -> Json.obj("foo" -> "bar")
+                      )
+                  )
+                )
+              )
+            )
+            .toString()
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(invalidResponse))
         )
 
-      val mockHttpHandler = mock[HttpHandler]
-      when(mockHttpHandler.getFromApi(any(), any())(any()))
-        .thenReturn(Future.successful(rawResponse))
+        a[JsResultException] mustBe thrownBy {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+      }
 
-      val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
+      "400 is returned" in {
+
+        val exMessage = "Invalid argument"
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        val ex = intercept[BadRequestException] {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+
+        ex.responseCode mustBe BAD_REQUEST
+        ex.message mustBe exMessage
+      }
+
+      "404 is returned" in {
+
+        val exMessage = "Could not find car benefits"
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
+
+        val ex = intercept[NotFoundException] {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+
+        ex.responseCode mustBe NOT_FOUND
+        ex.message mustBe exMessage
+      }
+
+      "4xx is returned" in {
+
+        val exMessage = "Request has been locked"
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+
+        ex.responseCode mustBe LOCKED
+        ex.message mustBe exMessage
+      }
+
+      "500 is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        val ex = intercept[InternalServerException] {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
+      }
+
+      "5xx is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
+        }
+
+        ex.responseCode mustBe BAD_GATEWAY
+        ex.message mustBe exMessage
+      }
     }
   }
 
   "removeCarBenefit" must {
+
+    val removeCarAndFuelModel = WithdrawCarAndFuel(1, new LocalDate(), None)
+
     "call remove Api and return id with success" in {
-      val removeCarAndFuelModel = WithdrawCarAndFuel(1, new LocalDate(), None)
 
-      val sampleResponse = Json.obj(
-        "transaction" -> Json.obj("oid" -> "4958621783d14007b71d55934d5ccca9"),
-        "taxCode"     -> "220T",
-        "allowance"   -> 1674)
+      val sampleResponse = Json
+        .obj(
+          "transaction" -> Json.obj("oid" -> "4958621783d14007b71d55934d5ccca9"),
+          "taxCode"     -> "220T",
+          "allowance"   -> 1674)
+        .toString()
 
-      val mockHttpHandler = mock[HttpHandler]
-      when(mockHttpHandler.postToApi(any(), any(), any())(any(), any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Some(sampleResponse))))
+      server.stubFor(
+        post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(sampleResponse))
+      )
 
-      val sut = createSUT(mockHttpHandler, mock[PayeUrls])
-      val result = Await.result(sut.withdrawCarBenefit(nino, taxYear, 1, 2, removeCarAndFuelModel), 5 seconds)
+      val result = Await
+        .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
 
       result mustBe "4958621783d14007b71d55934d5ccca9"
-      verify(mockHttpHandler, times(1))
-        .postToApi(any(), any(), any())(any(), any())
+    }
+
+    "throw" when {
+      "invalid json is returned" in {
+
+        val invalidResponse = Json
+          .obj("transact" -> Json.obj("uid" -> "45ccca9"), "taxCode" -> "220T", "allowance" -> 1674)
+          .toString()
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(invalidResponse))
+        )
+
+        a[JsResultException] mustBe thrownBy {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+      }
+
+      "400 is returned" in {
+
+        val exMessage = "Invalid argument"
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+
+        ex.responseCode mustBe BAD_REQUEST
+        ex.message mustBe exMessage
+      }
+
+      "404 is returned" in {
+
+        val exMessage = "Could not find car benefits"
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+
+        ex.responseCode mustBe NOT_FOUND
+        ex.message mustBe exMessage
+      }
+
+      "4xx is returned" in {
+
+        val exMessage = "Request has been locked"
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(FORBIDDEN).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+
+        ex.responseCode mustBe FORBIDDEN
+        ex.message mustBe exMessage
+      }
+
+      "500 is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl))
+            .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
+      }
+
+      "5xx is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await
+            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
+        }
+
+        ex.responseCode mustBe SERVICE_UNAVAILABLE
+        ex.message mustBe exMessage
+      }
     }
   }
 
   "ninoVersion" must {
     "call paye to fetch the version" in {
       val expectedResponse = 4
-      val response: JsValue = JsNumber(4)
 
-      val mockHttpHandler = mock[HttpHandler]
-      when(mockHttpHandler.getFromApi(any(), any())(any()))
-        .thenReturn(Future.successful(response))
+      server.stubFor(
+        get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(OK).withBody(expectedResponse.toString))
+      )
 
-      val sut = createSUT(mockHttpHandler, mock[PayeUrls])
       val result = Await.result(sut.ninoVersion(nino), 5 seconds)
 
       result mustBe expectedResponse
     }
+
+    "throw" when {
+      "json is invalid" in {
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(OK).withBody("X"))
+        )
+
+        a[JsonParseException] mustBe thrownBy {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+      }
+
+      "400 is returned" in {
+
+        val exMessage = "Invalid argument"
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        val ex = intercept[BadRequestException] {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+
+        ex.responseCode mustBe BAD_REQUEST
+        ex.message mustBe exMessage
+      }
+
+      "404 is returned" in {
+
+        val exMessage = "Could not find car benefits"
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
+
+        val ex = intercept[NotFoundException] {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+
+        ex.responseCode mustBe NOT_FOUND
+        ex.message mustBe exMessage
+      }
+
+      "4xx is returned" in {
+
+        val exMessage = "Request has been locked"
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+
+        ex.responseCode mustBe LOCKED
+        ex.message mustBe exMessage
+      }
+
+      "500 is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        val ex = intercept[InternalServerException] {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+
+        ex.responseCode mustBe INTERNAL_SERVER_ERROR
+        ex.message mustBe exMessage
+      }
+
+      "5xx is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(exMessage))
+        )
+
+        val ex = intercept[HttpException] {
+          Await.result(sut.ninoVersion(nino), 5 seconds)
+        }
+
+        ex.responseCode mustBe BAD_GATEWAY
+        ex.message mustBe exMessage
+      }
+    }
   }
-
-  private val taxYear = TaxYear(2017)
-
-  private def createSUT(httpHandler: HttpHandler, urls: PayeUrls) =
-    new CompanyCarConnector(httpHandler, urls)
 }

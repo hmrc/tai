@@ -16,23 +16,16 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
@@ -173,7 +166,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
   "getEtag" must {
     "return an etag on success" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(OK)
@@ -192,7 +185,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
     """.stripMargin)
 
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(OK)
@@ -205,7 +198,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
 
     "return None on an unrecoverable error, possibly bad data received from the upstream API" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)
@@ -217,7 +210,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
 
     "return None when record not found" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(NOT_FOUND)
@@ -229,7 +222,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
 
     "return None when record was hidden, due to manual correspondence indicator flag being set" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(LOCKED)
