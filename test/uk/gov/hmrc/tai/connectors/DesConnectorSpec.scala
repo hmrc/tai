@@ -16,17 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.codahale.metrics.Timer
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
 import org.joda.time.DateTime
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import play.api.http.Status._
+import play.api.libs.json.{JsValue, Json, Writes}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -36,121 +30,145 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
-import uk.gov.hmrc.tai.util.{BaseSpec, TaiConstants}
+import uk.gov.hmrc.tai.util.TaiConstants
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
-class DesConnectorSpec extends BaseSpec {
+class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
+
+  lazy val sut: DesConnector = inject[DesConnector]
+  implicit lazy val iabdWrites: Writes[IabdUpdateAmount] =
+    inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
+
+  val taxYear: Int = DateTime.now().getYear
+  val iabdType: Int = 27
+
+  val baseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
+  val iabdsUrl: String = s"$baseUrl/iabds/tax-year/$taxYear"
+  val iabdsForTypeUrl: String = s"$iabdsUrl?type=$iabdType"
+  val calcTaxAccUrl: String = s"$baseUrl/tax-account/tax-year/$taxYear?calculation=true"
+  val updateEmploymentUrl: String = s"$baseUrl/iabds/$taxYear/employment/$iabdType"
+  val updateExpensesUrl: String = s"$baseUrl/iabds/$taxYear/$iabdType"
 
   "DesConnector" should {
 
     "create a valid des url with an additional path" when {
       "a valid nino and additional path are supplied" in {
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.baseURL)
-          .thenReturn("testServiceUrl")
-
-        val sut =
-          createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
 
         val result = sut.desPathUrl(nino, "test")
 
-        result mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/test"
+        result mustBe s"${server.baseUrl()}/pay-as-you-earn/individuals/$nino/test"
       }
     }
 
     "create a header carrier with extra headers populated correctly" when {
       "the required extra header information is provided" in {
-        val extraHeaders = Seq(
-          "Environment"   -> "testEnvironment",
-          "Authorization" -> "testAuthorization",
+
+        val etag: String = "2"
+        val originatorId: String = "testOriginatorId"
+
+        val result = sut.headerForUpdate(etag.toInt, originatorId)
+
+        result.extraHeaders mustBe Seq(
+          "Environment"   -> "local",
+          "Authorization" -> "Bearer Local",
           "Content-Type"  -> TaiConstants.contentType,
-          "Originator-Id" -> "testOriginatorId",
-          "ETag"          -> "1"
+          "Originator-Id" -> originatorId,
+          "ETag"          -> etag
         )
-
-        val extraHeaders2 = Seq(
-          "Environment"   -> "testEnvironment",
-          "Authorization" -> "testAuthorization",
-          "Content-Type"  -> TaiConstants.contentType,
-          "Originator-Id" -> "testOriginatorId2",
-          "ETag"          -> "1"
-        )
-
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.environment)
-          .thenReturn("testEnvironment")
-        when(mockDesConfig.authorization)
-          .thenReturn("testAuthorization")
-        when(mockDesConfig.originatorId)
-          .thenReturn("testOriginatorId")
-        when(mockDesConfig.daPtaOriginatorId)
-          .thenReturn("testOriginatorId2")
-
-        val sut =
-          createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-
-        val result = sut.headerForUpdate(1, mockDesConfig.originatorId)
-        val result2 = sut.headerForUpdate(1, mockDesConfig.daPtaOriginatorId)
-
-        result.extraHeaders mustBe extraHeaders
-        result2.extraHeaders mustBe extraHeaders2
       }
     }
 
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
-        val jsonData = Json.toJson(List(NpsIabdRoot(nino = nino.nino, `type` = iabdType)))
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
 
-        val urlCaptor: ArgumentCaptor[String] = ArgumentCaptor.forClass(classOf[String])
+        val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
+        val jsonData = Json.toJson(iabdList).toString()
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](urlCaptor.capture())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
+        )
 
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.baseURL)
-          .thenReturn("testServiceUrl")
-
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-
-        val response = Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType)(hc), 5 seconds)
-
-        response mustBe List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/iabds/tax-year/$taxYear?type=$iabdType"
+        Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType), 5 seconds) mustBe iabdList
       }
     }
 
-    "recieve 404 Not-Found exception from DES API" when {
+    "throw an exception from DES API" when {
       "supplied with a valid nino, year and IABD type but an IABD cannot be found" in {
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.NOT_FOUND, responseString = Some("Not-Found"), responseJson = None))
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+        val exMessage = "Could not find IABD"
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
 
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+        assertConnectorException[NotFoundException](
+          sut.getIabdsForTypeFromDes(nino, taxYear, iabdType),
+          NOT_FOUND,
+          exMessage
+        )
+      }
 
-        val response = sut.getIabdsForTypeFromDes(nino, taxYear, iabdType)(hc)
+      "DES API returns 400" in {
 
-        val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
-        ex.getMessage mustBe "Not-Found"
+        val exMessage = "Invalid query"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        assertConnectorException[BadRequestException](
+          sut.getIabdsForTypeFromDes(nino, taxYear, iabdType),
+          BAD_REQUEST,
+          exMessage
+        )
+      }
+
+      "DES API returns 4xx" in {
+
+        val exMessage = "Record locked"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getIabdsForTypeFromDes(nino, taxYear, iabdType),
+          LOCKED,
+          exMessage
+        )
+      }
+
+      "DES API returns 500" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        assertConnectorException[InternalServerException](
+          sut.getIabdsForTypeFromDes(nino, taxYear, iabdType),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
+      }
+
+      "DES API returns 5xx" in {
+
+        val exMessage = "Service unavailable"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getIabdsForTypeFromDes(nino, taxYear, iabdType),
+          SERVICE_UNAVAILABLE,
+          exMessage
+        )
       }
     }
 
@@ -158,216 +176,370 @@ class DesConnectorSpec extends BaseSpec {
       "supplied with a valid nino and year" in {
         val iabdList =
           List(NpsIabdRoot(nino = nino.nino, `type` = iabdType), NpsIabdRoot(nino = nino.nino, `type` = iabdType))
-        val jsonData = Json.toJson(iabdList)
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
+        val jsonData = Json.toJson(iabdList).toString()
 
-        val urlCaptor: ArgumentCaptor[String] = ArgumentCaptor.forClass(classOf[String])
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
+        )
 
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.baseURL)
-          .thenReturn("testServiceUrl")
-
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](urlCaptor.capture())(any(), any(), any()))
-          .thenReturn(jsonResponse)
-
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-        val response = Await.result(sut.getIabdsFromDes(nino, taxYear)(hc), 5 seconds)
-
-        response mustBe iabdList
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/iabds/tax-year/$taxYear"
+        Await.result(sut.getIabdsFromDes(nino, taxYear), 5 seconds) mustBe iabdList
       }
     }
 
-    "recieve 404 Not-Found exception from DES API" when {
-      "supplied with a valid nino and year but an IABD cannot be found" in {
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.NOT_FOUND, responseString = Some("Not-Found"), responseJson = None))
+    "throw an exception" when {
+      "a 404 is returned" in {
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+        val exMessage = "Not found"
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
 
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+        assertConnectorException[NotFoundException](
+          sut.getIabdsFromDes(nino, taxYear),
+          NOT_FOUND,
+          exMessage
+        )
+      }
 
-        val response = sut.getIabdsFromDes(nino, taxYear)(hc)
+      "a 400 is returned" in {
 
-        val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
-        ex.getMessage mustBe "Not-Found"
+        val exMessage = "Invalid query"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        assertConnectorException[BadRequestException](
+          sut.getIabdsFromDes(nino, taxYear),
+          BAD_REQUEST,
+          exMessage
+        )
+      }
+
+      "a 4xx is returned" in {
+
+        val exMessage = "UNACCEPTABLE"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(NOT_ACCEPTABLE).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getIabdsFromDes(nino, taxYear),
+          NOT_ACCEPTABLE,
+          exMessage
+        )
+      }
+
+      "a 500 is returned" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        assertConnectorException[InternalServerException](
+          sut.getIabdsFromDes(nino, taxYear),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
+      }
+
+      "a 5xx is returned" in {
+
+        val exMessage = "Service unavailable"
+
+        server.stubFor(
+          get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getIabdsFromDes(nino, taxYear),
+          SERVICE_UNAVAILABLE,
+          exMessage
+        )
       }
     }
 
     "get TaxAccount from DES api" when {
       "supplied with a valid nino and year" in {
+
         val taxAccount = NpsTaxAccount(Some(nino.nino), Some(taxYear))
         val jsonData = Json.toJson(taxAccount)
+        val body = jsonData.toString()
         val expectedResult: (NpsTaxAccount, Int, JsValue) = (taxAccount, -1, jsonData)
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
 
-        val urlCaptor: ArgumentCaptor[String] = ArgumentCaptor.forClass(classOf[String])
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+        )
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](urlCaptor.capture())(any(), any(), any()))
-          .thenReturn(jsonResponse)
-
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.baseURL)
-          .thenReturn("testServiceUrl")
-
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-
-        val response = Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear)(hc), 5 seconds)
-
-        response mustBe expectedResult
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
+        Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear), 5 seconds) mustBe expectedResult
       }
     }
 
-    "recieve 404 Not-Found exception from DES API" when {
+    "thrown an exception" when {
       "supplied with a valid nino and year but the taxAccount cannot be found" in {
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.NOT_FOUND, responseString = Some("Not-Found"), responseJson = None))
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+        val exMessage = "Not found"
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+        )
 
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+        assertConnectorException[NotFoundException](
+          sut.getCalculatedTaxAccountFromDes(nino, taxYear),
+          NOT_FOUND,
+          exMessage
+        )
+      }
 
-        val response = sut.getCalculatedTaxAccountFromDes(nino, taxYear)(hc)
+      "the API returns 400" in {
 
-        val ex = the[NotFoundException] thrownBy Await.result(response, 5 seconds)
-        ex.getMessage mustBe "Not-Found"
+        val exMessage = "Invalid query"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+        )
+
+        assertConnectorException[BadRequestException](
+          sut.getCalculatedTaxAccountFromDes(nino, taxYear),
+          BAD_REQUEST,
+          exMessage
+        )
+      }
+
+      "the API returns 4xx" in {
+
+        val exMessage = "There was a conflict"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(CONFLICT).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getCalculatedTaxAccountFromDes(nino, taxYear),
+          CONFLICT,
+          exMessage
+        )
+      }
+
+      "the API returns 500" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+        )
+
+        assertConnectorException[InternalServerException](
+          sut.getCalculatedTaxAccountFromDes(nino, taxYear),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
+      }
+
+      "the API returns 5xx" in {
+
+        val exMessage = "There was a problem"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(GATEWAY_TIMEOUT).withBody(exMessage))
+        )
+
+        assertConnectorException[HttpException](
+          sut.getCalculatedTaxAccountFromDes(nino, taxYear),
+          GATEWAY_TIMEOUT,
+          exMessage
+        )
       }
     }
 
     "get TaxAccount Json from DES api" when {
       "supplied with a valid nino and year" in {
         val jsonData = Json.toJson(NpsTaxAccount(Some(nino.nino), Some(taxYear)))
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.OK, responseString = Some("Success"), responseJson = Some(jsonData)))
 
-        val urlCaptor: ArgumentCaptor[String] = ArgumentCaptor.forClass(classOf[String])
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData.toString()))
+        )
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](urlCaptor.capture())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
 
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.baseURL)
-          .thenReturn("testServiceUrl")
-
-        val sut = createSUT(mockHttpClient, mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mockDesConfig)
-
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear)(hc), 5 seconds)
-
+        response.status mustBe OK
         response.json mustBe jsonData
-        urlCaptor.getValue mustBe s"testServiceUrl/pay-as-you-earn/individuals/$nino/tax-account/tax-year/$taxYear?calculation=true"
       }
     }
 
-    "recieve an HttpResponse with status of 404 Not-Found from DES API" when {
-      "supplied with a valid nino and year but a taxAccount cannot be found" in {
-        val jsonResponse = Future.successful(
-          HttpResponse(responseStatus = Status.NOT_FOUND, responseString = Some("Not-Found"), responseJson = None))
+    "return the correct HttpResponse" when {
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(jsonResponse)
+      "the API returns 400" in {
 
-        val sut =
-          createSUT(mockHttpClient, mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear)(hc), 5 seconds)
+        val body = "Invalid query"
 
-        response.status mustBe Status.NOT_FOUND
-        response.body mustBe "Not-Found"
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(body))
+        )
+
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+
+        response.status mustBe BAD_REQUEST
+        response.body mustBe body
+      }
+
+      "the API returns 404" in {
+
+        val body = "Account not found"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(body))
+        )
+
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+
+        response.status mustBe NOT_FOUND
+        response.body mustBe body
+      }
+
+      "the API returns 4xx" in {
+
+        val body = "Access denied"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(FORBIDDEN).withBody(body))
+        )
+
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+
+        response.status mustBe FORBIDDEN
+        response.body mustBe body
+      }
+
+      "the API returns 500" in {
+
+        val body = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(body))
+        )
+
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+
+        response.status mustBe INTERNAL_SERVER_ERROR
+        response.body mustBe body
+      }
+
+      "the API returns 5xx" in {
+
+        val body = "The service is unavailable"
+
+        server.stubFor(
+          get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(body))
+        )
+
+        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+
+        response.status mustBe SERVICE_UNAVAILABLE
+        response.body mustBe body
       }
     }
 
-    "return a status of 200 OK" when {
-      "updating employment data in DES using an empty update amount." in {
-        val sut =
-          createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+    val updateAmount = List(IabdUpdateAmount(1, 20000))
 
-        val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil)(hc), 5 seconds)
+    "updateEmploymentDataToDes" must {
 
-        response.status mustBe Status.OK
+      val updateAmount = List(IabdUpdateAmount(1, 20000))
+
+      "return a status of 200 OK" when {
+
+        "updating employment data in DES using an empty update amount." in {
+
+          val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
+
+          response.status mustBe OK
+        }
+
+        "updating employment data in DES using a valid update amount" in {
+
+          val json = Json.toJson(updateAmount)
+
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          val response =
+            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
+
+          response.status mustBe OK
+          response.json mustBe json
+        }
       }
-    }
 
-    "return a status of 200 OK" when {
-      "updating employment data in DES using a valid update amount" in {
-        val updateAmount = List(IabdUpdateAmount(1, 20000))
-        val jsonResponse = Future.successful(HttpResponse(Status.OK))
+      "return a 2xx status" when {
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.POST[List[IabdUpdateAmount], HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(jsonResponse)
+        "the connector returns NO_CONTENT" in {
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
+          )
 
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+          val response =
+            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
 
-        val response =
-          Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount)(hc), 5 seconds)
+          response.status mustBe NO_CONTENT
+        }
 
-        response.status mustBe Status.OK
+        "the connector returns ACCEPTED" in {
+
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(ACCEPTED))
+          )
+
+          val response =
+            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
+
+          response.status mustBe ACCEPTED
+        }
       }
-    }
 
-    "return a status of 500 INTERNAL_SERVER_ERROR" when {
-      "updating employment data and the update fails in DES with an internal server error" in {
-        val updateAmount = List(IabdUpdateAmount(1, 20000))
-        val jsonResponse = Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR))
+      "throw a HttpException" when {
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.POST[List[IabdUpdateAmount], HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(jsonResponse)
+        "a 4xx response is returned" in {
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+          val exMessage = "Bad request"
 
-        val sut = createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+          )
 
-        val response = sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount)(hc)
+          assertConnectorException[HttpException](
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
 
-        val ex = the[HttpException] thrownBy Await.result(response, 5 seconds)
-        ex.responseCode mustBe Status.INTERNAL_SERVER_ERROR
+        "a 5xx response is returned" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
       }
     }
 
     "returns the sessionId from a HeaderCarrier" when {
       "HeaderCarrier has an assigned sessionId" in {
 
-        val sut =
-          createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
         val testSessionId = "testSessionId"
         val testHeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(testSessionId)))
 
@@ -379,35 +551,23 @@ class DesConnectorSpec extends BaseSpec {
 
     "returns a randomly generated sessionId" when {
       "HeaderCarrier has None assigned as a sessionId" in {
-        val testHeaderCarrier = HeaderCarrier(sessionId = None)
-
-        val sut =
-          createSUT(mock[HttpClient], mock[Metrics], mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
-        val result = sut.sessionOrUUID(testHeaderCarrier)
-
-        result.length must be > 0
+        sut.sessionOrUUID(HeaderCarrier(sessionId = None)).length must be > 0
       }
     }
 
     "updateExpensesDataToDes" should {
 
-      "return a OK" when {
-        "updating expenses data to des" in {
-          val mockHttpClient = mock[HttpClient]
+      "return a status of 200 OK" when {
 
-          when(
-            mockHttpClient
-              .POST[UpdateIabdEmployeeExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-            .thenReturn(Future.successful(HttpResponse(Status.OK)))
+        "updating expenses data in DES using a valid update amount" in {
 
-          val mockMetrics = mock[Metrics]
-          when(mockMetrics.startTimer(any()))
-            .thenReturn(mock[Timer.Context])
+          val json = Json.toJson(updateAmount)
 
-          val sut: DesConnector =
-            createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
 
-          val result = Await.result(
+          val response = Await.result(
             sut.updateExpensesDataToDes(
               nino = nino,
               year = taxYear,
@@ -415,58 +575,107 @@ class DesConnectorSpec extends BaseSpec {
               version = 1,
               expensesData = List(UpdateIabdEmployeeExpense(100, None)),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            )(hc),
+            ),
             5 seconds
           )
 
-          result.status mustBe Status.OK
+          response.status mustBe OK
+          response.json mustBe json
         }
       }
 
-      "return a Internal Server Error" when {
-        "updating expenses data to des" in {
-          val mockHttpClient = mock[HttpClient]
+      "return a 2xx status" when {
 
-          when(
-            mockHttpClient
-              .POST[UpdateIabdEmployeeExpense, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-            .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR)))
+        "the connector returns NO_CONTENT" in {
 
-          val mockMetrics = mock[Metrics]
-          when(mockMetrics.startTimer(any())).thenReturn(mock[Timer.Context])
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
+          )
 
-          val sut: DesConnector =
-            createSUT(mockHttpClient, mockMetrics, mock[Auditor], mock[IabdUpdateAmountFormats], mock[DesConfig])
+          val response = Await.result(
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            5 seconds
+          )
 
-          val result = sut.updateExpensesDataToDes(
-            nino = nino,
-            year = taxYear,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          )(hc)
+          response.status mustBe NO_CONTENT
+        }
 
-          val ex: HttpException = the[HttpException] thrownBy Await.result(result, 5 seconds)
-          ex.responseCode mustBe Status.INTERNAL_SERVER_ERROR
+        "the connector returns ACCEPTED" in {
 
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(ACCEPTED))
+          )
+
+          val response = Await.result(
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            5 seconds
+          )
+
+          response.status mustBe ACCEPTED
         }
       }
 
+      "throw a HttpException" when {
+
+        "a 4xx response is returned" in {
+
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a 5xx response is returned" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
+      }
     }
   }
-
-  private def createSUT(
-    httpClient: HttpClient,
-    metrics: Metrics,
-    audit: Auditor,
-    formats: IabdUpdateAmountFormats,
-    config: DesConfig) =
-    new DesConnector(httpClient, metrics, audit, formats, config) {
-      override val originatorId: String = "testOriginatorId"
-      override val daPtaOriginatorId: String = "testOriginatorId"
-    }
-
-  private val taxYear: Int = DateTime.now().getYear
-  private val iabdType: Int = 27
 }
