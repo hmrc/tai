@@ -23,10 +23,6 @@ import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json, Writes}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
