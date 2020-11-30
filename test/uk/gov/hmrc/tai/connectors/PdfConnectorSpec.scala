@@ -16,113 +16,71 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.util.ByteString
-import com.codahale.metrics.Timer
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
-import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
+import play.api.http.Status._
 import uk.gov.hmrc.http.HttpException
-import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PdfConnectorSpec extends BaseSpec {
+class PdfConnectorSpec extends ConnectorBaseSpec {
+
+  lazy val sut: PdfConnector = inject[PdfConnector]
+
+  val url: String = "/pdf-generator-service/generate"
+  val htmlAsString: String = "<html>test</html>"
 
   "PdfConnector" must {
 
     "return the pdf service payload in bytes " when {
       "generatePdf is called successfully" in {
-        val htmlAsString = "<html>test</html>"
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockWSResponse = createMockResponse(200, htmlAsString)
+        server.stubFor(
+          post(urlEqualTo(url)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(htmlAsString))
+        )
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockWSRequest = mock[WSRequest]
-        when(mockWSRequest.post(any[Map[String, Seq[String]]])(any()))
-          .thenReturn(Future.successful(mockWSResponse))
-
-        val mockWSClient = mock[WSClient]
-        when(mockWSClient.url(any()))
-          .thenReturn(mockWSRequest)
-
-        val sut = createSut(mockMetrics, mockWSClient, mock[PdfUrls])
-        val response = sut.generatePdf(htmlAsString)
-
-        val result = Await.result(response, 5 seconds)
-
-        result mustBe htmlAsString.getBytes
-
-        verify(mockWSRequest, times(1))
-          .post(any[Map[String, Seq[String]]])(any())
-        verify(mockMetrics, times(1))
-          .startTimer(APITypes.PdfServiceAPI)
-        verify(mockMetrics, times(1))
-          .incrementSuccessCounter(APITypes.PdfServiceAPI)
-        verify(mockMetrics, never())
-          .incrementFailedCounter(any())
-        verify(mockTimerContext, times(1))
-          .stop()
+        Await.result(sut.generatePdf(htmlAsString), 5 seconds) mustBe htmlAsString.getBytes
       }
     }
 
     "generate an HttpException" when {
-      "generatePdf is called and the pdf service returns something other than 200" in {
-        val htmlAsString = "<html>test</html>"
+      "generatePdf is called and the pdf service returns 4xx" in {
+        val exMessage = "Invalid payload"
 
-        val mockTimerContext = mock[Timer.Context]
-        val mockWSResponse = createMockResponse(400, "")
+        server.stubFor(
+          post(urlEqualTo(url)).willReturn(
+            aResponse()
+              .withStatus(BAD_REQUEST)
+              .withBody(exMessage))
+        )
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        assertConnectorException[HttpException](
+          sut.generatePdf(htmlAsString),
+          BAD_REQUEST,
+          exMessage
+        )
+      }
 
-        val mockWSRequest = mock[WSRequest]
-        when(mockWSRequest.post(any[Map[String, Seq[String]]])(any()))
-          .thenReturn(Future.successful(mockWSResponse))
+      "generatePdf is called and the pdf service returns 5xx" in {
+        val exMessage = "An error occurred"
 
-        val mockWSClient = mock[WSClient]
-        when(mockWSClient.url(any()))
-          .thenReturn(mockWSRequest)
+        server.stubFor(
+          post(urlEqualTo(url)).willReturn(
+            aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)
+              .withBody(exMessage))
+        )
 
-        val sut = createSut(mockMetrics, mockWSClient, mock[PdfUrls])
-        val result = sut.generatePdf(htmlAsString)
-
-        the[HttpException] thrownBy Await.result(result, 5 seconds)
-
-        verify(mockWSRequest, times(1))
-          .post(any[Map[String, Seq[String]]])(any())
-        verify(mockMetrics, times(1))
-          .startTimer(APITypes.PdfServiceAPI)
-        verify(mockMetrics, never())
-          .incrementSuccessCounter(any())
-        verify(mockMetrics, times(1))
-          .incrementFailedCounter(APITypes.PdfServiceAPI)
-        verify(mockTimerContext, times(1))
-          .stop()
+        assertConnectorException[HttpException](
+          sut.generatePdf(htmlAsString),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
     }
   }
-
-  private def createMockResponse(status: Int, body: String): WSResponse = {
-
-    val wsResponseMock = mock[WSResponse]
-
-    when(wsResponseMock.status).thenReturn(status)
-    when(wsResponseMock.body).thenReturn(body)
-    when(wsResponseMock.bodyAsBytes).thenReturn(ByteString(body))
-
-    wsResponseMock
-  }
-
-  private def createSut(metrics: Metrics, wsClient: WSClient, urls: PdfUrls) =
-    new PdfConnector(metrics, wsClient, urls)
-
 }

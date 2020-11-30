@@ -563,6 +563,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           val taxAccount = NpsTaxAccount(Some(nino.nino), Some(year))
           val taxAccountAsJson = Json.toJson(taxAccount)
+          val expectedResult: (NpsTaxAccount, Int, JsValue) = (taxAccount, etag, taxAccountAsJson)
 
           server.stubFor(
             get(urlEqualTo(taxAccountUrl)).willReturn(
@@ -572,7 +573,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", etag.toString))
           )
 
-          Await.result(sut.getCalculatedTaxAccount(nino, year), 5.seconds) mustBe (taxAccount, etag, taxAccountAsJson)
+          Await.result(sut.getCalculatedTaxAccount(nino, year), 5.seconds) mustBe expectedResult
         }
       }
 
