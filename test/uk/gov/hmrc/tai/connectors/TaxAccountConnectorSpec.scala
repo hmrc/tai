@@ -249,7 +249,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
   }
 
-  private val originatorId = "testOriginatorId"
+  override val originatorId = "testOriginatorId"
   lazy val taxAccountUrlConfig = injector.instanceOf[TaxAccountUrls]
   lazy val iabdUrlConfig = injector.instanceOf[IabdUrls]
   val taxYear = TaxYear(2017)

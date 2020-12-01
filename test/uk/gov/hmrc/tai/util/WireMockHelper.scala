@@ -28,6 +28,8 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
 
   protected val server: WireMockServer = new WireMockServer(wireMockConfig().dynamicPort())
 
+  val originatorId = "orgId"
+
   implicit lazy val app: Application =
     new GuiceApplicationBuilder()
       .configure(
@@ -37,7 +39,8 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
         "microservice.services.paye.port"                  -> server.port(),
         "microservice.services.file-upload.port"           -> server.port(),
         "microservice.services.file-upload-frontend.port"  -> server.port(),
-        "microservice.services.pdf-generator-service.port" -> server.port()
+        "microservice.services.pdf-generator-service.port" -> server.port(),
+        "microservice.services.des-hod.originatorId"       -> originatorId
       )
       .build()
 
