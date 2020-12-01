@@ -24,6 +24,7 @@ import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -37,6 +38,10 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class BaseConnectorSpec extends ConnectorBaseSpec {
+
+  lazy val auditor: Auditor = inject[Auditor]
+  lazy val metrics: Metrics = inject[Metrics]
+  lazy val httpClient: HttpClient = inject[HttpClient]
 
   lazy val sut: BaseConnector = new BaseConnector(auditor, metrics, httpClient) {
     override def originatorId: String = "testOriginatorId"
@@ -338,13 +343,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[NotFoundException] {
-          Await.result(sut.getFromNps(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe NOT_FOUND
-        ex.message mustBe exMessage
-
+        assertConnectorException[NotFoundException](
+          sut.getFromNps(url, apiType),
+          NOT_FOUND,
+          exMessage
+        )
       }
       "it returns an internal server error http response for GET transactions" in {
 
@@ -358,13 +361,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[InternalServerException] {
-          Await.result(sut.getFromNps(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
-
+        assertConnectorException[InternalServerException](
+          sut.getFromNps(url, apiType),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
       "it returns an bad request http response for GET transactions" in {
 
@@ -378,13 +379,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[BadRequestException] {
-          Await.result(sut.getFromNps(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe BAD_REQUEST
-        ex.message mustBe exMessage
-
+        assertConnectorException[BadRequestException](
+          sut.getFromNps(url, apiType),
+          BAD_REQUEST,
+          exMessage
+        )
       }
 
       "it returns an unknown http response for GET transactions" in {
@@ -399,12 +398,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.getFromNps(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe CONFLICT
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.getFromNps(url, apiType),
+          CONFLICT,
+          exMessage
+        )
       }
 
       "it returns a non success Http response for POST transactions" in {
@@ -419,12 +417,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.postToNps[ResponseObject](url, apiType, bodyAsObj), 5.seconds)
-        }
-
-        ex.responseCode mustBe CONFLICT
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.postToNps[ResponseObject](url, apiType, bodyAsObj),
+          CONFLICT,
+          exMessage
+        )
       }
     }
 
@@ -596,12 +593,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe FORBIDDEN
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.getPersonDetailsFromCitizenDetails(url, nino, apiType),
+          FORBIDDEN,
+          exMessage
+        )
       }
     }
 
@@ -653,12 +649,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[NotFoundException] {
-          Await.result(sut.getFromDes(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe NOT_FOUND
-        ex.message mustBe exMessage
+        assertConnectorException[NotFoundException](
+          sut.getFromDes(url, apiType),
+          NOT_FOUND,
+          exMessage
+        )
       }
 
       "it returns an internal server error http response for GET transactions" in {
@@ -673,12 +668,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[InternalServerException] {
-          Await.result(sut.getFromDes(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
+        assertConnectorException[InternalServerException](
+          sut.getFromDes(url, apiType),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
 
       "it returns an bad request http response for GET transactions" in {
@@ -693,12 +687,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[BadRequestException] {
-          Await.result(sut.getFromDes(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe BAD_REQUEST
-        ex.message mustBe exMessage
+        assertConnectorException[BadRequestException](
+          sut.getFromDes(url, apiType),
+          BAD_REQUEST,
+          exMessage
+        )
       }
 
       "it returns an unknown http response for GET transactions" in {
@@ -713,12 +706,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.getFromDes(url, apiType), 5.seconds)
-        }
-
-        ex.responseCode mustBe FORBIDDEN
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.getFromDes(url, apiType),
+          FORBIDDEN,
+          exMessage
+        )
       }
 
       "it returns a non success Http response for POST transactions" in {
@@ -733,12 +725,11 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.postToDes(url, apiType, bodyAsObj), 5.seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.postToDes(url, apiType, bodyAsObj),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
     }
 

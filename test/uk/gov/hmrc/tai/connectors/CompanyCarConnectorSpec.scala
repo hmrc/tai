@@ -166,12 +166,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
         )
 
-        val ex = intercept[BadRequestException] {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
-
-        ex.responseCode mustBe BAD_REQUEST
-        ex.message mustBe exMessage
+        assertConnectorException[BadRequestException](
+          sut.carBenefits(nino, taxYear),
+          BAD_REQUEST,
+          exMessage
+        )
       }
 
       "404 is returned" in {
@@ -182,12 +181,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
         )
 
-        val ex = intercept[NotFoundException] {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
-
-        ex.responseCode mustBe NOT_FOUND
-        ex.message mustBe exMessage
+        assertConnectorException[NotFoundException](
+          sut.carBenefits(nino, taxYear),
+          NOT_FOUND,
+          exMessage
+        )
       }
 
       "4xx is returned" in {
@@ -198,12 +196,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
-
-        ex.responseCode mustBe LOCKED
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.carBenefits(nino, taxYear),
+          LOCKED,
+          exMessage
+        )
       }
 
       "500 is returned" in {
@@ -214,12 +211,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
         )
 
-        val ex = intercept[InternalServerException] {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
+        assertConnectorException[InternalServerException](
+          sut.carBenefits(nino, taxYear),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
 
       "5xx is returned" in {
@@ -230,12 +226,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
-
-        ex.responseCode mustBe BAD_GATEWAY
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.carBenefits(nino, taxYear),
+          BAD_GATEWAY,
+          exMessage
+        )
       }
     }
   }
@@ -288,13 +283,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
-
-        ex.responseCode mustBe BAD_REQUEST
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
+          BAD_REQUEST,
+          exMessage
+        )
       }
 
       "404 is returned" in {
@@ -305,13 +298,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
-
-        ex.responseCode mustBe NOT_FOUND
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
+          NOT_FOUND,
+          exMessage
+        )
       }
 
       "4xx is returned" in {
@@ -322,13 +313,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(FORBIDDEN).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
-
-        ex.responseCode mustBe FORBIDDEN
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
+          FORBIDDEN,
+          exMessage
+        )
       }
 
       "500 is returned" in {
@@ -340,13 +329,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
             .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
 
       "5xx is returned" in {
@@ -357,13 +344,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
-
-        ex.responseCode mustBe SERVICE_UNAVAILABLE
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
+          SERVICE_UNAVAILABLE,
+          exMessage
+        )
       }
     }
   }
@@ -401,12 +386,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
         )
 
-        val ex = intercept[BadRequestException] {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
-
-        ex.responseCode mustBe BAD_REQUEST
-        ex.message mustBe exMessage
+        assertConnectorException[BadRequestException](
+          sut.ninoVersion(nino),
+          BAD_REQUEST,
+          exMessage
+        )
       }
 
       "404 is returned" in {
@@ -417,12 +401,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
         )
 
-        val ex = intercept[NotFoundException] {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
-
-        ex.responseCode mustBe NOT_FOUND
-        ex.message mustBe exMessage
+        assertConnectorException[NotFoundException](
+          sut.ninoVersion(nino),
+          NOT_FOUND,
+          exMessage
+        )
       }
 
       "4xx is returned" in {
@@ -433,12 +416,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(LOCKED).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
-
-        ex.responseCode mustBe LOCKED
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.ninoVersion(nino),
+          LOCKED,
+          exMessage
+        )
       }
 
       "500 is returned" in {
@@ -449,12 +431,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
         )
 
-        val ex = intercept[InternalServerException] {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
-
-        ex.responseCode mustBe INTERNAL_SERVER_ERROR
-        ex.message mustBe exMessage
+        assertConnectorException[InternalServerException](
+          sut.ninoVersion(nino),
+          INTERNAL_SERVER_ERROR,
+          exMessage
+        )
       }
 
       "5xx is returned" in {
@@ -465,12 +446,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(BAD_GATEWAY).withBody(exMessage))
         )
 
-        val ex = intercept[HttpException] {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
-
-        ex.responseCode mustBe BAD_GATEWAY
-        ex.message mustBe exMessage
+        assertConnectorException[HttpException](
+          sut.ninoVersion(nino),
+          BAD_GATEWAY,
+          exMessage
+        )
       }
     }
   }

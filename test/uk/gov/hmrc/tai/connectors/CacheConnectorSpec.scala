@@ -35,7 +35,7 @@ import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfterEach with MockAuthenticationPredicate {

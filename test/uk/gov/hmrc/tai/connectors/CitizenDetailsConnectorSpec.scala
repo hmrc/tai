@@ -95,11 +95,11 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
       )
 
-      val thrown = the[HttpException] thrownBy Await
-        .result(sut.getPersonDetails(nino), 5 seconds)
-
-      thrown.responseCode mustBe INTERNAL_SERVER_ERROR
-      thrown.getMessage mustBe exMessage
+      assertConnectorException[HttpException](
+        sut.getPersonDetails(nino),
+        INTERNAL_SERVER_ERROR,
+        exMessage
+      )
     }
 
     "return deceased indicator as false if no value is returned from citizen details" in {

@@ -21,14 +21,13 @@ import com.github.tomakehurst.wiremock.http.Fault
 import org.joda.time.LocalDate
 import play.api.Configuration
 import play.api.http.Status._
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters.annualAccountHodReads
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
