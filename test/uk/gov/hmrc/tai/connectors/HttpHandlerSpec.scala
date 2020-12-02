@@ -37,9 +37,8 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
-class HttpHandlerSpec extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting {
+class HttpHandlerSpec extends ConnectorBaseSpec with ScalaFutures with Injecting {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
   lazy val sut: HttpHandler = createSUT(inject[Metrics], inject[HttpClient])
