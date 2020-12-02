@@ -19,10 +19,13 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
 import org.joda.time.LocalDate
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
@@ -31,7 +34,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
@@ -41,7 +44,16 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
   val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/20-21"
 
+  val mockHttp = mock[HttpClient]
+
   lazy val sut: RtiConnector = inject[RtiConnector]
+  lazy val sutWithMockHttp = new RtiConnector(
+    mockHttp,
+    inject[Metrics],
+    inject[Auditor],
+    inject[DesConfig],
+    inject[RtiUrls],
+    inject[RtiToggleConfig])
 
   "RtiConnector" when {
 
@@ -290,9 +302,9 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
       "return a BadGateway error" when {
 
-        "a BadGatewayException is received" in {
+        val exMessage = "Bad gateway error"
 
-          val exMessage = "Could not reach gateway"
+        "a BadGateway is received" in {
 
           server.stubFor(
             get(urlEqualTo(url)).willReturn(
@@ -303,13 +315,32 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
           Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
         }
+
+        "a BadGatewayException is received" in {
+
+          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(new BadGatewayException(exMessage))
+
+          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
+        }
       }
 
-      "return a TimeOutError " when {
+      "return a TimeOutError" when {
+
+        val exMessage = "Could not reach gateway"
+
+        "a 499 is received" in {
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(499)
+                .withBody(exMessage))
+          )
+
+          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+        }
 
         "a GatewayTimeout is received" in {
-
-          val exMessage = "Could not reach gateway"
 
           server.stubFor(
             get(urlEqualTo(url)).willReturn(
@@ -319,6 +350,14 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           )
 
           Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+        }
+
+        "a GatewayTimeoutException is received" in {
+
+          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(
+            new GatewayTimeoutException(exMessage))
+
+          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
         }
       }
 

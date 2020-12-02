@@ -22,6 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.Configuration
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.{Cache, Id}
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
@@ -40,7 +41,7 @@ import scala.language.postfixOps
 
 class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfterEach with MockAuthenticationPredicate {
 
-  implicit lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
+  implicit lazy val configuration: Configuration = inject[Configuration]
 
   lazy implicit val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
@@ -66,6 +67,23 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfte
 
   override protected def beforeEach(): Unit =
     reset(cacheRepository)
+
+  "TaiCacheRepository" should {
+
+    lazy val sut = inject[TaiCacheRepository]
+
+    "have the correct collection name" in {
+      sut.repo.collection.name mustBe "TAI"
+    }
+
+    "use the default time out from TimeToLive" in new TimeToLive {
+      sut.defaultExpireAfter mustBe defaultExpireAfter
+    }
+
+    "use mongoFormats from Cache" in {
+      sut.repo.domainFormatImplicit mustBe Cache.mongoFormats
+    }
+  }
 
   "Cache Connector" should {
     "save the data in cache" when {

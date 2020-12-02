@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{BadRequestException, InternalServerException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
@@ -44,7 +44,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
     def desUpdateIsEnabled: Boolean = true
 
     def apiEnabled: Boolean = true
-
     def featureTogglesConfig: FeatureTogglesConfig = new FeatureTogglesConfig(inject[Configuration]) {
       override def desEnabled: Boolean = desIsEnabled
 
@@ -83,6 +82,37 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
   }
 
   "Tax Account Connector" when {
+
+    "hcWithHodHeaders is called" must {
+
+      val originId = "Gov-Uk-Originator-Id"
+
+      "set the originator ID to DES" when {
+
+        "DES is enabled" in new ConnectorSetup {
+
+          val headerCarrier = HeaderCarrier()
+          val res = sut.hcWithHodHeaders(headerCarrier)
+
+          res.extraHeaders must contain(originId    -> desConfig.originatorId)
+          res.extraHeaders mustNot contain(originId -> npsConfig.originatorId)
+        }
+      }
+
+      "set the originator ID to NPS" when {
+
+        "DES is disabled" in new ConnectorSetup {
+
+          override def desIsEnabled: Boolean = false
+
+          val headerCarrier = HeaderCarrier()
+          val res = sut.hcWithHodHeaders(headerCarrier)
+
+          res.extraHeaders must contain(originId    -> npsConfig.originatorId)
+          res.extraHeaders mustNot contain(originId -> desConfig.originatorId)
+        }
+      }
+    }
 
     "toggled to use NPS" when {
 
