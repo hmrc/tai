@@ -531,7 +531,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           get(urlEqualTo(endpoint)).willReturn(
             aResponse()
-              .withStatus(FORBIDDEN)
+              .withStatus(IM_A_TEAPOT)
               .withBody(exMessage)
               .withHeader(eTagKey, s"$eTag"))
         )
@@ -540,7 +540,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
           Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
 
         resData mustBe None
-        resStatus.status mustBe FORBIDDEN
+        resStatus.status mustBe IM_A_TEAPOT
         resStatus.response mustBe exMessage
 
       }
@@ -588,14 +588,14 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           get(urlEqualTo(endpoint)).willReturn(
             aResponse()
-              .withStatus(FORBIDDEN)
+              .withStatus(IM_A_TEAPOT)
               .withBody(exMessage)
               .withHeader(eTagKey, s"$eTag"))
         )
 
         assertConnectorException[HttpException](
           sut.getPersonDetailsFromCitizenDetails(url, nino, apiType),
-          FORBIDDEN,
+          IM_A_TEAPOT,
           exMessage
         )
       }
@@ -701,14 +701,14 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           get(urlEqualTo(endpoint)).willReturn(
             aResponse()
-              .withStatus(FORBIDDEN)
+              .withStatus(IM_A_TEAPOT)
               .withBody(exMessage)
               .withHeader(eTagKey, s"$eTag"))
         )
 
         assertConnectorException[HttpException](
           sut.getFromDes(url, apiType),
-          FORBIDDEN,
+          IM_A_TEAPOT,
           exMessage
         )
       }
@@ -720,14 +720,14 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           post(urlEqualTo(endpoint)).willReturn(
             aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)
+              .withStatus(IM_A_TEAPOT)
               .withBody(exMessage)
               .withHeader(eTagKey, s"$eTag"))
         )
 
         assertConnectorException[HttpException](
           sut.postToDes(url, apiType, bodyAsObj),
-          INTERNAL_SERVER_ERROR,
+          IM_A_TEAPOT,
           exMessage
         )
       }
