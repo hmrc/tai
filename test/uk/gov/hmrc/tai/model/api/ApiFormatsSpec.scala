@@ -17,11 +17,50 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsString, Json}
+import play.api.libs.json.{JsNumber, JsString, JsSuccess, Json}
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class ApiFormatsSpec extends PlaySpec with ApiFormats {
 
+  "paymentFrequencyFormat" when {
+
+    val jsonValues = List(
+      ("Weekly", Weekly),
+      ("FortNightly", FortNightly),
+      ("FourWeekly", FourWeekly),
+      ("Monthly", Monthly),
+      ("Quarterly", Quarterly),
+      ("BiAnnually", BiAnnually),
+      ("Annually", Annually),
+      ("OneOff", OneOff),
+      ("Irregular", Irregular)
+    )
+
+    "reading values" must {
+      "read valid string values" in {
+        jsonValues.foreach { kv =>
+          JsString(kv._1).as[PaymentFrequency] mustBe kv._2
+        }
+      }
+
+      "throw an IllegalArgumentException" when {
+        "an invalid string is read" in {
+          the[IllegalArgumentException] thrownBy {
+            JsString("Foo").as[PaymentFrequency]
+          } must have message "Invalid payment frequency"
+        }
+      }
+    }
+    
+    "writing values" must {
+      "write PaymentFrequencies to a JsString" in {
+        jsonValues.foreach { kv =>
+          Json.toJson(kv._2) mustBe JsString(kv._1)
+        }
+      }
+    }
+  }
   "formatTaxYear reads" must {
     "read a valid json taxyear" in {
       JsNumber(2018).as[TaxYear](formatTaxYear) mustBe TaxYear(2018)

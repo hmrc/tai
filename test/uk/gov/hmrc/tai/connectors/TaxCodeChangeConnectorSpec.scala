@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import java.net.URL
 
 import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
-import org.scalatest.BeforeAndAfterAll
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -28,14 +27,13 @@ import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{TaxCodeHistoryConstants, WireMockHelper}
+import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class TaxCodeChangeConnectorSpec
-    extends ConnectorBaseSpec with WireMockHelper with BeforeAndAfterAll with TaxCodeHistoryConstants {
+class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants {
 
   "taxCodeHistory" must {
     "return tax code change response" when {
