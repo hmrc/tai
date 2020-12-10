@@ -15,11 +15,12 @@
  */
 
 package uk.gov.hmrc.tai.connectors
+import com.kenshoo.play.metrics.Metrics
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.util.{TestMetrics, WireMockHelper}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -29,4 +30,6 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper {
   val nino: Nino = new Generator(new Random).nextNino
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val cc: ExecutionContext = injector.instanceOf[ExecutionContext]
+
+  lazy val metrics: Metrics = new TestMetrics
 }

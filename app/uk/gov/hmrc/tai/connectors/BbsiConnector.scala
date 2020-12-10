@@ -16,70 +16,49 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import java.util.UUID.randomUUID
+
 import com.google.inject.{Inject, Singleton}
+import com.kenshoo.play.metrics.Metrics
 import com.typesafe.scalalogging.LazyLogging
-import play.api.http.Status._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.metrics.metrics.HasMetrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BbsiConnector @Inject()(metrics: Metrics, http: HttpClient, urls: BbsiUrls, config: DesConfig)(
+class BbsiConnector @Inject()(val metrics: Metrics, http: HttpClient, urls: BbsiUrls, config: DesConfig)(
   implicit ec: ExecutionContext)
-    extends LazyLogging {
+    extends LazyLogging with HasMetrics {
 
-  private val api = APITypes.BbsiAPI
-
-  private def createHeader: HeaderCarrier =
-    HeaderCarrier(
-      extraHeaders = Seq(
-        "Environment"   -> config.environment,
-        "Authorization" -> s"Bearer ${config.authorization}",
-        "Content-Type"  -> TaiConstants.contentType))
-
-  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-
-    implicit val hc: HeaderCarrier = createHeader
-    val timerContext = metrics.startTimer(api)
-
-    def stopTimerAndFailMetric(): Unit = {
-      timerContext.stop()
-      metrics.incrementFailedCounter(api)
-    }
-
-    http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear)) map { response =>
-      response.status match {
-        case OK =>
-          timerContext.stop()
-          metrics.incrementSuccessCounter(api)
-          response
-        case _ =>
-          stopTimerAndFailMetric()
-          logger.error(response.body)
-          response
-      }
-    } recover {
-      case e: HttpException =>
-        stopTimerAndFailMetric()
-        logger.error(e.message, e)
-        HttpResponse(e.responseCode, e.message)
-      case e: UpstreamErrorResponse =>
-        stopTimerAndFailMetric()
-        logger.error(e.message, e)
-        HttpResponse(e.statusCode, e.message)
-      case e =>
-        val errorMessage = s"Exception in HttpHandler: $e"
-        stopTimerAndFailMetric()
-        logger.error(errorMessage, e)
-        HttpResponse(INTERNAL_SERVER_ERROR, errorMessage)
+  private def correlationId(hc: HeaderCarrier): String = {
+    val CorrelationIdPattern = """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
+    hc.requestId match {
+      case Some(requestId) =>
+        requestId.value match {
+          case CorrelationIdPattern(prefix) => prefix + "-" + randomUUID.toString.substring(24)
+          case _                            => randomUUID.toString
+        }
+      case _ => randomUUID.toString
     }
   }
+
+  private def extraHeaders(implicit hc: HeaderCarrier): HeaderCarrier =
+    hc.withExtraHeaders(
+      "Environment"   -> config.environment,
+      "Authorization" -> s"Bearer ${config.authorization}",
+      "Content-Type"  -> TaiConstants.contentType,
+      "CorrelationId" -> correlationId(hc)
+    )
+
+  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    withMetricsTimerAsync("bbsi") { _ =>
+      http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear))(implicitly, extraHeaders, implicitly)
+    }
 }

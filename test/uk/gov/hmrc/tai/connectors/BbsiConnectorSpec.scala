@@ -26,7 +26,6 @@ import play.api.test.Injecting
 import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.duration._
@@ -39,7 +38,6 @@ class BbsiConnectorSpec extends ConnectorBaseSpec with Injecting {
   val mockHttp: HttpClient = mock[HttpClient]
 
   lazy val bbsiUrls: BbsiUrls = inject[BbsiUrls]
-  lazy val metrics: Metrics = inject[Metrics]
   lazy val desConfig: DesConfig = inject[DesConfig]
 
   lazy val url = s"/pre-population-of-investment-income/nino/${nino.withoutSuffix}/tax-year/${taxYear.year}"
@@ -122,43 +120,6 @@ class BbsiConnectorSpec extends ConnectorBaseSpec with Injecting {
 
         result.status mustBe SERVICE_UNAVAILABLE
         result.body mustBe exMessage
-      }
-
-      "handle HttpExceptions" in {
-
-        val exMessage = "An error occurred"
-
-        when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(
-          new HttpException(exMessage, INTERNAL_SERVER_ERROR))
-
-        val result = Await.result(sutWithMockHttp.bankAccounts(nino, taxYear), 5.seconds)
-
-        result.status mustBe INTERNAL_SERVER_ERROR
-        result.body mustBe exMessage
-      }
-
-      "handle UpstreamErrorResponses" in {
-
-        val exMessage = "An error occurred"
-
-        when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(
-          UpstreamErrorResponse(exMessage, INTERNAL_SERVER_ERROR))
-
-        val result = Await.result(sutWithMockHttp.bankAccounts(nino, taxYear), 5.seconds)
-
-        result.status mustBe INTERNAL_SERVER_ERROR
-        result.body mustBe exMessage
-      }
-
-      "handle generic exceptions" in {
-
-        server.stubFor(
-          get(urlEqualTo(url)).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK))
-        )
-
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        result.status mustBe INTERNAL_SERVER_ERROR
       }
     }
   }
