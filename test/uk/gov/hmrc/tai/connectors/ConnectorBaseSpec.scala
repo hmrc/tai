@@ -15,21 +15,33 @@
  */
 
 package uk.gov.hmrc.tai.connectors
-import com.kenshoo.play.metrics.Metrics
+import org.scalactic.source.Position
+import org.scalatest.Assertion
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.util.{TestMetrics, WireMockHelper}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.reflect.ClassTag
 import scala.util.Random
 
-trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper {
+trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with Injecting {
 
   val nino: Nino = new Generator(new Random).nextNino
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit lazy val cc: ExecutionContext = injector.instanceOf[ExecutionContext]
 
-  lazy val metrics: Metrics = new TestMetrics
+  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
+  def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(
+    implicit classTag: ClassTag[A],
+    pos: Position
+  ): Assertion = {
+    val ex = intercept[A](Await.result(call, 5.seconds))
+    ex.responseCode mustBe code
+    ex.message mustBe message
+  }
 }

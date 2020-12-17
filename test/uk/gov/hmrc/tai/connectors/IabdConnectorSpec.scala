@@ -16,150 +16,34 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
+import play.api.Configuration
+import play.api.http.Status._
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 
-class IabdConnectorSpec extends BaseSpec {
+class IabdConnectorSpec extends ConnectorBaseSpec {
 
-  "IABD Connector" when {
-
-    "toggled to use NPS" must {
-      "return IABD json" in {
-        val mockHttpHandler = mock[HttpHandler]
-        val mockNpsConfig = mock[NpsConfig]
-        val mockDesConfig = mock[DesConfig]
-        val iabdUrls = mock[IabdUrls]
-        val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-        when(iabdUrls.npsIabdUrl(any(), any())).thenReturn("URL")
-        when(featureTogglesConfig.desEnabled).thenReturn(false)
-        when(mockNpsConfig.originatorId).thenReturn("TEST")
-        when(
-          mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
-            meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-        val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
-
-        result mustBe json
-      }
-
-      "return empty json" when {
-        "looking for next tax year" in {
-          val mockHttpHandler = mock[HttpHandler]
-          val mockNpsConfig = mock[NpsConfig]
-          val mockDesConfig = mock[DesConfig]
-          val iabdUrls = mock[IabdUrls]
-          val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-          when(featureTogglesConfig.desEnabled).thenReturn(false)
-          when(mockNpsConfig.originatorId).thenReturn("TEST")
-          when(
-            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
-              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-          val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-          val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
-
-          result mustBe Json.arr()
-        }
-
-        "looking for cy+2 year" in {
-          val mockHttpHandler = mock[HttpHandler]
-          val mockNpsConfig = mock[NpsConfig]
-          val mockDesConfig = mock[DesConfig]
-          val iabdUrls = mock[IabdUrls]
-          val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-          when(featureTogglesConfig.desEnabled).thenReturn(false)
-          when(mockNpsConfig.originatorId).thenReturn("TEST")
-          when(
-            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.NpsIabdAllAPI))(
-              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-          val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-          val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
-
-          result mustBe Json.arr()
-        }
-      }
-    }
-
-    "toggled to use DES" must {
-
-      "return IABD json" in {
-        val mockHttpHandler = mock[HttpHandler]
-        val mockNpsConfig = mock[NpsConfig]
-        val mockDesConfig = mock[DesConfig]
-        val iabdUrls = mock[IabdUrls]
-        val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-        when(featureTogglesConfig.desEnabled).thenReturn(true)
-        when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-        when(mockDesConfig.originatorId).thenReturn("TEST")
-        when(
-          mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
-            meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-        val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
-
-        result mustBe json
-      }
-
-      "return empty json" when {
-        "looking for next tax year" in {
-          val mockHttpHandler = mock[HttpHandler]
-          val mockNpsConfig = mock[NpsConfig]
-          val mockDesConfig = mock[DesConfig]
-          val iabdUrls = mock[IabdUrls]
-          val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-          when(featureTogglesConfig.desEnabled).thenReturn(true)
-          when(mockDesConfig.originatorId).thenReturn("TEST")
-          when(
-            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
-              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-          val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-          val result = Await.result(sut.iabds(nino, TaxYear().next), 5.seconds)
-
-          result mustBe Json.arr()
-        }
-
-        "looking for cy+2 year" in {
-          val mockHttpHandler = mock[HttpHandler]
-          val mockNpsConfig = mock[NpsConfig]
-          val mockDesConfig = mock[DesConfig]
-          val iabdUrls = mock[IabdUrls]
-          val featureTogglesConfig = mock[FeatureTogglesConfig]
-
-          when(iabdUrls.desIabdUrl(any(), any())).thenReturn("URL")
-          when(featureTogglesConfig.desEnabled).thenReturn(true)
-          when(mockDesConfig.originatorId).thenReturn("TEST")
-          when(
-            mockHttpHandler.getFromApi(meq("URL"), meq(APITypes.DesIabdAllAPI))(
-              meq(hc.withExtraHeaders("Gov-Uk-Originator-Id" -> "TEST")))).thenReturn(Future.successful(json))
-
-          val sut = createSUT(mockNpsConfig, mockDesConfig, mockHttpHandler, iabdUrls, featureTogglesConfig)
-          val result = Await.result(sut.iabds(nino, TaxYear().next.next), 5.seconds)
-
-          result mustBe Json.arr()
-        }
-      }
-    }
+  class StubbedFeatureTogglesConfig(enabled: Boolean) extends FeatureTogglesConfig(inject[Configuration]) {
+    override def desEnabled: Boolean = enabled
   }
+
+  def sut(desEnabled: Boolean): IabdConnector = new IabdConnector(
+    inject[NpsConfig],
+    inject[DesConfig],
+    inject[HttpHandler],
+    inject[IabdUrls],
+    new StubbedFeatureTogglesConfig(desEnabled)
+  )
+
+  val taxYear: TaxYear = TaxYear()
+
+  val desUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}"
+  val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
 
   private val json = Json.arr(
     Json.obj(
@@ -175,12 +59,67 @@ class IabdConnectorSpec extends BaseSpec {
     )
   )
 
-  private def createSUT(
-    npsConfig: NpsConfig = mock[NpsConfig],
-    desConfig: DesConfig = mock[DesConfig],
-    httpHandler: HttpHandler = mock[HttpHandler],
-    iabdUrls: IabdUrls = mock[IabdUrls],
-    featureTogglesConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]) =
-    new IabdConnector(npsConfig, desConfig, httpHandler, iabdUrls, featureTogglesConfig)
+  "IABD Connector" when {
 
+    "toggled to use NPS" must {
+      "return IABD json" in {
+
+        server.stubFor(
+          get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+        )
+
+        Await.result(sut(false).iabds(nino, taxYear), 5.seconds) mustBe json
+      }
+
+      "return empty json" when {
+        "looking for next tax year" in {
+
+          server.stubFor(
+            get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          Await.result(sut(false).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+        }
+
+        "looking for cy+2 year" in {
+
+          server.stubFor(
+            get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          Await.result(sut(false).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+        }
+      }
+    }
+
+    "toggled to use DES" must {
+
+      "return IABD json" in {
+
+        server.stubFor(
+          get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+        )
+
+        Await.result(sut(true).iabds(nino, taxYear), 5.seconds) mustBe json
+      }
+
+      "return empty json" when {
+        "looking for next tax year" in {
+          server.stubFor(
+            get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          Await.result(sut(true).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+        }
+
+        "looking for cy+2 year" in {
+          server.stubFor(
+            get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          Await.result(sut(true).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+        }
+      }
+    }
+  }
 }

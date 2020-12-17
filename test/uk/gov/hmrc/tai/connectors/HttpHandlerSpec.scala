@@ -22,8 +22,6 @@ import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Injecting
@@ -31,15 +29,12 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class HttpHandlerSpec extends ConnectorBaseSpec with ScalaFutures with Injecting {
-
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
   lazy val sut: HttpHandler = createSUT(inject[Metrics], inject[HttpClient])
 

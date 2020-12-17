@@ -16,58 +16,47 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
 
+  lazy val sut: CitizenDetailsConnector = inject[CitizenDetailsConnector]
+
+  val baseUrl: String = s"/citizen-details/${nino.nino}"
+  val designatoryDetailsUrl: String = s"$baseUrl/designatory-details"
+  val eTagUrl: String = s"$baseUrl/etag"
+
+  val data: PersonDetails = PersonDetails(
+    "100",
+    Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, nino, Some(false), Some(false)))
+
+  val jsonData: String = Json.toJson(data).toString()
+
+  val etag: String = "123"
+  val etagJson: JsValue = Json.parse(s"""
+                                        |{
+                                        |   "etag":"$etag"
+                                        |}
+    """.stripMargin)
+
   "Get data from citizen-details service" must {
     "return person information when requesting " in {
-      val jsonData = Json.toJson(
-        PersonDetails(
-          "100",
-          Person(
-            Some("FName"),
-            None,
-            Some("LName"),
-            None,
-            Some("Mr"),
-            None,
-            None,
-            None,
-            Nino(nino.nino),
-            Some(false),
-            Some(false))))
 
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-        .thenReturn(Future.successful(
-          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
+      )
 
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
-
-      val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val personDetails =
-        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      val personDetails = Await.result(sut.getPersonDetails(nino), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -81,28 +70,16 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
         "FName LName",
         manualCorrespondenceInd = false,
         Some(false))
-
     }
 
-    "return Record Locked when requesting  " in {
-      val jsonData = Json.toJson(
-        PersonDetails(
-          "0",
-          Person(Some(""), None, Some(""), None, Some(""), None, None, None, Nino(nino.nino), Some(true), Some(false))))
+    "return Record Locked when requesting designatory details" in {
 
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-        .thenReturn(Future.successful(
-          HttpResponse(responseStatus = 423, responseString = Some("Record Locked"), responseJson = Some(jsonData))))
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(LOCKED).withBody("Record locked"))
+      )
 
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
-
-      val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
       val personDetails =
-        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+        Await.result(sut.getPersonDetails(nino)(HeaderCarrier(), PersonDetails.formats), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "0"
@@ -110,53 +87,36 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
     }
 
     "return Internal server error when requesting " in {
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-        .thenReturn(Future.successful(
-          HttpResponse(responseStatus = 500, responseString = Some("Internal Server Error"), responseJson = None)))
 
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
+      val exMessage = "An error occurred"
 
-      val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
-      val thrown = the[HttpException] thrownBy Await
-        .result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+      )
 
-      thrown.getMessage mustBe "Internal Server Error"
+      assertConnectorException[HttpException](
+        sut.getPersonDetails(nino),
+        INTERNAL_SERVER_ERROR,
+        exMessage
+      )
     }
 
-    "return deceased indicator as false if no value is returned form citizen details" in {
-      val jsonData = Json.toJson(
-        PersonDetails(
-          "100",
-          Person(
-            Some("FName"),
-            None,
-            Some("LName"),
-            None,
-            Some("Mr"),
-            None,
-            None,
-            None,
-            Nino(nino.nino),
-            None,
-            Some(false))))
+    "return deceased indicator as false if no value is returned from citizen details" in {
 
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-        .thenReturn(Future.successful(
-          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+      val body = Json
+        .toJson(
+          data.copy(
+            person = data.person.copy(manualCorrespondenceInd = None)
+          ))
+        .toString()
 
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+      )
 
-      val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
       val personDetails =
-        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+        Await.result(sut.getPersonDetails(nino), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -173,35 +133,20 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
     }
 
     "return deceased indicator as true" in {
-      val jsonData = Json.toJson(
-        PersonDetails(
-          "100",
-          Person(
-            Some("FName"),
-            None,
-            Some("LName"),
-            None,
-            Some("Mr"),
-            None,
-            None,
-            None,
-            Nino(nino.nino),
-            Some(true),
-            Some(false))))
 
-      val mockHttpClient = mock[HttpClient]
-      when(mockHttpClient.GET[HttpResponse](any())(any(), any(), any()))
-        .thenReturn(Future.successful(
-          HttpResponse(responseStatus = 200, responseString = Some("Success"), responseJson = Some(jsonData))))
+      val body = Json
+        .toJson(
+          data.copy(
+            person = data.person.copy(deceased = Some(true))
+          ))
+        .toString()
 
-      val mockTimerContext = mock[Timer.Context]
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mockTimerContext)
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+      )
 
-      val sut = createSUT(mockMetrics, mockHttpClient, mock[Auditor], mock[CitizenDetailsUrls])
       val personDetails =
-        Await.result(sut.getPersonDetails(Nino(nino.nino))(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+        Await.result(sut.getPersonDetails(nino), 5 seconds)
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -213,15 +158,15 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
         None,
         "LName",
         "FName LName",
-        manualCorrespondenceInd = true,
-        Some(false))
+        manualCorrespondenceInd = false,
+        Some(true))
     }
   }
 
   "getEtag" must {
     "return an etag on success" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(OK)
@@ -229,7 +174,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
           )
       )
 
-      citizenDetailsConnector.getEtag(nino).futureValue mustBe Some(ETag(etag))
+      sut.getEtag(nino).futureValue mustBe Some(ETag(etag))
     }
 
     "return a None for bad json" in {
@@ -240,7 +185,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
     """.stripMargin)
 
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(OK)
@@ -248,55 +193,43 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
           )
       )
 
-      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+      sut.getEtag(nino).futureValue mustBe None
     }
 
     "return None on an unrecoverable error, possibly bad data received from the upstream API" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)
           )
       )
 
-      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+      sut.getEtag(nino).futureValue mustBe None
     }
 
     "return None when record not found" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(NOT_FOUND)
           )
       )
 
-      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+      sut.getEtag(nino).futureValue mustBe None
     }
 
     "return None when record was hidden, due to manual correspondence indicator flag being set" in {
       server.stubFor(
-        get(urlEqualTo(s"/citizen-details/$nino/etag"))
+        get(urlEqualTo(eTagUrl))
           .willReturn(
             aResponse()
               .withStatus(LOCKED)
           )
       )
 
-      citizenDetailsConnector.getEtag(nino).futureValue mustBe None
+      sut.getEtag(nino).futureValue mustBe None
     }
   }
-
-  val etag = "123"
-  val etagJson: JsValue = Json.parse(s"""
-                                        |{
-                                        |   "etag":"$etag"
-                                        |}
-    """.stripMargin)
-
-  private lazy val citizenDetailsConnector = app.injector.instanceOf[CitizenDetailsConnector]
-
-  def createSUT(metrics: Metrics, httpClient: HttpClient, audit: Auditor, urls: CitizenDetailsUrls) =
-    new CitizenDetailsConnector(metrics, httpClient, audit, urls)
 }

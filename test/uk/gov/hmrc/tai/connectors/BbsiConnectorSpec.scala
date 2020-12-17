@@ -17,21 +17,17 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.http.Fault
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.http.Status._
 import play.api.libs.json.Json
-import play.api.test.Injecting
-import uk.gov.hmrc.http.{HttpException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TestMetrics
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
 
-class BbsiConnectorSpec extends ConnectorBaseSpec with Injecting {
+class BbsiConnectorSpec extends ConnectorBaseSpec {
 
   private val taxYear = TaxYear()
 
@@ -42,8 +38,7 @@ class BbsiConnectorSpec extends ConnectorBaseSpec with Injecting {
 
   lazy val url = s"/pre-population-of-investment-income/nino/${nino.withoutSuffix}/tax-year/${taxYear.year}"
 
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-
+  lazy val metrics: TestMetrics = new TestMetrics
   lazy val sut = new BbsiConnector(metrics, inject[HttpClient], bbsiUrls, desConfig)
   lazy val sutWithMockHttp = new BbsiConnector(metrics, mockHttp, bbsiUrls, desConfig)
 

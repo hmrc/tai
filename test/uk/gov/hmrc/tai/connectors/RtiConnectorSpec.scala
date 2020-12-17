@@ -16,136 +16,194 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.net.URL
-
-import com.codahale.metrics.Timer
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
+import com.github.tomakehurst.wiremock.http.Fault
 import org.joda.time.LocalDate
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.when
+import play.api.Configuration
 import play.api.http.Status._
-import play.api.libs.json.{JsString, Json, Reads}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
+import play.api.libs.json.Json
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters.annualAccountHodReads
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.Random
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
-  implicit val reads: Reads[Seq[AnnualAccount]] = annualAccountHodReads
-  val mockRtiToggle = mock[RtiToggleConfig]
+  val taxYear: TaxYear = TaxYear()
+  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/20-21"
 
-  trait MockPaymentsForYearSetup {
-    val mockTimerContext = mock[Timer.Context]
-    val mockMetrics = mock[Metrics]
-    val mockHttpConnector = mock[HttpClient]
+  val mockHttp = mock[HttpClient]
 
-    when(mockRtiToggle.rtiEnabled).thenReturn(true)
-    when(mockMetrics.startTimer(APITypes.RTIAPI)).thenReturn(mockTimerContext)
+  lazy val sut: RtiConnector = inject[RtiConnector]
+  lazy val sutWithMockHttp = new RtiConnector(
+    mockHttp,
+    inject[Metrics],
+    inject[Auditor],
+    inject[DesConfig],
+    inject[RtiUrls],
+    inject[RtiToggleConfig])
 
-    val mockRtiConnector =
-      new RtiConnector(mockHttpConnector, mockMetrics, mock[Auditor], mock[DesConfig], mock[RtiUrls], mockRtiToggle)
-  }
+  "RtiConnector" when {
 
-  trait PaymentsForYearSetup {
-    val httpClient: HttpClient = injector.instanceOf[HttpClient]
-    val metrics: Metrics = injector.instanceOf[Metrics]
-    val audit: Auditor = mock[Auditor]
-    val rtiConfig: DesConfig = injector.instanceOf[DesConfig]
-    val rtiUrls: RtiUrls = injector.instanceOf[RtiUrls]
-    val rtiToggle: RtiToggleConfig = mockRtiToggle
-
-    val url = new URL(rtiUrls.paymentsForYearUrl(nino.withoutSuffix, taxyear)).getPath
-
-    when(mockRtiToggle.rtiEnabled).thenReturn(true)
-
-    val rtiConnector = new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls, rtiToggle)
-  }
-
-  "RtiConnector" should {
-
-    "have withoutSuffix nino" when {
-      "given a valid nino" in {
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
-
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mock[HttpClient], mockMetrics, mockAudit, mockConfig, mockUrls)
-
-        sut.withoutSuffix(Nino(nino.nino)) mustBe nino.withoutSuffix
+    "withoutSuffix is called" should {
+      "return a nino without the suffix" in {
+        sut.withoutSuffix(nino) mustBe nino.withoutSuffix
       }
     }
 
-    "have createHeader" in {
-      val mockMetrics = mock[Metrics]
-      when(mockMetrics.startTimer(any()))
-        .thenReturn(mock[Timer.Context])
-
-      val mockConfig = mock[DesConfig]
-      when(mockConfig.authorization)
-        .thenReturn("auth")
-      when(mockConfig.environment)
-        .thenReturn("env")
-      when(mockConfig.originatorId)
-        .thenReturn("orgId")
-
-      val sut = createSUT(mock[HttpClient], mockMetrics, mock[Auditor], mockConfig, mock[RtiUrls])
-
-      val headers = sut.createHeader
-      headers.extraHeaders mustBe List(
-        ("Environment", "env"),
-        ("Authorization", "auth"),
-        ("Gov-Uk-Originator-Id", "orgId"))
+    "createHeader is called" should {
+      "set the correct headers for a request" in {
+        val headers = sut.createHeader
+        headers.extraHeaders mustBe List(
+          ("Environment", "local"),
+          ("Authorization", "Bearer Local"),
+          ("Gov-Uk-Originator-Id", originatorId))
+      }
     }
 
-    "have get RTI" when {
-      "given a valid Nino and TaxYear" in {
-        val fakeRtiData = RtiData(nino.withoutSuffix, TaxYear(2017), "req123", Nil)
-        val fakeResponse: HttpResponse = HttpResponse(200, Json.toJson(fakeRtiData), Map[String, Seq[String]]())
+    "getRti is called" should {
+      "return RTI data when the response is OK (200)" in {
+        val fakeRtiData = Json.toJson(RtiData(nino.withoutSuffix, taxYear, "req123", Nil))
 
-        val mockHttpClient = mock[HttpClient]
-        when(mockHttpClient.GET[HttpResponse](any[String])(any(), any(), any()))
-          .thenReturn(Future.successful(fakeResponse))
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(fakeRtiData.toString()))
+        )
 
-        val mockAudit = mock[Auditor]
-        val mockTimerContext = mock[Timer.Context]
+        val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        rtiStatus.status mustBe OK
+        rtiData mustBe Some(fakeRtiData.as[RtiData])
+      }
 
-        val mockUrls = mock[RtiUrls]
-        val mockConfig = mock[DesConfig]
-        val sut = createSUT(mockHttpClient, mockMetrics, mockAudit, mockConfig, mockUrls)
+      "return No RTI data" when {
+        "the ninos are mismatched" in {
+          val mismatchedNino = new Generator(new Random).nextNino.withoutSuffix
+          val fakeRtiData = Json.toJson(RtiData(mismatchedNino, taxYear, "req123", Nil))
 
-        val resp = sut.getRTI(Nino(nino.nino), TaxYear(2017))
-        val (rtiData, rtiStatus) = Await.result(resp, 5 seconds)
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(fakeRtiData.toString()))
+          )
 
-        rtiStatus.status mustBe 200
-        rtiData mustBe Some(fakeRtiData)
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
 
+          rtiStatus.status mustBe OK
+          rtiStatus.response mustBe "Incorrect RTI Payload"
+          rtiData mustBe None
+        }
+
+        "connector returns 400" in {
+
+          val errorMessage = "Invalid query"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+
+          rtiStatus.status mustBe BAD_REQUEST
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 404" in {
+
+          val errorMessage = "No RTI found"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+
+          rtiStatus.status mustBe NOT_FOUND
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 4xx" in {
+
+          val errorMessage = "RTI record locked"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(LOCKED)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+
+          rtiStatus.status mustBe LOCKED
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 500" in {
+
+          val errorMessage = "An error occurred"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+
+          rtiStatus.status mustBe INTERNAL_SERVER_ERROR
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 5xx" in {
+
+          val errorMessage = "Can not reach gateway"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_GATEWAY)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+
+          rtiStatus.status mustBe BAD_GATEWAY
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
       }
     }
 
     "getPaymentsForYear" should {
       "return a sequence of annual accounts" when {
-        "a successful Http response is received from RTI" in new PaymentsForYearSetup {
+        "a successful Http response is received from RTI" in {
           val taxYearRange = "16-17"
           val fileName = "1"
           val rtiJson = QaData.paymentDetailsForYear(taxYearRange)(fileName)
@@ -207,7 +265,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(rtiJson.toString()))
           )
 
-          val result = Await.result(rtiConnector.getPaymentsForYear(nino, taxyear), 5 seconds)
+          val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
           result mustBe Right(expectedPayments)
         }
       }
@@ -226,7 +284,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         )
 
         errors foreach { error =>
-          s"a ${error._1} status is returned from RTI" in new PaymentsForYearSetup {
+          s"a ${error._1} status is returned from RTI" in {
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -235,7 +293,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   .withBody(error._2))
             )
 
-            val result = Await.result(rtiConnector.getPaymentsForYear(nino, taxyear), 5 seconds)
+            val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
 
             result mustBe Left(error._3)
           }
@@ -244,88 +302,99 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
       "return a BadGateway error" when {
 
-        "a BadGatewayException is received" in new MockPaymentsForYearSetup {
-          when(mockHttpConnector.GET(any())(any(), any(), any()))
-            .thenReturn(Future.failed(new BadGatewayException("Bad gateway")))
+        val exMessage = "Bad gateway error"
 
-          val result = Await.result(mockRtiConnector.getPaymentsForYear(nino, taxyear), 5 seconds)
-          result mustBe Left(BadGatewayError)
+        "a BadGateway is received" in {
 
-          verify(mockTimerContext, times(1)).stop()
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_GATEWAY)
+                .withBody(exMessage))
+          )
+
+          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
+        }
+
+        "a BadGatewayException is received" in {
+
+          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(new BadGatewayException(exMessage))
+
+          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
         }
       }
 
-      "return a TimeOutError " when {
+      "return a TimeOutError" when {
 
-        "a GatewayTimeout is received" in new MockPaymentsForYearSetup {
+        val exMessage = "Could not reach gateway"
 
-          when(mockHttpConnector.GET(any())(any(), any(), any()))
-            .thenReturn(Future.failed(new GatewayTimeoutException("timeout")))
+        "a 499 is received" in {
 
-          val result = Await.result(mockRtiConnector.getPaymentsForYear(nino, taxyear), 5 seconds)
-          result mustBe Left(TimeoutError)
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(499)
+                .withBody(exMessage))
+          )
 
-          verify(mockTimerContext, times(1)).stop()
+          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+        }
+
+        "a GatewayTimeout is received" in {
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(GATEWAY_TIMEOUT)
+                .withBody(exMessage))
+          )
+
+          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+        }
+
+        "a GatewayTimeoutException is received" in {
+
+          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(
+            new GatewayTimeoutException(exMessage))
+
+          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
         }
       }
 
       "return an exception " when {
-        "an exception is thrown whilst trying to contact RTI" in new MockPaymentsForYearSetup {
+        "an exception is thrown whilst trying to contact RTI" in {
 
-          val errorMessage = "An error has occurred"
-          when(mockHttpConnector.GET(any())(any(), any(), any()))
-            .thenReturn(Future.failed(new RuntimeException(errorMessage)))
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(aResponse()
+              .withFault(Fault.MALFORMED_RESPONSE_CHUNK))
+          )
 
-          val exception = intercept[RuntimeException] {
-            Await.result(mockRtiConnector.getPaymentsForYear(nino, taxyear), 5 seconds)
+          an[Exception] mustBe thrownBy {
+            Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
           }
-
-          exception.getMessage mustBe errorMessage
-
-          verify(mockTimerContext, times(1)).stop()
         }
-
       }
-
     }
 
     "return a ServiceUnavailableError " when {
       "the rti toggle is set to false" in {
-        val mockRtiToggle = mock[RtiToggleConfig]
-        when(mockRtiToggle.rtiEnabled).thenReturn(false)
 
-        val testConnector = createSUT(rtiToggle = mockRtiToggle)
-        val result = Await.result(testConnector.getPaymentsForYear(nino, TaxYear(2017)), 5 seconds)
-        result mustBe Left(ServiceUnavailableError)
+        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+          override def rtiEnabled: Boolean = false
+        }
+
+        lazy val sutWithRTIDisabled = new RtiConnector(
+          inject[HttpClient],
+          inject[Metrics],
+          inject[Auditor],
+          inject[DesConfig],
+          inject[RtiUrls],
+          stubbedRtiConfig
+        )
+
+        Await.result(sutWithRTIDisabled.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe
+          Left(ServiceUnavailableError)
       }
-    }
-  }
-
-  val taxyear = TaxYear(2017)
-
-  lazy val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
-  lazy val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
-  lazy val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
-  val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, JsString("not found"), Map("ETag" -> Seq("34")))
-
-  private def createSUT(
-    httpClient: HttpClient = mock[HttpClient],
-    metrics: Metrics = mock[Metrics],
-    audit: Auditor = mock[Auditor],
-    rtiConfig: DesConfig = mock[DesConfig],
-    rtiUrls: RtiUrls = mock[RtiUrls],
-    rtiToggle: RtiToggleConfig = mockRtiToggle) = {
-
-    val mockTimerContext = mock[Timer.Context]
-    when(metrics.startTimer(any()))
-      .thenReturn(mockTimerContext)
-    when(mockRtiToggle.rtiEnabled).thenReturn(true)
-
-    new RtiConnector(httpClient, metrics, audit, rtiConfig, rtiUrls, rtiToggle) {
-      override val originatorId: String = "orgId"
     }
   }
 }

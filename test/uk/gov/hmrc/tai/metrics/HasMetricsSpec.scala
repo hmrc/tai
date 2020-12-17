@@ -17,26 +17,25 @@
 package uk.gov.hmrc.tai.metrics
 
 import com.codahale.metrics.Timer
-import com.kenshoo.play.metrics.Metrics
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.scalatest.compatible.Assertion
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{AsyncWordSpecLike, BeforeAndAfterAll, Matchers, OptionValues}
 import play.api.mvc.{BaseController, ControllerComponents, Results}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.tai.metrics.metrics.{HasActionMetrics, HasMetrics}
+import uk.gov.hmrc.tai.util.TestMetrics
 
 import scala.concurrent.Future
-import scala.util.Success
 
 class HasMetricsSpec
     extends AsyncWordSpecLike with Matchers with OptionValues with MockitoSugar with BeforeAndAfterAll {
 
   trait MockHasMetrics { self: HasMetrics =>
     val timer = mock[Timer.Context]
-    val metrics = mock[Metrics]
+    val metrics = new TestMetrics
     override val localMetrics: LocalMetrics = mock[LocalMetrics]
     when(localMetrics.startTimer(anyString())) thenReturn timer
   }
