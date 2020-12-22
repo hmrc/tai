@@ -24,6 +24,7 @@ import com.typesafe.scalalogging.LazyLogging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.metrics.HasMetrics
@@ -53,6 +54,8 @@ class BbsiConnector @Inject()(val metrics: Metrics, http: HttpClient, urls: Bbsi
     hc.withExtraHeaders(
       "Environment"   -> config.environment,
       "Authorization" -> s"Bearer ${config.authorization}",
+      "X-Session-ID"  -> hc.sessionId.fold(uuid)(_.value),
+      "X-Request-ID"  -> hc.requestId.fold(uuid)(_.value),
       "Content-Type"  -> TaiConstants.contentType,
       "CorrelationId" -> correlationId(hc)
     )
@@ -61,4 +64,6 @@ class BbsiConnector @Inject()(val metrics: Metrics, http: HttpClient, urls: Bbsi
     withMetricsTimerAsync("bbsi") { _ =>
       http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear))(implicitly, extraHeaders, implicitly)
     }
+
+  private val uuid = randomUUID().toString.replace("-", "")
 }
