@@ -36,8 +36,10 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
   .settings(
     Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-    parallelExecution in IntegrationTest := false
+    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in Test)(base => Seq(base / "it")).value,
+    parallelExecution in IntegrationTest := false,
+    HeaderPlugin.autoImport.headerSettings(IntegrationTest),
+    AutomateHeaderPlugin.autoImport.automateHeaderSettings(IntegrationTest)
   )
   .settings(
     resolvers += Resolver.jcenterRepo,
