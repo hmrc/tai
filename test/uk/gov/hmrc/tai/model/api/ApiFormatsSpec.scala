@@ -52,7 +52,7 @@ class ApiFormatsSpec extends PlaySpec with ApiFormats {
         }
       }
     }
-    
+
     "writing values" must {
       "write PaymentFrequencies to a JsString" in {
         jsonValues.foreach { kv =>

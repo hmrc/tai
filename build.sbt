@@ -2,6 +2,7 @@ import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.SbtArtifactory
+import uk.gov.hmrc.DefaultBuildSettings
 
 val appName: String = "tai"
 
@@ -33,12 +34,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .configs(IntegrationTest)
-  .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
-  .settings(
-    Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-    parallelExecution in IntegrationTest := false
-  )
+  .settings(DefaultBuildSettings.integrationTestSettings())
   .settings(
     resolvers += Resolver.jcenterRepo,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint"),
