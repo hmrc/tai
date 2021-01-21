@@ -42,8 +42,7 @@ class IabdConnector @Inject()(
     } else if (featureTogglesConfig.desEnabled) {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId,
         "Environment"   -> desConfig.environment,
-        "Authorization" -> desConfig.authorization,
-        "Content-Type"  -> TaiConstants.contentType)
+        "Authorization" -> desConfig.authorization)
 
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
 
