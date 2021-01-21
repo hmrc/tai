@@ -24,6 +24,7 @@ import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.concurrent.Future
 
@@ -39,8 +40,13 @@ class IabdConnector @Inject()(
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
     } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId,
+        "Environment"   -> desConfig.environment,
+        "Authorization" -> desConfig.authorization,
+        "Content-Type"  -> TaiConstants.contentType)
+
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
+
       httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
     } else {
       val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)

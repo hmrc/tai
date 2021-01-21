@@ -98,7 +98,14 @@ class DesConnector @Inject()(
 
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = s"${config.baseURL}/individuals/$nino/employment/$year"
-    getFromDes[JsValue](urlToRead, APITypes.NpsEmploymentAPI).map(_._1)
+
+    val header = hc.withExtraHeaders(
+      "Environment"   -> config.environment,
+      "Authorization" -> config.authorization,
+      "Content-Type"  -> TaiConstants.contentType
+    )
+
+    getFromDes[JsValue](urlToRead, APITypes.NpsEmploymentAPI)(header, implicitly).map(_._1)
   }
 
   def updateEmploymentDataToDes(
