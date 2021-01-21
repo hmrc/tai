@@ -72,8 +72,14 @@ class DesConnector @Inject()(
 
   def getIabdsFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year")
-    implicit val hc: HeaderCarrier = header
-    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI).map(x => x._1)
+
+    val header = hc.withExtraHeaders(
+      "Environment"   -> config.environment,
+      "Authorization" -> config.authorization,
+      "Content-Type"  -> TaiConstants.contentType
+    )
+
+    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI)(header, implicitly).map(x => x._1)
   }
 
   def getCalculatedTaxAccountFromDes(nino: Nino, year: Int)(
@@ -88,6 +94,11 @@ class DesConnector @Inject()(
     val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
     implicit val hc: HeaderCarrier = header
     httpClient.GET[HttpResponse](urlToRead)
+  }
+
+  def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    val urlToRead = s"${config.baseURL}/individuals/$nino/employment/$year"
+    getFromDes[JsValue](urlToRead, APITypes.NpsEmploymentAPI).map(_._1)
   }
 
   def updateEmploymentDataToDes(

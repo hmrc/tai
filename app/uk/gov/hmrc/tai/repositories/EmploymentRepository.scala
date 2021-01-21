@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, DesConnector, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
@@ -34,6 +34,7 @@ class EmploymentRepository @Inject()(
   rtiConnector: RtiConnector,
   cacheConnector: CacheConnector,
   npsConnector: NpsConnector,
+  desConnector: DesConnector,
   employmentBuilder: EmploymentBuilder)(implicit ec: ExecutionContext) {
 
   private def employmentMongoKey(taxYear: TaxYear) = s"EmploymentData-${taxYear.year}"
@@ -132,7 +133,7 @@ class EmploymentRepository @Inject()(
       }
 
     for {
-      employments <- npsConnector.getEmploymentDetails(nino, taxYear.year) map {
+      employments <- desConnector.getEmploymentDetails(nino, taxYear.year) map {
                       _.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads).employments
                     }
       accounts <- rtiAnnualAccounts(employments)
