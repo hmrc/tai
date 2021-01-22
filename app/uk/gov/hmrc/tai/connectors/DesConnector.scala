@@ -22,6 +22,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
@@ -73,11 +74,12 @@ class DesConnector @Inject()(
   def getIabdsFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year")
 
-    val header = hc.withExtraHeaders(
-      "Environment"   -> config.environment,
-      "Authorization" -> config.authorization,
-      "Content-Type"  -> TaiConstants.contentType
-    )
+    val header = hc
+      .copy(authorization = Some(Authorization(config.authorization)))
+      .withExtraHeaders(
+        "Gov-Uk-Originator-Id" -> config.originatorId,
+        "Environment"          -> config.environment
+      )
 
     getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI)(header, implicitly).map(x => x._1)
   }
@@ -99,11 +101,12 @@ class DesConnector @Inject()(
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = s"${config.baseURL}/individuals/$nino/employment/$year"
 
-    val header = hc.withExtraHeaders(
-      "Gov-Uk-Originator-Id" -> config.originatorId,
-      "Environment"          -> config.environment,
-      "Authorization"        -> config.authorization
-    )
+    val header = hc
+      .copy(authorization = Some(Authorization(config.authorization)))
+      .withExtraHeaders(
+        "Gov-Uk-Originator-Id" -> config.originatorId,
+        "Environment"          -> config.environment
+      )
 
     getFromDes[JsValue](urlToRead, APITypes.NpsEmploymentAPI)(header, implicitly).map(_._1)
   }
