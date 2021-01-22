@@ -25,6 +25,8 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.http.logging.Authorization
+
 
 import scala.concurrent.Future
 
@@ -40,10 +42,13 @@ class IabdConnector @Inject()(
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
     } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders(
-        "Gov-Uk-Originator-Id" -> desConfig.originatorId,
-        "Environment"          -> desConfig.environment,
-        "Authorization"        -> desConfig.authorization)
+
+      val hcWithHodHeaders = hc
+        .copy(authorization = Some(Authorization(desConfig.authorization)))
+        .withExtraHeaders(
+          "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+          "Environment"          -> desConfig.environment
+        )
 
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
 
