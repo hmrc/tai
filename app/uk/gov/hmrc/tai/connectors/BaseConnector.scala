@@ -197,6 +197,9 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
   def getFromDes[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url)
+
+    Logger.warn(s"hc.headers = ${hc.headers}")
+
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {

@@ -101,8 +101,8 @@ class DesConnector @Inject()(
 
     val header = hc.withExtraHeaders(
       "Gov-Uk-Originator-Id" -> config.originatorId,
-      "Environment"   -> config.environment,
-      "Authorization" -> config.authorization
+      "Environment"          -> config.environment,
+      "Authorization"        -> config.authorization
     )
 
     getFromDes[JsValue](urlToRead, APITypes.NpsEmploymentAPI)(header, implicitly).map(_._1)

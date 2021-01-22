@@ -40,9 +40,10 @@ class IabdConnector @Inject()(
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
     } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId,
-        "Environment"   -> desConfig.environment,
-        "Authorization" -> desConfig.authorization)
+      val hcWithHodHeaders = hc.withExtraHeaders(
+        "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+        "Environment"          -> desConfig.environment,
+        "Authorization"        -> desConfig.authorization)
 
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
 
