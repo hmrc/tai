@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,32 +38,18 @@ class BbsiConnector @Inject()(val metrics: Metrics, http: HttpClient, urls: Bbsi
   implicit ec: ExecutionContext)
     extends LazyLogging with HasMetrics {
 
-  private def correlationId(hc: HeaderCarrier): String = {
-    val CorrelationIdPattern = """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
-    hc.requestId match {
-      case Some(requestId) =>
-        requestId.value match {
-          case CorrelationIdPattern(prefix) => prefix + "-" + randomUUID.toString.substring(24)
-          case _                            => randomUUID.toString
-        }
-      case _ => randomUUID.toString
-    }
-  }
-
   private def extraHeaders(implicit hc: HeaderCarrier): HeaderCarrier =
     hc.withExtraHeaders(
       "Environment"   -> config.environment,
       "Authorization" -> s"Bearer ${config.authorization}",
-      "X-Session-ID"  -> hc.sessionId.fold(uuid)(_.value),
-      "X-Request-ID"  -> hc.requestId.fold(uuid)(_.value),
+      "X-Session-ID"  -> hc.sessionId.getOrElse("").toString,
+      "X-Request-ID"  -> hc.requestId.getOrElse("").toString,
       "Content-Type"  -> TaiConstants.contentType,
-      "CorrelationId" -> correlationId(hc)
+      "CorrelationId" -> randomUUID().toString
     )
 
   def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     withMetricsTimerAsync("bbsi") { _ =>
       http.GET[HttpResponse](urls.bbsiUrl(nino, taxYear))(implicitly, extraHeaders, implicitly)
     }
-
-  private val uuid = randomUUID().toString.replace("-", "")
 }
