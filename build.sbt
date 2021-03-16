@@ -25,12 +25,12 @@ lazy val microservice = Project(appName, file("."))
   .settings(publishingSettings: _*)
   .settings(
     libraryDependencies ++= AppDependencies(),
-    dependencyOverrides ++= dependencyOverride,
     retrieveManaged := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesGenerator := InjectedRoutesGenerator,
     scalafmtOnCompile := true,
-    PlayKeys.playDefaultPort := 9331
+    PlayKeys.playDefaultPort := 9331,
+    scalaVersion := "2.12.13"
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .configs(IntegrationTest)
@@ -65,7 +65,8 @@ val allItPhases = "tit->it;it->it;it->compile;compile->compile"
 lazy val TemplateTest = config("tt") extend Test
 lazy val TemplateItTest = config("tit") extend IntegrationTest
 
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
-  tests map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
-  }
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = tests map { test =>
+  val forkOptions =
+    ForkOptions().withRunJVMOptions(Vector("-Dtest.name=" + test.name))
+  Group(test.name, Seq(test), SubProcess(config = forkOptions))
+}
