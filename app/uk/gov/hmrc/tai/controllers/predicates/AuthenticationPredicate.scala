@@ -37,7 +37,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
   def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request: Request[AnyContent] =>
       authorisedFunctions
-        .authorised(ConfidenceLevel.L100)
+        .authorised(ConfidenceLevel.L200)
         .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
           case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, Nino(trustedHelper.principalNino)))
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
@@ -53,7 +53,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
   def async[A](bodyParser: BodyParser[A])(action: AuthenticatedRequest[A] => Future[Result]): Action[A] =
     Action.async(bodyParser) { implicit request =>
       authorisedFunctions
-        .authorised(ConfidenceLevel.L100)
+        .authorised(ConfidenceLevel.L200)
         .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
           case _ ~ Some(trustedHelper) => action(AuthenticatedRequest(request, Nino(trustedHelper.principalNino)))
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
