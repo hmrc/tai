@@ -27,8 +27,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class PersonRepository @Inject()(
   cacheConnector: CacheConnector,
-  urls: CitizenDetailsUrls,
-  httpHandler: HttpHandler,
   citizenDetailsConnector: CitizenDetailsConnector)(implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
