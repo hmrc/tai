@@ -1,7 +1,6 @@
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.DefaultBuildSettings
 
 val appName: String = "tai"
@@ -20,7 +19,7 @@ lazy val dependencyOverride: Set[ModuleID] = Set(
 )
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(publishingSettings: _*)
   .settings(
