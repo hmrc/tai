@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.joda.time.LocalDate
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.model.domain.Address
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
@@ -49,7 +51,142 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
                                         |}
     """.stripMargin)
 
-  "Get data from citizen-details service" must {
+  "getPerson" must {
+    "return person information when requesting" in {
+
+      val jsonPayload = Json.parse(s"""
+                                      |{
+                                      | "etag":"1",
+                                      | "person":{
+                                      |   "firstName":"FName",
+                                      |   "lastName":"LName",
+                                      |   "title":"Mr",
+                                      |   "sex":"M",
+                                      |   "dateOfBirth":"1975-09-15",
+                                      |   "nino":"${nino.nino}",
+                                      |   "deceased":false
+                                      | },
+                                      | "address":{
+                                      |   "line1":"1 Test Line",
+                                      |   "line2":"Test Line 2",
+                                      |   "postcode":"TEST",
+                                      |   "startDate":"2013-11-28",
+                                      |   "country":"GREAT BRITAIN",
+                                      |   "type":"Residential"
+                                      | }
+                                      |}""".stripMargin).toString()
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonPayload))
+      )
+
+      val person = sut.getPerson(nino).futureValue
+
+      import uk.gov.hmrc.tai.model.domain.Person
+      person mustBe Person(
+        nino,
+        "FName",
+        "LName",
+        Some(LocalDate.parse("1975-09-15")),
+        Address("", "", "", "", ""),
+        false,
+        false)
+    }
+
+    "missing fields" in {
+
+      val jsonWithMissingFields = Json
+        .obj(
+          "etag" -> "000",
+          "person" -> Json.obj(
+            "nino"    -> nino.nino,
+            "address" -> Json.obj()
+          )
+        )
+        .toString
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonWithMissingFields))
+      )
+
+      val person = sut.getPerson(nino).futureValue
+
+      import uk.gov.hmrc.tai.model.domain.Person
+      val expectedPersonFromPartialJson = Person(nino, "", "", None, Address("", "", "", "", ""), false, false)
+      person mustBe expectedPersonFromPartialJson
+    }
+
+    "marks the deceased indicator as true if the user is deceased" in {
+
+      val jsonPayload = Json.parse(s"""
+                                      |{
+                                      | "etag":"1",
+                                      | "person":{
+                                      |   "firstName":"FName",
+                                      |   "lastName":"LName",
+                                      |   "title":"Mr",
+                                      |   "sex":"M",
+                                      |   "dateOfBirth":"1975-09-15",
+                                      |   "nino":"${nino.nino}",
+                                      |   "deceased":true
+                                      | },
+                                      | "address":{
+                                      |   "line1":"1 Test Line",
+                                      |   "line2":"Test Line 2",
+                                      |   "postcode":"TEST",
+                                      |   "startDate":"2013-11-28",
+                                      |   "country":"GREAT BRITAIN",
+                                      |   "type":"Residential"
+                                      | }
+                                      |}""".stripMargin).toString()
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonPayload))
+      )
+
+      val person = sut.getPerson(nino).futureValue
+
+      import uk.gov.hmrc.tai.model.domain.Person
+      person mustBe Person(
+        nino,
+        "FName",
+        "LName",
+        Some(LocalDate.parse("1975-09-15")),
+        Address("", "", "", "", ""),
+        true,
+        false)
+    }
+
+    "return an empty user marked as locked when there is a Locked response" in {
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl))
+          .willReturn(aResponse().withStatus(LOCKED).withBody("User opted for manual correspondence"))
+      )
+
+      val person = sut.getPerson(nino).futureValue
+      import uk.gov.hmrc.tai.model.domain.Person
+      person mustBe Person.createLockedUser(nino)
+    }
+
+    "throws an internal server error on anything else " in {
+
+      val exMessage = "An error occurred"
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+      )
+
+      assertConnectorException[HttpException](
+        sut.getPerson(nino),
+        INTERNAL_SERVER_ERROR,
+        exMessage
+      )
+    }
+  }
+
+  "getPersonDetails" must {
     "return person information when requesting " in {
 
       server.stubFor(

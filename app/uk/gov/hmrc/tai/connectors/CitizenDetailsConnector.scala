@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.http.Status
 import play.api.http.Status._
 import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
@@ -26,7 +27,9 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
+import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.PersonDetails
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,6 +43,32 @@ class CitizenDetailsConnector @Inject()(
     extends BaseConnector(auditor, metrics, httpClient) {
 
   override val originatorId: String = ""
+
+  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
+    val api = APITypes.NpsPersonAPI
+    val url = urls.designatoryDetailsUrl(nino)
+
+    val timerContext = metrics.startTimer(api)
+    val futureResponse = httpClient.GET[HttpResponse](url)
+    futureResponse.flatMap { httpResponse =>
+      timerContext.stop()
+      httpResponse.status match {
+        case Status.OK =>
+          metrics.incrementSuccessCounter(api)
+          val person = httpResponse.json.as[Person](PersonFormatter.personHodRead)
+          Future.successful(person)
+        case Status.LOCKED =>
+          metrics.incrementSuccessCounter(api)
+          Future.successful(Person.createLockedUser(nino))
+        case _ => {
+          metrics.incrementFailedCounter(api)
+          Logger.warn(s"Calling person details from citizen details failed: " + httpResponse.status + " url " + url)
+          metrics.incrementFailedCounter(api)
+          Future.failed(new HttpException(httpResponse.body, httpResponse.status))
+        }
+      }
+    }
+  }
 
   def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] =
     getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)
