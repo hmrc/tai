@@ -7,17 +7,6 @@ val appName: String = "tai"
 
 lazy val playSettings: Seq[Setting[_]] = Seq(routesImport ++= Seq("uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"))
 
-val akkaResolver = "com.typesafe.akka"
-val akkaVersion = "2.5.23"
-val akkaHttpVersion = "10.0.15"
-lazy val dependencyOverride: Set[ModuleID] = Set(
-  akkaResolver %% "akka-stream"    % akkaVersion force (),
-  akkaResolver %% "akka-protobuf"  % akkaVersion force (),
-  akkaResolver %% "akka-slf4j"     % akkaVersion force (),
-  akkaResolver %% "akka-actor"     % akkaVersion force (),
-  akkaResolver %% "akka-http-core" % akkaHttpVersion force ()
-)
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(playSettings ++ scoverageSettings: _*)
