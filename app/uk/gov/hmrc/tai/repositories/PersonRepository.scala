@@ -25,9 +25,8 @@ import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonRepository @Inject()(
-  cacheConnector: CacheConnector,
-  citizenDetailsConnector: CitizenDetailsConnector)(implicit ec: ExecutionContext) {
+class PersonRepository @Inject()(cacheConnector: CacheConnector, citizenDetailsConnector: CitizenDetailsConnector)(
+  implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
 
