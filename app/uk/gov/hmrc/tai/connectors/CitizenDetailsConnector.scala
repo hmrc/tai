@@ -27,9 +27,8 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
+import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.PersonDetails
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,7 +60,6 @@ class CitizenDetailsConnector @Inject()(
           metrics.incrementSuccessCounter(api)
           Future.successful(Person.createLockedUser(nino))
         case _ => {
-          metrics.incrementFailedCounter(api)
           Logger.warn(s"Calling person details from citizen details failed: " + httpResponse.status + " url " + url)
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))

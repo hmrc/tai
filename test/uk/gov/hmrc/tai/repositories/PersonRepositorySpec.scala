@@ -38,9 +38,7 @@ class PersonRepositorySpec extends BaseSpec {
 
   implicit val formats = PersonFormatter.personMongoFormat
 
-  def createSUT(
-    cacheConnector: CacheConnector,
-    citizenDetailsConnector: CitizenDetailsConnector) =
+  def createSUT(cacheConnector: CacheConnector, citizenDetailsConnector: CitizenDetailsConnector) =
     new PersonRepository(cacheConnector, citizenDetailsConnector)
 
   "The getPerson method" should {

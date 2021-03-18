@@ -16,17 +16,26 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.LocalDate
+import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.Address
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.tai.model.enums.APITypes
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -51,33 +60,32 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
                                         |}
     """.stripMargin)
 
+  val jsonPayload = Json.parse(s"""
+                                  |{
+                                  | "etag":"1",
+                                  | "person":{
+                                  |   "firstName":"FName",
+                                  |   "lastName":"LName",
+                                  |   "title":"Mr",
+                                  |   "sex":"M",
+                                  |   "dateOfBirth":"1975-09-15",
+                                  |   "nino":"${nino.nino}",
+                                  |   "deceased":false
+                                  | },
+                                  | "address":{
+                                  |   "line1":"1 Test Line",
+                                  |   "line2":"Test Line 2",
+                                  |   "postcode":"TEST",
+                                  |   "startDate":"2013-11-28",
+                                  |   "country":"GREAT BRITAIN",
+                                  |   "type":"Residential"
+                                  | }
+                                  |}""".stripMargin)
+
   "getPerson" must {
     "return person information when requesting" in {
-
-      val jsonPayload = Json.parse(s"""
-                                      |{
-                                      | "etag":"1",
-                                      | "person":{
-                                      |   "firstName":"FName",
-                                      |   "lastName":"LName",
-                                      |   "title":"Mr",
-                                      |   "sex":"M",
-                                      |   "dateOfBirth":"1975-09-15",
-                                      |   "nino":"${nino.nino}",
-                                      |   "deceased":false
-                                      | },
-                                      | "address":{
-                                      |   "line1":"1 Test Line",
-                                      |   "line2":"Test Line 2",
-                                      |   "postcode":"TEST",
-                                      |   "startDate":"2013-11-28",
-                                      |   "country":"GREAT BRITAIN",
-                                      |   "type":"Residential"
-                                      | }
-                                      |}""".stripMargin).toString()
-
       server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonPayload))
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonPayload.toString()))
       )
 
       val person = sut.getPerson(nino).futureValue
@@ -367,6 +375,66 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       sut.getEtag(nino).futureValue mustBe None
+    }
+  }
+
+  "metrics" must {
+    "increment the success counter on an OK response" in {
+      lazy val metrics = mock[Metrics]
+      lazy val timerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(timerContext)
+
+      lazy val httpClient = mock[HttpClient]
+
+      when(httpClient.GET[HttpResponse](any())(any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(OK, jsonPayload, Map[String, Seq[String]]())))
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      connector.getPerson(nino).futureValue
+
+      Mockito.verify(metrics).incrementSuccessCounter(meq(APITypes.NpsPersonAPI))
+    }
+
+    "increment the success counter on a LOCKED response" in {
+      lazy val metrics = mock[Metrics]
+      lazy val timerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(timerContext)
+
+      lazy val httpClient = mock[HttpClient]
+
+      when(httpClient.GET[HttpResponse](any())(any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(LOCKED, "")))
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      connector.getPerson(nino).futureValue
+
+      Mockito.verify(metrics).incrementSuccessCounter(meq(APITypes.NpsPersonAPI))
+    }
+
+    "increment the failed counter on any other response" in {
+      lazy val metrics = mock[Metrics]
+      lazy val timerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(timerContext)
+
+      lazy val httpClient = mock[HttpClient]
+
+      when(httpClient.GET[HttpResponse](any())(any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(BAD_REQUEST, "")))
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      assertConnectorException[HttpException](
+        connector.getPerson(nino),
+        BAD_REQUEST,
+        ""
+      )
+
+      Mockito.verify(metrics).incrementFailedCounter(meq(APITypes.NpsPersonAPI))
     }
   }
 }
