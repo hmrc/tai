@@ -18,7 +18,7 @@ lazy val microservice = Project(appName, file("."))
     routesGenerator := InjectedRoutesGenerator,
     scalafmtOnCompile := true,
     PlayKeys.playDefaultPort := 9331,
-    scalaVersion := "2.12.13"
+    scalaVersion := "2.12.12"
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .configs(IntegrationTest)
