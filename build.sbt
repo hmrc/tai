@@ -1,36 +1,24 @@
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.DefaultBuildSettings
 
 val appName: String = "tai"
 
 lazy val playSettings: Seq[Setting[_]] = Seq(routesImport ++= Seq("uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"))
 
-val akkaResolver = "com.typesafe.akka"
-val akkaVersion = "2.5.23"
-val akkaHttpVersion = "10.0.15"
-lazy val dependencyOverride: Set[ModuleID] = Set(
-  akkaResolver %% "akka-stream"    % akkaVersion force (),
-  akkaResolver %% "akka-protobuf"  % akkaVersion force (),
-  akkaResolver %% "akka-slf4j"     % akkaVersion force (),
-  akkaResolver %% "akka-actor"     % akkaVersion force (),
-  akkaResolver %% "akka-http-core" % akkaHttpVersion force ()
-)
-
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(publishingSettings: _*)
   .settings(
     libraryDependencies ++= AppDependencies(),
-    dependencyOverrides ++= dependencyOverride,
     retrieveManaged := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesGenerator := InjectedRoutesGenerator,
     scalafmtOnCompile := true,
-    PlayKeys.playDefaultPort := 9331
+    PlayKeys.playDefaultPort := 9331,
+    scalaVersion := "2.12.13"
   )
   .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
   .configs(IntegrationTest)
@@ -65,7 +53,8 @@ val allItPhases = "tit->it;it->it;it->compile;compile->compile"
 lazy val TemplateTest = config("tt") extend Test
 lazy val TemplateItTest = config("tit") extend IntegrationTest
 
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
-  tests map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
-  }
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = tests map { test =>
+  val forkOptions =
+    ForkOptions().withRunJVMOptions(Vector("-Dtest.name=" + test.name))
+  Group(test.name, Seq(test), SubProcess(config = forkOptions))
+}
