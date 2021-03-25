@@ -30,8 +30,8 @@ class RtiEyuSpec extends PlaySpec {
 
         val rtiEyuList: List[RtiEyu] = List(rtiEyu2, rtiEyu3, rtiEyu1)
         val sortedList = rtiEyuList.sorted
-        sortedList.head.rcvdDate mustBe (new LocalDate(2015, 1, 1))
-        sortedList.last.rcvdDate mustBe (new LocalDate(2015, 3, 1))
+        sortedList.head.rcvdDate mustBe new LocalDate(2015, 1, 1)
+        sortedList.last.rcvdDate mustBe new LocalDate(2015, 3, 1)
       }
     }
   }

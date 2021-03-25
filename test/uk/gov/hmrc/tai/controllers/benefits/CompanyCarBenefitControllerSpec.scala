@@ -215,5 +215,5 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
   }
 
   def employmentSeqNum = 10
-  val sampleVersion = Some(1)
+  val sampleVersion: Option[Int] = Some(1)
 }

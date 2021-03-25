@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsValue, Json}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 
 import scala.util.Random
 
@@ -154,6 +154,6 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
     }
   }
 
-  val nino = new Generator(new Random).nextNino
+  val nino: Nino = new Generator(new Random).nextNino
 
 }

@@ -35,17 +35,16 @@ object QaData {
       .map { x =>
         Json.fromJson[T](x) match {
           case JsSuccess(r, _) => r
-          case JsError(e) => {
+          case JsError(e) =>
             throw new IllegalArgumentException(
               e.map(_.toString).mkString("\n")
             )
-          }
         }
       }
 
-  def obj(year: String)(nino: String) = json(year)(nino).as[RtiData]
+  def obj(year: String)(nino: String): RtiData = json(year)(nino).as[RtiData]
 
-  def paymentDetailsForYear(year: String)(fileName: String) = json(year)(fileName)
+  def paymentDetailsForYear(year: String)(fileName: String): JsValue = json(year)(fileName)
 
   def json(year: String): Map[String, JsValue] = {
     val dir = new File(s"test/data/rti/$year")

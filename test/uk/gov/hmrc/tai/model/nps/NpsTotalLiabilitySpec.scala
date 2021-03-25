@@ -98,11 +98,8 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     "an allowance is not requested " should {
 
       "generate an deduction adjustment" in {
-        val adjustment = SUT.getCodingAdjustment(
-          relief = BigDecimal(3434),
-          taxCodeDetails = Some(taxCodeDetails),
-          compType = 2,
-          isAllow = false)
+        val adjustment =
+          SUT.getCodingAdjustment(relief = BigDecimal(3434), taxCodeDetails = Some(taxCodeDetails), compType = 2)
 
         adjustment mustBe Some(Adjustment(32.30, 3434))
       }
@@ -312,52 +309,52 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
       "extract only those iabd's classified as IADB_TYPE_OTHER_PENSIONS" in {
         val result = SUT.otherPensions().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IADB_TYPE_OTHER_PENSIONS)
+        result.toSet must contain theSameElementsAs TaiConstants.IADB_TYPE_OTHER_PENSIONS
       }
 
       "extract only those iabd's classified as IABD_TYPE_BLIND_PERSON" in {
         val result = SUT.blindPerson().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_BLIND_PERSON)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_BLIND_PERSON
       }
 
       "extract only those iabd's classified as IABD_TYPE_EXPENSES" in {
         val result = SUT.expenses().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_EXPENSES)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_EXPENSES
       }
 
       "extract only those iabd's classified as IABD_TYPE_GIFT_RELATED" in {
         val result = SUT.giftRelated().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_GIFT_RELATED)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_GIFT_RELATED
       }
 
       "extract only those iabd's classified as IABD_TYPE_JOB_EXPENSES" in {
         val result = SUT.jobExpenses().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_JOB_EXPENSES)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_JOB_EXPENSES
       }
 
       "extract only those iabd's classified as IABD_TYPE_MISCELLANEOUS" in {
         val result = SUT.miscellaneous().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_MISCELLANEOUS)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_MISCELLANEOUS
       }
 
       "extract only those iabd's classified as IABD_TYPE_PENSION_CONTRIBUTIONS" in {
         val result = SUT.pensionContributions().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_PENSION_CONTRIBUTIONS
       }
 
       "extract only those iabd's classified as IABD_TYPE_DIVIDENDS" in {
         val result = SUT.dividends().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_DIVIDENDS)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_DIVIDENDS
       }
 
       "extract only those iabd's classified as IABD_TYPE_BANK_INTEREST" in {
         val result = SUT.bankinterest().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_BANK_INTEREST)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_BANK_INTEREST
       }
 
       "extract only those iabd's classified as IABD_TYPE_UNTAXED_INTEREST" in {
         val result = SUT.untaxedinterest().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (TaiConstants.IABD_TYPE_UNTAXED_INTEREST)
+        result.toSet must contain theSameElementsAs TaiConstants.IABD_TYPE_UNTAXED_INTEREST
       }
 
       "extract only those iabd's classified as ForeignInterestAndOtherSavings.code" in {
@@ -372,10 +369,10 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
       "extract only those iabd's classified as 'other'" in {
         val result = SUT.other().get.iabdSummaries.get.map(_.`type`)
-        result.toSet must contain theSameElementsAs (List(
+        result.toSet must contain theSameElementsAs List(
           Some(BankOrBuildingSocietyInterest.code),
           Some(UkDividend.code),
-          Some(UntaxedInterest.code)))
+          Some(UntaxedInterest.code))
       }
     }
   }
@@ -636,7 +633,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     val overflow: List[Option[Int]] = if (grouped.size > 6) grouped.last else Nil
 
     NpsTotalLiability(
-      nonSavings = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(0))))))),
+      nonSavings = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped.head)))))),
       untaxedInterest = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(1))))))),
       bankInterest = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(2))))))),
       ukDividends = Some(NpsTax(totalIncome = Some(NpsComponent(iabdSummaries = Some(iadbList(grouped(3))))))),

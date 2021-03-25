@@ -18,9 +18,6 @@ package uk.gov.hmrc.tai.model
 
 import data.NpsData
 import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.tai.calculators.TaxCalculator
-import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxModelFactory}
-import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsIabdSummary, NpsTax, NpsTotalLiability}
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.util.TaiConstants
 
@@ -41,7 +38,7 @@ class TaxSummaryModelSpec extends UnitSpec {
         npsTaxAccount.totalLiability.get.nonSavings.isDefined shouldBe true
         val nonSavings = npsTaxAccount.totalLiability.get.nonSavings.get
         val iabdSummary = nonSavings.totalIncome.get.iabdSummaries.get
-        val noneCoded = iabdSummary.find(iabd => iabd.`type` == Some(IabdType.NonCodedIncome.code))
+        val noneCoded = iabdSummary.find(iabd => iabd.`type`.contains(IabdType.NonCodedIncome.code))
         noneCoded.isDefined shouldBe false
 
         val taiTaxDetails = npsTaxAccount.toTaxSummary(1, npsEmployment)
@@ -65,7 +62,7 @@ class TaxSummaryModelSpec extends UnitSpec {
         npsTaxAccount.totalLiability.get.nonSavings.isDefined shouldBe true
         val nonSavings = npsTaxAccount.totalLiability.get.nonSavings.get
         val iabdSummary = nonSavings.totalIncome.get.iabdSummaries.get
-        val noneCoded = iabdSummary.find(iabd => iabd.`type` == Some(IabdType.NonCodedIncome.code))
+        val noneCoded = iabdSummary.find(iabd => iabd.`type`.contains(IabdType.NonCodedIncome.code))
         noneCoded.isDefined shouldBe true
         noneCoded.get.`type` shouldBe Some(IabdType.NonCodedIncome.code)
 
@@ -139,7 +136,7 @@ class TaxSummaryModelSpec extends UnitSpec {
   "withMciRule" should {
     "return GateKeeper with Manual Correspondence Indicator data" in {
       val gateKeeper = GateKeeper(
-        true,
+        gateKeepered = true,
         List(
           GateKeeperRule(
             Some(TaiConstants.mciGateKeeperType),

@@ -35,7 +35,7 @@ import scala.util.Random
 
 class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants {
 
-  val baseTaxCodeIncome = TaxCodeIncome(
+  val baseTaxCodeIncome: TaxCodeIncome = TaxCodeIncome(
     EmploymentIncome,
     Some(1),
     BigDecimal(0),
@@ -749,10 +749,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           employerName = "Employer 2",
           dateOfCalculation = previousStartDateInPrevYear,
           payrollNumber = Some(payrollNumberPrev))
-        val currentTaxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(
-          taxCode = "1185L",
-          dateOfCalculation = currentStartDate,
-          payrollNumber = Some(payrollNumberCurr))
+        val currentTaxCodeRecord1 = TaxCodeRecordFactory
+          .createPrimaryEmployment(dateOfCalculation = currentStartDate, payrollNumber = Some(payrollNumberCurr))
 
         val taxCodeHistory = TaxCodeHistory(
           nino.withoutSuffix,
@@ -971,10 +969,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           employerName = "Employer 2",
           dateOfCalculation = previousStartDateInPrevYear,
           payrollNumber = Some(payrollNumberPrev))
-        val currentTaxCodeRecord1 = TaxCodeRecordFactory.createPrimaryEmployment(
-          taxCode = "1185L",
-          dateOfCalculation = currentStartDate,
-          payrollNumber = Some(payrollNumberCurr))
+        val currentTaxCodeRecord1 = TaxCodeRecordFactory
+          .createPrimaryEmployment(dateOfCalculation = currentStartDate, payrollNumber = Some(payrollNumberCurr))
 
         val taxCodeHistory = TaxCodeHistory(
           nino.withoutSuffix,
@@ -1213,7 +1209,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(false, Seq("1185L"), Seq("1185L"))
+        val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1234,7 +1230,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(false, Seq("1185L"), Seq("1185L"))
+        val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1279,7 +1275,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         val confirmedTaxCodes = Seq("1185L", "1155L", "1175L", "1195L").sorted
         val unconfirmedTaxCodes = Seq("1155L", "1175L", "1185L", "1195L").sorted
 
-        val expectedResult = TaxCodeMismatch(false, unconfirmedTaxCodes, confirmedTaxCodes)
+        val expectedResult = TaxCodeMismatch(mismatch = false, unconfirmedTaxCodes, confirmedTaxCodes)
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1296,7 +1292,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(true, Seq("1185L"), Seq())
+        val expectedResult = TaxCodeMismatch(mismatch = true, Seq("1185L"), Seq())
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1317,7 +1313,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(false, Seq("1185L"), Seq("1185L"))
+        val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector, auditor, incomeService)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1351,7 +1347,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(incomeService.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())).thenReturn(Future.successful(taxCodeHistory))
 
-        val expectedResult = TaxCodeMismatch(true, Seq("1000LX"), Seq("1185L"))
+        val expectedResult = TaxCodeMismatch(mismatch = true, Seq("1000LX"), Seq("1185L"))
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1395,7 +1391,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         val confirmedTaxCodes = Seq("1185L", "1155L", "1175L", "1195L").sorted
         val unconfirmedTaxCodes = Seq("1155L", "1175L", "1195L").sorted
 
-        val expectedResult = TaxCodeMismatch(true, unconfirmedTaxCodes, confirmedTaxCodes)
+        val expectedResult = TaxCodeMismatch(mismatch = true, unconfirmedTaxCodes, confirmedTaxCodes)
 
         val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
         Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1420,7 +1416,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
       val unconfirmedTaxCodes = Seq("1155L", "1175L", "1195L").sorted
 
-      val expectedResult = TaxCodeMismatch(true, unconfirmedTaxCodes, Seq.empty)
+      val expectedResult = TaxCodeMismatch(mismatch = true, unconfirmedTaxCodes, Seq.empty)
 
       val service: TaxCodeChangeServiceImpl = createService(taxCodeChangeConnector)
       Await.result(service.taxCodeMismatch(nino), 5.seconds) mustEqual expectedResult
@@ -1497,7 +1493,17 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val dateOfCalculation = TaxYear().start.minusMonths(1)
         val taxCodeRecords = Seq(
-          TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", true, dateOfCalculation, Some("123"), false, Primary))
+          TaxCodeRecord(
+            TaxYear(),
+            1,
+            "1185L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("123"),
+            pensionIndicator = false,
+            Primary))
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecords)
 
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())) thenReturn Future.successful(taxCodeHistory)
@@ -1505,7 +1511,16 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         val latestTaxCodes =
           Await.result(createService(taxCodeChangeConnector).latestTaxCodes(nino, currentTaxYear), 5.seconds)
         val expectedResult = Seq(
-          TaxCodeSummary(1, "1185L", "", TaxYear().start, currentTaxYear.end, "Employer 1", Some("123"), false, true))
+          TaxCodeSummary(
+            1,
+            "1185L",
+            "",
+            TaxYear().start,
+            currentTaxYear.end,
+            "Employer 1",
+            Some("123"),
+            pensionIndicator = false,
+            primary = true))
 
         latestTaxCodes mustEqual expectedResult
       }
@@ -1514,7 +1529,17 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val dateOfCalculation = previousTaxYear.start.minusMonths(1)
         val taxCodeRecords = Seq(
-          TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", true, dateOfCalculation, Some("123"), false, Primary))
+          TaxCodeRecord(
+            TaxYear(),
+            1,
+            "1185L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("123"),
+            pensionIndicator = false,
+            Primary))
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecords)
 
         when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())) thenReturn Future.successful(taxCodeHistory)
@@ -1530,8 +1555,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
             previousTaxYear.end,
             "Employer 1",
             Some("123"),
-            false,
-            true))
+            pensionIndicator = false,
+            primary = true))
 
         latestTaxCodes mustEqual expectedResult
       }
@@ -1543,7 +1568,17 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val dateOfCalculation = previousTaxYear.start.minusMonths(1)
         val taxCodeRecord1 =
-          TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", true, dateOfCalculation, Some("123"), false, Primary)
+          TaxCodeRecord(
+            TaxYear(),
+            1,
+            "1185L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("123"),
+            pensionIndicator = false,
+            Primary)
         val taxCodeRecordWithEndDate1 = TaxCodeSummary(
           1,
           "1185L",
@@ -1552,8 +1587,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 1",
           Some("123"),
-          false,
-          true
+          pensionIndicator = false,
+          primary = true
         )
 
         val taxCodeRecordList = Seq(taxCodeRecord1)
@@ -1572,9 +1607,29 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
       "there are multiple tax codes with the same date of calculation under a single employer" in {
         val dateOfCalculation = previousTaxYear.start.minusMonths(1)
         val taxCodeRecord1 =
-          TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", true, dateOfCalculation, Some("123"), false, Primary)
+          TaxCodeRecord(
+            TaxYear(),
+            1,
+            "1185L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("123"),
+            pensionIndicator = false,
+            Primary)
         val taxCodeRecord2 =
-          TaxCodeRecord(TaxYear(), 2, "1085L", "", "Employer 1", true, dateOfCalculation, Some("321"), false, Secondary)
+          TaxCodeRecord(
+            TaxYear(),
+            2,
+            "1085L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("321"),
+            pensionIndicator = false,
+            Secondary)
 
         val taxCodeRecordWithEndDate1 = TaxCodeSummary(
           1,
@@ -1584,8 +1639,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 1",
           Some("123"),
-          false,
-          true
+          pensionIndicator = false,
+          primary = true
         )
         val taxCodeRecordWithEndDate2 = TaxCodeSummary(
           2,
@@ -1595,8 +1650,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 1",
           Some("321"),
-          false,
-          false
+          pensionIndicator = false,
+          primary = false
         )
 
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
@@ -1618,9 +1673,29 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         val dateOfCalculation = previousTaxYear.start.minusMonths(1)
 
         val taxCodeRecord1 =
-          TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", true, dateOfCalculation, Some("123"), false, Primary)
+          TaxCodeRecord(
+            TaxYear(),
+            1,
+            "1185L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            dateOfCalculation,
+            Some("123"),
+            pensionIndicator = false,
+            Primary)
         val taxCodeRecord2 =
-          TaxCodeRecord(TaxYear(), 2, "1085L", "", "Employer 1", true, date, Some("321"), false, Secondary)
+          TaxCodeRecord(
+            TaxYear(),
+            2,
+            "1085L",
+            "",
+            "Employer 1",
+            operatedTaxCode = true,
+            date,
+            Some("321"),
+            pensionIndicator = false,
+            Secondary)
 
         val taxCodeRecordWithEndDate1 = TaxCodeSummary(
           1,
@@ -1630,8 +1705,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 1",
           Some("123"),
-          false,
-          true
+          pensionIndicator = false,
+          primary = true
         )
 
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
@@ -1656,10 +1731,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "1L",
           "",
           "Employer 1",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusMonths(2),
           Some("123"),
-          false,
+          pensionIndicator = false,
           Primary)
         val taxCodeRecord2 = TaxCodeRecord(
           TaxYear(),
@@ -1667,10 +1742,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "2L",
           "",
           "Employer 1",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusMonths(3),
           Some("321"),
-          false,
+          pensionIndicator = false,
           Secondary)
         val taxCodeRecord3 = TaxCodeRecord(
           TaxYear(),
@@ -1678,10 +1753,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "3L",
           "",
           "Employer 2",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusMonths(5),
           Some("321"),
-          false,
+          pensionIndicator = false,
           Secondary)
         val taxCodeRecord4 = TaxCodeRecord(
           TaxYear(),
@@ -1689,10 +1764,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "4L",
           "",
           "Employer 2",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusMonths(5),
           Some("321"),
-          false,
+          pensionIndicator = false,
           Secondary)
         val taxCodeRecord5 = TaxCodeRecord(
           TaxYear(),
@@ -1700,10 +1775,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "5L",
           "",
           "Employer 3",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusMonths(5),
           Some("321"),
-          false,
+          pensionIndicator = false,
           Secondary)
         val taxCodeRecord6 = TaxCodeRecord(
           TaxYear(),
@@ -1711,10 +1786,10 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           "6L",
           "",
           "Employer 3",
-          true,
+          operatedTaxCode = true,
           dateOfCalculation.minusDays(4),
           Some("321"),
-          false,
+          pensionIndicator = false,
           Secondary)
 
         val taxCodeRecordWithEndDate1 = TaxCodeSummary(
@@ -1725,8 +1800,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 1",
           Some("123"),
-          false,
-          true
+          pensionIndicator = false,
+          primary = true
         )
         val taxCodeRecordWithEndDate3 = TaxCodeSummary(
           3,
@@ -1736,8 +1811,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 2",
           Some("321"),
-          false,
-          false
+          pensionIndicator = false,
+          primary = false
         )
         val taxCodeRecordWithEndDate4 = TaxCodeSummary(
           4,
@@ -1747,8 +1822,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 2",
           Some("321"),
-          false,
-          false
+          pensionIndicator = false,
+          primary = false
         )
         val taxCodeRecordWithEndDate6 = TaxCodeSummary(
           6,
@@ -1758,8 +1833,8 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           endOfTaxCode,
           "Employer 3",
           Some("321"),
-          false,
-          false
+          pensionIndicator = false,
+          primary = false
         )
 
         val taxCodeRecordList =
@@ -1783,7 +1858,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
   }
 
   val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
-  val auditor = mock[Auditor]
+  val auditor: Auditor = mock[Auditor]
   val incomeService: IncomeService = mock[IncomeService]
 
   private def createService(

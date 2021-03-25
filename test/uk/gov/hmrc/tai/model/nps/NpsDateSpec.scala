@@ -60,11 +60,10 @@ class NpsDateSpec extends PlaySpec {
       "JsNull is given" in {
         val p = NpsDate.reads.reads(JsNull)
         p match {
-          case error: JsError => {
+          case error: JsError =>
             val valErrors: Seq[JsonValidationError] = error.errors.head._2
             valErrors.size mustBe 1
             valErrors.head.message mustBe "Cannot convert null to NpsDate"
-          }
           case _ => fail("parsing of null should result in an error")
         }
       }

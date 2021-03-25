@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsString, JsSuccess, Json}
+import play.api.libs.json.{JsNumber, JsString, Json}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 

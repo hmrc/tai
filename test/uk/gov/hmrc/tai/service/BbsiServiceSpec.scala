@@ -174,7 +174,7 @@ class BbsiServiceSpec extends BaseSpec {
 
     "internally generate an interest update version of the Incorrect Bank Account iform" in {
 
-      val iformFunctionCaptor = ArgumentCaptor.forClass(classOf[(Person) => Future[String]])
+      val iformFunctionCaptor = ArgumentCaptor.forClass(classOf[Person => Future[String]])
 
       val mockBbsiRepository = mock[BbsiRepository]
       when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
@@ -193,7 +193,7 @@ class BbsiServiceSpec extends BaseSpec {
       Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
 
       val fakePerson =
-        Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
+        Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""))
       val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
 
       testIform must include("Correct amount of gross interest")
@@ -201,7 +201,7 @@ class BbsiServiceSpec extends BaseSpec {
       testIform must include("Tell us what is incorrect and why")
       testIform must include("My gross interest is wrong")
 
-      testIform must not include ("I never had this account")
+      testIform must not include "I never had this account"
     }
   }
 

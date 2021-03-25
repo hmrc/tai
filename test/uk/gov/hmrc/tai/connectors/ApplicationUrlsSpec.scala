@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import org.mockito.Mockito.when
+import org.mockito.stubbing.OngoingStubbing
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -24,10 +25,10 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 class ApplicationUrlsSpec extends BaseSpec {
 
-  val mockConfigNps = mock[NpsConfig]
-  val mockConfigDes = mock[DesConfig]
-  val mockConfigFileUpload = mock[FileUploadConfig]
-  val mockFeatureToggleConfig = mock[FeatureTogglesConfig]
+  val mockConfigNps: NpsConfig = mock[NpsConfig]
+  val mockConfigDes: DesConfig = mock[DesConfig]
+  val mockConfigFileUpload: FileUploadConfig = mock[FileUploadConfig]
+  val mockFeatureToggleConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
 
   when(mockConfigNps.baseURL).thenReturn("")
   when(mockConfigDes.baseURL).thenReturn("")
@@ -36,7 +37,7 @@ class ApplicationUrlsSpec extends BaseSpec {
   val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes, mockFeatureToggleConfig)
   val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
 
-  def featureToggle(desEnabled: Boolean, confirmedAPIEnabled: Boolean) = {
+  def featureToggle(desEnabled: Boolean, confirmedAPIEnabled: Boolean): OngoingStubbing[Boolean] = {
     when(mockFeatureToggleConfig.desEnabled).thenReturn(desEnabled)
     when(mockFeatureToggleConfig.confirmedAPIEnabled).thenReturn(confirmedAPIEnabled)
   }
@@ -129,7 +130,7 @@ class ApplicationUrlsSpec extends BaseSpec {
     "toggled for calculation" must {
       "return the correct DES url" when {
         "given argument values" ignore {
-          featureToggle(true, false)
+          featureToggle(desEnabled = true, confirmedAPIEnabled = false)
           taxAccountUrls
             .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
         }
@@ -137,7 +138,7 @@ class ApplicationUrlsSpec extends BaseSpec {
 
       "return the correct NPS url" when {
         "given argument values" ignore {
-          featureToggle(false, false)
+          featureToggle(desEnabled = false, confirmedAPIEnabled = false)
           taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
         }
       }
@@ -146,14 +147,14 @@ class ApplicationUrlsSpec extends BaseSpec {
     "toggled for confirmed" must {
       "return the correct DES url" when {
         "given argument values" in {
-          featureToggle(true, true)
+          featureToggle(desEnabled = true, confirmedAPIEnabled = true)
           taxAccountUrls
             .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
         }
       }
       "return the correct NPS url" when {
         "given argument values" in {
-          featureToggle(false, true)
+          featureToggle(desEnabled = false, confirmedAPIEnabled = true)
           taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
         }
       }

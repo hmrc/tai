@@ -619,10 +619,10 @@ class BenefitsServiceSpec extends BaseSpec {
     NonCashBenefit
   )
 
-  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100) =
+  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[CodingComponent] =
     typesList.map(benefitType => CodingComponent(benefitType, Some(126), amount, "some other description"))
 
-  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100) =
+  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[GenericBenefit] =
     typesList.map(benefitType => GenericBenefit(benefitType, Some(126), amount))
 
   val taxFreeAmountComponentsWithoutBenefits = Seq(

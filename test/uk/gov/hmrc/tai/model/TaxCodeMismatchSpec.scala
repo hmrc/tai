@@ -24,7 +24,7 @@ class TaxCodeMismatchSpec extends PlaySpec {
       val input = Seq("222", "111")
       val sortedList = Seq("111", "222")
 
-      val expected = TaxCodeMismatch(false, sortedList, sortedList)
+      val expected = TaxCodeMismatch(mismatch = false, sortedList, sortedList)
       TaxCodeMismatch(input, input) mustBe expected
     }
 
@@ -32,7 +32,7 @@ class TaxCodeMismatchSpec extends PlaySpec {
       val input1 = Seq("123", "456")
       val input2 = Seq("123", "789")
 
-      val expected = TaxCodeMismatch(true, input1.sorted, input2.sorted)
+      val expected = TaxCodeMismatch(mismatch = true, input1.sorted, input2.sorted)
       TaxCodeMismatch(input1, input2) mustBe expected
     }
   }

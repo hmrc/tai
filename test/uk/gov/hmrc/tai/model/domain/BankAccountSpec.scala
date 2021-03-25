@@ -43,7 +43,7 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
 
         val bankAccounts = jsonBankAccounts.as[Seq[BankAccount]]
         bankAccounts.size mustBe 1
-        val bankAccount1 = bankAccounts(0)
+        val bankAccount1 = bankAccounts.head
 
         bankAccount1.accountNumber mustBe None
         bankAccount1.bankName mustBe None
@@ -69,7 +69,7 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
 
       val bankAccounts = jsonBankAccounts.as[Seq[BankAccount]]
       bankAccounts.size mustBe 2
-      val bankAccount1 = bankAccounts(0)
+      val bankAccount1 = bankAccounts.head
 
       bankAccount1.accountNumber mustBe None
       bankAccount1.bankName mustBe None
@@ -106,7 +106,7 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
 
       bankAccounts.size mustBe 1
 
-      val bankAccount1 = bankAccounts(0)
+      val bankAccount1 = bankAccounts.head
 
       bankAccount1.accountNumber mustBe Some(accountNo)
       bankAccount1.bankName mustBe Some(bankName)

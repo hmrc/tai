@@ -50,7 +50,14 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         CompanyCarBenefit(
           empSeqNumber,
           3333,
-          Seq(CompanyCar(carSeqNumber, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
+          Seq(
+            CompanyCar(
+              carSeqNumber,
+              "company car",
+              hasActiveFuelBenefit = false,
+              Some(LocalDate.parse("2014-06-10")),
+              None,
+              None))))
 
       val body: String = Json
         .arr(Json.obj(
@@ -79,10 +86,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
             CompanyCar(
               carSeqNumber,
               "company car",
-              true,
+              hasActiveFuelBenefit = true,
               Some(LocalDate.parse("2014-06-10")),
               Some(LocalDate.parse("2017-05-02")),
-              None))))
+              None))
+        ))
 
       val rawResponse: String =
         Json

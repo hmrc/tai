@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.LocalDate
+import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.enums.IncomeType._
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.util.TaiConstants
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live, PotentiallyCeased}
+import uk.gov.hmrc.tai.util.TaiConstants
 
 /**
   * Created by dev01 on 08/07/14.
@@ -87,9 +86,9 @@ class TaxModelSpec extends UnitSpec {
       personalAllowance.componentType shouldBe 11
       personalAllowance.description shouldBe "npsDescription"
       personalAllowance.iabdSummaries.size shouldBe 1
-      personalAllowance.iabdSummaries.lift(0).get.amount shouldBe BigDecimal(333.66)
-      personalAllowance.iabdSummaries.lift(0).get.iabdType shouldBe 12
-      personalAllowance.iabdSummaries.lift(0).get.description shouldBe "npsIabdSummaryDesc"
+      personalAllowance.iabdSummaries.headOption.get.amount shouldBe BigDecimal(333.66)
+      personalAllowance.iabdSummaries.headOption.get.iabdType shouldBe 12
+      personalAllowance.iabdSummaries.headOption.get.description shouldBe "npsIabdSummaryDesc"
     }
   }
 

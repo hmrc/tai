@@ -51,7 +51,7 @@ class RtiEmploymentSpec extends PlaySpec {
     }
   }
 
-  def sut(paymentsInput: List[RtiPayment]) =
+  def sut(paymentsInput: List[RtiPayment]): RtiEmployment =
     RtiEmployment(
       officeRefNo = "officeRefNo",
       payeRef = "payeRef",

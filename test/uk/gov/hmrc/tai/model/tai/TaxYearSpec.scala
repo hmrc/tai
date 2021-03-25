@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model.tai
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsString, JsSuccess, Json}
 
 class TaxYearSpec extends PlaySpec {
 

@@ -24,13 +24,13 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 class EmploymentsSpec extends PlaySpec {
 
   val currentTaxYear: TaxYear = TaxYear()
-  val previousTaxYear = currentTaxYear.prev
-  val now = LocalDate.now()
+  val previousTaxYear: TaxYear = currentTaxYear.prev
+  val now: LocalDate = LocalDate.now()
 
-  val annualAccountCTY = createAnnualAccount()
-  val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
+  val annualAccountCTY: AnnualAccount = createAnnualAccount()
+  val annualAccountPTY: AnnualAccount = createAnnualAccount(taxYear = previousTaxYear)
 
-  val employment1 = Employment(
+  val employment1: Employment = Employment(
     "TEST",
     Live,
     Some("12345"),
@@ -41,8 +41,8 @@ class EmploymentsSpec extends PlaySpec {
     "0",
     1,
     Some(100),
-    false,
-    false
+    hasPayrolledBenefit = false,
+    receivingOccupationalPension = false
   )
 
   def createAnnualAccount(
@@ -141,8 +141,8 @@ class EmploymentsSpec extends PlaySpec {
             "0",
             2,
             None,
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false)
 
         val employment1WithPTYAccount =
           Employment(
@@ -156,8 +156,8 @@ class EmploymentsSpec extends PlaySpec {
             "0",
             2,
             None,
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false)
 
         val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
         val employment2 =
@@ -172,8 +172,8 @@ class EmploymentsSpec extends PlaySpec {
             "01",
             2,
             None,
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false)
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
 
@@ -199,8 +199,8 @@ class EmploymentsSpec extends PlaySpec {
             "0",
             2,
             None,
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false)
 
         val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
         val employment2 =
@@ -215,8 +215,8 @@ class EmploymentsSpec extends PlaySpec {
             "01",
             2,
             None,
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false)
 
         val unifiedEmployment = Employments(Seq(employment1))
         val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
@@ -247,8 +247,9 @@ class EmploymentsSpec extends PlaySpec {
           "0",
           2,
           None,
-          false,
-          false)
+          hasPayrolledBenefit = false,
+          receivingOccupationalPension = false
+        )
 
       val employment1WithUpdatedStatus =
         Employment(
@@ -262,8 +263,8 @@ class EmploymentsSpec extends PlaySpec {
           "0",
           2,
           None,
-          false,
-          false)
+          hasPayrolledBenefit = false,
+          receivingOccupationalPension = false)
 
       val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
       val employment2 =
@@ -278,8 +279,8 @@ class EmploymentsSpec extends PlaySpec {
           "01",
           2,
           None,
-          false,
-          false)
+          hasPayrolledBenefit = false,
+          receivingOccupationalPension = false)
 
       val expectedEmployments =
         employment1.copy(annualAccounts = Seq(annualAccountCTYAvailable, annualAccountPTYTempUnavailable))

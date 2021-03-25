@@ -31,9 +31,9 @@ import scala.language.postfixOps
 
 class PersonRepositorySpec extends BaseSpec {
 
-  val address = Address("line1", "line2", "line3", "postcode", "country")
+  val address: Address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
-  val dateOfBirth = LocalDate.parse("2017-02-01")
+  val dateOfBirth: LocalDate = LocalDate.parse("2017-02-01")
 
   def createSUT(cacheConnector: CacheConnector, citizenDetailsUrls: CitizenDetailsUrls, httpHandler: HttpHandler) =
     new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
@@ -44,7 +44,7 @@ class PersonRepositorySpec extends BaseSpec {
 
       "cached data is present for the requested nino" in {
 
-        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address)
 
         val mockCacheConnector = mock[CacheConnector]
         val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
@@ -70,7 +70,7 @@ class PersonRepositorySpec extends BaseSpec {
 
       "no cache data is currently held for the requested nino" in {
 
-        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address)
         implicit val formats = PersonFormatter.personMongoFormat
 
         val mockCacheConnector = mock[CacheConnector]
@@ -108,9 +108,9 @@ class PersonRepositorySpec extends BaseSpec {
             "address" -> Json.obj()
           )
         )
-        val expectedPersonFromPartialJson = Person(nino, "", "", None, Address("", "", "", "", ""), false, false)
+        val expectedPersonFromPartialJson = Person(nino, "", "", None, Address("", "", "", "", ""))
 
-        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address)
         implicit val formats = PersonFormatter.personMongoFormat
 
         val mockCacheConnector = mock[CacheConnector]

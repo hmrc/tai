@@ -64,7 +64,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
     "return 200" when {
       "success response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
@@ -77,7 +77,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
     "return 500" when {
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(500)))
+          .thenReturn(Future.successful(HttpResponse(500, "")))
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 

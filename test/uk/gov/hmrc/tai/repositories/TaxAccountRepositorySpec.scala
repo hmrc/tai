@@ -33,12 +33,12 @@ import scala.language.postfixOps
 
 class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConstants {
 
-  val metrics = mock[Metrics]
-  val cacheConfig = mock[CacheMetricsConfig]
-  val iabdConnector = mock[IabdConnector]
-  val cacheConnector = mock[CacheConnector]
+  val metrics: Metrics = mock[Metrics]
+  val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+  val iabdConnector: IabdConnector = mock[IabdConnector]
+  val cacheConnector: CacheConnector = mock[CacheConnector]
 
-  val taxAccountConnector = mock[TaxAccountConnector]
+  val taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
 
   "updateTaxCodeAmount" should {
     "update tax code amount" in {

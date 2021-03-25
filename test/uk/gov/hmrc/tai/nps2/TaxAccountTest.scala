@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hmrc.nps2
+package uk.gov.hmrc.tai.nps2
 
 import org.scalatest._
 import java.io.File
@@ -34,11 +34,11 @@ class TaxAccountTest extends WordSpec with Matchers with NpsFormatter {
       obj  <- Try(json.as[TaxAccount])
     } yield obj
 
-  val qaData = {
+  val qaData: Map[String, Try[TaxAccount]] = {
     new java.io.File("test/data/QAData")
   }.listFiles.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
 
-  val otherData = {
+  val otherData: Map[String, Try[TaxAccount]] = {
     val files = {
       new java.io.File("test/data")
     }.listFiles

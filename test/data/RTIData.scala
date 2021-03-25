@@ -20,7 +20,7 @@ import java.io.File
 
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -33,7 +33,7 @@ object RTIData {
 
   private val basePath = "test/resources/data/"
 
-  val nino = new Generator(new Random).nextNino
+  val nino: Nino = new Generator(new Random).nextNino
 
   private def getRTIData(fileName: String): RtiData = {
     val jsonFilePath = basePath + fileName
@@ -53,9 +53,9 @@ object RTIData {
     result.get
   }
 
-  def getRtiData = getRTIData(RtiData)
+  def getRtiData: RtiData = getRTIData(RtiData)
 
-  def updatePmtDateToThisYear(oldData: RtiData) = oldData.copy(
+  def updatePmtDateToThisYear(oldData: RtiData): RtiData = oldData.copy(
     employments = oldData.employments.map { employment =>
       employment.copy(payments = employment.payments.map { inYear =>
         //We can finally try to change the value for the payment data

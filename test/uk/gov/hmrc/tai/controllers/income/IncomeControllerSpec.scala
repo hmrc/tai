@@ -44,8 +44,8 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
     "links" -> Json.arr()
   )
 
-  val mockIncomeService = mock[IncomeService]
-  val mockEmploymentService = mock[EmploymentService]
+  val mockIncomeService: IncomeService = mock[IncomeService]
+  val mockEmploymentService: EmploymentService = mock[EmploymentService]
 
   val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
     TaxCodeIncome(

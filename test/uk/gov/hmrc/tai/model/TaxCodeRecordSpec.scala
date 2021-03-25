@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model
 
+import org.joda.time.LocalDate
 import org.scalatest.MustMatchers
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -42,16 +43,16 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
     }
   }
 
-  val cyMinus1 = TaxYear().prev
+  val cyMinus1: TaxYear = TaxYear().prev
 
-  val mostRecentStartDate = cyMinus1.start.plusDays(2)
-  val mostRecentEndDate = cyMinus1.end
-  val previousStartDate = cyMinus1.start
-  val previousEndDate = mostRecentStartDate.minusDays(1)
-  val previousStartDateInPrevYear = cyMinus1.start.minusDays(2)
+  val mostRecentStartDate: LocalDate = cyMinus1.start.plusDays(2)
+  val mostRecentEndDate: LocalDate = cyMinus1.end
+  val previousStartDate: LocalDate = cyMinus1.start
+  val previousEndDate: LocalDate = mostRecentStartDate.minusDays(1)
+  val previousStartDateInPrevYear: LocalDate = cyMinus1.start.minusDays(2)
   val payrollNumber = "12345"
 
-  val olderTaxCodeRecord = TaxCodeRecord(
+  val olderTaxCodeRecord: TaxCodeRecord = TaxCodeRecord(
     TaxYear(),
     1,
     "1185L",
@@ -64,7 +65,7 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
     Primary
   )
 
-  val mostRecentTaxCodeRecord = TaxCodeRecord(
+  val mostRecentTaxCodeRecord: TaxCodeRecord = TaxCodeRecord(
     TaxYear(),
     2,
     "1000L",
@@ -79,8 +80,8 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustM
 
   private val payrollNumber2 = "999"
 
-  val recordEmployer2 = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
+  val recordEmployer2: TaxCodeRecord = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
 
-  val recordNoPayrollPrimary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
-  val recordNoPayrollSecondary = mostRecentTaxCodeRecord.copy(payrollNumber = None)
+  val recordNoPayrollPrimary: TaxCodeRecord = mostRecentTaxCodeRecord.copy(payrollNumber = None)
+  val recordNoPayrollSecondary: TaxCodeRecord = mostRecentTaxCodeRecord.copy(payrollNumber = None)
 }

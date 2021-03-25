@@ -21,11 +21,11 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.json.JodaWrites._
 import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
-import uk.gov.hmrc.tai.model.domain.income.OtherBasisOperation
+import uk.gov.hmrc.tai.model.domain.income.{OtherBasisOperation, TaxCodeIncome}
 
 class TaxCodeIncomeSpec extends PlaySpec {
 
-  val taxCodeIncome = TaxCodeIncomeFactory.create
+  val taxCodeIncome: TaxCodeIncome = TaxCodeIncomeFactory.create
 
   "TaxCodeIncomeSource taxCodeWithEmergencySuffix" must {
     "return the taxCode WITH X suffix" when {

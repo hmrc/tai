@@ -18,11 +18,10 @@ package uk.gov.hmrc.tai.metrics
 
 import com.codahale.metrics.{Counter, MetricRegistry, Timer}
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.{times, verify, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.APITypes
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.tai.config.CacheMetricsConfig
 
 class MetricsSpec extends PlaySpec with MockitoSugar {
 
@@ -62,7 +61,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
 
       sut.incrementSuccessCounter(APITypes.CompanyCarAPI)
 
-      verify(mockCounter, times(1)).inc
+      verify(mockCounter, times(1)).inc()
     }
   }
 }

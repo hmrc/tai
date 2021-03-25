@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import data.{NpsData, RTIData}
+import data.NpsData
 import org.joda.time.{DateTime, LocalDate}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.nps2.{DeductionType, IabdType, TaxAccount, TaxDetail, TaxObject}
 import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model.{TaxBand, TaxCodeComponent, _}
-import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import scala.util.Random
@@ -704,7 +704,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -729,7 +737,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -754,7 +770,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -767,7 +791,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -792,7 +824,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -817,7 +857,15 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, npsEmployments, Nil, false)
+        val result = sut.getIncomeData(
+          Some(employments),
+          None,
+          None,
+          None,
+          Nil,
+          npsEmployments,
+          Nil,
+          hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -838,7 +886,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -859,7 +908,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -882,7 +932,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, iabds, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -910,7 +961,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, rti, Nil, Nil, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, rti, Nil, Nil, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -941,7 +993,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT()
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, rti, Nil, Nil, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, rti, Nil, Nil, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -971,7 +1024,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT(adjustedNetIncome = Some(npsComponentWithNewEstimatedPay))
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, Nil, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, Nil, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -1000,7 +1054,8 @@ class NpsTaxAccountSpec extends PlaySpec {
 
         val sut = createSUT(adjustedNetIncome = Some(npsComponentWithNewEstimatedPay))
 
-        val result = sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, Nil, false)
+        val result =
+          sut.getIncomeData(Some(employments), None, None, None, Nil, Nil, Nil, hasDuplicateEmploymentNames = false)
 
         result.incomeExplanations.length mustBe 1
 
@@ -1935,11 +1990,11 @@ class NpsTaxAccountSpec extends PlaySpec {
       pensions.isDefined mustBe true
       pensions.get.taxCodeIncomes.size mustBe 3
 
-      pensions.get.taxCodeIncomes(0).isLive mustBe true
-      pensions.get.taxCodeIncomes(0).isEditable mustBe true
-      pensions.get.taxCodeIncomes(0).isOccupationalPension mustBe true
-      pensions.get.taxCodeIncomes(0).otherIncomeSourceIndicator mustBe Some(false)
-      pensions.get.taxCodeIncomes(0).isPrimary mustBe true
+      pensions.get.taxCodeIncomes.head.isLive mustBe true
+      pensions.get.taxCodeIncomes.head.isEditable mustBe true
+      pensions.get.taxCodeIncomes.head.isOccupationalPension mustBe true
+      pensions.get.taxCodeIncomes.head.otherIncomeSourceIndicator mustBe Some(false)
+      pensions.get.taxCodeIncomes.head.isPrimary mustBe true
 
       pensions.get.taxCodeIncomes(1).isPrimary mustBe false
       pensions.get.taxCodeIncomes(2).isPrimary mustBe false
@@ -1955,11 +2010,11 @@ class NpsTaxAccountSpec extends PlaySpec {
       employments.isDefined mustBe true
       employments.get.taxCodeIncomes.size mustBe 1
 
-      employments.get.taxCodeIncomes(0).isLive mustBe false
-      employments.get.taxCodeIncomes(0).isEditable mustBe false
-      employments.get.taxCodeIncomes(0).isOccupationalPension mustBe false
-      employments.get.taxCodeIncomes(0).otherIncomeSourceIndicator mustBe Some(false)
-      employments.get.taxCodeIncomes(0).isPrimary mustBe true
+      employments.get.taxCodeIncomes.head.isLive mustBe false
+      employments.get.taxCodeIncomes.head.isEditable mustBe false
+      employments.get.taxCodeIncomes.head.isOccupationalPension mustBe false
+      employments.get.taxCodeIncomes.head.otherIncomeSourceIndicator mustBe Some(false)
+      employments.get.taxCodeIncomes.head.isPrimary mustBe true
 
     }
 
@@ -1973,11 +2028,11 @@ class NpsTaxAccountSpec extends PlaySpec {
       employments.isDefined mustBe true
       employments.get.taxCodeIncomes.size mustBe 1
 
-      employments.get.taxCodeIncomes(0).isLive mustBe false
-      employments.get.taxCodeIncomes(0).isEditable mustBe true
-      employments.get.taxCodeIncomes(0).isOccupationalPension mustBe false
-      employments.get.taxCodeIncomes(0).otherIncomeSourceIndicator mustBe Some(false)
-      employments.get.taxCodeIncomes(0).isPrimary mustBe true
+      employments.get.taxCodeIncomes.head.isLive mustBe false
+      employments.get.taxCodeIncomes.head.isEditable mustBe true
+      employments.get.taxCodeIncomes.head.isOccupationalPension mustBe false
+      employments.get.taxCodeIncomes.head.otherIncomeSourceIndicator mustBe Some(false)
+      employments.get.taxCodeIncomes.head.isPrimary mustBe true
 
       val npsEmploymentsWithCessationPay =
         npsEmployments.map(emp => emp.copy(cessationPayThisEmployment = Some(BigDecimal(12)))).toList
@@ -1989,8 +2044,8 @@ class NpsTaxAccountSpec extends PlaySpec {
       employmentsWithCessation.isDefined mustBe true
       employmentsWithCessation.get.taxCodeIncomes.size mustBe 1
 
-      employmentsWithCessation.get.taxCodeIncomes(0).isLive mustBe false
-      employmentsWithCessation.get.taxCodeIncomes(0).isEditable mustBe false
+      employmentsWithCessation.get.taxCodeIncomes.head.isLive mustBe false
+      employmentsWithCessation.get.taxCodeIncomes.head.isEditable mustBe false
 
     }
 
@@ -2005,29 +2060,29 @@ class NpsTaxAccountSpec extends PlaySpec {
       taxableStateBenefit.isDefined mustBe true
       taxableStateBenefit.get.taxCodeIncomes.size mustBe 1
 
-      taxableStateBenefit.get.taxCodeIncomes(0).isLive mustBe true
-      taxableStateBenefit.get.taxCodeIncomes(0).isEditable mustBe false
-      taxableStateBenefit.get.taxCodeIncomes(0).isOccupationalPension mustBe false
-      taxableStateBenefit.get.taxCodeIncomes(0).otherIncomeSourceIndicator mustBe Some(false)
-      taxableStateBenefit.get.taxCodeIncomes(0).isPrimary mustBe true
+      taxableStateBenefit.get.taxCodeIncomes.head.isLive mustBe true
+      taxableStateBenefit.get.taxCodeIncomes.head.isEditable mustBe false
+      taxableStateBenefit.get.taxCodeIncomes.head.isOccupationalPension mustBe false
+      taxableStateBenefit.get.taxCodeIncomes.head.otherIncomeSourceIndicator mustBe Some(false)
+      taxableStateBenefit.get.taxCodeIncomes.head.isPrimary mustBe true
 
       val employments = mergedTaxAccount.increasesTax.flatMap(_.incomes.flatMap(_.taxCodeIncomes.employments))
       employments.isDefined mustBe true
       employments.get.taxCodeIncomes.size mustBe 1
 
-      employments.get.taxCodeIncomes(0).isLive mustBe true
-      employments.get.taxCodeIncomes(0).isEditable mustBe true
-      employments.get.taxCodeIncomes(0).isOccupationalPension mustBe false
-      employments.get.taxCodeIncomes(0).otherIncomeSourceIndicator mustBe Some(false)
-      employments.get.taxCodeIncomes(0).isPrimary mustBe false
+      employments.get.taxCodeIncomes.head.isLive mustBe true
+      employments.get.taxCodeIncomes.head.isEditable mustBe true
+      employments.get.taxCodeIncomes.head.isOccupationalPension mustBe false
+      employments.get.taxCodeIncomes.head.otherIncomeSourceIndicator mustBe Some(false)
+      employments.get.taxCodeIncomes.head.isPrimary mustBe false
 
     }
   }
 
-  val firstTaxBand = TaxBand(Some(1000), Some(200), Some(400), Some(800), Some(20))
-  val secondTaxBand = TaxBand(Some(500), Some(10), Some(800), Some(6000), Some(40))
+  val firstTaxBand: TaxBand = TaxBand(Some(1000), Some(200), Some(400), Some(800), Some(20))
+  val secondTaxBand: TaxBand = TaxBand(Some(500), Some(10), Some(800), Some(6000), Some(40))
 
-  val PersonalPensionPaymentNpsComponent = NpsComponent(
+  val PersonalPensionPaymentNpsComponent: NpsComponent = NpsComponent(
     amount = Some(100),
     `type` = Some(PersonalPensionPayments.code),
     iabdSummaries = None,
@@ -2035,10 +2090,10 @@ class NpsTaxAccountSpec extends PlaySpec {
     sourceAmount = None
   )
 
-  val PersonalPensionTaxCodeComponent =
+  val PersonalPensionTaxCodeComponent: TaxCodeComponent =
     TaxCodeComponent(Some("personal payments test description"), Some(100), Some(PersonalPensionPayments.code))
 
-  val ProfessionalSubscriptionsNpsComponent = NpsComponent(
+  val ProfessionalSubscriptionsNpsComponent: NpsComponent = NpsComponent(
     amount = Some(50),
     `type` = Some(ProfessionalSubscriptions.code),
     iabdSummaries = None,
@@ -2046,12 +2101,12 @@ class NpsTaxAccountSpec extends PlaySpec {
     sourceAmount = None
   )
 
-  val ProfessionalSubscriptionsTaxCodeComponent = TaxCodeComponent(
+  val ProfessionalSubscriptionsTaxCodeComponent: TaxCodeComponent = TaxCodeComponent(
     Some("professional subscriptions test description"),
     Some(50),
     Some(ProfessionalSubscriptions.code))
 
-  val incomeSourceWithOneAllowanceAndDeduction = NpsIncomeSource(
+  val incomeSourceWithOneAllowanceAndDeduction: NpsIncomeSource = NpsIncomeSource(
     name = Some("name"),
     taxCode = Some("K950L"),
     employmentType = Some(1),

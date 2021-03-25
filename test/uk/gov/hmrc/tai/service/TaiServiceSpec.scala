@@ -828,7 +828,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
 
         val mockDesConnector = mock[DesConnector]
         when(mockDesConnector.updateEmploymentDataToDes(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
         when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any()))
@@ -884,7 +884,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
 
         val mockNpsConnector = mock[NpsConnector]
         when(mockNpsConnector.updateEmploymentData(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
         when(mockCitizenDetailsConnector.getPersonDetails(any())(any(), any()))

@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.libs.json.{JsString, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.HttpException
@@ -32,7 +33,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
   private def createSUT(repository: JourneyCacheRepository) =
     new JourneyCacheController(repository, loggedInAuthenticationPredicate, cc)
 
-  val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
   "JourneyCacheController" must {
 
@@ -66,7 +67,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
     "accept and persist a valid POST'ed cache" in {
       val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
       val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-        .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test"))
+        .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test")
 
       val mockRepository = mock[JourneyCacheRepository]
       when(mockRepository.cached(any(), any(), any()))
@@ -153,7 +154,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
         val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
         val result3 = sut.cached("testjourney")(
           FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-            .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test")))
+            .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test"))
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))

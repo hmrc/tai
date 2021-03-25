@@ -108,7 +108,7 @@ class EmploymentSpec extends PlaySpec {
 
   }
 
-  val taxYear = TaxYear()
+  val taxYear: TaxYear = TaxYear()
 
   def createAnnualAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear = taxYear): AnnualAccount =
     AnnualAccount("0-0-0", taxYear, rtiStatus, Nil, Nil)
@@ -125,8 +125,9 @@ class EmploymentSpec extends PlaySpec {
       "AZ00070",
       2,
       Some(100),
-      false,
-      false))
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    ))
   val singleEmploymentWithMissingPayrollNumber = List(
     Employment(
       "XXX PPPP",
@@ -139,8 +140,8 @@ class EmploymentSpec extends PlaySpec {
       "AZ00070",
       2,
       Some(100),
-      false,
-      false))
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
   val singleEmploymentWithEmptyStringPayrollNumber = List(
     Employment(
       "XXX PPPP",
@@ -153,8 +154,8 @@ class EmploymentSpec extends PlaySpec {
       "AZ00070",
       2,
       Some(100),
-      false,
-      false))
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
   val dualEmployment = List(
     Employment(
       "XXX PPPP",
@@ -167,8 +168,9 @@ class EmploymentSpec extends PlaySpec {
       "AZ00070",
       2,
       Some(100),
-      false,
-      false),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    ),
     Employment(
       "XXX PPPP",
       Live,
@@ -180,8 +182,9 @@ class EmploymentSpec extends PlaySpec {
       "AZ00070",
       2,
       Some(100),
-      false,
-      false)
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    )
   )
 
 }

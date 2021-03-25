@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
 import org.joda.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
@@ -34,8 +34,8 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -44,7 +44,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
   val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/20-21"
 
-  val mockHttp = mock[HttpClient]
+  val mockHttp: HttpClient = mock[HttpClient]
 
   lazy val sut: RtiConnector = inject[RtiConnector]
   lazy val sutWithMockHttp = new RtiConnector(

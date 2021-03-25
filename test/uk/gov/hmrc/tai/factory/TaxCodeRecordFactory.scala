@@ -78,7 +78,7 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       taxCode,
       basisOfOperation,
       employerName,
-      true,
+      operatedTaxCode = true,
       dateOfCalculation,
       payrollNumber,
       Secondary)

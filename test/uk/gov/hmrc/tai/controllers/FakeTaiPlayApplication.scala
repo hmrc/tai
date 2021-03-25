@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.scalatest.{Args, Status, TestSuite}
 import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatestplus.play.guice.{GuiceOneAppPerSuite, GuiceOneServerPerSuite}
+import org.scalatest.{Args, Status, TestSuite}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
 trait FakeTaiPlayApplication extends GuiceOneAppPerSuite with PatienceConfiguration with TestSuite {
   this: TestSuite =>
 
-  val additionalConfiguration = Map[String, Any]("metrics.enabled" -> false)
+  val additionalConfiguration: Map[String, Any] = Map[String, Any]("metrics.enabled" -> false)
 
   implicit override lazy val app: Application =
     new GuiceApplicationBuilder()

@@ -65,9 +65,9 @@ class CachingSpec extends BaseSpec {
   val mongoKey = "mongoKey1"
 
   def cacheTest = new CachingTest
-  val cacheConnector = mock[CacheConnector]
-  val metrics = mock[Metrics]
-  val cacheMetricsConfig = mock[CacheMetricsConfig]
+  val cacheConnector: CacheConnector = mock[CacheConnector]
+  val metrics: Metrics = mock[Metrics]
+  val cacheMetricsConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
 
   when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
 

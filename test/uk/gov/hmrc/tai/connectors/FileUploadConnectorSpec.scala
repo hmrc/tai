@@ -37,7 +37,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
   val envelopeId: String = "4142477f-9242-4a98-9c8b-73295cfb170c"
   val fileId = "fileId"
   val fileName = "fileName.pdf"
-  val contentType = MimeContentType.ApplicationPdf
+  val contentType: MimeContentType = MimeContentType.ApplicationPdf
 
   lazy val envelopesHeader = s"${server.baseUrl()}/file-upload/envelopes/$envelopeId"
 

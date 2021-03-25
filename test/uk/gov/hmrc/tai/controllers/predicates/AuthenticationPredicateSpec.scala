@@ -43,7 +43,7 @@ class AuthenticationPredicateSpec extends BaseSpec {
 
   object TestAuthenticationPredicate extends AuthenticationPredicate(mockAuthService, cc)
 
-  val authErrors = Seq[RuntimeException](
+  val authErrors: Seq[RuntimeException] = Seq[RuntimeException](
     new InsufficientConfidenceLevel,
     new InsufficientEnrolments,
     new UnsupportedAffinityGroup,
@@ -63,7 +63,7 @@ class AuthenticationPredicateSpec extends BaseSpec {
 
       when(mockAuthService.authorised(any()))
         .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
-          override def retrieve[A](retrieval: Retrieval[A]) =
+          override def retrieve[A](retrieval: Retrieval[A]): mockAuthService.AuthorisedFunctionWithResult[A] =
             new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
               override def apply[B](
                 body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =

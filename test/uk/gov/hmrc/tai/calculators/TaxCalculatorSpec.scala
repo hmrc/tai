@@ -379,12 +379,12 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "net income is greater than child benefit upper threshold" in {
         val sut = SUT
-        sut.calculateChildBenefit(1000, (TaiConstants.CHILDBENEFIT_HIGHER_THRESHOLD + 100)) must be(1000)
+        sut.calculateChildBenefit(1000, TaiConstants.CHILDBENEFIT_HIGHER_THRESHOLD + 100) must be(1000)
       }
 
       "net income is lower than child benefit upper threshold" in {
         val sut = SUT
-        sut.calculateChildBenefit(1000, (TaiConstants.CHILDBENEFIT_HIGHER_THRESHOLD - 2000)) must be(800)
+        sut.calculateChildBenefit(1000, TaiConstants.CHILDBENEFIT_HIGHER_THRESHOLD - 2000) must be(800)
       }
 
       "both values are negative" in {

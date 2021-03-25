@@ -25,7 +25,6 @@ import play.mvc.Http.Status
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}

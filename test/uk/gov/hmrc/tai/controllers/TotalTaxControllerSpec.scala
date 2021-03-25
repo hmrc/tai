@@ -152,13 +152,15 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
     }
   }
 
-  val reliefsGivingBackTax = Some(
+  val reliefsGivingBackTax: Option[TaxAdjustment] = Some(
     TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
-  val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
-  val alreadyTaxedAtSource = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
-  val taxReliefComponents = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
+  val otherTaxDue: Option[TaxAdjustment] = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
+  val alreadyTaxedAtSource: Option[TaxAdjustment] = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
+  val taxReliefComponents: Option[TaxAdjustment] = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
 
-  val totalTax = TotalTax(
+  val totalTax: TotalTax = TotalTax(
     BigDecimal(1000),
     Seq(
       IncomeCategory(

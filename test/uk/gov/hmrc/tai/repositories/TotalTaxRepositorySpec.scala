@@ -18,10 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
+import play.api.libs.json.{JsNull, JsObject, Json}
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -29,7 +26,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class TotalTaxRepositorySpec extends BaseSpec {
 
@@ -75,7 +71,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
     }
   }
 
-  val json = Json.obj(
+  val json: JsObject = Json.obj(
     "totalLiability" -> Json.obj(
       "ukDividends" -> Json.obj(
         "allowReliefDeducts" -> Json.obj(

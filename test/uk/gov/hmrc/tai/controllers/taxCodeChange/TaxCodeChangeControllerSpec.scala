@@ -162,7 +162,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
         when(taxCodeService.taxCodeMismatch(any())(any()))
-          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L"))))
+          .thenReturn(Future.successful(TaxCodeMismatch(mismatch = true, Seq("1185L", "BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
@@ -182,7 +182,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
         when(taxCodeService.taxCodeMismatch(any())(any()))
-          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
+          .thenReturn(Future.successful(TaxCodeMismatch(mismatch = true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
@@ -243,8 +243,8 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
                   LocalDate.now().plusDays(1),
                   "Employer 1",
                   Some("1234"),
-                  false,
-                  true
+                  pensionIndicator = false,
+                  primary = true
                 )
               )))
 

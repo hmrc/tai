@@ -80,18 +80,12 @@ class PersonControllerSpec extends BaseSpec {
 
       val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
       val thrown = the[NotFoundException] thrownBy Await.result(result, 5 seconds)
-      thrown.getMessage mustBe ("an example not found exception")
+      thrown.getMessage mustBe "an example not found exception"
     }
   }
 
-  val person = Person(
-    nino,
-    "firstname",
-    "surname",
-    Some(new LocalDate(1982, 5, 26)),
-    Address("l1", "l2", "l3", "pc", "country"),
-    false,
-    false)
+  val person: Person =
+    Person(nino, "firstname", "surname", Some(new LocalDate(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"))
 
   private def createSUT(
     authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,

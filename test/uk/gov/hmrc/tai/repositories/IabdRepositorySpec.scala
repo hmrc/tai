@@ -30,10 +30,10 @@ import scala.concurrent.{Await, Future}
 
 class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
-  val cacheConnector = mock[CacheConnector]
-  val metrics = mock[Metrics]
-  val cacheConfig = mock[CacheMetricsConfig]
-  val iabdConnector = mock[IabdConnector]
+  val cacheConnector: CacheConnector = mock[CacheConnector]
+  val metrics: Metrics = mock[Metrics]
+  val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+  val iabdConnector: IabdConnector = mock[IabdConnector]
 
   "IABD repository" must {
     "return json" when {

@@ -19,9 +19,9 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -35,8 +35,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
   val auditTransactionName = "NPS RTI Data Mismatch"
 
   trait EmploymentBuilderSetup {
-    val nino = new Generator(new Random).nextNino
-    val mockAuditor = mock[Auditor]
+    val nino: Nino = new Generator(new Random).nextNino
+    val mockAuditor: Auditor = mock[Auditor]
     val testEmploymentBuilder = new EmploymentBuilder(mockAuditor)
   }
 
@@ -56,8 +56,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TestEmp2",
             Live,
@@ -69,8 +70,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer2",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
         val accounts = List(
@@ -78,7 +80,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           AnnualAccount("taxDistrict2-payeRefemployer2", TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments =
+        val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
             .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
             .employments
@@ -95,8 +97,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ))
 
         unifiedEmployments must contain(
@@ -111,8 +113,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer2",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ))
 
         unifiedEmployments.size mustBe 2
@@ -135,8 +137,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TestEmp1",
             Live,
@@ -148,14 +151,15 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
         val accounts =
           List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil))
 
-        val unifiedEmployments =
+        val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
             .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
             .employments
@@ -172,8 +176,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 
@@ -193,8 +197,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TestEmp2",
             Live,
@@ -206,8 +211,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer2",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
         val accounts = List(
@@ -216,7 +222,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           AnnualAccount("taxDistrict2-payeRefemployer2-payrollNo1", TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments =
+        val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
             .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
             .employments
@@ -236,8 +242,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer1",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 
@@ -253,8 +259,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeRefemployer2",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 
@@ -280,8 +286,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TEST",
             Live,
@@ -293,15 +300,17 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
         val accounts = List(
           AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil))
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -315,8 +324,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ),
           Employment(
             "TEST",
@@ -329,8 +338,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 
@@ -350,8 +359,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TEST",
             Live,
@@ -363,13 +373,15 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
-        val accounts = Nil
+        val accounts: Seq[Nothing] = Nil
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -383,8 +395,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ),
           Employment(
             "TEST",
@@ -397,8 +409,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 
@@ -419,8 +431,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false),
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
           Employment(
             "TEST",
             Live,
@@ -432,8 +445,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false)
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
         )
 
         val accounts = List(
@@ -442,7 +456,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil)
         )
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -458,8 +473,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             1,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ),
           Employment(
             "TEST",
@@ -472,8 +487,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             "payeNumber",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           )
         )
 

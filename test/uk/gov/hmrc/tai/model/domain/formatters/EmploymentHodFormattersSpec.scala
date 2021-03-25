@@ -135,7 +135,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       val annualAccount =
         getJson("rtiSingleEmploymentMultiplePayments").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.payments.size mustBe 3
-      annualAccount.payments(0).date mustBe new LocalDate("2016-04-30")
+      annualAccount.payments.head.date mustBe new LocalDate("2016-04-30")
       annualAccount.payments(1).date mustBe new LocalDate("2016-06-09")
       annualAccount.payments(2).date mustBe new LocalDate("2017-06-09")
     }
@@ -144,7 +144,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       val annualAccount =
         getJson("rtiSingleEmploymentSinglePaymentMutipleEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.endOfTaxYearUpdates.size mustBe 3
-      annualAccount.endOfTaxYearUpdates(0).date mustBe new LocalDate("2016-06-09")
+      annualAccount.endOfTaxYearUpdates.head.date mustBe new LocalDate("2016-06-09")
       annualAccount.endOfTaxYearUpdates(1).date mustBe new LocalDate("2016-06-17")
       annualAccount.endOfTaxYearUpdates(2).date mustBe new LocalDate("2017-06-09")
     }
@@ -236,7 +236,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  val samplePayment = Payment(
+  val samplePayment: Payment = Payment(
     date = new LocalDate(2017, 5, 26),
     amountYearToDate = 2000,
     taxAmountYearToDate = 1200,
@@ -248,14 +248,15 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     duplicate = None
   )
 
-  val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
-  val sampleEndOfTaxYearUpdateMultipleAdjusts = EndOfTaxYearUpdate(
+  val sampleEndOfTaxYearUpdate: EndOfTaxYearUpdate =
+    EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
+  val sampleEndOfTaxYearUpdateMultipleAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
     new LocalDate(2016, 6, 4),
     Seq(
       Adjustment(TaxAdjustment, -20.99),
       Adjustment(IncomeAdjustment, -21.99),
       Adjustment(NationalInsuranceAdjustment, 44.2)))
-  val sampleEndOfTaxYearUpdateTwoAdjusts = EndOfTaxYearUpdate(
+  val sampleEndOfTaxYearUpdateTwoAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
     new LocalDate(2016, 6, 4),
     Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
 
@@ -280,8 +281,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "00000",
       2,
       Some(100),
-      false,
-      false))
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
   val sampleDualEmployment = List(
     Employment(
       "EMPLOYER1",
@@ -294,8 +295,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "00000",
       2,
       None,
-      true,
-      false),
+      hasPayrolledBenefit = true,
+      receivingOccupationalPension = false),
     Employment(
       "EMPLOYER2",
       Live,
@@ -307,8 +308,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "00000",
       2,
       Some(100),
-      false,
-      false)
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false)
   )
 
   private def getJson(fileName: String): JsValue = {

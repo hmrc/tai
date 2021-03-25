@@ -285,7 +285,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "44",
     1,
     Some(100),
-    false,
-    false)
+    hasPayrolledBenefit = false,
+    receivingOccupationalPension = false
+  )
 
 }

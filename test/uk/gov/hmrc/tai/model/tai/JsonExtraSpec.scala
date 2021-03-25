@@ -21,7 +21,7 @@ import play.api.libs.json._
 import org.slf4j.{Logger, LoggerFactory}
 import uk.gov.hmrc.tai.model.rti.RtiEyu
 import org.joda.time.LocalDate
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 class JsonExtraSpec extends PlaySpec with MockitoSugar {
 

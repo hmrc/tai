@@ -55,7 +55,7 @@ class RtiPackageSpec extends PlaySpec {
       }
 
       "convert received date object to json" in {
-        val rti = RtiEyu(None, None, None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(None, None, None, new LocalDate(2016, 7, 29))
         Json.toJson(rti).toString must be(
           """{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
@@ -149,10 +149,10 @@ class RtiPackageSpec extends PlaySpec {
         }
 
         rtiEyu mustNot be(Nil)
-        val eyuList = rtiEyu(0)
+        val eyuList = rtiEyu.head
 
         eyuList mustNot be(Nil)
-        val eyu = eyuList(0)
+        val eyu = eyuList.head
 
         eyu.taxablePayDelta must be(Some(-600.99))
         eyu.totalTaxDelta must be(Some(-10.99))
@@ -160,19 +160,19 @@ class RtiPackageSpec extends PlaySpec {
       }
 
       "convert EYU object having taxablePayDelta only to json " in {
-        val rti = RtiEyu(Some(10), None, None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), None, None, new LocalDate(2016, 7, 29))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object having taxablePayDelta and totalTaxDelta to json " in {
-        val rti = RtiEyu(Some(10), Some(10), None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), Some(10), None, new LocalDate(2016, 7, 29))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object to json " in {
-        val rti = RtiEyu(Some(10), Some(10), Some(10), (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), Some(10), Some(10), new LocalDate(2016, 7, 29))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[{"type":"EmpeeContribnsDelta","amount":10}]}],"rcvdDate":"2016-07-29"}""")
       }

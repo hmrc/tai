@@ -67,7 +67,7 @@ object RtiGenerator {
       typeId.getOrElse(false)
     )
 
-  def alphaNumStr(min: Int, max: Int) =
+  def alphaNumStr(min: Int, max: Int): Gen[String] =
     choose(min, max)
       .flatMap {
         listOfN(_, oneOf(alphaUpperChar, numChar, numChar, numChar))

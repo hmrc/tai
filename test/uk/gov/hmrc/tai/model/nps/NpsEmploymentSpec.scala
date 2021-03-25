@@ -59,7 +59,7 @@ class NpsEmploymentSpec extends PlaySpec {
     }
   }
 
-  val createSUT = NpsEmployment(
+  val createSUT: NpsEmployment = NpsEmployment(
     sequenceNumber = 1,
     startDate = NpsDate(TaxYear().start.minusDays(1)),
     endDate = Some(NpsDate(TaxYear().next.start)),

@@ -113,7 +113,7 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mockFileUploadService.createEnvelope())
           .thenReturn(Future.successful("1"))
         when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val mockAuditable = mock[Auditor]
         doNothing()
@@ -157,7 +157,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockFileUploadService.createEnvelope())
         .thenReturn(Future.successful("111"))
       when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200)))
+        .thenReturn(Future.successful(HttpResponse(200, "")))
 
       val mockAuditable = mock[Auditor]
       doNothing()
@@ -196,7 +196,7 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mockFileUploadService.createEnvelope())
           .thenReturn(Future.successful("1"))
         when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val mockAuditable = mock[Auditor]
         doNothing()
@@ -237,7 +237,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mockFileUploadService.createEnvelope())
         .thenReturn(Future.successful("111"))
       when(mockFileUploadService.uploadFile(any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200)))
+        .thenReturn(Future.successful(HttpResponse(200, "")))
 
       val mockAuditable = mock[Auditor]
       doNothing()
@@ -409,8 +409,9 @@ class EmploymentServiceSpec extends BaseSpec {
     "",
     2,
     Some(100),
-    false,
-    false)
+    hasPayrolledBenefit = false,
+    receivingOccupationalPension = false
+  )
 
   private def createSut(
     employmentRepository: EmploymentRepository,

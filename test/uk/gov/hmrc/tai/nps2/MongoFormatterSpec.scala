@@ -22,7 +22,7 @@ import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter
-import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, IncomeType, Status}
+import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
 import uk.gov.hmrc.tai.model.nps2.{Component, Iabd, Income, MongoFormatter, NpsEmployment, TaxBand, TaxDetail, TaxObject}
 
 class MongoFormatterSpec extends PlaySpec with MongoFormatter {

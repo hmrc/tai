@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.nps
 
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -38,7 +38,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val result = sut.toTaiRoot
 
-        result mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", false, None)
+        result mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = false, None)
       }
 
       "a blank person (except for nino) represented as json is supplied" in {
@@ -52,7 +52,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
         val result = sut.toTaiRoot
 
-        result mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", false, None)
+        result mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = false, None)
       }
     }
 
@@ -85,7 +85,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           Some("middleName"),
           "lastName",
           "firstName lastName",
-          true,
+          manualCorrespondenceInd = true,
           None)
       }
 
@@ -115,7 +115,7 @@ class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
           Some("testMiddleName"),
           "testLastName",
           "testFirstName testLastName",
-          true,
+          manualCorrespondenceInd = true,
           None)
       }
     }

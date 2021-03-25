@@ -69,21 +69,21 @@ class AnnualAccountSpec extends PlaySpec {
     }
   }
 
-  val SutWithNoPayments = AnnualAccount(
+  val SutWithNoPayments: AnnualAccount = AnnualAccount(
     "taxdistrict-payeref-payroll",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
-  val SutWithNoPayroll = AnnualAccount(
+  val SutWithNoPayroll: AnnualAccount = AnnualAccount(
     "taxdistrict-payeref",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
-  val SutWithOnePayment = AnnualAccount(
+  val SutWithOnePayment: AnnualAccount = AnnualAccount(
     "",
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
@@ -102,7 +102,7 @@ class AnnualAccountSpec extends PlaySpec {
     endOfTaxYearUpdates = Nil
   )
 
-  val SutWithMultiplePayments = SutWithOnePayment.copy(
+  val SutWithMultiplePayments: AnnualAccount = SutWithOnePayment.copy(
     payments = SutWithOnePayment.payments :+
       Payment(
         date = new LocalDate(2017, 5, 26),

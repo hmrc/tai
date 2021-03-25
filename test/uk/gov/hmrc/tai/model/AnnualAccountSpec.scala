@@ -17,14 +17,13 @@
 package uk.gov.hmrc.tai.model.tai
 
 import org.joda.time.LocalDate
+import org.scalacheck.Gen
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.nps2
-import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
-import uk.gov.hmrc.tai.model.nps2.{Income, NpsEmployment, TaxAccount, TaxDetail, TaxObject}
-import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.enums.BasisOperation
+import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
+import uk.gov.hmrc.tai.model.nps2.{Income, NpsEmployment, TaxAccount}
+import uk.gov.hmrc.tai.model.rti._
 
 import scala.util.Random
 
@@ -76,7 +75,7 @@ class AnnualAccountSpec extends PlaySpec {
     }
   }
 
-  val rtiSampleEmployments = RtiGenerator.employment
+  val rtiSampleEmployments: Gen[RtiEmployment] = RtiGenerator.employment
   private val nino: Nino = new Generator(new Random).nextNino
 
   private val date = LocalDate.parse("2017-12-12")
@@ -107,6 +106,9 @@ class AnnualAccountSpec extends PlaySpec {
     basisOperation = Some(BasisOperation.Week1Month1)
   )
 
-  def sut(nps: Option[TaxAccount] = None, rti: Option[RtiData] = None, rtiStatus: Option[RtiStatus] = None) =
+  def sut(
+    nps: Option[TaxAccount] = None,
+    rti: Option[RtiData] = None,
+    rtiStatus: Option[RtiStatus] = None): Seq[Employment] =
     AnnualAccount(TaxYear(2016), nps, rti, rtiStatus).employments
 }

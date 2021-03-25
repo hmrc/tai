@@ -46,19 +46,19 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfte
   lazy implicit val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
 
-  val cacheIdValue = cacheId.value
+  val cacheIdValue: String = cacheId.value
   val emptyKey = ""
 
-  val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
-  val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
-  val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
+  val databaseUpdate: Future[DatabaseUpdate[Cache]] = Future.successful(mock[DatabaseUpdate[Cache]])
+  val taxSummaryDetails: TaxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
+  val sessionData: SessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
   val mongoKey = "key1"
-  val atMost = 5 seconds
+  val atMost: FiniteDuration = 5 seconds
 
-  val cacheRepository = mock[CacheMongoRepository]
-  val taiCacheRepository = mock[TaiCacheRepository]
+  val cacheRepository: CacheMongoRepository = mock[CacheMongoRepository]
+  val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
-  def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = {
+  def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]): CacheConnector = {
 
     when(taiCacheRepository.repo).thenReturn(cacheRepository)
 

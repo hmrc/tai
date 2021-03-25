@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 import org.scalactic.source.Position
 import org.scalatest.Assertion
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}

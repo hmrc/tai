@@ -36,7 +36,7 @@ import scala.language.postfixOps
 
 class EmploymentsControllerSpec extends BaseSpec {
 
-  val emp =
+  val emp: Employment =
     Employment(
       "company name",
       Live,
@@ -48,8 +48,8 @@ class EmploymentsControllerSpec extends BaseSpec {
       "",
       2,
       Some(100),
-      false,
-      true)
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true)
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
 

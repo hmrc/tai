@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsString, Json}
+import play.api.libs.json.{JsNumber, Json}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -129,8 +129,8 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             "",
             2,
             Some(100),
-            false,
-            false
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
           ))
 
         val json = Json.arr(

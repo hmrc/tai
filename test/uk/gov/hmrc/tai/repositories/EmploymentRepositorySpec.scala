@@ -23,9 +23,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
@@ -37,15 +35,14 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.io.BufferedSource
 import scala.language.postfixOps
-import scala.util.Random
 
 class EmploymentRepositorySpec extends BaseSpec {
 
   val currentTaxYear: TaxYear = TaxYear()
-  val previousTaxYear = currentTaxYear.prev
+  val previousTaxYear: TaxYear = currentTaxYear.prev
   val employmentDataKey = s"EmploymentData-${currentTaxYear.year}"
 
-  val npsSingleEmployment = Employment(
+  val npsSingleEmployment: Employment = Employment(
     "EMPLOYER1",
     Live,
     Some("0"),
@@ -56,10 +53,11 @@ class EmploymentRepositorySpec extends BaseSpec {
     "0",
     2,
     None,
-    false,
-    false)
+    hasPayrolledBenefit = false,
+    receivingOccupationalPension = false
+  )
 
-  val npsDualEmployment = (
+  val npsDualEmployment: (Employment, Employment) = (
     Employment(
       name = "EMPLOYER1",
       employmentStatus = Live,
@@ -215,8 +213,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               "0",
               2,
               None,
-              false,
-              false))
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false))
 
           val mockEmploymentBuilder = mock[EmploymentBuilder]
           when(
@@ -283,8 +281,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               "0",
               2,
               None,
-              false,
-              false))
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false))
 
           val mockEmploymentBuilder = mock[EmploymentBuilder]
           when(
@@ -360,8 +358,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "0",
               1,
               None,
-              false,
-              false),
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            ),
             Employment(
               "EMPLOYER2",
               Live,
@@ -373,8 +372,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "00",
               2,
               Some(100),
-              true,
-              false)
+              hasPayrolledBenefit = true,
+              receivingOccupationalPension = false
+            )
           )
 
           val mockEmploymentBuilder = mock[EmploymentBuilder]
@@ -441,8 +441,9 @@ class EmploymentRepositorySpec extends BaseSpec {
                 "",
                 2,
                 Some(100),
-                false,
-                false))
+                hasPayrolledBenefit = false,
+                receivingOccupationalPension = false
+              ))
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -484,8 +485,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val pyEmployment = Employment(
               "employer2",
@@ -498,8 +500,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -544,8 +547,8 @@ class EmploymentRepositorySpec extends BaseSpec {
                 "",
                 2,
                 Some(100),
-                false,
-                false
+                hasPayrolledBenefit = false,
+                receivingOccupationalPension = false
               )
             )
 
@@ -560,8 +563,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val mockCacheConnector = mock[CacheConnector]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
@@ -605,8 +609,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
             ),
             Employment(
               "TEST1",
@@ -621,8 +625,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
             )
           )
 
@@ -638,8 +642,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false),
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            ),
             Employment(
               "TEST1",
               Live,
@@ -651,8 +656,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
           )
 
           val expectedPYEmployments = List(
@@ -667,8 +673,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false),
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            ),
             Employment(
               "TEST1",
               Live,
@@ -680,8 +687,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
           )
 
           Seq((currentTaxYear, expectedCYEmployments), (previousTaxYear, expectedPYEmployments)) foreach {
@@ -715,8 +723,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val cachedEmployment2 = Employment(
               "employer2",
@@ -729,8 +738,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val cachedEmploymentsFor2018 = List(cachedEmployment1, cachedEmployment2)
 
@@ -828,8 +838,9 @@ class EmploymentRepositorySpec extends BaseSpec {
               "",
               2,
               Some(100),
-              false,
-              false)
+              hasPayrolledBenefit = false,
+              receivingOccupationalPension = false
+            )
 
             val cachedEmploymentsFor2018 = List(
               employment1,
@@ -1171,8 +1182,8 @@ class EmploymentRepositorySpec extends BaseSpec {
         "",
         employment1Id,
         Some(100),
-        false,
-        false
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false
       )
 
       val emp2 = Employment(
@@ -1186,8 +1197,8 @@ class EmploymentRepositorySpec extends BaseSpec {
         "",
         2,
         Some(100),
-        false,
-        false
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false
       )
 
       val expectedEmployment = emp1.copy(annualAccounts = Seq(annualAccountCY))
@@ -1216,8 +1227,8 @@ class EmploymentRepositorySpec extends BaseSpec {
         "",
         4,
         Some(100),
-        false,
-        false
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false
       )
 
       val emp2 = Employment(
@@ -1231,8 +1242,8 @@ class EmploymentRepositorySpec extends BaseSpec {
         "",
         2,
         Some(100),
-        false,
-        false
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = false
       )
 
       val mockCacheConnector = mock[CacheConnector]
@@ -1305,8 +1316,8 @@ class EmploymentRepositorySpec extends BaseSpec {
           "",
           4,
           Some(100),
-          false,
-          false
+          hasPayrolledBenefit = false,
+          receivingOccupationalPension = false
         )
 
         val expectedAnnualAccount = AnnualAccount(

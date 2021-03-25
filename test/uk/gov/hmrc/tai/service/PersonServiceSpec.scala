@@ -35,7 +35,7 @@ class PersonServiceSpec extends BaseSpec {
       val mockRepo = mock[PersonRepository]
       when(mockRepo.getPerson(meq(nino))(any())).thenReturn(Future.successful(person))
       val SUT = createSUT(mockRepo)
-      Await.result(SUT.person(nino), 5 seconds) mustBe (person)
+      Await.result(SUT.person(nino), 5 seconds) mustBe person
     }
 
     "expose any exception thrown by the person repository" in {
@@ -48,14 +48,8 @@ class PersonServiceSpec extends BaseSpec {
     }
   }
 
-  val person = Person(
-    nino,
-    "firstname",
-    "surname",
-    Some(new LocalDate()),
-    Address("l1", "l2", "l3", "pc", "country"),
-    false,
-    false)
+  val person: Person =
+    Person(nino, "firstname", "surname", Some(new LocalDate()), Address("l1", "l2", "l3", "pc", "country"))
   def createSUT(personRepository: PersonRepository = mock[PersonRepository]) = new PersonService(personRepository)
 
 }

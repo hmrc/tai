@@ -3418,7 +3418,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
 
   private val npsUpdateAmount = IabdUpdateAmount(employmentSequenceNumber = 1, grossAmount = 1000, source = Some(46))
 
-  val payment = RtiPayment(
+  val payment: RtiPayment = RtiPayment(
     PayFrequency.FourWeekly,
     new LocalDate(CurrentYear, 6, 20),
     new LocalDate(CurrentYear, 4, 20),
@@ -3432,13 +3432,14 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     Some(10)
   )
 
-  val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
+  val rtiEmp: RtiEmployment = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
-  val rtiData = RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
+  val rtiData: RtiData =
+    RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
 
-  val iabdRoot = NpsIabdRoot(nino.value, Some(1), 23, Some(1000))
+  val iabdRoot: NpsIabdRoot = NpsIabdRoot(nino.value, Some(1), 23, Some(1000))
 
-  val npsEmployment = NpsEmployment(
+  val npsEmployment: NpsEmployment = NpsEmployment(
     1,
     npsDateStartOfYear,
     Some(npsDateCurrentTaxYear),
@@ -3457,7 +3458,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     None,
     Some(100))
 
-  val npsEmploymentWithCessationPay = NpsEmployment(
+  val npsEmploymentWithCessationPay: NpsEmployment = NpsEmployment(
     1,
     npsDateStartOfYear,
     Some(npsDateCurrentTaxYear),

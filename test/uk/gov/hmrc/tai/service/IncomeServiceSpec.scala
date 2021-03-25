@@ -618,8 +618,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         "",
         2,
         Some(100),
-        false,
-        true)
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = true)
       val taxCodeIncomes = Seq(
         TaxCodeIncome(
           EmploymentIncome,
@@ -705,8 +705,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                     "",
                     0,
                     Some(100),
-                    false,
-                    false))))
+                    hasPayrolledBenefit = false,
+                    receivingOccupationalPension = false))))
 
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
@@ -768,8 +768,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                     "",
                     0,
                     Some(100),
-                    false,
-                    false))))
+                    hasPayrolledBenefit = false,
+                    receivingOccupationalPension = false))))
 
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
@@ -847,8 +847,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                     "",
                     0,
                     Some(100),
-                    false,
-                    false))))
+                    hasPayrolledBenefit = false,
+                    receivingOccupationalPension = false))))
 
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
@@ -927,8 +927,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                     "",
                     0,
                     Some(100),
-                    false,
-                    false))))
+                    hasPayrolledBenefit = false,
+                    receivingOccupationalPension = false))))
 
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -993,8 +993,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                     "",
                     0,
                     Some(100),
-                    false,
-                    false))))
+                    hasPayrolledBenefit = false,
+                    receivingOccupationalPension = false))))
 
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
@@ -1072,8 +1072,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                 "",
                 0,
                 Some(100),
-                false,
-                false))))
+                hasPayrolledBenefit = false,
+                receivingOccupationalPension = false))))
 
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
@@ -1137,8 +1137,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
                 "",
                 0,
                 Some(100),
-                false,
-                false))))
+                hasPayrolledBenefit = false,
+                receivingOccupationalPension = false))))
 
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))

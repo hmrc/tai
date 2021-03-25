@@ -37,7 +37,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
               Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car", "dateMadeAvailable" -> "2014-06-10"))
           )
 
-        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
+        val companyCarSeq = Seq(
+          CompanyCar(24, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")), None, None))
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe CompanyCarBenefit(1, 3333, companyCarSeq)
       }
 
@@ -58,7 +59,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
             ))
           )
 
-        val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
+        val companyCarSeq = Seq(
+          CompanyCar(24, "Company car", hasActiveFuelBenefit = false, Some(LocalDate.parse("2014-06-10")), None, None))
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe
           CompanyCarBenefit(1, 3333, companyCarSeq)
       }
@@ -84,7 +86,7 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
           CompanyCar(
             24,
             "Company car",
-            true,
+            hasActiveFuelBenefit = true,
             Some(LocalDate.parse("2014-06-10")),
             Some(LocalDate.parse("2017-05-02")),
             None))
@@ -127,7 +129,13 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
       "there is a valid make model with only mandatory fields complete" in {
         val json = Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car")
 
-        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(24, "Company car", false, None, None, None)
+        json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
+          24,
+          "Company car",
+          hasActiveFuelBenefit = false,
+          None,
+          None,
+          None)
       }
       "there is a valid response with active fuel benefit" in {
         val json =
@@ -144,7 +152,7 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
           24,
           "Company car",
-          true,
+          hasActiveFuelBenefit = true,
           Some(LocalDate.parse("2013-06-10")),
           Some(LocalDate.parse("2014-06-10")),
           None)
@@ -167,7 +175,7 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
           24,
           "Company car",
-          false,
+          hasActiveFuelBenefit = false,
           Some(LocalDate.parse("2013-06-10")),
           None,
           Some(LocalDate.parse("2014-06-16")))
