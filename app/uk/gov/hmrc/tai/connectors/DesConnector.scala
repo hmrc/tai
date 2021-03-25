@@ -46,9 +46,9 @@ class DesConnector @Inject()(
   implicit ec: ExecutionContext
 ) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override def originatorId = config.originatorId
+  override def originatorId: String = config.originatorId
 
-  def daPtaOriginatorId = config.daPtaOriginatorId
+  def daPtaOriginatorId: String = config.daPtaOriginatorId
 
   def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
@@ -103,7 +103,7 @@ class DesConnector @Inject()(
         headerForUpdate(version, originatorId),
         formats.formatList)
     } else {
-      Future(HttpResponse(OK))
+      Future(HttpResponse(OK, ""))
     }
 
   def updateExpensesDataToDes(

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
-import play.api.{Configuration, Play}
+import play.api.Configuration
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.Cache
@@ -90,9 +90,8 @@ class CacheConnector @Inject()(
               None
             }
           }
-        case None => {
+        case None =>
           None
-        }
       }
     } else {
       cacheRepository.repo.findById(cacheId.value) map {
@@ -104,9 +103,8 @@ class CacheConnector @Inject()(
               None
             }
           }
-        case None => {
+        case None =>
           None
-        }
       }
     }
 
@@ -127,9 +125,8 @@ class CacheConnector @Inject()(
           } getOrElse {
             Nil
           }
-        case None => {
+        case None =>
           Nil
-        }
       }
     } else {
       cacheRepository.repo.findById(cacheId.value) map {
@@ -143,9 +140,8 @@ class CacheConnector @Inject()(
           } getOrElse {
             Nil
           }
-        case None => {
+        case None =>
           Nil
-        }
       }
     }
 
@@ -161,9 +157,8 @@ class CacheConnector @Inject()(
               None
             }
           }
-        case None => {
+        case None =>
           None
-        }
       }
     } else {
       cacheRepository.repo.findById(cacheId.value) map {
@@ -175,9 +170,8 @@ class CacheConnector @Inject()(
               None
             }
           }
-        case None => {
+        case None =>
           None
-        }
       }
     }
 

@@ -45,7 +45,7 @@ class NpsConnector @Inject()(
   config: NpsConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override val originatorId = config.originatorId
+  override val originatorId: String = config.originatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
@@ -81,7 +81,7 @@ class NpsConnector @Inject()(
 
   def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
-    implicit val hc = basicNpsHeaders(HeaderCarrier())
+    implicit val hc: HeaderCarrier = basicNpsHeaders(HeaderCarrier())
     httpClient.GET[HttpResponse](urlToRead)
   }
 
@@ -98,7 +98,7 @@ class NpsConnector @Inject()(
         extraNpsHeaders(hc, version, sessionOrUUID),
         formats.formatList)
     } else {
-      Future(HttpResponse(OK))
+      Future(HttpResponse(OK, ""))
     }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String =

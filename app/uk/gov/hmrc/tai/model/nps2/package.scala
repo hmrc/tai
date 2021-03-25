@@ -25,16 +25,16 @@ import scala.util.matching.Regex
 
 package object nps2 {
 
-  def enumerationFormat(a: Enumeration) = new Format[a.Value] {
+  def enumerationFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
     def reads(json: JsValue) = JsSuccess(a.withName(json.as[String]))
 
-    def writes(v: a.Value) = JsString(v.toString)
+    def writes(v: a.Value): JsString = JsString(v.toString)
   }
 
-  def enumerationNumFormat(a: Enumeration) = new Format[a.Value] {
+  def enumerationNumFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
     def reads(json: JsValue) = JsSuccess(a(json.as[Int]))
 
-    def writes(v: a.Value) = JsNumber(v.id)
+    def writes(v: a.Value): JsNumber = JsNumber(v.id)
   }
 
   implicit val formatLocalDate: Format[LocalDate] = Format(

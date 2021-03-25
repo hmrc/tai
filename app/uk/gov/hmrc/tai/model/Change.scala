@@ -16,32 +16,26 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.{JsObject, JsResult, JsSuccess, JsValue, Reads, Writes}
+import play.api.libs.json._
 
 case class Change[A, B](currentYear: A, currentYearPlusOne: B)
 object Change {
 
-  implicit def changeReads[A, B](implicit aReads: Reads[A], bReads: Reads[B]): Reads[Change[A, B]] =
-    new Reads[Change[A, B]] {
-      override def reads(json: JsValue): JsResult[Change[A, B]] =
-        json match {
-          case JsObject(js) =>
-            val a = aReads.reads((json \ "currentYear").as[JsValue]).get
-            val b = bReads.reads((json \ "currentYearPlusOne").as[JsValue]).get
-            JsSuccess(Change(a, b))
-          case e =>
-            throw new IllegalArgumentException(
-              s"Expected a JsObject, found $e"
-            )
-        }
+  implicit def changeReads[A, B](implicit aReads: Reads[A], bReads: Reads[B]): Reads[Change[A, B]] = {
+    case json @ JsObject(js) =>
+      val a = aReads.reads((json \ "currentYear").as[JsValue]).get
+      val b = bReads.reads((json \ "currentYearPlusOne").as[JsValue]).get
+      JsSuccess(Change(a, b))
+    case e =>
+      throw new IllegalArgumentException(
+        s"Expected a JsObject, found $e"
+      )
+  }
 
-    }
-
-  implicit def changeWrite[A, B](implicit aWrites: Writes[A], bWrites: Writes[B]) = new Writes[Change[A, B]] {
-    def writes(change: Change[A, B]) = {
+  implicit def changeWrite[A, B](implicit aWrites: Writes[A], bWrites: Writes[B]): Writes[Change[A, B]] =
+    (change: Change[A, B]) => {
       val currentYearJs = aWrites.writes(change.currentYear)
       val currentYearPlusOneJs = bWrites.writes(change.currentYearPlusOne)
       JsObject(Seq("currentYear" -> currentYearJs, "currentYearPlusOne" -> currentYearPlusOneJs))
     }
-  }
 }

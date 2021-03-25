@@ -36,8 +36,6 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class IncomeController @Inject()(
   incomeService: IncomeService,
-  taxAccountService: TaxAccountService,
-  employmentService: EmploymentService,
   authentication: AuthenticationPredicate,
   cc: ControllerComponents)(
   implicit ec: ExecutionContext

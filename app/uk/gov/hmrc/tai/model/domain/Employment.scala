@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
@@ -61,13 +61,13 @@ case class AddEmployment(
   telephoneNumber: Option[String])
 
 object AddEmployment {
-  implicit val formats = Json.format[AddEmployment]
+  implicit val formats: OFormat[AddEmployment] = Json.format[AddEmployment]
 }
 
 case class EndEmployment(endDate: LocalDate, telephoneContactAllowed: String, telephoneNumber: Option[String])
 
 object EndEmployment {
-  implicit val formats = Json.format[EndEmployment]
+  implicit val formats: OFormat[EndEmployment] = Json.format[EndEmployment]
 }
 
 case class IncorrectEmployment(whatYouToldUs: String, telephoneContactAllowed: String, telephoneNumber: Option[String])

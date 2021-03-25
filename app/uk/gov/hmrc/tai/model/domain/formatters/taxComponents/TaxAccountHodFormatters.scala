@@ -23,15 +23,13 @@ import uk.gov.hmrc.tai.model.domain.formatters.{BaseTaxAccountHodFormatters, Nps
 
 trait TaxAccountHodFormatters extends TotalLiabilityHodReads with IncomeSourcesHodReads {
 
-  val codingComponentReads = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
+  val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
-      val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
-      val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
-      val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
+    val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
+    val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
+    val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
 
-      JsSuccess(taxComponents)
-    }
+    JsSuccess(taxComponents)
   }
 }
 
@@ -73,11 +71,10 @@ trait IncomeSourcesHodReads {
     incomeSourceJsonElement: String,
     codingComponentFactory: CodingComponentFactory): Seq[CodingComponent] =
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
-      case JsSuccess(componentJsArray, _) => {
+      case JsSuccess(componentJsArray, _) =>
         componentJsArray.value.flatMap { componentJsVal =>
           taxComponentFromNpsComponent(componentJsVal, codingComponentFactory)
         }
-      }
       case _ => Seq.empty[CodingComponent]
     }
 
@@ -167,7 +164,7 @@ trait TotalLiabilityHodReads extends BaseTaxAccountHodFormatters {
 
   private def codingComponentsFromIabdSummaries(iabds: Seq[NpsIabdSummary]): Seq[CodingComponent] =
     iabds collect {
-      case (iabd) if npsIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
+      case iabd if npsIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
         CodingComponent(npsIabdSummariesLookup(iabd.componentType), iabd.employmentId, iabd.amount, iabd.description)
     }
 

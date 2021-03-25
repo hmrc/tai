@@ -31,15 +31,16 @@ case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
   def apply(constant: String): BasisOperation =
-    if (constant == Week1Month1)
+    if (constant == Week1Month1) {
       Week1Month1BasisOperation
-    else
+    } else {
       OtherBasisOperation
+    }
 
-  implicit val formatBasisOperationType = new Format[BasisOperation] {
+  implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = ???
 
-    override def writes(basisOperation: BasisOperation) = JsString(basisOperation.toString)
+    override def writes(basisOperation: BasisOperation): JsString = JsString(basisOperation.toString)
   }
 }
 
@@ -64,13 +65,12 @@ object TaxCodeIncomeStatus {
       case "Live"              => JsSuccess(Live)
       case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
       case "Ceased"            => JsSuccess(Ceased)
-      case default => {
+      case default =>
         Logger.warn(s"Invalid Employment Status Reads -> $default")
         throw new RuntimeException("Invalid employment status reads")
-      }
     }
 
-    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
+    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus): JsString = JsString(taxCodeIncomeStatus.toString)
   }
 }
 
@@ -93,10 +93,10 @@ object IabdUpdateSource extends IabdUpdateSource {
     39 -> Internet,
     40 -> InformationLetter
   )
-  implicit val formatIabdUpdateSource = new Format[IabdUpdateSource] {
+  implicit val formatIabdUpdateSource: Format[IabdUpdateSource] = new Format[IabdUpdateSource] {
     override def reads(json: JsValue): JsSuccess[IabdUpdateSource] = throw new RuntimeException("Not Implemented")
 
-    override def writes(iabdUpdateSource: IabdUpdateSource) = JsString(iabdUpdateSource.toString)
+    override def writes(iabdUpdateSource: IabdUpdateSource): JsString = JsString(iabdUpdateSource.toString)
   }
   def fromCode(code: Int): Option[IabdUpdateSource] = iabdUpdateSourceMap.get(code)
 }
@@ -125,7 +125,7 @@ case class TaxCodeIncome(
 
 object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
 
-  implicit val writes = new Writes[TaxCodeIncome] {
+  implicit val writes: Writes[TaxCodeIncome] = new Writes[TaxCodeIncome] {
     override def writes(o: TaxCodeIncome): JsValue =
       JsObject(
         List(

@@ -104,7 +104,7 @@ class TaxAccountConnector @Inject()(
   def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): HeaderCarrier =
     hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
 
-  val createHeader = HeaderCarrier(
+  val createHeader: HeaderCarrier = HeaderCarrier(
     extraHeaders = Seq(
       "Environment"   -> desConfig.environment,
       "Authorization" -> desConfig.authorization,

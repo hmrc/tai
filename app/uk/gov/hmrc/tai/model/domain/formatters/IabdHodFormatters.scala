@@ -17,13 +17,15 @@
 package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import play.api.libs.json.{JsError, _}
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 
+import scala.util.matching.Regex
+
 trait IabdHodFormatters extends IabdTypeConstants {
 
-  val iabdEstimatedPayReads = new Reads[JsValue] {
+  val iabdEstimatedPayReads: Reads[JsValue] = new Reads[JsValue] {
     override def reads(json: JsValue): JsResult[JsValue] = {
       val iabdDetails = json.as[Seq[IabdDetails]]
       JsSuccess(Json.toJson(iabdDetails.filter(_.`type`.contains(NewEstimatedPay))))
@@ -41,7 +43,7 @@ trait IabdHodFormatters extends IabdTypeConstants {
   object IabdDetails {
     implicit val formatLocalDate: Format[LocalDate] = Format(
       new Reads[LocalDate] {
-        val dateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
+        val dateRegex: Regex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
 
         override def reads(json: JsValue): JsResult[LocalDate] = json match {
           case JsString(dateRegex(d, m, y)) =>
@@ -50,7 +52,7 @@ trait IabdHodFormatters extends IabdTypeConstants {
         }
       },
       new Writes[LocalDate] {
-        val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")
+        val dateFormat: DateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yyyy")
 
         override def writes(date: LocalDate): JsValue =
           JsString(dateFormat.print(date))

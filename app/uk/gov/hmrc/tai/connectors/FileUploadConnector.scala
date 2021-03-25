@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Scheduler}
 import akka.pattern.retry
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -47,7 +47,7 @@ class FileUploadConnector @Inject()(
   urls: FileUploadUrls,
   config: FileUploadConfig)(implicit ec: ExecutionContext) {
 
-  implicit val scheduler = ActorSystem().scheduler
+  implicit val scheduler: Scheduler = ActorSystem().scheduler
 
   def routingRequest(envelopeId: String): JsValue =
     Json.obj("envelopeId" -> envelopeId, "application" -> "TAI", "destination" -> "DMS")
@@ -92,18 +92,17 @@ class FileUploadConnector @Inject()(
     awsClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url: String = urls.fileUrl(envelopeId, fileId)
     envelope(envelopeId)
-      .flatMap(envelopeSummary =>
-        envelopeSummary match {
-          case Some(es) if es.isOpen =>
-            uploadFileCall(byteArray, fileName, contentType, url, awsClient)
-          case Some(es) if !es.isOpen =>
-            Logger.warn(
-              s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
-            Future.failed(new RuntimeException("Incorrect Envelope State"))
-          case _ =>
-            Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
-            Future.failed(new RuntimeException("Could Not Read Envelope State"))
-      })
+      .flatMap {
+        case Some(es) if es.isOpen =>
+          uploadFileCall(byteArray, fileName, contentType, url, awsClient)
+        case Some(es) if !es.isOpen =>
+          Logger.warn(
+            s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId")
+          Future.failed(new RuntimeException("Incorrect Envelope State"))
+        case _ =>
+          Logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
+          Future.failed(new RuntimeException("Could Not Read Envelope State"))
+      }
       .recoverWith {
         case _: RuntimeException =>
           Logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
@@ -126,7 +125,7 @@ class FileUploadConnector @Inject()(
 
     ahcWSClient
       .url(url)
-      .withHeaders(hc.copy(otherHeaders = Seq("CSRF-token" -> "nocheck")).headers: _*)
+      .withHttpHeaders(hc.copy(otherHeaders = Seq("CSRF-token" -> "nocheck")).headers: _*)
       .post(multipartFormData)
       .map { response =>
         timerContext.stop()
@@ -134,7 +133,7 @@ class FileUploadConnector @Inject()(
         if (response.status == OK) {
           metrics.incrementSuccessCounter(FusUploadFile)
           ahcWSClient.close()
-          HttpResponse(response.status)
+          HttpResponse(response.status, "")
         } else {
           Logger.warn(s"FileUploadConnector.uploadFile - failed to upload file with status [${response.status}]")
           ahcWSClient.close()

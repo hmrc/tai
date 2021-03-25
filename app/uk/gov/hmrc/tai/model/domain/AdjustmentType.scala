@@ -27,7 +27,7 @@ case object TaxAdjustment extends AdjustmentType
 case object IncomeAdjustment extends AdjustmentType
 
 object AdjustmentType extends AdjustmentType {
-  implicit val formatAdjustmentType = new Format[AdjustmentType] {
+  implicit val formatAdjustmentType: Format[AdjustmentType] = new Format[AdjustmentType] {
     override def reads(json: JsValue): JsSuccess[AdjustmentType] = json.as[String] match {
       case "NationalInsuranceAdjustment" => JsSuccess(NationalInsuranceAdjustment)
       case "TaxAdjustment"               => JsSuccess(TaxAdjustment)
@@ -35,6 +35,6 @@ object AdjustmentType extends AdjustmentType {
       case _                             => throw new IllegalArgumentException("Invalid adjustment type")
     }
 
-    override def writes(adjustmentType: AdjustmentType) = JsString(adjustmentType.toString)
+    override def writes(adjustmentType: AdjustmentType): JsString = JsString(adjustmentType.toString)
   }
 }

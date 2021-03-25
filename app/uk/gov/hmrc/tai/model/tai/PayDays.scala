@@ -43,13 +43,13 @@ object SIX_MONTHS extends PayDays {
 }
 
 object RegularYear extends Enumeration {
-  val NoOfMonths = Value(12)
-  val NoOfDays = Value(365)
-  val NoOfWeeks = Value(52)
+  val NoOfMonths: RegularYear.Value = Value(12)
+  val NoOfDays: RegularYear.Value = Value(365)
+  val NoOfWeeks: RegularYear.Value = Value(52)
 }
 
 object NoOfMonths extends Enumeration {
-  val Annually = Value(12)
-  val Quarterly = Value(4)
-  val BiAnnually = Value(2)
+  val Annually: NoOfMonths.Value = Value(12)
+  val Quarterly: NoOfMonths.Value = Value(4)
+  val BiAnnually: NoOfMonths.Value = Value(2)
 }

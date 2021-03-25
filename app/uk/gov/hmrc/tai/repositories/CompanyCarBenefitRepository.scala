@@ -35,7 +35,7 @@ class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, comp
     val cacheId = CacheId(nino)
 
     cacheConnector.find[Seq[CompanyCarBenefit]](cacheId, CarBenefitKey) flatMap {
-      case None => {
+      case None =>
         val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)
         val version = companyCarConnector.ninoVersion(nino)
 
@@ -47,7 +47,6 @@ class CompanyCarBenefitRepository @Inject()(cacheConnector: CacheConnector, comp
         companyCarBenefitsWithVersion.flatMap { result =>
           cacheConnector.createOrUpdate(cacheId, result, CarBenefitKey).map(_ => result)
         }
-      }
       case Some(seq) => Future.successful(seq)
     }
   }

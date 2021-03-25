@@ -33,63 +33,58 @@ trait TaxCodeIncomeHodFormatters {
     }
   }
 
-  val totalTaxableIncomeReads = new Reads[BigDecimal] {
-    override def reads(json: JsValue) = {
-      val totalTaxableIncome = (json \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(totalTaxableIncome)
-    }
+  val totalTaxableIncomeReads: Reads[BigDecimal] = (json: JsValue) => {
+    val totalTaxableIncome = (json \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    JsSuccess(totalTaxableIncome)
   }
 
-  val taxCodeIncomeSourceReads = new Reads[TaxCodeIncome] {
-    override def reads(json: JsValue) = {
-      val incomeSourceType = taxCodeIncomeType(json)
-      val employmentId = (json \ "employmentId").asOpt[Int]
-      val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
-      val description = incomeSourceType.toString
-      val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
-      val name = (json \ "name").asOpt[String].getOrElse("")
-      val basisOperation =
-        (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
-      val status = employmentStatus(json)
-      val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(
-        TaxCodeIncome(
-          incomeSourceType,
-          employmentId,
-          amount,
-          description,
-          taxCode,
-          name,
-          basisOperation,
-          status,
-          iyaCy,
-          totalIya,
-          iyaCyPlusOne))
-    }
+  val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = (json: JsValue) => {
+    val incomeSourceType = taxCodeIncomeType(json)
+    val employmentId = (json \ "employmentId").asOpt[Int]
+    val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
+    val description = incomeSourceType.toString
+    val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
+    val name = (json \ "name").asOpt[String].getOrElse("")
+    val basisOperation =
+      (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
+    val status = employmentStatus(json)
+    val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    JsSuccess(
+      TaxCodeIncome(
+        incomeSourceType,
+        employmentId,
+        amount,
+        description,
+        taxCode,
+        name,
+        basisOperation,
+        status,
+        iyaCy,
+        totalIya,
+        iyaCyPlusOne))
   }
 
-  val taxCodeIncomeSourcesReads = new Reads[Seq[TaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxCodeIncome]] = {
-      val taxCodeIncomes = (json \ "incomeSources")
-        .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
-        .getOrElse(Seq.empty[TaxCodeIncome])
-      JsSuccess(taxCodeIncomes)
-    }
+  val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
+    val taxCodeIncomes = (json \ "incomeSources")
+      .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
+      .getOrElse(Seq.empty[TaxCodeIncome])
+    JsSuccess(taxCodeIncomes)
   }
 
   private def taxCodeIncomeType(json: JsValue): TaxComponentType = {
     def indicator(indicatorType: String) = (json \ indicatorType).asOpt[Boolean].getOrElse(false)
 
-    if (indicator("pensionIndicator"))
+    if (indicator("pensionIndicator")) {
       PensionIncome
-    else if (indicator("jsaIndicator"))
+    } else if (indicator("jsaIndicator")) {
       JobSeekerAllowanceIncome
-    else if (indicator("otherIncomeSourceIndicator"))
+    } else if (indicator("otherIncomeSourceIndicator")) {
       OtherIncome
-    else
+    } else {
       EmploymentIncome
+    }
   }
 
   private def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
@@ -99,10 +94,9 @@ trait TaxCodeIncomeHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case default => {
+      case default =>
         Logger.warn(s"Invalid Employment Status -> $default")
         throw new RuntimeException("Invalid employment status")
-      }
     }
   }
 

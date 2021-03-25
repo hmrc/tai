@@ -36,7 +36,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def start: LocalDate = new LocalDate(year, startMonth, startDay)
   def end: LocalDate = new LocalDate(year + 1, endMonth, endDay)
   def next: TaxYear = TaxYear(year + 1)
-  def prev = TaxYear(year - 1)
+  def prev: TaxYear = TaxYear(year - 1)
   def startPrev: LocalDate = new LocalDate(prev.year, endMonth, startDay)
   def endPrev: LocalDate = new LocalDate(prev.year + 1, startMonth, endDay)
   def compare(that: TaxYear): Int = this.year compare that.year
@@ -56,10 +56,11 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def taxYearFor(dateToResolve: LocalDate): Int = {
     val year = dateToResolve.year.get
 
-    if (dateToResolve.isBefore(new LocalDate(year, 4, 6)))
+    if (dateToResolve.isBefore(new LocalDate(year, 4, 6))) {
       year - 1
-    else
+    } else {
       year
+    }
   }
 
 }
@@ -80,7 +81,7 @@ object TaxYear {
     object Year {
       val SimpleYear: Regex = "([12][0-9])?([0-9]{2})".r
       def unapply(in: String): Option[Int] = in match {
-        case SimpleYear(cenStr, yearStr) => {
+        case SimpleYear(cenStr, yearStr) =>
           val year = yearStr.toInt
           val century = Option(cenStr).filter(_.nonEmpty) match {
             case None if year > 70 => 1900
@@ -88,7 +89,6 @@ object TaxYear {
             case Some(x)           => x.toInt * 100
           }
           Some(century + year)
-        }
         case _ => None
       }
     }

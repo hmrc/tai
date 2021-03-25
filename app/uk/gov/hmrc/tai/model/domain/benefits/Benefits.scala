@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.benefits
 
 import org.joda.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
@@ -31,7 +31,7 @@ case class CompanyCar(
   dateWithdrawn: Option[LocalDate])
 
 object CompanyCar {
-  implicit val formats = Json.format[CompanyCar]
+  implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
 }
 
 case class CompanyCarBenefit(

@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import java.util.UUID
-
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 

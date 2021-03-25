@@ -38,7 +38,7 @@ case class IabdUpdateAmount(
 
 class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
 
-  def empSeqNoFieldName =
+  def empSeqNoFieldName: String =
     if (config.desUpdateEnabled) {
       "employmentSeqNo"
     } else {
@@ -54,10 +54,8 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
         (JsPath \ "source").writeNullable[Int]
     )(unlift(IabdUpdateAmount.unapply))
 
-  implicit def formats = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
+  implicit def formats: Format[IabdUpdateAmount] = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
 
-  implicit val formatList = new Writes[List[IabdUpdateAmount]] {
-    def writes(updateAmounts: List[IabdUpdateAmount]): JsValue =
-      Json.toJson(updateAmounts)
-  }
+  implicit val formatList: Writes[List[IabdUpdateAmount]] = (updateAmounts: List[IabdUpdateAmount]) =>
+    Json.toJson(updateAmounts)
 }

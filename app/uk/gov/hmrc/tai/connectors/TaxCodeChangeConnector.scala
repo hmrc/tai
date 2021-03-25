@@ -39,7 +39,7 @@ class TaxCodeChangeConnector @Inject()(
   implicit ec: ExecutionContext
 ) extends BaseConnector(auditor, metrics, httpClient) {
 
-  override val originatorId = config.originatorId
+  override val originatorId: String = config.originatorId
 
   implicit private val header: HeaderCarrier = {
     val commonHeaderValues = Seq(

@@ -23,9 +23,8 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 
 trait CodingComponentAPIFormatters {
 
-  val codingComponentTypeWrites = new Writes[TaxComponentType] {
-    override def writes(taxComponentType: TaxComponentType) = JsString(taxComponentType.toString)
-  }
+  val codingComponentTypeWrites: Writes[TaxComponentType] = (taxComponentType: TaxComponentType) =>
+    JsString(taxComponentType.toString)
 
   val codingComponentWrites: Writes[CodingComponent] = (
     (JsPath \ "componentType").write[TaxComponentType](codingComponentTypeWrites) and

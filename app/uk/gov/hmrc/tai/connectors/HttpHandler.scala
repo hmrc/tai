@@ -37,36 +37,35 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
 
     val timerContext = metrics.startTimer(api)
 
-    implicit val responseHandler = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse =
+    implicit val responseHandler: HttpReads[HttpResponse] =
+      (method: String, url: String, response: HttpResponse) =>
         response.status match {
           case Status.OK =>
             Try(response) match {
               case Success(data) => data
               case Failure(e)    => throw new RuntimeException("Unable to parse response")
             }
-          case Status.NOT_FOUND => {
+
+          case Status.NOT_FOUND =>
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)
-          }
-          case Status.INTERNAL_SERVER_ERROR => {
+
+          case Status.INTERNAL_SERVER_ERROR =>
             Logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
             throw new InternalServerException(response.body)
-          }
-          case Status.BAD_REQUEST => {
+
+          case Status.BAD_REQUEST =>
             Logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
             throw new BadRequestException(response.body)
-          }
-          case Status.LOCKED => {
+
+          case Status.LOCKED =>
             Logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
             throw new LockedException(response.body)
-          }
-          case _ => {
+
+          case _ =>
             Logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
             throw new HttpException(response.body, response.status)
-          }
-        }
-    }
+      }
 
     (for {
       response <- httpClient.GET[HttpResponse](url)
@@ -89,22 +88,20 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
     implicit hc: HeaderCarrier,
     writes: Writes[I]): Future[HttpResponse] = {
 
-    val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-    }
+    val rawHttpReads: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) => response
 
     httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, ec) map { httpResponse =>
       httpResponse status match {
-        case OK | CREATED | ACCEPTED | NO_CONTENT => {
+        case OK | CREATED | ACCEPTED | NO_CONTENT =>
           metrics.incrementSuccessCounter(api)
           httpResponse
-        }
-        case _ => {
+
+        case _ =>
           Logger.warn(
             s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
           metrics.incrementFailedCounter(api)
           throw new HttpException(httpResponse.body, httpResponse.status)
-        }
+
       }
     }
   }

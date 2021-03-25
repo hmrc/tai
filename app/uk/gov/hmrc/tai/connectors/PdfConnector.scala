@@ -31,8 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
 
-  private implicit val system = ActorSystem()
-  private implicit val materializer = ActorMaterializer()
+  private implicit val system: ActorSystem = ActorSystem()
+  private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   def generatePdf(html: String): Future[Array[Byte]] = {
 
@@ -43,15 +43,14 @@ class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls
     result.map { response =>
       timerContext.stop()
       response.status match {
-        case Status.OK => {
+        case Status.OK =>
           metrics.incrementSuccessCounter(APITypes.PdfServiceAPI)
           response.bodyAsBytes.toArray
-        }
-        case _ => {
+
+        case _ =>
           Logger.warn(s"PdfConnector - A Server error was received from ${APITypes.PdfServiceAPI}")
           metrics.incrementFailedCounter(APITypes.PdfServiceAPI)
           throw new HttpException(response.body, response.status)
-        }
       }
     }
   }

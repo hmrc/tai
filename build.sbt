@@ -1,7 +1,6 @@
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.DefaultBuildSettings
+import uk.gov.hmrc.{DefaultBuildSettings, SbtAutoBuildPlugin}
 
 val appName: String = "tai"
 

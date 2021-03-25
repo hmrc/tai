@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.model.enums
 
-import uk.gov.hmrc.tai.model.nps2
+import play.api.libs.json.Format
+import uk.gov.hmrc.tai.model.{enums, nps2}
 
 object PayFreq extends Enumeration {
 
@@ -24,6 +25,6 @@ object PayFreq extends Enumeration {
 
   val weekly, fortnightly, monthly, other = Value
 
-  implicit val enumFormat = nps2.enumerationFormat(PayFreq)
+  implicit val enumFormat: Format[enums.PayFreq.Value] = nps2.enumerationFormat(PayFreq)
 
 }

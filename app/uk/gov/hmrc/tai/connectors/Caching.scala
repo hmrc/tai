@@ -34,18 +34,19 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
     val cacheId = CacheId(nino)
 
     cacheConnector.findJson(cacheId, mongoKey).flatMap {
-      case Some(jsonFromCache) => {
-        if (cacheMetricsConfig.cacheMetricsEnabled)
+      case Some(jsonFromCache) =>
+        if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheHitCounter()
+        }
 
         Future.successful(jsonFromCache)
-      }
-      case _ => {
-        if (cacheMetricsConfig.cacheMetricsEnabled)
+
+      case _ =>
+        if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheMissCounter()
+        }
 
         jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(cacheId, _, mongoKey))
-      }
     }
   }
 }

@@ -16,23 +16,21 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters.income
 
-import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{BaseTaxAccountHodFormatters, NpsIabdSummary}
 import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
 
 trait TaxAccountIncomeHodFormatters extends BaseTaxAccountHodFormatters {
 
-  val nonTaxCodeIncomeReads = new Reads[Seq[OtherNonTaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[OtherNonTaxCodeIncome]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
-      JsSuccess(nonTaxCodeIncomes(extractedIabds))
-    }
+  val nonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+    JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 
   private def nonTaxCodeIncomes(iabds: Seq[NpsIabdSummary]): Seq[OtherNonTaxCodeIncome] =
     iabds collect {
-      case (iabd) if nonTaxCodeIncomesMap.isDefinedAt(iabd.componentType) =>
+      case iabd if nonTaxCodeIncomesMap.isDefinedAt(iabd.componentType) =>
         OtherNonTaxCodeIncome(
           nonTaxCodeIncomesMap(iabd.componentType),
           iabd.employmentId,

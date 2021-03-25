@@ -21,7 +21,7 @@ import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
 trait FileUploadFormatters {
 
-  val envelopeSummaryReads = new Reads[EnvelopeSummary] {
+  val envelopeSummaryReads: Reads[EnvelopeSummary] = new Reads[EnvelopeSummary] {
     override def reads(json: JsValue): JsResult[EnvelopeSummary] =
       if ((json \ "id").validate[String].isSuccess) {
         val envelopeId = (json \ "id").as[String]

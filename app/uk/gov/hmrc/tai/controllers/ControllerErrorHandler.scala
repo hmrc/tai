@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import play.api.mvc.{AnyContent, Request, Result}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import play.api.mvc.Result
 import play.api.mvc.Results._
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+
 import scala.concurrent.Future
 
 trait ControllerErrorHandler {

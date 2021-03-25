@@ -25,7 +25,7 @@ case object Unavailable extends RealTimeStatus
 
 object RealTimeStatus extends RealTimeStatus {
 
-  implicit val realTimeStatusFormat = new Format[RealTimeStatus] {
+  implicit val realTimeStatusFormat: Format[RealTimeStatus] = new Format[RealTimeStatus] {
     override def reads(json: JsValue): JsSuccess[RealTimeStatus] = json.as[String] match {
       case "Available"              => JsSuccess(Available)
       case "TemporarilyUnavailable" => JsSuccess(TemporarilyUnavailable)
@@ -33,6 +33,6 @@ object RealTimeStatus extends RealTimeStatus {
       case _                        => throw new IllegalArgumentException("Invalid real time status value")
     }
 
-    override def writes(realTimeStatus: RealTimeStatus) = JsString(realTimeStatus.toString)
+    override def writes(realTimeStatus: RealTimeStatus): JsString = JsString(realTimeStatus.toString)
   }
 }

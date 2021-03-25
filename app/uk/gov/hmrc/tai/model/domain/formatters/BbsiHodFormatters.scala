@@ -21,32 +21,30 @@ import uk.gov.hmrc.tai.model.domain.BankAccount
 
 trait BbsiHodFormatters {
 
-  val bankAccountHodReads = new Reads[Seq[BankAccount]] {
-    override def reads(json: JsValue): JsResult[Seq[BankAccount]] = {
-      val accounts: Seq[JsValue] = (json \ "accounts").validate[JsArray] match {
-        case JsSuccess(arr, _) => arr.value
-        case _                 => throw new RuntimeException("Invalid Json")
-      }
-
-      JsSuccess(accounts.map { account =>
-        val accountNumber = (account \ "accountNumber").asOpt[String]
-        val sortCode = (account \ "sortCode").asOpt[String]
-        val bankName = (account \ "bankName").asOpt[String]
-        val source = (account \ "source").asOpt[String]
-        val numberOfAccountHolders = (account \ "numberOfAccountHolders").asOpt[Int]
-        val grossInterest = (account \ "grossInterest").as[BigDecimal]
-
-        BankAccount(
-          accountNumber = accountNumber,
-          sortCode = sortCode,
-          bankName = bankName,
-          source = source,
-          grossInterest = grossInterest,
-          numberOfAccountHolders = numberOfAccountHolders
-        )
-      })
-
+  val bankAccountHodReads: Reads[Seq[BankAccount]] = (json: JsValue) => {
+    val accounts: Seq[JsValue] = (json \ "accounts").validate[JsArray] match {
+      case JsSuccess(arr, _) => arr.value
+      case _ => throw new RuntimeException("Invalid Json")
     }
+
+    JsSuccess(accounts.map { account =>
+      val accountNumber = (account \ "accountNumber").asOpt[String]
+      val sortCode = (account \ "sortCode").asOpt[String]
+      val bankName = (account \ "bankName").asOpt[String]
+      val source = (account \ "source").asOpt[String]
+      val numberOfAccountHolders = (account \ "numberOfAccountHolders").asOpt[Int]
+      val grossInterest = (account \ "grossInterest").as[BigDecimal]
+
+      BankAccount(
+        accountNumber = accountNumber,
+        sortCode = sortCode,
+        bankName = bankName,
+        source = source,
+        grossInterest = grossInterest,
+        numberOfAccountHolders = numberOfAccountHolders
+      )
+    })
+
   }
 }
 

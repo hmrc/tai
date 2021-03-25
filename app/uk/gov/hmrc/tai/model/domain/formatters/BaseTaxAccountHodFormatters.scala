@@ -19,14 +19,12 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import play.api.libs.json._
 
 trait BaseTaxAccountHodFormatters {
-  val iabdsFromTotalLiabilityReads = new Reads[Seq[NpsIabdSummary]] {
-    override def reads(json: JsValue): JsResult[Seq[NpsIabdSummary]] = {
-      val categories =
-        Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-      val totalIncomeList = totalLiabilityIabds(json, "totalIncome", categories)
-      val allowReliefDeductsList = totalLiabilityIabds(json, "allowReliefDeducts", categories)
-      JsSuccess(totalIncomeList ++ allowReliefDeductsList)
-    }
+  val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
+    val categories =
+      Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val totalIncomeList = totalLiabilityIabds(json, "totalIncome", categories)
+    val allowReliefDeductsList = totalLiabilityIabds(json, "allowReliefDeducts", categories)
+    JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {

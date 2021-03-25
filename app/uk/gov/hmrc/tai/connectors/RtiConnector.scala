@@ -44,8 +44,8 @@ class RtiConnector @Inject()(
   rtiToggle: RtiToggleConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) {
 
-  override val originatorId = rtiConfig.originatorId
-  val logger = Logger(this.getClass)
+  override val originatorId: String = rtiConfig.originatorId
+  val logger: Logger = Logger(this.getClass)
 
   def withoutSuffix(nino: Nino): String = {
     val BASIC_NINO_LENGTH = 8
@@ -81,61 +81,60 @@ class RtiConnector @Inject()(
       futureResponse map { res =>
         timerContext.stop()
         res.status match {
-          case OK => {
+          case OK =>
             metrics.incrementSuccessCounter(APITypes.RTIAPI)
             val rtiData = res.json
             val annualAccounts = rtiData.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
             Right(annualAccounts)
-          }
-          case NOT_FOUND => {
+
+          case NOT_FOUND =>
             metrics.incrementSuccessCounter(APITypes.RTIAPI)
             Left(ResourceNotFoundError)
-          }
-          case BAD_REQUEST => {
+
+          case BAD_REQUEST =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             logger.error(s"RTIAPI - Bad request error received: ${res.body}")
             Left(BadRequestError)
-          }
-          case SERVICE_UNAVAILABLE => {
+
+          case SERVICE_UNAVAILABLE =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             logger.warn(s"RTIAPI - Service unavailable error received")
             Left(ServiceUnavailableError)
-          }
-          case INTERNAL_SERVER_ERROR => {
+
+          case INTERNAL_SERVER_ERROR =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             logger.error(s"RTIAPI - Internal Server error received: ${res.body}")
             Left(ServerError)
-          }
-          case BAD_GATEWAY => {
+
+          case BAD_GATEWAY =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             Left(BadGatewayError)
-          }
-          case GATEWAY_TIMEOUT | NGINX_TIMEOUT => {
+
+          case GATEWAY_TIMEOUT | NGINX_TIMEOUT =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             Left(TimeoutError)
-          }
-          case _ => {
+
+          case _ =>
             logger.error(s"RTIAPI - ${res.status} error returned from RTI HODS")
             metrics.incrementFailedCounter(APITypes.RTIAPI)
             Left(UnhandledStatusError)
-          }
         }
       } recover {
-        case _: GatewayTimeoutException => {
+        case _: GatewayTimeoutException =>
           metrics.incrementFailedCounter(APITypes.RTIAPI)
           timerContext.stop()
           Left(TimeoutError)
-        }
-        case _: BadGatewayException => {
+
+        case _: BadGatewayException =>
           metrics.incrementFailedCounter(APITypes.RTIAPI)
           timerContext.stop()
           Left(BadGatewayError)
-        }
-        case NonFatal(e) => {
+
+        case NonFatal(e) =>
           metrics.incrementFailedCounter(APITypes.RTIAPI)
           timerContext.stop()
           throw e
-        }
+
       }
     } else {
       Future.successful(Left(ServiceUnavailableError))

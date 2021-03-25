@@ -61,13 +61,13 @@ object EstimatedPayCalculator {
     val daysInYear = 365
 
     frequency match {
-      case PayFreq.monthly     => { pay * freqMonthly }
-      case PayFreq.weekly      => { pay * freqWeekly }
-      case PayFreq.fortnightly => { pay * freqBiWeekly }
-      case PayFreq.other => {
+      case PayFreq.monthly     => pay * freqMonthly
+      case PayFreq.weekly      => pay * freqWeekly
+      case PayFreq.fortnightly => pay * freqBiWeekly
+      case PayFreq.other =>
         (if (days > 0 && days <= daysInYear) pay * (BigDecimal(daysInYear) / days) else BigDecimal(0))
           .setScale(0, RoundingMode.DOWN)
-      }
+
     }
   }
 

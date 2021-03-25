@@ -29,7 +29,7 @@ case class TaxBand(
   rate: BigDecimal)
 
 object TaxBand {
-  implicit val formats = Json.format[TaxBand]
+  implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
 }
 
 sealed trait IncomeCategoryType

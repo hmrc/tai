@@ -17,35 +17,36 @@
 package uk.gov.hmrc.tai.model.enums
 
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.enums
 
 object APITypes extends Enumeration {
   type APITypes = Value
-  val NpsTaxAccountAPI = Value
-  val NpsIabdAllAPI = Value
-  val NpsIabdSpecificAPI = Value
-  val NpsPersonAPI = Value
-  val NpsEmploymentAPI = Value
-  val NpsIabdUpdateEstPayAutoAPI = Value
-  val NpsIabdUpdateEstPayManualAPI = Value
-  val NpsIabdUpdateFlatRateExpensesAPI = Value
-  val RTIAPI = Value
-  val DesTaxAccountAPI = Value
-  val DesIabdAllAPI = Value
-  val DesIabdSpecificAPI = Value
-  val DesIabdUpdateEstPayAutoAPI = Value
-  val DesIabdUpdateEstPayManualAPI = Value
-  val DesIabdUpdateFlatRateExpensesAPI = Value
-  val DesIabdGetFlatRateExpensesAPI = Value
-  val DesIabdGetEmployeeExpensesAPI = Value
-  val DesIabdUpdateEmployeeExpensesAPI = Value
-  val PdfServiceAPI = Value
-  val CompanyCarAPI = Value
-  val FusCreateEnvelope = Value
-  val FusUploadFile = Value
-  val FusCloseEnvelope = Value
-  val BbsiAPI = Value
-  val TaxCodeChangeAPI = Value
-  val TaxAccountHistoryAPI = Value
+  val NpsTaxAccountAPI: enums.APITypes.Value = Value
+  val NpsIabdAllAPI: enums.APITypes.Value = Value
+  val NpsIabdSpecificAPI: enums.APITypes.Value = Value
+  val NpsPersonAPI: enums.APITypes.Value = Value
+  val NpsEmploymentAPI: enums.APITypes.Value = Value
+  val NpsIabdUpdateEstPayAutoAPI: enums.APITypes.Value = Value
+  val NpsIabdUpdateEstPayManualAPI: enums.APITypes.Value = Value
+  val NpsIabdUpdateFlatRateExpensesAPI: enums.APITypes.Value = Value
+  val RTIAPI: enums.APITypes.Value = Value
+  val DesTaxAccountAPI: enums.APITypes.Value = Value
+  val DesIabdAllAPI: enums.APITypes.Value = Value
+  val DesIabdSpecificAPI: enums.APITypes.Value = Value
+  val DesIabdUpdateEstPayAutoAPI: enums.APITypes.Value = Value
+  val DesIabdUpdateEstPayManualAPI: enums.APITypes.Value = Value
+  val DesIabdUpdateFlatRateExpensesAPI: enums.APITypes.Value = Value
+  val DesIabdGetFlatRateExpensesAPI: enums.APITypes.Value = Value
+  val DesIabdGetEmployeeExpensesAPI: enums.APITypes.Value = Value
+  val DesIabdUpdateEmployeeExpensesAPI: enums.APITypes.Value = Value
+  val PdfServiceAPI: enums.APITypes.Value = Value
+  val CompanyCarAPI: enums.APITypes.Value = Value
+  val FusCreateEnvelope: enums.APITypes.Value = Value
+  val FusUploadFile: enums.APITypes.Value = Value
+  val FusCloseEnvelope: enums.APITypes.Value = Value
+  val BbsiAPI: enums.APITypes.Value = Value
+  val TaxCodeChangeAPI: enums.APITypes.Value = Value
+  val TaxAccountHistoryAPI: enums.APITypes.Value = Value
 }
 
 object BasisOperation extends Enumeration {
@@ -58,8 +59,8 @@ object BasisOperation extends Enumeration {
     4 -> CumulativeNotOperated
   )
 
-  implicit val enumFormat = new Format[BasisOperation] {
-    def reads(json: JsValue) =
+  implicit val enumFormat: Format[BasisOperation] = new Format[BasisOperation] {
+    def reads(json: JsValue): JsSuccess[Value] =
       JsSuccess(
         json
           .validate[Int]
@@ -72,6 +73,6 @@ object BasisOperation extends Enumeration {
             }
           ))
 
-    def writes(enum: BasisOperation) = JsString(enum.toString)
+    def writes(enum: BasisOperation): JsString = JsString(enum.toString)
   }
 }

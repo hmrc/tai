@@ -22,24 +22,20 @@ import uk.gov.hmrc.tai.model.domain.calculation._
 
 trait IncomeCategoryHodFormatters {
 
-  val taxFreeAllowanceReads = new Reads[BigDecimal] {
-    override def reads(json: JsValue): JsResult[BigDecimal] = {
-      val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-      val totalLiability = (json \ "totalLiability").as[JsValue]
-      JsSuccess(
-        categoryNames map (category =>
-          (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
-      )
-    }
+  val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
+    val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val totalLiability = (json \ "totalLiability").as[JsValue]
+    JsSuccess(
+      categoryNames map (category =>
+        (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
+    )
   }
 
-  val incomeCategorySeqReads = new Reads[Seq[IncomeCategory]] {
-    override def reads(json: JsValue): JsResult[Seq[IncomeCategory]] = {
-      val categoryNames =
-        Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-      val incomeCategoryList = incomeCategories(json, categoryNames)
-      JsSuccess(incomeCategoryList)
-    }
+  val incomeCategorySeqReads: Reads[Seq[IncomeCategory]] = (json: JsValue) => {
+    val categoryNames =
+      Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val incomeCategoryList = incomeCategories(json, categoryNames)
+    JsSuccess(incomeCategoryList)
   }
 
   def incomeCategories(json: JsValue, categories: Seq[String]): Seq[IncomeCategory] = {
@@ -57,17 +53,15 @@ trait IncomeCategoryHodFormatters {
     }.toList
   }
 
-  val taxBandReads = new Reads[TaxBand] {
-    override def reads(json: JsValue): JsResult[TaxBand] = {
-      val bandType = (json \ "bandType").asOpt[String].getOrElse("")
-      val code = (json \ "code").asOpt[String].getOrElse("")
-      val income = (json \ "income").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val tax = (json \ "tax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
-      val upperBand = (json \ "upperBand").asOpt[BigDecimal]
-      val rate = (json \ "rate").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate))
-    }
+  val taxBandReads: Reads[TaxBand] = (json: JsValue) => {
+    val bandType = (json \ "bandType").asOpt[String].getOrElse("")
+    val code = (json \ "code").asOpt[String].getOrElse("")
+    val income = (json \ "income").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val tax = (json \ "tax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
+    val upperBand = (json \ "upperBand").asOpt[BigDecimal]
+    val rate = (json \ "rate").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    JsSuccess(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate))
   }
 
   private def categoryTypeFactory(category: String) =

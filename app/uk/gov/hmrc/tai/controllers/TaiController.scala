@@ -16,27 +16,25 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.{SessionData, Tax}
-import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
-
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.SessionData
+import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaiController @Inject()(
   taxAccountService: TaxAccountService,
-  metrics: Metrics,
   authentication: AuthenticationPredicate,
   cc: ControllerComponents)(
   implicit ec: ExecutionContext
@@ -53,7 +51,7 @@ class TaiController @Inject()(
     {
 
       for {
-        sessionData <- taxAccountService.taiData(nino, TaxYear().start.getYear())
+        sessionData <- taxAccountService.taiData(nino, TaxYear().start.getYear)
       } yield Ok(Json.toJson(sessionData))
     } recoverWith {
       case NpsError(body, NOT_FOUND) =>

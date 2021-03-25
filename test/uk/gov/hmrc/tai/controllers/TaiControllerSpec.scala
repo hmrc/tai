@@ -57,7 +57,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.personDetails(any())(any()))
         .thenReturn(Future.successful(data.taiRoot.get))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val taiRoot = sut.getTaiRoot(nino)(FakeRequest())
 
       status(taiRoot) mustBe Status.OK
@@ -90,7 +90,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.taiData(any(), any())(any()))
         .thenReturn(Future.successful(data))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val result = sut.taiData(nino)(FakeRequest())
 
       status(result) mustBe 200
@@ -111,7 +111,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.taiData(any(), any())(any()))
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(badRequestErrorResponse), BAD_REQUEST)))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val badRequest = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
       status(badRequest) mustBe BAD_REQUEST
@@ -131,7 +131,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.taiData(any(), any())(any()))
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(notFoundErrorResponse), NOT_FOUND)))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val notFound = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
       val thrown = the[NotFoundException] thrownBy await(notFound)
@@ -150,7 +150,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.taiData(any(), any())(any()))
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(serviceUnavailableErrorResponse), SERVICE_UNAVAILABLE)))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val serviceUnavailable = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
       val thrown = the[HttpException] thrownBy await(serviceUnavailable)
@@ -169,7 +169,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.taiData(any(), any())(any()))
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(internalServerErrorResponse), INTERNAL_SERVER_ERROR)))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val internalServerError = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
       val thrown = the[InternalServerException] thrownBy await(internalServerError)
@@ -189,7 +189,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.updateTaiData(any(), any())(any()))
         .thenReturn(Future.successful(sessionData))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val result = sut.updateTaiData(nino)(fakeRequest)
 
       status(result) mustBe 200
@@ -208,7 +208,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
       when(mockTaxAccountService.updateTaiData(any(), any())(any()))
         .thenReturn(Future.failed(new IllegalArgumentException("FAILED")))
 
-      val sut = createSUT(mockTaxAccountService, mock[Metrics])
+      val sut = createSUT(mockTaxAccountService)
       val result = sut.updateTaiData(nino)(fakeRequest)
 
       val ex = the[InternalServerException] thrownBy Await.result(result, 5 seconds)
@@ -225,7 +225,6 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
   private def createSUT(
     taxAccountService: TaxAccountService,
-    metrics: Metrics,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new TaiController(taxAccountService, metrics, authentication, cc)
+    new TaiController(taxAccountService, authentication, cc)
 }

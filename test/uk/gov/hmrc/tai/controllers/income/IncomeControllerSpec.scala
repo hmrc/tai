@@ -435,7 +435,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
     taxAccountService: TaxAccountService = mock[TaxAccountService],
     employmentService: EmploymentService = mock[EmploymentService],
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, taxAccountService, employmentService, authentication, cc)
+    new IncomeController(incomeService, authentication, cc)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)

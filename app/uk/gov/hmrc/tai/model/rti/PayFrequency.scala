@@ -17,21 +17,21 @@
 package uk.gov.hmrc.tai.model.rti
 
 object PayFrequency extends Enumeration {
-  val Weekly = Value("W1")
-  val Fortnightly = Value("W2")
+  val Weekly: PayFrequency.Value = Value("W1")
+  val Fortnightly: PayFrequency.Value = Value("W2")
 
   /**
     * Not the same as [[Monthly]] (Calendar Month)
     */
-  val FourWeekly = Value("W4")
+  val FourWeekly: PayFrequency.Value = Value("W4")
 
   /**
     * A Calendar month, not the same as [[FourWeekly]]
     */
-  val Monthly = Value("M1")
-  val Quarterly = Value("M3")
-  val BiAnnually = Value("M6")
-  val Annually = Value("MA")
-  val OneOff = Value("IO")
-  val Irregular = Value("IR")
+  val Monthly: PayFrequency.Value = Value("M1")
+  val Quarterly: PayFrequency.Value = Value("M3")
+  val BiAnnually: PayFrequency.Value = Value("M6")
+  val Annually: PayFrequency.Value = Value("MA")
+  val OneOff: PayFrequency.Value = Value("IO")
+  val Irregular: PayFrequency.Value = Value("IR")
 }
