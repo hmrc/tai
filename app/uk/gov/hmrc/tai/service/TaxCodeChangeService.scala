@@ -96,7 +96,7 @@ class TaxCodeChangeServiceImpl @Inject()(
         Logger.warn(s"Only one tax code record returned for $nino")
 
         TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)), Seq())
-      } else if (taxCodeRecordList.size == 0) {
+      } else if (taxCodeRecordList.isEmpty) {
         Logger.warn(s"Zero tax code records returned for $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxHelper}
 import uk.gov.hmrc.tai.model.nps2.{AllowanceType, DeductionType}
 import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}

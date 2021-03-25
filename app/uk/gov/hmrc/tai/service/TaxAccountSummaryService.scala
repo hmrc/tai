@@ -47,9 +47,9 @@ class TaxAccountSummaryService @Inject()(
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
-      val totalIyaIntoCY = (taxCodeIncomes map (_.inYearAdjustmentIntoCY) sum)
-      val totalIya = (taxCodeIncomes map (_.totalInYearAdjustment) sum)
-      val totalIyatIntoCYPlusOne = (taxCodeIncomes map (_.inYearAdjustmentIntoCYPlusOne) sum)
+      val totalIyaIntoCY = taxCodeIncomes map (_.inYearAdjustmentIntoCY) sum
+      val totalIya = taxCodeIncomes map (_.totalInYearAdjustment) sum
+      val totalIyatIntoCYPlusOne = taxCodeIncomes map (_.inYearAdjustmentIntoCYPlusOne) sum
       val incomeCategoriesSum = totalTax.incomeCategories.map(_.totalTaxableIncome).sum
       val totalEstimatedIncome =
         if (incomeCategoriesSum == 0) totalTax.incomeCategories.map(_.totalIncome).sum

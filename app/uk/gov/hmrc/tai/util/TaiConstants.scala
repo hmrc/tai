@@ -85,7 +85,7 @@ object TaiConstants {
     Some(BereavementAllowance.code)
   )
 
-  val IADB_TYPE_BENEFITS_IN_KIND_TOTAL = Some(BenefitInKind.code)
+  val IADB_TYPE_BENEFITS_IN_KIND_TOTAL: Option[Int] = Some(BenefitInKind.code)
 
   val IADB_TYPE_BENEFITS_IN_KIND = List(
     Some(Accommodation.code),

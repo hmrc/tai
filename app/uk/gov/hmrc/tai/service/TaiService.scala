@@ -35,8 +35,8 @@ import uk.gov.hmrc.tai.model.nps2.Income.Live
 import uk.gov.hmrc.tai.model.nps2.{IabdType, NpsFormatter, TaxAccount}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
+import uk.gov.hmrc.tai.util.DateTimeHelper
 import uk.gov.hmrc.tai.util.TaiConstants._
-import uk.gov.hmrc.tai.util.{DateTimeHelper, TaiConstants}
 
 import scala.concurrent._
 
@@ -92,7 +92,7 @@ class TaiService @Inject()(
       endDate match {
         case None => true
         case Some(npsDate)
-            if (npsDate.localDate.isAfter(TaxYear().start) && npsDate.localDate.isBefore(TaxYear().next.start)) =>
+            if npsDate.localDate.isAfter(TaxYear().start) && npsDate.localDate.isBefore(TaxYear().next.start) =>
           true
         case _ => false
     }
@@ -176,7 +176,7 @@ class TaiService @Inject()(
         .stripCeasedFromNps(taxAccountNY)
         .toTaxSummary(
           newVersion,
-          employments.filter(x => x.employmentStatus == Some(Live.code)),
+          employments.filter(x => x.employmentStatus.contains(Live.code)),
           accounts = List(taiAnnualAccountNY))
         .copy(accounts = List(taiAnnualAccountNY))
 
@@ -217,28 +217,28 @@ class TaiService @Inject()(
           updatedEmployments.map(employment => getIadbUpdateAmount(employment))
         val refreshedVersion = personDetails.etag.toInt
 
-        val updateEmpData = featureTogglesConfig.desUpdateEnabled match {
-          case true =>
-            des.updateEmploymentDataToDes(
-              nino,
-              taxYear,
-              iabdType,
-              refreshedVersion,
-              editedAmounts,
-              apiType = APITypes.DesIabdUpdateEstPayManualAPI)
-          case _ =>
-            nps.updateEmploymentData(
-              nino,
-              taxYear,
-              iabdType,
-              refreshedVersion,
-              editedAmounts,
-              apiType = APITypes.NpsIabdUpdateEstPayManualAPI)
+        val updateEmpData = if (featureTogglesConfig.desUpdateEnabled) {
+          des.updateEmploymentDataToDes(
+            nino,
+            taxYear,
+            iabdType,
+            refreshedVersion,
+            editedAmounts,
+            apiType = APITypes.DesIabdUpdateEstPayManualAPI)
+        } else {
+          nps.updateEmploymentData(
+            nino,
+            taxYear,
+            iabdType,
+            refreshedVersion,
+            editedAmounts,
+            apiType = APITypes.NpsIabdUpdateEstPayManualAPI)
         }
         updateEmpData map { currentYearUpdatedResponse =>
-          featureTogglesConfig.desUpdateEnabled match {
-            case true => des.updateEmploymentDataToDes(nino, taxYear + 1, iabdType, refreshedVersion + 1, editedAmounts)
-            case _    => nps.updateEmploymentData(nino, taxYear + 1, iabdType, refreshedVersion + 1, editedAmounts)
+          if (featureTogglesConfig.desUpdateEnabled) {
+            des.updateEmploymentDataToDes(nino, taxYear + 1, iabdType, refreshedVersion + 1, editedAmounts)
+          } else {
+            nps.updateEmploymentData(nino, taxYear + 1, iabdType, refreshedVersion + 1, editedAmounts)
           }
 
           val updatedResponse =
@@ -276,7 +276,7 @@ class TaiService @Inject()(
       source = source)
   }
 
-  def getCalculatedEstimatedPay(payDetails: PayDetails) =
+  def getCalculatedEstimatedPay(payDetails: PayDetails): CalculatedPay =
     EstimatedPayCalculator.calculate(payDetails)
 
   private[service] def sessionOrUUID(implicit hc: HeaderCarrier): String =

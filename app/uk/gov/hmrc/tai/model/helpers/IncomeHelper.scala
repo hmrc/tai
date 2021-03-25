@@ -122,7 +122,7 @@ object IncomeHelper extends IncomeHelper {
     adjustedNetIncome: Option[NpsComponent] = None,
     employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdFilter = (npsIabdSummary: NpsIabdSummary) =>
-      npsIabdSummary.`type`.contains(NewEstimatedPay.code) && npsIabdSummary.employmentId == employmentId
+      (npsIabdSummary.`type`.contains(NewEstimatedPay.code) && npsIabdSummary.employmentId == employmentId)
     getIabdAmountFromIncome(adjustedNetIncome, iabdFilter)
   }
 

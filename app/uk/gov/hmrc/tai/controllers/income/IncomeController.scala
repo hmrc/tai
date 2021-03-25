@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
+import uk.gov.hmrc.tai.service.IncomeService
 
 import scala.concurrent.ExecutionContext
 

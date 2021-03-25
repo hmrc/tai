@@ -24,7 +24,7 @@ trait BbsiHodFormatters {
   val bankAccountHodReads: Reads[Seq[BankAccount]] = (json: JsValue) => {
     val accounts: Seq[JsValue] = (json \ "accounts").validate[JsArray] match {
       case JsSuccess(arr, _) => arr.value
-      case _ => throw new RuntimeException("Invalid Json")
+      case _                 => throw new RuntimeException("Invalid Json")
     }
 
     JsSuccess(accounts.map { account =>

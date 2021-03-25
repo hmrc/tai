@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 @Singleton
 class NextYearComparisonService @Inject()() {
 
-  def stripCeasedFromNps(npsTaxAccount: NpsTaxAccount) = {
+  def stripCeasedFromNps(npsTaxAccount: NpsTaxAccount): NpsTaxAccount = {
 
     val modifiedIncomeSources = npsTaxAccount.incomeSources.map(_.map { incomeSource =>
       incomeSource.employmentStatus match {

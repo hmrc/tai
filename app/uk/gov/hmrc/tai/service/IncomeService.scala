@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
-import uk.gov.hmrc.tai.model.enums.APITypes.FusCreateEnvelope
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
@@ -125,8 +124,9 @@ class IncomeService @Inject()(
             incomeAmount         <- incomeAmountForEmploymentId(nino, year, employmentId)
             incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
           } yield {
-            if (incomeUpdateResponse == IncomeUpdateSuccess)
+            if (incomeUpdateResponse == IncomeUpdateSuccess) {
               auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+            }
             incomeUpdateResponse
           }
         case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
