@@ -30,6 +30,90 @@ import scala.io.BufferedSource
 
 class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters {
 
+  val samplePayment: Payment = Payment(
+    date = new LocalDate(2017, 5, 26),
+    amountYearToDate = 2000,
+    taxAmountYearToDate = 1200,
+    nationalInsuranceAmountYearToDate = 300,
+    amount = 200,
+    taxAmount = 100,
+    nationalInsuranceAmount = 150,
+    payFrequency = Irregular,
+    duplicate = None
+  )
+
+  val sampleEndOfTaxYearUpdate: EndOfTaxYearUpdate =
+    EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
+  val sampleEndOfTaxYearUpdateMultipleAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
+    new LocalDate(2016, 6, 4),
+    Seq(
+      Adjustment(TaxAdjustment, -20.99),
+      Adjustment(IncomeAdjustment, -21.99),
+      Adjustment(NationalInsuranceAdjustment, 44.2)))
+  val sampleEndOfTaxYearUpdateTwoAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
+    new LocalDate(2016, 6, 4),
+    Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
+
+  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
+    for {
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
+      error: JsonValidationError                       <- errors
+      message: String                                  <- error.messages
+    } yield {
+      path.toString() + " -> " + message
+    }
+
+  val sampleSingleEmployment = List(
+    Employment(
+      "EMPLOYER1",
+      Live,
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
+  val sampleDualEmployment = List(
+    Employment(
+      "EMPLOYER1",
+      Live,
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      None,
+      hasPayrolledBenefit = true,
+      receivingOccupationalPension = false),
+    Employment(
+      "EMPLOYER2",
+      Live,
+      Some("0000"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "000",
+      "00000",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false)
+  )
+
+  private def getJson(fileName: String): JsValue = {
+    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
+    val file: File = new File(jsonFilePath)
+    val source: BufferedSource = scala.io.Source.fromFile(file)
+    val jsVal = Json.parse(source.mkString(""))
+    jsVal
+  }
+
   "numberChecked" should {
 
     "return a new string with leading zeros removed, when supplied with a numeric string" in {
@@ -234,89 +318,5 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       val rtiTaxYearJsVal = JsString("16-")
       an[IllegalArgumentException] mustBe thrownBy(rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016))
     }
-  }
-
-  val samplePayment: Payment = Payment(
-    date = new LocalDate(2017, 5, 26),
-    amountYearToDate = 2000,
-    taxAmountYearToDate = 1200,
-    nationalInsuranceAmountYearToDate = 300,
-    amount = 200,
-    taxAmount = 100,
-    nationalInsuranceAmount = 150,
-    payFrequency = Irregular,
-    duplicate = None
-  )
-
-  val sampleEndOfTaxYearUpdate: EndOfTaxYearUpdate =
-    EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
-  val sampleEndOfTaxYearUpdateMultipleAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
-    new LocalDate(2016, 6, 4),
-    Seq(
-      Adjustment(TaxAdjustment, -20.99),
-      Adjustment(IncomeAdjustment, -21.99),
-      Adjustment(NationalInsuranceAdjustment, 44.2)))
-  val sampleEndOfTaxYearUpdateTwoAdjusts: EndOfTaxYearUpdate = EndOfTaxYearUpdate(
-    new LocalDate(2016, 6, 4),
-    Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
-
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
-    for {
-      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
-      error: JsonValidationError                       <- errors
-      message: String                                  <- error.messages
-    } yield {
-      path.toString() + " -> " + message
-    }
-
-  val sampleSingleEmployment = List(
-    Employment(
-      "EMPLOYER1",
-      Live,
-      Some("0000"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "000",
-      "00000",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false))
-  val sampleDualEmployment = List(
-    Employment(
-      "EMPLOYER1",
-      Live,
-      Some("0000"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "000",
-      "00000",
-      2,
-      None,
-      hasPayrolledBenefit = true,
-      receivingOccupationalPension = false),
-    Employment(
-      "EMPLOYER2",
-      Live,
-      Some("0000"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "000",
-      "00000",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false)
-  )
-
-  private def getJson(fileName: String): JsValue = {
-    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
-    val file: File = new File(jsonFilePath)
-    val source: BufferedSource = scala.io.Source.fromFile(file)
-    val jsVal = Json.parse(source.mkString(""))
-    jsVal
   }
 }

@@ -30,6 +30,45 @@ import scala.util.Random
 class AnnualAccountSpec extends PlaySpec {
 
   "Annual Account employments" should {
+
+    val rtiSampleEmployments: Gen[RtiEmployment] = RtiGenerator.employment
+
+    val nino: Nino = new Generator(new Random).nextNino
+
+    val date = LocalDate.parse("2017-12-12")
+
+    val testNpsEmployment = NpsEmployment(
+      employerName = Some("Company Plc"),
+      isPrimary = true,
+      sequenceNumber = 1,
+      worksNumber = Some("1234"),
+      districtNumber = 1,
+      iabds = List(),
+      cessationPay = Some(2200.22),
+      start = date
+    )
+
+    def testIncome(taxDistrict: Int, payeRef: String) = Income(
+      employmentId = Some(1),
+      isPrimary = true,
+      incomeType = IncomeType.Employment,
+      status = Status(Some(1), ceased = Some(date)),
+      taxDistrict = Some(taxDistrict),
+      payeRef = payeRef,
+      name = "name",
+      worksNumber = Some("1234"),
+      taxCode = "AB1234",
+      potentialUnderpayment = 20.20,
+      employmentRecord = Some(testNpsEmployment),
+      basisOperation = Some(BasisOperation.Week1Month1)
+    )
+
+    def sut(
+      nps: Option[TaxAccount] = None,
+      rti: Option[RtiData] = None,
+      rtiStatus: Option[RtiStatus] = None): Seq[Employment] =
+      AnnualAccount(TaxYear(2016), nps, rti, rtiStatus).employments
+
     "fetch the correct sequence of employments" when {
       "there is no nps or rti data" in {
         sut() mustBe List()
@@ -74,41 +113,4 @@ class AnnualAccountSpec extends PlaySpec {
       }
     }
   }
-
-  val rtiSampleEmployments: Gen[RtiEmployment] = RtiGenerator.employment
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private val date = LocalDate.parse("2017-12-12")
-
-  private val testNpsEmployment = NpsEmployment(
-    employerName = Some("Company Plc"),
-    isPrimary = true,
-    sequenceNumber = 1,
-    worksNumber = Some("1234"),
-    districtNumber = 1,
-    iabds = List(),
-    cessationPay = Some(2200.22),
-    start = date
-  )
-
-  private def testIncome(taxDistrict: Int, payeRef: String) = Income(
-    employmentId = Some(1),
-    isPrimary = true,
-    incomeType = IncomeType.Employment,
-    status = Status(Some(1), ceased = Some(date)),
-    taxDistrict = Some(taxDistrict),
-    payeRef = payeRef,
-    name = "name",
-    worksNumber = Some("1234"),
-    taxCode = "AB1234",
-    potentialUnderpayment = 20.20,
-    employmentRecord = Some(testNpsEmployment),
-    basisOperation = Some(BasisOperation.Week1Month1)
-  )
-
-  def sut(
-    nps: Option[TaxAccount] = None,
-    rti: Option[RtiData] = None,
-    rtiStatus: Option[RtiStatus] = None): Seq[Employment] =
-    AnnualAccount(TaxYear(2016), nps, rti, rtiStatus).employments
 }

@@ -26,6 +26,88 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class IncomeHelperSpec extends PlaySpec {
 
+  val iabdSummary1: NpsIabdSummary =
+    NpsIabdSummary(amount = Some(BigDecimal(15000)), `type` = Some(GiftAidPayments.code), employmentId = Some(1))
+  val iabdSummary2: NpsIabdSummary =
+    NpsIabdSummary(amount = Some(BigDecimal(1291)), `type` = Some(27), employmentId = Some(2))
+  val iabdSummary3: NpsIabdSummary =
+    NpsIabdSummary(amount = Some(BigDecimal(23)), `type` = Some(23), employmentId = Some(3))
+  val modifiableIabdSummaryType: Option[Int] => NpsIabdSummary = (modifiedType: Option[Int]) =>
+    NpsIabdSummary(amount = Some(BigDecimal(14000)), `type` = modifiedType, employmentId = Some(4))
+  val npsComponent: NpsComponent = NpsComponent(
+    Some(BigDecimal(999.01)),
+    Some(1),
+    Option(List(iabdSummary1, iabdSummary2, iabdSummary3)),
+    Some("npsDescription"))
+
+  val income1: NpsIncomeSource = NpsIncomeSource(
+    name = Some("primary"),
+    taxCode = Some("taxCode1"),
+    employmentType = Some(1),
+    employmentStatus = Some(Live.code),
+    employmentId = Some(1))
+  val pension: NpsIncomeSource = NpsIncomeSource(
+    Some("pension1"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    Some(5),
+    Some(Live.code),
+    None,
+    None,
+    Some(true),
+    Some(true))
+  val modifiableIncome: (Int, String) => NpsIncomeSource = (etdn: Int, epr: String) =>
+    NpsIncomeSource(
+      name = Some("name"),
+      taxCode = Some("taxCodeB"),
+      employmentType = Some(2),
+      employmentId = Some(4),
+      employmentTaxDistrictNumber = Some(etdn),
+      employmentPayeRef = Some(epr)
+  )
+
+  val employment1 = new NpsEmployment(
+    sequenceNumber = 1,
+    startDate = NpsDate(new LocalDate(2006, 12, 31)),
+    endDate = Some(NpsDate(new LocalDate(2014, 12, 31))),
+    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
+    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
+    employerName = Some("AAA"),
+    employmentType = 1,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle1"),
+    startingTaxCode = Some("startingTaxCode1")
+  )
+  val employment2 = new NpsEmployment(
+    sequenceNumber = 2,
+    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    endDate = None,
+    taxDistrictNumber = "1",
+    payeNumber = "payeno",
+    employerName = Some("TTT"),
+    employmentType = 2,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle2"),
+    startingTaxCode = Some("startingTaxCode2")
+  )
+  val employmentESA = new NpsEmployment(
+    sequenceNumber = 2,
+    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    endDate = None,
+    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
+    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
+    employerName = Some("TTT"),
+    employmentType = 2,
+    worksNumber = Some("00-000"),
+    jobTitle = Some("jobTitle2"),
+    startingTaxCode = Some("startingTaxCode2")
+  )
+
+  def sut: IncomeHelper.type = IncomeHelper
+
   "isEditableByUser" should {
     "return if user is editable or not when given different employment status" when {
       val isEditable =
@@ -526,84 +608,4 @@ class IncomeHelperSpec extends PlaySpec {
       }
     }
   }
-
-  val iabdSummary1 =
-    NpsIabdSummary(amount = Some(BigDecimal(15000)), `type` = Some(GiftAidPayments.code), employmentId = Some(1))
-  val iabdSummary2 = NpsIabdSummary(amount = Some(BigDecimal(1291)), `type` = Some(27), employmentId = Some(2))
-  val iabdSummary3 = NpsIabdSummary(amount = Some(BigDecimal(23)), `type` = Some(23), employmentId = Some(3))
-  val modifiableIabdSummaryType = (modifiedType: Option[Int]) =>
-    NpsIabdSummary(amount = Some(BigDecimal(14000)), `type` = modifiedType, employmentId = Some(4))
-  val npsComponent = NpsComponent(
-    Some(BigDecimal(999.01)),
-    Some(1),
-    Option(List(iabdSummary1, iabdSummary2, iabdSummary3)),
-    Some("npsDescription"))
-
-  val income1 = NpsIncomeSource(
-    name = Some("primary"),
-    taxCode = Some("taxCode1"),
-    employmentType = Some(1),
-    employmentStatus = Some(Live.code),
-    employmentId = Some(1))
-  val pension = NpsIncomeSource(
-    Some("pension1"),
-    Some("taxCodePension"),
-    Some(3),
-    None,
-    None,
-    None,
-    Some(5),
-    Some(Live.code),
-    None,
-    None,
-    Some(true),
-    Some(true))
-  val modifiableIncome = (etdn: Int, epr: String) =>
-    NpsIncomeSource(
-      name = Some("name"),
-      taxCode = Some("taxCodeB"),
-      employmentType = Some(2),
-      employmentId = Some(4),
-      employmentTaxDistrictNumber = Some(etdn),
-      employmentPayeRef = Some(epr)
-  )
-
-  val employment1 = new NpsEmployment(
-    sequenceNumber = 1,
-    startDate = NpsDate(new LocalDate(2006, 12, 31)),
-    endDate = Some(NpsDate(new LocalDate(2014, 12, 31))),
-    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
-    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
-    employerName = Some("AAA"),
-    employmentType = 1,
-    worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle1"),
-    startingTaxCode = Some("startingTaxCode1")
-  )
-  val employment2 = new NpsEmployment(
-    sequenceNumber = 2,
-    startDate = NpsDate(new LocalDate(2006, 12, 12)),
-    endDate = None,
-    taxDistrictNumber = "1",
-    payeNumber = "payeno",
-    employerName = Some("TTT"),
-    employmentType = 2,
-    worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle2"),
-    startingTaxCode = Some("startingTaxCode2")
-  )
-  val employmentESA = new NpsEmployment(
-    sequenceNumber = 2,
-    startDate = NpsDate(new LocalDate(2006, 12, 12)),
-    endDate = None,
-    taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
-    payeNumber = TaiConstants.ESA_PAYE_NUMBER,
-    employerName = Some("TTT"),
-    employmentType = 2,
-    worksNumber = Some("00-000"),
-    jobTitle = Some("jobTitle2"),
-    startingTaxCode = Some("startingTaxCode2")
-  )
-
-  def sut = IncomeHelper
 }

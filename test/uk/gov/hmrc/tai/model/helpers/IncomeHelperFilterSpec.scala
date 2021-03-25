@@ -23,6 +23,56 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class IncomeHelperFilterSpec extends PlaySpec {
 
+  val income1: NpsIncomeSource = NpsIncomeSource(
+    name = Some("primary"),
+    taxCode = Some("taxCode1"),
+    employmentType = Some(1),
+    employmentStatus = Some(Live.code),
+    employmentId = Some(1))
+  val pension: NpsIncomeSource = NpsIncomeSource(
+    Some("pension1"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    Some(5),
+    Some(Live.code),
+    None,
+    None,
+    Some(true),
+    Some(true))
+  val ceasedIncome: NpsIncomeSource = NpsIncomeSource(
+    Some("ceasedIncome"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    None,
+    employmentStatus = Some(Ceased.code))
+  val potentiallyCeasedIncome: NpsIncomeSource = NpsIncomeSource(
+    Some("potCeased"),
+    Some("taxCodePension"),
+    Some(3),
+    None,
+    None,
+    None,
+    None,
+    employmentStatus = Some(PotentiallyCeased.code))
+  val modifiableIncome: (Int, String) => NpsIncomeSource = (taxNum: Int, payeRef: String) =>
+    NpsIncomeSource(
+      name = Some("value"),
+      taxCode = Some("taxCode1"),
+      employmentType = Some(1),
+      employmentStatus = Some(Live.code),
+      employmentId = Some(1),
+      employmentTaxDistrictNumber = Some(taxNum),
+      employmentPayeRef = Some(payeRef)
+  )
+
+  def sut: IncomeHelper.type = IncomeHelper
+
   "filterLiveAndCeased" should {
     "return lists of live and ceased employment" when {
       "no input is provided" in {
@@ -140,57 +190,5 @@ class IncomeHelperFilterSpec extends PlaySpec {
         income.size mustBe 2
       }
     }
-
   }
-
-  val income1 = NpsIncomeSource(
-    name = Some("primary"),
-    taxCode = Some("taxCode1"),
-    employmentType = Some(1),
-    employmentStatus = Some(Live.code),
-    employmentId = Some(1))
-  val pension = NpsIncomeSource(
-    Some("pension1"),
-    Some("taxCodePension"),
-    Some(3),
-    None,
-    None,
-    None,
-    Some(5),
-    Some(Live.code),
-    None,
-    None,
-    Some(true),
-    Some(true))
-  val ceasedIncome = NpsIncomeSource(
-    Some("ceasedIncome"),
-    Some("taxCodePension"),
-    Some(3),
-    None,
-    None,
-    None,
-    None,
-    employmentStatus = Some(Ceased.code))
-  val potentiallyCeasedIncome = NpsIncomeSource(
-    Some("potCeased"),
-    Some("taxCodePension"),
-    Some(3),
-    None,
-    None,
-    None,
-    None,
-    employmentStatus = Some(PotentiallyCeased.code))
-  val modifiableIncome = (taxNum: Int, payeRef: String) =>
-    NpsIncomeSource(
-      name = Some("value"),
-      taxCode = Some("taxCode1"),
-      employmentType = Some(1),
-      employmentStatus = Some(Live.code),
-      employmentId = Some(1),
-      employmentTaxDistrictNumber = Some(taxNum),
-      employmentPayeRef = Some(payeRef)
-  )
-
-  def sut = IncomeHelper
-
 }

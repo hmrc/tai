@@ -26,6 +26,21 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
 
   "iabdsFromTotalLiabilityReads" must {
 
+    val nino: Nino = new Generator(new Random).nextNino
+
+    def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
+      for {
+        i <- 1 to noOfIabds
+      } yield {
+        Json.obj(
+          "amount"             -> 1,
+          "type"               -> iabdType,
+          "npsDescription"     -> "desc",
+          "employmentId"       -> 1,
+          "estimatesPaySource" -> 1
+        )
+      }
+
     "extract iabd summaries from a single category" in {
       val iabdSummaries = npsIabdSummaries(2)
       val json = Json.obj(
@@ -243,18 +258,4 @@ class BaseTaxAccountHodFormattersSpec extends PlaySpec with BaseTaxAccountHodFor
       }
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
-    for {
-      i <- 1 to noOfIabds
-    } yield {
-      Json.obj(
-        "amount"             -> 1,
-        "type"               -> iabdType,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> 1,
-        "estimatesPaySource" -> 1
-      )
-    }
 }

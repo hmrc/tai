@@ -22,6 +22,15 @@ import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 
 class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
 
+  val accountNo = "test account no"
+  val bankName = "test bank name"
+  val sortCode = "test sort code"
+  val source = "customer"
+  val numberOfAccountHolders = 1
+
+  val grossInterest1: BigDecimal = 123.45
+  val grossInterest2: BigDecimal = 678.90
+
   "BankAccount" must {
     "not contain bank accounts" when {
       "no data is provided." in {
@@ -116,13 +125,4 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
       bankAccount1.numberOfAccountHolders mustBe Some(numberOfAccountHolders)
     }
   }
-
-  val accountNo = "test account no"
-  val bankName = "test bank name"
-  val sortCode = "test sort code"
-  val source = "customer"
-  val numberOfAccountHolders = 1
-
-  val grossInterest1: BigDecimal = 123.45
-  val grossInterest2: BigDecimal = 678.90
 }

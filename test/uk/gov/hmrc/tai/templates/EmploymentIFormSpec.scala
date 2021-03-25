@@ -26,6 +26,80 @@ import scala.util.Random
 
 class EmploymentIFormSpec extends PlaySpec {
 
+  private val nino = new Generator(new Random()).nextNino
+
+  private val endEmploymentViewModel: EmploymentPensionViewModel =
+    EmploymentPensionViewModel(
+      "2017-2018",
+      nino.nino,
+      "firstname",
+      "lastname",
+      "1982-04-03",
+      "Yes",
+      "123456789",
+      "address line 1",
+      "address line 2",
+      "address line 3",
+      "postcode",
+      "No",
+      "No",
+      "Yes",
+      "employerName",
+      "12345",
+      "",
+      "2018-12-12",
+      ""
+    )
+
+  private val addEmploymentViewModel: EmploymentPensionViewModel =
+    EmploymentPensionViewModel(
+      "2017-2018",
+      nino.nino,
+      "firstname",
+      "lastname",
+      "1982-04-03",
+      "Yes",
+      "123456789",
+      "address line 1",
+      "address line 2",
+      "address line 3",
+      "postcode",
+      "Yes",
+      "No",
+      "No",
+      "employerName",
+      "12345",
+      "2017-12-12",
+      "",
+      ""
+    )
+
+  private val incorrectEmploymentViewModel: EmploymentPensionViewModel =
+    EmploymentPensionViewModel(
+      "2017-2018",
+      nino.nino,
+      "firstname",
+      "lastname",
+      "1982-04-03",
+      "Yes",
+      "123456789",
+      "address line 1",
+      "address line 2",
+      "address line 3",
+      "postcode",
+      "No",
+      "Yes",
+      "No",
+      "employerName",
+      "12345",
+      "2017-12-12",
+      "",
+      "WHAT YOU TOLD US"
+    )
+
+  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
+    uk.gov.hmrc.tai.templates.html.EmploymentIForm(viewModel)
+
   "EmploymentIForm" must {
 
     "display the correct static content of employment iform" when {
@@ -261,78 +335,4 @@ class EmploymentIFormSpec extends PlaySpec {
       }
     }
   }
-
-  private val nino = new Generator(new Random()).nextNino
-
-  private val endEmploymentViewModel: EmploymentPensionViewModel =
-    EmploymentPensionViewModel(
-      "2017-2018",
-      nino.nino,
-      "firstname",
-      "lastname",
-      "1982-04-03",
-      "Yes",
-      "123456789",
-      "address line 1",
-      "address line 2",
-      "address line 3",
-      "postcode",
-      "No",
-      "No",
-      "Yes",
-      "employerName",
-      "12345",
-      "",
-      "2018-12-12",
-      ""
-    )
-
-  private val addEmploymentViewModel: EmploymentPensionViewModel =
-    EmploymentPensionViewModel(
-      "2017-2018",
-      nino.nino,
-      "firstname",
-      "lastname",
-      "1982-04-03",
-      "Yes",
-      "123456789",
-      "address line 1",
-      "address line 2",
-      "address line 3",
-      "postcode",
-      "Yes",
-      "No",
-      "No",
-      "employerName",
-      "12345",
-      "2017-12-12",
-      "",
-      ""
-    )
-
-  private val incorrectEmploymentViewModel: EmploymentPensionViewModel =
-    EmploymentPensionViewModel(
-      "2017-2018",
-      nino.nino,
-      "firstname",
-      "lastname",
-      "1982-04-03",
-      "Yes",
-      "123456789",
-      "address line 1",
-      "address line 2",
-      "address line 3",
-      "postcode",
-      "No",
-      "Yes",
-      "No",
-      "employerName",
-      "12345",
-      "2017-12-12",
-      "",
-      "WHAT YOU TOLD US"
-    )
-
-  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
-    uk.gov.hmrc.tai.templates.html.EmploymentIForm(viewModel)
 }

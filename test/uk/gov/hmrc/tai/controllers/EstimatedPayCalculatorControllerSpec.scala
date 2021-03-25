@@ -30,33 +30,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
-  "Estimated pay calculator controller" should {
-    "return an OK response with CalculatedPay json" when {
-      "given a valid request" in {
-
-        val mockTaiService = mock[TaiService]
-        when(mockTaiService.getCalculatedEstimatedPay(any()))
-          .thenReturn(testCalculation)
-
-        val sut = createSUT(mockTaiService)
-        val response = sut.calculateFullYearEstimatedPay().apply(createRequest(payDetails))
-
-        status(response) mustBe OK
-        contentAsJson(response) mustBe Json.toJson(testCalculation)
-      }
-    }
-    "return a bad request response" when {
-      "the given request has an invalid json body" in {
-        val mockTaiService = mock[TaiService]
-
-        val sut = createSUT(mockTaiService)
-        val response = sut.calculateFullYearEstimatedPay().apply(createRequest("a simple String"))
-
-        status(response) mustBe BAD_REQUEST
-      }
-    }
-  }
-
   private def createSUT(
     taiService: TaiService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
@@ -86,4 +59,31 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     FakeHeaders(Seq("Content-type" -> "application/json")),
     Json.toJson(payload)
   )
+
+  "Estimated pay calculator controller" should {
+    "return an OK response with CalculatedPay json" when {
+      "given a valid request" in {
+
+        val mockTaiService = mock[TaiService]
+        when(mockTaiService.getCalculatedEstimatedPay(any()))
+          .thenReturn(testCalculation)
+
+        val sut = createSUT(mockTaiService)
+        val response = sut.calculateFullYearEstimatedPay().apply(createRequest(payDetails))
+
+        status(response) mustBe OK
+        contentAsJson(response) mustBe Json.toJson(testCalculation)
+      }
+    }
+    "return a bad request response" when {
+      "the given request has an invalid json body" in {
+        val mockTaiService = mock[TaiService]
+
+        val sut = createSUT(mockTaiService)
+        val response = sut.calculateFullYearEstimatedPay().apply(createRequest("a simple String"))
+
+        status(response) mustBe BAD_REQUEST
+      }
+    }
+  }
 }

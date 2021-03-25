@@ -43,6 +43,90 @@ import scala.util.{Failure, Success}
 
 class AutoUpdatePayServiceSpec extends BaseSpec {
 
+  private val CurrentYear: Int = TaxYear().year
+  private val NextYear: Int = CurrentYear + 1
+  private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))
+  private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))
+
+  val expectedPay =
+    if (new LocalDate(TaxYear().year + 1, 1, 1).year().isLeap)
+      Some(201250)
+    else
+      Some(200625)
+
+  val daysInHalfYear: Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays / 2
+
+  val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear + 1)
+
+  private val npsUpdateAmount = IabdUpdateAmount(employmentSequenceNumber = 1, grossAmount = 1000, source = Some(46))
+
+  val payment: RtiPayment = RtiPayment(
+    PayFrequency.FourWeekly,
+    new LocalDate(CurrentYear, 6, 20),
+    new LocalDate(CurrentYear, 4, 20),
+    BigDecimal(20),
+    BigDecimal(20000),
+    BigDecimal(0),
+    BigDecimal(0),
+    None,
+    isOccupationalPension = false,
+    None,
+    Some(10)
+  )
+
+  val rtiEmp: RtiEmployment = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
+
+  val rtiData: RtiData =
+    RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
+
+  val iabdRoot: NpsIabdRoot = NpsIabdRoot(nino.value, Some(1), 23, Some(1000))
+
+  val npsEmployment: NpsEmployment = NpsEmployment(
+    1,
+    npsDateStartOfYear,
+    Some(npsDateCurrentTaxYear),
+    "",
+    "123",
+    None,
+    1,
+    Some(Ceased.code),
+    Some("1000"),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    Some(100))
+
+  val npsEmploymentWithCessationPay: NpsEmployment = NpsEmployment(
+    1,
+    npsDateStartOfYear,
+    Some(npsDateCurrentTaxYear),
+    "",
+    "123",
+    None,
+    1,
+    Some(Ceased.code),
+    Some("1000"),
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    None,
+    Some(1000))
+
+  private def createSUT(
+    nps: NpsConnector,
+    des: DesConnector,
+    featureTogglesConfig: FeatureTogglesConfig,
+    npsConfig: NpsConfig,
+    incomeHelper: IncomeHelper) =
+    new AutoUpdatePayService(nps, des, featureTogglesConfig, npsConfig, incomeHelper)
+
   "updateIncomes" should {
     "not return any updated incomes" when {
       "the auto update flag is set to false" in {
@@ -3400,88 +3484,4 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-
-  private val CurrentYear: Int = TaxYear().year
-  private val NextYear: Int = CurrentYear + 1
-  private val npsDateCurrentTaxYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 4, 12))
-  private val npsDateStartOfYear: NpsDate = NpsDate(new LocalDate(CurrentYear, 1, 1))
-
-  val expectedPay =
-    if (new LocalDate(TaxYear().year + 1, 1, 1).year().isLeap)
-      Some(201250)
-    else
-      Some(200625)
-
-  val daysInHalfYear: Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() / 2
-
-  val midPointofTaxYearPlusOneDay: LocalDate = TaxYear().start.plusDays(daysInHalfYear + 1)
-
-  private val npsUpdateAmount = IabdUpdateAmount(employmentSequenceNumber = 1, grossAmount = 1000, source = Some(46))
-
-  val payment: RtiPayment = RtiPayment(
-    PayFrequency.FourWeekly,
-    new LocalDate(CurrentYear, 6, 20),
-    new LocalDate(CurrentYear, 4, 20),
-    BigDecimal(20),
-    BigDecimal(20000),
-    BigDecimal(0),
-    BigDecimal(0),
-    None,
-    isOccupationalPension = false,
-    None,
-    Some(10)
-  )
-
-  val rtiEmp: RtiEmployment = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
-
-  val rtiData: RtiData =
-    RtiData("", TaxYear(CurrentYear), "", List(RtiEmployment("", "123", "", Nil, Nil, Some("1000"), 1)))
-
-  val iabdRoot: NpsIabdRoot = NpsIabdRoot(nino.value, Some(1), 23, Some(1000))
-
-  val npsEmployment: NpsEmployment = NpsEmployment(
-    1,
-    npsDateStartOfYear,
-    Some(npsDateCurrentTaxYear),
-    "",
-    "123",
-    None,
-    1,
-    Some(Ceased.code),
-    Some("1000"),
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    Some(100))
-
-  val npsEmploymentWithCessationPay: NpsEmployment = NpsEmployment(
-    1,
-    npsDateStartOfYear,
-    Some(npsDateCurrentTaxYear),
-    "",
-    "123",
-    None,
-    1,
-    Some(Ceased.code),
-    Some("1000"),
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    Some(1000))
-
-  private def createSUT(
-    nps: NpsConnector,
-    des: DesConnector,
-    featureTogglesConfig: FeatureTogglesConfig,
-    npsConfig: NpsConfig,
-    incomeHelper: IncomeHelper) =
-    new AutoUpdatePayService(nps, des, featureTogglesConfig, npsConfig, incomeHelper)
 }

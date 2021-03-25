@@ -36,6 +36,40 @@ import scala.language.postfixOps
 
 class EmploymentServiceSpec extends BaseSpec {
 
+  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+
+  private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
+
+  private val employment = Employment(
+    "TEST",
+    Live,
+    Some("12345"),
+    LocalDate.now(),
+    None,
+    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
+    "",
+    "",
+    2,
+    Some(100),
+    hasPayrolledBenefit = false,
+    receivingOccupationalPension = false
+  )
+
+  private def createSut(
+    employmentRepository: EmploymentRepository,
+    personRepository: PersonRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    fileUploadService: FileUploadService,
+    pdfService: PdfService,
+    auditable: Auditor) =
+    new EmploymentService(
+      employmentRepository,
+      personRepository,
+      iFormSubmissionService,
+      fileUploadService,
+      pdfService,
+      auditable)
+
   "EmploymentService" should {
     "return employments for passed nino and year" in {
       val employmentsForYear = Seq(employment)
@@ -393,38 +427,4 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())
     }
   }
-
-  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-
-  private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
-
-  private val employment = Employment(
-    "TEST",
-    Live,
-    Some("12345"),
-    LocalDate.now(),
-    None,
-    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
-    "",
-    "",
-    2,
-    Some(100),
-    hasPayrolledBenefit = false,
-    receivingOccupationalPension = false
-  )
-
-  private def createSut(
-    employmentRepository: EmploymentRepository,
-    personRepository: PersonRepository,
-    iFormSubmissionService: IFormSubmissionService,
-    fileUploadService: FileUploadService,
-    pdfService: PdfService,
-    auditable: Auditor) =
-    new EmploymentService(
-      employmentRepository,
-      personRepository,
-      iFormSubmissionService,
-      fileUploadService,
-      pdfService,
-      auditable)
 }

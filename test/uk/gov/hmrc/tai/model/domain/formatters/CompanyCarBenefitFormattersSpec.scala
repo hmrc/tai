@@ -26,6 +26,8 @@ import scala.util.Random
 
 class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFormatters {
 
+  private val nino: Nino = new Generator(new Random).nextNino
+
   "companyCarBenefitReads" must {
     "be able to read correct companyCarBenefit json" when {
       "there is a list of company cars but no fuel benefit" in {
@@ -220,5 +222,4 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
       }
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
 }

@@ -35,6 +35,69 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class BenefitsServiceSpec extends BaseSpec {
+
+  val allBenefitTypesExceptCompanyCar = Seq(
+    EmployerProvidedServices,
+    BenefitInKind,
+    CarFuelBenefit,
+    MedicalInsurance,
+    Telephone,
+    ServiceBenefit,
+    TaxableExpensesBenefit,
+    VanBenefit,
+    VanFuelBenefit,
+    BeneficialLoan,
+    Accommodation,
+    Assets,
+    AssetTransfer,
+    EducationalServices,
+    Entertaining,
+    Expenses,
+    Mileage,
+    NonQualifyingRelocationExpenses,
+    NurseryPlaces,
+    OtherItems,
+    PaymentsOnEmployeesBehalf,
+    PersonalIncidentalExpenses,
+    QualifyingRelocationExpenses,
+    EmployerProvidedProfessionalSubscription,
+    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
+    VouchersAndCreditCards,
+    NonCashBenefit
+  )
+
+  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[CodingComponent] =
+    typesList.map(benefitType => CodingComponent(benefitType, Some(126), amount, "some other description"))
+
+  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[GenericBenefit] =
+    typesList.map(benefitType => GenericBenefit(benefitType, Some(126), amount))
+
+  val taxFreeAmountComponentsWithoutBenefits = Seq(
+    CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
+    CodingComponent(Commission, Some(125), 777, "some other description"),
+    CodingComponent(BalancingCharge, Some(126), 999, "some other description")
+  )
+
+  private def createSUT(
+    taxAccountService: TaxAccountService = mock[TaxAccountService],
+    companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
+    companyCarConnector: CompanyCarConnector = mock[CompanyCarConnector],
+    codingComponentService: CodingComponentService = mock[CodingComponentService],
+    iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
+    fileUploadService: FileUploadService = mock[FileUploadService],
+    pdfService: PdfService = mock[PdfService],
+    auditable: Auditor = mock[Auditor]) =
+    new BenefitsService(
+      taxAccountService,
+      companyCarBenefitRepository,
+      companyCarConnector,
+      codingComponentService,
+      iFormSubmissionService,
+      fileUploadService,
+      pdfService,
+      auditable
+    )
+
   "companyCarBenefit" must {
     "return Nil" when {
       "the repository returned Nil" in {
@@ -588,66 +651,4 @@ class BenefitsServiceSpec extends BaseSpec {
         .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())
     }
   }
-
-  val allBenefitTypesExceptCompanyCar = Seq(
-    EmployerProvidedServices,
-    BenefitInKind,
-    CarFuelBenefit,
-    MedicalInsurance,
-    Telephone,
-    ServiceBenefit,
-    TaxableExpensesBenefit,
-    VanBenefit,
-    VanFuelBenefit,
-    BeneficialLoan,
-    Accommodation,
-    Assets,
-    AssetTransfer,
-    EducationalServices,
-    Entertaining,
-    Expenses,
-    Mileage,
-    NonQualifyingRelocationExpenses,
-    NurseryPlaces,
-    OtherItems,
-    PaymentsOnEmployeesBehalf,
-    PersonalIncidentalExpenses,
-    QualifyingRelocationExpenses,
-    EmployerProvidedProfessionalSubscription,
-    IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
-    VouchersAndCreditCards,
-    NonCashBenefit
-  )
-
-  def createBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[CodingComponent] =
-    typesList.map(benefitType => CodingComponent(benefitType, Some(126), amount, "some other description"))
-
-  def createGenericBenefitList(typesList: Seq[BenefitComponentType], amount: BigDecimal = 100): Seq[GenericBenefit] =
-    typesList.map(benefitType => GenericBenefit(benefitType, Some(126), amount))
-
-  val taxFreeAmountComponentsWithoutBenefits = Seq(
-    CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description"),
-    CodingComponent(Commission, Some(125), 777, "some other description"),
-    CodingComponent(BalancingCharge, Some(126), 999, "some other description")
-  )
-
-  private def createSUT(
-    taxAccountService: TaxAccountService = mock[TaxAccountService],
-    companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
-    companyCarConnector: CompanyCarConnector = mock[CompanyCarConnector],
-    codingComponentService: CodingComponentService = mock[CodingComponentService],
-    iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
-    fileUploadService: FileUploadService = mock[FileUploadService],
-    pdfService: PdfService = mock[PdfService],
-    auditable: Auditor = mock[Auditor]) =
-    new BenefitsService(
-      taxAccountService,
-      companyCarBenefitRepository,
-      companyCarConnector,
-      codingComponentService,
-      iFormSubmissionService,
-      fileUploadService,
-      pdfService,
-      auditable
-    )
 }

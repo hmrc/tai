@@ -32,6 +32,13 @@ import scala.concurrent.{Await, Future}
 
 class FileUploadServiceSpec extends BaseSpec {
 
+  private val fileName = "EndEmployment.pdf"
+  private val fileId = "EndEmployment"
+  private val contentType = MimeContentType.ApplicationPdf
+
+  private def createSUT(fileUploadConnector: FileUploadConnector, Auditor: Auditor) =
+    new FileUploadService(fileUploadConnector, Auditor)
+
   "FileUploadService" must {
 
     "able to create envelope" in {
@@ -250,13 +257,5 @@ class FileUploadServiceSpec extends BaseSpec {
         result mustBe Closed
       }
     }
-
   }
-
-  private val fileName = "EndEmployment.pdf"
-  private val fileId = "EndEmployment"
-  private val contentType = MimeContentType.ApplicationPdf
-
-  private def createSUT(fileUploadConnector: FileUploadConnector, Auditor: Auditor) =
-    new FileUploadService(fileUploadConnector, Auditor)
 }

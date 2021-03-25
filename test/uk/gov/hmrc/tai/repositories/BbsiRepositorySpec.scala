@@ -29,6 +29,10 @@ import scala.concurrent.{Await, Future}
 class BbsiRepositorySpec extends BaseSpec {
 
   "Bbsi Repository" must {
+    val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
+
+    def createSUT(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) =
+      new BbsiRepository(cacheConnector, bbsiConnector)
 
     "return accounts" when {
       "data exist in cache" in {
@@ -75,9 +79,4 @@ class BbsiRepositorySpec extends BaseSpec {
       }
     }
   }
-
-  private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-
-  private def createSUT(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) =
-    new BbsiRepository(cacheConnector, bbsiConnector)
 }

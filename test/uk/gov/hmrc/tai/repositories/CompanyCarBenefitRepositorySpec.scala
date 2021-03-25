@@ -29,6 +29,14 @@ import scala.language.postfixOps
 
 class CompanyCarBenefitRepositorySpec extends BaseSpec {
 
+  private val sampleNinoVersion = 4
+
+  private def createSUT(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector) =
+    new CompanyCarBenefitRepository(cacheConnector, companyCarConnector) {
+      when(companyCarConnector.ninoVersion(any())(any()))
+        .thenReturn(Future.successful(sampleNinoVersion))
+    }
+
   "carBenefit" when {
     "there is car benefit in the cache as an empty list" must {
       "return empty list" in {
@@ -107,12 +115,4 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
       }
     }
   }
-
-  private val sampleNinoVersion = 4
-
-  private def createSUT(cacheConnector: CacheConnector, companyCarConnector: CompanyCarConnector) =
-    new CompanyCarBenefitRepository(cacheConnector, companyCarConnector) {
-      when(companyCarConnector.ninoVersion(any())(any()))
-        .thenReturn(Future.successful(sampleNinoVersion))
-    }
 }

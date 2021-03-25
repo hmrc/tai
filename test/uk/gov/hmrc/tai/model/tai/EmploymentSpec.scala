@@ -27,28 +27,6 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class EmploymentSpec extends PlaySpec {
 
-  "Employment" should {
-    "Create an employment object" when {
-      "Given an primary employment nps object but no rti object" in {
-        val employment: Employment = Employment(testIncome, None)
-        employment.isPrimary mustBe true
-        employment.payments mustBe Nil
-      }
-
-      "Given a non primary nps object but no rti object" in {
-        val employment: Employment = Employment(testIncome2, None)
-        employment.isPrimary mustBe false
-        employment.payments mustBe Nil
-      }
-
-      "Given an nps object and an rti object" in {
-        val employment: Employment = Employment(testIncome, Some(rtiEmp))
-        employment.isPrimary mustBe true
-        employment.payments.head.taxablePayYTD mustBe 20000
-      }
-    }
-  }
-
   private val fixedDate = LocalDate.parse("2017-12-12")
 
   private val testIabd = Iabd(
@@ -126,4 +104,25 @@ class EmploymentSpec extends PlaySpec {
 
   private val rtiEmp = RtiEmployment("", "123", "", List(payment), Nil, Some("1000"), 1)
 
+  "Employment" should {
+    "Create an employment object" when {
+      "Given an primary employment nps object but no rti object" in {
+        val employment: Employment = Employment(testIncome, None)
+        employment.isPrimary mustBe true
+        employment.payments mustBe Nil
+      }
+
+      "Given a non primary nps object but no rti object" in {
+        val employment: Employment = Employment(testIncome2, None)
+        employment.isPrimary mustBe false
+        employment.payments mustBe Nil
+      }
+
+      "Given an nps object and an rti object" in {
+        val employment: Employment = Employment(testIncome, Some(rtiEmp))
+        employment.isPrimary mustBe true
+        employment.payments.head.taxablePayYTD mustBe 20000
+      }
+    }
+  }
 }

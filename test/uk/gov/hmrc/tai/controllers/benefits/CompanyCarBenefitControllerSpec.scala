@@ -31,6 +31,9 @@ import scala.language.postfixOps
 
 class CompanyCarBenefitControllerSpec extends BaseSpec {
 
+  def employmentSeqNum = 10
+  val sampleVersion: Option[Int] = Some(1)
+
   "companyCarBenefits" must {
     "return NotFound" when {
       "company car benefit service returns Nil" in {
@@ -213,7 +216,4 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
       status(result) mustBe OK
     }
   }
-
-  def employmentSeqNum = 10
-  val sampleVersion: Option[Int] = Some(1)
 }

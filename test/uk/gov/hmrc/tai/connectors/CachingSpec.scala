@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import jdk.internal.platform.Container.metrics
 import org.mockito.ArgumentMatchers.{eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
@@ -28,6 +29,13 @@ import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class CachingSpec extends BaseSpec {
+
+  val mongoKey = "mongoKey1"
+
+  def cacheTest = new CachingTest
+  val cacheConnector: CacheConnector = mock[CacheConnector]
+  val metrics: Metrics = mock[Metrics]
+  val cacheMetricsConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
 
   "cache" must {
     "return the json from cache" when {
@@ -61,13 +69,6 @@ class CachingSpec extends BaseSpec {
       }
     }
   }
-
-  val mongoKey = "mongoKey1"
-
-  def cacheTest = new CachingTest
-  val cacheConnector: CacheConnector = mock[CacheConnector]
-  val metrics: Metrics = mock[Metrics]
-  val cacheMetricsConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
 
   when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
 

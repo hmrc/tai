@@ -24,6 +24,8 @@ import scala.util.Random
 
 class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
 
+  val nino: Nino = new Generator(new Random).nextNino
+
   "Iabd Formatter" must {
 
     "return empty json" when {
@@ -153,7 +155,4 @@ class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
       }
     }
   }
-
-  val nino: Nino = new Generator(new Random).nextNino
-
 }

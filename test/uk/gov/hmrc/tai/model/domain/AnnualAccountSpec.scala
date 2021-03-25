@@ -33,6 +33,64 @@ class AnnualAccountSpec extends PlaySpec {
   }
 
   "totalIncome" must {
+    val SutWithNoPayments: AnnualAccount = AnnualAccount(
+      "taxdistrict-payeref-payroll",
+      taxYear = TaxYear("2017"),
+      realTimeStatus = Available,
+      payments = Nil,
+      endOfTaxYearUpdates = Nil)
+
+    val SutWithNoPayroll: AnnualAccount = AnnualAccount(
+      "taxdistrict-payeref",
+      taxYear = TaxYear("2017"),
+      realTimeStatus = Available,
+      payments = Nil,
+      endOfTaxYearUpdates = Nil)
+
+    val SutWithOnePayment: AnnualAccount = AnnualAccount(
+      "",
+      taxYear = TaxYear("2017"),
+      realTimeStatus = Available,
+      payments = List(
+        Payment(
+          date = new LocalDate(2017, 5, 26),
+          amountYearToDate = 2000,
+          taxAmountYearToDate = 1200,
+          nationalInsuranceAmountYearToDate = 1500,
+          amount = 200,
+          taxAmount = 100,
+          nationalInsuranceAmount = 150,
+          payFrequency = Monthly,
+          duplicate = None
+        )),
+      endOfTaxYearUpdates = Nil
+    )
+
+    val SutWithMultiplePayments: AnnualAccount = SutWithOnePayment.copy(
+      payments = SutWithOnePayment.payments :+
+        Payment(
+          date = new LocalDate(2017, 5, 26),
+          amountYearToDate = 2000,
+          taxAmountYearToDate = 1200,
+          nationalInsuranceAmountYearToDate = 1500,
+          amount = 200,
+          taxAmount = 100,
+          nationalInsuranceAmount = 150,
+          payFrequency = Weekly,
+          duplicate = None
+        ) :+
+        Payment(
+          date = new LocalDate(2017, 5, 26),
+          amountYearToDate = 2000,
+          taxAmountYearToDate = 1200,
+          nationalInsuranceAmountYearToDate = 1500,
+          amount = 200,
+          taxAmount = 100,
+          nationalInsuranceAmount = 150,
+          payFrequency = FortNightly,
+          duplicate = None
+        ))
+
     "return the latest year to date value from the payments" when {
       "there is only one payment" in {
         SutWithOnePayment.totalIncomeYearToDate mustBe 2000
@@ -68,62 +126,4 @@ class AnnualAccountSpec extends PlaySpec {
       }
     }
   }
-
-  val SutWithNoPayments: AnnualAccount = AnnualAccount(
-    "taxdistrict-payeref-payroll",
-    taxYear = TaxYear("2017"),
-    realTimeStatus = Available,
-    payments = Nil,
-    endOfTaxYearUpdates = Nil)
-
-  val SutWithNoPayroll: AnnualAccount = AnnualAccount(
-    "taxdistrict-payeref",
-    taxYear = TaxYear("2017"),
-    realTimeStatus = Available,
-    payments = Nil,
-    endOfTaxYearUpdates = Nil)
-
-  val SutWithOnePayment: AnnualAccount = AnnualAccount(
-    "",
-    taxYear = TaxYear("2017"),
-    realTimeStatus = Available,
-    payments = List(
-      Payment(
-        date = new LocalDate(2017, 5, 26),
-        amountYearToDate = 2000,
-        taxAmountYearToDate = 1200,
-        nationalInsuranceAmountYearToDate = 1500,
-        amount = 200,
-        taxAmount = 100,
-        nationalInsuranceAmount = 150,
-        payFrequency = Monthly,
-        duplicate = None
-      )),
-    endOfTaxYearUpdates = Nil
-  )
-
-  val SutWithMultiplePayments: AnnualAccount = SutWithOnePayment.copy(
-    payments = SutWithOnePayment.payments :+
-      Payment(
-        date = new LocalDate(2017, 5, 26),
-        amountYearToDate = 2000,
-        taxAmountYearToDate = 1200,
-        nationalInsuranceAmountYearToDate = 1500,
-        amount = 200,
-        taxAmount = 100,
-        nationalInsuranceAmount = 150,
-        payFrequency = Weekly,
-        duplicate = None
-      ) :+
-      Payment(
-        date = new LocalDate(2017, 5, 26),
-        amountYearToDate = 2000,
-        taxAmountYearToDate = 1200,
-        nationalInsuranceAmountYearToDate = 1500,
-        amount = 200,
-        taxAmount = 100,
-        nationalInsuranceAmount = 150,
-        payFrequency = FortNightly,
-        duplicate = None
-      ))
 }

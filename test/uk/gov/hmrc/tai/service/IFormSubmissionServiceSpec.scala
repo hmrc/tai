@@ -31,6 +31,19 @@ import scala.concurrent.{Await, Future}
 
 class IFormSubmissionServiceSpec extends BaseSpec {
 
+  private val iformSubmissionKey = "testSubmissionKey"
+  private val iformId = "testIformId"
+
+  private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
+
+  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+
+  private def createSUT(
+    personRepository: PersonRepository,
+    pdfService: PdfService,
+    fileUploadService: FileUploadService) =
+    new IFormSubmissionService(personRepository, pdfService, fileUploadService)
+
   "IFormSubmissionService" should {
     "create and submit an iform and return an envelope id after submission" in {
       val mockPersonRepository = mock[PersonRepository]
@@ -95,17 +108,4 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         any())(any())
     }
   }
-
-  private val iformSubmissionKey = "testSubmissionKey"
-  private val iformId = "testIformId"
-
-  private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
-
-  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-
-  private def createSUT(
-    personRepository: PersonRepository,
-    pdfService: PdfService,
-    fileUploadService: FileUploadService) =
-    new IFormSubmissionService(personRepository, pdfService, fileUploadService)
 }

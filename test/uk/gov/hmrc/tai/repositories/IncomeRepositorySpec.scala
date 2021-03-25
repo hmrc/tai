@@ -31,6 +31,43 @@ import scala.language.postfixOps
 
 class IncomeRepositorySpec extends BaseSpec {
 
+  private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
+
+  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
+    types.map { tp =>
+      Json.obj(
+        "amount"             -> amount,
+        "type"               -> tp,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> empId,
+        "estimatesPaySource" -> 1
+      )
+    }
+
+  private def taxAccountJsonWithIabds(
+    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
+    Json.obj(
+      "taxAccountId" -> "id",
+      "nino"         -> nino.nino,
+      "totalLiability" -> Json.obj(
+        "nonSavings" -> Json.obj(
+          "totalIncome" -> Json.obj(
+            "iabdSummaries" -> JsArray(incomeIabdSummaries)
+          ),
+          "allowReliefDeducts" -> Json.obj(
+            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
+          )
+        )
+      )
+    )
+
+  private def createSut(
+    taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
+    bbsiRepository: BbsiRepository = mock[BbsiRepository],
+    iabdRepository: IabdRepository = mock[IabdRepository]) =
+    new IncomeRepository(taxAccountRepository, bbsiRepository, iabdRepository)
+
   "Income" must {
     "return empty sequence of non-tax code income" when {
       "there is no non-tax-code income present" in {
@@ -507,41 +544,4 @@ class IncomeRepositorySpec extends BaseSpec {
       }
     }
   }
-
-  private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-
-  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
-    types.map { tp =>
-      Json.obj(
-        "amount"             -> amount,
-        "type"               -> tp,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> empId,
-        "estimatesPaySource" -> 1
-      )
-    }
-
-  private def taxAccountJsonWithIabds(
-    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
-    Json.obj(
-      "taxAccountId" -> "id",
-      "nino"         -> nino.nino,
-      "totalLiability" -> Json.obj(
-        "nonSavings" -> Json.obj(
-          "totalIncome" -> Json.obj(
-            "iabdSummaries" -> JsArray(incomeIabdSummaries)
-          ),
-          "allowReliefDeducts" -> Json.obj(
-            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
-          )
-        )
-      )
-    )
-
-  private def createSut(
-    taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
-    bbsiRepository: BbsiRepository = mock[BbsiRepository],
-    iabdRepository: IabdRepository = mock[IabdRepository]) =
-    new IncomeRepository(taxAccountRepository, bbsiRepository, iabdRepository)
 }

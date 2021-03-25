@@ -23,6 +23,85 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentSpec extends PlaySpec {
 
+  val taxYear: TaxYear = TaxYear()
+
+  def createAnnualAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear = taxYear): AnnualAccount =
+    AnnualAccount("0-0-0", taxYear, rtiStatus, Nil, Nil)
+
+  val singleEmploymentWithAllRefs = List(
+    Employment(
+      "XXX PPPP",
+      Live,
+      Some("64765"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    ))
+  val singleEmploymentWithMissingPayrollNumber = List(
+    Employment(
+      "XXX PPPP",
+      Live,
+      None,
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
+  val singleEmploymentWithEmptyStringPayrollNumber = List(
+    Employment(
+      "XXX PPPP",
+      Live,
+      Some(""),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false))
+  val dualEmployment = List(
+    Employment(
+      "XXX PPPP",
+      Live,
+      Some("64765"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    ),
+    Employment(
+      "XXX PPPP",
+      Live,
+      Some("64766"),
+      new LocalDate(2016, 4, 6),
+      None,
+      Nil,
+      "754",
+      "AZ00070",
+      2,
+      Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
+    )
+  )
+
   "Employment" should {
 
     "Generate a unique employer designation, consisting of tax district and paye ref" in {
@@ -107,84 +186,4 @@ class EmploymentSpec extends PlaySpec {
     }
 
   }
-
-  val taxYear: TaxYear = TaxYear()
-
-  def createAnnualAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear = taxYear): AnnualAccount =
-    AnnualAccount("0-0-0", taxYear, rtiStatus, Nil, Nil)
-
-  val singleEmploymentWithAllRefs = List(
-    Employment(
-      "XXX PPPP",
-      Live,
-      Some("64765"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false
-    ))
-  val singleEmploymentWithMissingPayrollNumber = List(
-    Employment(
-      "XXX PPPP",
-      Live,
-      None,
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false))
-  val singleEmploymentWithEmptyStringPayrollNumber = List(
-    Employment(
-      "XXX PPPP",
-      Live,
-      Some(""),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false))
-  val dualEmployment = List(
-    Employment(
-      "XXX PPPP",
-      Live,
-      Some("64765"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false
-    ),
-    Employment(
-      "XXX PPPP",
-      Live,
-      Some("64766"),
-      new LocalDate(2016, 4, 6),
-      None,
-      Nil,
-      "754",
-      "AZ00070",
-      2,
-      Some(100),
-      hasPayrolledBenefit = false,
-      receivingOccupationalPension = false
-    )
-  )
-
 }

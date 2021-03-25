@@ -89,6 +89,39 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
     )
   )
 
+  private val untaxedInterest =
+    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
+
+  private def createSUT(
+    incomeService: IncomeService = mock[IncomeService],
+    taxAccountService: TaxAccountService = mock[TaxAccountService],
+    employmentService: EmploymentService = mock[EmploymentService],
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    new IncomeController(incomeService, authentication, cc)
+
+  private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
+    val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
+    FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
+      .withHeaders(("content-type", "application/json"))
+  }
+
+  private def generateMockAccountServiceWithAnyResponse: TaxAccountService = {
+    val mockTaxAccountService = mock[TaxAccountService]
+    when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
+    mockTaxAccountService
+  }
+
+  private def setup(
+    response: Future[IncomeUpdateResponse],
+    mockTaxAccountService: TaxAccountService): IncomeController = {
+    val mockIncomeService: IncomeService = {
+      val mockIncomeService: IncomeService = mock[IncomeService]
+      when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)
+      mockIncomeService
+    }
+    createSUT(mockIncomeService, mockTaxAccountService)
+  }
+
   "untaxedInterest" must {
     "return OK with untaxed interest" when {
       "untaxed interest is returned by income service" in {
@@ -425,38 +458,5 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
         verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
     }
-  }
-
-  private val untaxedInterest =
-    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
-
-  private def createSUT(
-    incomeService: IncomeService = mock[IncomeService],
-    taxAccountService: TaxAccountService = mock[TaxAccountService],
-    employmentService: EmploymentService = mock[EmploymentService],
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, authentication, cc)
-
-  private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
-    val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
-    FakeRequest("POST", "/", FakeHeaders(), Json.toJson(updateTaxCodeIncomeRequest))
-      .withHeaders(("content-type", "application/json"))
-  }
-
-  private def generateMockAccountServiceWithAnyResponse: TaxAccountService = {
-    val mockTaxAccountService = mock[TaxAccountService]
-    when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
-    mockTaxAccountService
-  }
-
-  private def setup(
-    response: Future[IncomeUpdateResponse],
-    mockTaxAccountService: TaxAccountService): IncomeController = {
-    val mockIncomeService: IncomeService = {
-      val mockIncomeService: IncomeService = mock[IncomeService]
-      when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)
-      mockIncomeService
-    }
-    createSUT(mockIncomeService, mockTaxAccountService)
   }
 }

@@ -33,6 +33,15 @@ import scala.language.postfixOps
 
 class HttpHandlerSpec extends BaseSpec {
 
+  private case class ResponseObject(name: String, age: Int)
+  private implicit val responseObjectFormat = Json.format[ResponseObject]
+  private val responseBodyObject = ResponseObject("aaa", 24)
+
+  private val SuccessfulGetResponseWithObject: HttpResponse =
+    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag" -> Seq("34")))
+
+  private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
+
   "getFromAPI" should {
     "return valid json" when {
       "when data is successfully received from the http get call" in {
@@ -249,21 +258,4 @@ class HttpHandlerSpec extends BaseSpec {
       }
     }
   }
-
-  private case class ResponseObject(name: String, age: Int)
-  private implicit val responseObjectFormat = Json.format[ResponseObject]
-  private val responseBodyObject = ResponseObject("aaa", 24)
-
-  private val SuccessfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                      -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, JsString("not found"), Map("ETag"                                           -> Seq("34")))
-  private val LockedHttpResponse: HttpResponse = HttpResponse(423, JsString("locked"), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
-
-  private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
 }

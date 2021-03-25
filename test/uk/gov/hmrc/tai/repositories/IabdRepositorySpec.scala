@@ -35,39 +35,6 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val iabdConnector: IabdConnector = mock[IabdConnector]
 
-  "IABD repository" must {
-    "return json" when {
-      "data is present in cache" in {
-
-        val cache = new Caching(cacheConnector, metrics, cacheConfig)
-        when(iabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(jsonAfterFormat))
-        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
-          .thenReturn(Future.successful(Some(jsonAfterFormat)))
-
-        val sut = createTestCache(cache, iabdConnector)
-
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
-        result mustBe jsonAfterFormat
-      }
-
-      "data is not present in cache" in {
-        val cache = new Caching(cacheConnector, metrics, cacheConfig)
-
-        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
-          .thenReturn(Future.successful(None))
-        when(cacheConnector.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
-        when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
-
-        val sut = createTestCache(cache, iabdConnector)
-
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
-
-        result mustBe jsonAfterFormat
-      }
-    }
-  }
-
   private val jsonFromIabdApi = Json.arr(
     Json.obj(
       "nino"            -> nino.withoutSuffix,
@@ -105,4 +72,36 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
   def createTestCache(cache: Caching, iabdConnector: IabdConnector) = new IabdRepository(cache, iabdConnector)
 
+  "IABD repository" must {
+    "return json" when {
+      "data is present in cache" in {
+
+        val cache = new Caching(cacheConnector, metrics, cacheConfig)
+        when(iabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(jsonAfterFormat))
+        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
+          .thenReturn(Future.successful(Some(jsonAfterFormat)))
+
+        val sut = createTestCache(cache, iabdConnector)
+
+        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
+        result mustBe jsonAfterFormat
+      }
+
+      "data is not present in cache" in {
+        val cache = new Caching(cacheConnector, metrics, cacheConfig)
+
+        when(cacheConnector.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
+          .thenReturn(Future.successful(None))
+        when(cacheConnector.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
+        when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
+
+        val sut = createTestCache(cache, iabdConnector)
+
+        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
+
+        result mustBe jsonAfterFormat
+      }
+    }
+  }
 }

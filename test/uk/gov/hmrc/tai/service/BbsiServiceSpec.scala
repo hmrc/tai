@@ -33,6 +33,13 @@ import scala.concurrent.{Await, Future}
 
 class BbsiServiceSpec extends BaseSpec {
 
+  private val bankAccount = BankAccount(1, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
+  private def createSUT(
+    bbsiRepository: BbsiRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    auditor: Auditor) =
+    new BbsiService(bbsiRepository, iFormSubmissionService, auditor)
+
   "Bbsi Service" must {
     "return bank accounts" in {
       val mockBbsiRepository = mock[BbsiRepository]
@@ -204,11 +211,4 @@ class BbsiServiceSpec extends BaseSpec {
       testIform must not include "I never had this account"
     }
   }
-
-  private val bankAccount = BankAccount(1, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
-  private def createSUT(
-    bbsiRepository: BbsiRepository,
-    iFormSubmissionService: IFormSubmissionService,
-    auditor: Auditor) =
-    new BbsiService(bbsiRepository, iFormSubmissionService, auditor)
 }
