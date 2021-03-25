@@ -18,10 +18,10 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.MongoConfig
@@ -39,8 +39,8 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
-  val nino = new Generator(Random).nextNino
-  val cacheId = CacheId(nino)
+  val nino: Nino = new Generator(Random).nextNino
+  val cacheId: CacheId = CacheId(nino)
 
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
