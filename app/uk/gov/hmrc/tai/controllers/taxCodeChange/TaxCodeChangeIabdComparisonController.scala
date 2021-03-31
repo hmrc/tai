@@ -39,7 +39,9 @@ class TaxCodeChangeIabdComparisonController @Inject()(
     taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
       Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
     } recover {
-      case ex: Exception => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: Exception => {
+        BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
     }
   }
 }
