@@ -42,7 +42,7 @@ import scala.util.Random
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
   val taxYear: TaxYear = TaxYear()
-  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/20-21"
+  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/21-22"
 
   val mockHttp = mock[HttpClient]
 
