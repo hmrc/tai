@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import scala.util.Random
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
   val taxYear: TaxYear = TaxYear()
-  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/20-21"
+  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/21-22"
 
   val mockHttp = mock[HttpClient]
 
