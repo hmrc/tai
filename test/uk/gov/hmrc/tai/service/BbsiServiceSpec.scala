@@ -21,7 +21,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, verify, when}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.CloseAccountRequest
 import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
@@ -35,40 +34,21 @@ import scala.concurrent.{Await, Future}
 class BbsiServiceSpec extends BaseSpec {
 
   "Bbsi Service" must {
-    "return bank accounts" when {
-      "the connector returns a right" in {
+    "return bank accounts" in {
+      val mockBbsiRepository = mock[BbsiRepository]
+      when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
+        .thenReturn(Future.successful(Seq(bankAccount)))
 
-        val mockBbsiRepository = mock[BbsiRepository]
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+      val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
+      val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
 
-        val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
-
-        result mustBe Right(Seq(bankAccount))
-      }
-    }
-
-    "return a http response" when {
-      "the connector returns a left" in {
-
-        val response = Left(HttpResponse(500, "An error occurred"))
-
-        val mockBbsiRepository = mock[BbsiRepository]
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(response))
-
-        val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
-
-        result mustBe response
-      }
+      result mustBe Seq(bankAccount)
     }
 
     "return bank account" in {
       val mockBbsiRepository = mock[BbsiRepository]
       when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-        .thenReturn(Future.successful(Right(Seq(bankAccount, bankAccount.copy(id = 2)))))
+        .thenReturn(Future.successful(Seq(bankAccount, bankAccount.copy(id = 2))))
 
       val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
       val result = Await.result(sut.bbsiAccount(nino, 1), 5.seconds)
@@ -86,7 +66,7 @@ class BbsiServiceSpec extends BaseSpec {
         when(mockIFormSubmissionService.uploadIForm(any(), any(), any(), any())(any()))
           .thenReturn(Future.successful("1"))
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         val mockAuditor = mock[Auditor]
         doNothing()
@@ -107,7 +87,7 @@ class BbsiServiceSpec extends BaseSpec {
       "id is not present" in {
         val mockBbsiRepository = mock[BbsiRepository]
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
         the[BankAccountNotFound] thrownBy
@@ -122,7 +102,7 @@ class BbsiServiceSpec extends BaseSpec {
       "given valid inputs" in {
         val mockBbsiRepository = mock[BbsiRepository]
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(mockIFormSubmissionService.uploadIForm(any(), any(), any(), any())(any()))
@@ -146,7 +126,7 @@ class BbsiServiceSpec extends BaseSpec {
       "id is not present" in {
         val mockBbsiRepository = mock[BbsiRepository]
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
         the[BankAccountNotFound] thrownBy Await.result(sut.removeIncorrectBankAccount(nino, 49), 5.seconds)
@@ -160,7 +140,7 @@ class BbsiServiceSpec extends BaseSpec {
 
         val mockBbsiRepository = mock[BbsiRepository]
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(mockIFormSubmissionService.uploadIForm(any(), any(), any(), any())(any()))
@@ -186,7 +166,7 @@ class BbsiServiceSpec extends BaseSpec {
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
 
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount)))
 
         the[BankAccountNotFound] thrownBy Await.result(sut.updateBankAccountInterest(nino, 49, 1000), 5.seconds)
       }
@@ -198,7 +178,7 @@ class BbsiServiceSpec extends BaseSpec {
 
       val mockBbsiRepository = mock[BbsiRepository]
       when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-        .thenReturn(Future.successful(Right(Seq(bankAccount))))
+        .thenReturn(Future.successful(Seq(bankAccount)))
 
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(mockIFormSubmissionService.uploadIForm(any(), any(), any(), iformFunctionCaptor.capture())(any()))
@@ -214,7 +194,7 @@ class BbsiServiceSpec extends BaseSpec {
 
       val fakePerson =
         Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
-      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5.seconds)
+      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
 
       testIform must include("Correct amount of gross interest")
       testIform must include("1234.56")

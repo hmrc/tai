@@ -16,106 +16,149 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.http.Status._
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentCaptor
+import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.model.domain.BankAccount
+import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TestMetrics
+import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
-class BbsiConnectorSpec extends ConnectorBaseSpec {
+class BbsiConnectorSpec extends BaseSpec {
 
-  private val taxYear = TaxYear()
+  "BbsiConnector" should {
 
-  val mockHttp: HttpClient = mock[HttpClient]
+    "return Sequence of BankAccounts" when {
+      "api returns bank accounts" in {
+        val captor = ArgumentCaptor.forClass(classOf[HeaderCarrier])
 
-  lazy val bbsiUrls: BbsiUrls = inject[BbsiUrls]
-  lazy val desConfig: DesConfig = inject[DesConfig]
+        val mockHttpHandler = mock[HttpHandler]
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(multipleBankAccounts))
 
-  lazy val url = s"/pre-population-of-investment-income/nino/${nino.withoutSuffix}/tax-year/${taxYear.year}"
+        val mockDesConfig = mock[DesConfig]
+        when(mockDesConfig.environment)
+          .thenReturn("ist0")
+        when(mockDesConfig.authorization)
+          .thenReturn("123")
 
-  lazy val metrics: TestMetrics = new TestMetrics
-  lazy val sut = new BbsiConnector(metrics, inject[HttpClient], bbsiUrls, desConfig)
-  lazy val sutWithMockHttp = new BbsiConnector(metrics, mockHttp, bbsiUrls, desConfig)
-
-  "BbsiConnector" when {
-
-    "bankAccounts is called" must {
-
-      "return a 200 response" in {
-
-        val json = """{"message": "Success"}"""
-
-        server.stubFor(
-          get(urlEqualTo(url)).willReturn(aResponse().withStatus(OK).withBody(json))
-        )
-
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mockDesConfig)
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result.status mustBe OK
-        result.json mustBe Json.parse(json)
+        result mustBe Seq(bankAccount, bankAccount, bankAccount)
+
+        verify(mockHttpHandler, times(1))
+          .getFromApi(any(), meq(APITypes.BbsiAPI))(captor.capture())
+
+        captor.getValue.extraHeaders must contain("Environment"   -> "ist0")
+        captor.getValue.extraHeaders must contain("Authorization" -> s"Bearer 123")
+
       }
 
-      "return a 400 response" in {
+      "api return bank account" in {
+        val mockHttpHandler = mock[HttpHandler]
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(singleBankAccount))
 
-        val exMessage = "Text from reason column"
-
-        server.stubFor(
-          get(urlEqualTo(url))
-            .willReturn(badRequest().withBody(exMessage))
-        )
-
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result.status mustBe BAD_REQUEST
-        result.body mustBe exMessage
+        result mustBe Seq(bankAccount)
       }
+    }
 
-      "return a 404 response" in {
+    "return empty bank accounts" when {
+      "api doesn't return account" in {
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016", "accounts" -> Json.arr())
 
-        val exMessage = "Could not find bank accounts"
+        val mockHttpHandler = mock[HttpHandler]
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(json))
 
-        server.stubFor(
-          get(urlEqualTo(url)).willReturn(notFound().withBody(exMessage))
-        )
-
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
         val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        result.status mustBe NOT_FOUND
-        result.body mustBe exMessage
+        result mustBe Nil
       }
+    }
 
-      "return a 500 response" in {
+    "return exception" when {
+      "api returns invalid json" in {
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
 
-        val exMessage = "An error occurred"
+        val mockHttpHandler = mock[HttpHandler]
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(json))
 
-        server.stubFor(
-          get(urlEqualTo(url)).willReturn(serverError().withBody(exMessage))
-        )
+        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
+        val ex = the[RuntimeException] thrownBy Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
 
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        result.status mustBe INTERNAL_SERVER_ERROR
-        result.body mustBe exMessage
-      }
-
-      "return a 503 response" in {
-
-        val exMessage = "Service is unavailable"
-
-        server.stubFor(
-          get(urlEqualTo(url)).willReturn(serviceUnavailable().withBody(exMessage))
-        )
-
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        result.status mustBe SERVICE_UNAVAILABLE
-        result.body mustBe exMessage
+        ex.getMessage mustBe "Invalid Json"
       }
     }
   }
+  private val bankAccount = BankAccount(
+    accountNumber = Some("*****5566"),
+    sortCode = Some("112233"),
+    bankName = Some("ACCOUNT ONE"),
+    grossInterest = 1500.5,
+    source = Some("Customer"),
+    numberOfAccountHolders = Some(1)
+  )
+
+  private val multipleBankAccounts = Json.obj(
+    "nino"    -> nino.nino,
+    "taxYear" -> "2016",
+    "accounts" -> Json.arr(
+      Json.obj(
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
+        "numberOfAccountHolders" -> 1
+      ),
+      Json.obj(
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
+        "numberOfAccountHolders" -> 1
+      ),
+      Json.obj(
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
+        "numberOfAccountHolders" -> 1
+      )
+    )
+  )
+
+  private val singleBankAccount = Json.obj(
+    "nino"    -> nino.nino,
+    "taxYear" -> "2016",
+    "accounts" -> Json.arr(
+      Json.obj(
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
+        "numberOfAccountHolders" -> 1
+      ))
+  )
+
+  private val taxYear = TaxYear()
+
+  private def createSut(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig) =
+    new BbsiConnector(httpHandler, urls, config)
 }

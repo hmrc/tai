@@ -23,30 +23,29 @@ trait BbsiHodFormatters {
 
   val bankAccountHodReads = new Reads[Seq[BankAccount]] {
     override def reads(json: JsValue): JsResult[Seq[BankAccount]] = {
-
-      def createBankAccount(accounts: Seq[JsValue]): JsSuccess[Seq[BankAccount]] =
-        JsSuccess(accounts.map { account =>
-          val accountNumber = (account \ "accountNumber").asOpt[String]
-          val sortCode = (account \ "sortCode").asOpt[String]
-          val bankName = (account \ "bankName").asOpt[String]
-          val source = (account \ "source").asOpt[String]
-          val numberOfAccountHolders = (account \ "numberOfAccountHolders").asOpt[Int]
-          val grossInterest = (account \ "grossInterest").as[BigDecimal]
-
-          BankAccount(
-            accountNumber = accountNumber,
-            sortCode = sortCode,
-            bankName = bankName,
-            source = source,
-            grossInterest = grossInterest,
-            numberOfAccountHolders = numberOfAccountHolders
-          )
-        })
-
-      (json \ "accounts").validate[JsArray] match {
-        case JsSuccess(arr, _) => createBankAccount(arr.value)
-        case e @ JsError(_)    => e
+      val accounts: Seq[JsValue] = (json \ "accounts").validate[JsArray] match {
+        case JsSuccess(arr, _) => arr.value
+        case _                 => throw new RuntimeException("Invalid Json")
       }
+
+      JsSuccess(accounts.map { account =>
+        val accountNumber = (account \ "accountNumber").asOpt[String]
+        val sortCode = (account \ "sortCode").asOpt[String]
+        val bankName = (account \ "bankName").asOpt[String]
+        val source = (account \ "source").asOpt[String]
+        val numberOfAccountHolders = (account \ "numberOfAccountHolders").asOpt[Int]
+        val grossInterest = (account \ "grossInterest").as[BigDecimal]
+
+        BankAccount(
+          accountNumber = accountNumber,
+          sortCode = sortCode,
+          bankName = bankName,
+          source = source,
+          grossInterest = grossInterest,
+          numberOfAccountHolders = numberOfAccountHolders
+        )
+      })
+
     }
   }
 }

@@ -41,15 +41,8 @@ class IncomeRepository @Inject()(
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
       if (untaxedInterestIncome.nonEmpty) {
-        val accountsFuture = bbsiRepository.bbsiDetails(nino, year) map {
-          case Right(accounts) => accounts
-          case Left(_)         => Seq.empty[BankAccount]
-        } recover {
-          case NonFatal(_) => Seq.empty[BankAccount]
-        }
-
         for {
-          accounts <- accountsFuture
+          accounts <- bbsiRepository.bbsiDetails(nino, year).recover({ case NonFatal(_) => Seq.empty[BankAccount] })
         } yield {
           val income = untaxedInterestIncome.head
           val untaxedInterest = UntaxedInterest(
