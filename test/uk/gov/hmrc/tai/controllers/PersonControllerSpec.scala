@@ -60,8 +60,8 @@ class PersonControllerSpec extends BaseSpec {
                 "postcode" -> "pc",
                 "country"  -> "country"
               ),
-              "isDeceased"     -> false,
-              "hasCorruptData" -> false
+              "isDeceased"              -> false,
+              "manualCorrespondenceInd" -> false
             ),
           "links" -> Json.arr()
         )
