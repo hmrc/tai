@@ -17,13 +17,11 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.http.Status._
-import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector, CacheId}
 import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.domain.formatters.{BbsiHodFormatters, BbsiMongoFormatters}
+import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,22 +30,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector)(
   implicit ec: ExecutionContext) {
 
-  private val BBSIKey = "BankAndBuildingSocietyInterest"
+  val BBSIKey = "BankAndBuildingSocietyInterest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[HttpResponse, Seq[BankAccount]]] = {
+  def bbsiDetails(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
     val cacheId = CacheId(nino)
 
     cacheConnector.findOptSeq[BankAccount](cacheId, BBSIKey)(BbsiMongoFormatters.bbsiFormat) flatMap {
       case None =>
-        fetchBankAccounts(nino, taxYear) flatMap {
-          case Right(accounts) =>
-            cacheConnector.createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat) map {
-              Right(_)
-            }
-          case error @ _ => Future.successful(error)
-        }
-      case Some(accounts) => Future.successful(Right(accounts))
+        for {
+          accounts <- bbsiConnector.bankAccounts(nino, taxYear)
+          accountsWithId <- cacheConnector
+                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
+        } yield accountsWithId
+      case Some(accounts) => Future.successful(accounts)
     }
   }
 
@@ -59,20 +54,4 @@ class BbsiRepository @Inject()(cacheConnector: CacheConnector, bbsiConnector: Bb
       .map { case (account: BankAccount, index: Int) => (account, index + 1) }
       .foldLeft(Seq.empty[BankAccount])(updateIds)
   }
-
-  private def fetchBankAccounts(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[HttpResponse, Seq[BankAccount]]] =
-    bbsiConnector.bankAccounts(nino, taxYear) map { response =>
-      response.status match {
-        case OK =>
-          response.json.validate[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads) match {
-            case JsSuccess(value, _) => Right(value)
-            case JsError(_)          => Left(HttpResponse(INTERNAL_SERVER_ERROR, "Could not parse Json"))
-          }
-        case _ => Left(response)
-      }
-    } recover {
-      case e => Left(HttpResponse(INTERNAL_SERVER_ERROR, e.getMessage))
-    }
-
 }

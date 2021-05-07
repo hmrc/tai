@@ -32,8 +32,8 @@ import scala.util.Random
 trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with Injecting {
 
   val nino: Nino = new Generator(new Random).nextNino
-  implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
   def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(

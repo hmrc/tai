@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -51,79 +51,55 @@ class IncomeRepositorySpec extends BaseSpec {
     }
 
     "return non-tax-code incomes" when {
-
-      val expectedIncomes = Seq(
-        OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(OtherIncomeNotEarned, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(PartTimeEarnings, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(Tips, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(OtherEarnings, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(CasualEarnings, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(ForeignDividendIncome, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(ForeignPropertyIncome, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(ForeignInterestAndOtherSavings, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(ForeignPensionsAndOtherIncome, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(StatePension, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(OccupationalPension, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(PublicServicesPension, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(ForcesPension, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(PersonalPensionAnnuity, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(Profit, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(BankOrBuildingSocietyInterest, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(UkDividend, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(UnitTrust, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(StockDividend, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(NationalSavings, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(SavingsBond, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(PurchasedLifeAnnuities, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(IncapacityBenefit, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(JobSeekersAllowance, Some(1), 100, "desc"),
-        OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "desc")
-      )
-
-      val expectedUntaxedInterest =
-        Some(UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
-
-      val json = taxAccountJsonWithIabds(
-        npsIabdSummaries(
-          1,
-          Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
-            81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
-          100))
-
-      "there is non-tax-code income present and bank-accounts are empty" in {
+      "there is non-tax-code income present and bank-accounts are not present" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
         val mockBbsiRepository = mock[BbsiRepository]
-
+        val json = taxAccountJsonWithIabds(
+          npsIabdSummaries(
+            1,
+            Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
+              81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
+            100))
         when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq.empty[BankAccount])))
+        when(mockBbsiRepository.bbsiDetails(any(), any())(any())).thenReturn(Future.successful(Seq.empty[BankAccount]))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
         val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
 
-        result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe expectedIncomes
-        result.nonTaxCodeIncomes.untaxedInterest mustBe expectedUntaxedInterest
-      }
+        result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe Seq(
+          OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherIncomeNotEarned, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PartTimeEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Tips, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(CasualEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignDividendIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignPropertyIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignInterestAndOtherSavings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignPensionsAndOtherIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(StatePension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OccupationalPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PublicServicesPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForcesPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PersonalPensionAnnuity, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Profit, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(BankOrBuildingSocietyInterest, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(UkDividend, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(UnitTrust, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(StockDividend, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(NationalSavings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(SavingsBond, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PurchasedLifeAnnuities, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(IncapacityBenefit, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(JobSeekersAllowance, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "desc")
+        )
 
-      "there is non-tax-code income present and bank-accounts are not available" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        val mockBbsiRepository = mock[BbsiRepository]
-
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
-        when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Left(HttpResponse(500, "An error"))))
-
-        val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
-
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
-
-        result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe expectedIncomes
-
-        result.nonTaxCodeIncomes.untaxedInterest mustBe expectedUntaxedInterest
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
       }
 
       "non-tax-code income and bank accounts are present" in {
@@ -133,7 +109,7 @@ class IncomeRepositorySpec extends BaseSpec {
         when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(bankAccount, bankAccount))))
+          .thenReturn(Future.successful(Seq(bankAccount, bankAccount)))
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 

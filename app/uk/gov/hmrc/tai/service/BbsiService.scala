@@ -38,14 +38,11 @@ class BbsiService @Inject()(
 
   private val CloseBankAccountAuditRequest = "CloseBankAccountRequest"
 
-  def bbsiDetails(nino: Nino, taxYear: TaxYear = TaxYear())(implicit hc: HeaderCarrier) =
+  def bbsiDetails(nino: Nino, taxYear: TaxYear = TaxYear())(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
     bbsiRepository.bbsiDetails(nino, taxYear)
 
   def bbsiAccount(nino: Nino, id: Int)(implicit hc: HeaderCarrier): Future[Option[BankAccount]] =
-    bbsiDetails(nino) map {
-      case Right(accounts) => accounts.find(_.id == id)
-      case Left(_)         => None
-    }
+    bbsiDetails(nino) map (_.find(_.id == id))
 
   def closeBankAccount(nino: Nino, id: Int, closeAccountRequest: CloseAccountRequest)(
     implicit hc: HeaderCarrier): Future[String] =

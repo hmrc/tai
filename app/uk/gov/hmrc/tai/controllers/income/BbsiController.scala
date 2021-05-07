@@ -40,10 +40,8 @@ class BbsiController @Inject()(
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    bbsiService.bbsiDetails(nino) map {
-      case Right(accounts) if accounts.nonEmpty => Ok(Json.toJson(ApiResponse(accounts, Nil)))
-      case Right(accounts) if accounts.isEmpty  => NotFound("No bank accounts found")
-      case Left(response)                       => new Status(response.status).apply(response.json)
+    bbsiService.bbsiDetails(nino) map { accounts =>
+      Ok(Json.toJson(ApiResponse(accounts, Nil)))
     }
   }
 
