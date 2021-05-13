@@ -19,13 +19,14 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
+import uk.gov.hmrc.tai.model.enums.APITypes
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonRepository @Inject()(cacheConnector: CacheConnector, citizenDetailsConnector: CitizenDetailsConnector)(
+class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDetailsUrls, httpHandler: HttpHandler)(
   implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
@@ -44,7 +45,8 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector, citizenDetailsC
     cacheConnector.find(cacheId, PersonMongoKey)(PersonFormatter.personMongoFormat)
 
   private[repositories] def getPersonFromAPI(nino: Nino, cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Person] =
-    citizenDetailsConnector.getPerson(nino) flatMap { person =>
-      cacheConnector.createOrUpdate(cacheId, person, PersonMongoKey)(PersonFormatter.personMongoFormat)
+    httpHandler.getFromApi(urls.designatoryDetailsUrl(nino), APITypes.NpsPersonAPI) flatMap { s =>
+      val personDetails = s.as[Person](PersonFormatter.personHodRead)
+      cacheConnector.createOrUpdate(cacheId, personDetails, PersonMongoKey)(PersonFormatter.personMongoFormat)
     }
 }
