@@ -28,12 +28,7 @@ case class Person(
   dateOfBirth: Option[LocalDate],
   address: Address,
   isDeceased: Boolean = false,
-  manualCorrespondenceInd: Boolean = false)
-
-object Person {
-  def createLockedUser(nino: Nino): Person =
-    new Person(nino, "", "", None, Address("", "", "", "", ""), false, true)
-}
+  hasCorruptData: Boolean = false)
 
 case class Address(line1: String, line2: String, line3: String, postcode: String, country: String)
 
@@ -46,7 +41,7 @@ object PersonFormatter {
 
   val personMongoFormat = Json.format[Person]
 
-  implicit val personHodRead: Reads[Person] = (
+  val personHodRead: Reads[Person] = (
     (JsPath \ "person" \ "nino").read[Nino] and
       ((JsPath \ "person" \ "firstName").read[String] or Reads.pure("")) and
       ((JsPath \ "person" \ "lastName").read[String] or Reads.pure("")) and

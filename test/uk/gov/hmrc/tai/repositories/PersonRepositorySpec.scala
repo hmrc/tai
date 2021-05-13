@@ -19,9 +19,9 @@ package uk.gov.hmrc.tai.repositories
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsConnector}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -34,12 +34,9 @@ class PersonRepositorySpec extends BaseSpec {
   val address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
   val dateOfBirth = LocalDate.parse("2017-02-01")
-  val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
 
-  implicit val formats = PersonFormatter.personMongoFormat
-
-  def createSUT(cacheConnector: CacheConnector, citizenDetailsConnector: CitizenDetailsConnector) =
-    new PersonRepository(cacheConnector, citizenDetailsConnector)
+  def createSUT(cacheConnector: CacheConnector, citizenDetailsUrls: CitizenDetailsUrls, httpHandler: HttpHandler) =
+    new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 
   "The getPerson method" should {
 
@@ -47,13 +44,15 @@ class PersonRepositorySpec extends BaseSpec {
 
       "cached data is present for the requested nino" in {
 
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+
         val mockCacheConnector = mock[CacheConnector]
-        val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+        val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
+        val mockHttpHandler = mock[HttpHandler]
         when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(Some(person)))
 
-        lazy val SUT =
-          createSUT(mockCacheConnector, mockCitizenDetailsConnector)
+        val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
         val result = Await.result(responseFuture, 5 seconds)
 
@@ -62,8 +61,8 @@ class PersonRepositorySpec extends BaseSpec {
         verify(mockCacheConnector, times(1))
           .find[Person](meq(cacheId), meq(personMongoKey))(any())
 
-        verify(mockCitizenDetailsConnector, never())
-          .getPerson(any())(any())
+        verify(mockHttpHandler, never())
+          .getFromApi(any(), any())(any())
       }
     }
 
@@ -71,31 +70,35 @@ class PersonRepositorySpec extends BaseSpec {
 
       "no cache data is currently held for the requested nino" in {
 
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        implicit val formats = PersonFormatter.personMongoFormat
+
         val mockCacheConnector = mock[CacheConnector]
-        val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+        val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
+        val mockHttpHandler = mock[HttpHandler]
         when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(person))
-        when(mockCitizenDetailsConnector.getPerson(any())(any()))
-          .thenReturn(Future.successful(person))
+        when(mockHttpHandler.getFromApi(any(), any())(any()))
+          .thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
 
-        lazy val SUT =
-          createSUT(mockCacheConnector, mockCitizenDetailsConnector)
+        val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
         val result = Await.result(responseFuture, 5 seconds)
 
         result mustBe person
 
-        verify(mockCitizenDetailsConnector)
-          .getPerson(any())(any())
+        verify(mockHttpHandler, times(1))
+          .getFromApi(any(), any())(any())
 
-        verify(mockCacheConnector)
+        verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), any(), meq(personMongoKey))(any())
       }
     }
 
-    "cache a correctly configured Person instance" when {
+    "cache a correctly configured Person instace" when {
+
       "the person API sends json with missing fields" in {
 
         val jsonWithMissingFields = Json.obj(
@@ -107,19 +110,21 @@ class PersonRepositorySpec extends BaseSpec {
         )
         val expectedPersonFromPartialJson = Person(nino, "", "", None, Address("", "", "", "", ""), false, false)
 
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        implicit val formats = PersonFormatter.personMongoFormat
+
         val mockCacheConnector = mock[CacheConnector]
-        val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+        val mockCitizenDetailsUrls = mock[CitizenDetailsUrls]
+        val mockHttpHandler = mock[HttpHandler]
         when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(expectedPersonFromPartialJson))
-        when(mockCitizenDetailsConnector.getPerson(any())(any()))
-          .thenReturn(Future.successful(expectedPersonFromPartialJson))
+        when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(jsonWithMissingFields))
 
-        lazy val SUT =
-          createSUT(mockCacheConnector, mockCitizenDetailsConnector)
+        val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        Await.result(responseFuture, 5 seconds)
+        val result = Await.result(responseFuture, 5 seconds)
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), meq(expectedPersonFromPartialJson), meq(personMongoKey))(any())

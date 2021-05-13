@@ -127,7 +127,7 @@ trait TaxCodeIncomeHodFormatters {
     iabdSummary.map(_.amount) match {
       case Some(amount) => Some(amount)
       case _ =>
-        Logger.info("TotalTaxableIncome is 0")
+        Logger.warn("TotalTaxableIncome is 0")
         None
     }
   }
