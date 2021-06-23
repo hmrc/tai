@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HttpException, InternalServerException}
-import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
+import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class TaxCodeMismatchSpec extends IntegrationSpec {
 
@@ -32,8 +32,8 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
   }
 
-  val url = s"/tai/$nino/tax-account/tax-code-mismatch"
-  def request = FakeRequest(GET, url).withHeaders("X-SESSION-ID" -> "test-session-id")
+  val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> "test-session-id")
 
   "TaxCodeMismatch" should {
     "return an OK response for a valid user" in {

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
@@ -30,13 +30,31 @@ class GetEmploymentsSpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
   }
 
-  val url = s"/tai/$nino/employments/years/$year"
-  def request = FakeRequest(GET, url).withHeaders("X-SESSION-ID" -> "test-session-id")
+  val apiUrl = s"/tai/$nino/employments/years/$year"
+  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> "test-session-id")
 
   "Get Employment" should {
     "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
       result.map(getStatus) shouldBe Some(OK)
+    }
+
+    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return OK for employment API failures with status code $httpStatus" in {
+        server.stubFor(get(urlEqualTo(employmentUrl)).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) shouldBe Some(OK)
+      }
+    }
+
+    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+      s"return OK for rti API failures with status code $httpStatus" in {
+        server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(aResponse().withStatus(httpStatus)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) shouldBe Some(OK)
+      }
     }
   }
 }
