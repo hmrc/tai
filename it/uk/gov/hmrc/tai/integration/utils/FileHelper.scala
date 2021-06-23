@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.integration
+package uk.gov.hmrc.tai.integration.utils
 
-import uk.gov.hmrc.play.it._
+import scala.io.Source.fromFile
 
+object FileHelper {
 
-class TaiEmbeddedServer (override val testName: String) extends MicroServiceEmbeddedServer {
-  override protected lazy val externalServices: Seq[ExternalService] = Seq()
-  override def additionalConfig = Map(
-    "cache.expiryInMinutes" -> 1
-  )
-}
-
-
-class TaiBaseSpec (testName: String) extends ServiceSpec {
-  override protected val server: ResourceProvider with StartAndStopServer = new TaiEmbeddedServer(testName)
+  def loadFile(name: String): String = {
+    val source = fromFile(name)
+    try source.mkString finally source.close()
+  }
 }

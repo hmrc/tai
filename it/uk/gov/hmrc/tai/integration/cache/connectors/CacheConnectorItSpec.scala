@@ -18,15 +18,16 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
-import uk.gov.hmrc.tai.integration.TaiBaseSpec
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
@@ -35,7 +36,13 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with MongoFormatter with MockitoSugar with GuiceOneAppPerSuite {
+class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar {
+
+  override def fakeApplication = GuiceApplicationBuilder()
+    .configure(
+      "cache.expiryInMinutes" -> 1
+    )
+    .build()
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
@@ -119,14 +126,14 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
 
       "return the data from cache" when {
         "Nil is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(Nil) shouldBe cachedData
         }
 
         "sequence is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(List(sessionData, sessionData)) shouldBe cachedData
