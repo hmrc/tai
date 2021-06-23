@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.integration.utils
 
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -27,7 +27,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.util.Random
 
 // APIs to test:
-// GET /tai/nino/employments/years/2021 HTTP/1.1
 // GET /tai/nino/tax-account/2021/summary
 
 class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
@@ -61,8 +60,6 @@ class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHel
     server.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(ok(authResponse)))
-
-    setupTaxAccount()
   }
 
   override def fakeApplication =
@@ -83,16 +80,12 @@ class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHel
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
   val taxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=${year + 1}"
+  val employmentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+  val rtiUrl = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${TaxYear().twoDigitRange}"
 
-
-  private def setupTaxAccount(): Unit = {
-    val taxAccountJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxAccount.json")
-    server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
-
-    val iabdsJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/iabds.json")
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
-
-    val taxCodeHistoryJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxCodeHistory.json")
-    server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
-  }
+  val taxAccountJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxAccount.json")
+  val iabdsJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/iabds.json")
+  val taxCodeHistoryJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxCodeHistory.json")
+  val employmentJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/employment.json")
+  val rtiJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/rti.json")
 }

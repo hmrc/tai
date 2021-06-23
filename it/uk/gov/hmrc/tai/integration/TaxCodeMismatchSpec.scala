@@ -16,13 +16,21 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, findUnmatchedRequests, get, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HttpException, InternalServerException}
-import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
 class TaxCodeMismatchSpec extends IntegrationSpec {
+
+  override def beforeEach() = {
+    super.beforeEach()
+
+    server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+  }
 
   val url = s"/tai/$nino/tax-account/tax-code-mismatch"
   def request = FakeRequest(GET, url).withHeaders("X-SESSION-ID" -> "test-session-id")
