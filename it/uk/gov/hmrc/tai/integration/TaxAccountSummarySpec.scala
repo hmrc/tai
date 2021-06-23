@@ -19,23 +19,21 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
-class TaxCodeMismatchSpec extends IntegrationSpec {
+class TaxAccountSummarySpec extends IntegrationSpec {
 
   override def beforeEach() = {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
     server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
-    server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
   }
 
-  val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+  val apiUrl = s"/tai/$nino/tax-account/$year/summary"
   def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> "test-session-id")
 
-  "TaxCodeMismatch" should {
+  "TaxAccountSummary" should {
     "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
       result.map(getStatus) shouldBe Some(OK)
@@ -56,36 +54,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
         val result = route(fakeApplication(), request)
         result.map(getStatus) shouldBe Some(OK)
-      }
-    }
-
-    "for tax-code-history failures" should {
-      "return a BAD_REQUEST when the tax-code-history API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
-
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(BAD_REQUEST)
-      }
-
-      "return a NOT_FOUND when the tax-code-history API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(NOT_FOUND)
-      }
-
-      "throws an  InternalServerException when the tax-code-history API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue shouldBe a[InternalServerException])
-      }
-
-      "throws a HttpException when the tax-code-history API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue shouldBe a[HttpException])
       }
     }
   }

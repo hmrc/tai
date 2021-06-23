@@ -26,9 +26,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-// APIs to test:
-// GET /tai/nino/tax-account/2021/summary
-
 class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
   override def beforeEach() = {
     super.beforeEach()
