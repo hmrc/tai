@@ -26,7 +26,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
   override def beforeEach() = {
     super.beforeEach()
 
-    server.stubFor(get(urlEqualTo(employmentUrl)).willReturn(ok(employmentJson)))
+    server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
   }
 
@@ -41,7 +41,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
 
     List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for employment API failures with status code $httpStatus" in {
-        server.stubFor(get(urlEqualTo(employmentUrl)).willReturn(aResponse().withStatus(httpStatus)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
         result.map(getStatus) shouldBe Some(OK)

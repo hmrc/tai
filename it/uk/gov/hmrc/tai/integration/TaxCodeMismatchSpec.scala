@@ -29,7 +29,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
     server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
-    server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+    server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
   }
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
@@ -61,28 +61,28 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
     "for tax-code-history failures" should {
       "return a BAD_REQUEST when the tax-code-history API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
         val result = route(fakeApplication(), request)
         result.map(getStatus) shouldBe Some(BAD_REQUEST)
       }
 
       "return a NOT_FOUND when the tax-code-history API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
         val result = route(fakeApplication(), request)
         result.map(getStatus) shouldBe Some(NOT_FOUND)
       }
 
       "throws an  InternalServerException when the tax-code-history API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
         val result = route(fakeApplication(), request)
         result.map(_.failed.futureValue shouldBe a[InternalServerException])
       }
 
       "throws a HttpException when the tax-code-history API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(taxCodeHistoryUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
 
         val result = route(fakeApplication(), request)
         result.map(_.failed.futureValue shouldBe a[HttpException])

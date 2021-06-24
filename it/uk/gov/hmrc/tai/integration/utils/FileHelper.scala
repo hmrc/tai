@@ -21,7 +21,8 @@ import scala.io.Source.fromFile
 object FileHelper {
 
   def loadFile(name: String): String = {
-    val source = fromFile(name)
+    val filePath = s"it/uk/gov/hmrc/tai/integration/resources/$name"
+    val source = fromFile(filePath)
     try source.mkString finally source.close()
   }
 }

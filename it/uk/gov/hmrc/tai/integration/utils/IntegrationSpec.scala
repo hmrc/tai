@@ -26,6 +26,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
+// to test:
+// POST          /:nino/tax-account/:year/expenses/working-from-home-employee-expenses/:iabd                             @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.updateWorkingFromHomeExpenses(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, iabd: Int)
+// Update income API
 class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
   override def beforeEach() = {
     super.beforeEach()
@@ -76,13 +79,13 @@ class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHel
 
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
-  val taxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=${year + 1}"
-  val employmentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+  val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=${year + 1}"
+  val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
   val rtiUrl = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${TaxYear().twoDigitRange}"
 
-  val taxAccountJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxAccount.json")
-  val iabdsJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/iabds.json")
-  val taxCodeHistoryJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/taxCodeHistory.json")
-  val employmentJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/employment.json")
-  val rtiJson = FileHelper.loadFile("it/uk/gov/hmrc/tai/integration/resources/rti.json")
+  val taxAccountJson = FileHelper.loadFile("taxAccount.json")
+  val iabdsJson = FileHelper.loadFile("iabds.json")
+  val taxCodeHistoryJson = FileHelper.loadFile("taxCodeHistory.json")
+  val employmentJson = FileHelper.loadFile("employment.json")
+  val rtiJson = FileHelper.loadFile("rti.json")
 }
