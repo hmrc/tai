@@ -62,7 +62,7 @@ class HttpHandlerSpec
 //        when(mockMetrics.startTimer(any()))
 //          .thenReturn(mockTimerContext)
 
-     //   val mockHttp = mock[HttpClient]
+        //   val mockHttp = mock[HttpClient]
 
         server.stubFor(
           WireMock
