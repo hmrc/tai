@@ -144,7 +144,6 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
       INTERNAL_SERVER_ERROR,
       SERVICE_UNAVAILABLE
     ).foreach { httpResponse =>
-
       s"a $httpResponse occurs" in {
 
         server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(httpResponse)))
@@ -156,27 +155,5 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
         result mustBe a[HttpException]
       }
     }
-
-//    "a 500 occurs" in {
-//
-//      server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-//
-//      val connector = createSut()
-//
-//      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
-//
-//      result mustBe a[HttpException]
-//    }
-//
-//    "a 503 occurs" in {
-//
-//      server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
-//
-//      val connector = createSut()
-//
-//      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
-//
-//      result mustBe a[HttpException]
-//    }
   }
 }

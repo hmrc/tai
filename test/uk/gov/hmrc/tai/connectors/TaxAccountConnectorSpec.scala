@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.net.URL
-
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, InternalServerException, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
@@ -31,6 +29,7 @@ import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
+import java.net.URL
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -208,7 +207,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
         "return a HttpException" when {
 
-          "connector receives 4xx" in new ConnectorSetup {
+          "connector receives BAD_REQUEST" in new ConnectorSetup {
             val taxCodeId = 1
 
             val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
@@ -226,20 +225,74 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             )
           }
 
-          "connector receives 5xx" in new ConnectorSetup {
+          "connector receives NOT_FOUND" in new ConnectorSetup {
             val taxCodeId = 1
 
             val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
-                serverError()
+                aResponse().withStatus(NOT_FOUND)
+              )
+            )
+
+            assertConnectorException[NotFoundException](
+              sut.taxAccountHistory(nino, taxCodeId),
+              NOT_FOUND,
+              ""
+            )
+          }
+
+          "connector receives IM_A_TEAPOT" in new ConnectorSetup {
+            val taxCodeId = 1
+
+            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse().withStatus(IM_A_TEAPOT)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.taxAccountHistory(nino, taxCodeId),
+              IM_A_TEAPOT,
+              ""
+            )
+          }
+
+          "connector receives INTERNAL_SERVER_ERROR" in new ConnectorSetup {
+            val taxCodeId = 1
+
+            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse().withStatus(INTERNAL_SERVER_ERROR)
               )
             )
 
             assertConnectorException[InternalServerException](
               sut.taxAccountHistory(nino, taxCodeId),
               INTERNAL_SERVER_ERROR,
+              ""
+            )
+          }
+
+          "connector receives SERVICE_UNAVAILABLE" in new ConnectorSetup {
+            val taxCodeId = 1
+
+            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse().withStatus(SERVICE_UNAVAILABLE)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.taxAccountHistory(nino, taxCodeId),
+              SERVICE_UNAVAILABLE,
               ""
             )
           }

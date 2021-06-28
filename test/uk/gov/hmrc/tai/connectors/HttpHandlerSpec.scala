@@ -31,11 +31,12 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.util.WireMockHelper
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, getRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, equalTo, getRequestedFor, urlEqualTo}
 
 class HttpHandlerSpec
     extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
@@ -44,35 +45,42 @@ class HttpHandlerSpec
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  lazy val httpHandler = inject[HttpHandler]
+
+  lazy val testUrl = server.url("testUrl")
+  private case class ResponseObject(name: String, age: Int)
+  private implicit val responseObjectFormat = Json.format[ResponseObject]
+  private val responseBodyObject = ResponseObject("aaa", 24)
+
   "getFromAPI" should {
     "return valid json" when {
       "when data is successfully received from the http get call" in {
-        val testUrl = "testUrl"
 
-        val mockTimerContext = mock[Timer.Context]
+//        val mockTimerContext = mock[Timer.Context]
+//
+//        val mockMetrics = mock[Metrics]
+//        when(mockMetrics.startTimer(any()))
+//          .thenReturn(mockTimerContext)
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+     //   val mockHttp = mock[HttpClient]
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.successful(SuccessfulGetResponseWithObject))
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(OK)
+              .withBody(Json.toJson(responseBodyObject).toString())))
 
-//        make a wiremock to retunr a SuccessfulGetResponseWithObject for any get url
-
-        server.stubFor(WireMock.get(urlEqualTo(any())).willReturn(aResponse().withStatus(OK).withJsonBody(Json.toJson(responseBodyObject))))
-
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val response = Await.result(SUT.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
+        //  val SUT = createSUT(mockMetrics, mockHttp)
+        val response = Await.result(httpHandler.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
 
         response shouldBe Json.toJson(responseBodyObject)
 
-        verify(mockHttp, times(1)).GET(meq(testUrl))(any(), any(), any())
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, times(1)).incrementSuccessCounter(APITypes.RTIAPI)
-        verify(mockMetrics, never()).incrementFailedCounter(any())
-        verify(mockTimerContext, times(1)).stop()
+        //  verify(mockHttp, times(1)).GET(meq(testUrl))(any(), any(), any())
+//        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
+//        verify(mockMetrics, times(1)).incrementSuccessCounter(APITypes.RTIAPI)
+//        verify(mockMetrics, never()).incrementFailedCounter(any())
+//        verify(mockTimerContext, times(1)).stop()
       }
     }
 
@@ -265,10 +273,6 @@ class HttpHandlerSpec
     }
   }
 
-  private case class ResponseObject(name: String, age: Int)
-  private implicit val responseObjectFormat = Json.format[ResponseObject]
-  private val responseBodyObject = ResponseObject("aaa", 24)
-
   private val SuccessfulGetResponseWithObject: HttpResponse =
     HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                      -> Seq("34")))
   private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
@@ -281,4 +285,5 @@ class HttpHandlerSpec
     HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
 
   private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
+
 }

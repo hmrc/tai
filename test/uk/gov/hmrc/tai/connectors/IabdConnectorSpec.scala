@@ -17,16 +17,18 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
+import org.scalatest.concurrent.ScalaFutures
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class IabdConnectorSpec extends ConnectorBaseSpec {
+class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
   class StubbedFeatureTogglesConfig(enabled: Boolean) extends FeatureTogglesConfig(inject[Configuration]) {
     override def desEnabled: Boolean = enabled
@@ -89,6 +91,18 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
           Await.result(sut(false).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
         }
+      }
+    }
+
+    "generate an exception" when {
+      "a 400 occurs in the connector" in {
+
+        server.stubFor(
+          get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST))
+        )
+
+        sut(false).iabds(nino, taxYear.next.next).failed.futureValue mustBe a[HttpException]
+
       }
     }
 
