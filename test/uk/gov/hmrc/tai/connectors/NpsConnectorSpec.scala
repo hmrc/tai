@@ -102,6 +102,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           )
 
           Await.result(sut.getEmployments(nino, year), 5.seconds) mustBe expectedResult
+
+          //TODO: verify the headers here
         }
       }
 
@@ -218,6 +220,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           )
 
           Await.result(sut.getEmploymentDetails(nino, year), 5.seconds) mustBe employmentListJson
+
+          //TODO: verify the headers here
         }
       }
 
@@ -337,6 +341,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           Await.result(sut.getIabds(nino, year), 5.seconds) mustBe
             expectedResponse
+
+          //TODO: verify the headers here
         }
       }
 
@@ -456,6 +462,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           Await.result(sut.getIabdsForType(nino, year, iabdType), 5.seconds) mustBe
             expectedResponse
+
+          //TODO: verify the headers here
         }
       }
 
@@ -574,6 +582,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           )
 
           Await.result(sut.getCalculatedTaxAccount(nino, year), 5.seconds) mustBe expectedResult
+
+          //TODO: verify the headers here
         }
       }
 
@@ -693,6 +703,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           result.status mustBe OK
           result.json mustBe taxAccountAsJson
+
+          //TODO: verify the headers here
         }
       }
 
@@ -714,6 +726,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           res.status mustBe BAD_REQUEST
           res.body mustBe exMessage
         }
+
+        //TODO: Add in tests for 400, 404, 418, 500, 503
 
         "connector returns 5xx" in {
 
@@ -760,6 +774,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           result.status mustBe OK
           result.json mustBe json
+
+          //TODO: verify the headers here
         }
 
         "given an empty updates amount" in {
@@ -826,6 +842,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             exMessage
           )
         }
+
+        //TODO: Add in tests for 400, 404, 418, 500, 503
 
         "the connector returns a 5xx code" in {
 

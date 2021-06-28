@@ -95,6 +95,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
           res.extraHeaders must contain(originId    -> desConfig.originatorId)
           res.extraHeaders mustNot contain(originId -> npsConfig.originatorId)
+
         }
       }
 
@@ -131,7 +132,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result mustBe jsonResponse
+
+          //TODO: verify the headers here
         }
+
+        //TODO: Add in tests for 400, 404, 418, 500, 503
 
         "toggled to use non confirmedAPI" must {
 
@@ -147,7 +152,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result mustBe jsonResponse
+
+            //TODO: verify the headers here
           }
+
+          //TODO: Add in tests for 400, 404, 418, 500, 503
         }
 
         "updateTaxCodeIncome" must {
@@ -167,8 +176,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
               5 seconds
             ) mustBe HodUpdateSuccess
+
+            //TODO: verify the headers here
           }
 
+          //TODO: Add in tests for 400, 404, 418, 500, 503
           "return a failure status if the update fails" in new ConnectorSetup {
 
             override def desUpdateIsEnabled: Boolean = false
@@ -203,6 +215,8 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           val result = Await.result(sut.taxAccountHistory(nino, taxCodeId), 5.seconds)
 
           result mustEqual json
+
+          //TODO: verify the headers here
         }
 
         "return a HttpException" when {
@@ -314,9 +328,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result mustBe jsonResponse
+
+              //TODO: verify the headers here
             }
 
           }
+
+          //TODO: Add in tests for 400, 404, 418, 500, 503
 
           "toggled to use non confirmedAPI" must {
 
@@ -332,9 +350,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
               Await.result(sut.taxAccount(nino, taxYear), 5 seconds) mustBe jsonResponse
+
+              //TODO: verify the headers here
             }
 
           }
+
+          //TODO: Add in tests for 400, 404, 418, 500, 503
         }
 
         "updateTaxCodeIncome" must {
@@ -351,7 +373,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
 
             result mustBe HodUpdateSuccess
+
+            //TODO: verify the headers here
           }
+
+          //TODO: Add in tests for 400, 404, 418, 500, 503
 
           "return a failure status if the update fails" in new ConnectorSetup {
             val url = {

@@ -52,14 +52,17 @@ class DesConnector @Inject()(
 
   def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
+  // TODO: Mark this as private, its st to public only for test reasons
   def commonHeaderValues =
     Seq(
       "Environment"   -> config.environment,
       "Authorization" -> config.authorization,
       "Content-Type"  -> TaiConstants.contentType)
 
+  // TODO: Mark this as private, its st to public only for test reasons
   def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
 
+  // TODO: Mark this as private, its st to public only for test reasons
   def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
     HeaderCarrier(extraHeaders = commonHeaderValues ++ Seq("Originator-Id" -> originatorId, "ETag" -> version.toString))
 

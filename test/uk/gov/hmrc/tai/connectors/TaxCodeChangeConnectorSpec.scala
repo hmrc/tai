@@ -69,6 +69,8 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
         val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
 
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+
+        //TODO: verify the headers here
       }
 
       "payroll number is not returned" in {

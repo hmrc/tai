@@ -123,6 +123,7 @@ class BbsiConnectorSpec
             .withHeader("Environment", equalTo(config.environment))
             .withHeader("Authorization", equalTo(s"Bearer ${config.authorization}"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+            //TODO: Add in X-Session-ID, X-Request-ID and Correlation ID
         )
       }
 

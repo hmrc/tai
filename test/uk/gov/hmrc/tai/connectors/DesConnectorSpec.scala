@@ -61,7 +61,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
     "create a header carrier with extra headers populated correctly" when {
       "the required extra header information is provided" in {
-
+        //TODO: Remove this test and verify the headers the usual way
         val etag: String = "2"
         val originatorId: String = "testOriginatorId"
 
@@ -88,6 +88,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
         )
 
         Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType), 5 seconds) mustBe iabdList
+
+        //TODO: verify the headers here
       }
     }
 
@@ -179,6 +181,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
         )
 
         Await.result(sut.getIabdsFromDes(nino, taxYear), 5 seconds) mustBe iabdList
+
+        //TODO: verify the headers here
       }
     }
 
@@ -272,6 +276,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
         )
 
         Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear), 5 seconds) mustBe expectedResult
+
+        //TODO: verify the headers here
       }
     }
 
@@ -364,6 +370,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
         response.status mustBe OK
         response.json mustBe jsonData
+
+        //TODO: verify the headers here
       }
     }
 
@@ -453,6 +461,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
 
           response.status mustBe OK
+
+          //TODO: verify the headers here
         }
 
         "updating employment data in DES using a valid update amount" in {
@@ -577,6 +587,8 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
           response.status mustBe OK
           response.json mustBe json
+
+          //TODO: verify the headers here
         }
       }
 
@@ -627,6 +639,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
       "throw a HttpException" when {
 
+        //TODO: Add tests for 400, 404, 418, 500, 503
         "a 4xx response is returned" in {
 
           val exMessage = "Bad request"

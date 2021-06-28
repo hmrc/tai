@@ -88,6 +88,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
         rtiStatus.status mustBe OK
         rtiData mustBe Some(fakeRtiData.as[RtiData])
+
+        //TODO: verify the headers here
       }
 
       "return No RTI data" when {
@@ -267,6 +269,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
           val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
           result mustBe Right(expectedPayments)
+
+          //TODO: verify the headers here
         }
       }
 

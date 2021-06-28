@@ -58,9 +58,13 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
       )
 
       Await.result(sut.createEnvelope, 5 seconds) mustBe envelopeId
+
+      //TODO: verify the headers here
     }
 
     "throw a runtime exception" when {
+
+      //TODO: Add in tests for 400, 404, 418, 500, 503
       "the success response does not contain a location header" in {
 
         server.stubFor(
@@ -136,6 +140,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
 
         result.status mustBe OK
+
+        //TODO: verify the headers here
       }
     }
 
@@ -216,6 +222,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
       }
 
+      //TODO: Add in tests for 400, 404, 418, 500, 503
+
       "any error occurred" in {
 
         server.importStubs(
@@ -254,6 +262,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
       )
 
       Await.result(sut.closeEnvelope(envelopeId), 5 seconds) mustBe envelopeId
+
+      //TODO: verify the headers here
     }
 
     "throw a runtime exception" when {
@@ -286,6 +296,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
         } must have message "File upload envelope routing request failed"
       }
+
+      //TODO: Add in tests for 400, 404, 418, 500, 503
 
       "the call to the file upload service returns a failure response" in {
 
@@ -333,6 +345,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "AVAILABLE")
           )
         )
+
+        //TODO: verify the headers here
       }
 
       "there are no files" in {
@@ -385,6 +399,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         result mustBe None
       }
     }
+
+    //TODO: Add in tests for 400, 404, 418, 500, 503
 
     "Throw a RuntimeException on returning 404 and after all retries have failed" in {
 

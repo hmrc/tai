@@ -52,6 +52,7 @@ class RtiConnector @Inject()(
     nino.value.take(BASIC_NINO_LENGTH)
   }
 
+  //TODO: mark this as private, it's only public to exposed for testing
   def createHeader: HeaderCarrier =
     HeaderCarrier(
       extraHeaders = Seq(

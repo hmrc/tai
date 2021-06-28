@@ -68,6 +68,8 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
       )
 
       Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
+
+      //TODO: Verify the headers
     }
 
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
@@ -256,6 +258,8 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
 
       result mustBe "4958621783d14007b71d55934d5ccca9"
+
+      //TODO: verify the headers
     }
 
     "throw" when {
@@ -364,6 +368,8 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
       val result = Await.result(sut.ninoVersion(nino), 5 seconds)
 
       result mustBe expectedResponse
+
+      //TODO: verify the headers
     }
 
     "throw" when {
