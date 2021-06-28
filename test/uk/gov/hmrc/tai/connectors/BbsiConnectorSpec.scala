@@ -16,100 +16,51 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{times, verify, when}
-import org.mockito.ArgumentCaptor
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, getRequestedFor, urlEqualTo}
+import data.RTIData.nino
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.http._
+import play.api.test.Helpers._
+import play.api.test.Injecting
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext
 
-class BbsiConnectorSpec extends BaseSpec {
+class BbsiConnectorSpec
+    extends WordSpec with WireMockHelper with MockitoSugar with Matchers with Injecting with ScalaFutures
+    with IntegrationPatience {
 
-  "BbsiConnector" should {
+  lazy val connector = inject[BbsiConnector]
 
-    "return Sequence of BankAccounts" when {
-      "api returns bank accounts" in {
-        val captor = ArgumentCaptor.forClass(classOf[HeaderCarrier])
+  private val taxYear = TaxYear()
 
-        val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(multipleBankAccounts))
+  implicit val hc = HeaderCarrier()
 
-        val mockDesConfig = mock[DesConfig]
-        when(mockDesConfig.environment)
-          .thenReturn("ist0")
-        when(mockDesConfig.authorization)
-          .thenReturn("123")
+  implicit lazy val ec = inject[ExecutionContext]
 
-        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mockDesConfig)
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
+  lazy val config = inject[DesConfig]
 
-        result mustBe Seq(bankAccount, bankAccount, bankAccount)
+  val url = s"/pre-population-of-investment-income/nino/${nino.nino.take(8)}/tax-year/2021"
 
-        verify(mockHttpHandler, times(1))
-          .getFromApi(any(), meq(APITypes.BbsiAPI))(captor.capture())
-
-        captor.getValue.extraHeaders must contain("Environment"   -> "ist0")
-        captor.getValue.extraHeaders must contain("Authorization" -> s"Bearer 123")
-
-      }
-
-      "api return bank account" in {
-        val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(singleBankAccount))
-
-        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        result mustBe Seq(bankAccount)
-      }
-    }
-
-    "return empty bank accounts" when {
-      "api doesn't return account" in {
-        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016", "accounts" -> Json.arr())
-
-        val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(json))
-
-        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
-        val result = Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        result mustBe Nil
-      }
-    }
-
-    "return exception" when {
-      "api returns invalid json" in {
-        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
-
-        val mockHttpHandler = mock[HttpHandler]
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
-          .thenReturn(Future.successful(json))
-
-        val sut = createSut(mockHttpHandler, mock[BbsiUrls], mock[DesConfig])
-        val ex = the[RuntimeException] thrownBy Await.result(sut.bankAccounts(nino, taxYear), 5.seconds)
-
-        ex.getMessage mustBe "Invalid Json"
-      }
-    }
-  }
-  private val bankAccount = BankAccount(
-    accountNumber = Some("*****5566"),
-    sortCode = Some("112233"),
-    bankName = Some("ACCOUNT ONE"),
-    grossInterest = 1500.5,
-    source = Some("Customer"),
-    numberOfAccountHolders = Some(1)
+  private val singleBankAccount = Json.obj(
+    "nino"    -> nino.nino,
+    "taxYear" -> "2016",
+    "accounts" -> Json.arr(
+      Json.obj(
+        "accountNumber"          -> "*****5566",
+        "sortCode"               -> "112233",
+        "bankName"               -> "ACCOUNT ONE",
+        "grossInterest"          -> 1500.5,
+        "source"                 -> "Customer",
+        "numberOfAccountHolders" -> 1
+      ))
   )
 
   private val multipleBankAccounts = Json.obj(
@@ -143,22 +94,126 @@ class BbsiConnectorSpec extends BaseSpec {
     )
   )
 
-  private val singleBankAccount = Json.obj(
-    "nino"    -> nino.nino,
-    "taxYear" -> "2016",
-    "accounts" -> Json.arr(
-      Json.obj(
-        "accountNumber"          -> "*****5566",
-        "sortCode"               -> "112233",
-        "bankName"               -> "ACCOUNT ONE",
-        "grossInterest"          -> 1500.5,
-        "source"                 -> "Customer",
-        "numberOfAccountHolders" -> 1
-      ))
+  private val bankAccount = BankAccount(
+    accountNumber = Some("*****5566"),
+    sortCode = Some("112233"),
+    bankName = Some("ACCOUNT ONE"),
+    grossInterest = 1500.5,
+    source = Some("Customer"),
+    numberOfAccountHolders = Some(1)
   )
 
-  private val taxYear = TaxYear()
+  "BbsiConnector" should {
+    "return Sequence of BankAccounts" when {
+      "api returns one bank account" in {
 
-  private def createSut(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig) =
-    new BbsiConnector(httpHandler, urls, config)
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(OK).withBody(singleBankAccount.toString())))
+
+        val customHeaderCarrier = connector.createHeader
+
+        val result = connector.bankAccounts(nino, taxYear)(customHeaderCarrier)
+
+        result.futureValue shouldBe Seq(bankAccount)
+
+        server.verify(
+          getRequestedFor(urlEqualTo(url))
+            .withHeader("Environment", equalTo(config.environment))
+            .withHeader("Authorization", equalTo(s"Bearer ${config.authorization}"))
+            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+        )
+      }
+
+      "api returns three bank accounts" in {
+
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(OK).withBody(multipleBankAccounts.toString())))
+
+        val result = connector.bankAccounts(nino, taxYear)
+
+        result.futureValue shouldBe Seq(bankAccount, bankAccount, bankAccount)
+      }
+    }
+
+    "return empty bank accounts" when {
+      "api doesn't return account" in {
+
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016", "accounts" -> Json.arr())
+
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(OK).withBody(json.toString())))
+
+        val result = connector.bankAccounts(nino, taxYear)
+
+        result.futureValue shouldBe Nil
+      }
+    }
+
+    "return exception" when {
+      "api returns invalid json" in {
+
+        val json: JsValue = Json.obj("nino" -> nino.nino, "taxYear" -> "2016")
+
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(OK).withBody(json.toString())))
+
+        val result = connector.bankAccounts(nino, taxYear).failed.futureValue
+
+        result.getMessage shouldBe "Invalid Json"
+
+        result shouldBe a[RuntimeException]
+      }
+    }
+
+    "return error" when {
+      "a 400 occurs" in {
+
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+        val result = connector.bankAccounts(nino, taxYear).failed.futureValue
+
+        result shouldBe a[BadRequestException]
+      }
+      "a 404" in {
+
+        server.stubFor(
+          WireMock
+            .get(urlEqualTo(url))
+            .willReturn(aResponse().withStatus(NOT_FOUND)))
+
+        val result = connector.bankAccounts(nino, taxYear).failed.futureValue
+
+        result shouldBe a[NotFoundException]
+      }
+
+      List(
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpResponse =>
+        s"a $httpResponse will throw a HttpException" in {
+
+          server.stubFor(
+            WireMock
+              .get(urlEqualTo(url))
+              .willReturn(aResponse().withStatus(httpResponse)))
+
+          val result = connector.bankAccounts(nino, taxYear).failed.futureValue
+
+          result shouldBe a[HttpException]
+        }
+      }
+    }
+  }
 }
