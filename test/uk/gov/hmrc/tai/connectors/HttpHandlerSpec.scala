@@ -39,7 +39,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, equalTo, getRequestedFor, urlEqualTo}
 
 class HttpHandlerSpec
-    extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
+  extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
     with IntegrationPatience {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
@@ -56,14 +56,6 @@ class HttpHandlerSpec
     "return valid json" when {
       "when data is successfully received from the http get call" in {
 
-//        val mockTimerContext = mock[Timer.Context]
-//
-//        val mockMetrics = mock[Metrics]
-//        when(mockMetrics.startTimer(any()))
-//          .thenReturn(mockTimerContext)
-
-        //   val mockHttp = mock[HttpClient]
-
         server.stubFor(
           WireMock
             .get(anyUrl())
@@ -71,141 +63,93 @@ class HttpHandlerSpec
               .withStatus(OK)
               .withBody(Json.toJson(responseBodyObject).toString())))
 
-        //  val SUT = createSUT(mockMetrics, mockHttp)
-        val response = Await.result(httpHandler.getFromApi(testUrl, APITypes.RTIAPI), 5 seconds)
+        val response = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).futureValue
 
         response shouldBe Json.toJson(responseBodyObject)
 
-        //  verify(mockHttp, times(1)).GET(meq(testUrl))(any(), any(), any())
-//        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-//        verify(mockMetrics, times(1)).incrementSuccessCounter(APITypes.RTIAPI)
-//        verify(mockMetrics, never()).incrementFailedCounter(any())
-//        verify(mockTimerContext, times(1)).stop()
       }
     }
 
     "result in a BadRequest exception" when {
 
       "when a BadRequest http response is received from the http get call" in {
-        val mockTimerContext = mock[Timer.Context]
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(BAD_REQUEST)))
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.failed(new BadRequestException("bad request")))
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[BadRequestException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        result shouldBe a[BadRequestException]
 
-        ex.message mustBe "bad request"
-
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, never()).incrementSuccessCounter(any())
-        verify(mockMetrics, times(1)).incrementFailedCounter(APITypes.RTIAPI)
-        verify(mockTimerContext, times(1)).stop()
       }
     }
 
     "result in a NotFound exception" when {
 
       "when a NotFound http response is received from the http get call" in {
-        val mockTimerContext = mock[Timer.Context]
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(NOT_FOUND)))
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.failed(new NotFoundException("not found")))
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[NotFoundException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        result shouldBe a[NotFoundException]
 
-        ex.message mustBe "not found"
-
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, never()).incrementSuccessCounter(any())
-        verify(mockMetrics, times(1)).incrementFailedCounter(APITypes.RTIAPI)
-        verify(mockTimerContext, times(1)).stop()
       }
     }
 
     "result in a InternalServerError exception" when {
 
       "when a InternalServerError http response is received from the http get call" in {
-        val mockTimerContext = mock[Timer.Context]
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)))
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.failed(new InternalServerException("internal server error")))
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[InternalServerException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
+        result shouldBe a[InternalServerException]
 
-        ex.message mustBe "internal server error"
-
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, never()).incrementSuccessCounter(any())
-        verify(mockMetrics, times(1)).incrementFailedCounter(APITypes.RTIAPI)
-        verify(mockTimerContext, times(1)).stop()
       }
     }
 
     "result in a Locked exception" when {
 
       "when a Locked response is received from the http get call" in {
-        val mockTimerContext = mock[Timer.Context]
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(LOCKED)))
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.failed(new LockedException("locked")))
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[LockedException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
-
-        ex.message mustBe "locked"
-
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, times(1)).incrementSuccessCounter(any())
-        verify(mockMetrics, never()).incrementFailedCounter(APITypes.RTIAPI)
-        verify(mockTimerContext, times(1)).stop()
+        result shouldBe a[LockedException]
       }
     }
 
     "result in an HttpException" when {
 
       "when a unknown error http response is received from the http get call" in {
-        val mockTimerContext = mock[Timer.Context]
 
-        val mockMetrics = mock[Metrics]
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
+        server.stubFor(
+          WireMock
+            .get(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(IM_A_TEAPOT)))
 
-        val mockHttp = mock[HttpClient]
-        when(mockHttp.GET[HttpResponse](any())(any(), any(), any()))
-          .thenReturn(Future.failed(new HttpException("unknown response", responseCode = 418)))
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        val ex = the[HttpException] thrownBy Await.result(SUT.getFromApi("", APITypes.RTIAPI), 5 seconds)
-
-        ex.message mustBe "unknown response"
-
-        verify(mockMetrics, times(1)).startTimer(APITypes.RTIAPI)
-        verify(mockMetrics, never()).incrementSuccessCounter(any())
-        verify(mockMetrics, times(1)).incrementFailedCounter(APITypes.RTIAPI)
-        verify(mockTimerContext, times(1)).stop()
+        result shouldBe a[HttpException]
       }
     }
   }
