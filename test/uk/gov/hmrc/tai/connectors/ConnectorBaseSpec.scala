@@ -21,7 +21,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException}
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.duration.DurationInt
@@ -33,7 +33,16 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
 
   val nino: Nino = new Generator(new Random).nextNino
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val sessionId = "testSessionId"
+  val requestId = "testRequestId"
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(
+    extraHeaders = Seq(
+      HeaderNames.xSessionId -> sessionId,
+      HeaderNames.xRequestId -> requestId
+    )
+  )
+
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
   def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(

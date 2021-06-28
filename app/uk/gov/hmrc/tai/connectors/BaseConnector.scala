@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: HttpClient)(
@@ -47,7 +48,12 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
 
   def basicNpsHeaders(hc: HeaderCarrier): HeaderCarrier =
-    hc.withExtraHeaders("Gov-Uk-Originator-Id" -> originatorId)
+    hc.withExtraHeaders(
+      "Gov-Uk-Originator-Id" -> originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
 
   def getFromNps[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val headerCarrier: HeaderCarrier = basicNpsHeaders(hc)

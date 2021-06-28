@@ -72,6 +72,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
         Await.result(sut(false).iabds(nino, taxYear), 5.seconds) mustBe json
 
         //TODO: verify the headers here
+
       }
 
       "return empty json" when {

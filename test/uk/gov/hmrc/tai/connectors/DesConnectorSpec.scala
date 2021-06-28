@@ -63,15 +63,14 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
       "the required extra header information is provided" in {
         //TODO: Remove this test and verify the headers the usual way
         val etag: String = "2"
-        val originatorId: String = "testOriginatorId"
 
-        val result = sut.headerForUpdate(etag.toInt, originatorId)
+        val result = sut.headerForUpdate(etag.toInt, desOriginatorId)
 
         result.extraHeaders mustBe Seq(
           "Environment"   -> "local",
           "Authorization" -> "Bearer Local",
           "Content-Type"  -> TaiConstants.contentType,
-          "Originator-Id" -> originatorId,
+          "Originator-Id" -> desOriginatorId,
           "ETag"          -> etag
         )
       }

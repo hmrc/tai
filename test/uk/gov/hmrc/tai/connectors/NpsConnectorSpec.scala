@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, putRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
+import org.mockito.Mockito.when
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json, Writes}
 import uk.gov.hmrc.http._
@@ -40,15 +42,23 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
   val etag: Int = intGen
   val iabdType: Int = intGen
   val empSeqNum: Int = intGen
-
   val npsBaseUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}"
   val employmentsUrl: String = s"$npsBaseUrl/employment/$year"
   val iabdsUrl: String = s"$npsBaseUrl/iabds/$year"
   val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
   val taxAccountUrl: String = s"$npsBaseUrl/tax-account/$year/calculation"
   val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
-
   lazy val sut: NpsConnector = inject[NpsConnector]
+
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      getRequestedFor(urlEqualTo(employmentsUrl))
+        .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+        .withHeader(
+          "CorrelationId",
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
   val employment: NpsEmployment = NpsEmployment(
     intGen,
@@ -77,7 +87,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       "fetch the path url" when {
         "given a nino and path" in {
           val arg = "path"
-          sut.npsPathUrl(nino, arg) mustBe s"${server.baseUrl()}$npsBaseUrl/$arg"
+          sut.npsPathUrl(nino, arg) contains s"$npsBaseUrl/$arg"
         }
       }
     }
@@ -98,12 +108,19 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
               aResponse()
                 .withStatus(OK)
                 .withBody(s"[$employmentAsJson]")
-                .withHeader("ETag", s"$etag"))
+            )
           )
 
           Await.result(sut.getEmployments(nino, year), 5.seconds) mustBe expectedResult
 
-          //TODO: verify the headers here
+          server.verify(
+            getRequestedFor(urlEqualTo(employmentsUrl))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
         }
       }
 
@@ -221,7 +238,14 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           Await.result(sut.getEmploymentDetails(nino, year), 5.seconds) mustBe employmentListJson
 
-          //TODO: verify the headers here
+          server.verify(
+            getRequestedFor(urlEqualTo(employmentsUrl))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
         }
       }
 
@@ -342,7 +366,14 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           Await.result(sut.getIabds(nino, year), 5.seconds) mustBe
             expectedResponse
 
-          //TODO: verify the headers here
+          server.verify(
+            getRequestedFor(urlEqualTo(iabdsUrl))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
         }
       }
 

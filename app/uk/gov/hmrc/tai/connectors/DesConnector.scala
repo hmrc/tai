@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import java.util.UUID
-
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue

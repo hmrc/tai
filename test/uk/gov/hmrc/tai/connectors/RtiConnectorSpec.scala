@@ -69,7 +69,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         headers.extraHeaders mustBe List(
           ("Environment", "local"),
           ("Authorization", "Bearer Local"),
-          ("Gov-Uk-Originator-Id", originatorId))
+          ("Gov-Uk-Originator-Id", desOriginatorId))
       }
     }
 
