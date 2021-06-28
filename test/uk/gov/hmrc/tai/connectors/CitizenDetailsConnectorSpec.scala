@@ -86,6 +86,31 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = true, None)
     }
 
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT
+    ).foreach { httpResponse =>
+      s"return a HttpException when a $httpResponse occurs" in {
+
+        val exMessage = "An error occurred"
+
+        server.stubFor(
+          get(urlEqualTo(designatoryDetailsUrl))
+            .willReturn(
+              aResponse()
+                .withStatus(httpResponse)
+            )
+        )
+
+        assertConnectorException[HttpException](
+          sut.getPersonDetails(nino),
+          httpResponse,
+          ""
+        )
+      }
+    }
+
     "return Internal server error when requesting " in {
 
       val exMessage = "An error occurred"
@@ -194,6 +219,25 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       sut.getEtag(nino).futureValue mustBe None
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT
+    ).foreach { httpResponse =>
+      s"return a None when a $httpResponse occurs" in {
+
+        server.stubFor(
+          get(urlEqualTo(eTagUrl))
+            .willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+            )
+        )
+
+        sut.getEtag(nino).futureValue mustBe None
+      }
     }
 
     "return None on an unrecoverable error, possibly bad data received from the upstream API" in {

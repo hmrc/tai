@@ -21,7 +21,7 @@ import org.scalatest.concurrent.ScalaFutures
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.http.{BadRequestException, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -62,7 +62,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
   )
 
   "IABD Connector" when {
-
     "toggled to use NPS" must {
       "return IABD json" in {
 
@@ -92,22 +91,39 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           Await.result(sut(false).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
         }
       }
-    }
 
-    "generate an exception" when {
-      "a 400 occurs in the connector" in {
+      "return an error" when {
+        "a 400 occurs" in {
 
-        server.stubFor(
-          get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST))
-        )
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-        sut(false).iabds(nino, taxYear.next.next).failed.futureValue mustBe a[HttpException]
+          sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+        }
 
+        "a 404 occurs" in {
+
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
+        }
+
+        List(
+          IM_A_TEAPOT,
+          INTERNAL_SERVER_ERROR,
+          SERVICE_UNAVAILABLE
+        ).foreach { httpResponse =>
+          s"a $httpResponse occurs" in {
+
+            server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(httpResponse)))
+
+            sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+          }
+        }
       }
+
     }
 
     "toggled to use DES" must {
-
       "return IABD json" in {
 
         server.stubFor(
@@ -132,6 +148,35 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           )
 
           Await.result(sut(true).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+        }
+      }
+
+      "return an error" when {
+        "a 400 occurs" in {
+
+          server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+          sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+        }
+
+        "a 404 occurs" in {
+
+          server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
+        }
+
+        List(
+          IM_A_TEAPOT,
+          INTERNAL_SERVER_ERROR,
+          SERVICE_UNAVAILABLE
+        ).foreach { httpResponse =>
+          s"a $httpResponse occurs" in {
+
+            server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(httpResponse)))
+
+            sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+          }
         }
       }
     }
