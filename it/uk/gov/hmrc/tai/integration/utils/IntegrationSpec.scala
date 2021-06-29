@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -27,9 +28,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.util.Random
 
 // to test:
-// POST          /:nino/tax-account/:year/expenses/working-from-home-employee-expenses/:iabd                             @uk.gov.hmrc.tai.controllers.expenses.EmployeeExpensesController.updateWorkingFromHomeExpenses(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear, iabd: Int)
 // Update income API
-class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
+trait IntegrationSpec
+    extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
   override def beforeEach() = {
     super.beforeEach()
 
@@ -65,18 +66,22 @@ class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHel
   override def fakeApplication =
     GuiceApplicationBuilder()
       .configure(
-        "microservice.services.auth.port"    -> server.port(),
-        "microservice.services.des-hod.port" -> server.port(),
-        "microservice.services.des-hod.host" -> "127.0.0.1",
-        "microservice.services.nps-hod.port" -> server.port(),
-        "microservice.services.nps-hod.host" -> "127.0.0.1",
-        "auditing.enabled"                   -> false
+        "microservice.services.auth.port"            -> server.port(),
+        "microservice.services.des-hod.port"         -> server.port(),
+        "microservice.services.des-hod.host"         -> "127.0.0.1",
+        "microservice.services.nps-hod.port"         -> server.port(),
+        "microservice.services.citizen-details.port" -> server.port(),
+        "microservice.services.nps-hod.host"         -> "127.0.0.1",
+        "auditing.enabled"                           -> false,
+        "cache.isEnabled"                            -> false
       )
       .build()
 
   val nino = new Generator(new Random).nextNino
   val year = TaxYear().year
+  val etag: String = "123"
 
+  val cidEtagUrl = s"/citizen-details/$nino/etag"
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
   val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=${year + 1}"
@@ -88,4 +93,9 @@ class IntegrationSpec extends UnitSpec with GuiceOneAppPerSuite with WireMockHel
   val taxCodeHistoryJson = FileHelper.loadFile("taxCodeHistory.json")
   val employmentJson = FileHelper.loadFile("employment.json")
   val rtiJson = FileHelper.loadFile("rti.json")
+  val etagJson: JsValue = Json.parse(s"""
+                                        |{
+                                        |   "etag":"$etag"
+                                        |}
+                                          """.stripMargin)
 }

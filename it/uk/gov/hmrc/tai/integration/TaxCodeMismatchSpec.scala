@@ -41,7 +41,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       result.map(getStatus) shouldBe Some(OK)
     }
 
-    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for tax-account API failures with status code $httpStatus" in {
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
@@ -50,7 +50,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
     }
 
-    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for iabds API failures with status code $httpStatus" in {
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
 

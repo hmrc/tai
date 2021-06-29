@@ -39,7 +39,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
       result.map(getStatus) shouldBe Some(OK)
     }
 
-    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for employment API failures with status code $httpStatus" in {
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
@@ -48,7 +48,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
       }
     }
 
-    List(BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
+    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for rti API failures with status code $httpStatus" in {
         server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
