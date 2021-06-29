@@ -52,7 +52,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
-      getRequestedFor(urlEqualTo(employmentsUrl))
+      requestPattern
         .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
@@ -108,19 +108,13 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
               aResponse()
                 .withStatus(OK)
                 .withBody(s"[$employmentAsJson]")
+                .withHeader("ETag", s"$etag")
             )
           )
 
           Await.result(sut.getEmployments(nino, year), 5.seconds) mustBe expectedResult
 
-          server.verify(
-            getRequestedFor(urlEqualTo(employmentsUrl))
-              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-              .withHeader(
-                "CorrelationId",
-                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(employmentsUrl)))
         }
       }
 
@@ -238,14 +232,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           Await.result(sut.getEmploymentDetails(nino, year), 5.seconds) mustBe employmentListJson
 
-          server.verify(
-            getRequestedFor(urlEqualTo(employmentsUrl))
-              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-              .withHeader(
-                "CorrelationId",
-                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(employmentsUrl)))
         }
       }
 
@@ -366,14 +353,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           Await.result(sut.getIabds(nino, year), 5.seconds) mustBe
             expectedResponse
 
-          server.verify(
-            getRequestedFor(urlEqualTo(iabdsUrl))
-              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-              .withHeader(
-                "CorrelationId",
-                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(iabdsUrl)))
         }
       }
 
@@ -494,7 +474,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           Await.result(sut.getIabdsForType(nino, year, iabdType), 5.seconds) mustBe
             expectedResponse
 
-          //TODO: verify the headers here
+
         }
       }
 
