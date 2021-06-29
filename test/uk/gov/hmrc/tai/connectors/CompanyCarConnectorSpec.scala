@@ -380,7 +380,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
       result mustBe expectedResponse
 
-      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(ninoVersionUrl)))
+      verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(ninoVersionUrl)))
     }
 
     "throw" when {

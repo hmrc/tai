@@ -21,7 +21,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
-class GetEmployeeExpenses extends IntegrationSpec {
+class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
   def request = FakeRequest(GET, apiUrl)
