@@ -39,7 +39,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, equalTo, getRequestedFor, urlEqualTo}
 
 class HttpHandlerSpec
-  extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
+    extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
     with IntegrationPatience {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
@@ -155,79 +155,108 @@ class HttpHandlerSpec
   }
 
   "postToApi" should {
-    val mockUrl = "mockUrl"
+
     val userInput = "userInput"
 
-    "return json which is coming from http post call" in {
-      val mockHttp = mock[HttpClient]
-      when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(OK, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(CREATED, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(ACCEPTED, Json.toJson(userInput), Map[String, Seq[String]]())))
-        .thenReturn(Future.successful(HttpResponse(NO_CONTENT, Json.toJson(userInput), Map[String, Seq[String]]())))
+    "return json which is coming from http post call with OK response" in {
 
-      val SUT = createSUT(mock[Metrics], mockHttp)
-      val okResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val createdResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val acceptedResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
-      val noContentResponse = Await.result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+      server.stubFor(
+        WireMock
+          .post(anyUrl())
+          .willReturn(aResponse()
+            .withStatus(OK)
+            .withBody(Json.toJson(userInput).toString())))
 
-      okResponse.status mustBe OK
-      okResponse.json mustBe Json.toJson(userInput)
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
 
-      createdResponse.status mustBe CREATED
-      createdResponse.json mustBe Json.toJson(userInput)
+      result.status shouldBe OK
+      result.json shouldBe Json.toJson(userInput)
+    }
 
-      acceptedResponse.status mustBe ACCEPTED
-      acceptedResponse.json mustBe Json.toJson(userInput)
+    "return json which is coming from http post call with CREATED response" in {
 
-      noContentResponse.status mustBe NO_CONTENT
-      noContentResponse.json mustBe Json.toJson(userInput)
+      server.stubFor(
+        WireMock
+          .post(anyUrl())
+          .willReturn(aResponse()
+            .withStatus(CREATED)
+            .withBody(Json.toJson(userInput).toString())))
+
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+
+      result.status shouldBe CREATED
+      result.json shouldBe Json.toJson(userInput)
+
+    }
+
+    "return json which is coming from http post call with ACCEPTED response" in {
+
+      server.stubFor(
+        WireMock
+          .post(anyUrl())
+          .willReturn(aResponse()
+            .withStatus(ACCEPTED)
+            .withBody(Json.toJson(userInput).toString())))
+
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+
+      result.status shouldBe ACCEPTED
+      result.json shouldBe Json.toJson(userInput)
+
+    }
+
+    "return json which is coming from http post call with NO_CONTENT response" in {
+
+      server.stubFor(
+        WireMock
+          .post(anyUrl())
+          .willReturn(aResponse()
+            .withStatus(NO_CONTENT)))
+
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+
+      result.status shouldBe NO_CONTENT
     }
 
     "return Http exception" when {
       "http response is NOT_FOUND" in {
-        val mockMetrics = mock[Metrics]
-        val mockHttp = mock[HttpClient]
+        server.stubFor(
+          WireMock
+            .post(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(NOT_FOUND)))
 
-        val SUT = createSUT(mockMetrics, mockHttp)
-        when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(NOT_FOUND, "")))
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
 
-        val result = the[HttpException] thrownBy Await
-          .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+        result shouldBe a[HttpException]
 
-        result.responseCode mustBe NOT_FOUND
       }
 
       "http response is GATEWAY_TIMEOUT" in {
-        val mockMetrics = mock[Metrics]
-        val mockHttp = mock[HttpClient]
 
-        val SUT = createSUT(mockMetrics, mockHttp)
+        server.stubFor(
+          WireMock
+            .post(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(GATEWAY_TIMEOUT)))
 
-        when(mockHttp.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(GATEWAY_TIMEOUT, "")))
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
 
-        val result = the[HttpException] thrownBy Await
-          .result(SUT.postToApi[String](mockUrl, userInput, APITypes.RTIAPI), 5 seconds)
+        result shouldBe a[HttpException]
+      }
 
-        result.responseCode mustBe GATEWAY_TIMEOUT
+      "http response is INTERNAL_SERVER_ERROR" in {
+
+        server.stubFor(
+          WireMock
+            .post(anyUrl())
+            .willReturn(aResponse()
+              .withStatus(INTERNAL_SERVER_ERROR)))
+
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
+
+        result shouldBe a[HttpException]
       }
     }
   }
-
-  private val SuccessfulGetResponseWithObject: HttpResponse =
-    HttpResponse(200, Some(Json.toJson(responseBodyObject)), Map("ETag"                      -> Seq("34")))
-  private val BadRequestHttpResponse = HttpResponse(400, JsString("bad request"), Map("ETag" -> Seq("34")))
-  private val NotFoundHttpResponse: HttpResponse =
-    HttpResponse(404, JsString("not found"), Map("ETag"                                           -> Seq("34")))
-  private val LockedHttpResponse: HttpResponse = HttpResponse(423, JsString("locked"), Map("ETag" -> Seq("34")))
-  private val InternalServerErrorHttpResponse: HttpResponse =
-    HttpResponse(500, JsString("internal server error"), Map("ETag" -> Seq("34")))
-  private val UnknownErrorHttpResponse: HttpResponse =
-    HttpResponse(418, JsString("unknown response"), Map("ETag" -> Seq("34")))
-
-  private def createSUT(metrics: Metrics, http: HttpClient) = new HttpHandler(metrics, http)
-
 }
