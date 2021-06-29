@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, urlEqualTo}
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status._
@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.util.UUID
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -48,34 +49,9 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
   val updateEmploymentUrl: String = s"$baseUrl/iabds/$taxYear/employment/$iabdType"
   val updateExpensesUrl: String = s"$baseUrl/iabds/$taxYear/$iabdType"
 
+  val etag: String = "2"
+
   "DesConnector" should {
-
-    "create a valid des url with an additional path" when {
-      "a valid nino and additional path are supplied" in {
-
-        val result = sut.desPathUrl(nino, "test")
-
-        result mustBe s"${server.baseUrl()}/pay-as-you-earn/individuals/$nino/test"
-      }
-    }
-
-    "create a header carrier with extra headers populated correctly" when {
-      "the required extra header information is provided" in {
-        //TODO: Remove this test and verify the headers the usual way
-        val etag: String = "2"
-
-        val result = sut.headerForUpdate(etag.toInt, desOriginatorId)
-
-        result.extraHeaders mustBe Seq(
-          "Environment"   -> "local",
-          "Authorization" -> "Bearer Local",
-          "Content-Type"  -> TaiConstants.contentType,
-          "Originator-Id" -> desOriginatorId,
-          "ETag"          -> etag
-        )
-      }
-    }
-
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
 
@@ -88,7 +64,19 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
         Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType), 5 seconds) mustBe iabdList
 
-        //TODO: verify the headers here
+        server.verify(
+          getRequestedFor(urlEqualTo(iabdsForTypeUrl))
+            .withHeader("Environment", equalTo("local"))
+            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+//            .withHeader("Originator-Id", equalTo(desOriginatorId))
+//            .withHeader("ETag", equalTo(etag))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+        )
       }
     }
 

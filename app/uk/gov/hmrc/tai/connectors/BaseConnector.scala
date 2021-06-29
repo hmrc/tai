@@ -45,7 +45,11 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
   }
 
   def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String): HeaderCarrier =
-    hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
+    hc.withExtraHeaders(
+      "ETag"                 -> version.toString,
+      "X-TXID"               -> txId,
+      "Gov-Uk-Originator-Id" -> originatorId,
+      "CorrelationId"        -> UUID.randomUUID().toString)
 
   def basicNpsHeaders(hc: HeaderCarrier): HeaderCarrier =
     hc.withExtraHeaders(

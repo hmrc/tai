@@ -81,8 +81,8 @@ class NpsConnector @Inject()(
 
   def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
-    implicit val hc = basicNpsHeaders(HeaderCarrier())
-    httpClient.GET[HttpResponse](urlToRead)
+    val newHeaderCarrier = basicNpsHeaders(hc)
+    httpClient.GET[HttpResponse](urlToRead)(implicitly, newHeaderCarrier, implicitly)
   }
 
   def updateEmploymentData(

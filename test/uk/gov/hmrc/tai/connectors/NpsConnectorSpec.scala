@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, putRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, postRequestedFor, putRequestedFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
 import org.mockito.Mockito.when
@@ -474,7 +474,6 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           Await.result(sut.getIabdsForType(nino, year, iabdType), 5.seconds) mustBe
             expectedResponse
 
-
         }
       }
 
@@ -594,7 +593,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
           Await.result(sut.getCalculatedTaxAccount(nino, year), 5.seconds) mustBe expectedResult
 
-          //TODO: verify the headers here
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(taxAccountUrl)))
         }
       }
 
@@ -715,7 +714,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           result.status mustBe OK
           result.json mustBe taxAccountAsJson
 
-          //TODO: verify the headers here
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(taxAccountUrl)))
         }
       }
 
@@ -786,7 +785,15 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           result.status mustBe OK
           result.json mustBe json
 
-          //TODO: verify the headers here
+          server.verify(
+            postRequestedFor(urlEqualTo(updateEmploymentUrl))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader("ETag", equalTo(etag.toString))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
         }
 
         "given an empty updates amount" in {

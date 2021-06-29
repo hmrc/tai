@@ -21,7 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -49,26 +49,35 @@ class DesConnector @Inject()(
 
   def daPtaOriginatorId = config.daPtaOriginatorId
 
-  def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
+  private def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def commonHeaderValues =
+  private def commonHeaderValues =
     Seq(
       "Environment"   -> config.environment,
       "Authorization" -> config.authorization,
-      "Content-Type"  -> TaiConstants.contentType)
+      "Content-Type"  -> TaiConstants.contentType
+    )
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
+  private def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
-    HeaderCarrier(extraHeaders = commonHeaderValues ++ Seq("Originator-Id" -> originatorId, "ETag" -> version.toString))
+  private def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
+    HeaderCarrier(
+      extraHeaders = commonHeaderValues ++ Seq(
+        "Originator-Id" -> originatorId,
+        "ETag"          -> version.toString
+      ))
 
   def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(
     implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year?type=$iabdType")
-    implicit val hc: HeaderCarrier = header
+
+    implicit val hc: HeaderCarrier = header.withExtraHeaders(
+      HeaderNames.xSessionId -> header.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> header.sessionId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString.replace("-", "")
+    )
+
     getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI).map(x => x._1)
   }
 
