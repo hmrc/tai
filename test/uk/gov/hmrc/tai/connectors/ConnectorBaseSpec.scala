@@ -21,6 +21,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.logging.{RequestId, SessionId}
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException}
 import uk.gov.hmrc.tai.util.WireMockHelper
 
@@ -37,10 +38,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   val requestId = "testRequestId"
 
   implicit val hc: HeaderCarrier = HeaderCarrier(
-    extraHeaders = Seq(
-      HeaderNames.xSessionId -> sessionId,
-      HeaderNames.xRequestId -> requestId
-    )
+    sessionId = Some(SessionId(sessionId)),
+    requestId = Some(RequestId(requestId))
   )
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]

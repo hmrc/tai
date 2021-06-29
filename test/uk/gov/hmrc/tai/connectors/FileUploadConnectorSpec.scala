@@ -17,14 +17,16 @@
 package uk.gov.hmrc.tai.connectors
 
 import akka.stream.Materializer
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, postRequestedFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
 import play.api.http.Status.{BAD_REQUEST, CREATED, NOT_FOUND, OK}
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
+import uk.gov.hmrc.http.HeaderNames
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -46,6 +48,12 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
   val fileUrl = s"/file-upload/upload/envelopes/$envelopeId/files/$fileId"
   val closeEnvelopeUrl = s"/file-routing/requests"
 
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      requestPattern
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
+
   "createEnvelope" must {
     "return an envelope id" in {
 
@@ -59,7 +67,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
       Await.result(sut.createEnvelope, 5 seconds) mustBe envelopeId
 
-      //TODO: verify the headers here
+      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(envelopesUrl)))
     }
 
     "throw a runtime exception" when {
@@ -142,6 +150,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         result.status mustBe OK
 
         //TODO: verify the headers here
+
       }
     }
 
@@ -263,7 +272,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
       Await.result(sut.closeEnvelope(envelopeId), 5 seconds) mustBe envelopeId
 
-      //TODO: verify the headers here
+      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(closeEnvelopeUrl)))
     }
 
     "throw a runtime exception" when {

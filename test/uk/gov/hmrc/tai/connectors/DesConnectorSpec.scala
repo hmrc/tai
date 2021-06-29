@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, postRequestedFor, urlEqualTo}
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status._
@@ -172,8 +172,6 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             .withHeader("Environment", equalTo("local"))
             .withHeader("Authorization", equalTo("Bearer Local"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-            //            .withHeader("Originator-Id", equalTo(desOriginatorId))
-            //            .withHeader("ETag", equalTo(etag))
             .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
@@ -274,7 +272,17 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
         Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear), 5 seconds) mustBe expectedResult
 
-        //TODO: verify the headers here
+        server.verify(
+          getRequestedFor(urlEqualTo(calcTaxAccUrl))
+            .withHeader("Environment", equalTo("local"))
+            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+        )
       }
     }
 
@@ -368,7 +376,17 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
         response.status mustBe OK
         response.json mustBe jsonData
 
-        //TODO: verify the headers here
+        server.verify(
+          getRequestedFor(urlEqualTo(calcTaxAccUrl))
+            .withHeader("Environment", equalTo("local"))
+            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+        )
       }
     }
 
@@ -455,11 +473,27 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
         "updating employment data in DES using an empty update amount." in {
 
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(OK))
+          )
+
           val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
 
           response.status mustBe OK
 
-          //TODO: verify the headers here
+          server.verify(
+            postRequestedFor(urlEqualTo(updateEmploymentUrl))
+              .withHeader("Environment", equalTo("local"))
+              .withHeader("Authorization", equalTo("Bearer Local"))
+              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+              .withHeader("Etag", equalTo(etag))
+              .withHeader("Gov-Uk-Originator-Id", equalTo(TaiConstants.contentType))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+          )
         }
 
         "updating employment data in DES using a valid update amount" in {
