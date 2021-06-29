@@ -737,7 +737,59 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           res.body mustBe exMessage
         }
 
-        //TODO: Add in tests for 400, 404, 418, 500, 503
+        "connector returns 400" in {
+
+          val exMessage = "Bad Request"
+
+          server.stubFor(
+            get(urlEqualTo(taxAccountUrl)).willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+                .withBody(exMessage)
+                .withHeader("ETag", s"$etag"))
+          )
+
+          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+
+          res.status mustBe BAD_REQUEST
+          res.body mustBe exMessage
+        }
+
+        "connector returns 404" in {
+
+          val exMessage = "Not Found"
+
+          server.stubFor(
+            get(urlEqualTo(taxAccountUrl)).willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+                .withBody(exMessage)
+                .withHeader("ETag", s"$etag"))
+          )
+
+          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+
+          res.status mustBe NOT_FOUND
+          res.body mustBe exMessage
+        }
+
+        "connector returns 418" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            get(urlEqualTo(taxAccountUrl)).willReturn(
+              aResponse()
+                .withStatus(IM_A_TEAPOT)
+                .withBody(exMessage)
+                .withHeader("ETag", s"$etag"))
+          )
+
+          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+
+          res.status mustBe IM_A_TEAPOT
+          res.body mustBe exMessage
+        }
 
         "connector returns 5xx" in {
 
@@ -756,130 +808,235 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           res.status mustBe INTERNAL_SERVER_ERROR
           res.body mustBe exMessage
         }
-      }
-    }
 
-    "updateEmploymentData is called" should {
+        List(
+          GATEWAY_TIMEOUT,
+          INTERNAL_SERVER_ERROR
+        ).foreach { httpStatus =>
+          s"connector returns $httpStatus" in {
 
-      val update = List(IabdUpdateAmount(empSeqNum, intGen))
+            val exMessage = "An error occurred"
 
-      "update employment data" when {
-        "given a populated update amount" in {
-
-          implicit lazy val writes: Writes[IabdUpdateAmount] =
-            inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
-
-          val json = Json.toJson(update)
-
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(OK)
-                .withBody(json.toString())
+            server.stubFor(
+              get(urlEqualTo(taxAccountUrl)).willReturn(
+                aResponse()
+                  .withStatus(httpStatus)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag"))
             )
-          )
 
-          val result: HttpResponse =
-            Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+            val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
 
-          result.status mustBe OK
-          result.json mustBe json
-
-          server.verify(
-            postRequestedFor(urlEqualTo(updateEmploymentUrl))
-              .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-              .withHeader("ETag", equalTo(etag.toString))
-              .withHeader(
-                "CorrelationId",
-                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
-        }
-
-        "given an empty updates amount" in {
-
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(OK)
-            )
-          )
-
-          val result: HttpResponse = Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, Nil), 5 seconds)
-
-          result.status mustBe OK
-        }
-
-        "connector returns ACCEPTED (202)" in {
-
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(ACCEPTED)
-            )
-          )
-
-          val result: HttpResponse =
-            Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
-
-          result.status mustBe ACCEPTED
-        }
-
-        "connector returns NO_CONTENT (204)" in {
-
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(NO_CONTENT)
-            )
-          )
-
-          val result: HttpResponse =
-            Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
-
-          result.status mustBe NO_CONTENT
+            res.status mustBe httpStatus
+            res.body mustBe exMessage
+          }
         }
       }
 
-      "throw an exception" when {
-        "the connector returns a 4xx code" in {
+      "updateEmploymentData is called" should {
 
-          val exMessage = "Invalid payload"
+        val update = List(IabdUpdateAmount(empSeqNum, intGen))
 
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(BAD_REQUEST)
-                .withBody(exMessage)
+        "update employment data" when {
+          "given a populated update amount" in {
+
+            implicit lazy val writes: Writes[IabdUpdateAmount] =
+              inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
+
+            val json = Json.toJson(update)
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(OK)
+                  .withBody(json.toString())
+              )
             )
-          )
 
-          assertConnectorException[HttpException](
-            sut.updateEmploymentData(nino, year, iabdType, etag, update),
-            BAD_REQUEST,
-            exMessage
-          )
+            val result: HttpResponse =
+              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+
+            result.status mustBe OK
+            result.json mustBe json
+
+            server.verify(
+              postRequestedFor(urlEqualTo(updateEmploymentUrl))
+                .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+                .withHeader("ETag", equalTo(etag.toString))
+                .withHeader(
+                  "CorrelationId",
+                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          }
+
+          "given an empty updates amount" in {
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(OK)
+              )
+            )
+
+            val result: HttpResponse =
+              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, Nil), 5 seconds)
+
+            result.status mustBe OK
+          }
+
+          "connector returns ACCEPTED (202)" in {
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(ACCEPTED)
+              )
+            )
+
+            val result: HttpResponse =
+              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+
+            result.status mustBe ACCEPTED
+          }
+
+          "connector returns NO_CONTENT (204)" in {
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(NO_CONTENT)
+              )
+            )
+
+            val result: HttpResponse =
+              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+
+            result.status mustBe NO_CONTENT
+          }
         }
 
-        //TODO: Add in tests for 400, 404, 418, 500, 503
+        "throw an exception" when {
+          "the connector returns a 4xx code" in {
 
-        "the connector returns a 5xx code" in {
+            val exMessage = "Invalid payload"
 
-          val exMessage = "An error occurred"
-
-          server.stubFor(
-            post(urlEqualTo(updateEmploymentUrl)).willReturn(
-              aResponse()
-                .withStatus(INTERNAL_SERVER_ERROR)
-                .withBody(exMessage)
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(exMessage)
+              )
             )
-          )
 
-          assertConnectorException[HttpException](
-            sut.updateEmploymentData(nino, year, iabdType, etag, update),
-            INTERNAL_SERVER_ERROR,
-            exMessage
-          )
+            assertConnectorException[HttpException](
+              sut.updateEmploymentData(nino, year, iabdType, etag, update),
+              BAD_REQUEST,
+              exMessage
+            )
+          }
+
+          "the connector returns a 400 code" in {
+
+            val exMessage = "Invalid payload"
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(exMessage)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.updateEmploymentData(nino, year, iabdType, etag, update),
+              BAD_REQUEST,
+              exMessage
+            )
+          }
+
+          "the connector returns a 404 code" in {
+
+            val exMessage = "Not Found"
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(NOT_FOUND)
+                  .withBody(exMessage)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.updateEmploymentData(nino, year, iabdType, etag, update),
+              NOT_FOUND,
+              exMessage
+            )
+          }
+
+          "the connector returns a 418 code" in {
+
+            val exMessage = "An error occurred"
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(IM_A_TEAPOT)
+                  .withBody(exMessage)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.updateEmploymentData(nino, year, iabdType, etag, update),
+              IM_A_TEAPOT,
+              exMessage
+            )
+          }
+
+          //TODO: Add in tests for 400, 404, 418, 500, 503
+
+          "the connector returns a 5xx code" in {
+
+            val exMessage = "An error occurred"
+
+            server.stubFor(
+              post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                aResponse()
+                  .withStatus(INTERNAL_SERVER_ERROR)
+                  .withBody(exMessage)
+              )
+            )
+
+            assertConnectorException[HttpException](
+              sut.updateEmploymentData(nino, year, iabdType, etag, update),
+              INTERNAL_SERVER_ERROR,
+              exMessage
+            )
+          }
+
+          List(
+            GATEWAY_TIMEOUT,
+            INTERNAL_SERVER_ERROR
+          ).foreach { httpStatus =>
+            s"connector returns $httpStatus" in {
+
+              val exMessage = "An error occurred"
+
+              server.stubFor(
+                post(urlEqualTo(updateEmploymentUrl)).willReturn(
+                  aResponse()
+                    .withStatus(httpStatus)
+                    .withBody(exMessage)
+                )
+              )
+
+              assertConnectorException[HttpException](
+                sut.updateEmploymentData(nino, year, iabdType, etag, update),
+                httpStatus,
+                exMessage
+              )
+            }
+          }
         }
       }
     }
