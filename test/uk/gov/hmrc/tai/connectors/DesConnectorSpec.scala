@@ -69,8 +69,6 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             .withHeader("Environment", equalTo("local"))
             .withHeader("Authorization", equalTo("Bearer Local"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-//            .withHeader("Originator-Id", equalTo(desOriginatorId))
-//            .withHeader("ETag", equalTo(etag))
             .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
@@ -169,7 +167,19 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
         Await.result(sut.getIabdsFromDes(nino, taxYear), 5 seconds) mustBe iabdList
 
-        //TODO: verify the headers here
+        server.verify(
+          getRequestedFor(urlEqualTo(iabdsUrl))
+            .withHeader("Environment", equalTo("local"))
+            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+            //            .withHeader("Originator-Id", equalTo(desOriginatorId))
+            //            .withHeader("ETag", equalTo(etag))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+        )
       }
     }
 

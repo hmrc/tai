@@ -72,13 +72,16 @@ class DesConnector @Inject()(
 
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year?type=$iabdType")
 
-    implicit val hc: HeaderCarrier = header.withExtraHeaders(
+    val headerCarrier: HeaderCarrier = hc.withExtraHeaders(
+      "Environment"          -> config.environment,
+      "Authorization"        -> config.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
       HeaderNames.xSessionId -> header.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> header.sessionId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString.replace("-", "")
+      "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI).map(x => x._1)
+    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI)(hc = headerCarrier, implicitly).map(x => x._1)
   }
 
   def getIabdsFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {

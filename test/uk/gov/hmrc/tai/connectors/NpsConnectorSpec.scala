@@ -993,8 +993,6 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
           }
 
-          //TODO: Add in tests for 400, 404, 418, 500, 503
-
           "the connector returns a 5xx code" in {
 
             val exMessage = "An error occurred"
