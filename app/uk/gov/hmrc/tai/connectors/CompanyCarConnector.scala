@@ -25,16 +25,21 @@ import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCarBenefit, WithdrawCarAndF
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext)
     extends CompanyCarBenefitFormatters {
 
-  def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
+  def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
+
+    val header = hc.withExtraHeaders("CorrelationId" -> UUID.randomUUID().toString)
+
     httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI) map { json =>
       json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReads))
     }
+  }
 
   def ninoVersion(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] =
     httpHandler.getFromApi(urls.ninoVersionUrl(nino), APITypes.CompanyCarAPI) map { json =>

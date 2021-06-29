@@ -18,10 +18,11 @@ package uk.gov.hmrc.tai.connectors
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
 import play.api.http.Status._
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -42,6 +43,15 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
   lazy val removeBenefitUrl = s"$baseUrl/benefits/${taxYear.year}/$empSeqNumber/car/$carSeqNumber/remove"
 
   lazy val sut: CompanyCarConnector = inject[CompanyCarConnector]
+
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      requestPattern
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+        .withHeader(
+          "CorrelationId",
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {
@@ -69,7 +79,8 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
       Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
 
-      //TODO: Verify the headers
+      verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(carBenefitUrl)))
+
     }
 
     "return company car benefit details from the company car benefit service with a fuel benefit" in {
@@ -259,7 +270,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
       result mustBe "4958621783d14007b71d55934d5ccca9"
 
-      //TODO: verify the headers
+      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(removeBenefitUrl)))
     }
 
     "throw" when {
@@ -369,7 +380,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
       result mustBe expectedResponse
 
-      //TODO: verify the headers
+      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(ninoVersionUrl)))
     }
 
     "throw" when {
