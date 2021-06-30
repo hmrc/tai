@@ -17,11 +17,10 @@
 package uk.gov.hmrc.tai.connectors
 
 import java.util.UUID
-
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.IabdUpdateAmount
@@ -43,20 +42,28 @@ class TaxAccountConnector @Inject()(
   featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
     extends HodsSource {
 
+  lazy val uuid = UUID.randomUUID().toString
+
+  def hcWithDesHeaders(implicit hc: HeaderCarrier): HeaderCarrier = createHeader.withExtraHeaders(
+    "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+    HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+    HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+  )
+
   def hcWithHodHeaders(implicit hc: HeaderCarrier): HeaderCarrier =
     if (featureTogglesConfig.desEnabled) {
-      createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+      hcWithDesHeaders
     } else {
-      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId, "CorrelationId" -> uuid)
     }
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    implicit val hc: HeaderCarrier = createHeader.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)(hcWithDesHeaders)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
@@ -108,5 +115,6 @@ class TaxAccountConnector @Inject()(
     extraHeaders = Seq(
       "Environment"   -> desConfig.environment,
       "Authorization" -> desConfig.authorization,
-      "Content-Type"  -> TaiConstants.contentType))
+      "Content-Type"  -> TaiConstants.contentType,
+      "CorrelationId" -> uuid))
 }

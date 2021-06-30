@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.concurrent.Future
 
 @Singleton
@@ -39,11 +40,15 @@ class IabdConnector @Inject()(
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
     } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+      val hcWithHodHeaders = hc.withExtraHeaders(
+        "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+        "CorrelationId"        -> UUID.randomUUID().toString)
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
       httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
     } else {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+      val hcWithHodHeaders = hc.withExtraHeaders(
+        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+        "CorrelationId"        -> UUID.randomUUID().toString)
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
       httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
     }

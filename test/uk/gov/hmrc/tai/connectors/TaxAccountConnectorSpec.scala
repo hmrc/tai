@@ -17,17 +17,18 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, InternalServerException, NotFoundException, ServiceUnavailableException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HeaderNames, HttpException, InternalServerException, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
 
 import java.net.URL
 import scala.concurrent.Await
@@ -54,6 +55,19 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
     lazy val npsConfig = inject[NpsConfig]
     lazy val desConfig = inject[DesConfig]
     lazy val iabdUrls = inject[IabdUrls]
+
+    def verifyOutgoingDesUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+      server.verify(
+        requestPattern
+          .withHeader("Environment", equalTo("local"))
+          .withHeader("Authorization", equalTo("Bearer Local"))
+          .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+          .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
+          .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+          .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+          .withHeader(
+            "CorrelationId",
+            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
     def taxAccountUrls: TaxAccountUrls =
       new TaxAccountUrls(npsConfig, desConfig, featureTogglesConfig)
@@ -133,7 +147,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
           result mustBe jsonResponse
 
-          //TODO: verify the headers here
+          verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
         }
 
         //TODO: Add in tests for 400, 404, 418, 500, 503
@@ -153,7 +167,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             result mustBe jsonResponse
 
-            //TODO: verify the headers here
+            verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
           }
 
           //TODO: Add in tests for 400, 404, 418, 500, 503
@@ -177,7 +191,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               5 seconds
             ) mustBe HodUpdateSuccess
 
-            //TODO: verify the headers here
+            server.verify(
+              postRequestedFor(urlEqualTo(url))
+                .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+                .withHeader("ETag", equalTo("1"))
+                .withHeader("X-TXID", equalTo(sessionId)))
           }
 
           //TODO: Add in tests for 400, 404, 418, 500, 503
@@ -216,7 +236,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
           result mustEqual json
 
-          //TODO: verify the headers here
+          verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
         }
 
         "return a HttpException" when {

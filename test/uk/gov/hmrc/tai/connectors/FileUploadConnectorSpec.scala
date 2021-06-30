@@ -21,12 +21,13 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get,
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
-import play.api.http.Status.{BAD_REQUEST, CREATED, NOT_FOUND, OK}
+import controllers.Assets.IM_A_TEAPOT
+import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
-import uk.gov.hmrc.http.HeaderNames
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -71,8 +72,28 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
     }
 
     "throw a runtime exception" when {
+      List(
+        BAD_REQUEST,
+        NOT_FOUND,
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpStatus =>
+        s" RuntimeException occurred for $httpStatus  response" in {
 
-      //TODO: Add in tests for 400, 404, 418, 500, 503
+          server.stubFor(
+            post(urlEqualTo(envelopesUrl)).willReturn(
+              aResponse()
+                .withStatus(httpStatus)
+            )
+          )
+
+          the[RuntimeException] thrownBy {
+            Await.result(sut.createEnvelope, 5 seconds)
+          } must have message "File upload envelope creation failed"
+        }
+      }
+
       "the success response does not contain a location header" in {
 
         server.stubFor(
@@ -149,7 +170,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         result.status mustBe OK
 
-        //TODO: verify the headers here
+        verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(fileUrl)))
 
       }
     }
@@ -231,7 +252,38 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
       }
 
-      //TODO: Add in tests for 400, 404, 418, 500, 503
+      List(
+        BAD_REQUEST,
+        NOT_FOUND,
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpStatus =>
+        s" RuntimeException occurred for $httpStatus  response" in {
+
+          server.importStubs(
+            stubImport()
+              .stub(
+                post(urlEqualTo(fileUrl)).willReturn(
+                  aResponse()
+                    .withFault(Fault.MALFORMED_RESPONSE_CHUNK)
+                )
+              )
+              .stub(
+                get(urlEqualTo(envelopeWithIdUrl)).willReturn(
+                  aResponse()
+                    .withStatus(httpStatus)
+                )
+              )
+              .build()
+          )
+
+          the[RuntimeException] thrownBy Await
+            .result(
+              sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient),
+              5 seconds)
+        }
+      }
 
       "any error occurred" in {
 
@@ -255,6 +307,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         the[RuntimeException] thrownBy Await
           .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
       }
+
     }
   }
 
@@ -306,7 +359,27 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         } must have message "File upload envelope routing request failed"
       }
 
-      //TODO: Add in tests for 400, 404, 418, 500, 503
+      List(
+        BAD_REQUEST,
+        NOT_FOUND,
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpStatus =>
+        s" RuntimeException occurred for $httpStatus  response" in {
+
+          server.stubFor(
+            post(urlEqualTo(closeEnvelopeUrl)).willReturn(
+              aResponse()
+                .withStatus(httpStatus)
+            )
+          )
+
+          the[RuntimeException] thrownBy {
+            Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
+          } must have message "File upload envelope routing request failed"
+        }
+      }
 
       "the call to the file upload service returns a failure response" in {
 
@@ -355,7 +428,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        //TODO: verify the headers here
+        //TODO: verify the headers here - Reply: Not needed now as Header is no longer used
       }
 
       "there are no files" in {
@@ -409,8 +482,6 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-    //TODO: Add in tests for 400, 404, 418, 500, 503
-
     "Throw a RuntimeException on returning 404 and after all retries have failed" in {
 
       server.stubFor(
@@ -422,6 +493,26 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
       assertThrows[RuntimeException] {
         Await.result(sut.envelope(envelopeId), Duration.Inf)
+      }
+    }
+
+    List(
+      BAD_REQUEST,
+      IM_A_TEAPOT,
+      INTERNAL_SERVER_ERROR,
+      SERVICE_UNAVAILABLE
+    ).foreach { httpStatus =>
+      s" None response returned for $httpStatus  response" in {
+
+        server.stubFor(
+          get(urlEqualTo(envelopeWithIdUrl)).willReturn(
+            aResponse()
+              .withStatus(httpStatus)
+          )
+        )
+        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+
+        result mustBe None
       }
     }
   }
