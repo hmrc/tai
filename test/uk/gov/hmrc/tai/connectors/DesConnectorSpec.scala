@@ -472,22 +472,22 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
       "return a status of 200 OK" when {
 
         // TODO : Fix it
-//        "updating employment data in DES using an empty update amount." in {
-//
-//          server.stubFor(
-//            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(OK))
-//          )
-//
-//          val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
-//
-//          response.status mustBe OK
-//
+        "updating employment data in DES using an empty update amount." in {
+
+          server.stubFor(
+            post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(OK))
+          )
+
+          val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
+
+          response.status mustBe OK
+
 //          server.verify(
 //            postRequestedFor(urlEqualTo(updateEmploymentUrl))
 //              .withHeader("Environment", equalTo("local"))
 //              .withHeader("Authorization", equalTo("Bearer Local"))
 //              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-//              .withHeader("Etag", equalTo(etag))
+//              .withHeader("Etag", equalTo("1"))
 //              .withHeader("Gov-Uk-Originator-Id", equalTo(TaiConstants.contentType))
 //              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
 //              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
@@ -495,7 +495,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 //                "CorrelationId",
 //                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
 //          )
-//        }
+        }
 
         "updating employment data in DES using a valid update amount" in {
 
@@ -621,6 +621,20 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           response.json mustBe json
 
           //TODO: verify the headers here
+
+//          server.verify(
+//            postRequestedFor(urlEqualTo(updateEmploymentUrl))
+//              .withHeader("Environment", equalTo("local"))
+//              .withHeader("Authorization", equalTo("Bearer Local"))
+//              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+//              .withHeader("Etag", equalTo("1"))
+//              .withHeader("Gov-Uk-Originator-Id", equalTo(TaiConstants.contentType))
+//              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+//              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+//              .withHeader(
+//                "CorrelationId",
+//                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+//          )
         }
       }
 

@@ -28,21 +28,25 @@ import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiHodFormatters
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.util.UUID
+
 @Singleton
 class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(
   implicit ec: ExecutionContext) {
 
-  def createHeader: HeaderCarrier =
+  def createHeader(implicit hc: HeaderCarrier): HeaderCarrier =
     HeaderCarrier(
       extraHeaders = Seq(
-        "Environment"   -> config.environment,
-        "Authorization" -> s"Bearer ${config.authorization}",
-        "Content-Type"  -> TaiConstants.contentType))
+        "Environment"          -> config.environment,
+        "Authorization"        -> s"Bearer ${config.authorization}",
+        "Content-Type"         -> TaiConstants.contentType,
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "CorrelationId"        -> UUID.randomUUID().toString
+      ))
 
-  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] = {
-    implicit val hc: HeaderCarrier = createHeader
-    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI) map { json =>
+  def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
+    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI)(createHeader) map { json =>
       json.as[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
     }
-  }
 }

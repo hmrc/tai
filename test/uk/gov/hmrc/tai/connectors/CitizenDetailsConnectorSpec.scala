@@ -93,9 +93,6 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
     ).foreach { httpResponse =>
       s"return a HttpException when a $httpResponse occurs" in {
 
-        //TODO: unused
-        val exMessage = "An error occurred"
-
         server.stubFor(
           get(urlEqualTo(designatoryDetailsUrl))
             .willReturn(

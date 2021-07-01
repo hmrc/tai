@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, getRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, getRequestedFor, matching, urlEqualTo}
 import data.RTIData.nino
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
@@ -25,7 +25,7 @@ import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import play.api.test.Injecting
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -33,17 +33,11 @@ import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
 
 import scala.concurrent.ExecutionContext
 
-class BbsiConnectorSpec
-    extends WordSpec with WireMockHelper with MockitoSugar with Matchers with Injecting with ScalaFutures
-    with IntegrationPatience {
+class BbsiConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
 
   lazy val connector = inject[BbsiConnector]
 
   private val taxYear = TaxYear()
-
-  implicit val hc = HeaderCarrier()
-
-  implicit lazy val ec = inject[ExecutionContext]
 
   lazy val config = inject[DesConfig]
 
@@ -112,18 +106,20 @@ class BbsiConnectorSpec
             .get(urlEqualTo(url))
             .willReturn(aResponse().withStatus(OK).withBody(singleBankAccount.toString())))
 
-        val customHeaderCarrier = connector.createHeader
+        val result = connector.bankAccounts(nino, taxYear)
 
-        val result = connector.bankAccounts(nino, taxYear)(customHeaderCarrier)
-
-        result.futureValue shouldBe Seq(bankAccount)
+        result.futureValue mustBe Seq(bankAccount)
 
         server.verify(
           getRequestedFor(urlEqualTo(url))
             .withHeader("Environment", equalTo(config.environment))
             .withHeader("Authorization", equalTo(s"Bearer ${config.authorization}"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-          //TODO: Add in X-Session-ID, X-Request-ID and Correlation ID
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
         )
       }
 
@@ -136,7 +132,7 @@ class BbsiConnectorSpec
 
         val result = connector.bankAccounts(nino, taxYear)
 
-        result.futureValue shouldBe Seq(bankAccount, bankAccount, bankAccount)
+        result.futureValue mustBe Seq(bankAccount, bankAccount, bankAccount)
       }
     }
 
@@ -152,7 +148,7 @@ class BbsiConnectorSpec
 
         val result = connector.bankAccounts(nino, taxYear)
 
-        result.futureValue shouldBe Nil
+        result.futureValue mustBe Nil
       }
     }
 
@@ -168,9 +164,9 @@ class BbsiConnectorSpec
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
-        result.getMessage shouldBe "Invalid Json"
+        result.getMessage mustBe "Invalid Json"
 
-        result shouldBe a[RuntimeException]
+        result mustBe a[RuntimeException]
       }
     }
 
@@ -184,7 +180,7 @@ class BbsiConnectorSpec
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
-        result shouldBe a[BadRequestException]
+        result mustBe a[BadRequestException]
       }
       "a 404" in {
 
@@ -195,7 +191,7 @@ class BbsiConnectorSpec
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
-        result shouldBe a[NotFoundException]
+        result mustBe a[NotFoundException]
       }
 
       List(
@@ -212,7 +208,7 @@ class BbsiConnectorSpec
 
           val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
-          result shouldBe a[HttpException]
+          result mustBe a[HttpException]
         }
       }
     }

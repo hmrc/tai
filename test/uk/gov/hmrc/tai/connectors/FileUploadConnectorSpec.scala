@@ -427,8 +427,6 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             EnvelopeFile("4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "AVAILABLE")
           )
         )
-
-        //TODO: verify the headers here - Reply: Not needed now as Header is no longer used
       }
 
       "there are no files" in {

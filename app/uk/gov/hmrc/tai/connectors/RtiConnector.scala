@@ -52,33 +52,35 @@ class RtiConnector @Inject()(
     nino.value.take(BASIC_NINO_LENGTH)
   }
 
-  //TODO: mark this as private, it's only public to exposed for testing
-  def createHeader: HeaderCarrier =
+  private def createHeader(implicit hc: HeaderCarrier): HeaderCarrier =
     HeaderCarrier(
       extraHeaders = Seq(
         "Environment"          -> rtiConfig.environment,
         "Authorization"        -> rtiConfig.authorization,
-        "Gov-Uk-Originator-Id" -> originatorId))
+        "Gov-Uk-Originator-Id" -> originatorId,
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+      ))
 
   def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {
-    implicit val hc: HeaderCarrier = createHeader
     val ninoWithoutSuffix = withoutSuffix(nino)
     getFromRTIWithStatus[RtiData](
       urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
       APITypes.RTIAPI,
       ninoWithoutSuffix
-    )(hc, formatRtiData)
+    )(createHeader, formatRtiData)
   }
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] = {
-    implicit val hc: HeaderCarrier = createHeader
-
+    implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
     if (rtiToggle.rtiEnabled) {
       val NGINX_TIMEOUT = 499
       val timerContext = metrics.startTimer(APITypes.RTIAPI)
       val ninoWithoutSuffix = withoutSuffix(nino)
-      val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))
+      val futureResponse = httpClient.GET[HttpResponse](urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear))(
+        implicitly,
+        createHeader,
+        implicitly)
       futureResponse map { res =>
         timerContext.stop()
         res.status match {
@@ -141,5 +143,4 @@ class RtiConnector @Inject()(
     } else {
       Future.successful(Left(ServiceUnavailableError))
     }
-  }
 }

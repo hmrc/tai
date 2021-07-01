@@ -16,19 +16,21 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
+import org.mockito.ArgumentMatchers.any
 import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{BadRequestException, HttpException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.net.URL
 import scala.concurrent.Await
@@ -45,6 +47,15 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
   }
 
   lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
+
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      requestPattern
+        .withHeader("Environment", equalTo("local"))
+        .withHeader("Authorization", equalTo("Bearer Local"))
+        .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
 
   private def createSut(
     metrics: Metrics = injector.instanceOf[Metrics],
@@ -70,7 +81,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
-        //TODO: verify the headers here
+        verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
       }
 
       "payroll number is not returned" in {

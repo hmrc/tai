@@ -46,16 +46,6 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
 
         Await.result(sut.generatePdf(htmlAsString), 5 seconds) mustBe htmlAsString.getBytes
 
-        //TODO: verify the headers here
-
-//        server.verify(
-//          requestPattern
-//            .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-//            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-//            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-//            .withHeader(
-//              "CorrelationId",
-//              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
       }
     }
 
