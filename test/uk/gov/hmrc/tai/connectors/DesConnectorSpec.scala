@@ -32,13 +32,15 @@ import java.util.UUID
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.Random
 
 class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
   lazy val sut: DesConnector = inject[DesConnector]
   implicit lazy val iabdWrites: Writes[IabdUpdateAmount] =
     inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
-
+  def intGen: Int = Random.nextInt(50)
+  val empSeqNum: Int = intGen
   val taxYear: Int = DateTime.now().getYear
   val iabdType: Int = 27
 
@@ -471,30 +473,17 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
       "return a status of 200 OK" when {
 
-        // TODO : Fix it
         "updating employment data in DES using an empty update amount." in {
 
           server.stubFor(
             post(urlEqualTo(updateEmploymentUrl)).willReturn(aResponse().withStatus(OK))
           )
 
-          val response = Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
+          val response =
+            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
 
           response.status mustBe OK
 
-//          server.verify(
-//            postRequestedFor(urlEqualTo(updateEmploymentUrl))
-//              .withHeader("Environment", equalTo("local"))
-//              .withHeader("Authorization", equalTo("Bearer Local"))
-//              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-//              .withHeader("Etag", equalTo("1"))
-//              .withHeader("Gov-Uk-Originator-Id", equalTo(TaiConstants.contentType))
-//              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-//              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-//              .withHeader(
-//                "CorrelationId",
-//                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
-//          )
         }
 
         "updating employment data in DES using a valid update amount" in {
@@ -510,6 +499,20 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
           response.status mustBe OK
           response.json mustBe json
+
+          server.verify(
+            postRequestedFor(urlEqualTo(updateEmploymentUrl))
+              .withHeader("Environment", equalTo("local"))
+              .withHeader("Authorization", equalTo("Bearer Local"))
+              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+              .withHeader("Etag", equalTo("1"))
+              .withHeader("Originator-Id", equalTo(desOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+          )
         }
       }
 
@@ -620,21 +623,19 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           response.status mustBe OK
           response.json mustBe json
 
-          //TODO: verify the headers here
-
-//          server.verify(
-//            postRequestedFor(urlEqualTo(updateEmploymentUrl))
-//              .withHeader("Environment", equalTo("local"))
-//              .withHeader("Authorization", equalTo("Bearer Local"))
-//              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-//              .withHeader("Etag", equalTo("1"))
-//              .withHeader("Gov-Uk-Originator-Id", equalTo(TaiConstants.contentType))
-//              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-//              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-//              .withHeader(
-//                "CorrelationId",
-//                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
-//          )
+          server.verify(
+            postRequestedFor(urlEqualTo(updateExpensesUrl))
+              .withHeader("Environment", equalTo("local"))
+              .withHeader("Authorization", equalTo("Bearer Local"))
+              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+              .withHeader("Etag", equalTo("1"))
+              .withHeader("Originator-Id", equalTo(desPtaOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+          )
         }
       }
 
@@ -685,7 +686,6 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
       "throw a HttpException" when {
 
-        //TODO: Add tests for 400, 404, 418, 500, 503
         "a 4xx response is returned" in {
 
           val exMessage = "Bad request"
@@ -704,6 +704,118 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
             ),
             BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
+
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a NOT_FOUND response is returned for NOT_FOUND response status" in {
+
+          val exMessage = "Not Found"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            NOT_FOUND,
+            exMessage
+          )
+        }
+
+        "a 418 response is returned for 418 response status" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            IM_A_TEAPOT,
+            exMessage
+          )
+        }
+
+        "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
+
+          val exMessage = "Internal Server Error"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
+
+        "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
+
+          val exMessage = "Service unavailable"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut.updateExpensesDataToDes(
+              nino = nino,
+              year = taxYear,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            SERVICE_UNAVAILABLE,
             exMessage
           )
         }
