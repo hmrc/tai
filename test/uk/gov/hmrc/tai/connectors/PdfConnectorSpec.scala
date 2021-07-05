@@ -46,7 +46,6 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
 
         Await.result(sut.generatePdf(htmlAsString), 5 seconds) mustBe htmlAsString.getBytes
 
-        //TODO: verify the headers here
       }
     }
 

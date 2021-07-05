@@ -21,6 +21,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -29,7 +30,7 @@ import java.util.UUID
 import scala.util.Random
 
 trait IntegrationSpec
-    extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
+    extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
   override def beforeEach() = {
     super.beforeEach()
 

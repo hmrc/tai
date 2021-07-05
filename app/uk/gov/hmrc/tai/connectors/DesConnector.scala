@@ -21,7 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -49,47 +49,49 @@ class DesConnector @Inject()(
 
   def daPtaOriginatorId = config.daPtaOriginatorId
 
-  def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
+  private def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def commonHeaderValues =
+  private def createDesHeader(implicit hc: HeaderCarrier) =
     Seq(
-      "Environment"   -> config.environment,
-      "Authorization" -> config.authorization,
-      "Content-Type"  -> TaiConstants.contentType)
+      "Environment"          -> config.environment,
+      "Authorization"        -> config.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def header: HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
+  private def header(implicit hc: HeaderCarrier): HeaderCarrier = HeaderCarrier(extraHeaders = createDesHeader)
 
-  // TODO: Mark this as private, its st to public only for test reasons
-  def headerForUpdate(version: Int, originatorId: String): HeaderCarrier =
-    HeaderCarrier(extraHeaders = commonHeaderValues ++ Seq("Originator-Id" -> originatorId, "ETag" -> version.toString))
+  private def headerForUpdate(version: Int, originatorId: String)(implicit hc: HeaderCarrier): HeaderCarrier =
+    HeaderCarrier(
+      extraHeaders = createDesHeader ++ Seq(
+        "Originator-Id" -> originatorId,
+        "ETag"          -> version.toString
+      ))
 
   def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(
     implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year?type=$iabdType")
-    implicit val hc: HeaderCarrier = header
-    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI).map(x => x._1)
+    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdSpecificAPI)(hc = header, implicitly).map(x => x._1)
   }
 
   def getIabdsFromDes(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = desPathUrl(nino, s"iabds/tax-year/$year")
-    implicit val hc: HeaderCarrier = header
-    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI).map(x => x._1)
+    getFromDes[List[NpsIabdRoot]](urlToRead, APITypes.DesIabdAllAPI)(hc = header, implicitly).map(x => x._1)
   }
 
   def getCalculatedTaxAccountFromDes(nino: Nino, year: Int)(
     implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
     val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
-    implicit val hc: HeaderCarrier = header
-    getFromDes[JsValue](urlToRead, APITypes.DesTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
+    getFromDes[JsValue](urlToRead, APITypes.DesTaxAccountAPI)(hc = header, implicitly).map(x =>
+      (x._1.as[NpsTaxAccount], x._2, x._1))
   }
 
   def getCalculatedTaxAccountRawResponseFromDes(nino: Nino, year: Int)(
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
-    implicit val hc: HeaderCarrier = header
-    httpClient.GET[HttpResponse](urlToRead)
+    httpClient.GET[HttpResponse](urlToRead)(hc = header, rds = implicitly, ec = ec)
   }
 
   def updateEmploymentDataToDes(

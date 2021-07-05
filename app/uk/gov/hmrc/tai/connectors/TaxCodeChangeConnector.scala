@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -41,18 +41,21 @@ class TaxCodeChangeConnector @Inject()(
 
   override val originatorId = config.originatorId
 
-  implicit private val header: HeaderCarrier = {
+  implicit private def createHeader(implicit hc: HeaderCarrier): HeaderCarrier = {
     val commonHeaderValues = Seq(
-      "Environment"   -> config.environment,
-      "Authorization" -> config.authorization,
-      "Content-Type"  -> TaiConstants.contentType)
+      "Environment"          -> config.environment,
+      "Authorization"        -> config.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+    )
 
     HeaderCarrier(extraHeaders = commonHeaderValues)
   }
 
-  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
+  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
 
-    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI).map(_._1)
+    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI)(createHeader, implicitly).map(_._1)
   }
 }

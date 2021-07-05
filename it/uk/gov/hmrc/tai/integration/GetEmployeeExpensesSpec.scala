@@ -19,15 +19,20 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.{HttpException, InternalServerException, ServiceUnavailableException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
-class GetEmployeeExpenses extends IntegrationSpec {
+import scala.concurrent.ExecutionContext
+
+class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
   def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
+
+  implicit lazy val ec = inject[ExecutionContext]
 
   "Get Employment" should {
     "return an OK response for a valid user" in {
@@ -54,17 +59,25 @@ class GetEmployeeExpenses extends IntegrationSpec {
     }
 
     "throws an InternalServerException when iabds from DES returns a INTERNAL_SERVER_ERROR" in {
-      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(NOT_FOUND)
+
+      result.map(fResult =>
+        whenReady(fResult.failed) { e =>
+          e shouldBe a[InternalServerException]
+        })
     }
 
     "throws an HttpException when iabds from DES returns a SERVICE_UNAVAILABLE" in {
-      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(NOT_FOUND)
+
+      result.map(fResult =>
+        whenReady(fResult.failed) { e =>
+          e shouldBe a[HttpException]
+        })
     }
   }
 }

@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, urlEqualTo}
 import com.github.tomakehurst.wiremock.http.Fault
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any}
 import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException}
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
@@ -55,21 +56,20 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     inject[RtiUrls],
     inject[RtiToggleConfig])
 
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      requestPattern
+        .withHeader("Environment", equalTo("local"))
+        .withHeader("Authorization", equalTo("Bearer Local"))
+        .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
+
   "RtiConnector" when {
 
     "withoutSuffix is called" should {
       "return a nino without the suffix" in {
         sut.withoutSuffix(nino) mustBe nino.withoutSuffix
-      }
-    }
-
-    "createHeader is called" should {
-      "set the correct headers for a request" in {
-        val headers = sut.createHeader
-        headers.extraHeaders mustBe List(
-          ("Environment", "local"),
-          ("Authorization", "Bearer Local"),
-          ("Gov-Uk-Originator-Id", desOriginatorId))
       }
     }
 
@@ -89,7 +89,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         rtiStatus.status mustBe OK
         rtiData mustBe Some(fakeRtiData.as[RtiData])
 
-        //TODO: verify the headers here
+        verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
+
       }
 
       "return No RTI data" when {
@@ -270,7 +271,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
           result mustBe Right(expectedPayments)
 
-          //TODO: verify the headers here
+          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
         }
       }
 
