@@ -116,25 +116,14 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-    "add extra headers for NPS" in {
-      val headers = sut
-        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
-        .headers
-
-      headers must contain(eTagKey                -> s"$eTag")
-      headers must contain("X-TXID"               -> "testtxID")
-      headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
-
-    }
-
-    "add basic headers for NPS" in {
-      val headers = sut
-        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
-        .headers
-
-      headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
-
-    }
+//
+//    "add basic headers for NPS" in {
+//      val headers = sut
+//        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
+//
+//      headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
+//
+//    }
 
     "start and stop a transaction timer" when {
       "making a GET request to NPS" in {
@@ -175,7 +164,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj), 5 seconds)
+        Await.result(sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty), 5 seconds)
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -322,7 +311,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = Await.result(sut.postToNps(url, apiType, bodyAsObj), 5.seconds)
+        val res = Await.result(sut.postToNps(url, apiType, bodyAsObj, Seq.empty), 5.seconds)
 
         res.status mustBe OK
         res.json.as[ResponseObject] mustBe bodyAsObj
@@ -418,7 +407,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[HttpException](
-          sut.postToNps[ResponseObject](url, apiType, bodyAsObj),
+          sut.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty),
           CONFLICT,
           exMessage
         )

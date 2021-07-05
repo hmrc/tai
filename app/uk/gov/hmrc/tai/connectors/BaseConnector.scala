@@ -44,13 +44,6 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     npsVersion
   }
 
-  def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String): HeaderCarrier =
-    hc.withExtraHeaders(
-      "ETag"                 -> version.toString,
-      "X-TXID"               -> txId,
-      "Gov-Uk-Originator-Id" -> originatorId,
-      "CorrelationId"        -> UUID.randomUUID().toString)
-
   def basicNpsHeaders(hc: HeaderCarrier): HeaderCarrier =
     hc.withExtraHeaders(
       "Gov-Uk-Originator-Id" -> originatorId,
@@ -102,11 +95,11 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     }
   }
 
-  def postToNps[A](url: String, api: APITypes, postData: A)(
+  def postToNps[A](url: String, api: APITypes, postData: A, headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier,
     writes: Writes[A]): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.POST(url, postData)
+    val futureResponse = httpClient.POST(url, postData, headers)
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {

@@ -21,7 +21,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.logging.{RequestId, SessionId}
+import uk.gov.hmrc.http.{RequestId, SessionId}
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException}
 import uk.gov.hmrc.tai.util.WireMockHelper
 

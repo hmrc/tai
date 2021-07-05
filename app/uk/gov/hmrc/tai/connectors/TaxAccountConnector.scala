@@ -42,28 +42,27 @@ class TaxAccountConnector @Inject()(
   featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
     extends HodsSource {
 
-  def getUuid = UUID.randomUUID().toString
+  private def getUuid = UUID.randomUUID().toString
 
-  def hcWithDesHeaders(implicit hc: HeaderCarrier): HeaderCarrier = createHeader.withExtraHeaders(
-    "Gov-Uk-Originator-Id" -> desConfig.originatorId,
-    HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-    HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
-  )
-
-  def hcWithHodHeaders(implicit hc: HeaderCarrier): HeaderCarrier =
+  private def hcWithHodHeaders(implicit hc: HeaderCarrier) =
     if (featureTogglesConfig.desEnabled) {
       hcWithDesHeaders
     } else {
-      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId, "CorrelationId" -> getUuid)
+      Seq(
+        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "CorrelationId"        -> getUuid
+      )
     }
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI)(hcWithHodHeaders)
+    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI, hcWithHodHeaders)
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
 
     val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI)(hcWithDesHeaders)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, hcWithDesHeaders)
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
@@ -76,8 +75,8 @@ class TaxAccountConnector @Inject()(
       val requestHeader = headersForUpdate(hc, version, sessionOrUUID, desConfig.originatorId)
 
       httpHandler
-        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI)(
-          requestHeader,
+        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI, requestHeader)(
+          hc,
           IabdUpdateAmountFormats.formatList
         )
         .map { _ =>
@@ -92,8 +91,8 @@ class TaxAccountConnector @Inject()(
       val requestHeader = headersForUpdate(hc, version, sessionOrUUID, npsConfig.originatorId)
 
       httpHandler
-        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI)(
-          requestHeader,
+        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
+          hc,
           IabdUpdateAmountFormats.formatList
         )
         .map { _ =>
@@ -108,13 +107,25 @@ class TaxAccountConnector @Inject()(
       case None            => UUID.randomUUID().toString.replace("-", "")
     }
 
-  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): HeaderCarrier =
-    hc.withExtraHeaders("ETag" -> version.toString, "X-TXID" -> txId, "Gov-Uk-Originator-Id" -> originatorId)
+  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String) =
+    Seq(
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "ETag"                 -> version.toString,
+      "X-TXID"               -> txId,
+      "Gov-Uk-Originator-Id" -> originatorId,
+      // TODO : Check for CorrelationId in test
+      "CorrelationId" -> getUuid
+    )
 
-  val createHeader = HeaderCarrier(
-    extraHeaders = Seq(
-      "Environment"   -> desConfig.environment,
-      "Authorization" -> desConfig.authorization,
-      "Content-Type"  -> TaiConstants.contentType,
-      "CorrelationId" -> getUuid))
+  private def hcWithDesHeaders(implicit hc: HeaderCarrier) =
+    Seq(
+      "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "Environment"          -> desConfig.environment,
+      "Authorization"        -> desConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      "CorrelationId"        -> getUuid
+    )
 }

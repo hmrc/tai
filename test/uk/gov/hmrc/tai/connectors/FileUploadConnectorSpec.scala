@@ -170,7 +170,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
 
         result.status mustBe OK
 
-        verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(fileUrl)))
+        server.verify(
+          postRequestedFor(urlEqualTo(fileUrl))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader("CSRF-token", equalTo("nocheck")))
 
       }
     }

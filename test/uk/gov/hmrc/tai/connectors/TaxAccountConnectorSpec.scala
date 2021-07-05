@@ -107,38 +107,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
   "Tax Account Connector" when {
 
-    "hcWithHodHeaders is called" must {
-
-      val originId = "Gov-Uk-Originator-Id"
-
-      "set the originator ID to DES" when {
-
-        "DES is enabled" in new ConnectorSetup {
-
-          val headerCarrier = HeaderCarrier()
-          val res = sut.hcWithHodHeaders(headerCarrier)
-
-          res.extraHeaders must contain(originId    -> desConfig.originatorId)
-          res.extraHeaders mustNot contain(originId -> npsConfig.originatorId)
-
-        }
-      }
-
-      "set the originator ID to NPS" when {
-
-        "DES is disabled" in new ConnectorSetup {
-
-          override def desIsEnabled: Boolean = false
-
-          val headerCarrier = HeaderCarrier()
-          val res = sut.hcWithHodHeaders(headerCarrier)
-
-          res.extraHeaders must contain(originId    -> npsConfig.originatorId)
-          res.extraHeaders mustNot contain(originId -> desConfig.originatorId)
-        }
-      }
-    }
-
     "toggled to use NPS" when {
 
       "toggled to use confirmedAPI" must {
@@ -411,7 +379,10 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
                 .withHeader(HeaderNames.xRequestId, equalTo(requestId))
                 .withHeader("ETag", equalTo("1"))
-                .withHeader("X-TXID", equalTo(sessionId)))
+                .withHeader("X-TXID", equalTo(sessionId))
+                .withHeader(
+                  "CorrelationId",
+                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
           }
 
           "return a failure status if the update fails" in new ConnectorSetup {
@@ -806,7 +777,10 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
                 .withHeader(HeaderNames.xRequestId, equalTo(requestId))
                 .withHeader("ETag", equalTo("1"))
-                .withHeader("X-TXID", equalTo(sessionId)))
+                .withHeader("X-TXID", equalTo(sessionId))
+                .withHeader(
+                  "CorrelationId",
+                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
           }
 
           "return a failure status if the update fails" in new ConnectorSetup {
