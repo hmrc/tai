@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 class GetEmployeeExpenses extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
-  def request = FakeRequest(GET, apiUrl)
+  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"

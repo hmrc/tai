@@ -25,10 +25,9 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.util.Random
 
-// to test:
-// Update income API
 trait IntegrationSpec
     extends UnitSpec with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with IntegrationPatience {
   override def beforeEach() = {
@@ -98,4 +97,6 @@ trait IntegrationSpec
                                         |   "etag":"$etag"
                                         |}
                                           """.stripMargin)
+
+  def generateSessionId: String = UUID.randomUUID().toString
 }

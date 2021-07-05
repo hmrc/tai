@@ -33,7 +33,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> "test-session-id")
+  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   "TaxCodeMismatch" should {
     "return an OK response for a valid user" in {

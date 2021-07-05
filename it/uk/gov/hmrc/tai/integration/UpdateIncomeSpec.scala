@@ -41,8 +41,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
   val amount = 123
   val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
 
-  def sessionID = UUID.randomUUID().toString
-  def request = FakeRequest(PUT, apiUrl).withJsonBody(postRequest).withHeaders("X-SESSION-ID" -> sessionID)
+  def request = FakeRequest(PUT, apiUrl).withJsonBody(postRequest).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   val iabdType = 27
   val postNpsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year/employment/$iabdType"

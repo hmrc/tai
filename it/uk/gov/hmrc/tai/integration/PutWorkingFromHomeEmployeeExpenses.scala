@@ -24,9 +24,9 @@ import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 
-class PutEmployeeExpenses extends IntegrationSpec {
+class PutWorkingFromHomeEmployeeExpenses extends IntegrationSpec {
 
-  val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
+  val apiUrl = s"/tai/$nino/tax-account/$year/expenses/working-from-home-employee-expenses/59"
 
   val postRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
 
@@ -35,7 +35,7 @@ class PutEmployeeExpenses extends IntegrationSpec {
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
 
-  "Put Employee Expenses" should {
+  "Put WFH Employee Expenses" should {
     "return an OK response for a valid user" in {
       server.stubFor(post(desIabdsUrl).willReturn(ok()))
 
