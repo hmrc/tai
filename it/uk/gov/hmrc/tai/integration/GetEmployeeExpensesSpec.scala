@@ -19,7 +19,10 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.{HttpException, InternalServerException, ServiceUnavailableException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
+
+import scala.concurrent.ExecutionContext
 
 class GetEmployeeExpensesSpec extends IntegrationSpec {
 
@@ -28,6 +31,8 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
+
+  implicit lazy val ec = inject[ExecutionContext]
 
   "Get Employment" should {
     "return an OK response for a valid user" in {
@@ -57,14 +62,22 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
+
+      result.map(fResult =>
+        whenReady(fResult.failed) { e =>
+          e shouldBe a[InternalServerException]
+        })
     }
 
     "throws an HttpException when iabds from DES returns a SERVICE_UNAVAILABLE" in {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(SERVICE_UNAVAILABLE)
+
+      result.map(fResult =>
+        whenReady(fResult.failed) { e =>
+          e shouldBe a[HttpException]
+        })
     }
   }
 }

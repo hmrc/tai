@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchers.any
 import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
