@@ -51,7 +51,7 @@ class DesConnector @Inject()(
 
   private def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
-  private def commonHeaderValues(implicit hc: HeaderCarrier) =
+  private def createDesHeader(implicit hc: HeaderCarrier) =
     Seq(
       "Environment"          -> config.environment,
       "Authorization"        -> config.authorization,
@@ -61,11 +61,11 @@ class DesConnector @Inject()(
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  private def header(implicit hc: HeaderCarrier): HeaderCarrier = HeaderCarrier(extraHeaders = commonHeaderValues)
+  private def header(implicit hc: HeaderCarrier): HeaderCarrier = HeaderCarrier(extraHeaders = createDesHeader)
 
   private def headerForUpdate(version: Int, originatorId: String)(implicit hc: HeaderCarrier): HeaderCarrier =
     HeaderCarrier(
-      extraHeaders = commonHeaderValues ++ Seq(
+      extraHeaders = createDesHeader ++ Seq(
         "Originator-Id" -> originatorId,
         "ETag"          -> version.toString
       ))

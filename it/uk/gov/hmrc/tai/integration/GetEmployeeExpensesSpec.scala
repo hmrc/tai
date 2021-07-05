@@ -54,17 +54,17 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
     }
 
     "throws an InternalServerException when iabds from DES returns a INTERNAL_SERVER_ERROR" in {
-      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(NOT_FOUND)
+      result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
     }
 
     "throws an HttpException when iabds from DES returns a SERVICE_UNAVAILABLE" in {
-      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(NOT_FOUND)
+      result.map(getStatus) shouldBe Some(SERVICE_UNAVAILABLE)
     }
   }
 }

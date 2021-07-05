@@ -48,10 +48,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
     server.verify(
       requestPattern
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-        .withHeader(
-          "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {

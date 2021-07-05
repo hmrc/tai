@@ -42,7 +42,7 @@ class TaxAccountConnector @Inject()(
   featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
     extends HodsSource {
 
-  lazy val uuid = UUID.randomUUID().toString
+  def getUuid = UUID.randomUUID().toString
 
   def hcWithDesHeaders(implicit hc: HeaderCarrier): HeaderCarrier = createHeader.withExtraHeaders(
     "Gov-Uk-Originator-Id" -> desConfig.originatorId,
@@ -54,7 +54,7 @@ class TaxAccountConnector @Inject()(
     if (featureTogglesConfig.desEnabled) {
       hcWithDesHeaders
     } else {
-      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId, "CorrelationId" -> uuid)
+      hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId, "CorrelationId" -> getUuid)
     }
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
@@ -116,5 +116,5 @@ class TaxAccountConnector @Inject()(
       "Environment"   -> desConfig.environment,
       "Authorization" -> desConfig.authorization,
       "Content-Type"  -> TaiConstants.contentType,
-      "CorrelationId" -> uuid))
+      "CorrelationId" -> getUuid))
 }
