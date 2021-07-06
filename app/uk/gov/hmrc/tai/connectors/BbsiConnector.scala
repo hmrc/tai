@@ -34,19 +34,17 @@ import java.util.UUID
 class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(
   implicit ec: ExecutionContext) {
 
-  def createHeader(implicit hc: HeaderCarrier): HeaderCarrier =
-    HeaderCarrier(
-      extraHeaders = Seq(
-        "Environment"          -> config.environment,
-        "Authorization"        -> s"Bearer ${config.authorization}",
-        "Content-Type"         -> TaiConstants.contentType,
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId"        -> UUID.randomUUID().toString
-      ))
+  def createHeader(implicit hc: HeaderCarrier) = Seq(
+    "Environment"          -> config.environment,
+    "Authorization"        -> s"Bearer ${config.authorization}",
+    "Content-Type"         -> TaiConstants.contentType,
+    HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+    HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+    "CorrelationId"        -> UUID.randomUUID().toString
+  )
 
   def bankAccounts(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
-    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI)(createHeader) map { json =>
+    httpHandler.getFromApi(urls.bbsiUrl(nino, taxYear), APITypes.BbsiAPI, createHeader) map { json =>
       json.as[Seq[BankAccount]](BbsiHodFormatters.bankAccountHodReads)
     }
 }

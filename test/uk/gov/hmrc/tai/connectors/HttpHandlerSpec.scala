@@ -30,13 +30,13 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, equalTo, getRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, anyUrl, equalTo, getRequestedFor, matching, postRequestedFor, urlEqualTo}
 
 class HttpHandlerSpec
     extends WordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures
@@ -63,10 +63,13 @@ class HttpHandlerSpec
               .withStatus(OK)
               .withBody(Json.toJson(responseBodyObject).toString())))
 
-        val response = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).futureValue
+        val response = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
         response shouldBe Json.toJson(responseBodyObject)
 
+        server.verify(
+          getRequestedFor(anyUrl())
+            .withHeader("test", equalTo("testHeader")))
       }
     }
 
@@ -80,7 +83,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(BAD_REQUEST)))
 
-        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[BadRequestException]
 
@@ -97,7 +100,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(NOT_FOUND)))
 
-        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[NotFoundException]
 
@@ -114,7 +117,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)))
 
-        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[InternalServerException]
 
@@ -131,7 +134,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(LOCKED)))
 
-        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[LockedException]
       }
@@ -147,7 +150,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(IM_A_TEAPOT)))
 
-        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[HttpException]
       }
@@ -167,10 +170,14 @@ class HttpHandlerSpec
             .withStatus(OK)
             .withBody(Json.toJson(userInput).toString())))
 
-      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
       result.status shouldBe OK
       result.json shouldBe Json.toJson(userInput)
+
+      server.verify(
+        postRequestedFor(anyUrl())
+          .withHeader("test", equalTo("testHeader")))
     }
 
     "return json which is coming from http post call with CREATED response" in {
@@ -182,10 +189,14 @@ class HttpHandlerSpec
             .withStatus(CREATED)
             .withBody(Json.toJson(userInput).toString())))
 
-      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
       result.status shouldBe CREATED
       result.json shouldBe Json.toJson(userInput)
+
+      server.verify(
+        postRequestedFor(anyUrl())
+          .withHeader("test", equalTo("testHeader")))
 
     }
 
@@ -198,10 +209,14 @@ class HttpHandlerSpec
             .withStatus(ACCEPTED)
             .withBody(Json.toJson(userInput).toString())))
 
-      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
       result.status shouldBe ACCEPTED
       result.json shouldBe Json.toJson(userInput)
+
+      server.verify(
+        postRequestedFor(anyUrl())
+          .withHeader("test", equalTo("testHeader")))
 
     }
 
@@ -213,7 +228,7 @@ class HttpHandlerSpec
           .willReturn(aResponse()
             .withStatus(NO_CONTENT)))
 
-      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).futureValue
+      val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).futureValue
 
       result.status shouldBe NO_CONTENT
     }
@@ -226,7 +241,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(NOT_FOUND)))
 
-        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[HttpException]
 
@@ -240,7 +255,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(GATEWAY_TIMEOUT)))
 
-        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[HttpException]
       }
@@ -253,7 +268,7 @@ class HttpHandlerSpec
             .willReturn(aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)))
 
-        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI).failed.futureValue
+        val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
         result shouldBe a[HttpException]
       }

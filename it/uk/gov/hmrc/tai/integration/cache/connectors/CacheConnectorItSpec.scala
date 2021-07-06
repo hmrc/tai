@@ -24,7 +24,7 @@ import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}

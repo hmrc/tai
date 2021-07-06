@@ -323,7 +323,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
         "a BadGatewayException is received" in {
 
-          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(new BadGatewayException(exMessage))
+          when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
+            new BadGatewayException(exMessage))
 
           Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
         }
@@ -359,7 +360,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
         "a GatewayTimeoutException is received" in {
 
-          when(mockHttp.GET(any())(any(), any(), any())) thenReturn Future.failed(
+          when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
             new GatewayTimeoutException(exMessage))
 
           Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)

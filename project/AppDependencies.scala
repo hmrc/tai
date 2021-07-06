@@ -10,7 +10,7 @@ object AppDependencies {
   val compile = Seq(
     filters,
     ws,
-    "uk.gov.hmrc"       %% s"bootstrap-$playVersion" % "2.3.0",
+    "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % "5.3.0",
     "uk.gov.hmrc"       %% "domain"                  % s"5.10.0-$playVersion",
     "uk.gov.hmrc"       %% "json-encryption"         % s"4.8.0-$playVersion",
     "uk.gov.hmrc"       %% "mongo-caching"           % s"6.15.0-$playVersion" exclude("uk.gov.hmrc","time_2.11"),

@@ -17,12 +17,11 @@
 package uk.gov.hmrc.tai.connectors
 
 import java.util.UUID
-
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
@@ -85,6 +84,16 @@ class NpsConnector @Inject()(
     httpClient.GET[HttpResponse](urlToRead)(implicitly, newHeaderCarrier, implicitly)
   }
 
+  private def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String) =
+    Seq(
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "ETag"                 -> version.toString,
+      "X-TXID"               -> txId,
+      "Gov-Uk-Originator-Id" -> originatorId,
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
+
   def updateEmploymentData(
     nino: Nino,
     year: Int,
@@ -94,8 +103,8 @@ class NpsConnector @Inject()(
     apiType: APITypes = APITypes.NpsIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     if (updateAmounts.nonEmpty) {
       val postUrl = npsPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(
-        extraNpsHeaders(hc, version, sessionOrUUID),
+      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts, extraNpsHeaders(hc, version, sessionOrUUID))(
+        hc,
         formats.formatList)
     } else {
       Future(HttpResponse(OK))

@@ -33,7 +33,8 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
-  def getFromApi(url: String, api: APITypes)(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(
+    implicit hc: HeaderCarrier): Future[JsValue] = {
 
     val timerContext = metrics.startTimer(api)
 
@@ -69,7 +70,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
     }
 
     (for {
-      response <- httpClient.GET[HttpResponse](url)
+      response <- httpClient.GET[HttpResponse](url = url, headers = headers)
       _        <- Future.successful(timerContext.stop())
       _        <- Future.successful(metrics.incrementSuccessCounter(api))
     } yield response.json) recover {
@@ -85,7 +86,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
 
   }
 
-  def postToApi[I](url: String, data: I, api: APITypes)(
+  def postToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier,
     writes: Writes[I]): Future[HttpResponse] = {
 
@@ -93,7 +94,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
     }
 
-    httpClient.POST[I, HttpResponse](url, data)(writes, rawHttpReads, hc, ec) map { httpResponse =>
+    httpClient.POST[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
       httpResponse status match {
         case OK | CREATED | ACCEPTED | NO_CONTENT => {
           metrics.incrementSuccessCounter(api)

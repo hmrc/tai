@@ -27,7 +27,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -126,7 +126,10 @@ class FileUploadConnector @Inject()(
 
     ahcWSClient
       .url(url)
-      .withHeaders(hc.copy(otherHeaders = Seq("CSRF-token" -> "nocheck")).headers: _*)
+      .addHttpHeaders(
+        "CSRF-token"           -> "nocheck",
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value))
       .post(multipartFormData)
       .map { response =>
         timerContext.stop()
