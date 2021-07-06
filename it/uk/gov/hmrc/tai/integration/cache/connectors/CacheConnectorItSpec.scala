@@ -80,7 +80,6 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
         "data has been passed without key" in {
           val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
-
           Some(data) shouldBe cachedData
         }
 
@@ -134,7 +133,14 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
       }
 
       "return None" when {
+
         "key doesn't exist" in {
+          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
+          val cachedData = Await.result(sut.find[String](cacheId, "invalid-key"), atMost)
+          cachedData shouldBe None
+        }
+
+        "cache id doesn't exist" in {
           val idWithNoData = CacheId(new Generator(Random).nextNino)
           val cachedData = Await.result(sut.findOptSeq[SessionData](idWithNoData), atMost)
 
