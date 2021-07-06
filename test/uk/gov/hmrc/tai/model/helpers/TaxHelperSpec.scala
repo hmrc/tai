@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.TaxBand
 
 class TaxHelperSpec extends PlaySpec with MockitoSugar {
 
-  "Tax Helper" should {
+  "Tax Helper" must {
     "return tax object" when {
       "given none nps tax and tax paid at source" in {
         val sut = createSUT

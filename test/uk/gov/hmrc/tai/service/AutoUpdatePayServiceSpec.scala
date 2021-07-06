@@ -43,7 +43,7 @@ import scala.util.{Failure, Success}
 
 class AutoUpdatePayServiceSpec extends BaseSpec {
 
-  "updateIncomes" should {
+  "updateIncomes" must {
     "not return any updated incomes" when {
       "the auto update flag is set to false" in {
 
@@ -156,7 +156,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "updateCeasedAndRtiIncomes" should {
+  "updateCeasedAndRtiIncomes" must {
     "return a successful list of RTI calculations" in {
       val mockNpsConfig = mock[NpsConfig]
       when(mockNpsConfig.autoUpdatePayEnabled)
@@ -225,7 +225,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "getCeasedIncomeFinalSalaries" should {
+  "getCeasedIncomeFinalSalaries" must {
 
     "Get the ceased income final salaries" when {
       "the ceased employment has a cessation pay greater than zero and it ceased within the current year" in {
@@ -547,7 +547,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "ceaseEmploymentAmountDifferent" should {
+  "ceaseEmploymentAmountDifferent" must {
 
     "compare ceased employments" when {
       "the sequence numbers don't match and the amounts are different" in {
@@ -686,7 +686,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "getRtiUpdateAmounts" should {
+  "getRtiUpdateAmounts" must {
     "return RTI updates for the current year" when {
       "employments and RTIData match" in {
 
@@ -950,7 +950,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "estimatedPay" should {
+  "estimatedPay" must {
     "return the current and next years estimated pay" when {
       "when it is a mid year estimated pay period" in {
 
@@ -1072,7 +1072,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "getMidYearEstimatedPay" should {
+  "getMidYearEstimatedPay" must {
     "return the mid year estimated pay values for the current year and next year" when {
       "the frequency is weekly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -1422,7 +1422,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "getContinuousEstimatedPay" should {
+  "getContinuousEstimatedPay" must {
     "return the continuous estimated pay value" when {
       "the pay frequency is weekly" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -1814,7 +1814,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "getEstPayWithMonthNo" should {
+  "getEstPayWithMonthNo" must {
     "return the estimated pay" when {
       "the number of months is one and the month of tax year is one" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2054,7 +2054,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "getRemainingBiAnnual" should {
+  "getRemainingBiAnnual" must {
     s"return ${SIX_MONTHS.remainingBiAnnual}" when {
       "the last paid on date is before the middle of the tax year" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2203,7 +2203,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
       }
     }
   }
-  "getRemainingQuarter" should {
+  "getRemainingQuarter" must {
     s"return ${NINE_MONTHS.remainingQuarter}" when {
       s"days between is more than ${NINE_MONTHS.days}" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2438,7 +2438,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "getFinalEstPayWithDefault" should {
+  "getFinalEstPayWithDefault" must {
     "return the taxable pay year to date amount" when {
       "the estimated pay is less than the taxable pay year to date amount" in {
         val mockNpsConnector = mock[NpsConnector]
@@ -2543,7 +2543,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "compareTaxDistrictNos" should {
+  "compareTaxDistrictNos" must {
     val mockNpsConnector = mock[NpsConnector]
     val mockDesConnector = mock[DesConnector]
 
@@ -2577,7 +2577,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "findEmployment" should {
+  "findEmployment" must {
     val mockNpsConnector = mock[NpsConnector]
     val mockDesConnector = mock[DesConnector]
 
@@ -2872,7 +2872,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
     }
   }
 
-  "updateEmploymentData" should {
+  "updateEmploymentData" must {
     "call the DES updateEmploymentDataToDes with the correct parameters" when {
       "the update DES indicator is set" in {
 

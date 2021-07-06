@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.{HttpException, InternalServerException, ServiceUnavailableException}
+import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
 import scala.concurrent.ExecutionContext

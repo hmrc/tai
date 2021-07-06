@@ -37,7 +37,7 @@ import scala.language.postfixOps
 
 class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
-  "getTaiRoot" should {
+  "getTaiRoot" must {
 
     "return the TaiRoot for the supplied nino " in {
       val data = sessionData.copy(
@@ -71,7 +71,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
     }
   }
 
-  "taiData" should {
+  "taiData" must {
     "return cached data" in {
       val data = sessionData.copy(
         taiRoot = Some(
@@ -177,7 +177,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
     }
   }
 
-  "updateTaiData" should {
+  "updateTaiData" must {
     "return successful when data saved in cache" in {
       val fakeRequest = FakeRequest(
         method = "Put",

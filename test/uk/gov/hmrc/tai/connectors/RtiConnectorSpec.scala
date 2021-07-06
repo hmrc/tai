@@ -67,13 +67,13 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
   "RtiConnector" when {
 
-    "withoutSuffix is called" should {
+    "withoutSuffix is called" must {
       "return a nino without the suffix" in {
         sut.withoutSuffix(nino) mustBe nino.withoutSuffix
       }
     }
 
-    "getRti is called" should {
+    "getRti is called" must {
       "return RTI data when the response is OK (200)" in {
         val fakeRtiData = Json.toJson(RtiData(nino.withoutSuffix, taxYear, "req123", Nil))
 
@@ -204,7 +204,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-    "getPaymentsForYear" should {
+    "getPaymentsForYear" must {
       "return a sequence of annual accounts" when {
         "a successful Http response is received from RTI" in {
           val taxYearRange = "16-17"

@@ -19,7 +19,8 @@ package uk.gov.hmrc.tai.connectors
 import org.mockito.ArgumentMatchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import org.scalatest.BeforeAndAfterEach
-import play.api.Configuration
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application, Configuration}
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.TimeToLive
@@ -39,24 +40,24 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfterEach with MockAuthenticationPredicate {
+class CacheConnectorSpec extends BaseSpec with MongoFormatter {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
   lazy implicit val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
 
-  val cacheIdValue = cacheId.value
-  val emptyKey = ""
+  lazy val cacheIdValue = cacheId.value
+  lazy val emptyKey = ""
 
-  val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
-  val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
-  val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
-  val mongoKey = "key1"
-  val atMost = 5 seconds
+  lazy val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
+  lazy val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
+  lazy val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
+  lazy val mongoKey = "key1"
+  lazy val atMost = 5 seconds
 
-  val cacheRepository = mock[CacheMongoRepository]
-  val taiCacheRepository = mock[TaiCacheRepository]
+  lazy val cacheRepository = mock[CacheMongoRepository]
+  lazy val taiCacheRepository = mock[TaiCacheRepository]
 
   def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = {
 
@@ -68,7 +69,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfte
   override protected def beforeEach(): Unit =
     reset(cacheRepository)
 
-  "TaiCacheRepository" should {
+  "TaiCacheRepository" must {
 
     lazy val sut = inject[TaiCacheRepository]
 
@@ -85,7 +86,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with BeforeAndAfte
     }
   }
 
-  "Cache Connector" should {
+  "Cache Connector" must {
     "save the data in cache" when {
       "provided with string data" in {
         val mockMongoConfig = mock[MongoConfig]

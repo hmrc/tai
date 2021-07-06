@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
 
 class NpsIncomeSourceSpec extends PlaySpec {
-  "toTaxCodeIncomeSummary" should {
+  "toTaxCodeIncomeSummary" must {
     "create a tax code income summary" when {
       "there is an employment but no adjusted net income" in {
         val startDate = NpsDate(new LocalDate("2017-01-01"))
@@ -159,7 +159,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "personalAllowanceComponent" should {
+  "personalAllowanceComponent" must {
     "return the personal allowance standard nps component" when {
       "there is one in the nps income source" in {
         val personalAllowanceStandard = NpsComponent(`type` = Some(AllowanceType.PersonalAllowanceStandard.id))
@@ -204,7 +204,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "underpaymentComponent" should {
+  "underpaymentComponent" must {
     "return the underpayment amount component" when {
       "there is one in the nps income source" in {
         val underpaymentAmount = NpsComponent(`type` = Some(DeductionType.UnderpaymentAmount.id))
@@ -228,7 +228,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "inYearAdjustmentComponent" should {
+  "inYearAdjustmentComponent" must {
     "return the in year adjustment component" when {
       "there is one in the nps component" in {
         val inYearAdjustment = NpsComponent(`type` = Some(DeductionType.InYearAdjustment.id))
@@ -253,7 +253,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "outstandingDebtComponent" should {
+  "outstandingDebtComponent" must {
     "return the outstanding debt component" when {
       "there is one in the nps component" in {
         val outstandingDebtRestriction = NpsComponent(`type` = Some(DeductionType.OutstandingDebtRestriction.id))
@@ -277,7 +277,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "personalAllowanceTransferred" should {
+  "personalAllowanceTransferred" must {
     "return the personal allowance transferred component" when {
       "there is one in the nps component" in {
         val personalAllowanceTransferred = NpsComponent(`type` = Some(DeductionType.PersonalAllowanceTransferred.id))
@@ -301,7 +301,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "personalAllowanceReceived" should {
+  "personalAllowanceReceived" must {
     "return the personal allowance received component" when {
       "there is one in the nps component" in {
         val personalAllowanceReceived = NpsComponent(`type` = Some(AllowanceType.PersonalAllowanceReceived.id))
@@ -325,7 +325,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "statePension" should {
+  "statePension" must {
     "return the amount of state pension or benefits" when {
       "there is an nps component of type state pension or benefits with an amount" in {
         val statePensionOrBenefits =
@@ -359,7 +359,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "incomeType" should {
+  "incomeType" must {
     "return the correct income type" when {
       "there is no employment tax district number, employment paye ref, employment type, JSA indicator and pension indicator" in {
         val sut = createSUT()
@@ -371,7 +371,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeSummary Model" should {
+  "TaxCodeIncomeSummary Model" must {
     "return the basisOperation if basisOperation exists " in {
       val npsComponent = NpsComponent(
         amount = Some(BigDecimal(333.33)),
@@ -407,7 +407,7 @@ class NpsIncomeSourceSpec extends PlaySpec {
     }
   }
 
-  "NpsIncomeSource Json" should {
+  "NpsIncomeSource Json" must {
     "transform correctly to valid NpsIncomeSource object With the the old Api" in {
       val npsIncomeSource = Json.parse(incomeSourceJson).as[NpsIncomeSource]
       npsIncomeSource.basisOperation mustBe None

@@ -27,7 +27,7 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
 
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  "JsonExtra" should {
+  "JsonExtra" must {
     "Use map format to write to Json value" when {
       "given valid input return JsValue" in {
         val inputMap: Map[TaxYear, TaxYear] = Map(TaxYear(2016) -> TaxYear(2017))

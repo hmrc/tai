@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
-  "package" should {
+  "package" must {
     "provide Json formatting of enumeration types" when {
       "correctly marshall string enumeration types to and from Json" in {
         val format = nps2.enumerationFormat(PayFreq)
@@ -206,7 +206,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
         )
       }
 
-      "unmarshalling an nps2 Json liability structure" should {
+      "unmarshalling an nps2 Json liability structure" must {
         "ignore any tax bands that have income value of zero" when {
           "and create a corresponding Liability Map structure from the filtered result" in {
             val npsJson =

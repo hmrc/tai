@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.nps2.{Component, Iabd, Income, MongoFormatter, NpsE
 
 class MongoFormatterSpec extends PlaySpec with MongoFormatter {
 
-  "Mongo Formatter" should {
+  "Mongo Formatter" must {
 
     "provide Json formatting of Liability Map" when {
       "reading the liability map JsValue" in {

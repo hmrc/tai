@@ -34,7 +34,7 @@ import scala.language.postfixOps
 
 class PersonControllerSpec extends BaseSpec {
 
-  "taxPayer method" should {
+  "taxPayer method" must {
     "return 200" when {
       "given a valid nino" in {
         val mockPersonService = mock[PersonService]

@@ -97,7 +97,7 @@ class BbsiConnectorSpec extends ConnectorBaseSpec with ScalaFutures with Integra
     numberOfAccountHolders = Some(1)
   )
 
-  "BbsiConnector" should {
+  "BbsiConnector" must {
     "return Sequence of BankAccounts" when {
       "api returns one bank account" in {
 

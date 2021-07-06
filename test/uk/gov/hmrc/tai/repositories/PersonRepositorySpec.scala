@@ -38,7 +38,7 @@ class PersonRepositorySpec extends BaseSpec {
   def createSUT(cacheConnector: CacheConnector, citizenDetailsUrls: CitizenDetailsUrls, httpHandler: HttpHandler) =
     new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 
-  "The getPerson method" should {
+  "The getPerson method" must {
 
     "retrieve person details from mongo cache, bypassing an API call" when {
 

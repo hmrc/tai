@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class TaxCalculatorSpec extends PlaySpec {
 
-  "updateTax in Tax calculator" should {
+  "updateTax in Tax calculator" must {
     "update totalIncome to expected value" when {
       "updateTax is called with totalIncome as None" in {
         val sut = SUT
@@ -106,7 +106,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "AdjustmentsTaxFreeAmount" should {
+  "AdjustmentsTaxFreeAmount" must {
     "adjust the allowance and deductions" when {
       "both allowance and deduction are none" in {
         val sut = SUT
@@ -130,7 +130,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "isAdjustmentNeeded" should {
+  "isAdjustmentNeeded" must {
     "check the conditions for tax adjustment" when {
 
       val oldTax = NpsTax(totalTax = Some(20), allowReliefDeducts = Some(NpsComponent(amount = Some(40))))
@@ -190,7 +190,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "adjustTaxData" should {
+  "adjustTaxData" must {
     "return adjusted tax values" when {
       "all the parameters are none" in {
         val sut = SUT
@@ -290,7 +290,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "getStartDateInCurrentFinancialYear" should {
+  "getStartDateInCurrentFinancialYear" must {
     "return financial year" when {
       val startDateCY = TaxYear().start
 
@@ -307,7 +307,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "totalAtBasicRate" should {
+  "totalAtBasicRate" must {
     "return basic rate" when {
       "total income and tax bands are None" in {
         val sut = SUT
@@ -334,7 +334,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "actualTaxDueAssumingBasicRateAlreadyPaid" should {
+  "actualTaxDueAssumingBasicRateAlreadyPaid" must {
     "return actual tax to be paid" when {
       "all parameters are none" in {
         val sut = SUT
@@ -360,7 +360,7 @@ class TaxCalculatorSpec extends PlaySpec {
     }
   }
 
-  "calculateChildBenefit" should {
+  "calculateChildBenefit" must {
     "return child benefit" when {
       "both inputs are zero" in {
         val sut = SUT

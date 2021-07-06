@@ -28,7 +28,7 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
       taxCodeChange.latestTaxCodeChangeDate mustEqual currentTaxCodeChangeRecordPrimary.startDate
     }
 
-    "primaryPreviousRecord" should {
+    "primaryPreviousRecord" must {
       "return Some(TaxCodeSummary) when primary previous tax code is found" in {
         val taxCodeChange = createTaxCodeChange()
         taxCodeChange.primaryPreviousRecord mustBe Some(previousTaxCodeChangeRecordPrimary)

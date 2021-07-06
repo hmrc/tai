@@ -26,7 +26,7 @@ import scala.math.BigDecimal.RoundingMode
 
 class EstimatedPayCalculatorSpec extends PlaySpec {
 
-  "Estimated Pay Calculator" should {
+  "Estimated Pay Calculator" must {
 
     "calculate the correct gross and net amount" when {
       "monthly amount is entered" in {

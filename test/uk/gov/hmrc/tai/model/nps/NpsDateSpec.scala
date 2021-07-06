@@ -22,7 +22,7 @@ import play.api.libs.json._
 
 class NpsDateSpec extends PlaySpec {
 
-  "NpsDate" should {
+  "NpsDate" must {
 
     "expose date in tax platform string form" in {
       NpsDate(LocalDate.parse("2016-12-12")).toNpsString mustBe "12/12/2016"
@@ -33,7 +33,7 @@ class NpsDateSpec extends PlaySpec {
     }
   }
 
-  "NpsDate Json integration" should {
+  "NpsDate Json integration" must {
 
     "marshall an NpsDate instance into a JsValue" in {
       val jsonObj = Json.toJson(NpsDate(LocalDate.parse("2017-05-03")))
@@ -65,13 +65,13 @@ class NpsDateSpec extends PlaySpec {
             valErrors.size mustBe 1
             valErrors.head.message mustBe "Cannot convert null to NpsDate"
           }
-          case _ => fail("parsing of null should result in an error")
+          case _ => fail("parsing of null must result in an error")
         }
       }
     }
   }
 
-  "NpsDateImplicitConversions" should {
+  "NpsDateImplicitConversions" must {
 
     "create an NpsDate" when {
 
@@ -112,7 +112,7 @@ class NpsDateSpec extends PlaySpec {
     }
   }
 
-  "localDateSerializer" should {
+  "localDateSerializer" must {
 
     "serialize a LocalDate instance into yyyy-MM-dd string form" in {
       localDateSerializer.serialize(LocalDate.parse("2015-11-11")) mustBe "2015-11-11"

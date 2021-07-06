@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustMatchers {
 
-  "mostRecentTaxCodeRecord" should {
+  "mostRecentTaxCodeRecord" must {
 
     "return the taxCodeRecord when given a sequence of one taxCodeRecord" in {
 

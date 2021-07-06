@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
-
-import java.util.UUID
 
 class UpdateIncomeSpec extends IntegrationSpec {
 

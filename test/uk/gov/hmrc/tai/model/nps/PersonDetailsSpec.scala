@@ -28,7 +28,7 @@ import scala.util.Random
 
 class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
 
-  "PersonDetails" should {
+  "PersonDetails" must {
     "return a blank taiRoot object (except for nino)" when {
       "a blank person (except for nino) is supplied" in {
 

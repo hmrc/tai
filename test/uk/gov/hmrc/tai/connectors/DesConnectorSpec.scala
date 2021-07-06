@@ -53,7 +53,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
 
   val etag: String = "2"
 
-  "DesConnector" should {
+  "DesConnector" must {
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
 
@@ -596,7 +596,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
       }
     }
 
-    "updateExpensesDataToDes" should {
+    "updateExpensesDataToDes" must {
 
       "return a status of 200 OK" when {
 

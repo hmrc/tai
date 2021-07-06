@@ -83,7 +83,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
   val employmentAsJson: JsValue = Json.toJson(employment)
 
   "NpsConnector" when {
-    "npsPathUrl is called" should {
+    "npsPathUrl is called" must {
       "fetch the path url" when {
         "given a nino and path" in {
           val arg = "path"
@@ -92,7 +92,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getEmployments is called" should {
+    "getEmployments is called" must {
       "return employments with success" when {
         "given a nino and a year" in {
 
@@ -216,7 +216,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getEmploymentDetails is called" should {
+    "getEmploymentDetails is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {
 
@@ -334,7 +334,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getIabds is called" should {
+    "getIabds is called" must {
       "return iabds" when {
         "given a valid nino, a year and a type" in {
 
@@ -455,7 +455,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getIabdsForType is called" should {
+    "getIabdsForType is called" must {
       "return iabds" when {
         "given a valid nino, a year and a type" in {
 
@@ -575,7 +575,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getCalculatedTaxAccount is called" should {
+    "getCalculatedTaxAccount is called" must {
       "return tax account" when {
         "connector returns OK with correct body" in {
 
@@ -695,7 +695,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getCalculatedTaxAccountRawResponse is called" should {
+    "getCalculatedTaxAccountRawResponse is called" must {
       "return tax account" when {
         "connector returns OK with correct body" in {
 
@@ -833,7 +833,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
         }
       }
 
-      "updateEmploymentData is called" should {
+      "updateEmploymentData is called" must {
 
         val update = List(IabdUpdateAmount(empSeqNum, intGen))
 

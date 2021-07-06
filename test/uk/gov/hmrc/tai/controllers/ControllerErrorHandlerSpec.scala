@@ -25,7 +25,7 @@ import scala.concurrent.duration._
 
 class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
 
-  "ControllerErrorHandler" should {
+  "ControllerErrorHandler" must {
     "return BAD_REQUEST" when {
       "there is hod BAD_REQUEST exception" in {
         val sut = createSUT

@@ -25,7 +25,7 @@ import scala.util.{Success, Try}
 
 class RtiPackageSpec extends PlaySpec {
 
-  "package" should {
+  "package" must {
     "successfully use implicit Local date formats" when {
 
       "Parse received date" in {

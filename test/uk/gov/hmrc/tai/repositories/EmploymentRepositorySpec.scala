@@ -96,7 +96,7 @@ class EmploymentRepositorySpec extends BaseSpec {
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
 
-  "employmentsForYear" should {
+  "employmentsForYear" must {
     "return the employment domain model" when {
       "there is no data in the cache" when {
         "a call to rti results in a ResourceNotFound error response" in {
@@ -1067,7 +1067,7 @@ class EmploymentRepositorySpec extends BaseSpec {
         }
 
         "the cache data contains an employment with two annual accounts for different years with a status of TemporarilyUnavailable" when {
-          "a subsequent request is made to RTI a status of available is returned, one annual account should be updated and the other left unmodified " in {
+          "a subsequent request is made to RTI a status of available is returned, one annual account must be updated and the other left unmodified " in {
 
             val cachedAnnualAccount1 = createAnnualAccount(TemporarilyUnavailable)
             val cachedAnnualAccount2 =

@@ -17,41 +17,38 @@
 package uk.gov.hmrc.tai.model
 
 import data.NpsData
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.tai.calculators.TaxCalculator
-import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxModelFactory}
-import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsIabdSummary, NpsTax, NpsTotalLiability}
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.util.TaiConstants
 
-class TaxSummaryModelSpec extends UnitSpec {
+class TaxSummaryModelSpec extends PlaySpec {
 
-  "Incomes" should {
+  "Incomes" must {
 
-    "Non coded Incomes" should {
+    "Non coded Incomes" must {
       "not appear if we don't have one" in {
 
         val npsTaxAccount = NpsData.getNpsBasicRateExtnTaxAccount()
         val npsEmployment = NpsData.getNpsBasicRateExtnEmployment()
 
         // Sanity test the input data
-        npsEmployment.head.worksNumber shouldBe Some("0000000")
+        npsEmployment.head.worksNumber mustBe Some("0000000")
 
-        npsTaxAccount.totalLiability.isDefined shouldBe true
-        npsTaxAccount.totalLiability.get.nonSavings.isDefined shouldBe true
+        npsTaxAccount.totalLiability.isDefined mustBe true
+        npsTaxAccount.totalLiability.get.nonSavings.isDefined mustBe true
         val nonSavings = npsTaxAccount.totalLiability.get.nonSavings.get
         val iabdSummary = nonSavings.totalIncome.get.iabdSummaries.get
         val noneCoded = iabdSummary.find(iabd => iabd.`type` == Some(IabdType.NonCodedIncome.code))
-        noneCoded.isDefined shouldBe false
+        noneCoded.isDefined mustBe false
 
         val taiTaxDetails = npsTaxAccount.toTaxSummary(1, npsEmployment)
-        taiTaxDetails.totalLiability.isDefined shouldBe true
+        taiTaxDetails.totalLiability.isDefined mustBe true
         val totalLiability = taiTaxDetails.totalLiability.get
 
         // Test none coded tax calculation
-        totalLiability.nonCodedIncome.isDefined shouldBe false
+        totalLiability.nonCodedIncome.isDefined mustBe false
 
-        taiTaxDetails.adjustedNetIncome shouldBe BigDecimal(53875)
+        taiTaxDetails.adjustedNetIncome mustBe BigDecimal(53875)
 
       }
       "appear in total liability section" in {
@@ -59,35 +56,35 @@ class TaxSummaryModelSpec extends UnitSpec {
         val npsEmployment = NpsData.getNpsNonCodedWithCeasedEmployment()
 
         // Sanity test the input data
-        npsEmployment.head.worksNumber shouldBe Some("0")
+        npsEmployment.head.worksNumber mustBe Some("0")
 
-        npsTaxAccount.totalLiability.isDefined shouldBe true
-        npsTaxAccount.totalLiability.get.nonSavings.isDefined shouldBe true
+        npsTaxAccount.totalLiability.isDefined mustBe true
+        npsTaxAccount.totalLiability.get.nonSavings.isDefined mustBe true
         val nonSavings = npsTaxAccount.totalLiability.get.nonSavings.get
         val iabdSummary = nonSavings.totalIncome.get.iabdSummaries.get
         val noneCoded = iabdSummary.find(iabd => iabd.`type` == Some(IabdType.NonCodedIncome.code))
-        noneCoded.isDefined shouldBe true
-        noneCoded.get.`type` shouldBe Some(IabdType.NonCodedIncome.code)
+        noneCoded.isDefined mustBe true
+        noneCoded.get.`type` mustBe Some(IabdType.NonCodedIncome.code)
 
         val taiTaxDetails = npsTaxAccount.toTaxSummary(1, npsEmployment)
 
-        taiTaxDetails.totalLiability.isDefined shouldBe true
+        taiTaxDetails.totalLiability.isDefined mustBe true
         val totalLiability = taiTaxDetails.totalLiability.get
 
         // Test none coded tax calculation
-        totalLiability.nonCodedIncome.isDefined shouldBe true
-        totalLiability.nonCodedIncome.get.totalIncome shouldBe Some(BigDecimal(219))
-        totalLiability.nonCodedIncome.get.totalTaxableIncome shouldBe Some(BigDecimal(219))
-        totalLiability.nonCodedIncome.get.totalTax shouldBe Some(BigDecimal(87.6))
+        totalLiability.nonCodedIncome.isDefined mustBe true
+        totalLiability.nonCodedIncome.get.totalIncome mustBe Some(BigDecimal(219))
+        totalLiability.nonCodedIncome.get.totalTaxableIncome mustBe Some(BigDecimal(219))
+        totalLiability.nonCodedIncome.get.totalTax mustBe Some(BigDecimal(87.6))
 
         //Now check to ensure that the non coded income is included in the increasesTax section
-        taiTaxDetails.increasesTax.isDefined shouldBe true
-        taiTaxDetails.increasesTax.get.total shouldBe BigDecimal(62219)
+        taiTaxDetails.increasesTax.isDefined mustBe true
+        taiTaxDetails.increasesTax.get.total mustBe BigDecimal(62219)
 
       }
     }
 
-    "have in Year Adjustment " should {
+    "have in Year Adjustment " must {
 
       val npsEmployment = NpsData.getNpsPotentialUnderpaymentEmployments()
       val npsTaxAccount = NpsData.getNpsPotentialUnderpaymentTaxAccount()
@@ -109,34 +106,34 @@ class TaxSummaryModelSpec extends UnitSpec {
         tcIncomes.foldLeft(BigDecimal(0))(_ + _.tax.inYearAdjustmentFromPreviousYear.getOrElse(BigDecimal(0)))
 
       "include total " in {
-        totalIYA shouldBe BigDecimal(272)
+        totalIYA mustBe BigDecimal(272)
       }
       "include current year value " in {
-        currentIYA shouldBe BigDecimal(12)
+        currentIYA mustBe BigDecimal(12)
       }
       "include current year plus one value " in {
-        currentIYAPlusOne shouldBe BigDecimal(34)
+        currentIYAPlusOne mustBe BigDecimal(34)
       }
       "include previous year value " in {
-        previousIYA shouldBe BigDecimal(56)
+        previousIYA mustBe BigDecimal(56)
       }
     }
 
-    "Oustanding Debt" should {
+    "Oustanding Debt" must {
 
       val npsData = data.NpsData.getNpsOutstandingDebt()
       val npsIabd = data.NpsData.getNpsChildBenefitIabds()
       val convertedTaxAccount = npsData.toTaxSummary(1, Nil, npsIabd)
 
       "be present" in {
-        convertedTaxAccount.totalLiability.isEmpty shouldBe false
-        convertedTaxAccount.totalLiability.map(_.outstandingDebt) shouldBe Some(200)
-        convertedTaxAccount.gateKeeper.map(_.gateKeepered) shouldBe None
+        convertedTaxAccount.totalLiability.isEmpty mustBe false
+        convertedTaxAccount.totalLiability.map(_.outstandingDebt) mustBe Some(200)
+        convertedTaxAccount.gateKeeper.map(_.gateKeepered) mustBe None
 
       }
     }
   }
-  "withMciRule" should {
+  "withMciRule" must {
     "return GateKeeper with Manual Correspondence Indicator data" in {
       val gateKeeper = GateKeeper(
         true,
@@ -145,7 +142,7 @@ class TaxSummaryModelSpec extends UnitSpec {
             Some(TaiConstants.mciGateKeeperType),
             Some(TaiConstants.mciGatekeeperId),
             Some(TaiConstants.mciGatekeeperDescr))))
-      GateKeeper.withMciRule shouldBe gateKeeper
+      GateKeeper.withMciRule mustBe gateKeeper
     }
   }
 }

@@ -21,7 +21,7 @@ import org.scalatestplus.play.PlaySpec
 
 class IncomeSpec extends PlaySpec {
 
-  "Income Status" should {
+  "Income Status" must {
     "return the Live status" when {
       "the given code is live" in {
         Income.Status(Some(Income.Live.code), None) mustBe Income.Live

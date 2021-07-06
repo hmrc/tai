@@ -21,7 +21,7 @@ import play.api.libs.json.{JsString, Json}
 
 class RealTimeStatusSpec extends PlaySpec {
 
-  "RealTimeFormat" should {
+  "RealTimeFormat" must {
     "create a valid object" when {
       "given a valid json value" in {
 

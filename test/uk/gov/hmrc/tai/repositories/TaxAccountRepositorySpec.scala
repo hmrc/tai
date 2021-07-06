@@ -40,7 +40,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
   val taxAccountConnector = mock[TaxAccountConnector]
 
-  "updateTaxCodeAmount" should {
+  "updateTaxCodeAmount" must {
     "update tax code amount" in {
 
       val cache = new Caching(cacheConnector, metrics, cacheConfig)
@@ -144,7 +144,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
       result mustBe taxAccountJsonResponse
     }
 
-    "taxAccountForTaxCodeId" should {
+    "taxAccountForTaxCodeId" must {
       "return json from the taxAccountHistoryConnector" in {
         val taxCodeId = 1
 

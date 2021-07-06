@@ -31,7 +31,7 @@ import scala.language.postfixOps
 
 class CodingComponentRepositorySpec extends BaseSpec {
 
-  "codingComponents" should {
+  "codingComponents" must {
     "return empty list of coding components" when {
       "iabd connector returns empty list and tax account connector returns json with no NpsComponents of interest" in {
         val mockTaxAccountRepository = mock[TaxAccountRepository]
@@ -65,7 +65,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
     }
   }
 
-  "codingComponentsForTaxCodeId" should {
+  "codingComponentsForTaxCodeId" must {
     "returns a Success[Seq[CodingComponent]] for valid json of income sources" in {
       val mockTaxAccountRepository = mock[TaxAccountRepository]
 

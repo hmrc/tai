@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class NpsIabdSummarySpec extends PlaySpec {
 
-  "NpsIabdSummary" should {
+  "NpsIabdSummary" must {
     "be identified as unique NpsIabdSummary" when {
       "give a same 'type' with different other parameters" in {
 

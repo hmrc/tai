@@ -98,7 +98,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
     super.beforeEach()
   }
 
-  "BaseConnector" should {
+  "BaseConnector" must {
     "get the version from the HttpResponse" when {
       "the HttpResponse contains the ETag header" in {
 

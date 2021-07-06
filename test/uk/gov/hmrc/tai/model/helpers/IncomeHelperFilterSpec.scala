@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class IncomeHelperFilterSpec extends PlaySpec {
 
-  "filterLiveAndCeased" should {
+  "filterLiveAndCeased" must {
     "return lists of live and ceased employment" when {
       "no input is provided" in {
         val (live, ceased) = sut.filterLiveAndCeased(Nil)
@@ -57,7 +57,7 @@ class IncomeHelperFilterSpec extends PlaySpec {
     }
   }
 
-  "filterPensions" should {
+  "filterPensions" must {
     "return lists of live and pension employment" when {
       "no input is provided" in {
         val (pension, live) = sut.filterPensions(Nil)
@@ -91,7 +91,7 @@ class IncomeHelperFilterSpec extends PlaySpec {
     }
   }
 
-  "filterTaxableStateBenefits" should {
+  "filterTaxableStateBenefits" must {
     "return taxable state benefits" when {
       "no input is provided" in {
         val (benefits, income) = sut.filterTaxableStateBenefits(Nil)
