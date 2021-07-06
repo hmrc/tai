@@ -18,14 +18,15 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 
 import org.mockito.Mockito
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{MustMatchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Injecting
+import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.SessionId
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
@@ -36,7 +37,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar {
+class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with Injecting {
 
   override def fakeApplication = GuiceApplicationBuilder()
     .configure(
@@ -56,46 +57,48 @@ class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoF
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
+  lazy val mockReactiveMongo: ReactiveMongoComponent = inject[ReactiveMongoComponent]
+
   val mockMongo: MongoConfig = mock[MongoConfig]
   Mockito.when(mockMongo.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(), mockMongo, configuration) {}
+  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(mockReactiveMongo, mockMongo), mockMongo, configuration)
 
-    "Cache Connector" should {
+    "Cache Connector" must {
       "insert and read the data from mongodb" when {
         "session data has been passed" in {
           val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
           val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "data has been passed" in {
           val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "session data has been passed without key" in {
           val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
           val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "data has been passed without key" in {
           val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "sequence has been passed" in {
           val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
           val cachedData = Await.result(sut.findSeq[SessionData](cacheId), atMost)
 
-          data shouldBe cachedData
+          data mustBe cachedData
         }
 
       }
@@ -104,23 +107,23 @@ class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoF
         "time to live is over" in {
           val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
 
           Thread.sleep(120000L)
 
           val cachedDataAfterTTL = Await.result(sut.find[String](cacheId), atMost)
-          cachedDataAfterTTL shouldBe None
+          cachedDataAfterTTL mustBe None
         }
 
         "calling removeById" in {
          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
 
           Await.result(sut.removeById(cacheId), atMost)
 
           val dataAfterRemove = Await.result(sut.find[String](cacheId), atMost)
-          dataAfterRemove shouldBe None
+          dataAfterRemove mustBe None
         }
       }
 
@@ -129,14 +132,14 @@ class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoF
           Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
-          Some(Nil) shouldBe cachedData
+          Some(Nil) mustBe cachedData
         }
 
         "sequence is saved in cache" in {
           Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
-          Some(List(sessionData, sessionData)) shouldBe cachedData
+          Some(List(sessionData, sessionData)) mustBe cachedData
         }
       }
 
@@ -145,7 +148,7 @@ class CacheConnectorItSpec extends UnitSpec with GuiceOneAppPerSuite with MongoF
           val idWithNoData = CacheId(new Generator(Random).nextNino)
           val cachedData = Await.result(sut.findOptSeq[SessionData](idWithNoData), atMost)
 
-          cachedData shouldBe None
+          cachedData mustBe None
         }
       }
     }

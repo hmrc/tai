@@ -35,13 +35,13 @@ class PutWorkingFromHomeEmployeeExpenses extends IntegrationSpec {
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
 
-  "Put WFH Employee Expenses" should {
+  "Put WFH Employee Expenses" must {
     "return an OK response for a valid user" in {
       server.stubFor(post(desIabdsUrl).willReturn(ok()))
 
       val result = route(fakeApplication(), request)
 
-      result.map(getStatus) shouldBe Some(NO_CONTENT)
+      result.map(getStatus) mustBe Some(NO_CONTENT)
     }
 
     List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
@@ -49,7 +49,7 @@ class PutWorkingFromHomeEmployeeExpenses extends IntegrationSpec {
         server.stubFor(post(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue shouldBe a[HttpException])
+        result.map(_.failed.futureValue mustBe a[HttpException])
       }
     }
   }

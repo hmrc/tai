@@ -34,28 +34,28 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   implicit lazy val ec = inject[ExecutionContext]
 
-  "Get Employment" should {
+  "Get Employment" must {
     "return an OK response for a valid user" in {
       val iabdsType59Json = FileHelper.loadFile("iabdsType59.json")
 
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(ok(iabdsType59Json)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(OK)
+      result.map(getStatus) mustBe Some(OK)
     }
 
     "return a BAD_REQUEST when iabds from DES returns a BAD_REQUEST" in {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(BAD_REQUEST)
+      result.map(getStatus) mustBe Some(BAD_REQUEST)
     }
 
     "return a NOT_FOUND when iabds from DES returns a NOT_FOUND" in {
       server.stubFor(get(urlEqualTo(desIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(NOT_FOUND)
+      result.map(getStatus) mustBe Some(NOT_FOUND)
     }
 
     "throws an InternalServerException when iabds from DES returns a INTERNAL_SERVER_ERROR" in {
@@ -65,7 +65,7 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
       result.map(fResult =>
         whenReady(fResult.failed) { e =>
-          e shouldBe a[InternalServerException]
+          e mustBe a[InternalServerException]
         })
     }
 
@@ -76,7 +76,7 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
 
       result.map(fResult =>
         whenReady(fResult.failed) { e =>
-          e shouldBe a[HttpException]
+          e mustBe a[HttpException]
         })
     }
   }

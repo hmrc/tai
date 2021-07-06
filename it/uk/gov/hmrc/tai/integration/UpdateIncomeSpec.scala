@@ -44,13 +44,13 @@ class UpdateIncomeSpec extends IntegrationSpec {
   val iabdType = 27
   val postNpsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year/employment/$iabdType"
 
-  "Update Income" should {
+  "Update Income" must {
     "return an OK response for a valid user" in {
       server.stubFor(post(postNpsIabdsUrl).willReturn(ok()))
 
       val result = route(fakeApplication(), request)
 
-      result.map(getStatus) shouldBe Some(OK)
+      result.map(getStatus) mustBe Some(OK)
     }
 
     List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
@@ -59,7 +59,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
 
         val result = route(fakeApplication(), request)
 
-        result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
       }
     }
 
@@ -68,7 +68,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
         server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
       }
     }
 
@@ -77,7 +77,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
       }
     }
 
@@ -86,7 +86,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(INTERNAL_SERVER_ERROR)
+        result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
       }
     }
   }

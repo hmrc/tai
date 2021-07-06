@@ -33,13 +33,13 @@ class GetEmploymentsSpec extends IntegrationSpec {
   val apiUrl = s"/tai/$nino/employments/years/$year"
   def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
-  "Get Employment" should {
+  "Get Employment" must {
     "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
-      result.map(getStatus) shouldBe Some(OK)
+      result.map(getStatus) mustBe Some(OK)
     }
 
-    "for nps employments failures" should {
+    "for nps employments failures" must {
       List(
         (BAD_REQUEST -> BAD_REQUEST),
         (NOT_FOUND -> NOT_FOUND),
@@ -51,7 +51,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
           val result = route(fakeApplication(), request)
-          result.map(getStatus) shouldBe Some(error)
+          result.map(getStatus) mustBe Some(error)
         }
       }
     }
@@ -61,7 +61,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
         server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(OK)
+        result.map(getStatus) mustBe Some(OK)
       }
     }
   }
