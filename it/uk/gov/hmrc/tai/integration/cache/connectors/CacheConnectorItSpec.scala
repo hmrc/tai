@@ -27,6 +27,7 @@ import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
 import uk.gov.hmrc.tai.integration.TaiBaseSpec
+import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
@@ -135,8 +136,8 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
       "return None" when {
 
         "key doesn't exist" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId, "invalid-key"), atMost)
+          val data = Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
+          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personHodRead), atMost)
           cachedData shouldBe None
         }
 

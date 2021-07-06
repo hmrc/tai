@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.{Configuration, Play}
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsResultException, JsValue, Json, JsonValidationError, Reads, Writes}
 import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.Cache
 import uk.gov.hmrc.cache.repository.CacheRepository
@@ -94,6 +94,8 @@ class CacheConnector @Inject()(
           None
         }
       }
+    } recover {
+      case JsResultException(_) => None
     } else {
       cacheRepository.repo.findById(cacheId.value) map {
         case Some(cache) =>
