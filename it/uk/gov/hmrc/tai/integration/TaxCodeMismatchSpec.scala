@@ -41,21 +41,77 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       result.map(getStatus) shouldBe Some(OK)
     }
 
-    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-      s"return OK for tax-account API failures with status code $httpStatus" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(httpStatus)))
+    "for nps iabds failures" should {
+      "return a BAD_REQUEST when the NPS iabds API returns a BAD_REQUEST" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(OK)
+        result.map(getStatus) shouldBe Some(BAD_REQUEST)
+      }
+
+      "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) shouldBe Some(NOT_FOUND)
+      }
+
+      "throws an InternalServerException when the NPS iabds API returns an INTERNAL_SERVER_ERROR" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[InternalServerException])
+      }
+
+      "throws a HttpException when the NPS iabds API returns a SERVICE_UNAVAILABLE" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[HttpException])
+      }
+
+      "throws a HttpException when the NPS iabds API returns a IM_A_TEAPOT" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[HttpException])
       }
     }
 
-    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-      s"return OK for iabds API failures with status code $httpStatus" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(httpStatus)))
+    "for nps tax account failures" should {
+      "return a BAD_REQUEST when the NPS tax account API returns a BAD_REQUEST" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
         val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(OK)
+        result.map(getStatus) shouldBe Some(BAD_REQUEST)
+      }
+
+      "return a NOT_FOUND when the NPS tax account API returns a NOT_FOUND" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+        val result = route(fakeApplication(), request)
+        result.map(getStatus) shouldBe Some(NOT_FOUND)
+      }
+
+      "throws an InternalServerException when the NPS tax account API returns an INTERNAL_SERVER_ERROR" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[InternalServerException])
+      }
+
+      "throws a HttpException when the NPS tax account API returns a SERVICE_UNAVAILABLE" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[HttpException])
+      }
+
+      "throws a HttpException when the NPS tax account API returns a IM_A_TEAPOT" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[HttpException])
       }
     }
 
@@ -74,7 +130,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
         result.map(getStatus) shouldBe Some(NOT_FOUND)
       }
 
-      "throws an  InternalServerException when the tax-code-history API returns an INTERNAL_SERVER_ERROR" in {
+      "throws an InternalServerException when the tax-code-history API returns an INTERNAL_SERVER_ERROR" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
         val result = route(fakeApplication(), request)
@@ -83,6 +139,13 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
       "throws a HttpException when the tax-code-history API returns a SERVICE_UNAVAILABLE" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+
+        val result = route(fakeApplication(), request)
+        result.map(_.failed.futureValue shouldBe a[HttpException])
+      }
+
+      "throws a HttpException when the tax-code-history API returns a IM_A_TEAPOT" in {
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
 
         val result = route(fakeApplication(), request)
         result.map(_.failed.futureValue shouldBe a[HttpException])

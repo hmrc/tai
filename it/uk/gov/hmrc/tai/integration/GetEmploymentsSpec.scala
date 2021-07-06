@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class GetEmploymentsSpec extends IntegrationSpec {
@@ -39,12 +40,20 @@ class GetEmploymentsSpec extends IntegrationSpec {
       result.map(getStatus) shouldBe Some(OK)
     }
 
-    List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
-      s"return OK for employment API failures with status code $httpStatus" in {
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
+    "for nps employments failures" should {
+      List(
+        (BAD_REQUEST -> BAD_REQUEST),
+        (NOT_FOUND -> NOT_FOUND),
+        (IM_A_TEAPOT -> INTERNAL_SERVER_ERROR),
+        (INTERNAL_SERVER_ERROR -> INTERNAL_SERVER_ERROR),
+        (SERVICE_UNAVAILABLE -> INTERNAL_SERVER_ERROR)
+      ).foreach { case (httpStatus, error) =>
+        s"return $error when the NPS employments API returns a $httpStatus" in {
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) shouldBe Some(OK)
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) shouldBe Some(error)
+        }
       }
     }
 
