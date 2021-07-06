@@ -18,12 +18,9 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.ArgumentMatchers.{any, eq => Meq}
 import org.mockito.Mockito._
-import org.scalatest.BeforeAndAfterEach
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.{Application, Configuration}
+import play.api.Configuration
 import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
-import uk.gov.hmrc.cache.TimeToLive
 import uk.gov.hmrc.cache.model.{Cache, Id}
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
@@ -31,7 +28,6 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protecte
 import uk.gov.hmrc.mongo.DatabaseUpdate
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -47,42 +43,37 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
   lazy implicit val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
 
-  lazy val cacheIdValue = cacheId.value
-  lazy val emptyKey = ""
+  val cacheIdValue = cacheId.value
+  val emptyKey = ""
 
-  lazy val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
-  lazy val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
-  lazy val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
-  lazy val mongoKey = "key1"
-  lazy val atMost = 5 seconds
+  val databaseUpdate = Future.successful(mock[DatabaseUpdate[Cache]])
+  val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
+  val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
+  val mongoKey = "key1"
+  val atMost = 5 seconds
 
-  lazy val cacheRepository = mock[CacheMongoRepository]
-  lazy val taiCacheRepository = mock[TaiCacheRepository]
+  val taiCacheRepository = mock[TaiCacheRepository]
 
-  def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) = {
-
-    when(taiCacheRepository.repo).thenReturn(cacheRepository)
-
+  def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) =
     new CacheConnector(taiCacheRepository, mongoConfig, configuration)
-  }
 
   override protected def beforeEach(): Unit =
-    reset(cacheRepository)
+    reset(taiCacheRepository)
 
   "TaiCacheRepository" must {
 
     lazy val sut = inject[TaiCacheRepository]
 
     "have the correct collection name" in {
-      sut.repo.collection.name mustBe "TAI"
+      sut.collection.name mustBe "TAI"
     }
 
-    "use the default time out from TimeToLive" in new TimeToLive {
-      sut.defaultExpireAfter mustBe defaultExpireAfter
-    }
+//    "use the default time out from TimeToLive" in new TimeToLive {
+//      sut.defaultExpireAfter mustBe defaultExpireAfter
+//    }
 
     "use mongoFormats from Cache" in {
-      sut.repo.domainFormatImplicit mustBe Cache.mongoFormats
+      sut.domainFormatImplicit mustBe Cache.mongoFormats
     }
   }
 
@@ -92,7 +83,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdate(cacheId, "DATA", emptyKey), atMost)
 
@@ -103,7 +94,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdate(cacheId, "DATA", emptyKey), atMost)
 
@@ -114,7 +105,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdate(cacheId, 10, emptyKey), atMost)
 
@@ -125,7 +116,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdate(cacheId, sessionData, emptyKey), atMost)
 
@@ -137,7 +128,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val stringSeq = List("one", "two", "three")
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey), atMost)
 
@@ -149,7 +140,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
         val stringSeq = List("one", "two", "three")
-        when(cacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+        when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
         val data = Await.result(sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey), atMost)
 
@@ -164,13 +155,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> "DATA")))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.find[String](cacheId), atMost)
 
         data mustBe Some("DATA")
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache and encryption is enabled" in {
@@ -180,39 +171,39 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val jsonEncryptor = new JsonEncryptor[String]()
         val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> encryptedData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.find[String](cacheId), atMost)
 
         data mustBe Some("DATA")
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.find[String](cacheId), atMost)
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache and encryption is enabled" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.find[String](cacheId), atMost)
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -223,13 +214,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> sessionData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.find[SessionData](cacheId, "TAI-SESSION"), atMost)
 
         data mustBe Some(sessionData)
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion" in {
@@ -237,13 +228,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> sessionData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.find[String](cacheId, "TAI-DATA"), atMost)
 
         data mustBe None
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -255,13 +246,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache =
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
         data mustBe List(sessionData, sessionData)
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache and encryption is enabled" in {
@@ -271,13 +262,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
         val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
         data mustBe List(sessionData, sessionData)
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion" in {
@@ -286,13 +277,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache =
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> List(sessionData, sessionData))))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is present in the cache but with wrong type conversion and encryption is enabled" in {
@@ -302,39 +293,39 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
         val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
 
       "id is not present in the cache and encryption is enabled" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
 
         data mustBe Nil
 
-        verify(cacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -343,13 +334,13 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.removeById(any(), any())(any()))
+        when(taiCacheRepository.removeById(any(), any())(any()))
           .thenReturn(Future.successful(DefaultWriteResult(ok = true, 0, Nil, None, None, None)))
 
         val result = Await.result(sut.removeById(cacheId), atMost)
 
         result mustBe true
-        verify(cacheRepository, times(1)).removeById(Meq(Id(cacheIdValue)), any())(any())
+        verify(taiCacheRepository, times(1)).removeById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 
@@ -361,7 +352,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val writeErrors = Seq(WriteError(0, 0, "Failed"))
         val eventualWriteResult =
           Future.successful(DefaultWriteResult(ok = false, 0, writeErrors, None, None, Some("Failed")))
-        when(cacheRepository.removeById(any(), any())(any())).thenReturn(eventualWriteResult)
+        when(taiCacheRepository.removeById(any(), any())(any())).thenReturn(eventualWriteResult)
 
         val ex = the[RuntimeException] thrownBy Await.result(sut.removeById(cacheId), atMost)
         ex.getMessage mustBe "Failed"
@@ -377,7 +368,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache =
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
@@ -393,7 +384,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
 
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
@@ -406,7 +397,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> Nil)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
@@ -421,7 +412,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val encryptedData = Json.toJson(Protected(List.empty[SessionData]))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
 
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
@@ -437,7 +428,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val eventualSomeCache =
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-DATA"), atMost)
 
@@ -451,7 +442,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
         val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
-        when(cacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-DATA"), atMost)
 
@@ -467,7 +458,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(cacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), Meq(jsonData)))
+        when(taiCacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), Meq(jsonData)))
           .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
@@ -480,7 +471,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
         val jsonData = Json.obj("amount" -> 123)
-        when(cacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), any()))
+        when(taiCacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), any()))
           .thenReturn(databaseUpdate)
 
         val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
@@ -498,7 +489,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj(mongoKey -> "DATA")
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(json)))
-        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
+        when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
@@ -512,7 +503,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any())).thenReturn(Future.successful(None))
+        when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any())).thenReturn(Future.successful(None))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
 
@@ -527,7 +518,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         val json = Json.obj("wrong-key" -> "DATA")
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(json)))
-        when(cacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
+        when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
