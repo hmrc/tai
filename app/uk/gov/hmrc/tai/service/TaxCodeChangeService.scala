@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
 import org.joda.time.LocalDate
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -38,26 +38,26 @@ class TaxCodeChangeServiceImpl @Inject()(
   auditor: Auditor,
   incomeService: IncomeService)(
   implicit ec: ExecutionContext
-) extends TaxCodeChangeService with TaxCodeHistoryConstants {
+) extends TaxCodeChangeService with TaxCodeHistoryConstants with Logging {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
     taxCodeHistory(nino, TaxYear())
       .flatMap { taxCodeHistory =>
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
 
-          Logger.debug("change is valid for service")
+          logger.debug("change is valid for service")
 
           taxCodeMismatch(nino).map { taxCodeMismatch =>
             !taxCodeMismatch.mismatch
           }
         } else {
-          Logger.debug("change is not valid for service")
+          logger.debug("change is not valid for service")
           Future.successful(false)
         }
       }
       .recover {
         case NonFatal(e) =>
-          Logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
+          logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
           false
       }
 
@@ -93,14 +93,14 @@ class TaxCodeChangeServiceImpl @Inject()(
         taxCodeChange
 
       } else if (taxCodeRecordList.size == 1) {
-        Logger.warn(s"Only one tax code record returned for $nino")
+        logger.warn(s"Only one tax code record returned for $nino")
 
         TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)), Seq())
       } else if (taxCodeRecordList.size == 0) {
-        Logger.warn(s"Zero tax code records returned for $nino")
+        logger.warn(s"Zero tax code records returned for $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {
-        Logger.warn(s"Returned list of tax codes is not valid for service: $nino")
+        logger.warn(s"Returned list of tax codes is not valid for service: $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       }
     }
@@ -116,19 +116,19 @@ class TaxCodeChangeServiceImpl @Inject()(
       val confirmedTaxCodeList: Seq[String] =
         confirmedTaxCodes.current.map(income => sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation)))
 
-      Logger.debug(s"Unconfirmed tax codes \n $unconfirmedTaxCodeList")
-      Logger.debug(s"Confirmed tax codes \n $confirmedTaxCodeList")
+      logger.debug(s"Unconfirmed tax codes \n $unconfirmedTaxCodeList")
+      logger.debug(s"Confirmed tax codes \n $confirmedTaxCodeList")
 
       val taxCodeMismatch = TaxCodeMismatch(unconfirmedTaxCodeList, confirmedTaxCodeList)
 
-      Logger.debug(s"taxCodeMismatch? $taxCodeMismatch")
+      logger.debug(s"taxCodeMismatch? $taxCodeMismatch")
 
       taxCodeMismatch
     }
 
     futureMismatch.onFailure {
       case NonFatal(exception) =>
-        Logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+        logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
     }
 
     futureMismatch
@@ -188,7 +188,7 @@ class TaxCodeChangeServiceImpl @Inject()(
 
   private def validForService(taxCodeRecords: Seq[TaxCodeRecord]): Boolean = {
     val calculationDates = taxCodeRecords.map(_.dateOfCalculation).distinct
-    Logger.debug(s"calculation dates $calculationDates")
+    logger.debug(s"calculation dates $calculationDates")
     lazy val latestDate = calculationDates.min
     calculationDates.length >= 2 && TaxYear().withinTaxYear(latestDate)
   }

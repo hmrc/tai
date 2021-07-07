@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.{Days, LocalDate}
+import org.joda.time.Days
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.model.enums.PayFreq

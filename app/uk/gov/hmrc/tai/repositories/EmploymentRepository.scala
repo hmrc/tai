@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
@@ -36,6 +36,8 @@ class EmploymentRepository @Inject()(
   npsConnector: NpsConnector,
   employmentBuilder: EmploymentBuilder)(implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   private def employmentMongoKey(taxYear: TaxYear) = s"EmploymentData-${taxYear.year}"
 
   def employment(nino: Nino, id: Int)(
@@ -46,7 +48,7 @@ class EmploymentRepository @Inject()(
         case Some(employment) => Right(employment)
         case None => {
           val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
-          Logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+          logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
           Left(EmploymentNotFound)
         }
       }

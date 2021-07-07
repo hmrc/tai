@@ -40,16 +40,18 @@ class CodingComponentController @Inject()(
   implicit ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with RequestQueryFilter with CodingComponentAPIFormatters {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
         Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
       } recover {
         case e: BadRequestException =>
-          Logger.warn(s"BadRequestException on codingComponentsForYear: ${e.getMessage}")
+          logger.warn(s"BadRequestException on codingComponentsForYear: ${e.getMessage}")
           BadRequest(Json.toJson(Map("reason" -> e.getMessage)))
         case e: NotFoundException =>
-          Logger.warn(s"NotFoundException on codingComponentsForYear: ${e.getMessage}")
+          logger.warn(s"NotFoundException on codingComponentsForYear: ${e.getMessage}")
           NotFound(Json.toJson(Map("reason" -> e.getMessage)))
         case e: Throwable =>
           throw e

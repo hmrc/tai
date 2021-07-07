@@ -25,6 +25,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentBuilder @Inject()(auditor: Auditor) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
     accounts: Seq[AnnualAccount],
@@ -35,13 +37,13 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       implicit hc: HeaderCarrier): Option[Employment] =
       employments.filter(_.employerDesignation == account.employerDesignation) match {
         case Seq(single) =>
-          Logger.warn(s"single match found for $nino for $taxYear")
+          logger.warn(s"single match found for $nino for $taxYear")
           Some(single.copy(annualAccounts = Seq(account)))
         case Nil =>
-          Logger.warn(s"no match found for $nino for $taxYear")
+          logger.warn(s"no match found for $nino for $taxYear")
           auditAssociatedEmployment(account, employments, nino.nino, taxYear.twoDigitRange)
         case many =>
-          Logger.warn(s"multiple matches found for $nino for $taxYear")
+          logger.warn(s"multiple matches found for $nino for $taxYear")
 
           val combinedEmploymentAndAccount = many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account)))
 
@@ -87,7 +89,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
         "RTI Account Key"     -> account.key)
     )
 
-    Logger.warn(
+    logger.warn(
       "EmploymentRepository: Failed to identify an Employment match for an AnnualAccount instance. NPS and RTI data may not align.")
     None
   }

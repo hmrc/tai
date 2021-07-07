@@ -3,7 +3,7 @@ import sbt._
 object AppDependencies {
   import play.sbt.PlayImport._
   
-  private val playVersion = "play-27"
+  private val playVersion = "play-28"
   
   private val pegdownVersion = "1.6.0"
 
@@ -13,9 +13,8 @@ object AppDependencies {
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % "5.3.0",
     "uk.gov.hmrc"       %% "domain"                  % s"6.1.0-$playVersion",
     "uk.gov.hmrc"       %% "json-encryption"         % s"4.10.0-$playVersion",
-    "uk.gov.hmrc"       %% "mongo-caching"           % s"6.15.0-$playVersion" exclude("uk.gov.hmrc","time_2.11"),
-    "uk.gov.hmrc"       %% "auth-client"             % s"3.2.0-$playVersion",
-    "com.typesafe.play" %% "play-json-joda"          % "2.7.4"
+    "uk.gov.hmrc"       %% "mongo-caching"           % s"7.0.0-$playVersion" exclude("uk.gov.hmrc","time_2.11"),
+    "com.typesafe.play" %% "play-json-joda"          % "2.9.2"
   )
 
   lazy val scope: String = "test,it"

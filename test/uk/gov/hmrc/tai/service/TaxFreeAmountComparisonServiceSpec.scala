@@ -71,8 +71,6 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
           CodingComponent(CarFuelBenefit, Some(124), 66666, "some other description")
         )
 
-        val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
-
         when(taxCodeChangeService.taxCodeChange(meq(nino))(any()))
           .thenReturn(Future.failed(new RuntimeException("Error")))
 
@@ -89,8 +87,6 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
       "service call for the previous coding components fails" in {
         val taxCodeChangeService = mock[TaxCodeChangeServiceImpl]
         val codingComponentService = mock[CodingComponentService]
-
-        val codingComponent1 = CodingComponent(PersonalAllowancePA, Some(123), 12345, "some description")
 
         val taxCodeChange = stubTaxCodeChange
 

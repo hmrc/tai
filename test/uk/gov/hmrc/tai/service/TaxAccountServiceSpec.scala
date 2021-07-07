@@ -317,8 +317,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
   "version" must {
     "return the version" in {
 
-      val sessionIdValue = "ABCD1234"
-
       val sd = sessionData().copy(taiRoot = Some(nonGatekeeperTaiRoot.copy(version = 1)))
 
       val mockTaiService = mock[TaiService]
@@ -363,8 +361,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
 
     "return None" when {
       "tai root is None" in {
-
-        val sessionIdValue = "ABCD1234"
 
         val sd = sessionData().copy(taiRoot = None)
 
@@ -1001,13 +997,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
   private def reflectedSessionAnswer = new Answer[Future[SessionData]]() {
     override def answer(invocation: InvocationOnMock): Future[SessionData] = {
       val suppliedSession: SessionData = invocation.getArguments()(1).asInstanceOf[SessionData]
-      Future.successful(suppliedSession)
-    }
-  }
-
-  private def reflectedProtectedSessionAnswer = new Answer[Future[Protected[SessionData]]]() {
-    override def answer(invocation: InvocationOnMock): Future[Protected[SessionData]] = {
-      val suppliedSession: Protected[SessionData] = invocation.getArguments()(1).asInstanceOf[Protected[SessionData]]
       Future.successful(suppliedSession)
     }
   }

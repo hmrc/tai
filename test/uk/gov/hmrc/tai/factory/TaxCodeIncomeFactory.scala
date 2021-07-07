@@ -38,14 +38,14 @@ object TaxCodeIncomeFactory {
 
   def createJson: JsObject =
     Json.obj(
-      "componentType"                 -> EmploymentIncome,
+      "componentType"                 -> EmploymentIncome.toString,
       "employmentId"                  -> 1,
       "amount"                        -> 0,
       "description"                   -> "Test Desc",
       "taxCode"                       -> "K100X",
       "name"                          -> "Test Name",
-      "basisOperation"                -> Week1Month1BasisOperation,
-      "status"                        -> Live,
+      "basisOperation"                -> Week1Month1BasisOperation.toString,
+      "status"                        -> Live.toString,
       "inYearAdjustmentIntoCY"        -> 0,
       "totalInYearAdjustment"         -> 1,
       "inYearAdjustmentIntoCYPlusOne" -> 2

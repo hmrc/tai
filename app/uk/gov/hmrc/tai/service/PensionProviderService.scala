@@ -36,13 +36,15 @@ class PensionProviderService @Inject()(
   employmentRepository: EmploymentRepository,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   def addPensionProvider(nino: Nino, pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,
       IFormConstants.AddPensionProviderSubmissionKey,
       "TES1",
       addPensionProviderForm(pensionProvider)) map { envelopeId =>
-      Logger.info("Envelope Id for incorrect employment- " + envelopeId)
+      logger.info("Envelope Id for incorrect employment- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.AddPensionProviderAuditTxnName,
@@ -74,7 +76,7 @@ class PensionProviderService @Inject()(
       "TES1",
       incorrectPensionProviderForm(nino, id, incorrectPensionProvider)
     ) map { envelopeId =>
-      Logger.info("Envelope Id for incorrect pension provider- " + envelopeId)
+      logger.info("Envelope Id for incorrect pension provider- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.IncorrectPensionProviderSubmissionKey,

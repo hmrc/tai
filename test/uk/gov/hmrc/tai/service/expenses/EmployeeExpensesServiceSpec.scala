@@ -57,8 +57,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
 
   private val taxYear = 2017
 
-  private lazy val timeoutDuration: Duration = 5 seconds
-
   "updateEmployeeExpensesData" must {
 
     "return 200" when {

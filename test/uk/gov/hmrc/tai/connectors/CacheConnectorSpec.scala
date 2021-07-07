@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import org.mockito.ArgumentMatchers.{any, eq => Meq}
 import org.mockito.Mockito._
 import play.api.Configuration
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsObject, JsString, JsValue, Json, MapWrites, OWrites, Writes}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
@@ -390,14 +390,15 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
 
         data mustBe Some(List(sessionData, sessionData))
-
       }
 
       "cache returns Nil" in {
+
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> Nil)))))
+        val eventualSomeCache =
+          Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List.empty[String])))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
         val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)

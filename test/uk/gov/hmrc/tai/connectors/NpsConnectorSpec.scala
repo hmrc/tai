@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, postRequestedFor, putRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
-import org.mockito.Mockito.when
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json, Writes}
 import uk.gov.hmrc.http._

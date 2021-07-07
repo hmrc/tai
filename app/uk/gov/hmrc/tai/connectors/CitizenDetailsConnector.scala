@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
@@ -37,7 +37,7 @@ class CitizenDetailsConnector @Inject()(
   httpClient: HttpClient,
   auditor: Auditor,
   urls: CitizenDetailsUrls)(implicit ec: ExecutionContext)
-    extends BaseConnector(auditor, metrics, httpClient) {
+    extends BaseConnector(auditor, metrics, httpClient) with Logging {
 
   override val originatorId: String = ""
 
@@ -50,7 +50,7 @@ class CitizenDetailsConnector @Inject()(
         case OK =>
           Future.successful(response.json.asOpt[ETag])
         case errorStatus =>
-          Logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
+          logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
           Future.successful(None)
       }
     }

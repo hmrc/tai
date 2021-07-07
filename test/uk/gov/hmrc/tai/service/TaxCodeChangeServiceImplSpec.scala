@@ -1079,8 +1079,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
     "return empty sequences when no tax code records are found" in {
 
-      val currentStartDate = TaxYear().start.plusMonths(2)
-
       val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq.empty)
 
       when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())(any()))
@@ -1511,7 +1509,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
     val currentTaxYear = TaxYear()
     val previousTaxYear = TaxYear().prev
-    val dateOfCalculation = TaxYear().start.minusMonths(1)
     val endOfTaxCode = TaxYear().prev.end
 
     "return an empty sequence" when {
