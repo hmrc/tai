@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 
 import org.mockito.Mockito
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -37,7 +38,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with Injecting {
+class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures with Injecting {
 
   override def fakeApplication = GuiceApplicationBuilder()
     .configure(
@@ -67,36 +68,36 @@ class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPe
     "Cache Connector" must {
       "insert and read the data from mongodb" when {
         "session data has been passed" in {
-          val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
-          val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+          val cachedData = sut.find[SessionData](cacheId).futureValue
 
           Some(data) mustBe cachedData
         }
 
         "data has been passed" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
 
           Some(data) mustBe cachedData
         }
 
         "session data has been passed without key" in {
-          val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
-          val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+          val cachedData = sut.find[SessionData](cacheId).futureValue
 
           Some(data) mustBe cachedData
         }
 
         "data has been passed without key" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
 
           Some(data) mustBe cachedData
         }
 
         "sequence has been passed" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
-          val cachedData = Await.result(sut.findSeq[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+          val cachedData = sut.findSeq[SessionData](cacheId).futureValue
 
           data mustBe cachedData
         }
@@ -105,39 +106,39 @@ class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPe
 
       "delete the data from cache" when {
         "time to live is over" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
           Some(data) mustBe cachedData
 
           Thread.sleep(120000L)
 
-          val cachedDataAfterTTL = Await.result(sut.find[String](cacheId), atMost)
+          val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
           cachedDataAfterTTL mustBe None
         }
 
         "calling removeById" in {
-         val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
+         val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
           Some(data) mustBe cachedData
 
-          Await.result(sut.removeById(cacheId), atMost)
+          sut.removeById(cacheId).futureValue
 
-          val dataAfterRemove = Await.result(sut.find[String](cacheId), atMost)
+          val dataAfterRemove = sut.find[String](cacheId).futureValue
           dataAfterRemove mustBe None
         }
       }
 
       "return the data from cache" when {
         "Nil is saved in cache" in {
-          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
+          sut.createOrUpdate[Seq[SessionData]](cacheId, Nil).futureValue
+          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
 
           Some(Nil) mustBe cachedData
         }
 
         "sequence is saved in cache" in {
-          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
+          sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
 
           Some(List(sessionData, sessionData)) mustBe cachedData
         }
@@ -146,7 +147,7 @@ class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPe
       "return None" when {
         "key doesn't exist" in {
           val idWithNoData = CacheId(new Generator(Random).nextNino)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](idWithNoData), atMost)
+          val cachedData = sut.findOptSeq[SessionData](idWithNoData).futureValue
 
           cachedData mustBe None
         }
