@@ -96,11 +96,7 @@ class CacheConnector @Inject()(
       cacheRepository.repo.findById(cacheId.value) map {
         case Some(cache) =>
           cache.data flatMap { json =>
-            if ((json \ key).validateOpt[T].isSuccess && (json \ key).isDefined) {
-              Some((json \ key).as[T])
-            } else {
-              None
-            }
+            (json \ key).validateOpt[T].asOpt.flatten
           }
         case None => {
           None
