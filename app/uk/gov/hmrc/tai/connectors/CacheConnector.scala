@@ -84,11 +84,7 @@ class CacheConnector @Inject()(
       cacheRepository.repo.findById(cacheId.value) map {
         case Some(cache) =>
           cache.data flatMap { json =>
-            if ((json \ key).validateOpt[Protected[T]](jsonDecryptor).isSuccess && (json \ key).isDefined) {
-              Some((json \ key).as[Protected[T]](jsonDecryptor).decryptedValue)
-            } else {
-              None
-            }
+            (json \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
           }
         case None => {
           None

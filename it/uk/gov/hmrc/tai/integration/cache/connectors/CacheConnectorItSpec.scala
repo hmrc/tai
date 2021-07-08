@@ -91,6 +91,12 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
           data shouldBe cachedData
         }
 
+        "saved and returned json is valid" in {
+          val data = Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
+          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personMongoFormat), atMost)
+          cachedData shouldBe Some(data)
+        }
+
       }
 
       "delete the data from cache" when {
@@ -119,14 +125,14 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
 
       "return the data from cache" when {
         "Nil is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(Nil) shouldBe cachedData
         }
 
         "sequence is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(List(sessionData, sessionData)) shouldBe cachedData
@@ -135,8 +141,8 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
 
       "return None" when {
 
-        "key doesn't exist" in {
-          val data = Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
+        "returned json is invalid" in {
+          Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
           val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personHodRead), atMost)
           cachedData shouldBe None
         }
