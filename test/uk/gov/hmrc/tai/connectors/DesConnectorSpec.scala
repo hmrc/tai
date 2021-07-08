@@ -16,25 +16,21 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, post, postRequestedFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.joda.time.DateTime
-import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json, Writes}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.SessionId
+import uk.gov.hmrc.http.{SessionId, _}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import java.util.UUID
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
+class DesConnectorSpec extends ConnectorBaseSpec {
 
   lazy val sut: DesConnector = inject[DesConnector]
   implicit lazy val iabdWrites: Writes[IabdUpdateAmount] =
@@ -64,7 +60,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
         )
 
-        Await.result(sut.getIabdsForTypeFromDes(nino, taxYear, iabdType), 5 seconds) mustBe iabdList
+        sut.getIabdsForTypeFromDes(nino, taxYear, iabdType).futureValue mustBe iabdList
 
         server.verify(
           getRequestedFor(urlEqualTo(iabdsForTypeUrl))
@@ -167,7 +163,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(iabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
         )
 
-        Await.result(sut.getIabdsFromDes(nino, taxYear), 5 seconds) mustBe iabdList
+        sut.getIabdsFromDes(nino, taxYear).futureValue mustBe iabdList
 
         server.verify(
           getRequestedFor(urlEqualTo(iabdsUrl))
@@ -272,7 +268,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
         )
 
-        Await.result(sut.getCalculatedTaxAccountFromDes(nino, taxYear), 5 seconds) mustBe expectedResult
+        sut.getCalculatedTaxAccountFromDes(nino, taxYear).futureValue mustBe expectedResult
 
         server.verify(
           getRequestedFor(urlEqualTo(calcTaxAccUrl))
@@ -373,7 +369,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData.toString()))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe OK
         response.json mustBe jsonData
@@ -402,7 +398,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(body))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe BAD_REQUEST
         response.body mustBe body
@@ -416,7 +412,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(body))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe NOT_FOUND
         response.body mustBe body
@@ -430,7 +426,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(FORBIDDEN).withBody(body))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe FORBIDDEN
         response.body mustBe body
@@ -444,7 +440,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(body))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe INTERNAL_SERVER_ERROR
         response.body mustBe body
@@ -458,7 +454,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(calcTaxAccUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(body))
         )
 
-        val response = Await.result(sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear), 5 seconds)
+        val response = sut.getCalculatedTaxAccountRawResponseFromDes(nino, taxYear).futureValue
 
         response.status mustBe SERVICE_UNAVAILABLE
         response.body mustBe body
@@ -480,7 +476,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           )
 
           val response =
-            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil), 5 seconds)
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, Nil).futureValue
 
           response.status mustBe OK
 
@@ -495,7 +491,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           )
 
           val response =
-            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount).futureValue
 
           response.status mustBe OK
           response.json mustBe json
@@ -525,7 +521,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           )
 
           val response =
-            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount).futureValue
 
           response.status mustBe NO_CONTENT
         }
@@ -537,7 +533,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           )
 
           val response =
-            Await.result(sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount), 5 seconds)
+            sut.updateEmploymentDataToDes(nino, taxYear, iabdType, 1, updateAmount).futureValue
 
           response.status mustBe ACCEPTED
         }
@@ -608,7 +604,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          val response = Await.result(
+          val response =
             sut.updateExpensesDataToDes(
               nino = nino,
               year = taxYear,
@@ -616,9 +612,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
               version = 1,
               expensesData = List(UpdateIabdEmployeeExpense(100, None)),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            ),
-            5 seconds
-          )
+            ).futureValue
 
           response.status mustBe OK
           response.json mustBe json
@@ -647,7 +641,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
           )
 
-          val response = Await.result(
+          val response =
             sut.updateExpensesDataToDes(
               nino = nino,
               year = taxYear,
@@ -655,9 +649,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
               version = 1,
               expensesData = List(UpdateIabdEmployeeExpense(100, None)),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            ),
-            5 seconds
-          )
+            ).futureValue
 
           response.status mustBe NO_CONTENT
         }
@@ -668,7 +660,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(ACCEPTED))
           )
 
-          val response = Await.result(
+          val response =
             sut.updateExpensesDataToDes(
               nino = nino,
               year = taxYear,
@@ -676,9 +668,7 @@ class DesConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
               version = 1,
               expensesData = List(UpdateIabdEmployeeExpense(100, None)),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            ),
-            5 seconds
-          )
+            ).futureValue
 
           response.status mustBe ACCEPTED
         }

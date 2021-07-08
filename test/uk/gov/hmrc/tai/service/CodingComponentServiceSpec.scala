@@ -18,14 +18,14 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.CodingComponentRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class CodingComponentServiceSpec extends BaseSpec {
@@ -40,7 +40,7 @@ class CodingComponentServiceSpec extends BaseSpec {
 
         val service = testCodingComponentService(mockIabdRepository)
 
-        val result = Await.result(service.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = service.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
       }
     }
@@ -57,7 +57,7 @@ class CodingComponentServiceSpec extends BaseSpec {
 
       val service = testCodingComponentService(mockIabdRepository)
 
-      val result = Await.result(service.codingComponentsForTaxCodeId(nino, 1), 5.seconds)
+      val result = service.codingComponentsForTaxCodeId(nino, 1).futureValue
 
       result mustBe expected
     }

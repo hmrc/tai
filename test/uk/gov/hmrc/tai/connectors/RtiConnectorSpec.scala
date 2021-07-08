@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
-import org.mockito.ArgumentMatchers.{any}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
@@ -35,8 +35,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
+import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -84,7 +83,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
               .withBody(fakeRtiData.toString()))
         )
 
-        val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+        val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
         rtiStatus.status mustBe OK
         rtiData mustBe Some(fakeRtiData.as[RtiData])
@@ -105,7 +104,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(fakeRtiData.toString()))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe OK
           rtiStatus.response mustBe "Incorrect RTI Payload"
@@ -123,7 +122,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(errorMessage))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe BAD_REQUEST
           rtiStatus.response mustBe errorMessage
@@ -141,7 +140,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(errorMessage))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe NOT_FOUND
           rtiStatus.response mustBe errorMessage
@@ -159,7 +158,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(errorMessage))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe LOCKED
           rtiStatus.response mustBe errorMessage
@@ -177,7 +176,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(errorMessage))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe INTERNAL_SERVER_ERROR
           rtiStatus.response mustBe errorMessage
@@ -195,7 +194,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(errorMessage))
           )
 
-          val (rtiData, rtiStatus) = Await.result(sut.getRTI(nino, taxYear), 5 seconds)
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
 
           rtiStatus.status mustBe BAD_GATEWAY
           rtiStatus.response mustBe errorMessage
@@ -268,7 +267,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(rtiJson.toString()))
           )
 
-          val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
+          val result = sut.getPaymentsForYear(nino, taxYear).futureValue
           result mustBe Right(expectedPayments)
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
@@ -298,7 +297,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   .withBody(error._2))
             )
 
-            val result = Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
+            val result = sut.getPaymentsForYear(nino, taxYear).futureValue
 
             result mustBe Left(error._3)
           }
@@ -318,7 +317,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(exMessage))
           )
 
-          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
+          sut.getPaymentsForYear(nino, taxYear).futureValue mustBe Left(BadGatewayError)
         }
 
         "a BadGatewayException is received" in {
@@ -326,7 +325,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
             new BadGatewayException(exMessage))
 
-          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(BadGatewayError)
+          sutWithMockHttp.getPaymentsForYear(nino, taxYear).futureValue mustBe Left(BadGatewayError)
         }
       }
 
@@ -343,7 +342,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(exMessage))
           )
 
-          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+          sut.getPaymentsForYear(nino, taxYear).futureValue mustBe Left(TimeoutError)
         }
 
         "a GatewayTimeout is received" in {
@@ -355,7 +354,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(exMessage))
           )
 
-          Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+          sut.getPaymentsForYear(nino, taxYear).futureValue mustBe Left(TimeoutError)
         }
 
         "a GatewayTimeoutException is received" in {
@@ -363,7 +362,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
             new GatewayTimeoutException(exMessage))
 
-          Await.result(sutWithMockHttp.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe Left(TimeoutError)
+          sutWithMockHttp.getPaymentsForYear(nino, taxYear).futureValue mustBe Left(TimeoutError)
         }
       }
 
@@ -375,9 +374,9 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
               .withFault(Fault.MALFORMED_RESPONSE_CHUNK))
           )
 
-          an[Exception] mustBe thrownBy {
-            Await.result(sut.getPaymentsForYear(nino, taxYear), 5 seconds)
-          }
+          val result = sut.getPaymentsForYear(nino, taxYear).failed.futureValue
+
+          result mustBe a[Exception]
         }
       }
     }
@@ -398,7 +397,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           stubbedRtiConfig
         )
 
-        Await.result(sutWithRTIDisabled.getPaymentsForYear(nino, taxYear), 5 seconds) mustBe
+        sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).futureValue mustBe
           Left(ServiceUnavailableError)
       }
     }

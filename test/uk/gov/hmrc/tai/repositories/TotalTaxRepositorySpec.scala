@@ -35,7 +35,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
       when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5 seconds)
+      val result = sut.incomeCategories(nino, TaxYear()).futureValue
       result must contain theSameElementsAs Seq(
         IncomeCategory(
           UkDividendsIncomeCategory,
@@ -65,7 +65,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
       when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5 seconds)
+      val result = sut.taxFreeAllowance(nino, TaxYear()).futureValue
 
       result mustBe 100
     }

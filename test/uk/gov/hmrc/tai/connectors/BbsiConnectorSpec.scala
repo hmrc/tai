@@ -17,23 +17,16 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, getRequestedFor, matching, urlEqualTo}
-import data.RTIData.nino
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{Matchers, WordSpec}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import play.api.test.Injecting
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HeaderNames, HttpException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
+import uk.gov.hmrc.tai.util.TaiConstants
 
-import scala.concurrent.ExecutionContext
-
-class BbsiConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
+class BbsiConnectorSpec extends ConnectorBaseSpec {
 
   lazy val connector = inject[BbsiConnector]
 

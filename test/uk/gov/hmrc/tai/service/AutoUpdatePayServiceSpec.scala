@@ -2913,7 +2913,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val result: Seq[HttpResponse] = Await.result(
+        val result: Seq[HttpResponse] = 
           sut.updateEmploymentData(
             nino,
             CurrentYear,
@@ -2922,8 +2922,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
             List(npsUpdate2),
             List(rtiCalc),
             1,
-            List(iabdRoot))(HeaderCarrier()),
-          5 seconds)
+            List(iabdRoot))(HeaderCarrier()).futureValue
 
         result.length mustBe 2
 
@@ -2975,9 +2974,8 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val result: Seq[HttpResponse] = Await.result(
-          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
-          5 seconds)
+        val result: Seq[HttpResponse] = 
+          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()).futureValue
 
         result.length mustBe 0
 
@@ -3012,10 +3010,9 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val result: Seq[HttpResponse] = Await.result(
+        val result: Seq[HttpResponse] = 
           sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
-            HeaderCarrier()),
-          5 seconds)
+            HeaderCarrier()).futureValue
 
         result.length mustBe 2
 
@@ -3054,7 +3051,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val result: Seq[HttpResponse] = Await.result(
+        val result: Seq[HttpResponse] = 
           sut.updateEmploymentData(
             nino,
             CurrentYear,
@@ -3063,8 +3060,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
             List(npsUpdate2),
             List(rtiCalc),
             1,
-            List(iabdRoot))(HeaderCarrier()),
-          5 seconds)
+            List(iabdRoot))(HeaderCarrier()).futureValue
 
         result.length mustBe 0
 
@@ -3110,7 +3106,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val result: Seq[HttpResponse] = Await.result(
+        val result: Seq[HttpResponse] = 
           sut.updateEmploymentData(
             nino,
             CurrentYear,
@@ -3119,8 +3115,7 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
             List(npsUpdate2),
             List(rtiCalc),
             1,
-            Nil)(HeaderCarrier()),
-          5 seconds)
+            Nil)(HeaderCarrier()).futureValue
 
         result.length mustBe 2
 
@@ -3172,9 +3167,8 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockNpsConnector.updateEmploymentData(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val resp: Seq[HttpResponse] = Await.result(
-          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()),
-          5 seconds)
+        val resp: Seq[HttpResponse] = 
+          sut.updateEmploymentData(nino, CurrentYear, Nil, Nil, Nil, List(rtiCalc), 1, Nil)(HeaderCarrier()).futureValue
 
         resp.length mustBe 0
 
@@ -3209,10 +3203,9 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
         when(mockDesConnector.updateEmploymentDataToDes(any(), anyInt, anyInt, anyInt, any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-        val resp: Seq[HttpResponse] = Await.result(
+        val resp: Seq[HttpResponse] = 
           sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
-            HeaderCarrier()),
-          5 seconds)
+            HeaderCarrier()).futureValue
 
         resp.length mustBe 2
 
@@ -3248,10 +3241,9 @@ class AutoUpdatePayServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(HttpResponse(OK, "")))
           .thenReturn(Future.failed(new RuntimeException("second call failed")))
 
-        val resp: Seq[HttpResponse] = Await.result(
+        val resp: Seq[HttpResponse] = 
           sut.updateEmploymentData(nino, CurrentYear, Nil, List(npsUpdateAmount), Nil, List(rtiCalc), 1, Nil)(
-            HeaderCarrier()),
-          5 seconds)
+            HeaderCarrier()).futureValue
 
         resp.length mustBe 1
 

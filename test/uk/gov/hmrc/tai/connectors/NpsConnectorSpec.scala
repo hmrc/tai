@@ -28,8 +28,6 @@ import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, nps2}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -111,7 +109,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
           )
 
-          Await.result(sut.getEmployments(nino, year), 5.seconds) mustBe expectedResult
+          sut.getEmployments(nino, year).futureValue mustBe expectedResult
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(employmentsUrl)))
         }
@@ -229,7 +227,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          Await.result(sut.getEmploymentDetails(nino, year), 5.seconds) mustBe employmentListJson
+          sut.getEmploymentDetails(nino, year).futureValue mustBe employmentListJson
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(employmentsUrl)))
         }
@@ -349,7 +347,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          Await.result(sut.getIabds(nino, year), 5.seconds) mustBe
+          sut.getIabds(nino, year).futureValue mustBe
             expectedResponse
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(iabdsUrl)))
@@ -470,7 +468,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          Await.result(sut.getIabdsForType(nino, year, iabdType), 5.seconds) mustBe
+          sut.getIabdsForType(nino, year, iabdType).futureValue mustBe
             expectedResponse
 
         }
@@ -590,7 +588,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", etag.toString))
           )
 
-          Await.result(sut.getCalculatedTaxAccount(nino, year), 5.seconds) mustBe expectedResult
+          sut.getCalculatedTaxAccount(nino, year).futureValue mustBe expectedResult
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(taxAccountUrl)))
         }
@@ -708,7 +706,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", etag.toString))
           )
 
-          val result = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val result = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           result.status mustBe OK
           result.json mustBe taxAccountAsJson
@@ -730,7 +728,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           res.status mustBe BAD_REQUEST
           res.body mustBe exMessage
@@ -748,7 +746,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           res.status mustBe BAD_REQUEST
           res.body mustBe exMessage
@@ -766,7 +764,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           res.status mustBe NOT_FOUND
           res.body mustBe exMessage
@@ -784,7 +782,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           res.status mustBe IM_A_TEAPOT
           res.body mustBe exMessage
@@ -802,7 +800,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+          val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
           res.status mustBe INTERNAL_SERVER_ERROR
           res.body mustBe exMessage
@@ -824,7 +822,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                   .withHeader("ETag", s"$etag"))
             )
 
-            val res = Await.result(sut.getCalculatedTaxAccountRawResponse(nino, year), 5.seconds)
+            val res = sut.getCalculatedTaxAccountRawResponse(nino, year).futureValue
 
             res.status mustBe httpStatus
             res.body mustBe exMessage
@@ -853,7 +851,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
 
             val result: HttpResponse =
-              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+              sut.updateEmploymentData(nino, year, iabdType, etag, update).futureValue
 
             result.status mustBe OK
             result.json mustBe json
@@ -879,7 +877,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
 
             val result: HttpResponse =
-              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, Nil), 5 seconds)
+              sut.updateEmploymentData(nino, year, iabdType, etag, Nil).futureValue
 
             result.status mustBe OK
           }
@@ -894,7 +892,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
 
             val result: HttpResponse =
-              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+              sut.updateEmploymentData(nino, year, iabdType, etag, update).futureValue
 
             result.status mustBe ACCEPTED
           }
@@ -909,7 +907,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
             )
 
             val result: HttpResponse =
-              Await.result(sut.updateEmploymentData(nino, year, iabdType, etag, update), 5 seconds)
+              sut.updateEmploymentData(nino, year, iabdType, etag, update).futureValue
 
             result.status mustBe NO_CONTENT
           }

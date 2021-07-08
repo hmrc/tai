@@ -39,7 +39,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(carBenefitSeq)))
 
         val sut = createSUT(mockCacheConnector, mock[CompanyCarConnector])
-        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeq
+        sut.carBenefit(nino, TaxYear(2017)).futureValue mustBe carBenefitSeq
       }
     }
 
@@ -54,7 +54,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(carBenefitSeqWithVersion)))
 
         val sut = createSUT(mockCacheConnector, mock[CompanyCarConnector])
-        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
+        sut.carBenefit(nino, TaxYear(2017)).futureValue mustBe carBenefitSeqWithVersion
       }
     }
 
@@ -74,7 +74,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(carBenefitFromCompanyCarService))
 
         val sut = createSUT(mockCacheConnector, mockCompanyCarConnector)
-        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitFromCompanyCarService
+        sut.carBenefit(nino, TaxYear(2017)).futureValue mustBe carBenefitFromCompanyCarService
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](
@@ -99,7 +99,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(carBenefitSeq))
 
         val sut = createSUT(mockCacheConnector, mockCompanyCarConnector)
-        Await.result(sut.carBenefit(nino, TaxYear(2017)), 5 seconds) mustBe carBenefitSeqWithVersion
+        sut.carBenefit(nino, TaxYear(2017)).futureValue mustBe carBenefitSeqWithVersion
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](meq(cacheId), meq(carBenefitSeqWithVersion), meq(sut.CarBenefitKey))(

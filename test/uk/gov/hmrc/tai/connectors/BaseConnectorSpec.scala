@@ -32,8 +32,6 @@ import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.duration._
-import scala.concurrent.Await
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -142,7 +140,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.getFromNps(url, apiType), 5 seconds)
+        sutWithMockedMetrics.getFromNps(url, apiType).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -164,7 +162,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty), 5 seconds)
+        sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -186,7 +184,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino), 5 seconds)
+        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -208,7 +206,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5 seconds)
+        sutWithMockedMetrics.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -230,7 +228,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.getFromDes(url, apiType), 5 seconds)
+        sutWithMockedMetrics.getFromDes(url, apiType).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -252,7 +250,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        Await.result(sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj), 5 seconds)
+        sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -278,7 +276,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
         val randomNino = new Generator(new Random).nextNino
 
-        Await.result(sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino), 5 seconds)
+        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino).futureValue
 
         verify(mockAuditor).sendDataEvent(meq("RTI returned incorrect account"), any())(any())
       }
@@ -295,7 +293,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val (res, resEtag) = Await.result(sut.getFromNps(url, apiType), 5.seconds)
+        val (res, resEtag) = sut.getFromNps(url, apiType).futureValue
 
         res mustBe bodyAsObj
         resEtag mustBe eTag
@@ -311,7 +309,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = Await.result(sut.postToNps(url, apiType, bodyAsObj, Seq.empty), 5.seconds)
+        val res = sut.postToNps(url, apiType, bodyAsObj, Seq.empty).futureValue
 
         res.status mustBe OK
         res.json.as[ResponseObject] mustBe bodyAsObj
@@ -426,7 +424,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
 
         resData mustBe Some(rtiData)
         resStatus.status mustBe OK
@@ -445,7 +443,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         val randomNino = new Generator(new Random).nextNino
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino).futureValue
 
         resData mustBe None
         resStatus.response mustBe "Incorrect RTI Payload"
@@ -466,7 +464,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
 
         resData mustBe None
         resStatus.status mustBe BAD_REQUEST
@@ -486,7 +484,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
 
         resData mustBe None
         resStatus.status mustBe NOT_FOUND
@@ -506,7 +504,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
 
         resData mustBe None
         resStatus.status mustBe INTERNAL_SERVER_ERROR
@@ -526,7 +524,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          Await.result(sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino), 5.seconds)
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
 
         resData mustBe None
         resStatus.status mustBe IM_A_TEAPOT
@@ -546,7 +544,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
+        val res = sut.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
 
         res mustBe fakePersonalDetails
       }
@@ -563,7 +561,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = Await.result(sut.getPersonDetailsFromCitizenDetails(url, nino, apiType), 5.seconds)
+        val res = sut.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
 
         res mustBe fakePersonalDetails
       }
@@ -601,7 +599,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val (resBody, resEtag) = Await.result(sut.getFromDes(url, apiType), 5 seconds)
+        val (resBody, resEtag) = sut.getFromDes(url, apiType).futureValue
 
         resBody mustBe bodyAsObj
         resEtag mustBe eTag
@@ -617,7 +615,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = Await.result(sut.postToDes(url, apiType, bodyAsObj), 5.seconds)
+        val res = sut.postToDes(url, apiType, bodyAsObj).futureValue
 
         res.status mustBe OK
         res.json.as[ResponseObject] mustBe bodyAsObj

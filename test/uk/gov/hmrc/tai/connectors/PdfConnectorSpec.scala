@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import ch.qos.logback.core.html.NOPThrowableRenderer
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpException
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class PdfConnectorSpec extends ConnectorBaseSpec {
@@ -44,7 +41,7 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
               .withBody(htmlAsString))
         )
 
-        Await.result(sut.generatePdf(htmlAsString), 5 seconds) mustBe htmlAsString.getBytes
+        sut.generatePdf(htmlAsString).futureValue mustBe htmlAsString.getBytes
 
       }
     }

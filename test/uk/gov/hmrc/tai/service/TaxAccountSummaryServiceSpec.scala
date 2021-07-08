@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
@@ -26,7 +27,7 @@ import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class TaxAccountSummaryServiceSpec extends BaseSpec {
@@ -136,7 +137,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -202,7 +203,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -259,7 +260,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val res = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds)
+        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(67.44)
         res.totalInYearAdjustment mustBe BigDecimal(23.20)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(11.60)
@@ -327,7 +328,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        Await.result(sut.taxAccountSummary(nino, TaxYear()), 5 seconds) mustBe
+        sut.taxAccountSummary(nino, TaxYear()).futureValue mustBe
           TaxAccountSummary(1111, -620, 67.46, 0, 0, 0, 10000)
       }
     }
@@ -365,7 +366,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
         result.totalEstimatedIncome mustBe 22000
         result.taxFreeAllowance mustBe 1000
@@ -399,7 +400,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
         result.totalEstimatedIncome mustBe 1000
         result.taxFreeAllowance mustBe 0
@@ -433,7 +434,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = Await.result(sut.taxAccountSummary(nino, TaxYear()), 5.seconds)
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
         result.totalEstimatedIncome mustBe 8000
         result.taxFreeAllowance mustBe 11500

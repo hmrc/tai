@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.model.TaiRoot
 
 import scala.util.Random
 
-class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+class PersonDetailsSpec extends PlaySpec with MockitoSugar {
 
   "PersonDetails" must {
     "return a blank taiRoot object (except for nino)" when {

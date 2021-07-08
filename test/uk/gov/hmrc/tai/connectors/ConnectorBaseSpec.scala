@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 import org.scalactic.source.Position
 import org.scalatest.Assertion
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
@@ -29,7 +30,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Random
 
-trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with Injecting {
+trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
 
   val nino: Nino = new Generator(new Random).nextNino
 

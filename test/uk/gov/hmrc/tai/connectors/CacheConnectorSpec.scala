@@ -18,11 +18,11 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.ArgumentMatchers.{any, eq => Meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.Configuration
-import play.api.libs.json.{JsObject, JsString, JsValue, Json, MapWrites, OWrites, Writes}
+import play.api.libs.json.{JsString, Json}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cache.model.{Cache, Id}
-import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.DatabaseUpdate
@@ -32,11 +32,11 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class CacheConnectorSpec extends BaseSpec with MongoFormatter {
+class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPatience {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
@@ -69,6 +69,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
       sut.collection.name mustBe "TAI"
     }
 
+    //TODO Check to see if this is needed still
 //    "use the default time out from TimeToLive" in new TimeToLive {
 //      sut.defaultExpireAfter mustBe defaultExpireAfter
 //    }
@@ -86,7 +87,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdate(cacheId, "DATA", emptyKey), atMost)
+        val data = sut.createOrUpdate(cacheId, "DATA", emptyKey).futureValue
 
         data mustBe "DATA"
       }
@@ -97,7 +98,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdate(cacheId, "DATA", emptyKey), atMost)
+        val data = sut.createOrUpdate(cacheId, "DATA", emptyKey).futureValue
 
         data mustBe "DATA"
       }
@@ -108,7 +109,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdate(cacheId, 10, emptyKey), atMost)
+        val data = sut.createOrUpdate(cacheId, 10, emptyKey).futureValue
 
         data mustBe 10
       }
@@ -119,7 +120,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdate(cacheId, sessionData, emptyKey), atMost)
+        val data = sut.createOrUpdate(cacheId, sessionData, emptyKey).futureValue
 
         data mustBe sessionData
       }
@@ -131,7 +132,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val stringSeq = List("one", "two", "three")
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey), atMost)
+        val data = sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey).futureValue
 
         data mustBe stringSeq
       }
@@ -143,7 +144,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val stringSeq = List("one", "two", "three")
         when(taiCacheRepository.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
 
-        val data = Await.result(sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey), atMost)
+        val data = sut.createOrUpdateSeq[String](cacheId, stringSeq, emptyKey).futureValue
 
         data mustBe stringSeq
       }
@@ -158,7 +159,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> "DATA")))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.find[String](cacheId), atMost)
+        val data = sut.find[String](cacheId).futureValue
 
         data mustBe Some("DATA")
 
@@ -174,7 +175,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> encryptedData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.find[String](cacheId), atMost)
+        val data = sut.find[String](cacheId).futureValue
 
         data mustBe Some("DATA")
 
@@ -187,7 +188,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
-        val data = Await.result(sut.find[String](cacheId), atMost)
+        val data = sut.find[String](cacheId).futureValue
 
         data mustBe None
 
@@ -200,7 +201,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
-        val data = Await.result(sut.find[String](cacheId), atMost)
+        val data = sut.find[String](cacheId).futureValue
 
         data mustBe None
 
@@ -217,7 +218,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> sessionData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.find[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.find[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(sessionData)
 
@@ -231,7 +232,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> sessionData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.find[String](cacheId, "TAI-DATA"), atMost)
+        val data = sut.find[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe None
 
@@ -249,7 +250,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe List(sessionData, sessionData)
 
@@ -265,7 +266,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe List(sessionData, sessionData)
 
@@ -280,7 +281,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> List(sessionData, sessionData))))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe Nil
 
@@ -296,7 +297,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe Nil
 
@@ -309,7 +310,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
-        val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe Nil
 
@@ -322,7 +323,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(None))
 
-        val data = Await.result(sut.findSeq[String](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe Nil
 
@@ -338,7 +339,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(taiCacheRepository.removeById(any(), any())(any()))
           .thenReturn(Future.successful(DefaultWriteResult(ok = true, 0, Nil, None, None, None)))
 
-        val result = Await.result(sut.removeById(cacheId), atMost)
+        val result = sut.removeById(cacheId).futureValue
 
         result mustBe true
         verify(taiCacheRepository, times(1)).removeById(Meq(Id(cacheIdValue)), any())(any())
@@ -355,8 +356,11 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Future.successful(DefaultWriteResult(ok = false, 0, writeErrors, None, None, Some("Failed")))
         when(taiCacheRepository.removeById(any(), any())(any())).thenReturn(eventualWriteResult)
 
-        val ex = the[RuntimeException] thrownBy Await.result(sut.removeById(cacheId), atMost)
-        ex.getMessage mustBe "Failed"
+        val result = sut.removeById(cacheId).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "Failed"
       }
     }
   }
@@ -371,7 +375,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(List(sessionData, sessionData))
 
@@ -387,7 +391,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
 
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(List(sessionData, sessionData))
       }
@@ -401,7 +405,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List.empty[String])))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(Nil)
       }
@@ -416,7 +420,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
 
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-SESSION"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(Nil)
       }
@@ -432,7 +436,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
           Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> List(sessionData, sessionData))))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-DATA").futureValue
 
         data mustBe None
       }
@@ -446,7 +450,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> encryptedData)))))
         when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findOptSeq[SessionData](cacheId, "TAI-DATA"), atMost)
+        val data = sut.findOptSeq[SessionData](cacheId, "TAI-DATA").futureValue
 
         data mustBe None
       }
@@ -463,7 +467,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(taiCacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), Meq(jsonData)))
           .thenReturn(databaseUpdate)
 
-        val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
+        val result = sut.createOrUpdateJson(cacheId, jsonData, "KeyName").futureValue
 
         result mustBe jsonData
       }
@@ -476,7 +480,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(taiCacheRepository.createOrUpdate(Meq(Id(cacheIdValue)), Meq("KeyName"), any()))
           .thenReturn(databaseUpdate)
 
-        val result = Await.result(sut.createOrUpdateJson(cacheId, jsonData, "KeyName"), atMost)
+        val result = sut.createOrUpdateJson(cacheId, jsonData, "KeyName").futureValue
 
         result mustBe jsonData
       }
@@ -494,7 +498,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
+        val data = sut.findJson(cacheId, mongoKey).futureValue
 
         data mustBe Some(JsString("DATA"))
       }
@@ -507,7 +511,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         val sut = createSUT(mockMongoConfig)
         when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any())).thenReturn(Future.successful(None))
 
-        val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
+        val data = sut.findJson(cacheId, mongoKey).futureValue
 
         data mustBe None
       }
@@ -523,7 +527,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter {
         when(taiCacheRepository.findById(Meq(Id(cacheIdValue)), any())(any()))
           .thenReturn(Future.successful(eventualSomeCache))
 
-        val data = Await.result(sut.findJson(cacheId, mongoKey), atMost)
+        val data = sut.findJson(cacheId, mongoKey).futureValue
 
         data mustBe None
       }

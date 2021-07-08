@@ -40,7 +40,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+        val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes mustBe NonTaxCodeIncome(None, Seq.empty[OtherNonTaxCodeIncome])
       }
@@ -61,7 +61,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+        val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
@@ -109,7 +109,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+        val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
           UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq(bankAccount, bankAccount)))
@@ -124,7 +124,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
           val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-          val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+          val result = sut.incomes(nino, TaxYear()).futureValue
 
           result.nonTaxCodeIncomes.untaxedInterest mustBe None
         }
@@ -140,7 +140,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
         val sut = createSut(mockTaxAccountRepository, mockBbsiRepository)
 
-        val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+        val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
           UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc", Seq.empty[BankAccount]))
@@ -186,7 +186,7 @@ class IncomeRepositorySpec extends BaseSpec {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           TaxCodeIncome(
@@ -279,7 +279,7 @@ class IncomeRepositorySpec extends BaseSpec {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           TaxCodeIncome(
@@ -373,7 +373,7 @@ class IncomeRepositorySpec extends BaseSpec {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           TaxCodeIncome(
@@ -468,7 +468,7 @@ class IncomeRepositorySpec extends BaseSpec {
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
         val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
-        val result = Await.result(sut.taxCodeIncomes(nino, TaxYear()), 5 seconds)
+        val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           TaxCodeIncome(

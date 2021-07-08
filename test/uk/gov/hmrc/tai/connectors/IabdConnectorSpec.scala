@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, urlEqualTo}
-import org.scalatest.concurrent.ScalaFutures
+import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, Json}
@@ -25,10 +24,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFou
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
+class IabdConnectorSpec extends ConnectorBaseSpec {
 
   class StubbedFeatureTogglesConfig(enabled: Boolean) extends FeatureTogglesConfig(inject[Configuration]) {
     override def desEnabled: Boolean = enabled
@@ -69,7 +65,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-        Await.result(sut(false).iabds(nino, taxYear), 5.seconds) mustBe json
+       sut(false).iabds(nino, taxYear).futureValue mustBe json
 
         server.verify(
           getRequestedFor(urlEqualTo(npsUrl))
@@ -89,7 +85,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(false).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+          sut(false).iabds(nino, taxYear.next).futureValue mustBe Json.arr()
         }
 
         "looking for cy+2 year" in {
@@ -98,7 +94,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(false).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+          sut(false).iabds(nino, taxYear.next.next).futureValue mustBe Json.arr()
         }
       }
 
@@ -140,7 +136,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
           get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-        Await.result(sut(true).iabds(nino, taxYear), 5.seconds) mustBe json
+        sut(true).iabds(nino, taxYear).futureValue mustBe json
 
         server.verify(
           getRequestedFor(urlEqualTo(desUrl))
@@ -158,7 +154,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(true).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+          sut(true).iabds(nino, taxYear.next).futureValue mustBe Json.arr()
         }
 
         "looking for cy+2 year" in {
@@ -166,7 +162,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec with ScalaFutures {
             get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(true).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+          sut(true).iabds(nino, taxYear.next.next).futureValue mustBe Json.arr()
         }
       }
 

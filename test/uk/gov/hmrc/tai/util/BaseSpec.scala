@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
@@ -25,7 +26,7 @@ import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import scala.concurrent.ExecutionContext
 
 trait BaseSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with Injecting {
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures with Injecting {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 }

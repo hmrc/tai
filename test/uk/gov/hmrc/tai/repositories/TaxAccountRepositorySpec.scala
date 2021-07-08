@@ -50,9 +50,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
       val SUT = createSUT(cache, taxAccountConnector)
 
-      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
-
-      val result = Await.result(responseFuture, 5 seconds)
+      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
 
       result mustBe HodUpdateSuccess
 
@@ -67,9 +65,8 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
       val SUT = createSUT(cache, taxAccountConnector)
 
-      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
+      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
 
-      val result = Await.result(responseFuture, 5 seconds)
       result mustBe HodUpdateFailure
 
     }
@@ -83,9 +80,8 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
       val SUT = createSUT(cache, taxAccountConnector)
 
-      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
+      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
 
-      val result = Await.result(responseFuture, 5 seconds)
       result mustBe HodUpdateSuccess
     }
 
@@ -97,9 +93,8 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
       val SUT = createSUT(cache, taxAccountConnector)
 
-      val responseFuture = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345)
+      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
 
-      val result = Await.result(responseFuture, 5 seconds)
       result mustBe HodUpdateFailure
     }
 
@@ -115,7 +110,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
           val sut = createSUT(cache, taxAccountConnector)
 
-          val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result = sut.taxAccount(nino, taxYear).futureValue
 
           result mustBe taxAccountJsonResponse
         }
@@ -139,7 +134,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
         .thenReturn(Future.successful(taxAccountJsonResponse))
 
       val sut = createSUT(cache, taxAccountConnector)
-      val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+      val result = sut.taxAccount(nino, taxYear).futureValue
 
       result mustBe taxAccountJsonResponse
     }

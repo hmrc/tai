@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.controllers
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -28,8 +29,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.service.PersonService
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class PersonControllerSpec extends BaseSpec {
@@ -78,9 +78,11 @@ class PersonControllerSpec extends BaseSpec {
       when(mockPersonService.person(meq(nino))(any()))
         .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
 
-      val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest())
-      val thrown = the[NotFoundException] thrownBy Await.result(result, 5 seconds)
-      thrown.getMessage mustBe ("an example not found exception")
+      val result = createSUT(personService = mockPersonService).person(nino)(FakeRequest()).failed.futureValue
+
+      result mustBe a[NotFoundException]
+
+      result.getMessage mustBe ("an example not found exception")
     }
   }
 

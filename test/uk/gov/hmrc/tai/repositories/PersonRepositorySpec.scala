@@ -24,12 +24,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.util.BaseSpec
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PersonRepositorySpec extends BaseSpec {
+class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 
   val address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
@@ -54,7 +55,7 @@ class PersonRepositorySpec extends BaseSpec {
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         result mustBe person
 
@@ -85,7 +86,7 @@ class PersonRepositorySpec extends BaseSpec {
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         result mustBe person
 
@@ -125,7 +126,7 @@ class PersonRepositorySpec extends BaseSpec {
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), meq(expectedPersonFromPartialJson), meq(personMongoKey))(any())

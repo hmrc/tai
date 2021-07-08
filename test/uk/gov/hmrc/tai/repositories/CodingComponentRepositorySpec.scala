@@ -40,7 +40,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(emptyJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
-        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = sut.codingComponents(nino, TaxYear()).futureValue
 
         result mustBe Nil
       }
@@ -54,7 +54,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(primaryIncomeDeductionsNpsJson))
 
         val sut = testCodingComponentRepository(mockTaxAccountRepository)
-        val result = Await.result(sut.codingComponents(nino, TaxYear()), 5 seconds)
+        val result = sut.codingComponents(nino, TaxYear()).futureValue
 
         result mustBe Seq(
           CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Estimated Tax You Owe This Year"),
@@ -82,7 +82,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = repository.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
 
       result mustBe expected
     }
@@ -103,7 +103,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = repository.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
 
       result mustBe expected
     }
@@ -125,7 +125,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val repository = testCodingComponentRepository(mockTaxAccountRepository)
 
-      val result = Await.result(repository.codingComponentsForTaxCodeId(nino, taxCodeId), 5 seconds)
+      val result = repository.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
 
       result mustBe expected
     }

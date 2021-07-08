@@ -16,18 +16,17 @@
 
 package uk.gov.hmrc.tai.service
 
-import java.nio.file.{Files, Paths}
-
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import java.nio.file.{Files, Paths}
+import scala.concurrent.Future
 
 class IFormSubmissionServiceSpec extends BaseSpec {
 
@@ -48,9 +47,9 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      val messageId = Await.result(sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
+      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
         Future("")
-      })(hc), 5.seconds)
+      })(hc).futureValue
 
       messageId mustBe "1"
 
@@ -78,10 +77,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      the[RuntimeException] thrownBy Await
-        .result(sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
-          Future("")
-        })(hc), 5.seconds)
+
+      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
+        Future("")
+      })(hc).failed.futureValue
+
+      result mustBe a[RuntimeException]
 
       verify(mockFileUploadService, never()).uploadFile(
         any(),

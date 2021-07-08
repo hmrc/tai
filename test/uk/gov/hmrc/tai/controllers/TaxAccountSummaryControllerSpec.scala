@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
@@ -28,8 +29,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
 
@@ -67,9 +67,12 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTaxAccountSummaryService)
-        val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest())
-        val ex = the[LockedException] thrownBy Await.result(result, 5.seconds)
-        ex.message mustBe "Account is locked"
+
+        val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest()).failed.futureValue
+
+        result mustBe a[LockedException]
+
+        result.getMessage mustBe "Account is locked"
       }
     }
   }

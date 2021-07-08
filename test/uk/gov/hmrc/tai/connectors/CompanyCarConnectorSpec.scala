@@ -20,14 +20,13 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.joda.time.LocalDate
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class CompanyCarConnectorSpec extends ConnectorBaseSpec {
@@ -74,7 +73,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
       )
 
-      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
+      sut.carBenefits(nino, taxYear).futureValue mustBe expectedResponse
 
       verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(carBenefitUrl)))
 
@@ -121,7 +120,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(rawResponse))
       )
 
-      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe expectedResponse
+      sut.carBenefits(nino, taxYear).futureValue mustBe expectedResponse
     }
 
     "return an empty sequence of car benefits" in {
@@ -130,7 +129,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody("[]"))
       )
 
-      Await.result(sut.carBenefits(nino, taxYear), 5 seconds) mustBe Seq.empty[CompanyCarBenefit]
+      sut.carBenefits(nino, taxYear).futureValue mustBe Seq.empty[CompanyCarBenefit]
     }
 
     "throw" when {
@@ -163,9 +162,9 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(carBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(invalidResponse))
         )
 
-        a[JsResultException] mustBe thrownBy {
-          Await.result(sut.carBenefits(nino, taxYear), 5 seconds)
-        }
+        val result = sut.carBenefits(nino, taxYear).failed.futureValue
+
+        result mustBe a[JsResultException]
       }
 
       "400 is returned" in {
@@ -262,9 +261,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(sampleResponse))
       )
 
-      val result = Await
-        .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-
+      val result = sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel).futureValue
       result mustBe "4958621783d14007b71d55934d5ccca9"
 
       verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(removeBenefitUrl)))
@@ -281,10 +278,10 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(invalidResponse))
         )
 
-        a[JsResultException] mustBe thrownBy {
-          Await
-            .result(sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel), 5 seconds)
-        }
+
+        val result = sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel).failed.futureValue
+
+        result mustBe a[JsResultException]
       }
 
       "400 is returned" in {
@@ -373,7 +370,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(OK).withBody(expectedResponse.toString))
       )
 
-      val result = Await.result(sut.ninoVersion(nino), 5 seconds)
+      val result = sut.ninoVersion(nino).futureValue
 
       result mustBe expectedResponse
 
@@ -387,9 +384,9 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(ninoVersionUrl)).willReturn(aResponse().withStatus(OK).withBody("X"))
         )
 
-        a[JsonParseException] mustBe thrownBy {
-          Await.result(sut.ninoVersion(nino), 5 seconds)
-        }
+        val result = sut.ninoVersion(nino).failed.futureValue
+
+        result mustBe a[JsonParseException]
       }
 
       "400 is returned" in {

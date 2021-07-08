@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.libs.json.{JsResultException, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
@@ -32,11 +32,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.net.URL
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with ScalaFutures {
+class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
 
   private val taxYear = TaxYear()
 
@@ -76,7 +74,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         val connector = createSut()
 
-        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
+        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
 
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
@@ -98,7 +96,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         val connector = createSut()
 
-        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
+        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
 
         result mustEqual TaxCodeHistory(
           nino.nino,
@@ -122,9 +120,10 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
       val connector = createSut()
 
-      val ex = the[JsResultException] thrownBy Await
-        .result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
-      ex.getMessage must include("ValidationError")
+      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+
+      result mustBe a[JsResultException]
+
     }
   }
 

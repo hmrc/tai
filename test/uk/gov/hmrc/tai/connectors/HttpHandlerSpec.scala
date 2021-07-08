@@ -32,8 +32,7 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 
 class HttpHandlerSpec
-    extends WordSpec with WireMockHelper with MustMatchers with MockitoSugar with Injecting with ScalaFutures
-    with IntegrationPatience {
+    extends WordSpec with WireMockHelper with MustMatchers with MockitoSugar with Injecting with ScalaFutures {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   implicit val hc: HeaderCarrier = HeaderCarrier()

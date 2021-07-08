@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
@@ -26,8 +27,7 @@ import uk.gov.hmrc.tai.model.domain.{CarFuelBenefit, PersonalAllowancePA}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryConstants {
 
@@ -54,7 +54,7 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
-        val result: TaxFreeAmountComparison = Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+        val result: TaxFreeAmountComparison = service.taxFreeAmountComparison(nino).futureValue
 
         result mustBe expected
       }
@@ -79,9 +79,10 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
-        val exception = the[RuntimeException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+        val result = service.taxFreeAmountComparison(nino).failed.futureValue
 
-        exception.getMessage mustBe "Error"
+        result mustBe a[RuntimeException]
+        result.getMessage mustBe "Error"
       }
 
       "service call for the previous coding components fails" in {
@@ -103,9 +104,10 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
-        val exception = the[BadRequestException] thrownBy Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+        val result = service.taxFreeAmountComparison(nino).failed.futureValue
 
-        exception.getMessage mustBe "Error"
+        result mustBe a[BadRequestException]
+        result.getMessage mustBe "Error"
       }
     }
 
@@ -136,7 +138,7 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
 
-        val result: TaxFreeAmountComparison = Await.result(service.taxFreeAmountComparison(nino), 5.seconds)
+        val result: TaxFreeAmountComparison = service.taxFreeAmountComparison(nino).futureValue
 
         result mustBe expected
       }

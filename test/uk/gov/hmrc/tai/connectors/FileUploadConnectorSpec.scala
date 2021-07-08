@@ -21,6 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.ahc.AhcWSClient
@@ -28,8 +29,6 @@ import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class FileUploadConnectorSpec extends ConnectorBaseSpec {
@@ -65,7 +64,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .withHeader("Location", s"${server.baseUrl()}$envelopeWithIdUrl"))
       )
 
-      Await.result(sut.createEnvelope, 5 seconds) mustBe envelopeId
+      sut.createEnvelope.futureValue mustBe envelopeId
 
       verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(envelopesUrl)))
     }
@@ -87,9 +86,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             )
           )
 
-          the[RuntimeException] thrownBy {
-            Await.result(sut.createEnvelope, 5 seconds)
-          } must have message "File upload envelope creation failed"
+          val result = sut.createEnvelope.failed.futureValue
+
+          result mustBe a[RuntimeException]
+
+          result.getMessage mustBe "File upload envelope creation failed"
         }
       }
 
@@ -102,9 +103,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.createEnvelope, 5 seconds)
-        } must have message "File upload envelope creation failed"
+        val result = sut.createEnvelope.failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope creation failed"
       }
 
       "the call to the file upload service create envelope endpoint fails" in {
@@ -116,10 +119,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.createEnvelope, 5 seconds)
-        } must have message "File upload envelope creation failed"
+        val result = sut.createEnvelope.failed.futureValue
 
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope creation failed"
       }
       "the call to the file upload service returns a failure response" in {
 
@@ -130,9 +134,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.createEnvelope, 5 seconds)
-        } must have message "File upload envelope creation failed"
+        val result = sut.createEnvelope.failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope creation failed"
       }
     }
   }
@@ -164,8 +170,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).futureValue
 
         result.status mustBe OK
 
@@ -199,8 +204,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        the[RuntimeException] thrownBy Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "Unable to find Envelope"
       }
 
       "file upload service returns non-open summary" in {
@@ -225,8 +233,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        the[RuntimeException] thrownBy Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "Unable to find Envelope"
       }
 
       "file upload service returns none" in {
@@ -251,8 +262,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        the[RuntimeException] thrownBy Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "Unable to find Envelope"
       }
 
       List(
@@ -281,10 +295,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
               .build()
           )
 
-          the[RuntimeException] thrownBy Await
-            .result(
-              sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient),
-              5 seconds)
+          val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+
+          result mustBe a[RuntimeException]
+
+          result.getMessage mustBe "Unable to find Envelope"
         }
       }
 
@@ -307,8 +322,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        the[RuntimeException] thrownBy Await
-          .result(sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient), 5 seconds)
+        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "Unable to find Envelope"
       }
 
     }
@@ -326,7 +344,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         )
       )
 
-      Await.result(sut.closeEnvelope(envelopeId), 5 seconds) mustBe envelopeId
+      sut.closeEnvelope(envelopeId).futureValue mustBe envelopeId
 
       verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(closeEnvelopeUrl)))
     }
@@ -343,9 +361,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
-        } must have message "File upload envelope routing request failed"
+        val result = sut.closeEnvelope(envelopeId).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope routing request failed"
       }
 
       "the call to the file upload service routing request endpoint fails" in {
@@ -357,9 +377,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
-        } must have message "File upload envelope routing request failed"
+        val result = sut.closeEnvelope(envelopeId).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope routing request failed"
       }
 
       List(
@@ -378,9 +400,11 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             )
           )
 
-          the[RuntimeException] thrownBy {
-            Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
-          } must have message "File upload envelope routing request failed"
+          val result = sut.closeEnvelope(envelopeId).failed.futureValue
+
+          result mustBe a[RuntimeException]
+
+          result.getMessage mustBe "File upload envelope routing request failed"
         }
       }
 
@@ -393,9 +417,12 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        the[RuntimeException] thrownBy {
-          Await.result(sut.closeEnvelope(envelopeId), 5 seconds)
-        } must have message "File upload envelope routing request failed"
+
+        val result = sut.closeEnvelope(envelopeId).failed.futureValue
+
+        result mustBe a[RuntimeException]
+
+        result.getMessage mustBe "File upload envelope routing request failed"
       }
     }
   }
@@ -420,7 +447,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+        val result = sut.envelope(envelopeId).futureValue
 
         result.get mustBe EnvelopeSummary(
           envelopeId,
@@ -445,7 +472,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+        val result = sut.envelope(envelopeId).futureValue
 
         result.get mustBe EnvelopeSummary(envelopeId, "OPEN", Nil)
 
@@ -462,7 +489,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+        val result = sut.envelope(envelopeId).futureValue
 
         result mustBe None
       }
@@ -477,7 +504,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+        val result = sut.envelope(envelopeId).futureValue
 
         result mustBe None
       }
@@ -492,9 +519,9 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         )
       )
 
-      assertThrows[RuntimeException] {
-        Await.result(sut.envelope(envelopeId), Duration.Inf)
-      }
+      val result = sut.envelope(envelopeId).failed.futureValue
+
+      result mustBe a[RuntimeException]
     }
 
     List(
@@ -511,7 +538,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
               .withStatus(httpStatus)
           )
         )
-        val result = Await.result(sut.envelope(envelopeId), 5.seconds)
+        val result = sut.envelope(envelopeId).futureValue
 
         result mustBe None
       }
