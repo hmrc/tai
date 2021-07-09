@@ -21,12 +21,14 @@ import org.mockito.Mockito
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
 import uk.gov.hmrc.tai.integration.TaiBaseSpec
+import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
@@ -80,7 +82,6 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
         "data has been passed without key" in {
           val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
           val cachedData = Await.result(sut.find[String](cacheId), atMost)
-
           Some(data) shouldBe cachedData
         }
 
@@ -89,6 +90,12 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
           val cachedData = Await.result(sut.findSeq[SessionData](cacheId), atMost)
 
           data shouldBe cachedData
+        }
+
+        "saved and returned json is valid" in {
+          val data = Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
+          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personMongoFormat), atMost)
+          cachedData shouldBe Some(data)
         }
 
       }
@@ -119,14 +126,14 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
 
       "return the data from cache" when {
         "Nil is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(Nil) shouldBe cachedData
         }
 
         "sequence is saved in cache" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
+          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
           val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
 
           Some(List(sessionData, sessionData)) shouldBe cachedData
@@ -134,7 +141,19 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
       }
 
       "return None" when {
-        "key doesn't exist" in {
+
+        "returned json is invalid" in {
+          val badJson = Json.parse("""
+                                     | {
+                                     |  "invalid": "key"
+                                     | }
+                                     |""".stripMargin).toString
+          Await.result(sut.createOrUpdate[String](cacheId, badJson), atMost)
+          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personHodRead), atMost)
+          cachedData shouldBe None
+        }
+
+        "cache id doesn't exist" in {
           val idWithNoData = CacheId(new Generator(Random).nextNino)
           val cachedData = Await.result(sut.findOptSeq[SessionData](idWithNoData), atMost)
 
