@@ -117,11 +117,11 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     }
   }
 
-  def getFromRTIWithStatus[A](url: String, api: APITypes, reqNino: String)(
+  def getFromRTIWithStatus[A](url: String, api: APITypes, reqNino: String, headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier,
     formats: Format[A]): Future[(Option[RtiData], RtiStatus)] = {
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url)
+    val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)
     futureResponse.flatMap { res =>
       timerContext.stop()
       res.status match {

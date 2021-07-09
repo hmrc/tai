@@ -76,7 +76,7 @@ class TaxAccountConnector @Inject()(
 
       httpHandler
         .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI, requestHeader)(
-          hc,
+          implicitly,
           IabdUpdateAmountFormats.formatList
         )
         .map { _ =>
@@ -92,7 +92,7 @@ class TaxAccountConnector @Inject()(
 
       httpHandler
         .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
-          hc,
+          implicitly,
           IabdUpdateAmountFormats.formatList
         )
         .map { _ =>
@@ -114,7 +114,6 @@ class TaxAccountConnector @Inject()(
       "ETag"                 -> version.toString,
       "X-TXID"               -> txId,
       "Gov-Uk-Originator-Id" -> originatorId,
-      // TODO : Check for CorrelationId in test
       "CorrelationId" -> getUuid
     )
 

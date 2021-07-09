@@ -184,7 +184,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino).futureValue
+        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino, Seq.empty).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -276,7 +276,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
         val randomNino = new Generator(new Random).nextNino
 
-        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino).futureValue
+        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino, Seq.empty).futureValue
 
         verify(mockAuditor).sendDataEvent(meq("RTI returned incorrect account"), any())(any())
       }
@@ -424,7 +424,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
 
         resData mustBe Some(rtiData)
         resStatus.status mustBe OK
@@ -443,7 +443,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         val randomNino = new Generator(new Random).nextNino
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino, Seq.empty).futureValue
 
         resData mustBe None
         resStatus.response mustBe "Incorrect RTI Payload"
@@ -464,7 +464,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
 
         resData mustBe None
         resStatus.status mustBe BAD_REQUEST
@@ -484,7 +484,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
 
         resData mustBe None
         resStatus.status mustBe NOT_FOUND
@@ -504,7 +504,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
 
         resData mustBe None
         resStatus.status mustBe INTERNAL_SERVER_ERROR
@@ -524,7 +524,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino).futureValue
+          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
 
         resData mustBe None
         resStatus.status mustBe IM_A_TEAPOT

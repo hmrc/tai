@@ -54,6 +54,6 @@ class TaxCodeChangeConnector @Inject()(
   def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
 
-    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI, headers = createHeader)(hc, implicitly).map(_._1)
+    getFromDes[TaxCodeHistory](url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader).map(_._1)
   }
 }
