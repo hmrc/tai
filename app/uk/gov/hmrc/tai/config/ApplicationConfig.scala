@@ -87,7 +87,7 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
   lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
-  lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("cache.expiryInMinutes").getOrElse(0)
+  lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("cache.expiryInMinutes").getOrElse(15)
 }
 
 @Singleton

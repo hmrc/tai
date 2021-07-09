@@ -51,7 +51,7 @@ class NpsConnector @Inject()(
   def getEmployments(nino: Nino, year: Int)(implicit hc: HeaderCarrier)
     : Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI)
+    val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc: HeaderCarrier))
     json.map { x =>
       (x._1.as[List[NpsEmployment]], x._1.as[List[model.nps2.NpsEmployment]], x._2, Nil)
     }
@@ -59,29 +59,29 @@ class NpsConnector @Inject()(
 
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI).map(_._1)
+    getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc: HeaderCarrier)).map(_._1)
   }
 
   def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = npsPathUrl(nino, s"iabds/$year/$iabdType")
-    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdSpecificAPI).map(x => x._1)
+    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdSpecificAPI, basicNpsHeaders(hc: HeaderCarrier)).map(x => x._1)
   }
 
   def getIabds(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = npsPathUrl(nino, s"iabds/$year")
-    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI).map(x => x._1)
+    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI, basicNpsHeaders(hc: HeaderCarrier)).map(x => x._1)
   }
 
   def getCalculatedTaxAccount(nino: Nino, year: Int)(
     implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
-    getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
+    getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI, basicNpsHeaders(hc: HeaderCarrier)).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
   }
 
   def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
     val newHeaderCarrier = basicNpsHeaders(hc)
-    httpClient.GET[HttpResponse](urlToRead)(implicitly, newHeaderCarrier, implicitly)
+    httpClient.GET[HttpResponse](url = urlToRead, headers = newHeaderCarrier)(implicitly, hc, implicitly)
   }
 
   private def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String) =

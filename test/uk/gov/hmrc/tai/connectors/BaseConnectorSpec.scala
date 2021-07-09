@@ -140,7 +140,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        sutWithMockedMetrics.getFromNps(url, apiType).futureValue
+        sutWithMockedMetrics.getFromNps(url, apiType, sut.basicNpsHeaders(hc)).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -228,7 +228,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        sutWithMockedMetrics.getFromDes(url, apiType).futureValue
+        sutWithMockedMetrics.getFromDes(url, apiType, Seq.empty).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -250,7 +250,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj).futureValue
+        sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj, Seq.empty).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -293,7 +293,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val (res, resEtag) = sut.getFromNps(url, apiType).futureValue
+        val (res, resEtag) = sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)).futureValue
 
         res mustBe bodyAsObj
         resEtag mustBe eTag
@@ -331,7 +331,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[NotFoundException](
-          sut.getFromNps(url, apiType),
+          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
           NOT_FOUND,
           exMessage
         )
@@ -349,7 +349,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[InternalServerException](
-          sut.getFromNps(url, apiType),
+          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
           INTERNAL_SERVER_ERROR,
           exMessage
         )
@@ -367,7 +367,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[BadRequestException](
-          sut.getFromNps(url, apiType),
+          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
           BAD_REQUEST,
           exMessage
         )
@@ -386,7 +386,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[HttpException](
-          sut.getFromNps(url, apiType),
+          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
           CONFLICT,
           exMessage
         )
@@ -599,7 +599,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val (resBody, resEtag) = sut.getFromDes(url, apiType).futureValue
+        val (resBody, resEtag) = sut.getFromDes(url, apiType, Seq.empty).futureValue
 
         resBody mustBe bodyAsObj
         resEtag mustBe eTag
@@ -615,7 +615,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val res = sut.postToDes(url, apiType, bodyAsObj).futureValue
+        val res = sut.postToDes(url, apiType, bodyAsObj, Seq.empty).futureValue
 
         res.status mustBe OK
         res.json.as[ResponseObject] mustBe bodyAsObj
@@ -637,7 +637,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[NotFoundException](
-          sut.getFromDes(url, apiType),
+          sut.getFromDes(url, apiType, Seq.empty),
           NOT_FOUND,
           exMessage
         )
@@ -656,7 +656,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[InternalServerException](
-          sut.getFromDes(url, apiType),
+          sut.getFromDes(url, apiType, Seq.empty),
           INTERNAL_SERVER_ERROR,
           exMessage
         )
@@ -675,7 +675,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[BadRequestException](
-          sut.getFromDes(url, apiType),
+          sut.getFromDes(url, apiType, Seq.empty),
           BAD_REQUEST,
           exMessage
         )
@@ -694,7 +694,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[HttpException](
-          sut.getFromDes(url, apiType),
+          sut.getFromDes(url, apiType, Seq.empty),
           IM_A_TEAPOT,
           exMessage
         )
@@ -713,7 +713,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[HttpException](
-          sut.postToDes(url, apiType, bodyAsObj),
+          sut.postToDes(url, apiType, bodyAsObj, Seq.empty),
           IM_A_TEAPOT,
           exMessage
         )

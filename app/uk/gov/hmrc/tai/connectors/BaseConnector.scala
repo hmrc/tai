@@ -44,18 +44,17 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     npsVersion
   }
 
-  def basicNpsHeaders(hc: HeaderCarrier): HeaderCarrier =
-    hc.withExtraHeaders(
+  def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
       "Gov-Uk-Originator-Id" -> originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  def getFromNps[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
-    val headerCarrier: HeaderCarrier = basicNpsHeaders(hc)
+  def getFromNps[A](url: String, api: APITypes, headerCarrier: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url)(implicitly, headerCarrier, implicitly)
+    val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headerCarrier)(implicitly, hc, implicitly)
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {
@@ -197,9 +196,9 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     }
   }
 
-  def getFromDes[A](url: String, api: APITypes)(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
+  def getFromDes[A](url: String, api: APITypes, headers: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url)
+    val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {
@@ -235,11 +234,11 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     }
   }
 
-  def postToDes[A](url: String, api: APITypes, postData: A)(
+  def postToDes[A](url: String, api: APITypes, postData: A, headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier,
     writes: Writes[A]): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.POST(url, postData)
+    val futureResponse = httpClient.POST(url = url, body = postData, headers = headers)
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
       httpResponse.status match {
