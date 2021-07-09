@@ -69,11 +69,6 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
       sut.collection.name mustBe "TAI"
     }
 
-    //TODO Check to see if this is needed still
-//    "use the default time out from TimeToLive" in new TimeToLive {
-//      sut.defaultExpireAfter mustBe defaultExpireAfter
-//    }
-
     "use mongoFormats from Cache" in {
       sut.domainFormatImplicit mustBe Cache.mongoFormats
     }
