@@ -21,6 +21,7 @@ import org.mockito.Mockito
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.SessionId
@@ -142,7 +143,12 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
       "return None" when {
 
         "returned json is invalid" in {
-          Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
+          val badJson = Json.parse("""
+                                     | {
+                                     |  "invalid": "key"
+                                     | }
+                                     |""".stripMargin).toString
+          Await.result(sut.createOrUpdate[String](cacheId, badJson), atMost)
           val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personHodRead), atMost)
           cachedData shouldBe None
         }
