@@ -52,7 +52,10 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
         .withHeader("Authorization", equalTo("Bearer Local"))
         .withHeader("Content-Type", equalTo(TaiConstants.contentType))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+        .withHeader(
+          "CorrelationId",
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
   private def createSut(
     metrics: Metrics = injector.instanceOf[Metrics],

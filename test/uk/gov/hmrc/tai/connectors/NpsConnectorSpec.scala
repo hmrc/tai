@@ -862,6 +862,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
                 .withHeader(HeaderNames.xRequestId, equalTo(requestId))
                 .withHeader("ETag", equalTo(etag.toString))
+                .withHeader("X-TXID", equalTo(sessionId))
                 .withHeader(
                   "CorrelationId",
                   matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))

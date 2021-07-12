@@ -44,14 +44,6 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     npsVersion
   }
 
-  def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
-    Seq(
-      "Gov-Uk-Originator-Id" -> originatorId,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString
-    )
-
   def getFromNps[A](url: String, api: APITypes, headerCarrier: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headerCarrier)

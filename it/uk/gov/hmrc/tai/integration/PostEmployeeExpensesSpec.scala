@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 
-class PutEmployeeExpensesSpec extends IntegrationSpec {
+class PostEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
 

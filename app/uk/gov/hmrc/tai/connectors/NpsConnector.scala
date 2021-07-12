@@ -48,6 +48,14 @@ class NpsConnector @Inject()(
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
+  def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Gov-Uk-Originator-Id" -> originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
+
   def getEmployments(nino: Nino, year: Int)(implicit hc: HeaderCarrier)
     : Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")

@@ -33,8 +33,8 @@ import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Random
 
@@ -42,7 +42,7 @@ class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPe
 
   override def fakeApplication = GuiceApplicationBuilder()
     .configure(
-      "cache.expiryInMinutes" -> 1
+      "tai.cache.expiryInSeconds" -> 10
     )
     .build()
 

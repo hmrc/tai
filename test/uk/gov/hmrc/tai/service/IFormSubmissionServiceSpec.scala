@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository

@@ -52,7 +52,6 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
   val mongoKey = "key1"
   val atMost = 5 seconds
 
-//  val cacheRepository = mock[CacheMongoRepository]
   val taiCacheRepository = mock[TaiCacheRepository]
 
   def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) =

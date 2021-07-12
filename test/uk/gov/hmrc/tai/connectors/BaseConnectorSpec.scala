@@ -45,6 +45,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
     override def originatorId: String = "testOriginatorId"
   }
 
+  lazy val npsConnector: NpsConnector = inject[NpsConnector]
+
   lazy val endpoint: String = "/foo"
   lazy val url: String = s"${server.baseUrl()}$endpoint"
 
@@ -114,15 +116,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-//
-//    "add basic headers for NPS" in {
-//      val headers = sut
-//        .extraNpsHeaders(HeaderCarrier(), eTag, "testtxID")
-//
-//      headers must contain("Gov-Uk-Originator-Id" -> "testOriginatorId")
-//
-//    }
-
     "start and stop a transaction timer" when {
       "making a GET request to NPS" in {
 
@@ -140,7 +133,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        sutWithMockedMetrics.getFromNps(url, apiType, sut.basicNpsHeaders(hc)).futureValue
+        sutWithMockedMetrics.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -293,7 +286,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
               .withHeader(eTagKey, s"$eTag"))
         )
 
-        val (res, resEtag) = sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)).futureValue
+        val (res, resEtag) = sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)).futureValue
 
         res mustBe bodyAsObj
         resEtag mustBe eTag
@@ -331,7 +324,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[NotFoundException](
-          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
+          sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)),
           NOT_FOUND,
           exMessage
         )
@@ -349,7 +342,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[InternalServerException](
-          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
+          sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)),
           INTERNAL_SERVER_ERROR,
           exMessage
         )
@@ -367,7 +360,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[BadRequestException](
-          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
+          sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)),
           BAD_REQUEST,
           exMessage
         )
@@ -386,7 +379,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         assertConnectorException[HttpException](
-          sut.getFromNps(url, apiType, sut.basicNpsHeaders(hc)),
+          sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)),
           CONFLICT,
           exMessage
         )

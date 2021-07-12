@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -58,7 +59,8 @@ class RtiConnector @Inject()(
         "Authorization"        -> rtiConfig.authorization,
         "Gov-Uk-Originator-Id" -> originatorId,
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "CorrelationId"        -> UUID.randomUUID().toString
       )
 
   def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {

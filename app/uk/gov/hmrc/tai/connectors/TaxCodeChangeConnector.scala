@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeChangeConnector @Inject()(
@@ -47,7 +48,8 @@ class TaxCodeChangeConnector @Inject()(
       "Authorization"        -> config.authorization,
       "Content-Type"         -> TaiConstants.contentType,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
     )
   }
 
