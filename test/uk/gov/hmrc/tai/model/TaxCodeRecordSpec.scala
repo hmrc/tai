@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.scalatest.MustMatchers
+import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
-class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with MustMatchers {
+class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with Matchers {
 
   "mostRecentTaxCodeRecord" must {
 

@@ -19,8 +19,9 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 import org.mockito.Mockito
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -38,7 +39,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures with Injecting {
+class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures with Injecting {
 
   override def fakeApplication = GuiceApplicationBuilder()
     .configure(
@@ -110,7 +111,7 @@ class CacheConnectorItSpec extends WordSpec with MustMatchers with GuiceOneAppPe
           val cachedData = sut.find[String](cacheId).futureValue
           Some(data) mustBe cachedData
 
-          Thread.sleep(120000L)
+          Thread.sleep(100000L)
 
           val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
           cachedDataAfterTTL mustBe None

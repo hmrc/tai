@@ -18,7 +18,8 @@ package uk.gov.hmrc.tai.integration.utils
 
 import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
@@ -30,7 +31,7 @@ import java.util.UUID
 import scala.util.Random
 
 trait IntegrationSpec
-    extends WordSpec with MustMatchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
+    extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
   override def beforeEach() = {
     super.beforeEach()
 

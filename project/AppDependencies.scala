@@ -20,12 +20,14 @@ object AppDependencies {
   lazy val scope: String = "test,it"
 
   val compileTest = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.0" % scope,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % scope,
     "org.pegdown"            %  "pegdown"            % pegdownVersion % scope,
     "org.jsoup"              %  "jsoup"              % "1.13.1" % scope,
     "org.scalacheck"         %% "scalacheck"         % "1.14.3" % scope,
     "org.mockito"            %  "mockito-core"       % "3.8.0",
-    "com.github.tomakehurst" %  "wiremock-jre8"      % "2.27.2" % scope
+    "org.scalatestplus"      %% "mockito-3-4"        % "3.2.3.0",
+    "com.github.tomakehurst" %  "wiremock-jre8"      % "2.27.2" % scope,
+    "com.vladsch.flexmark"   % "flexmark-all"        % "0.35.10"
   )
 
   def apply(): Seq[ModuleID] = compile ++ compileTest

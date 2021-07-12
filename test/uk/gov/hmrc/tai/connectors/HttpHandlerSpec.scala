@@ -18,9 +18,10 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Injecting
@@ -32,7 +33,7 @@ import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 
 class HttpHandlerSpec
-    extends WordSpec with WireMockHelper with MustMatchers with MockitoSugar with Injecting with ScalaFutures {
+    extends AnyWordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   implicit val hc: HeaderCarrier = HeaderCarrier()

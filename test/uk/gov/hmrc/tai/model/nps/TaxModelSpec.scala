@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.scalatest.Matchers
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.IncomeType._
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
