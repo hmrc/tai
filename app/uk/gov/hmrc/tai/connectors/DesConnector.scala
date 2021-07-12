@@ -117,9 +117,7 @@ class DesConnector @Inject()(
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 
-    postToDes[List[UpdateIabdEmployeeExpense]](postUrl, apiType, expensesData, headerForUpdate(version, daPtaOriginatorId))(
-      hc,
-      implicitly)
+    postToDes[List[UpdateIabdEmployeeExpense]](postUrl, apiType, expensesData, headerForUpdate(version, daPtaOriginatorId))
   }
 
   def sessionOrUUID(implicit hc: HeaderCarrier): String =
