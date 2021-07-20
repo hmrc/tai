@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: HttpClient)(
