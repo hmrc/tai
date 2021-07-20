@@ -21,7 +21,7 @@ import play.api.libs.json.{JsString, Json}
 
 class RealTimeStatusSpec extends PlaySpec {
 
-  "RealTimeFormat" should {
+  "RealTimeFormat" must {
     "create a valid object" when {
       "given a valid json value" in {
 
@@ -40,9 +40,10 @@ class RealTimeStatusSpec extends PlaySpec {
     "create a valid json value" when {
       "given a RealTimeStats object" in {
 
-        Json.toJson(Available) mustBe JsString("Available")
-        Json.toJson(TemporarilyUnavailable) mustBe JsString("TemporarilyUnavailable")
-        Json.toJson(Unavailable) mustBe JsString("Unavailable")
+        Json.toJson(Available)(RealTimeStatus.realTimeStatusFormat.writes) mustBe JsString("Available")
+        Json.toJson(TemporarilyUnavailable)(RealTimeStatus.realTimeStatusFormat.writes) mustBe JsString(
+          "TemporarilyUnavailable")
+        Json.toJson(Unavailable)(RealTimeStatus.realTimeStatusFormat.writes) mustBe JsString("Unavailable")
       }
     }
   }

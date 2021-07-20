@@ -1,0 +1,32 @@
+[
+  {
+    "nino": "$NINO",
+    "sequenceNumber": 1,
+    "payeSchemeType": 0,
+    "employerNumber": 13498962,
+    "payeSequenceNumber": 1,
+    "employmentType": 2,
+    "employmentStatus": 1,
+    "jobTitle": null,
+    "worksNumber": "EMP/EMP0000001",
+    "startingTaxCode": "BR",
+    "weekOneMonthOne": 2,
+    "receivingJobseekersAllowance": false,
+    "receivingOccupationalPension": true,
+    "director": false,
+    "manualCorrespondence": false,
+    "p161Issued": false,
+    "creationMedia": 9,
+    "creationSource": 25,
+    "startDateSource": 29,
+    "startDate": "18/03/2013",
+    "cessationMedia": 0,
+    "cessationSource": null,
+    "endDateSource": null,
+    "endDate": null,
+    "taxDistrictNumber": "120",
+    "payeNumber": "MA83247",
+    "employerName": "Test employment name",
+    "otherIncomeSourceIndicator": false
+  }
+]

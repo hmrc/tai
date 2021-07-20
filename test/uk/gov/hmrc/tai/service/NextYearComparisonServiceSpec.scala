@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import data.NpsData
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.{TaxAccount, TaxDetail, TaxObject}
@@ -25,9 +25,9 @@ import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live, PotentiallyCeased}
 
-class NextYearComparisonServiceSpec extends UnitSpec {
+class NextYearComparisonServiceSpec extends PlaySpec {
 
-  "stripCeasedFromNps" should {
+  "stripCeasedFromNps" must {
 
     val totalIncome = BigDecimal(123.32)
 
@@ -65,26 +65,26 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val result = (new NextYearComparisonService).stripCeasedFromNps(npsTaxAccount)
 
       result.incomeSources foreach { incomeSources =>
-        incomeSources.size shouldBe 3
+        incomeSources.size mustBe 3
 
-        incomeSources.head.taxCode shouldBe Some("LiveTC")
+        incomeSources.head.taxCode mustBe Some("LiveTC")
         incomeSources.head.payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(totalIncome)
+            ti.amount mustBe Some(totalIncome)
           }
         }
 
-        incomeSources(1).taxCode shouldBe Some("Not applicable")
+        incomeSources(1).taxCode mustBe Some("Not applicable")
         incomeSources(1).payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(BigDecimal(0))
+            ti.amount mustBe Some(BigDecimal(0))
           }
         }
 
-        incomeSources(2).taxCode shouldBe Some("Not applicable")
+        incomeSources(2).taxCode mustBe Some("Not applicable")
         incomeSources(2).payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(BigDecimal(0))
+            ti.amount mustBe Some(BigDecimal(0))
           }
         }
 
@@ -93,7 +93,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       result.totalLiability foreach { tl =>
         tl.nonSavings foreach { ns =>
           ns.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(estPayAmount)
+            ti.amount mustBe Some(estPayAmount)
           }
         }
       }
@@ -122,26 +122,26 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val result = (new NextYearComparisonService).stripCeasedFromNps(npsTaxAccount)
 
       result.incomeSources foreach { incomeSources =>
-        incomeSources.size shouldBe 3
+        incomeSources.size mustBe 3
 
-        incomeSources.head.taxCode shouldBe Some("LiveTC")
+        incomeSources.head.taxCode mustBe Some("LiveTC")
         incomeSources.head.payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(totalIncome)
+            ti.amount mustBe Some(totalIncome)
           }
         }
 
-        incomeSources(1).taxCode shouldBe Some("Not applicable")
+        incomeSources(1).taxCode mustBe Some("Not applicable")
         incomeSources(1).payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(BigDecimal(0))
+            ti.amount mustBe Some(BigDecimal(0))
           }
         }
 
-        incomeSources(2).taxCode shouldBe Some("Not applicable")
+        incomeSources(2).taxCode mustBe Some("Not applicable")
         incomeSources(2).payAndTax foreach { pat =>
           pat.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(BigDecimal(0))
+            ti.amount mustBe Some(BigDecimal(0))
           }
         }
 
@@ -150,7 +150,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       result.totalLiability foreach { tl =>
         tl.nonSavings foreach { ns =>
           ns.totalIncome foreach { ti =>
-            ti.amount shouldBe Some(estPayAmount + nonCodedIncomeAmount)
+            ti.amount mustBe Some(estPayAmount + nonCodedIncomeAmount)
           }
         }
       }
@@ -159,7 +159,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
   }
 
-  "proccessTaxSummaryWithCYPlusOne " should {
+  "proccessTaxSummaryWithCYPlusOne " must {
 
     "return an empty change object when there are no differences between cy and cy+1." in {
 
@@ -169,7 +169,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val result =
         (new NextYearComparisonService).proccessTaxSummaryWithCYPlusOne(currentYearTaxAccount, nextYearYearTaxAccount)
 
-      result.cyPlusOneChange.isDefined shouldBe false
+      result.cyPlusOneChange.isDefined mustBe false
 
     }
 
@@ -180,12 +180,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).proccessTaxSummaryWithCYPlusOne(current, nextYear)
 
-      result.cyPlusOneChange.isDefined shouldBe true
+      result.cyPlusOneChange.isDefined mustBe true
 
     }
   }
 
-  "cyPlusOneEmploymentTaxCodes " should {
+  "cyPlusOneEmploymentTaxCodes " must {
 
     "return the change object with the list of cy+1 employments tax code " in {
       val employments = List(
@@ -197,7 +197,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmploymentTaxCodes(nextYear, CYPlusOneChange())
 
-      result.employmentsTaxCode shouldBe Some(employments)
+      result.employmentsTaxCode mustBe Some(employments)
     }
 
     "return an empty change object when there is no cy+1 employments tax code " in {
@@ -206,12 +206,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmploymentTaxCodes(nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.employmentsTaxCode shouldBe None
+      result mustBe CYPlusOneChange()
+      result.employmentsTaxCode mustBe None
     }
   }
 
-  "cyPlusOneScottishTaxCodes " should {
+  "cyPlusOneScottishTaxCodes " must {
 
     "return the change object with true when the cy+1 tax code is scottish " in {
       val employments = List(
@@ -223,7 +223,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
-      result.scottishTaxCodes shouldBe Some(true)
+      result.scottishTaxCodes mustBe Some(true)
     }
 
     "return an empty change object when there is no cy+1 scottish tax code " in {
@@ -237,7 +237,7 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
-      result.scottishTaxCodes shouldBe Some(false)
+      result.scottishTaxCodes mustBe Some(false)
     }
 
     "return an empty change object when there is no employments " in {
@@ -246,12 +246,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneScottishTaxCodes(nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.scottishTaxCodes shouldBe None
+      result mustBe CYPlusOneChange()
+      result.scottishTaxCodes mustBe None
     }
   }
 
-  "cyPlusOnePersonalAllowance " should {
+  "cyPlusOnePersonalAllowance " must {
 
     "return an empty change object when the personal allowance amounts are the same for cy and cy+1. " in {
 
@@ -271,8 +271,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOnePersonalAllowance(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.personalAllowance shouldBe None
+      result mustBe CYPlusOneChange()
+      result.personalAllowance mustBe None
 
     }
 
@@ -283,12 +283,12 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOnePersonalAllowance(current, nextYear, CYPlusOneChange())
 
-      result.personalAllowance shouldBe Some(Change(10600, 0))
+      result.personalAllowance mustBe Some(Change(10600, 0))
     }
 
   }
 
-  "cyPlusOneUnderPayment " should {
+  "cyPlusOneUnderPayment " must {
 
     "return an empty change object when the underpayment amounts are the same for cy and cy+1. " in {
 
@@ -309,8 +309,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneUnderPayment(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.personalAllowance shouldBe None
+      result mustBe CYPlusOneChange()
+      result.personalAllowance mustBe None
 
     }
 
@@ -321,11 +321,11 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneUnderPayment(current, nextYear, CYPlusOneChange())
 
-      result.underPayment shouldBe Some(Change(0, 1000))
+      result.underPayment mustBe Some(Change(0, 1000))
     }
   }
 
-  "cyPlusOneTotalTax " should {
+  "cyPlusOneTotalTax " must {
 
     "return an empty change object when the total tax amounts are the same for cy and cy+1. " in {
 
@@ -340,8 +340,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneTotalTax(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.totalTax shouldBe None
+      result mustBe CYPlusOneChange()
+      result.totalTax mustBe None
 
     }
 
@@ -387,11 +387,11 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val nextYear = NpsData.getNpsChildBenefitTaxAccount().toTaxSummary(1, Nil, accounts = annualAccountsNy)
 
       val result = (new NextYearComparisonService).cyPlusOneTotalTax(current, nextYear, CYPlusOneChange())
-      result.totalTax shouldBe Some(Change(1297.2, 1680.1))
+      result.totalTax mustBe Some(Change(1297.2, 1680.1))
     }
   }
 
-  "cyPlusOneEmpBenefits " should {
+  "cyPlusOneEmpBenefits " must {
 
     "return an empty change object when the total tax amounts are the same for cy and cy+1. " in {
 
@@ -416,8 +416,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.employmentBenefits shouldBe None
+      result mustBe CYPlusOneChange()
+      result.employmentBenefits mustBe None
 
     }
 
@@ -454,8 +454,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.employmentBenefits shouldBe None
+      result mustBe CYPlusOneChange()
+      result.employmentBenefits mustBe None
 
     }
 
@@ -489,8 +489,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
-      result.employmentBenefits shouldBe None
+      result mustBe CYPlusOneChange()
+      result.employmentBenefits mustBe None
 
     }
 
@@ -524,8 +524,8 @@ class NextYearComparisonServiceSpec extends UnitSpec {
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange(employmentBenefits = Some(true))
-      result.employmentBenefits shouldBe Some(true)
+      result mustBe CYPlusOneChange(employmentBenefits = Some(true))
+      result.employmentBenefits mustBe Some(true)
 
     }
 
@@ -535,11 +535,11 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val nextYear = NpsData.getNpsNonCodedTaxAccount().toTaxSummary(1, Nil)
 
       val result = (new NextYearComparisonService).cyPlusOneEmpBenefits(current, nextYear, CYPlusOneChange())
-      result.employmentBenefits shouldBe Some(true)
+      result.employmentBenefits mustBe Some(true)
     }
   }
 
-  "cyPlusOnePersonalSavingsAllowance" should {
+  "cyPlusOnePersonalSavingsAllowance" must {
 
     "return an empty change object when the PSA amounts are the same for cy and cy+1." in {
 
@@ -563,9 +563,9 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val result =
         (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange()
+      result mustBe CYPlusOneChange()
 
-      result.personalSavingsAllowance shouldBe None
+      result.personalSavingsAllowance mustBe None
 
     }
 
@@ -591,13 +591,13 @@ class NextYearComparisonServiceSpec extends UnitSpec {
       val result =
         (new NextYearComparisonService).cyPlusOnePersonalSavingsAllowance(current, nextYear, CYPlusOneChange())
 
-      result shouldBe CYPlusOneChange(personalSavingsAllowance = Some(Change(currentYearPSA, nextYearPSA)))
+      result mustBe CYPlusOneChange(personalSavingsAllowance = Some(Change(currentYearPSA, nextYearPSA)))
 
-      result.personalSavingsAllowance.isDefined shouldBe true
+      result.personalSavingsAllowance.isDefined mustBe true
 
       result.personalSavingsAllowance foreach { psa =>
-        psa.currentYear shouldBe currentYearPSA
-        psa.currentYearPlusOne shouldBe nextYearPSA
+        psa.currentYear mustBe currentYearPSA
+        psa.currentYearPlusOne mustBe nextYearPSA
       }
     }
   }

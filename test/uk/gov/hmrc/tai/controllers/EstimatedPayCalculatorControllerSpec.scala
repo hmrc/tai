@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
-  "Estimated pay calculator controller" should {
+  "Estimated pay calculator controller" must {
     "return an OK response with CalculatedPay json" when {
       "given a valid request" in {
 

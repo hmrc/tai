@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import play.api.Logger
-import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
@@ -30,6 +29,8 @@ import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 import scala.util.matching.Regex
 
 trait EmploymentHodFormatters {
+
+  private val logger: Logger = Logger(getClass.getName)
 
   implicit val stringMapFormat = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
@@ -93,7 +94,7 @@ trait EmploymentHodFormatters {
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
       case default => {
-        Logger.warn(s"Invalid Employment Status -> $default")
+        logger.warn(s"Invalid Employment Status -> $default")
         throw new RuntimeException("Invalid employment status")
       }
     }

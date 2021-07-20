@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 class AuditorSpec extends BaseSpec {
 
-  "Auditable" should {
+  "Auditable" must {
     "send audit event" when {
       "send data event method has called with default value" in {
         val mockAudit = mock[AuditConnector]

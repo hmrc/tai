@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.net.URL
-
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.libs.json.{JsResultException, Json}
+import play.api.test.Helpers._
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -27,23 +29,45 @@ import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import java.net.URL
 import scala.language.postfixOps
 
-class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants {
+class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
+
+  private val taxYear = TaxYear()
+
+  private lazy val url = {
+    val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
+    s"${path.getPath}?${path.getQuery}"
+  }
+
+  lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
+
+  def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
+    server.verify(
+      requestPattern
+        .withHeader("Environment", equalTo("local"))
+        .withHeader("Authorization", equalTo("Bearer Local"))
+        .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+        .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+        .withHeader(
+          "CorrelationId",
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+
+  private def createSut(
+    metrics: Metrics = injector.instanceOf[Metrics],
+    httpClient: HttpClient = injector.instanceOf[HttpClient],
+    auditor: Auditor = injector.instanceOf[Auditor],
+    config: DesConfig = injector.instanceOf[DesConfig],
+    taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
+    new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
 
   "taxCodeHistory" must {
     "return tax code change response" when {
       "payroll number is returned" in {
-        val taxYear = TaxYear(2017)
-
-        val url = {
-          val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
-          s"${path.getPath}?${path.getQuery}"
-        }
 
         val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
 
@@ -52,18 +76,15 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
+
+        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
 
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+
+        verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
       }
 
       "payroll number is not returned" in {
-        val taxYear = TaxYear(2017)
-
-        val url = {
-          val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
-          s"${path.getPath}?${path.getQuery}"
-        }
 
         val taxCodeRecord = Seq(
           TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Primary),
@@ -77,7 +98,8 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
         )
 
         val connector = createSut()
-        val result = Await.result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
+
+        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
 
         result mustEqual TaxCodeHistory(
           nino.nino,
@@ -91,13 +113,6 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
     "respond with a JsResultException when given invalid json" in {
 
-      val taxYear = TaxYear(2017)
-
-      val url = {
-        val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
-        s"${path.getPath}?${path.getQuery}"
-      }
-
       val expectedJsonResponse = Json.obj(
         "invalid" -> "invalidjson"
       )
@@ -107,20 +122,52 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
       )
 
       val connector = createSut()
-      val ex = the[JsResultException] thrownBy Await
-        .result(connector.taxCodeHistory(nino, taxYear, taxYear), 10.seconds)
-      ex.getMessage must include("ValidationError")
+
+      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+
+      result mustBe a[JsResultException]
+
     }
   }
 
-  lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
+  "return an error" when {
+    "a 400 occurs" in {
 
-  private def createSut(
-    metrics: Metrics = injector.instanceOf[Metrics],
-    httpClient: HttpClient = injector.instanceOf[HttpClient],
-    auditor: Auditor = injector.instanceOf[Auditor],
-    config: DesConfig = injector.instanceOf[DesConfig],
-    taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
-    new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
+      server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
+      val connector = createSut()
+
+      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+
+      result mustBe a[BadRequestException]
+    }
+
+    "a 404 occurs" in {
+
+      server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+      val connector = createSut()
+
+      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+
+      result mustBe a[NotFoundException]
+    }
+
+    List(
+      IM_A_TEAPOT,
+      INTERNAL_SERVER_ERROR,
+      SERVICE_UNAVAILABLE
+    ).foreach { httpResponse =>
+      s"a $httpResponse occurs" in {
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(httpResponse)))
+
+        val connector = createSut()
+
+        val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+
+        result mustBe a[HttpException]
+      }
+    }
+  }
 }

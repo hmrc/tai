@@ -23,7 +23,7 @@ class ApiResponseSpec extends PlaySpec {
 
   implicit val testFormat = Json.format[TestObject]
 
-  "ApiResponse" should {
+  "ApiResponse" must {
     "produce a valid json message with a data section" when {
       "given a valid object" in {
 

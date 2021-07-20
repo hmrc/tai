@@ -47,7 +47,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
         val sut = createTestCache(cache, iabdConnector)
 
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
+        val result = sut.iabds(nino, TaxYear()).futureValue
         result mustBe jsonAfterFormat
       }
 
@@ -61,7 +61,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
         val sut = createTestCache(cache, iabdConnector)
 
-        val result = Await.result(sut.iabds(nino, TaxYear()), 5.seconds)
+        val result = sut.iabds(nino, TaxYear()).futureValue
 
         result mustBe jsonAfterFormat
       }

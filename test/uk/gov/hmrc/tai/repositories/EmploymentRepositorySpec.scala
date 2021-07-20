@@ -24,7 +24,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -96,7 +96,7 @@ class EmploymentRepositorySpec extends BaseSpec {
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
 
-  "employmentsForYear" should {
+  "employmentsForYear" must {
     "return the employment domain model" when {
       "there is no data in the cache" when {
         "a call to rti results in a ResourceNotFound error response" in {
@@ -134,7 +134,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
           result mustBe Employments(expectedEmployments)
 
@@ -178,7 +178,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
           result mustBe Employments(expectedEmployments)
 
@@ -246,7 +246,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
           result mustBe Employments(expectedEmployments)
         }
@@ -314,7 +314,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
           result mustBe Employments(expectedEmploymentDetails)
         }
 
@@ -406,7 +406,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             cacheConnector = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5 seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
           result mustBe Employments(expectedEmploymentDetails)
         }
 
@@ -420,7 +420,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Future.failed(new NotFoundException("nothing")))
 
             val sut = testRepository(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
-            the[NotFoundException] thrownBy Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+
+            val result = sut.employmentsForYear(nino, currentTaxYear).failed.futureValue
+
+            result mustBe a[NotFoundException]
           }
         }
       }
@@ -454,7 +457,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
             result mustBe Employments(employments)
 
@@ -511,7 +514,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
             result mustBe Employments(List(cyEmployment))
 
@@ -573,7 +576,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
-            val result = Await.result(sut.employmentsForYear(nino, previousTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, previousTaxYear).futureValue
 
             result mustBe Employments(List(expectedEmployment))
 
@@ -693,7 +696,7 @@ class EmploymentRepositorySpec extends BaseSpec {
                   .thenReturn(Future.successful(cachedEmployments))
 
                 val sut = testRepository(cacheConnector = mockCacheConnector)
-                val result = Await.result(sut.employmentsForYear(nino, taxYearAndEmployment._1), 5.seconds)
+                val result = sut.employmentsForYear(nino, taxYearAndEmployment._1).futureValue
 
                 result mustBe Employments(taxYearAndEmployment._2)
 
@@ -782,7 +785,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(1))
@@ -886,7 +889,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(1))
@@ -962,7 +965,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
@@ -1021,7 +1024,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
@@ -1055,7 +1058,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               cacheConnector = mockCacheConnector,
               npsConnector = mockNpsConnector)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(Seq(cachedEmployment))
 
             verify(mockNpsConnector, times(0))
@@ -1067,7 +1070,7 @@ class EmploymentRepositorySpec extends BaseSpec {
         }
 
         "the cache data contains an employment with two annual accounts for different years with a status of TemporarilyUnavailable" when {
-          "a subsequent request is made to RTI a status of available is returned, one annual account should be updated and the other left unmodified " in {
+          "a subsequent request is made to RTI a status of available is returned, one annual account must be updated and the other left unmodified " in {
 
             val cachedAnnualAccount1 = createAnnualAccount(TemporarilyUnavailable)
             val cachedAnnualAccount2 =
@@ -1116,7 +1119,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
-            val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+            val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
             result mustBe Employments(expectedEmployments)
 
             verify(mockNpsConnector, times(0))
@@ -1144,7 +1147,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             .thenReturn(Future.successful(Seq(cachedEmployment)))
 
           val sut = testRepository(cacheConnector = mockCacheConnector)
-          val result = Await.result(sut.employmentsForYear(nino, currentTaxYear), 5.seconds)
+          val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
           result mustBe Employments(Seq(cachedEmployment))
         }
@@ -1198,7 +1201,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
       val sut = testRepository(cacheConnector = mockCacheConnector)
 
-      Await.result(sut.employment(nino, employment1Id), 5 seconds) mustBe Right(expectedEmployment)
+      sut.employment(nino, employment1Id).futureValue mustBe Right(expectedEmployment)
     }
     "return Employment not found error type when there is no employment found for that ID" in {
 
@@ -1242,7 +1245,7 @@ class EmploymentRepositorySpec extends BaseSpec {
       val notFoundEmploymentId = 5
 
       val sut = testRepository(cacheConnector = mockCacheConnector)
-      Await.result(sut.employment(nino, notFoundEmploymentId), 5 seconds) mustBe Left(EmploymentNotFound)
+      sut.employment(nino, notFoundEmploymentId).futureValue mustBe Left(EmploymentNotFound)
     }
 
     "return employments with annual accounts with TemporaryUnavailable status type when RTI is temporarily unavailable" in {
@@ -1285,7 +1288,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
-      Await.result(sut.employment(nino, 2), 5 seconds) mustBe Right(employmentWithUnavailableAnnualAccount)
+      sut.employment(nino, 2).futureValue mustBe Right(employmentWithUnavailableAnnualAccount)
     }
 
     "get the current year employments from the hod" when {
@@ -1353,7 +1356,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
-        val result = Await.result(controller.employment(nino, 2), 5 seconds)
+        val result = controller.employment(nino, 2).futureValue
         result mustBe Right(expectedEmployment)
 
         verify(mockNpsConnector, times(1))

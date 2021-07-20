@@ -1,0 +1,202 @@
+{
+  "taxAccountId": null,
+  "date": "10/12/2014",
+  "nino": "$NINO",
+  "taxYear": 2021,
+  "previousTaxAccountId": 32,
+  "previousYearTaxAccountId": 29,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 1360.6,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 7853,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 23400,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 1
+      },
+      {
+        "amount": 11300,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 2
+      },
+      {
+        "amount": 1744,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3
+      }
+    ],
+    "sourceAmount": null
+  },
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 17467,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 23400,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 1
+      },
+      {
+        "amount": 11300,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 2
+      },
+      {
+        "amount": 1744,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 3
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 23400,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 23400,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 1
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 11500,
+        "type": null,
+        "iabdSummaries": null,
+        "sourceAmount": null
+      },
+      "totalTax": 2380,
+      "totalTaxableIncome": 11900,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "income": 11900,
+          "tax": 2380,
+          "lowerBand": 0,
+          "upperBand": 35100,
+          "rate": 20
+        },
+        {
+          "income": null,
+          "tax": null,
+          "lowerBand": 35100,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "income": null,
+          "tax": null,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "totalLiability": 2380
+  },
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 581,
+      "employmentPayeRef": "MS26",
+      "pensionIndicator": true,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "TEST PENSIONS",
+      "taxCode": "1150L",
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 11500,
+          "type": 13,
+          "iabdSummaries": null,
+          "sourceAmount": 10660
+        }
+      ],
+      "deductions": null,
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 23400,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 23400,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 1
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 1049.36,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 250.8,
+        "totalTaxableIncome": 1254,
+        "taxBands": [
+          {
+            "income": 1254,
+            "tax": 250.8,
+            "lowerBand": 0,
+            "upperBand": 31865,
+            "rate": 20
+          },
+          {
+            "income": null,
+            "tax": null,
+            "lowerBand": 31865,
+            "upperBand": 150000,
+            "rate": 40
+          },
+          {
+            "income": null,
+            "tax": null,
+            "lowerBand": 150000,
+            "upperBand": 0,
+            "rate": 45
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.CloseAccountRequest
@@ -28,8 +29,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.BbsiRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class BbsiServiceSpec extends BaseSpec {
 
@@ -40,7 +40,7 @@ class BbsiServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Seq(bankAccount)))
 
       val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-      val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
+      val result = sut.bbsiDetails(nino, TaxYear()).futureValue
 
       result mustBe Seq(bankAccount)
     }
@@ -51,7 +51,7 @@ class BbsiServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Seq(bankAccount, bankAccount.copy(id = 2))))
 
       val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-      val result = Await.result(sut.bbsiAccount(nino, 1), 5.seconds)
+      val result = sut.bbsiAccount(nino, 1).futureValue
 
       result mustBe Some(bankAccount)
     }
@@ -74,8 +74,8 @@ class BbsiServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-        val result = Await
-          .result(sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))), 5.seconds)
+        val result = sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))).futureValue
+
 
         result mustBe "1"
         verify(mockAuditor)
@@ -90,9 +90,10 @@ class BbsiServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Seq(bankAccount)))
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-        the[BankAccountNotFound] thrownBy
-          Await
-            .result(sut.closeBankAccount(nino, 49, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))), 5.seconds)
+
+        val result = sut.closeBankAccount(nino, 49, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))).failed.futureValue
+
+        result mustBe a[BankAccountNotFound]
       }
     }
   }
@@ -114,7 +115,8 @@ class BbsiServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-        val result = Await.result(sut.removeIncorrectBankAccount(nino, 1), 5.seconds)
+        val result = sut.removeIncorrectBankAccount(nino, 1).futureValue
+
 
         result mustBe "1"
 
@@ -129,7 +131,10 @@ class BbsiServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Seq(bankAccount)))
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
-        the[BankAccountNotFound] thrownBy Await.result(sut.removeIncorrectBankAccount(nino, 49), 5.seconds)
+
+        val result = sut.removeIncorrectBankAccount(nino, 49).failed.futureValue
+
+        result mustBe a[BankAccountNotFound]
       }
     }
   }
@@ -152,7 +157,7 @@ class BbsiServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-        val result = Await.result(sut.updateBankAccountInterest(nino, 1, 1000), 5.seconds)
+        val result = sut.updateBankAccountInterest(nino, 1, 1000).futureValue
 
         result mustBe "1"
         verify(mockAuditor)
@@ -168,7 +173,9 @@ class BbsiServiceSpec extends BaseSpec {
         when(mockBbsiRepository.bbsiDetails(any(), any())(any()))
           .thenReturn(Future.successful(Seq(bankAccount)))
 
-        the[BankAccountNotFound] thrownBy Await.result(sut.updateBankAccountInterest(nino, 49, 1000), 5.seconds)
+        val result = sut.updateBankAccountInterest(nino, 49, 1000).failed.futureValue
+
+        result mustBe a[BankAccountNotFound]
       }
     }
 
@@ -190,11 +197,11 @@ class BbsiServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-      Await.result(sut.updateBankAccountInterest(nino, 1, 1234.56), 5.seconds)
+      sut.updateBankAccountInterest(nino, 1, 1234.56).futureValue
 
       val fakePerson =
         Person(new Generator().nextNino, "", "", Some(LocalDate.now()), Address("", "", "", "", ""), false)
-      val testIform = Await.result(iformFunctionCaptor.getValue.apply(fakePerson), 5 seconds)
+      val testIform = iformFunctionCaptor.getValue.apply(fakePerson).futureValue
 
       testIform must include("Correct amount of gross interest")
       testIform must include("1234.56")

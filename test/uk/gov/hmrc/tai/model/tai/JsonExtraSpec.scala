@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
-import org.slf4j.{Logger, LoggerFactory}
-import uk.gov.hmrc.tai.model.rti.RtiEyu
 import org.joda.time.LocalDate
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.rti.RtiEyu
 
 class JsonExtraSpec extends PlaySpec with MockitoSugar {
 
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  "JsonExtra" should {
+  "JsonExtra" must {
     "Use map format to write to Json value" when {
       "given valid input return JsValue" in {
         val inputMap: Map[TaxYear, TaxYear] = Map(TaxYear(2016) -> TaxYear(2017))

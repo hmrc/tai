@@ -18,10 +18,10 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.joda.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{Format, JsObject, JsString, JsSuccess, JsValue, Json}
 import play.api.libs.json.JodaWrites._
 import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
-import uk.gov.hmrc.tai.model.domain.income.OtherBasisOperation
+import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, OtherBasisOperation}
 
 class TaxCodeIncomeSpec extends PlaySpec {
 
@@ -54,7 +54,8 @@ class TaxCodeIncomeSpec extends PlaySpec {
 
         val expectedJson = TaxCodeIncomeFactory.createJson
         val updatedJson = expectedJson
-          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation))
+          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
+          BasisOperation.formatBasisOperationType.writes))
 
         Json.toJson(model) mustEqual updatedJson
       }
@@ -68,7 +69,8 @@ class TaxCodeIncomeSpec extends PlaySpec {
 
         val expectedJson = TaxCodeIncomeFactory.createJson
         val updatedJson = expectedJson
-          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)) + ("updateNotificationDate" -> Json
+          .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
+          BasisOperation.formatBasisOperationType.writes)) + ("updateNotificationDate" -> Json
           .toJson(date))
 
         Json.toJson(model) mustEqual updatedJson

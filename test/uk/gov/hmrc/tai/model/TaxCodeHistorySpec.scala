@@ -43,7 +43,7 @@ import scala.util.Random
 
 class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
 
-  "TaxCodeHistory reads" should {
+  "TaxCodeHistory reads" must {
     "return a TaxCodeHistory given valid Json" in {
       val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
       val validJson = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
@@ -65,7 +65,7 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
     }
   }
 
-  "TaxCodeHistory applicableTaxCodeRecords" should {
+  "TaxCodeHistory applicableTaxCodeRecords" must {
     "filter out operated tax code records" in {
       val nonOperatedRecord = TaxCodeRecordFactory.createNonOperatedEmployment()
       val primaryEmployment = TaxCodeRecordFactory.createPrimaryEmployment()

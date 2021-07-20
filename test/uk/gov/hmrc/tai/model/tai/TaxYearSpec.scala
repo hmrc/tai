@@ -22,7 +22,7 @@ import play.api.libs.json.{JsString, JsSuccess, Json}
 
 class TaxYearSpec extends PlaySpec {
 
-  "TaxYear" should {
+  "TaxYear" must {
 
     "choose the correct year value" when {
 

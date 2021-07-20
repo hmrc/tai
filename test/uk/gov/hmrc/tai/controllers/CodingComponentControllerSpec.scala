@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
@@ -77,9 +78,9 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear().next))(any()))
           .thenReturn(Future.failed(new UnauthorizedException("")))
 
-        intercept[UnauthorizedException] {
-          await(sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()))
-        }
+        val result = sut.codingComponentsForYear(nino, TaxYear().next)(FakeRequest()).failed.futureValue
+
+        result mustBe a[UnauthorizedException]
       }
     }
 

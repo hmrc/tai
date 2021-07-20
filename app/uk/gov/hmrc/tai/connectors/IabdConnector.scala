@@ -19,12 +19,13 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.concurrent.Future
 
 @Singleton
@@ -39,13 +40,23 @@ class IabdConnector @Inject()(
     if (taxYear > TaxYear()) {
       Future.successful(Json.arr())
     } else if (featureTogglesConfig.desEnabled) {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> desConfig.originatorId)
+      val hodHeaders = Seq(
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "Gov-Uk-Originator-Id" -> desConfig.originatorId,
+        "CorrelationId"        -> UUID.randomUUID().toString
+      )
       val urlDes = iabdUrls.desIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI)(hcWithHodHeaders)
+      httpHandler.getFromApi(urlDes, APITypes.DesIabdAllAPI, hodHeaders)
     } else {
-      val hcWithHodHeaders = hc.withExtraHeaders("Gov-Uk-Originator-Id" -> npsConfig.originatorId)
+      val hodHeaders = Seq(
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+        "CorrelationId"        -> UUID.randomUUID().toString
+      )
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI)(hcWithHodHeaders)
+      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, hodHeaders)
     }
 
 }

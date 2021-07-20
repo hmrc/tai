@@ -47,6 +47,8 @@ class BenefitsService @Inject()(
   pdfService: PdfService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   def companyCarBenefits(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     benefits(nino, TaxYear()).map(_.companyCarBenefits)
 
@@ -80,7 +82,7 @@ class BenefitsService @Inject()(
           RemoveCompanyBenefitIForm(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit)).toString)
       }
     ) map { envelopeId =>
-      Logger.info("Envelope Id for RemoveCompanyBenefit- " + envelopeId)
+      logger.info("Envelope Id for RemoveCompanyBenefit- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.RemoveCompanyBenefitAuditTxnName,
@@ -131,7 +133,7 @@ class BenefitsService @Inject()(
       benefits.copy(companyCarBenefits = reconciledBenefits)
     } recover {
       case NonFatal(e) => {
-        Logger.warn(
+        logger.warn(
           s"The PAYE company car service returned an expection in response to the request for nino ${nino.nino} " +
             s"and ${taxYear.toString}. Returning car benefit details WITHOUT company car information.",
           e

@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -28,8 +29,7 @@ import uk.gov.hmrc.tai.repositories.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class PensionProviderServiceSpec extends BaseSpec {
 
@@ -49,7 +49,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-        val result = Await.result(sut.addPensionProvider(nino, addPensionProvider), 5 seconds)
+        val result = sut.addPensionProvider(nino, addPensionProvider).futureValue
 
         result mustBe "1"
       }
@@ -75,7 +75,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-      Await.result(sut.addPensionProvider(nino, pensionProvider), 5 seconds)
+      sut.addPensionProvider(nino, pensionProvider).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.AddPensionProviderAuditTxnName), meq(map))(any())
@@ -96,9 +96,8 @@ class PensionProviderServiceSpec extends BaseSpec {
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
 
-        val result = Await.result(sut.addPensionProviderForm(pensionProvider)(hc)(person), 5 seconds)
+        val result = sut.addPensionProviderForm(pensionProvider)(hc)(person).futureValue
         result mustBe PensionProviderIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider)).toString
-
       }
     }
   }
@@ -117,7 +116,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-        val result = Await.result(sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider), 5 seconds)
+        val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider).futureValue
 
         result mustBe "1"
       }
@@ -142,7 +141,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-      Await.result(sut.incorrectPensionProvider(nino, 1, pensionProvider), 5 seconds)
+      sut.incorrectPensionProvider(nino, 1, pensionProvider).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq(map))(any())
@@ -181,7 +180,7 @@ class PensionProviderServiceSpec extends BaseSpec {
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
 
-        val result = Await.result(sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc)(person), 5 seconds)
+        val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc)(person).futureValue
         result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
 
       }

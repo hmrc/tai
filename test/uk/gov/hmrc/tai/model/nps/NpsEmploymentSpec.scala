@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
 
 class NpsEmploymentSpec extends PlaySpec {
 
-  "toNpsIncomeSource" should {
+  "toNpsIncomeSource" must {
     "return NpsIncomeSource" when {
       "given an estimated pay " in {
         val npsIncomeSource = createSUT.toNpsIncomeSource(BigDecimal(100))
@@ -43,7 +43,7 @@ class NpsEmploymentSpec extends PlaySpec {
     }
   }
 
-  "toTaxCodeIncomeSummary" should {
+  "toTaxCodeIncomeSummary" must {
     "return TaxCodeIncomeSummary" when {
       "given an estimated pay" in {
         val taxCodeIncomeSummary = createSUT.toTaxCodeIncomeSummary(BigDecimal(100))

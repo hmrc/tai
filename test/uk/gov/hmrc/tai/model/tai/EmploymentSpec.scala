@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class EmploymentSpec extends PlaySpec {
 
-  "Employment" should {
+  "Employment" must {
     "Create an employment object" when {
       "Given an primary employment nps object but no rti object" in {
         val employment: Employment = Employment(testIncome, None)

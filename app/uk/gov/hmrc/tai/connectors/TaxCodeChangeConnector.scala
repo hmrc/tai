@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeChangeConnector @Inject()(
@@ -41,18 +42,20 @@ class TaxCodeChangeConnector @Inject()(
 
   override val originatorId = config.originatorId
 
-  implicit private val header: HeaderCarrier = {
-    val commonHeaderValues = Seq(
-      "Environment"   -> config.environment,
-      "Authorization" -> config.authorization,
-      "Content-Type"  -> TaiConstants.contentType)
-
-    HeaderCarrier(extraHeaders = commonHeaderValues)
+  implicit private def createHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+    Seq(
+      "Environment"          -> config.environment,
+      "Authorization"        -> config.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
   }
 
-  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear): Future[TaxCodeHistory] = {
+  def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
 
-    getFromDes[TaxCodeHistory](url, APITypes.TaxCodeChangeAPI).map(_._1)
+    getFromDes[TaxCodeHistory](url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader).map(_._1)
   }
 }

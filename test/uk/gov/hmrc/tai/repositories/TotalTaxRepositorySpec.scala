@@ -19,9 +19,6 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -29,7 +26,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
-import scala.util.Random
 
 class TotalTaxRepositorySpec extends BaseSpec {
 
@@ -39,7 +35,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
       when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.incomeCategories(nino, TaxYear()), 5 seconds)
+      val result = sut.incomeCategories(nino, TaxYear()).futureValue
       result must contain theSameElementsAs Seq(
         IncomeCategory(
           UkDividendsIncomeCategory,
@@ -69,7 +65,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
       when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
         .thenReturn(Future.successful(json))
       val sut = createSUT(mockTaxAccountRepository)
-      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5 seconds)
+      val result = sut.taxFreeAllowance(nino, TaxYear()).futureValue
 
       result mustBe 100
     }

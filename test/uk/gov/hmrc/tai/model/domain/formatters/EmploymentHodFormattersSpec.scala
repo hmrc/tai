@@ -30,7 +30,7 @@ import scala.io.BufferedSource
 
 class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters {
 
-  "numberChecked" should {
+  "numberChecked" must {
 
     "return a new string with leading zeros removed, when supplied with a numeric string" in {
       numberChecked("012") mustBe "12"
@@ -47,7 +47,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  "employmentHodReads" should {
+  "employmentHodReads" must {
     "un-marshall employment json" when {
       "reading single employment from Hod" in {
         val employment = getJson("npsSingleEmployment").as[EmploymentCollection]
@@ -162,7 +162,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  "Payment reads" should {
+  "Payment reads" must {
 
     "read nps json and convert it to payment object" in {
       val parsedJson: Payment = getJson("rtiInYearFragment").as[Payment](paymentHodReads)
@@ -202,7 +202,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  "EndOfTaxYearUpdate reads" should {
+  "EndOfTaxYearUpdate reads" must {
 
     "read rti json with a single adjustment, and convert it to TotalTaxDelta adjustment object" in {
       val result: EndOfTaxYearUpdate =
@@ -223,7 +223,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     }
   }
 
-  "taxYearFormatter" should {
+  "taxYearFormatter" must {
 
     "Format a valid tax year string from rti" in {
       val rtiTaxYearJsVal = JsString("16-17")

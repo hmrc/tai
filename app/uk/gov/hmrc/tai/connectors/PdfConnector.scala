@@ -31,6 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   private implicit val system = ActorSystem()
   private implicit val materializer = ActorMaterializer()
 
@@ -48,7 +50,7 @@ class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls
           response.bodyAsBytes.toArray
         }
         case _ => {
-          Logger.warn(s"PdfConnector - A Server error was received from ${APITypes.PdfServiceAPI}")
+          logger.warn(s"PdfConnector - A Server error was received from ${APITypes.PdfServiceAPI}")
           metrics.incrementFailedCounter(APITypes.PdfServiceAPI)
           throw new HttpException(response.body, response.status)
         }

@@ -18,12 +18,13 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.connectors.PdfConnector
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class PdfServiceSpec extends BaseSpec {
@@ -38,7 +39,7 @@ class PdfServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(htmlAsString.getBytes))
 
         val sut = createSut(mockPdfConnector)
-        val result = Await.result(sut.generatePdf(htmlAsString), 5 seconds)
+        val result = sut.generatePdf(htmlAsString).futureValue
 
         result mustBe htmlAsString.getBytes
       }
@@ -53,9 +54,9 @@ class PdfServiceSpec extends BaseSpec {
           .thenReturn(Future.failed(new HttpException("", 0)))
 
         val sut = createSut(mockPdfConnector)
-        val result = sut.generatePdf(htmlAsString)
+        val result = sut.generatePdf(htmlAsString).failed.futureValue
 
-        the[HttpException] thrownBy Await.result(result, 5 seconds)
+        result mustBe a[HttpException]
       }
     }
   }

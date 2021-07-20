@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.LocalDate
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.IncomeType._
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.util.TaiConstants
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live, PotentiallyCeased}
+import uk.gov.hmrc.tai.util.TaiConstants
 
 /**
   * Created by dev01 on 08/07/14.
   */
-class TaxModelSpec extends UnitSpec {
+class TaxModelSpec extends PlaySpec {
 
-  "totalIncome" should {
+  "totalIncome" must {
     "return the Estimated Income from NpsIncomeSource" in {
 
       val payAndTax = NpsTax(
@@ -51,7 +50,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         Some(false))
 
-      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalIncome shouldBe Some(BigDecimal(333.33))
+      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalIncome mustBe Some(BigDecimal(333.33))
 
     }
 
@@ -60,21 +59,21 @@ class TaxModelSpec extends UnitSpec {
       val npsIncomeSource =
         new NpsIncomeSource(None, None, Some(1), None, None, None, None, None, None, None, Some(false), Some(false))
 
-      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalIncome shouldBe None
-      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalTax shouldBe None
-      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalTaxableIncome shouldBe None
+      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalIncome mustBe None
+      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalTax mustBe None
+      npsIncomeSource.toTaxCodeIncomeSummary().tax.totalTaxableIncome mustBe None
 
     }
   }
 
-  "NpsComponent" should {
+  "NpsComponent" must {
     "return the New TaxCompenent when the data is empty" in {
       val personalAllowance = NpsComponent().toTaxComponent(None)
 
-      personalAllowance.amount shouldBe BigDecimal(0)
-      personalAllowance.componentType shouldBe 0
-      personalAllowance.description shouldBe ""
-      personalAllowance.iabdSummaries.size shouldBe 0
+      personalAllowance.amount mustBe BigDecimal(0)
+      personalAllowance.componentType mustBe 0
+      personalAllowance.description mustBe ""
+      personalAllowance.iabdSummaries.size mustBe 0
     }
 
     "return the New TaxCompenent when we have data" in {
@@ -83,21 +82,21 @@ class TaxModelSpec extends UnitSpec {
       val personalAllowance =
         NpsComponent(Some(BigDecimal(333.33)), Some(11), Some(List(iadb)), Some("npsDescription")).toTaxComponent(None)
 
-      personalAllowance.amount shouldBe BigDecimal(333.33)
-      personalAllowance.componentType shouldBe 11
-      personalAllowance.description shouldBe "npsDescription"
-      personalAllowance.iabdSummaries.size shouldBe 1
-      personalAllowance.iabdSummaries.lift(0).get.amount shouldBe BigDecimal(333.66)
-      personalAllowance.iabdSummaries.lift(0).get.iabdType shouldBe 12
-      personalAllowance.iabdSummaries.lift(0).get.description shouldBe "npsIabdSummaryDesc"
+      personalAllowance.amount mustBe BigDecimal(333.33)
+      personalAllowance.componentType mustBe 11
+      personalAllowance.description mustBe "npsDescription"
+      personalAllowance.iabdSummaries.size mustBe 1
+      personalAllowance.iabdSummaries.lift(0).get.amount mustBe BigDecimal(333.66)
+      personalAllowance.iabdSummaries.lift(0).get.iabdType mustBe 12
+      personalAllowance.iabdSummaries.lift(0).get.description mustBe "npsIabdSummaryDesc"
     }
   }
 
-  "income source type" should {
+  "income source type" must {
     "be set to employment if the income source is an employment" in {
       val npsIncomeSource =
         new NpsIncomeSource(None, None, None, None, None, None, None, None, None, None, Some(false), Some(false))
-      npsIncomeSource.incomeType shouldBe IncomeTypeEmployment.code
+      npsIncomeSource.incomeType mustBe IncomeTypeEmployment.code
     }
 
     "be set to employment if the income source has no settings" in {
@@ -110,8 +109,8 @@ class TaxModelSpec extends UnitSpec {
         payAndTax = None,
         employmentId = None,
         employmentStatus = Some(Live.code))
-      npsIncomeSource.incomeType shouldBe IncomeTypeEmployment.code
-      IncomeHelper.isLive(npsIncomeSource.employmentStatus) shouldBe true
+      npsIncomeSource.incomeType mustBe IncomeTypeEmployment.code
+      IncomeHelper.isLive(npsIncomeSource.employmentStatus) mustBe true
     }
 
     "be set to ceased employment if the income source has no settings and is set to ceased" in {
@@ -124,8 +123,8 @@ class TaxModelSpec extends UnitSpec {
         payAndTax = None,
         employmentId = None,
         employmentStatus = Some(Ceased.code))
-      npsIncomeSource.incomeType shouldBe IncomeTypeEmployment.code
-      IncomeHelper.isLive(npsIncomeSource.employmentStatus) shouldBe false
+      npsIncomeSource.incomeType mustBe IncomeTypeEmployment.code
+      IncomeHelper.isLive(npsIncomeSource.employmentStatus) mustBe false
     }
 
     "be set to ceased employment if the income source has no settings and is set to potentially ceased" in {
@@ -139,14 +138,14 @@ class TaxModelSpec extends UnitSpec {
         employmentId = None,
         employmentStatus = Some(PotentiallyCeased.code)
       )
-      npsIncomeSource.incomeType shouldBe IncomeTypeEmployment.code
-      IncomeHelper.isLive(npsIncomeSource.employmentStatus) shouldBe false
+      npsIncomeSource.incomeType mustBe IncomeTypeEmployment.code
+      IncomeHelper.isLive(npsIncomeSource.employmentStatus) mustBe false
     }
 
     "be set to other pension if the income source is an other pension" in {
       val npsIncomeSource =
         new NpsIncomeSource(None, None, Some(1), None, None, None, None, None, None, None, Some(true), Some(false))
-      npsIncomeSource.incomeType shouldBe IncomeTypeOccupationalPension.code
+      npsIncomeSource.incomeType mustBe IncomeTypeOccupationalPension.code
     }
 
     "be set to other pension if the income source is a Pension: Financial Assistance Scheme" in {
@@ -165,7 +164,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false)
       )
 
-      npsIncomeSource.incomeType shouldBe IncomeTypeOccupationalPension.code
+      npsIncomeSource.incomeType mustBe IncomeTypeOccupationalPension.code
     }
 
     "be set to ESA if this is an Employment Support Allowance" in {
@@ -183,7 +182,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         Some(false)
       )
-      npsIncomeSource.incomeType shouldBe IncomeTypeESA.code
+      npsIncomeSource.incomeType mustBe IncomeTypeESA.code
     }
 
     "be set to IB if this is an Incapacity Benefit" in {
@@ -201,7 +200,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         Some(false)
       )
-      npsIncomeSource.incomeType shouldBe IncomeTypeIB.code
+      npsIncomeSource.incomeType mustBe IncomeTypeIB.code
     }
 
     "be set to taxable benefit if this is job seekers allowance with the indicator set" in {
@@ -219,7 +218,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         Some(false),
         Some(true))
-      npsIncomeSource.incomeType shouldBe IncomeTypeJSA.code
+      npsIncomeSource.incomeType mustBe IncomeTypeJSA.code
     }
 
     "be set to taxable benefit if this is job seekers allowance" in {
@@ -237,7 +236,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         Some(false),
         None)
-      npsIncomeSource.incomeType shouldBe IncomeTypeJSA.code
+      npsIncomeSource.incomeType mustBe IncomeTypeJSA.code
     }
 
     "be set to taxable benefit if this is job seekers allowance (Students)" in {
@@ -256,7 +255,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         None
       )
-      npsIncomeSource.incomeType shouldBe IncomeTypeJSA.code
+      npsIncomeSource.incomeType mustBe IncomeTypeJSA.code
     }
 
     "be set to taxable benefit if this is job seekers allowance (New DWP)" in {
@@ -275,7 +274,7 @@ class TaxModelSpec extends UnitSpec {
         Some(false),
         None
       )
-      npsIncomeSource.incomeType shouldBe IncomeTypeJSA.code
+      npsIncomeSource.incomeType mustBe IncomeTypeJSA.code
     }
 
   }

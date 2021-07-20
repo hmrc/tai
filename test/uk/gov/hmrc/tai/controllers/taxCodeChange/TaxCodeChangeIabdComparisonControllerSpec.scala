@@ -32,7 +32,7 @@ import scala.util.Random
 
 class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
-  "taxCodeChangeIabdComparison" should {
+  "taxCodeChangeIabdComparison" must {
     "respond with OK" when {
       "when given a valid Nino" in {
         val nino = ninoGenerator

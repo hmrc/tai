@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -25,7 +26,7 @@ import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxReposi
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class TotalTaxServiceSpec extends BaseSpec {
@@ -49,7 +50,7 @@ class TotalTaxServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.incomeCategories must contain theSameElementsAs incomeCategories
       result.reliefsGivingBackTax mustBe None
@@ -75,7 +76,7 @@ class TotalTaxServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.amount mustBe BigDecimal(1000)
       result.reliefsGivingBackTax mustBe None
@@ -104,7 +105,7 @@ class TotalTaxServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.reliefsGivingBackTax mustBe Some(adjustment)
     }
@@ -128,7 +129,7 @@ class TotalTaxServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.otherTaxDue mustBe Some(adjustment)
     }
@@ -151,7 +152,7 @@ class TotalTaxServiceSpec extends BaseSpec {
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.alreadyTaxedAtSource mustBe Some(adjustment)
     }
@@ -174,7 +175,7 @@ class TotalTaxServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(Some(BigDecimal(40))))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.taxOnOtherIncome mustBe Some(40)
     }
@@ -198,7 +199,7 @@ class TotalTaxServiceSpec extends BaseSpec {
       when(mockTaxAccountSummaryRepository.taxOnOtherIncome(any(), any())(any())).thenReturn(Future.successful(None))
 
       val sut = createSUT(mockTotalTaxRepository, mockTaxAccountSummaryRepository)
-      val result = Await.result(sut.totalTax(nino, TaxYear()), 5 seconds)
+      val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.taxReliefComponent mustBe Some(taxReliefComponents)
     }
@@ -210,7 +211,7 @@ class TotalTaxServiceSpec extends BaseSpec {
       when(mockTotalTaxRepository.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
       val sut = createSUT(mockTotalTaxRepository, mock[TaxAccountSummaryRepository])
-      val result = Await.result(sut.taxFreeAllowance(nino, TaxYear()), 5.seconds)
+      val result = sut.taxFreeAllowance(nino, TaxYear()).futureValue
 
       result mustBe 100
 

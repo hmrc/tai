@@ -1,0 +1,26 @@
+{
+  "nino": "$NINO",
+  "taxCodeRecord": [
+    {
+      "pensionIndicator": false,
+      "p6Issued": false,
+      "p9xIssued": false,
+      "codeType": "Manual Coding",
+      "employmentType": "PRIMARY",
+      "employmentId": 1,
+      "employerName": "Test Employer Name",
+      "taxCodeId": 2,
+      "taxCode": "1100L",
+      "employmentStatus": 1,
+      "p2Date": "2021-09-14",
+      "operatedTaxCode": true,
+      "dateOfCalculation": "2021-09-14",
+      "taxYear": 2021,
+      "p9Issued": false,
+      "payrollNumber": "AA123-62",
+      "p2Issued": true,
+      "basisOfOperation": "Week1/Month1",
+      "employmentReference": "ZZ141441"
+    }
+  ]
+}

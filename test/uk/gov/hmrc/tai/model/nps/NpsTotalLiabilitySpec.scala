@@ -29,7 +29,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
   "grouping of IABD Types (income allowance benefits deductions)" when {
 
-    "an NpsTotalLiability instance is created with no content" should {
+    "an NpsTotalLiability instance is created with no content" must {
 
       val SUT = NpsTotalLiability()
 
@@ -46,7 +46,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       }
     }
 
-    "an NpsTotalLiability instance is created with content" should {
+    "an NpsTotalLiability instance is created with content" must {
 
       val npsIabdSummary = NpsIabdSummary(Some(100), Some(1), Some("Desc1"), Some(2), Some(3))
       val npsComponent = NpsComponent(iabdSummaries = Some(List(npsIabdSummary)))
@@ -82,7 +82,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       deductions = Some(List(taxCodeComponentDeduct, taxCodeComponentOther)),
       allowances = Some(List(taxCodeComponentAllow, taxCodeComponentOther)))
 
-    "an allowance is requested " should {
+    "an allowance is requested " must {
 
       "generate an allowance adjustment" in {
         val adjustment = SUT.getCodingAdjustment(
@@ -95,7 +95,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       }
     }
 
-    "an allowance is not requested " should {
+    "an allowance is not requested " must {
 
       "generate an deduction adjustment" in {
         val adjustment = SUT.getCodingAdjustment(
@@ -122,7 +122,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       NpsIabdSummary(Some(10), Some(LossBroughtForwardFromEarlierTaxYear.code), Some("Desc"), Some(2), Some(3))
     val lossBroughtForwardNpsComponent = NpsComponent(iabdSummaries = Some(List(ukDividendsSumm)), `type` = Some(3))
 
-    "otherIncome is requested for profit and loss amounts that combine to produce a positive overall profit" should {
+    "otherIncome is requested for profit and loss amounts that combine to produce a positive overall profit" must {
 
       "supply a new single NpsComponent reflecting a total other income amount, adjusted to reflect the " +
         "overall profit" in {
@@ -146,7 +146,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       }
     }
 
-    "otherIncome is requested for profit and loss amounts that combine to produce a negative overall profit" should {
+    "otherIncome is requested for profit and loss amounts that combine to produce a negative overall profit" must {
 
       "supply a new single NpsComponent reflecting a total other income amount, excluding any profits" in {
 
@@ -223,7 +223,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       estimatedPaySource = Some(3))
 
     "individual benefits in kind do not sum to the same value as a supplied 'benefits in kind total' amount, " +
-      "for a given employment id" should {
+      "for a given employment id" must {
 
       val nonSavingsNpsComponent = NpsComponent(
         iabdSummaries = Some(
@@ -259,7 +259,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     }
 
     "individual benefits in kind sum to an equal value as the supplied 'benefits in kind total' amount, " +
-      "for a given employment id" should {
+      "for a given employment id" must {
 
       val adjustedIabdBenInKind2 = iabdBenInKind2.copy(amount = Some(BigDecimal(498)))
       val nonSavingsNpsComponent = NpsComponent(
@@ -297,9 +297,9 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     }
   }
 
-  "iabd extraction methods should" when {
+  "iabd extraction methods must" when {
 
-    "processing an instance created with multiple iabd summary types" should {
+    "processing an instance created with multiple iabd summary types" must {
 
       val SUT = randomSpreadTotalLiability(
         TaiConstants.IADB_TYPE_OTHER_PENSIONS ::: TaiConstants.IABD_TYPE_BLIND_PERSON ::: TaiConstants.IABD_TYPE_EXPENSES :::
@@ -382,7 +382,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
 
   "conversion toTotalLiabilitySummary" when {
 
-    "processing an instance with amounts that result in zero value totalPaidElsewhere, reductionsToLiability, and additionsToTotalLiability amounts" should {
+    "processing an instance with amounts that result in zero value totalPaidElsewhere, reductionsToLiability, and additionsToTotalLiability amounts" must {
 
       val SUT = NpsTotalLiability()
 
@@ -397,7 +397,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     }
 
     "processing an instance with amounts that contribute to a non zero 'totalPaidElsewhere' amount (sum of non-coded income tax and " +
-      "alreadyTaxedAtSource amounts)" should {
+      "alreadyTaxedAtSource amounts)" must {
 
       val iabdNonCoded = NpsIabdSummary(
         amount = None,
@@ -435,7 +435,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     }
 
     "processing an instance with amounts that contribute to a non zero 'reductionsToLiability' amount (sum of reliefsGivingBackTax " +
-      "and marriageAllowanceRelief amounts)" should {
+      "and marriageAllowanceRelief amounts)" must {
 
       val npsReliefsGivingBackTax = Some(
         NpsReliefsGivingBackTax(
@@ -484,7 +484,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
     }
 
     "processing an instance with amounts that contribute to a non zero 'additionsToTotalLiabilty' amount (sum of otherTaxDue " +
-      "and underpaymentPreviousYear, outstandingDebt, childBenefitTaxDue, and inYearAdjustment amounts)" should {
+      "and underpaymentPreviousYear, outstandingDebt, childBenefitTaxDue, and inYearAdjustment amounts)" must {
 
       val npsOtherTaxDue = Some(
         NpsOtherTaxDue(
@@ -526,7 +526,7 @@ class NpsTotalLiabilitySpec extends PlaySpec {
       }
     }
 
-    "processing amounts on the liability object" should {
+    "processing amounts on the liability object" must {
 
       val iabdNonCoded = NpsIabdSummary(
         amount = None,

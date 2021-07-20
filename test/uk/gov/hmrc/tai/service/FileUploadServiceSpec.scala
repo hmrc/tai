@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.mockito.Mockito
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
@@ -28,7 +29,7 @@ import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class FileUploadServiceSpec extends BaseSpec {
 
@@ -42,7 +43,7 @@ class FileUploadServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("123"))
 
       val sut = createSUT(mockFileUploadConnector, mockAuditor)
-      val envelopeId = Await.result(sut.createEnvelope(), 5.seconds)
+      val envelopeId = sut.createEnvelope().futureValue
 
       envelopeId mustBe "123"
     }
@@ -53,7 +54,7 @@ class FileUploadServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-      val result = Await.result(sut.uploadFile(new Array[Byte](1), "123", fileName, contentType), 5.seconds)
+      val result = sut.uploadFile(new Array[Byte](1), "123", fileName, contentType).futureValue
 
       result.status mustBe 200
 
@@ -67,7 +68,7 @@ class FileUploadServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("123"))
 
       val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-      val result = Await.result(sut.closeEnvelope("123"), 5.seconds)
+      val result = sut.closeEnvelope("123").futureValue
 
       result mustBe "123"
     }
@@ -80,12 +81,12 @@ class FileUploadServiceSpec extends BaseSpec {
         val mockFileUploadConnector = mock[FileUploadConnector]
         when(mockFileUploadConnector.closeEnvelope(any())(any()))
           .thenReturn(Future.successful("123"))
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
         val result =
-          Await.result(sut.fileUploadCallback(FileUploadCallback("123", "metadata", "AVAILABLE", None)), 5.seconds)
+          sut.fileUploadCallback(FileUploadCallback("123", "metadata", "AVAILABLE", None)).futureValue
 
         result mustBe Closed
         verify(mockFileUploadConnector, times(1))
@@ -99,12 +100,11 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "CLOSED", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await
-          .result(sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "AVAILABLE", None)), 5.seconds)
+        val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "AVAILABLE", None)).futureValue
 
         result mustBe Open
         verify(mockFileUploadConnector, never())
@@ -115,8 +115,7 @@ class FileUploadServiceSpec extends BaseSpec {
         val mockFileUploadConnector = mock[FileUploadConnector]
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await
-          .result(sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "INFECTED", None)), 5.seconds)
+        val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "INFECTED", None)).futureValue
 
         result mustBe Open
         verify(mockFileUploadConnector, never())
@@ -134,7 +133,7 @@ class FileUploadServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mock[FileUploadConnector], mockAuditor)
-        Await.result(sut.fileUploadCallback(details), 5.seconds)
+        sut.fileUploadCallback(details).futureValue
 
         verify(mockAuditor, times(1))
           .sendDataEvent(meq("FileUploadFailure"), any())(any())
@@ -146,7 +145,7 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "OPEN", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
         when(mockFileUploadConnector.closeEnvelope(any())(any()))
           .thenReturn(Future.successful("123"))
@@ -157,7 +156,7 @@ class FileUploadServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockFileUploadConnector, mockAuditor)
-        Await.result(sut.fileUploadCallback(details), 5.seconds)
+        sut.fileUploadCallback(details).futureValue
 
         verify(mockAuditor, times(1))
           .sendDataEvent(meq("FileUploadSuccess"), any())(any())
@@ -173,11 +172,11 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "CLOSED", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Open
       }
@@ -186,11 +185,11 @@ class FileUploadServiceSpec extends BaseSpec {
         val envelopeSummary = EnvelopeSummary("123", "", Nil)
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Open
       }
@@ -200,22 +199,22 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "", Seq(EnvelopeFile("123", "PROGRESS"), EnvelopeFile("123", "PROGRESS")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Open
       }
 
       "envelope is not available" in {
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Open
       }
@@ -225,11 +224,11 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "PROGRESS")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Open
       }
@@ -241,11 +240,11 @@ class FileUploadServiceSpec extends BaseSpec {
           EnvelopeSummary("123", "OPEN", Seq(EnvelopeFile("123", "AVAILABLE"), EnvelopeFile("123", "AVAILABLE")))
 
         val mockFileUploadConnector = mock[FileUploadConnector]
-        when(mockFileUploadConnector.envelope(meq("123"))(any()))
+        when(mockFileUploadConnector.envelope(meq("123")))
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = Await.result(sut.envelopeStatus("123"), 5.seconds)
+        val result = sut.envelopeStatus("123").futureValue
 
         result mustBe Closed
       }

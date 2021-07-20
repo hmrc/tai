@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class MergedEmploymentSpec extends PlaySpec {
 
-  "orderField" should {
+  "orderField" must {
     "return primary employment constant appended with string 'No Name Supplied'" when {
       "an empty NpsIncomeSource is supplied which defaults to a primary employment" in {
         val sut = createSUT(NpsIncomeSource(), None, None)
@@ -51,7 +51,7 @@ class MergedEmploymentSpec extends PlaySpec {
     }
   }
 
-  "toTaxCodeIncomeSummary" should {
+  "toTaxCodeIncomeSummary" must {
     "return a TaxCodeIncomeSummary set to primary employment and is editable and is live is also set" when {
       "an empty NpsIncomeSource object is provided" in {
         val sut = createSUT(NpsIncomeSource(), None, None)

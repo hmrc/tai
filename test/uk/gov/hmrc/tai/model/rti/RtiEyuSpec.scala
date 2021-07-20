@@ -21,7 +21,7 @@ import org.scalatestplus.play.PlaySpec
 
 class RtiEyuSpec extends PlaySpec {
 
-  "Rti eyu" should {
+  "Rti eyu" must {
     "sort a list of Rti Eyu objects" when {
       "given in random order" in {
         val rtiEyu1: RtiEyu = RtiEyu(None, None, None, new LocalDate(2015, 1, 1))

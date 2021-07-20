@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -29,8 +30,7 @@ import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.service.{TaiService, TaxAccountService}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class TaxSummaryControllerSpec extends BaseSpec {
@@ -99,10 +99,11 @@ class TaxSummaryControllerSpec extends BaseSpec {
         .thenReturn(Future.failed(new HttpException("Incorrect Version Number", 400)))
 
       val sut = createSUT(mockTaiService, mock[TaxAccountService], mock[Metrics])
-      val summaryDetails = sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest)
+      val result = sut.updateEmployments(new Nino(nino.nino), 2014)(fakeRequest).failed.futureValue
 
-      val ex = the[HttpException] thrownBy Await.result(summaryDetails, 5 seconds)
-      ex.message mustBe "Incorrect Version Number"
+      result mustBe a[HttpException]
+
+      result.getMessage mustBe "Incorrect Version Number"
 
       verify(mockTaiService, times(1)).updateEmployments(any(), any(), any(), any())(any())
     }

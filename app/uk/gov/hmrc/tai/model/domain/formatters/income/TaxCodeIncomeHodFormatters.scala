@@ -23,6 +23,8 @@ import uk.gov.hmrc.tai.model.domain.income._
 
 trait TaxCodeIncomeHodFormatters {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   private val basisOperationReads = new Reads[BasisOperation] {
     override def reads(json: JsValue): JsResult[BasisOperation] = {
       val result = json.asOpt[Int] match {
@@ -100,7 +102,7 @@ trait TaxCodeIncomeHodFormatters {
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
       case default => {
-        Logger.warn(s"Invalid Employment Status -> $default")
+        logger.warn(s"Invalid Employment Status -> $default")
         throw new RuntimeException("Invalid employment status")
       }
     }
@@ -127,7 +129,7 @@ trait TaxCodeIncomeHodFormatters {
     iabdSummary.map(_.amount) match {
       case Some(amount) => Some(amount)
       case _ =>
-        Logger.warn("TotalTaxableIncome is 0")
+        logger.warn("TotalTaxableIncome is 0")
         None
     }
   }

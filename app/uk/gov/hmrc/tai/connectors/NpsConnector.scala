@@ -17,12 +17,11 @@
 package uk.gov.hmrc.tai.connectors
 
 import java.util.UUID
-
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
@@ -49,10 +48,18 @@ class NpsConnector @Inject()(
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 
+  def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Gov-Uk-Originator-Id" -> originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
+
   def getEmployments(nino: Nino, year: Int)(implicit hc: HeaderCarrier)
     : Future[(List[NpsEmployment], List[model.nps2.NpsEmployment], Int, List[GateKeeperRule])] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI)
+    val json = getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc))
     json.map { x =>
       (x._1.as[List[NpsEmployment]], x._1.as[List[model.nps2.NpsEmployment]], x._2, Nil)
     }
@@ -60,30 +67,39 @@ class NpsConnector @Inject()(
 
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI).map(_._1)
+    getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc)).map(_._1)
   }
 
   def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = npsPathUrl(nino, s"iabds/$year/$iabdType")
-    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdSpecificAPI).map(x => x._1)
+    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdSpecificAPI, basicNpsHeaders(hc)).map(x => x._1)
   }
 
   def getIabds(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
     val urlToRead = npsPathUrl(nino, s"iabds/$year")
-    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI).map(x => x._1)
+    getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI, basicNpsHeaders(hc)).map(x => x._1)
   }
 
   def getCalculatedTaxAccount(nino: Nino, year: Int)(
     implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
-    getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
+    getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI, basicNpsHeaders(hc)).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
   }
 
   def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
-    implicit val hc = basicNpsHeaders(HeaderCarrier())
-    httpClient.GET[HttpResponse](urlToRead)
+    httpClient.GET[HttpResponse](url = urlToRead, headers = basicNpsHeaders(hc))
   }
+
+  private def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String) =
+    Seq(
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "ETag"                 -> version.toString,
+      "X-TXID"               -> txId,
+      "Gov-Uk-Originator-Id" -> originatorId,
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
 
   def updateEmploymentData(
     nino: Nino,
@@ -94,8 +110,8 @@ class NpsConnector @Inject()(
     apiType: APITypes = APITypes.NpsIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     if (updateAmounts.nonEmpty) {
       val postUrl = npsPathUrl(nino, s"iabds/$year/employment/$iabdType")
-      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts)(
-        extraNpsHeaders(hc, version, sessionOrUUID),
+      postToNps[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts, extraNpsHeaders(hc, version, sessionOrUUID))(
+        implicitly,
         formats.formatList)
     } else {
       Future(HttpResponse(OK))

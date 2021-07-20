@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service.benefits
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
@@ -31,7 +32,7 @@ import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class BenefitsServiceSpec extends BaseSpec {
@@ -51,7 +52,7 @@ class BenefitsServiceSpec extends BaseSpec {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe Seq.empty[CompanyCarBenefit]
+        sut.companyCarBenefits(nino)(hc).futureValue mustBe Seq.empty[CompanyCarBenefit]
       }
     }
 
@@ -88,7 +89,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe result
+        sut.companyCarBenefits(nino)(hc).futureValue mustBe result
 
       }
 
@@ -124,7 +125,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefits(nino)(hc), 5 seconds) mustBe result
+        sut.companyCarBenefits(nino)(hc).futureValue mustBe result
       }
     }
 
@@ -161,7 +162,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe None
+        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe None
       }
 
       "the repository returned sequence of companyCarBenefit with one matching employment sequence number" in {
@@ -196,7 +197,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 12)(hc), 5 seconds) mustBe Some(result.head)
+        sut.companyCarBenefitForEmployment(nino, 12)(hc).futureValue mustBe Some(result.head)
       }
 
       "the repository returned sequence of multiple companyCarBenefits with one matching employment sequence number" in {
@@ -244,7 +245,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe Some(result.last)
+        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe Some(result.last)
       }
 
       "the repository returned sequence of multiple companyCarBenefits with multiple matching employment sequence numbers" in {
@@ -304,7 +305,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
-        Await.result(sut.companyCarBenefitForEmployment(nino, 11)(hc), 5 seconds) mustBe Some(result.head)
+        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe Some(result.head)
       }
     }
   }
@@ -329,7 +330,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(expectedResult))
 
         val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
-        Await.result(sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc), 5 seconds) mustBe expectedResult
+        sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc).futureValue mustBe expectedResult
 
         verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
@@ -345,7 +346,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponentsWithoutBenefits))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).otherBenefits mustBe Seq.empty[GenericBenefit]
+        sut.benefits(nino, TaxYear())(hc).futureValue.otherBenefits mustBe Seq.empty[GenericBenefit]
       }
     }
     "return all types of other benefits" when {
@@ -365,7 +366,7 @@ class BenefitsServiceSpec extends BaseSpec {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).otherBenefits mustBe
+        sut.benefits(nino, TaxYear())(hc).futureValue.otherBenefits mustBe
           createGenericBenefitList(allBenefitTypesExceptCompanyCar)
       }
     }
@@ -380,7 +381,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
         val sut = createSUT(codingComponentService = mockCodingComponentService)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe Seq
+        sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe Seq
           .empty[CompanyCarBenefit]
       }
     }
@@ -402,7 +403,7 @@ class BenefitsServiceSpec extends BaseSpec {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
+        sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
       }
 
@@ -423,7 +424,7 @@ class BenefitsServiceSpec extends BaseSpec {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
+        sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
       }
     }
@@ -479,7 +480,7 @@ class BenefitsServiceSpec extends BaseSpec {
           codingComponentService = mockCodingComponentService,
           companyCarBenefitRepository = mockCompanyCarBenefitRepository)
 
-        Await.result(sut.benefits(nino, TaxYear())(hc), 5 seconds).companyCarBenefits mustBe
+        sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(
             CompanyCarBenefit(
               12,
@@ -542,7 +543,7 @@ class BenefitsServiceSpec extends BaseSpec {
           mockAuditable
         )
         val result =
-          Await.result(sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc), 5 seconds)
+          sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc).futureValue
 
         result mustBe "1"
       }
@@ -582,7 +583,7 @@ class BenefitsServiceSpec extends BaseSpec {
         mock[PdfService],
         mockAuditable
       )
-      Await.result(sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc), 5 seconds) mustBe "1"
+      sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc).futureValue mustBe "1"
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())

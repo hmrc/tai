@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
-import uk.gov.hmrc.play.test.UnitSpec
 
-class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
+class UpdateIabdFlatRateExpenseSpec extends PlaySpec {
 
-  "IabdUpdateExpensesAmount" should {
+  "IabdUpdateExpensesAmount" must {
 
     "parse json correctly" in {
 
@@ -34,7 +34,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
 
       val employeeExpense: UpdateIabdEmployeeExpense = employeeExpenseJson.as[UpdateIabdEmployeeExpense]
 
-      employeeExpense.grossAmount shouldBe 1234
+      employeeExpense.grossAmount mustBe 1234
     }
 
     "give error when grossAmount field is empty" in {
@@ -47,7 +47,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
-      parseError shouldBe an[JsResultException]
+      parseError mustBe an[JsResultException]
 
     }
 
@@ -63,7 +63,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
-      parseError.getMessage shouldBe "requirement failed: grossAmount cannot be less than 0"
+      parseError.getMessage mustBe "requirement failed: grossAmount cannot be less than 0"
 
     }
 
@@ -79,7 +79,7 @@ class UpdateIabdFlatRateExpenseSpec extends UnitSpec {
         employeeExpenseJson.as[UpdateIabdEmployeeExpense].grossAmount
       }
 
-      parseError.getMessage shouldBe "requirement failed: grossAmount cannot be greater than 999999"
+      parseError.getMessage mustBe "requirement failed: grossAmount cannot be greater than 999999"
     }
   }
 }

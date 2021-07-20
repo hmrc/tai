@@ -46,9 +46,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
-        val responseFuture = sut.taxAccountSummary(nino, TaxYear())
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
-        val result = Await.result(responseFuture, 5 seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -64,9 +63,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
-        val responseFuture = sut.taxAccountSummary(nino, TaxYear())
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
-        val result = Await.result(responseFuture, 5 seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -82,9 +80,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             )))
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
-        val responseFuture = sut.taxAccountSummary(nino, TaxYear())
+        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
-        val result = Await.result(responseFuture, 5 seconds)
         result mustBe BigDecimal(1171)
       }
 
@@ -102,9 +99,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           )))
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
-          val responseFuture = sut.taxAccountSummary(nino, TaxYear())
+          val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
-          val result = Await.result(responseFuture, 5 seconds)
           result mustBe BigDecimal(1371)
         }
       }
@@ -122,9 +118,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
               )))
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
-          val responseFuture = sut.taxAccountSummary(nino, TaxYear())
+          val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
 
-          val result = Await.result(responseFuture, 5 seconds)
           result mustBe BigDecimal(1071)
         }
       }
@@ -137,7 +132,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(taxAccountSummaryNpsJson))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.taxAdjustmentComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.taxAdjustmentComponents(nino, TaxYear()).futureValue
 
         result mustBe Some(
           TaxAdjustment(
@@ -171,7 +166,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Json.obj()))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.taxAdjustmentComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.taxAdjustmentComponents(nino, TaxYear()).futureValue
 
         result mustBe None
       }
@@ -185,7 +180,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-      val result = Await.result(sut.reliefsGivingBackTaxComponents(nino, TaxYear()), 5.seconds)
+      val result = sut.reliefsGivingBackTaxComponents(nino, TaxYear()).futureValue
 
       result mustBe Some(
         TaxAdjustment(
@@ -207,7 +202,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Json.obj()))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.reliefsGivingBackTaxComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.reliefsGivingBackTaxComponents(nino, TaxYear()).futureValue
 
         result mustBe None
       }
@@ -221,7 +216,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-      val result = Await.result(sut.otherTaxDueComponents(nino, TaxYear()), 5.seconds)
+      val result = sut.otherTaxDueComponents(nino, TaxYear()).futureValue
 
       result mustBe Some(
         TaxAdjustment(
@@ -242,7 +237,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Json.obj()))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.otherTaxDueComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.otherTaxDueComponents(nino, TaxYear()).futureValue
 
         result mustBe None
       }
@@ -256,7 +251,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-      val result = Await.result(sut.alreadyTaxedAtSourceComponents(nino, TaxYear()), 5.seconds)
+      val result = sut.alreadyTaxedAtSourceComponents(nino, TaxYear()).futureValue
 
       result mustBe Some(
         TaxAdjustment(
@@ -277,7 +272,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Json.obj()))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.alreadyTaxedAtSourceComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.alreadyTaxedAtSourceComponents(nino, TaxYear()).futureValue
 
         result mustBe None
       }
@@ -291,7 +286,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(taxAccountSummaryNpsJson))
       val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-      val result = Await.result(sut.taxOnOtherIncome(nino, TaxYear()), 5.seconds)
+      val result = sut.taxOnOtherIncome(nino, TaxYear()).futureValue
 
       result mustBe Some(40)
     }
@@ -303,7 +298,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Json.obj()))
         val sut = createSUT(mockTaxAccountRepository, mock[CodingComponentRepository])
 
-        val result = Await.result(sut.taxOnOtherIncome(nino, TaxYear()), 5.seconds)
+        val result = sut.taxOnOtherIncome(nino, TaxYear()).futureValue
 
         result mustBe None
       }
@@ -323,7 +318,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           )))
       val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
-      val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
+      val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
 
       result mustBe Some(
         TaxAdjustment(
@@ -346,7 +341,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(Seq.empty[CodingComponent]))
       val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
-      val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
+      val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
 
       result mustBe Some(
         TaxAdjustment(
@@ -369,7 +364,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Seq.empty[CodingComponent]))
         val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
-        val result = Await.result(sut.taxReliefComponents(nino, TaxYear()), 5.seconds)
+        val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
 
         result mustBe None
       }

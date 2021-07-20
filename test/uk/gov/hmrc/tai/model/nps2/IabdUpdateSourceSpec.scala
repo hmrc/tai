@@ -20,7 +20,7 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource._
 
 class IabdUpdateSourceSpec extends PlaySpec {
-  "IabdUpdateSource" should {
+  "IabdUpdateSource" must {
     "return all the IABD update source types" when {
       "set is called" in {
         IabdUpdateSource.set mustBe Set(

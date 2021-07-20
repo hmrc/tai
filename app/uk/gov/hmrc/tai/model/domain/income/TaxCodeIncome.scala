@@ -18,10 +18,9 @@ package uk.gov.hmrc.tai.model.domain.income
 
 import org.joda.time.LocalDate
 import play.api.Logger
-import uk.gov.hmrc.tai.model.domain._
-import play.api.libs.json._
 import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
@@ -37,7 +36,7 @@ object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
       OtherBasisOperation
 
   implicit val formatBasisOperationType = new Format[BasisOperation] {
-    override def reads(json: JsValue): JsSuccess[BasisOperation] = ???
+    override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)
 
     override def writes(basisOperation: BasisOperation) = JsString(basisOperation.toString)
   }
@@ -50,6 +49,8 @@ case object PotentiallyCeased extends TaxCodeIncomeStatus
 case object Ceased extends TaxCodeIncomeStatus
 
 object TaxCodeIncomeStatus {
+
+  private val logger: Logger = Logger(getClass.getName)
 
   def apply(value: String): TaxCodeIncomeStatus = value match {
     case "Live"              => Live
@@ -65,7 +66,7 @@ object TaxCodeIncomeStatus {
       case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
       case "Ceased"            => JsSuccess(Ceased)
       case default => {
-        Logger.warn(s"Invalid Employment Status Reads -> $default")
+        logger.warn(s"Invalid Employment Status Reads -> $default")
         throw new RuntimeException("Invalid employment status reads")
       }
     }

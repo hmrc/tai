@@ -18,14 +18,14 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.service.{FileUploadService, Open}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class FileUploadControllerSpec extends BaseSpec {
 
@@ -49,7 +49,7 @@ class FileUploadControllerSpec extends BaseSpec {
         .thenReturn(Future.successful(Open))
 
       val sut = createSUT(mockFileUploadService)
-      val result = Await.result(sut.fileUploadCallback()(fakeRequest), 5.seconds)
+      val result = sut.fileUploadCallback()(fakeRequest).futureValue
 
       result.header.status mustBe 200
     }

@@ -18,13 +18,13 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class BbsiRepositorySpec extends BaseSpec {
 
@@ -38,7 +38,8 @@ class BbsiRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(Seq(bankAccount))))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
-        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
+
+        val result = sut.bbsiDetails(nino, TaxYear()).futureValue
 
         result mustBe Seq(bankAccount)
         verify(mockCacheConnector, times(1))
@@ -62,7 +63,7 @@ class BbsiRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Seq(bankAccount, bankAccount)))
 
         val sut = createSUT(mockCacheConnector, mockBbsiConnector)
-        val result = Await.result(sut.bbsiDetails(nino, TaxYear()), 5.seconds)
+        val result = sut.bbsiDetails(nino, TaxYear()).futureValue
 
         result mustBe Seq(expectedBankAccount1, expectedBankAccount2)
 

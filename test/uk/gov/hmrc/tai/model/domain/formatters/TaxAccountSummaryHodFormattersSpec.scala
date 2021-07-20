@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._

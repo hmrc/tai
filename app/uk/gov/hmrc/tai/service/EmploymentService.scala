@@ -23,13 +23,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
-import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +41,8 @@ class EmploymentService @Inject()(
   fileUploadService: FileUploadService,
   pdfService: PdfService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
+
+  private val logger: Logger = Logger(getClass.getName)
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
 
@@ -84,7 +86,7 @@ class EmploymentService @Inject()(
             endEmploymentMetaDataName(envelopeId),
             MimeContentType.ApplicationXml)
     } yield {
-      Logger.info("Envelope Id for end employment- " + envelopeId)
+      logger.info("Envelope Id for end employment- " + envelopeId)
 
       auditable.sendDataEvent(
         EndEmploymentAuditRequest,
@@ -115,7 +117,7 @@ class EmploymentService @Inject()(
             addEmploymentMetaDataName(envelopeId),
             MimeContentType.ApplicationXml)
     } yield {
-      Logger.info("Envelope Id for add employment- " + envelopeId)
+      logger.info("Envelope Id for add employment- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.AddEmploymentAuditTxnName,
@@ -144,7 +146,7 @@ class EmploymentService @Inject()(
         } yield EmploymentIForm(templateModel).toString
       }
     ) map { envelopeId =>
-      Logger.info("Envelope Id for incorrect employment- " + envelopeId)
+      logger.info("Envelope Id for incorrect employment- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.IncorrectEmploymentAuditTxnName,
@@ -170,7 +172,7 @@ class EmploymentService @Inject()(
         Future.successful(EmploymentIForm(EmploymentPensionViewModel(year, person, incorrectEmployment)).toString)
       }
     ) map { envelopeId =>
-      Logger.info("Envelope Id for updatePreviousYearIncome- " + envelopeId)
+      logger.info("Envelope Id for updatePreviousYearIncome- " + envelopeId)
 
       auditable.sendDataEvent(
         transactionName = IFormConstants.UpdatePreviousYearIncomeAuditTxnName,

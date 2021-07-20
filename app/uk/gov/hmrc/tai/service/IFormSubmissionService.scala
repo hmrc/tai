@@ -34,6 +34,8 @@ class IFormSubmissionService @Inject()(
   pdfService: PdfService,
   fileUploadService: FileUploadService)(implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   private def iformFilename(envelopeId: String, iformSubmissionKey: String) =
     s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"
 
@@ -59,7 +61,7 @@ class IFormSubmissionService @Inject()(
             metadataFilename(envelopeId, iformSubmissionKey),
             MimeContentType.ApplicationXml)
     } yield {
-      Logger.info(s"Envelope Id for $iformSubmissionKey - " + envelopeId)
+      logger.info(s"Envelope Id for $iformSubmissionKey - " + envelopeId)
       envelopeId
     }
 }

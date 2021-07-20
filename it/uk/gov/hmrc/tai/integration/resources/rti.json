@@ -1,0 +1,473 @@
+{
+  "queryResult": 0,
+  "request": {
+    "nino": "$NINO",
+    "relatedTaxYear": "21-22",
+    "requestId": "M1464687560154"
+  },
+  "individual": {
+    "currentNino": "$NINO",
+    "relatedTaxYear": "21-22",
+    "employments": {
+      "employment": [
+        {
+          "empRefs": {
+            "officeNo": "267",
+            "payeRef": "G697",
+            "aoRef": "267PP00002017"
+          },
+          "currentPayId": "111111",
+          "payments": {
+            "inYear": [
+              {
+                "payId": "111111",
+                "payFreq": "M3",
+                "monthNo": "1",
+                "periodsCovered": 1,
+                "aggregatedEarnings": true,
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "type": "TaxablePayYTD",
+                    "amount": 5000
+                  },
+                  {
+                    "type": "TotalTaxYTD",
+                    "amount": 1500
+                  },
+                  {
+                    "type": "TaxDeductedOrRefunded",
+                    "amount": 1500
+                  },
+                  {
+                    "type": "TaxablePay",
+                    "amount": 5000
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "type": "BenefitsTaxedViaPayroll",
+                    "amount": 0
+                  },
+                  {
+                    "type": "DednsFromNetPay",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsNotPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "ItemsSubjectToClass1NIC",
+                    "amount": 0
+                  },
+                  {
+                    "type": "NonTaxOrNICPmt",
+                    "amount": 0
+                  },
+                  {
+                    "type": "PayAfterStatDedns",
+                    "amount": 0
+                  },
+                  {
+                    "type": "StudentLoanRecovered",
+                    "amount": 0
+                  }
+                ],
+                "taxCode": {
+                  "value": "123L"
+                },
+                "flexibleDrawdown": {},
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "A",
+                    "niFigure": [
+                      {
+                        "type": "AtLELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsInPd",
+                        "amount": 600
+                      },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 600
+                      },
+                      {
+                        "type": "GrossEarningsForNICsInPd",
+                        "amount": 5000
+                      },
+                      {
+                        "type": "GrossEarningsForNICsYTD",
+                        "amount": 5000
+                      },
+                      {
+                        "type": "LELtoPTYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICInPd",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICYTD",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "pmtDate": "2016-04-30",
+                "rcvdDate": "2016-04-06",
+                "pmtConfidence": 1,
+                "taxYear": "21-22"
+              },
+              {
+                "payId": "111111",
+                "payFreq": "M3",
+                "monthNo": "11",
+                "periodsCovered": 1,
+                "aggregatedEarnings": true,
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "type": "TaxablePayYTD",
+                    "amount": 19000
+                  },
+                  {
+                    "type": "TotalTaxYTD",
+                    "amount": 5250
+                  },
+                  {
+                    "type": "TaxDeductedOrRefunded",
+                    "amount": 1000
+                  },
+                  {
+                    "type": "TaxablePay",
+                    "amount": 4000
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "type": "BenefitsTaxedViaPayroll",
+                    "amount": 0
+                  },
+                  {
+                    "type": "DednsFromNetPay",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsNotPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "ItemsSubjectToClass1NIC",
+                    "amount": 0
+                  },
+                  {
+                    "type": "NonTaxOrNICPmt",
+                    "amount": 0
+                  },
+                  {
+                    "type": "PayAfterStatDedns",
+                    "amount": 0
+                  },
+                  {
+                    "type": "StudentLoanRecovered",
+                    "amount": 0
+                  }
+                ],
+                "taxCode": {
+                  "value": "123L"
+                },
+                "flexibleDrawdown": {},
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "A",
+                    "niFigure": [
+                      {
+                        "type": "AtLELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsInPd",
+                        "amount": 480
+                      },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 2280
+                      },
+                      {
+                        "type": "GrossEarningsForNICsInPd",
+                        "amount": 4000
+                      },
+                      {
+                        "type": "GrossEarningsForNICsYTD",
+                        "amount": 19000
+                      },
+                      {
+                        "type": "LELtoPTYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICInPd",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICYTD",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "pmtDate": "2017-02-28",
+                "rcvdDate": "2016-04-06",
+                "pmtConfidence": 1,
+                "taxYear": "21-22"
+              },
+              {
+                "payId": "111111",
+                "payFreq": "M3",
+                "monthNo": "8",
+                "periodsCovered": 1,
+                "aggregatedEarnings": true,
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "type": "TaxablePayYTD",
+                    "amount": 15000
+                  },
+                  {
+                    "type": "TotalTaxYTD",
+                    "amount": 4250
+                  },
+                  {
+                    "type": "TaxDeductedOrRefunded",
+                    "amount": 1000
+                  },
+                  {
+                    "type": "TaxablePay",
+                    "amount": 4000
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "type": "BenefitsTaxedViaPayroll",
+                    "amount": 0
+                  },
+                  {
+                    "type": "DednsFromNetPay",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsNotPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "ItemsSubjectToClass1NIC",
+                    "amount": 0
+                  },
+                  {
+                    "type": "NonTaxOrNICPmt",
+                    "amount": 0
+                  },
+                  {
+                    "type": "PayAfterStatDedns",
+                    "amount": 0
+                  },
+                  {
+                    "type": "StudentLoanRecovered",
+                    "amount": 0
+                  }
+                ],
+                "taxCode": {
+                  "value": "123L"
+                },
+                "flexibleDrawdown": {},
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "A",
+                    "niFigure": [
+                      {
+                        "type": "AtLELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsInPd",
+                        "amount": 480
+                      },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1800
+                      },
+                      {
+                        "type": "GrossEarningsForNICsInPd",
+                        "amount": 4000
+                      },
+                      {
+                        "type": "GrossEarningsForNICsYTD",
+                        "amount": 15000
+                      },
+                      {
+                        "type": "LELtoPTYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICInPd",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICYTD",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "pmtDate": "2016-10-31",
+                "rcvdDate": "2016-04-06",
+                "pmtConfidence": 1,
+                "taxYear": "21-22"
+              },
+              {
+                "payId": "111111",
+                "payFreq": "M3",
+                "monthNo": "4",
+                "periodsCovered": 1,
+                "aggregatedEarnings": true,
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "type": "TaxablePayYTD",
+                    "amount": 11000
+                  },
+                  {
+                    "type": "TotalTaxYTD",
+                    "amount": 3250
+                  },
+                  {
+                    "type": "TaxDeductedOrRefunded",
+                    "amount": 1750
+                  },
+                  {
+                    "type": "TaxablePay",
+                    "amount": 6000
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "type": "BenefitsTaxedViaPayroll",
+                    "amount": 0
+                  },
+                  {
+                    "type": "DednsFromNetPay",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsNotPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "EmpeePenContribnsPaid",
+                    "amount": 0
+                  },
+                  {
+                    "type": "ItemsSubjectToClass1NIC",
+                    "amount": 0
+                  },
+                  {
+                    "type": "NonTaxOrNICPmt",
+                    "amount": 0
+                  },
+                  {
+                    "type": "PayAfterStatDedns",
+                    "amount": 0
+                  },
+                  {
+                    "type": "StudentLoanRecovered",
+                    "amount": 0
+                  }
+                ],
+                "taxCode": {
+                  "value": "123L"
+                },
+                "flexibleDrawdown": {},
+                "niLettersAndValues": [
+                  {
+                    "niLetter": "A",
+                    "niFigure": [
+                      {
+                        "type": "AtLELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "EmpeeContribnsInPd",
+                        "amount": 720
+                      },
+                      {
+                        "type": "EmpeeContribnsYTD",
+                        "amount": 1320
+                      },
+                      {
+                        "type": "GrossEarningsForNICsInPd",
+                        "amount": 6000
+                      },
+                      {
+                        "type": "GrossEarningsForNICsYTD",
+                        "amount": 11000
+                      },
+                      {
+                        "type": "LELtoPTYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "PTtoUELYTD",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICInPd",
+                        "amount": 0
+                      },
+                      {
+                        "type": "TotalEmpNICYTD",
+                        "amount": 0
+                      }
+                    ]
+                  }
+                ],
+                "pmtDate": "2016-07-31",
+                "rcvdDate": "2016-04-06",
+                "pmtConfidence": 1,
+                "taxYear": "21-22"
+              }
+            ]
+          },
+          "sequenceNumber": 39
+        }
+      ]
+    }
+  }
+}

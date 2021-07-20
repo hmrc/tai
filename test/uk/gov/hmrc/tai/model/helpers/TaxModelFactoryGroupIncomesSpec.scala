@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestData {
 
-  "groupIncomes" should {
+  "groupIncomes" must {
     "return none incomes" when {
       "passed none parameters" in {
         createSUT.groupIncomes() mustBe None

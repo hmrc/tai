@@ -45,7 +45,7 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector, urls: CitizenDe
     cacheConnector.find(cacheId, PersonMongoKey)(PersonFormatter.personMongoFormat)
 
   private[repositories] def getPersonFromAPI(nino: Nino, cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Person] =
-    httpHandler.getFromApi(urls.designatoryDetailsUrl(nino), APITypes.NpsPersonAPI) flatMap { s =>
+    httpHandler.getFromApi(urls.designatoryDetailsUrl(nino), APITypes.NpsPersonAPI, Seq.empty) flatMap { s =>
       val personDetails = s.as[Person](PersonFormatter.personHodRead)
       cacheConnector.createOrUpdate(cacheId, personDetails, PersonMongoKey)(PersonFormatter.personMongoFormat)
     }

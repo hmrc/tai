@@ -30,7 +30,7 @@ import scala.util.Random
 
 class AnnualAccountSpec extends PlaySpec {
 
-  "Annual Account employments" should {
+  "Annual Account employments" must {
     "fetch the correct sequence of employments" when {
       "there is no nps or rti data" in {
         sut() mustBe List()

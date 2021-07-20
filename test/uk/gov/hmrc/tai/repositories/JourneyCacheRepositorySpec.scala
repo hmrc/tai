@@ -55,7 +55,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", testCache), 5 seconds) mustBe testCache
+        sut.cached(cacheId, "testJourney", testCache).futureValue mustBe testCache
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
           meq(testCache),
@@ -70,7 +70,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", testCache), 5 seconds) mustBe
+        sut.cached(cacheId, "testJourney", testCache).futureValue mustBe
           Map("key1" -> "value1", "key2" -> "value2", "key3" -> "value3")
       }
 
@@ -83,7 +83,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", newCache), 5 seconds) mustBe
+        sut.cached(cacheId, "testJourney", newCache).futureValue mustBe
           Map("key1" -> "value1", "key3" -> "revised")
       }
     }
@@ -98,7 +98,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(None))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", "key3", "value3"), 5 seconds) mustBe expectedMap
+        sut.cached(cacheId, "testJourney", "key3", "value3").futureValue mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
@@ -115,7 +115,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", "key5", "value5"), 5 seconds) mustBe expectedMap
+        sut.cached(cacheId, "testJourney", "key5", "value5").futureValue mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
@@ -132,7 +132,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(Some(existingCache)))
 
         val sut = createSUT(mockConnector)
-        Await.result(sut.cached(cacheId, "testJourney", "key4", "updated"), 5 seconds) mustBe expectedMap
+        sut.cached(cacheId, "testJourney", "key4", "updated").futureValue mustBe expectedMap
 
         verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
           any(),
@@ -151,8 +151,8 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.currentCache(cacheId, "exists"), 5 seconds) mustBe Some(existingCache)
-      Await.result(sut.currentCache(cacheId, "doesntexist"), 5 seconds) mustBe None
+      sut.currentCache(cacheId, "exists").futureValue mustBe Some(existingCache)
+      sut.currentCache(cacheId, "doesntexist").futureValue mustBe None
     }
 
     "retrive an individual cached value, by journey name and key" in {
@@ -165,9 +165,9 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(None))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.currentCache(cacheId, "exists", "key3"), 5 seconds) mustBe Some("value3")
-      Await.result(sut.currentCache(cacheId, "exists", "key5"), 5 seconds) mustBe None
-      Await.result(sut.currentCache(cacheId, "doesntexist", "nochance"), 5 seconds) mustBe None
+      sut.currentCache(cacheId, "exists", "key3").futureValue mustBe Some("value3")
+      sut.currentCache(cacheId, "exists", "key5").futureValue mustBe None
+      sut.currentCache(cacheId, "doesntexist", "nochance").futureValue mustBe None
     }
 
     "delete a named journey cache" in {
@@ -176,7 +176,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         .thenReturn(Future.successful(Map.empty[String, String]))
 
       val sut = createSUT(mockConnector)
-      Await.result(sut.flush(cacheId, "testJourney"), 5 seconds)
+      sut.flush(cacheId, "testJourney").futureValue
 
       verify(mockConnector, times(1)).createOrUpdate[Map[String, String]](
         any(),

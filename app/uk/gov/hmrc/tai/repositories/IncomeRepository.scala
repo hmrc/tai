@@ -67,7 +67,6 @@ class IncomeRepository @Inject()(
       taxCodeIncomes <- taxCodeIncomeFuture
       iabdDetails    <- iabdDetailsFuture
     } yield {
-
       taxCodeIncomes.map { taxCodeIncome =>
         addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
       }

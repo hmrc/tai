@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatters {
 
-  "EmploymentMongoFormatter" should {
+  "EmploymentMongoFormatter" must {
 
     "un-marshall adjustment json" when {
       "reading from a json with type NI" in {
