@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCarBenefit, WithdrawCarAndF
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -32,12 +33,12 @@ class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(im
     extends CompanyCarBenefitFormatters {
 
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
-    httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI) map { json =>
+    httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI, Seq.empty) map { json =>
       json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReads))
     }
 
   def ninoVersion(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] =
-    httpHandler.getFromApi(urls.ninoVersionUrl(nino), APITypes.CompanyCarAPI) map { json =>
+    httpHandler.getFromApi(urls.ninoVersionUrl(nino), APITypes.CompanyCarAPI, Seq.empty) map { json =>
       json.as[Int]
     }
 
@@ -49,7 +50,8 @@ class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(im
     postData: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] = {
 
     val url = urls.removeCarBenefitUrl(nino, taxYear, employmentSequenceNumber, carSequenceNumber)
-    httpHandler.postToApi[WithdrawCarAndFuel](url, postData, APITypes.CompanyCarAPI)(hc, companyCarRemoveWrites) map {
+    httpHandler
+      .postToApi[WithdrawCarAndFuel](url, postData, APITypes.CompanyCarAPI, Seq.empty)(hc, companyCarRemoveWrites) map {
       httpResponse =>
         val json = httpResponse.json
         (json \ "transaction" \ "oid").as[String]

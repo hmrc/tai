@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.nps
 
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsValue, Json}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig

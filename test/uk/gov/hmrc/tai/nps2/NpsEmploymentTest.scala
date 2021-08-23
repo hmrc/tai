@@ -16,14 +16,13 @@
 
 package hmrc.nps2
 
-import org.scalatest._
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.nps2.{NpsEmployment, NpsFormatter}
 
-import scala.util.Success
-import scala.util.Try
+import scala.util.{Success, Try}
 
-class NpsEmploymentTest extends WordSpec with Matchers with NpsFormatter {
+class NpsEmploymentTest extends PlaySpec with NpsFormatter {
   val data: Seq[JsValue] = {
     val resource = this.getClass.getResourceAsStream("nps-employments.json")
     val stream = scala.io.Source.fromInputStream(resource)
@@ -39,14 +38,14 @@ class NpsEmploymentTest extends WordSpec with Matchers with NpsFormatter {
     }
   }
 
-  "NPS Employment JSON Parsing" should {
+  "NPS Employment JSON Parsing" must {
     "be able to parse all the stub data" in {
-      tryParse.filter(_._2.isFailure).toMap should be(Map.empty)
+      tryParse.filter(_._2.isFailure).toMap must be(Map.empty)
     }
 
     "have the property fromJson(toJson(x)) == x" in {
       tryParse.foreach {
-        case (k, Success(v)) => Json.toJson(v).as[NpsEmployment] should be(v)
+        case (k, Success(v)) => Json.toJson(v).as[NpsEmployment] must be(v)
         case _               =>
       }
     }

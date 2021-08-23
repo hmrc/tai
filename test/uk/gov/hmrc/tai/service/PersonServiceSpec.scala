@@ -19,13 +19,13 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class PersonServiceSpec extends BaseSpec {
@@ -35,7 +35,7 @@ class PersonServiceSpec extends BaseSpec {
       val mockRepo = mock[PersonRepository]
       when(mockRepo.getPerson(meq(nino))(any())).thenReturn(Future.successful(person))
       val SUT = createSUT(mockRepo)
-      Await.result(SUT.person(nino), 5 seconds) mustBe (person)
+      SUT.person(nino).futureValue mustBe (person)
     }
 
     "expose any exception thrown by the person repository" in {
@@ -43,8 +43,9 @@ class PersonServiceSpec extends BaseSpec {
       when(mockRepo.getPerson(meq(nino))(any()))
         .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
       val SUT = createSUT(mockRepo)
-      val thrown = the[NotFoundException] thrownBy Await.result(SUT.person(nino), 5 seconds)
-      thrown.getMessage mustBe "an example not found exception"
+      val result = SUT.person(nino).failed.futureValue
+      result mustBe a[NotFoundException]
+      result.getMessage mustBe "an example not found exception"
     }
   }
 

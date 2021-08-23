@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import org.scalatest.FunSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsError, JsNumber, JsResult, JsString, JsSuccess}
 import uk.gov.hmrc.tai.model.TaxSummaryDetails

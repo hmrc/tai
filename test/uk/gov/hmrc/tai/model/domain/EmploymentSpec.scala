@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class EmploymentSpec extends PlaySpec {
 
-  "Employment" should {
+  "Employment" must {
 
     "Generate a unique employer designation, consisting of tax district and paye ref" in {
       val desig = singleEmploymentWithAllRefs.head.employerDesignation

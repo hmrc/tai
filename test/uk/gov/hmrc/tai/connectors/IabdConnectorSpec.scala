@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
 
@@ -60,7 +58,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   )
 
   "IABD Connector" when {
-
     "toggled to use NPS" must {
       "return IABD json" in {
 
@@ -68,7 +65,17 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-        Await.result(sut(false).iabds(nino, taxYear), 5.seconds) mustBe json
+       sut(false).iabds(nino, taxYear).futureValue mustBe json
+
+        server.verify(
+          getRequestedFor(urlEqualTo(npsUrl))
+            .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+
       }
 
       "return empty json" when {
@@ -78,7 +85,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(false).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+          sut(false).iabds(nino, taxYear.next).futureValue mustBe Json.arr()
         }
 
         "looking for cy+2 year" in {
@@ -87,20 +94,58 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(false).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+          sut(false).iabds(nino, taxYear.next.next).futureValue mustBe Json.arr()
         }
       }
+
+      "return an error" when {
+        "a 400 occurs" in {
+
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+          sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+        }
+
+        "a 404 occurs" in {
+
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
+        }
+
+        List(
+          IM_A_TEAPOT,
+          INTERNAL_SERVER_ERROR,
+          SERVICE_UNAVAILABLE
+        ).foreach { httpResponse =>
+          s"a $httpResponse occurs" in {
+
+            server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(httpResponse)))
+
+            sut(false).iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+          }
+        }
+      }
+
     }
 
     "toggled to use DES" must {
-
       "return IABD json" in {
 
         server.stubFor(
           get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-        Await.result(sut(true).iabds(nino, taxYear), 5.seconds) mustBe json
+        sut(true).iabds(nino, taxYear).futureValue mustBe json
+
+        server.verify(
+          getRequestedFor(urlEqualTo(desUrl))
+            .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
       }
 
       "return empty json" when {
@@ -109,7 +154,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(true).iabds(nino, taxYear.next), 5.seconds) mustBe Json.arr()
+          sut(true).iabds(nino, taxYear.next).futureValue mustBe Json.arr()
         }
 
         "looking for cy+2 year" in {
@@ -117,7 +162,36 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          Await.result(sut(true).iabds(nino, taxYear.next.next), 5.seconds) mustBe Json.arr()
+          sut(true).iabds(nino, taxYear.next.next).futureValue mustBe Json.arr()
+        }
+      }
+
+      "return an error" when {
+        "a 400 occurs" in {
+
+          server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+          sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+        }
+
+        "a 404 occurs" in {
+
+          server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
+        }
+
+        List(
+          IM_A_TEAPOT,
+          INTERNAL_SERVER_ERROR,
+          SERVICE_UNAVAILABLE
+        ).foreach { httpResponse =>
+          s"a $httpResponse occurs" in {
+
+            server.stubFor(get(urlEqualTo(desUrl)).willReturn(aResponse().withStatus(httpResponse)))
+
+            sut(true).iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+          }
         }
       }
     }

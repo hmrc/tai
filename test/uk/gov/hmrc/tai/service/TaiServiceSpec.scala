@@ -22,7 +22,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{CyPlusOneConfig, FeatureTogglesConfig, NpsConfig}
@@ -73,7 +73,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
       mockCyPlusOneConfig
     )
 
-    val result: TaiRoot = Await.result(sut.getTaiRoot(Nino(nino.nino)), timeoutDuration)
+    val result: TaiRoot = sut.getTaiRoot(Nino(nino.nino)).futureValue
 
     "call citizenDetails service with the nino given" in {
       verify(mockCitizenDetailsConnector, times(1))
@@ -123,7 +123,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
       mockCyPlusOneConfig
     )
 
-    val result = Await.result(sut.getAutoUpdateResults(Nino(nino.nino), taxYear), timeoutDuration)
+    val result = sut.getAutoUpdateResults(Nino(nino.nino), taxYear).futureValue
 
     "return correct answer" in {
       val annualAccounts = Seq(
@@ -177,7 +177,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
 
     "return false" when {
       "employments list is empty" in {
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(Nil), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(Nil).futureValue
         result mustBe false
       }
 
@@ -185,40 +185,40 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
 
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe false
       }
 
       "there is one employment with end date as start Of Next Tax Year" in {
         val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear + 1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe false
       }
     }
     "return true" when {
       "there is one employment without end date" in {
         val employmentList = List(npsEmployment.copy(endDate = None))
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe true
       }
       "there is one employment with end date as one day after start Of Next Tax Year" in {
         val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear).plusDays(1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe true
       }
       "there is one employment with end date as one day before start Of Next Tax Year" in {
         val endDate = Some(NpsDate(TaxYear().start.withYear(taxYear + 1).minusDays(1)))
         val employmentList = List(npsEmployment.copy(endDate = endDate))
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe true
       }
       "there are multiple employments with one of them without an end date" in {
         val employmentList = List(
           npsEmployment.copy(endDate = None),
           npsEmployment.copy(endDate = Some(NpsDate(new LocalDate(taxYear, 4, 6)))))
-        val result = Await.result(sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList), timeoutDuration)
+        val result = sut.isNotCeasedOrCurrentYearCeasedEmployment(employmentList).futureValue
         result mustBe true
       }
     }
@@ -252,7 +252,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         )
 
         val result =
-          Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
+          sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = false).futureValue
         result mustBe Nil
       }
     }
@@ -293,7 +293,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
           )
 
           val result =
-            Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+            sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true).futureValue
 
           result mustBe fakeIabds
           verify(mockDesConnector, times(1))
@@ -336,7 +336,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
           )
 
           val result =
-            Await.result(sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+            sut.fetchIabdsForType(Nino(nino.nino), taxYear, isNotCeasedEmployment = true).futureValue
 
           result mustBe fakeIabds
           verify(mockNpsConnector, times(1))
@@ -374,7 +374,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         )
 
         val result =
-          Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = false), timeoutDuration)
+          sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = false).futureValue
         val expectedResult: (Option[RtiData], RtiStatus) = (None, RtiStatus(404, "Employment ceased"))
 
         result mustBe expectedResult
@@ -412,7 +412,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         )
 
         val result =
-          Await.result(sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = true), timeoutDuration)
+          sut.fetchRtiCurrent(Nino(nino.nino), taxYear, isNotCeasedEmployment = true).futureValue
         val expectedResult: (Option[RtiData], RtiStatus) = (Some(rtiDataCY), rtiStatus)
 
         result mustBe expectedResult
@@ -451,7 +451,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         mockCyPlusOneConfig
       )
 
-      val result = Await.result(sut.getIabd(Nino(nino.nino), taxYear), timeoutDuration)
+      val result = sut.getIabd(Nino(nino.nino), taxYear).futureValue
 
       result mustBe fakeIabds
       verify(mockNpsConnector, times(1))
@@ -485,7 +485,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         mockCyPlusOneConfig
       )
 
-      val result = Await.result(sut.getIabd(Nino(nino.nino), taxYear), timeoutDuration)
+      val result = sut.getIabd(Nino(nino.nino), taxYear).futureValue
 
       result mustBe fakeIabds
       verify(mockDesConnector, times(1))
@@ -523,7 +523,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         mockCyPlusOneConfig
       )
 
-      val result = Await.result(sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear), timeoutDuration)
+      val result = sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear).futureValue
       val expectedResult: (NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
 
       result mustBe expectedResult
@@ -559,7 +559,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         mockCyPlusOneConfig
       )
 
-      val result = Await.result(sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear), timeoutDuration)
+      val result = sut.getCalculatedTaxAccountFromConnector(Nino(nino.nino), taxYear).futureValue
       val expectedResult: (NpsTaxAccount, Int, JsValue) = (npsTaxAccount, version, Json.toJson(fakeSummary))
 
       result mustBe expectedResult
@@ -604,14 +604,12 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
 
         val npsTaxAccountJson = NpsData.getNpsTaxAccountJson
 
-        val result = Await.result(
+        val result = 
           sut.getCalculatedTaxAccount(
             Nino(nino.nino),
             taxYear,
             (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
-            (npsTaxAccountJson, version)),
-          timeoutDuration
-        )
+            (npsTaxAccountJson, version)).futureValue
 
         val npsTaxAccount = npsTaxAccountJson.as[NpsTaxAccount]
         val taxAccount = npsTaxAccountJson.as[TaxAccount]
@@ -674,14 +672,12 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
 
         val npsTaxAccountJson = NpsData.getNpsTaxAccountJson
 
-        val result = Await.result(
+        val result = 
           sut.getCalculatedTaxAccount(
             Nino(nino.nino),
             taxYear,
             (npsEmploymentList, rtiCalc, nps2EmploymentList, Nil, annualAccounts),
-            (npsTaxAccountJson, version)),
-          timeoutDuration
-        )
+            (npsTaxAccountJson, version)).futureValue
 
         verify(mockNpsConnector, times(1))
           .getCalculatedTaxAccount(Nino(nino.nino), taxYear + 1)
@@ -739,9 +735,8 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         mockCyPlusOneConfig
       )
 
-      val result = Await.result(
-        sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails),
-        timeoutDuration)
+      val result = 
+        sut.appendCYPlusOneToTaxSummary(Nino(nino.nino), taxYear, Nil, version, List(npsEmployment), taxSummaryDetails).futureValue
       val expectedAccounts =
         List(AnnualAccount(TaxYear(taxYear + 1), Some(TaxAccount(None, None, 0, Map.empty, Nil, Nil)), None, None))
 
@@ -862,7 +857,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
         val result: IabdUpdateEmploymentsResponse =
-          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+          sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID).futureValue
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -918,7 +913,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
         val result: IabdUpdateEmploymentsResponse =
-          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+          sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID).futureValue
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe version.toInt + 2
@@ -964,7 +959,7 @@ class TaiServiceSpec extends BaseSpec with NpsFormatter {
         val hcWithSessionID: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
 
         val result: IabdUpdateEmploymentsResponse =
-          Await.result(sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID), 5 seconds)
+          sut.updateEmployments(Nino(nino.nino), taxYear, 3, editEmployments)(hcWithSessionID).futureValue
 
         result.transaction mustBe TransactionId(sessionIdValue)
         result.version mustBe requestVersion

@@ -36,7 +36,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class IncomeServiceSpec extends BaseSpec with ScalaFutures {
+class IncomeServiceSpec extends BaseSpec {
 
   "untaxedInterest" must {
     "return total amount only for passed nino and year" when {
@@ -47,7 +47,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         when(mockIncomeRepository.incomes(any(), any())(any())).thenReturn(Future.successful(incomes))
 
         val SUT = createSUT(employmentService = mock[EmploymentService], incomeRepository = mockIncomeRepository)
-        val result = Await.result(SUT.untaxedInterest(nino)(HeaderCarrier()), 5.seconds)
+        val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
 
         result mustBe Some(untaxedInterest)
       }
@@ -62,7 +62,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         when(mockIncomeRepository.incomes(any(), any())(any())).thenReturn(Future.successful(incomes))
 
         val SUT = createSUT(incomeRepository = mockIncomeRepository)
-        val result = Await.result(SUT.untaxedInterest(nino)(HeaderCarrier()), 5.seconds)
+        val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
 
         result mustBe Some(untaxedInterestWithBankAccount)
       }
@@ -105,7 +105,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         .thenReturn(Future.successful(taxCodeIncomes))
 
       val SUT = createSUT(incomeRepository = mockIncomeRepository)
-      val result = Await.result(SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()), 5 seconds)
+      val result = SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
 
       result mustBe taxCodeIncomes
     }
@@ -199,9 +199,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         .thenReturn(Future.successful(employments :+ employment.copy(employmentStatus = Ceased)))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()).futureValue
 
       val expectedResult = Seq(IncomeSource(taxCodeIncomes(1), employment))
 
@@ -221,9 +220,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             )))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Ceased)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Ceased)(HeaderCarrier()).futureValue
 
       val expectedResult = Seq(IncomeSource(taxCodeIncome, employment.copy(employmentStatus = Ceased)))
 
@@ -243,9 +241,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             )))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()).futureValue
 
       val expectedResult = Seq(IncomeSource(taxCodeIncome, employment.copy(employmentStatus = PotentiallyCeased)))
 
@@ -269,9 +266,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             )))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, NotLive)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, NotLive)(HeaderCarrier()).futureValue
 
       val expectedResult =
         Seq(
@@ -290,9 +286,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         .thenReturn(Future.successful(employments))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
 
@@ -353,9 +348,8 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
         .thenReturn(Future.successful(employmentWithDifferentSeqNumber))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = Await.result(
-        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()),
-        5.seconds)
+      val result =
+        sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
     }
@@ -481,7 +475,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val nextTaxYear = TaxYear().next
       val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
-      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+      val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()).futureValue
 
       val expectedResult =
         Seq(
@@ -504,7 +498,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val nextTaxYear = TaxYear().next
       val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
-      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+      val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
     }
@@ -536,7 +530,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val nextTaxYear = TaxYear().next
       val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
-      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+      val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
     }
@@ -552,7 +546,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val nextTaxYear = TaxYear().next
       val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
-      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+      val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
     }
@@ -583,7 +577,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val nextTaxYear = TaxYear().next
       val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
-      val result = Await.result(sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()), 5.seconds)
+      val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier()).futureValue
 
       result mustBe Seq.empty
     }
@@ -597,7 +591,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val sut = createSUT(incomeRepository = mockIncomeRepository)
 
-      val result = Await.result(sut.incomes(nino, TaxYear()), 5.seconds)
+      val result = sut.incomes(nino, TaxYear()).futureValue
 
       result mustBe incomes
 
@@ -653,7 +647,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val sut = createSUT(employmentService = mockEmploymentService)
 
-      val result = Await.result(sut.employments(taxCodeIncomes, nino, TaxYear().next), 5.seconds)
+      val result = sut.employments(taxCodeIncomes, nino, TaxYear().next).futureValue
 
       result mustBe Seq(emp)
     }
@@ -663,7 +657,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
 
       val sut = createSUT()
 
-      val result = Await.result(sut.employments(taxCodeIncomes, nino, TaxYear()), 5.seconds)
+      val result = sut.employments(taxCodeIncomes, nino, TaxYear()).futureValue
 
       result mustBe Seq.empty[Employment]
     }
@@ -735,7 +729,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             auditor = mockAuditor
           )
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -798,7 +792,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             auditor = mockAuditor
           )
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -877,7 +871,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             auditor = mockAuditor
           )
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -951,7 +945,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             citizenDetailsConnector = citizenDetailsConnector
           )
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5 seconds)
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
 
           result mustBe IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
         }
@@ -1021,7 +1015,7 @@ class IncomeServiceSpec extends BaseSpec with ScalaFutures {
             auditor = mockAuditor
           )
 
-          val result = Await.result(SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()), 5.seconds)
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
 
           result mustBe IncomeUpdateSuccess
           verify(mockTaxAccountRepository, times(1))

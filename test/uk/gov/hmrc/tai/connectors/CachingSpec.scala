@@ -18,16 +18,16 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.ArgumentMatchers.{eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
-class CachingSpec extends BaseSpec {
+class CachingSpec extends BaseSpec with IntegrationPatience {
 
   "cache" must {
     "return the json from cache" when {
@@ -37,7 +37,7 @@ class CachingSpec extends BaseSpec {
         val jsonFromFunction = Json.obj("c" -> "d")
         when(cacheConnector.findJson(meq(cacheId), meq(mongoKey)))
           .thenReturn(Future.successful(Some(jsonFromCache)))
-        val result = Await.result(sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        val result = sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)).futureValue
         result mustBe jsonFromCache
 
         verify(metrics, times(1)).incrementCacheHitCounter()
@@ -54,7 +54,7 @@ class CachingSpec extends BaseSpec {
           cacheConnector
             .createOrUpdateJson(meq(cacheId), meq(jsonFromFunction), meq(mongoKey)))
           .thenReturn(Future.successful(jsonFromFunction))
-        val result = Await.result(sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)), 5 seconds)
+        val result = sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)).futureValue
         result mustBe jsonFromFunction
 
         verify(metrics, times(1)).incrementCacheMissCounter()

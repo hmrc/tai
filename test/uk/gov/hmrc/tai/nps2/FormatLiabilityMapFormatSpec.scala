@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.nps2.{NpsFormatter, TaxDetail, TaxObject}
 
 class FormatLiabilityMapFormatSpec extends PlaySpec with NpsFormatter {
-  "Total Liability " should {
+  "Total Liability " must {
     "return Tax-Detail object with pa tax bands" when {
       "non-savings has been passed" in {
         val result = createJson("nonSavings")

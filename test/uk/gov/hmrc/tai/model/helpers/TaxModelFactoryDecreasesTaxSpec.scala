@@ -21,7 +21,7 @@ import uk.gov.hmrc.tai.model.{DecreasesTax, IabdSummary, TaxCodeDetails, TaxComp
 
 class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestData {
 
-  "groupItemsThatDecreaseTax" should {
+  "groupItemsThatDecreaseTax" must {
     "not return a decreasesTax object" when {
       "no input data is provided" in {
         createSUT.groupItemsThatDecreaseTax(None, None, None, None, None) mustBe None

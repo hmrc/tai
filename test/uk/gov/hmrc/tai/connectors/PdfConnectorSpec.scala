@@ -20,8 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqua
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpException
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class PdfConnectorSpec extends ConnectorBaseSpec {
@@ -43,43 +41,36 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
               .withBody(htmlAsString))
         )
 
-        Await.result(sut.generatePdf(htmlAsString), 5 seconds) mustBe htmlAsString.getBytes
+        sut.generatePdf(htmlAsString).futureValue mustBe htmlAsString.getBytes
+
       }
     }
 
     "generate an HttpException" when {
-      "generatePdf is called and the pdf service returns 4xx" in {
-        val exMessage = "Invalid payload"
 
-        server.stubFor(
-          post(urlEqualTo(url)).willReturn(
-            aResponse()
-              .withStatus(BAD_REQUEST)
-              .withBody(exMessage))
-        )
+      List(
+        BAD_REQUEST,
+        NOT_FOUND,
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpResponse =>
+        s"generatePdf is called and the pdf service returns $httpResponse" in {
+          val exMessage = "Invalid payload"
 
-        assertConnectorException[HttpException](
-          sut.generatePdf(htmlAsString),
-          BAD_REQUEST,
-          exMessage
-        )
-      }
+          server.stubFor(
+            post(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(httpResponse)
+                .withBody(exMessage))
+          )
 
-      "generatePdf is called and the pdf service returns 5xx" in {
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(url)).willReturn(
-            aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)
-              .withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.generatePdf(htmlAsString),
-          INTERNAL_SERVER_ERROR,
-          exMessage
-        )
+          assertConnectorException[HttpException](
+            sut.generatePdf(htmlAsString),
+            httpResponse,
+            exMessage
+          )
+        }
       }
     }
   }
