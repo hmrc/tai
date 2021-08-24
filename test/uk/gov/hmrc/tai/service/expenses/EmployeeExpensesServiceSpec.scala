@@ -27,11 +27,10 @@ import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
-class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
+class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val mockDesConnector = mock[DesConnector]
   private val mockNpsConnector = mock[NpsConnector]
@@ -57,8 +56,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
 
   private val taxYear = 2017
 
-  private lazy val timeoutDuration: Duration = 5 seconds
-
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
@@ -68,8 +65,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await
-          .result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+          .futureValue
           .status mustBe 200
       }
     }
@@ -81,8 +78,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec with ScalaFutures {
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
-        Await
-          .result(service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd), 5 seconds)
+        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+          .futureValue
           .status mustBe 500
       }
     }

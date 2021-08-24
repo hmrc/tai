@@ -21,7 +21,7 @@ import uk.gov.hmrc.tai.model.TaxBand
 
 class TaxBandCalculatorSpec extends PlaySpec {
 
-  "Tax Band Calculator" should {
+  "Tax Band Calculator" must {
 
     "return a list of tax bands" when {
       "given an empty old tax band list" in {

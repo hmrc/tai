@@ -21,7 +21,7 @@ import org.scalatestplus.play.PlaySpec
 
 class RtiPaymentSpec extends PlaySpec {
 
-  "RtiPayment compare method" should {
+  "RtiPayment compare method" must {
     "implement comparison behaviour" in {
       rtiPayment1.compare(rtiPayment2) mustBe -1
       rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(7))) mustBe 0
@@ -30,14 +30,14 @@ class RtiPaymentSpec extends PlaySpec {
   }
 
   "RtiPayment isIrregular method" when {
-    "pay frequency is irregular" should {
+    "pay frequency is irregular" must {
       "return true" in {
         val result = rtiPayment1.isIrregular
         result mustBe true
       }
     }
 
-    "pay frequency is not irregular" should {
+    "pay frequency is not irregular" must {
       "return false" in {
         val result = rtiPayment2.isIrregular
         result mustBe false

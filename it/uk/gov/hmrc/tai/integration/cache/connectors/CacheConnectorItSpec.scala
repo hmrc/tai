@@ -18,26 +18,36 @@ package uk.gov.hmrc.tai.integration.cache.connectors
 
 
 import org.mockito.Mockito
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
+import play.api.test.Injecting
+import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.SessionId
+import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
-import uk.gov.hmrc.tai.integration.TaiBaseSpec
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with MongoFormatter with MockitoSugar with GuiceOneAppPerSuite {
+class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures with Injecting {
+
+  override def fakeApplication = GuiceApplicationBuilder()
+    .configure(
+      "tai.cache.expiryInSeconds" -> 10
+    )
+    .build()
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
@@ -51,92 +61,97 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
+  lazy val mockReactiveMongo: ReactiveMongoComponent = inject[ReactiveMongoComponent]
+
   val mockMongo: MongoConfig = mock[MongoConfig]
   Mockito.when(mockMongo.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(), mockMongo, configuration) {}
+  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(mockReactiveMongo, mockMongo), mockMongo, configuration)
 
-    "Cache Connector" should {
+    "Cache Connector" must {
       "insert and read the data from mongodb" when {
         "session data has been passed" in {
-          val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
-          val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+          val cachedData = sut.find[SessionData](cacheId).futureValue
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "data has been passed" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "session data has been passed without key" in {
-          val data = Await.result(sut.createOrUpdate[SessionData](cacheId, sessionData), atMost)
-          val cachedData = Await.result(sut.find[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+          val cachedData = sut.find[SessionData](cacheId).futureValue
 
-          Some(data) shouldBe cachedData
+          Some(data) mustBe cachedData
         }
 
         "data has been passed without key" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
-          Some(data) shouldBe cachedData
+
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
+
+          Some(data) mustBe cachedData
+
         }
 
         "sequence has been passed" in {
-          val data = Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
-          val cachedData = Await.result(sut.findSeq[SessionData](cacheId), atMost)
+          val data = sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+          val cachedData = sut.findSeq[SessionData](cacheId).futureValue
 
-          data shouldBe cachedData
+          data mustBe cachedData
         }
 
         "saved and returned json is valid" in {
-          val data = Await.result(sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat), atMost)
-          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personMongoFormat), atMost)
-          cachedData shouldBe Some(data)
+          val data = sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
+          cachedData mustBe Some(data)
         }
 
       }
 
       "delete the data from cache" when {
         "time to live is over" in {
-          val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
-          Some(data) shouldBe cachedData
+          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
+          Some(data) mustBe cachedData
 
-          Thread.sleep(120000L)
+          Thread.sleep(100000L)
 
-          val cachedDataAfterTTL = Await.result(sut.find[String](cacheId), atMost)
-          cachedDataAfterTTL shouldBe None
+          val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
+          cachedDataAfterTTL mustBe None
         }
 
         "calling removeById" in {
-         val data = Await.result(sut.createOrUpdate[String](cacheId, "DATA"), atMost)
-          val cachedData = Await.result(sut.find[String](cacheId), atMost)
-          Some(data) shouldBe cachedData
+         val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+          val cachedData = sut.find[String](cacheId).futureValue
+          Some(data) mustBe cachedData
 
-          Await.result(sut.removeById(cacheId), atMost)
+          sut.removeById(cacheId).futureValue
 
-          val dataAfterRemove = Await.result(sut.find[String](cacheId), atMost)
-          dataAfterRemove shouldBe None
+          val dataAfterRemove = sut.find[String](cacheId).futureValue
+          dataAfterRemove mustBe None
         }
       }
 
       "return the data from cache" when {
         "Nil is saved in cache" in {
-          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, Nil), atMost)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
+          sut.createOrUpdate[Seq[SessionData]](cacheId, Nil).futureValue
+          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
 
-          Some(Nil) shouldBe cachedData
+          Some(Nil) mustBe cachedData
         }
 
         "sequence is saved in cache" in {
-          Await.result(sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)), atMost)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](cacheId), atMost)
+          sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
 
-          Some(List(sessionData, sessionData)) shouldBe cachedData
+          Some(List(sessionData, sessionData)) mustBe cachedData
         }
       }
 
@@ -148,16 +163,16 @@ class CacheConnectorItSpec extends TaiBaseSpec("CacheConnectorItSpec") with Mong
                                      |  "invalid": "key"
                                      | }
                                      |""".stripMargin).toString
-          Await.result(sut.createOrUpdate[String](cacheId, badJson), atMost)
-          val cachedData = Await.result(sut.find[Person](cacheId)(PersonFormatter.personHodRead), atMost)
-          cachedData shouldBe None
+          sut.createOrUpdate[String](cacheId, badJson).futureValue
+          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
+          cachedData mustBe None
         }
 
         "cache id doesn't exist" in {
           val idWithNoData = CacheId(new Generator(Random).nextNino)
-          val cachedData = Await.result(sut.findOptSeq[SessionData](idWithNoData), atMost)
+          val cachedData = sut.findOptSeq[SessionData](idWithNoData).futureValue
 
-          cachedData shouldBe None
+          cachedData mustBe None
         }
       }
     }

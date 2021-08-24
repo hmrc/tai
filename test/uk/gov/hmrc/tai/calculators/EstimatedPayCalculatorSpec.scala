@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.{Days, LocalDate}
+import org.joda.time.Days
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.model.enums.PayFreq
@@ -26,7 +26,7 @@ import scala.math.BigDecimal.RoundingMode
 
 class EstimatedPayCalculatorSpec extends PlaySpec {
 
-  "Estimated Pay Calculator" should {
+  "Estimated Pay Calculator" must {
 
     "calculate the correct gross and net amount" when {
       "monthly amount is entered" in {

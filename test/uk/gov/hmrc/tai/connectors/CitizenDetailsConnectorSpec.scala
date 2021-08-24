@@ -24,11 +24,9 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures with IntegrationPatience {
+class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
   lazy val sut: CitizenDetailsConnector = inject[CitizenDetailsConnector]
 
@@ -56,7 +54,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
         get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
       )
 
-      val personDetails = Await.result(sut.getPersonDetails(nino), 5 seconds)
+      val personDetails = sut.getPersonDetails(nino).futureValue
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -79,11 +77,34 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       val personDetails =
-        Await.result(sut.getPersonDetails(nino)(HeaderCarrier(), PersonDetails.formats), 5 seconds)
+        sut.getPersonDetails(nino)(HeaderCarrier(), PersonDetails.formats).futureValue
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "0"
       personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = true, None)
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT
+    ).foreach { httpResponse =>
+      s"return a HttpException when a $httpResponse occurs" in {
+
+        server.stubFor(
+          get(urlEqualTo(designatoryDetailsUrl))
+            .willReturn(
+              aResponse()
+                .withStatus(httpResponse)
+            )
+        )
+
+        assertConnectorException[HttpException](
+          sut.getPersonDetails(nino),
+          httpResponse,
+          ""
+        )
+      }
     }
 
     "return Internal server error when requesting " in {
@@ -116,7 +137,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       val personDetails =
-        Await.result(sut.getPersonDetails(nino), 5 seconds)
+        sut.getPersonDetails(nino).futureValue
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -146,7 +167,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       val personDetails =
-        Await.result(sut.getPersonDetails(nino), 5 seconds)
+        sut.getPersonDetails(nino).futureValue
 
       personDetails.person.nino.value mustBe nino.nino
       personDetails.etag mustBe "100"
@@ -194,6 +215,25 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec with ScalaFutures wi
       )
 
       sut.getEtag(nino).futureValue mustBe None
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT
+    ).foreach { httpResponse =>
+      s"return a None when a $httpResponse occurs" in {
+
+        server.stubFor(
+          get(urlEqualTo(eTagUrl))
+            .willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+            )
+        )
+
+        sut.getEtag(nino).futureValue mustBe None
+      }
     }
 
     "return None on an unrecoverable error, possibly bad data received from the upstream API" in {

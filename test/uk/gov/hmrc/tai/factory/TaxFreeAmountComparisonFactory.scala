@@ -37,7 +37,7 @@ object TaxFreeAmountComparisonFactory {
     Json.obj(
       "previous" -> Json.arr(
         Json.obj(
-          "componentType" -> CarBenefit,
+          "componentType" -> CarBenefit.toString,
           "employmentId"  -> 1,
           "amount"        -> 1,
           "description"   -> "Car Benefit",
@@ -47,7 +47,7 @@ object TaxFreeAmountComparisonFactory {
       ),
       "current" -> Json.arr(
         Json.obj(
-          "componentType" -> Mileage,
+          "componentType" -> Mileage.toString,
           "employmentId"  -> 2,
           "amount"        -> 100,
           "description"   -> "Mileage",

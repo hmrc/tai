@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.tai.service
 
-import java.nio.file.{Files, Paths}
-
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
@@ -30,8 +29,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import java.nio.file.{Files, Paths}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class EmploymentServiceSpec extends BaseSpec {
@@ -51,7 +50,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = Await.result(sut.employments(nino, TaxYear())(HeaderCarrier()), 5.seconds)
+      val employments = sut.employments(nino, TaxYear())(HeaderCarrier()).futureValue
 
       employments mustBe employmentsForYear
     }
@@ -68,7 +67,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = Await.result(sut.employment(nino, 2)(HeaderCarrier()), 5.seconds)
+      val employments = sut.employment(nino, 2)(HeaderCarrier()).futureValue
 
       employments mustBe Right(employment)
       verify(mockEmploymentRepository, times(1)).employment(any(), meq(2))(any())
@@ -86,7 +85,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = Await.result(sut.employment(nino, 5)(HeaderCarrier()), 5.seconds)
+      val employments = sut.employment(nino, 5)(HeaderCarrier()).futureValue
 
       employments mustBe Left(EmploymentNotFound)
     }
@@ -128,7 +127,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockPdfService,
           mockAuditable)
 
-        Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds) mustBe "1"
+        sut.endEmployment(nino, 2, endEmployment).futureValue mustBe "1"
 
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
@@ -171,7 +170,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockFileUploadService,
         mockPdfService,
         mockAuditable)
-      Await.result(sut.endEmployment(nino, 2, endEmployment), 5 seconds)
+      sut.endEmployment(nino, 2, endEmployment).futureValue
 
       verify(mockAuditable, times(1)).sendDataEvent(
         meq("EndEmploymentRequest"),
@@ -210,7 +209,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockFileUploadService,
           mockPdfService,
           mockAuditable)
-        val result = Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
+        val result = sut.addEmployment(nino, addEmployment).futureValue
 
         result mustBe "1"
 
@@ -251,7 +250,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockFileUploadService,
         mockPdfService,
         mockAuditable)
-      Await.result(sut.addEmployment(nino, addEmployment), 5 seconds)
+      sut.addEmployment(nino, addEmployment).futureValue
 
       verify(mockAuditable, times(1)).sendDataEvent(
         meq(IFormConstants.AddEmploymentAuditTxnName),
@@ -289,7 +288,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[FileUploadService],
           mock[PdfService],
           mockAuditable)
-        val result = Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
+        val result = sut.incorrectEmployment(nino, 1, employment).futureValue
 
         result mustBe "1"
       }
@@ -323,7 +322,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mockAuditable)
-      Await.result(sut.incorrectEmployment(nino, 1, employment), 5 seconds)
+      sut.incorrectEmployment(nino, 1, employment).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.IncorrectEmploymentAuditTxnName), meq(map))(any())
@@ -352,7 +351,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[FileUploadService],
           mock[PdfService],
           mockAuditable)
-        val result = Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
+        val result = sut.updatePreviousYearIncome(nino, TaxYear(2016), employment).futureValue
 
         result mustBe "1"
       }
@@ -387,7 +386,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mockAuditable)
-      Await.result(sut.updatePreviousYearIncome(nino, TaxYear(2016), employment), 5 seconds)
+      sut.updatePreviousYearIncome(nino, TaxYear(2016), employment).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())

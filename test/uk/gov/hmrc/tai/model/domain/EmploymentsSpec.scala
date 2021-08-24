@@ -51,7 +51,7 @@ class EmploymentsSpec extends PlaySpec {
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
 
-  "Employments" should {
+  "Employments" must {
     "return a sequence of employments with only accounts for a given year" in {
 
       val employment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))

@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers.predicates
 
-import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -25,14 +24,15 @@ import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, Confi
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)
+case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request) with Logging
 
 @Singleton
 class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions, cc: ControllerComponents)(
   implicit ec: ExecutionContext
-) extends BackendController(cc) {
+) extends BackendController(cc) with Logging {
 
   def async(action: AuthenticatedRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     Action.async { implicit request: Request[AnyContent] =>
@@ -45,7 +45,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
         }
         .recover {
           case e: AuthorisationException =>
-            Logger.warn("Failed to authorise: " + e.reason)
+            logger.warn("Failed to authorise: " + e.reason)
             Unauthorized(e.getMessage)
         }
     }
@@ -61,7 +61,7 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
         }
         .recover {
           case e: AuthorisationException =>
-            Logger.warn("Failed to authorise: " + e.reason)
+            logger.warn("Failed to authorise: " + e.reason)
             Unauthorized(e.getMessage)
         }
     }

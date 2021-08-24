@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class IncomeHelperSpec extends PlaySpec {
 
-  "isEditableByUser" should {
+  "isEditableByUser" must {
     "return if user is editable or not when given different employment status" when {
       val isEditable =
         (employmentStatus: Option[Int]) => sut.isEditableByUser(Some(false), None, Some(false), employmentStatus)
@@ -96,7 +96,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "isPrimary" should {
+  "isPrimary" must {
     "return if employment is primary" when {
       "employmentType is primary" in {
         sut.isPrimary(Some(TaiConstants.PrimaryEmployment)) mustBe true
@@ -112,7 +112,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "isLive" should {
+  "isLive" must {
     "return if employment is live" when {
       "employmentStatus is primary" in {
         sut.isLive(Some(Live.code)) mustBe true
@@ -128,7 +128,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getFromAdjustedNetIncome" should {
+  "getFromAdjustedNetIncome" must {
     "return iabd amount" when {
       "given NPSComponent and iabd type" in {
         sut.getFromAdjustedNetIncome(Some(npsComponent), GiftAidPayments.code) mustBe 15000
@@ -145,7 +145,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getGiftFromAdjustedNetIncome" should {
+  "getGiftFromAdjustedNetIncome" must {
     "return gift amount" when {
       "given no income" in {
         sut.getGiftFromAdjustedNetIncome() mustBe 0
@@ -171,7 +171,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "isEditableByAutoUpdateService" should {
+  "isEditableByAutoUpdateService" must {
     "inform if AutoUpdateService can edit" when {
       "there is no otherIncomeSource and no jsaIndicator" in {
         sut.isEditableByAutoUpdateService(None, None) mustBe true
@@ -187,7 +187,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getIBFromAdjustedNetIncome" should {
+  "getIBFromAdjustedNetIncome" must {
     "return iabd amount for incapacity benefits" when {
       "given NPSComponent and iabd type as incapacity benefits" in {
         val modifiedNpsComponent = Some(
@@ -211,7 +211,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getIabdAmountFromIncome" should {
+  "getIabdAmountFromIncome" must {
     "return iabd amount" when {
       val iabdFilter = (npsIabdSummary: NpsIabdSummary) => npsIabdSummary.`type`.contains(GiftAidPayments.code)
 
@@ -235,7 +235,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getESAFromAdjustedNetIncome" should {
+  "getESAFromAdjustedNetIncome" must {
     "return iabd amount for employment and support allowance" when {
       "given NPSComponent and iabd type as employment and support allowance" in {
         val modifiedNpsComponent = Some(
@@ -259,7 +259,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getEstimatedPayFromAdjustedNetIncome" should {
+  "getEstimatedPayFromAdjustedNetIncome" must {
     "return net income amount for employment" when {
 
       val EmploymentId = Some(4)
@@ -293,7 +293,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "isOccupationalPension" should {
+  "isOccupationalPension" must {
     def isOccupationalPensionWithDefaultNoneParams(
       empTaxDistrictNum: Option[Int] = None,
       empPayeRef: Option[String] = None,
@@ -322,7 +322,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "getAllIncomes" should {
+  "getAllIncomes" must {
     "calculate merged incomes" when {
       "given no input" in {
         sut.getAllIncomes(Nil) mustBe Nil
@@ -469,7 +469,7 @@ class IncomeHelperSpec extends PlaySpec {
     }
   }
 
-  "incomeType" should {
+  "incomeType" must {
     "return a valid incomeType code" when {
 
       def incomeTypeTestWithDefaultNoneParams(

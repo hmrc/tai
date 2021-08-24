@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import org.scalatest.concurrent.ScalaFutures
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
 
-  "ControllerErrorHandler" should {
+  "ControllerErrorHandler" must {
     "return BAD_REQUEST" when {
       "there is hod BAD_REQUEST exception" in {
         val sut = createSUT
@@ -46,10 +44,8 @@ class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
       "tax account returns internal server error" in {
         val sut = createSUT
         val pf = sut.taxAccountErrorHandler()
-        val result = the[InternalServerException] thrownBy Await.result(
-          pf(new InternalServerException("any other error")),
-          5.seconds
-        )
+        val result = the[InternalServerException] thrownBy
+          pf(new InternalServerException("any other error")).futureValue
         result.getMessage mustBe "any other error"
       }
     }

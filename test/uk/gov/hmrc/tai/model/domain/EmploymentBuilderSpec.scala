@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,7 +40,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
     val testEmploymentBuilder = new EmploymentBuilder(mockAuditor)
   }
 
-  "combineAccountsWithEmployments" should {
+  "combineAccountsWithEmployments" must {
     "combine Employment instances (having Nil accounts), with their corresponding AnnualAccount instances" when {
       "each AnnualAccount record has a single matching Employment record by employer designation" in new EmploymentBuilderSetup {
 

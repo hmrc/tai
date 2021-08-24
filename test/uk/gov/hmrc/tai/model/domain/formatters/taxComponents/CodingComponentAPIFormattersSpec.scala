@@ -26,7 +26,7 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
   "codingComponentTypeWrites" must {
     "write tax component type correctly to json" when {
       "tax component type is having valid type" in {
-        Json.toJson(GiftAidPayments)(codingComponentTypeWrites) mustBe JsString("GiftAidPayments")
+        Json.toJson(GiftAidPayments)(codingComponentTypeWrites.writes) mustBe JsString("GiftAidPayments")
       }
     }
   }

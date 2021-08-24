@@ -17,11 +17,12 @@
 package uk.gov.hmrc.tai.connectors
 import org.scalactic.source.Position
 import org.scalatest.Assertion
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.duration.DurationInt
@@ -29,11 +30,18 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Random
 
-trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with Injecting {
+trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
 
   val nino: Nino = new Generator(new Random).nextNino
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val sessionId = "testSessionId"
+  val requestId = "testRequestId"
+
+  implicit val hc: HeaderCarrier = HeaderCarrier(
+    sessionId = Some(SessionId(sessionId)),
+    requestId = Some(RequestId(requestId))
+  )
+
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
   def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(

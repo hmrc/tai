@@ -37,7 +37,7 @@ import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants {
 
-  "hasTaxCodeChanged" should {
+  "hasTaxCodeChanged" must {
 
     "return true" when {
       "there has been a tax code change" in {
@@ -70,7 +70,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
     }
   }
 
-  "taxCodeChange" should {
+  "taxCodeChange" must {
     "respond with OK and return given nino's tax code history" in {
 
       val date = LocalDate.now()
@@ -153,7 +153,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
     }
   }
 
-  "taxCodeMismatch" should {
+  "taxCodeMismatch" must {
 
     val nino = ninoGenerator
 
@@ -224,7 +224,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
   }
 
-  "mostRecentTaxCodeRecords" should {
+  "mostRecentTaxCodeRecords" must {
 
     val nino = ninoGenerator
 

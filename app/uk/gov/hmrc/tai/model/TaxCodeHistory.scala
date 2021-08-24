@@ -24,9 +24,11 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   def applicableTaxCodeRecords: Seq[TaxCodeRecord] = {
     val applicableRecords = inYearTaxCodeRecords(operatedTaxCodeRecords(taxCodeRecords))
-    Logger.debug(s"applicableRecords are \n $applicableRecords")
+    logger.debug(s"applicableRecords are \n $applicableRecords")
     applicableRecords
   }
 

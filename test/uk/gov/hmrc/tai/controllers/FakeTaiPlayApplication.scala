@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.scalatest.{Args, Status, TestSuite}
 import org.scalatest.concurrent.PatienceConfiguration
-import org.scalatestplus.play.guice.{GuiceOneAppPerSuite, GuiceOneServerPerSuite}
+import org.scalatest.{Args, Status, TestSuite}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 

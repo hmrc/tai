@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.nps.NpsIabdSummary
 
 class TaxModelFactoryIncreasesTaxSpec extends PlaySpec with TaxModelFactoryTestData {
 
-  "groupItemsThatIncreaseTax" should {
+  "groupItemsThatIncreaseTax" must {
     "return object of components which increase the tax" when {
       "passed default arguments" in {
         val increasesTax = createSUT.groupItemsThatIncreaseTax(incomes = None)

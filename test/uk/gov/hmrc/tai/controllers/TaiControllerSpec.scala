@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json._
 import play.api.test.Helpers.{contentAsJson, _}
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -31,13 +32,12 @@ import uk.gov.hmrc.tai.model.{SessionData, TaiRoot, TaxSummaryDetails}
 import uk.gov.hmrc.tai.service.{NpsError, TaxAccountService}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
 class TaiControllerSpec extends BaseSpec with MongoFormatter {
 
-  "getTaiRoot" should {
+  "getTaiRoot" must {
 
     "return the TaiRoot for the supplied nino " in {
       val data = sessionData.copy(
@@ -71,7 +71,7 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
     }
   }
 
-  "taiData" should {
+  "taiData" must {
     "return cached data" in {
       val data = sessionData.copy(
         taiRoot = Some(
@@ -132,10 +132,11 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(notFoundErrorResponse), NOT_FOUND)))
 
       val sut = createSUT(mockTaxAccountService, mock[Metrics])
-      val notFound = sut.taiData(new Nino(nino.nino))(FakeRequest())
+      val result = sut.taiData(new Nino(nino.nino))(FakeRequest()).failed.futureValue
 
-      val thrown = the[NotFoundException] thrownBy await(notFound)
-      thrown.getMessage mustBe Json.prettyPrint(notFoundErrorResponse)
+      result mustBe a[NotFoundException]
+
+      result.getMessage mustBe Json.prettyPrint(notFoundErrorResponse)
     }
 
     "return Service Unavailable error from Hods for the supplied nino and year" in {
@@ -151,10 +152,12 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(serviceUnavailableErrorResponse), SERVICE_UNAVAILABLE)))
 
       val sut = createSUT(mockTaxAccountService, mock[Metrics])
-      val serviceUnavailable = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
-      val thrown = the[HttpException] thrownBy await(serviceUnavailable)
-      thrown.getMessage mustBe Json.prettyPrint(serviceUnavailableErrorResponse)
+      val result = sut.taiData(new Nino(nino.nino))(FakeRequest()).failed.futureValue
+
+      result mustBe a[HttpException]
+
+      result.getMessage mustBe Json.prettyPrint(serviceUnavailableErrorResponse)
     }
 
     "return Internal Server error from Hods for the supplied nino and year" in {
@@ -170,14 +173,16 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
         .thenReturn(Future.failed(NpsError(Json.prettyPrint(internalServerErrorResponse), INTERNAL_SERVER_ERROR)))
 
       val sut = createSUT(mockTaxAccountService, mock[Metrics])
-      val internalServerError = sut.taiData(new Nino(nino.nino))(FakeRequest())
 
-      val thrown = the[InternalServerException] thrownBy await(internalServerError)
-      thrown.getMessage mustBe Json.prettyPrint(internalServerErrorResponse)
+      val result = sut.taiData(new Nino(nino.nino))(FakeRequest()).failed.futureValue
+
+      result mustBe a[InternalServerException]
+
+      result.getMessage mustBe Json.prettyPrint(internalServerErrorResponse)
     }
   }
 
-  "updateTaiData" should {
+  "updateTaiData" must {
     "return successful when data saved in cache" in {
       val fakeRequest = FakeRequest(
         method = "Put",
@@ -209,11 +214,13 @@ class TaiControllerSpec extends BaseSpec with MongoFormatter {
         .thenReturn(Future.failed(new IllegalArgumentException("FAILED")))
 
       val sut = createSUT(mockTaxAccountService, mock[Metrics])
-      val result = sut.updateTaiData(nino)(fakeRequest)
 
-      val ex = the[InternalServerException] thrownBy Await.result(result, 5 seconds)
+      val result = sut.updateTaiData(nino)(fakeRequest).failed.futureValue
 
-      ex.getMessage mustBe "FAILED"
+      result mustBe a[InternalServerException]
+
+      result.getMessage mustBe "FAILED"
+
       verify(mockTaxAccountService, times(1))
         .updateTaiData(meq(nino), any())(any())
     }

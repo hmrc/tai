@@ -80,7 +80,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val result = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
+        val result = sut.taiData(nino, 2017)(hc).futureValue
 
         result.nino mustBe nino.nino
 
@@ -123,7 +123,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds) mustBe sessionData(
+        sut.taiData(nino, 2017)(hc).futureValue mustBe sessionData(
           gateKeeperTaxSummaryDetails,
           gatekeeperTaiRoot)
 
@@ -166,7 +166,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
+        val sessionData = sut.taiData(nino, 2017)(hc).futureValue
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
         verify(mockCitizenDetailsConnector, times(1))
@@ -217,7 +217,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
+        sut.taiData(nino, 2017)(hc).futureValue
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[SessionData](meq(cacheId), meq(sessionData()), any())(any())
@@ -260,7 +260,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
+        val sessionData = sut.taiData(nino, 2017)(hc).futureValue
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
 
@@ -305,7 +305,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val sessionData = Await.result(sut.taiData(nino, 2017)(hc), 5.seconds)
+        val sessionData = sut.taiData(nino, 2017)(hc).futureValue
 
         sessionData.taxSummaryDetailsCY mustBe gateKeeperTaxSummaryDetails
         verify(mockCitizenDetailsConnector, times(1)).getPersonDetails(any())(any(), any())
@@ -316,8 +316,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
 
   "version" must {
     "return the version" in {
-
-      val sessionIdValue = "ABCD1234"
 
       val sd = sessionData().copy(taiRoot = Some(nonGatekeeperTaiRoot.copy(version = 1)))
 
@@ -356,15 +354,13 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
       )
 
       val version =
-        Await.result(sut.version(nino, year)(hc), 5.seconds)
+        sut.version(nino, year)(hc).futureValue
 
       version mustBe Some(1)
     }
 
     "return None" when {
       "tai root is None" in {
-
-        val sessionIdValue = "ABCD1234"
 
         val sd = sessionData().copy(taiRoot = None)
 
@@ -403,7 +399,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
         )
 
         val version =
-          Await.result(sut.version(nino, year)(hc), 5.seconds)
+          sut.version(nino, year)(hc).futureValue
 
         version mustBe None
       }
@@ -442,7 +438,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
         mock[FeatureTogglesConfig]
       )
 
-      val awaitResult = Await.result(sut.personDetails(nino)(hc), 5.seconds)
+      val awaitResult = sut.personDetails(nino)(hc).futureValue
       awaitResult mustBe nonGatekeeperTaiRoot
     }
   }
@@ -486,7 +482,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mockFeatureToggleConfig
         )
 
-        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
+        sut.calculatedTaxAccountRawResponse(nino, 2016)(hc).futureValue
 
         verify(mockDesConnector, times(1))
           .getCalculatedTaxAccountRawResponseFromDes(any(), any())(any())
@@ -531,7 +527,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        Await.result(sut.calculatedTaxAccountRawResponse(nino, 2016)(hc), 5.seconds)
+        sut.calculatedTaxAccountRawResponse(nino, 2016)(hc).futureValue
 
         verify(mockDesConnector, never)
           .getCalculatedTaxAccountRawResponseFromDes(any(), any())(any())
@@ -583,7 +579,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
         mock[FeatureTogglesConfig]
       )
 
-      val summaryDetails = Await.result(sut.taxSummaryDetails(nino, 2014)(hc), 5 seconds)
+      val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc).futureValue
 
       summaryDetails mustBe taxSummaryDetails
     }
@@ -640,7 +636,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
 
         val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
         Json.parse(ex.message) mustBe failureMsg
-
       }
 
       "api throws bad request exception" in {
@@ -685,11 +680,11 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val summaryDetails = sut.taxSummaryDetails(nino, 2014)(hc)
+        val result = sut.taxSummaryDetails(nino, 2014)(hc).failed.futureValue
 
-        val ex = the[NpsError] thrownBy Await.result(summaryDetails, 5 seconds)
-        ex.message mustBe failureMsg
+        result mustBe a[NpsError]
 
+        result.getMessage mustBe "error message :" + failureMsg
       }
     }
   }
@@ -733,7 +728,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
+        val data = sut.updateTaiData(nino, sessionData())(hc).futureValue
 
         data mustBe sessionData()
         verify(mockCacheConnector, times(1))
@@ -779,7 +774,7 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
           mock[FeatureTogglesConfig]
         )
 
-        val data = Await.result(sut.updateTaiData(nino, sessionData())(hc), 5.seconds)
+        val data = sut.updateTaiData(nino, sessionData())(hc).futureValue
 
         data mustBe sessionData()
         verify(mockCacheConnector, never())
@@ -1001,13 +996,6 @@ class TaxAccountServiceSpec extends BaseSpec with MongoFormatter {
   private def reflectedSessionAnswer = new Answer[Future[SessionData]]() {
     override def answer(invocation: InvocationOnMock): Future[SessionData] = {
       val suppliedSession: SessionData = invocation.getArguments()(1).asInstanceOf[SessionData]
-      Future.successful(suppliedSession)
-    }
-  }
-
-  private def reflectedProtectedSessionAnswer = new Answer[Future[Protected[SessionData]]]() {
-    override def answer(invocation: InvocationOnMock): Future[Protected[SessionData]] = {
-      val suppliedSession: Protected[SessionData] = invocation.getArguments()(1).asInstanceOf[Protected[SessionData]]
       Future.successful(suppliedSession)
     }
   }

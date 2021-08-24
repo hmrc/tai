@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 class TaxModelFactorySpec extends PlaySpec {
 
-  "create" should {
+  "create" must {
     "return an empty TaxSummaryDetails object" when {
       "only default values are provided" in {
         val sut = createSUT
@@ -545,7 +545,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createTaxCodeIncomeTotal" should {
+  "createTaxCodeIncomeTotal" must {
     "return tax code income total" when {
       val employmentName = "test"
       val employmentId = 1234
@@ -589,7 +589,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "getIncreasesTaxTotal" should {
+  "getIncreasesTaxTotal" must {
     "return Increased Tax Total" when {
       "passed None incomes and benefits from employment" in {
         createSUT.getIncreasesTaxTotal() mustBe BigDecimal(0)
@@ -611,7 +611,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createTaxSummaryWithTotals" should {
+  "createTaxSummaryWithTotals" must {
     "return tax summary with totals" when {
       "passed default values" in {
         val taxSummaryDetails = createSUT.createTaxSummaryWithTotals(nino = "12345678", version = 1,
@@ -647,7 +647,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createIncreasesTaxWithTotal" should {
+  "createIncreasesTaxWithTotal" must {
     "return Increased Tax Total" when {
       "passed None incomes and benefits from employment" in {
         createSUT.createIncreasesTaxWithTotal() mustBe IncreasesTax(None,None,0)
@@ -674,7 +674,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "updateDecreasesTaxTotal" should {
+  "updateDecreasesTaxTotal" must {
     "return updated decrease tax total" when {
       "passed decreases tax model with default values" in {
         val decTaxTotal = createSUT.updateDecreasesTaxTotal(DecreasesTax(total = 0))
@@ -697,7 +697,7 @@ class TaxModelFactorySpec extends PlaySpec {
   }
 
 
-  "convertToNonCodedIncome" should {
+  "convertToNonCodedIncome" must {
     "return tax amounts" when {
       "there is a non-coded income amount and a total tax amount" in {
         val totalTax = 300
@@ -776,7 +776,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "getMarriageAllowance" should {
+  "getMarriageAllowance" must {
     "return marriage allowance with amounts for marriage allowance and reliefs" when {
       "there is a marriage couples allowance amount in reliefs giving back tax and multiple married couples allowance amounts" in {
         val totalLiability = NpsTotalLiability(reliefsGivingBackTax = Some(NpsReliefsGivingBackTax(marriedCouplesAllowance = Some(1000))))
@@ -906,7 +906,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "adjustMarriageAllowance" should {
+  "adjustMarriageAllowance" must {
     "return the allowances" when {
       "there are allowances and no Higher Personal Allowance Restriction" in {
         val allowance = TaxCodeComponent(componentType = Some(1))
@@ -985,7 +985,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createTaxCodeInfo" should {
+  "createTaxCodeInfo" must {
     "add the filtered list of allowed allowances" when {
       "given a list of all the allowance types" in {
         val taxCodeDetails = TaxCodeDetails(
@@ -1129,7 +1129,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createDecreasesTaxWithTotal" should {
+  "createDecreasesTaxWithTotal" must {
     "return DecreaseTax object with updated total" when {
       "passed default values in arguments" in {
         val decreasesTax = createSUT.createDecreasesTaxWithTotal(paTapered = false)
@@ -1163,7 +1163,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "updateNoneTaxableIncomesTotal" should {
+  "updateNoneTaxableIncomesTotal" must {
     "return the new total for NonTaxCodeIncomes" when {
       "each income has an amount" in {
 
@@ -1204,7 +1204,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "updateTaxableIncomesTotal" should {
+  "updateTaxableIncomesTotal" must {
     "return the new total for TaxCodeIncomes" when {
       "each income has an amount" in {
 
@@ -1247,7 +1247,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "updateIncomesTotal" should {
+  "updateIncomesTotal" must {
     "return updated Incomes Total" when {
       "passed incomes with TaxCodeIncomes and NonTaxCodeIncomes" in {
 
@@ -1291,7 +1291,7 @@ class TaxModelFactorySpec extends PlaySpec {
     }
   }
 
-  "createIncomesWithTotal" should {
+  "createIncomesWithTotal" must {
     val taxCodeSummary = TaxCodeIncomeSummary("ABC", "taxCode", tax = Tax())
     val employmentDetails = Some(TaxCodeIncomeTotal(List(taxCodeSummary), 0, 0, 0))
     "return income object" when {

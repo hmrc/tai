@@ -20,7 +20,7 @@ import org.scalatestplus.play.PlaySpec
 
 class RtiEmploymentSpec extends PlaySpec {
 
-  "RtiEmployment" should {
+  "RtiEmployment" must {
     val data = RtiGenerator.year
     val payFrequency = PayFrequency.Monthly
 

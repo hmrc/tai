@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 
 class TaxAccountSpec extends PlaySpec with NpsFormatter {
 
-  "TaxAccount format" should {
+  "TaxAccount format" must {
     val sut = createSut
 
     "successfully convert json from nps into TaxDetail." in {
@@ -45,7 +45,7 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
     }
   }
 
-  "TaxAccount format for multiple allowance , benefit and deduction" should {
+  "TaxAccount format for multiple allowance , benefit and deduction" must {
     "successfully read json" in {
       val json = NpsData.getNpsTaxAccountMultipleAllowancesJson
       val taxAccountObject = json.as[TaxAccount]
@@ -62,7 +62,7 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
     }
   }
 
-  "TaxAccount" should {
+  "TaxAccount" must {
     "update income" when {
       "passed employments with sequenceNo matches with employmentId" in {
         val sut = createSut

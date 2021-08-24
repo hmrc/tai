@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.model.nps
 
 import org.joda.time.DateTime
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -26,9 +25,9 @@ import uk.gov.hmrc.tai.model.TaiRoot
 
 import scala.util.Random
 
-class PersonDetailsSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+class PersonDetailsSpec extends PlaySpec with MockitoSugar {
 
-  "PersonDetails" should {
+  "PersonDetails" must {
     "return a blank taiRoot object (except for nino)" when {
       "a blank person (except for nino) is supplied" in {
 

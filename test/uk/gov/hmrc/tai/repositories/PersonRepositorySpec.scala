@@ -24,12 +24,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.util.BaseSpec
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class PersonRepositorySpec extends BaseSpec {
+class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 
   val address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
@@ -38,7 +39,7 @@ class PersonRepositorySpec extends BaseSpec {
   def createSUT(cacheConnector: CacheConnector, citizenDetailsUrls: CitizenDetailsUrls, httpHandler: HttpHandler) =
     new PersonRepository(cacheConnector, citizenDetailsUrls, httpHandler)
 
-  "The getPerson method" should {
+  "The getPerson method" must {
 
     "retrieve person details from mongo cache, bypassing an API call" when {
 
@@ -54,7 +55,7 @@ class PersonRepositorySpec extends BaseSpec {
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         result mustBe person
 
@@ -62,7 +63,7 @@ class PersonRepositorySpec extends BaseSpec {
           .find[Person](meq(cacheId), meq(personMongoKey))(any())
 
         verify(mockHttpHandler, never())
-          .getFromApi(any(), any())(any())
+          .getFromApi(any(), any(), any())(any())
       }
     }
 
@@ -80,17 +81,17 @@ class PersonRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(person))
-        when(mockHttpHandler.getFromApi(any(), any())(any()))
+        when(mockHttpHandler.getFromApi(any(), any(), any())(any()))
           .thenReturn(Future.successful(JsObject(Seq("person" -> Json.toJson(person)))))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         result mustBe person
 
         verify(mockHttpHandler, times(1))
-          .getFromApi(any(), any())(any())
+          .getFromApi(any(), any(), any())(any())
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), any(), meq(personMongoKey))(any())
@@ -120,11 +121,12 @@ class PersonRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdate[Person](any(), any(), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(expectedPersonFromPartialJson))
-        when(mockHttpHandler.getFromApi(any(), any())(any())).thenReturn(Future.successful(jsonWithMissingFields))
+        when(mockHttpHandler.getFromApi(any(), any(), any())(any()))
+          .thenReturn(Future.successful(jsonWithMissingFields))
 
         val SUT = createSUT(mockCacheConnector, mockCitizenDetailsUrls, mockHttpHandler)
         val responseFuture = SUT.getPerson(Nino(nino.nino))
-        val result = Await.result(responseFuture, 5 seconds)
+        val result = responseFuture.futureValue
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate(any(), meq(expectedPersonFromPartialJson), meq(personMongoKey))(any())

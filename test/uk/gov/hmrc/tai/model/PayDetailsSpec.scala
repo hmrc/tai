@@ -17,13 +17,13 @@
 package uk.gov.hmrc.tai.model
 
 import org.joda.time.LocalDate
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.tai.model.enums.PayFreq
 
-class PayDetailsSpec extends UnitSpec {
+class PayDetailsSpec extends PlaySpec {
 
-  "PayDetails Json conversion " should {
+  "PayDetails Json conversion " must {
     "successfully convert json paymentFrequency into PaymentDetails when a 'weekly' payment frequency is supplied." in {
       val payDetailsJson = Json.parse("""
                                         | {
@@ -32,7 +32,7 @@ class PayDetailsSpec extends UnitSpec {
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
-      payDetails.paymentFrequency shouldBe PayFreq.weekly
+      payDetails.paymentFrequency mustBe PayFreq.weekly
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when a 'fortnightly' payment frequency is supplied." in {
@@ -43,7 +43,7 @@ class PayDetailsSpec extends UnitSpec {
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
-      payDetails.paymentFrequency shouldBe PayFreq.fortnightly
+      payDetails.paymentFrequency mustBe PayFreq.fortnightly
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when a 'monthly' payment frequency is supplied." in {
@@ -54,7 +54,7 @@ class PayDetailsSpec extends UnitSpec {
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
-      payDetails.paymentFrequency shouldBe PayFreq.monthly
+      payDetails.paymentFrequency mustBe PayFreq.monthly
     }
 
     "successfully convert json paymentFrequency into PaymentDetails when an 'other' payment frequency is supplied." in {
@@ -65,7 +65,7 @@ class PayDetailsSpec extends UnitSpec {
         """.stripMargin)
 
       val payDetails = payDetailsJson.as[PayDetails]
-      payDetails.paymentFrequency shouldBe PayFreq.other
+      payDetails.paymentFrequency mustBe PayFreq.other
     }
 
     "successfully convert a full json representation of PaymentDetails into a PaymentDetails object." in {
@@ -82,18 +82,18 @@ class PayDetailsSpec extends UnitSpec {
 
       val payDetails = payDetailsJson.as[PayDetails]
 
-      payDetails.paymentFrequency shouldBe PayFreq.monthly
-      payDetails.pay shouldBe Some(5.12)
-      payDetails.taxablePay shouldBe Some(3.01)
-      payDetails.days shouldBe Some(23)
-      payDetails.bonus shouldBe Some(1.23)
-      payDetails.startDate shouldBe Some(LocalDate.parse("2017-01-01"))
+      payDetails.paymentFrequency mustBe PayFreq.monthly
+      payDetails.pay mustBe Some(5.12)
+      payDetails.taxablePay mustBe Some(3.01)
+      payDetails.days mustBe Some(23)
+      payDetails.bonus mustBe Some(1.23)
+      payDetails.startDate mustBe Some(LocalDate.parse("2017-01-01"))
     }
 
     "fail to convert json paymentFrequency into PaymentDetails when an unknown payment frequency is supplied." in {
       val payDetailsJson = Json.parse("""
                                         | {
-                                        |   "paymentFrequency": "shouldfail"
+                                        |   "paymentFrequency": "mustfail"
                                         | }
         """.stripMargin)
 
@@ -106,7 +106,7 @@ class PayDetailsSpec extends UnitSpec {
       val pd = PayDetails(paymentFrequency = PayFreq.fortnightly)
       val payDetailsJson = Json.toJson(pd)
       val resultPayDetails = payDetailsJson.as[PayDetails]
-      resultPayDetails.paymentFrequency shouldBe PayFreq.fortnightly
+      resultPayDetails.paymentFrequency mustBe PayFreq.fortnightly
     }
   }
 

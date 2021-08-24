@@ -33,6 +33,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, auditor: Auditor)(
   implicit ec: ExecutionContext) {
 
+  private val logger: Logger = Logger(getClass.getName)
+
   private val FileUploadSuccessStatus = "AVAILABLE"
   private val FileUploadErrorStatus = "ERROR"
   private val FileUploadOpenStatus = "OPEN"
@@ -46,7 +48,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
     fileUploadConnector.envelope(envelopeId) map {
       case Some(envelopeSummary) =>
         if (envelopeSummary.status != FileUploadOpenStatus) {
-          Logger.warn(s"Multiple Callback received for envelope-id $envelopeId (${envelopeSummary.status})")
+          logger.warn(s"Multiple Callback received for envelope-id $envelopeId (${envelopeSummary.status})")
           Open
         } else if (envelopeSummary.files.size == 2 && envelopeSummary.files.forall(_.status == FileUploadSuccessStatus)) {
           Closed
@@ -79,8 +81,8 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
       auditor.sendDataEvent(FileUploadFailureAudit, detail = details.toMap)
 
       details.reason match {
-        case Some(reason) => Logger.error(s"File upload failed: ${details.status} $reason")
-        case None         => Logger.error(s"File upload failed for an unknown reason: ${details.status}")
+        case Some(reason) => logger.error(s"File upload failed: ${details.status} $reason")
+        case None         => logger.error(s"File upload failed for an unknown reason: ${details.status}")
       }
 
       Future.successful(Open)

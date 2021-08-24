@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package hmrc.nps2
+package uk.gov.hmrc.tai.nps2
 
-import org.scalatest._
-import java.io.File
-
+import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.nps2.{NpsFormatter, TaxAccount}
 
+import java.io.File
 import scala.io.Source.fromFile
 import util._
-import play.api.libs.json.Json
 
-class TaxAccountTest extends WordSpec with Matchers with NpsFormatter {
+class TaxAccountTest extends PlaySpec with NpsFormatter {
 
   def parseNpsTaxAccount(f: File): Try[TaxAccount] =
     for {
@@ -52,13 +51,13 @@ class TaxAccountTest extends WordSpec with Matchers with NpsFormatter {
     files.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
   }
 
-  "NPS TaxAccount JSON Parsing" should {
+  "NPS TaxAccount JSON Parsing" must {
     "be able to parse the QA data" in {
-      qaData.filter(_._2.isFailure) should be(Map.empty)
+      qaData.filter(_._2.isFailure) must be(Map.empty)
     }
 
     "be able to parse all the other files" in {
-      otherData.filter(_._2.isFailure) should be(Map.empty)
+      otherData.filter(_._2.isFailure) must be(Map.empty)
     }
   }
 }

@@ -21,7 +21,7 @@ import uk.gov.hmrc.tai.model.TaxBand
 
 class PotentialUnderpaymentCalculatorSpec extends PlaySpec {
 
-  "calculatePotentialUnderpayment" should {
+  "calculatePotentialUnderpayment" must {
 
     "return no potentialUnderpayment" when {
 

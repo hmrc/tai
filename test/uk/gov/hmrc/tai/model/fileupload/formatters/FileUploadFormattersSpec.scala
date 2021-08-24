@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
 class FileUploadFormattersSpec extends PlaySpec {
 
-  "File Upload Formatter" should {
+  "File Upload Formatter" must {
 
     "read the envelope summary" when {
       "Json is valid and files are empty" in {

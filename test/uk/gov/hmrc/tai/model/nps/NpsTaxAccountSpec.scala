@@ -32,7 +32,7 @@ import scala.util.Random
 
 class NpsTaxAccountSpec extends PlaySpec {
 
-  "NpsTaxAccount" should {
+  "NpsTaxAccount" must {
     "return the TaxSummaryDetails " when {
       "given a version, and empty list of nps employments, iabds, rti calc and accounts" in {
 
@@ -109,7 +109,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "toLocalDate" should {
+  "toLocalDate" must {
 
     "return None" when {
       "None is supplied" in {
@@ -137,7 +137,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getEmploymentCeasedDetail" should {
+  "getEmploymentCeasedDetail" must {
 
     "return an empty CeasedEmploymentDetails object" when {
 
@@ -345,7 +345,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "findCeasedEmploymentDetails" should {
+  "findCeasedEmploymentDetails" must {
 
     "return the first CeasedEmploymentDetails" when {
 
@@ -424,7 +424,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getTaxableStateBenefit" should {
+  "getTaxableStateBenefit" must {
 
     "not return any taxable state benefits" when {
 
@@ -563,7 +563,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getIncomeData" should {
+  "getIncomeData" must {
 
     val employmentName = "test"
     val employmentId: Int = 1234
@@ -1012,7 +1012,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getTaxCodeDescriptors" should {
+  "getTaxCodeDescriptors" must {
     "output a list of tax code descriptors" when {
       "given a tax code with a valid prefix" in {
         val sut = createSUT()
@@ -1303,7 +1303,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getFullTaxCodeDescription" should {
+  "getFullTaxCodeDescription" must {
     "return an empty list" when {
       "given an empty list" in {
         val sut = createSUT()
@@ -1360,7 +1360,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getStatePension" should {
+  "getStatePension" must {
     "return the state pension amount" when {
       "there is a deduction of state pension" in {
         val npsComponentAmount = 41
@@ -1434,7 +1434,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getStatePensionLumpSum" should {
+  "getStatePensionLumpSum" must {
     "return the amount of the state pension lump sum" when {
       "there is a matching tax district number and a matching employment paye ref" in {
         val npsComponentAmount = 22
@@ -1542,7 +1542,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "primaryEmployment" should {
+  "primaryEmployment" must {
     "return a single nps income source" when {
       s"income sources has an employment type of ${TaiConstants.PrimaryEmployment}" in {
         val incomeSource = NpsIncomeSource(employmentType = Some(TaiConstants.PrimaryEmployment))
@@ -1581,7 +1581,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "toTaxCodeIncomeTotal" should {
+  "toTaxCodeIncomeTotal" must {
     "return a tax code income total" when {
       "given a list with a single merged employment" in {
         val sut = createSUT()
@@ -1721,7 +1721,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
   }
 
-  "getTaxCodeDetails" should {
+  "getTaxCodeDetails" must {
     "not return TaxCodeDetails" when {
       "income sources are not given" in {
 
@@ -1799,7 +1799,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getTaxCodeRate" should {
+  "getTaxCodeRate" must {
     "return the first rate for the given tax code" when {
       "the code is contained in the income sources" in {
         val sut = createSUT(None, Some(List(incomeSourceWithOneAllowanceAndDeduction)))
@@ -1821,7 +1821,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "taxCodeRates" should {
+  "taxCodeRates" must {
     "retrun a single pair of tax codes and rates" when {
       "given one tax rate in the income sources" in {
         val sut = createSUT(None, Some(List(incomeSourceWithOneAllowanceAndDeduction)))
@@ -1842,7 +1842,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getOperatedTaxCode" should {
+  "getOperatedTaxCode" must {
     "return the original taxcode" when {
       "there is no basis of operation specified" in {
         createSUT().getOperatedTaxCode(Some("BR"), None) mustBe Some("BR")
@@ -1863,7 +1863,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getTaxCodeComponent" should {
+  "getTaxCodeComponent" must {
     "return a tax code component" when {
       "given a single NpsComponent" in {
         val sut = createSUT()
@@ -1893,7 +1893,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "getTaxCodes" should {
+  "getTaxCodes" must {
     "return a single tax code" when {
       "given a single income source" in {
         val sut = createSUT()
@@ -1924,7 +1924,7 @@ class NpsTaxAccountSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeSummary" should {
+  "TaxCodeIncomeSummary" must {
     "have isLive and isEditable set correctly if the employments are live" in {
       val npsEmployments = NpsData.getNpsBasicRateLivePensions()
       val npsTaxAccount = NpsData.getNpsBasicRateLivePensionTaxAccount()
