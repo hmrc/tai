@@ -201,6 +201,36 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
 
         verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
+
+      "key is not present in the cache" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("WRONG_KEY" -> "DATA")))))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.find[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "key is not present in the cache and encryption is enabled" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+        val sut = createSUT(mockMongoConfig)
+        val jsonEncryptor = new JsonEncryptor[String]()
+        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("WRONG_KEY" -> encryptedData)))))
+        when(taiCacheRepository.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.find[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
     }
 
     "retrieve the session data from cache" when {
@@ -512,7 +542,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
     }
 
     "retrieve None" when {
-      "key is present in the cache" in {
+      "key is not present in the cache" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)

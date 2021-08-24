@@ -25,12 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.test.Injecting
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
+import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 
@@ -90,10 +92,12 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         }
 
         "data has been passed without key" in {
+
           val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
           val cachedData = sut.find[String](cacheId).futureValue
 
           Some(data) mustBe cachedData
+
         }
 
         "sequence has been passed" in {
@@ -101,6 +105,12 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
           val cachedData = sut.findSeq[SessionData](cacheId).futureValue
 
           data mustBe cachedData
+        }
+
+        "saved and returned json is valid" in {
+          val data = sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
+          cachedData mustBe Some(data)
         }
 
       }
@@ -146,7 +156,19 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       }
 
       "return None" when {
-        "key doesn't exist" in {
+
+        "returned json is invalid" in {
+          val badJson = Json.parse("""
+                                     | {
+                                     |  "invalid": "key"
+                                     | }
+                                     |""".stripMargin).toString
+          sut.createOrUpdate[String](cacheId, badJson).futureValue
+          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
+          cachedData mustBe None
+        }
+
+        "cache id doesn't exist" in {
           val idWithNoData = CacheId(new Generator(Random).nextNino)
           val cachedData = sut.findOptSeq[SessionData](idWithNoData).futureValue
 

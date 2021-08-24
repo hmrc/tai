@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.Configuration
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsResultException, JsValue, Json, Reads, Writes}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.cache.repository.CacheMongoRepository
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
@@ -83,25 +83,19 @@ class CacheConnector @Inject()(
       cacheRepository.findById(cacheId.value) map {
         case Some(cache) =>
           cache.data flatMap { json =>
-            if ((json \ key).validate[Protected[T]](jsonDecryptor).isSuccess) {
-              Some((json \ key).as[Protected[T]](jsonDecryptor).decryptedValue)
-            } else {
-              None
-            }
+            (json \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
           }
         case None => {
           None
         }
       }
+    } recover {
+      case JsResultException(_) => None
     } else {
       cacheRepository.findById(cacheId.value) map {
         case Some(cache) =>
           cache.data flatMap { json =>
-            if ((json \ key).validate[T].isSuccess) {
-              Some((json \ key).as[T])
-            } else {
-              None
-            }
+            (json \ key).validateOpt[T].asOpt.flatten
           }
         case None => {
           None
