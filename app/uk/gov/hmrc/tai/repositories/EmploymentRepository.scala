@@ -145,7 +145,7 @@ class EmploymentRepository @Inject()(
     rtiStatus: RealTimeStatus,
     employments: Seq[Employment],
     taxYear: TaxYear): Seq[AnnualAccount] =
-    employments map (employment => AnnualAccount(employment.key, taxYear, rtiStatus))
+    employments map (employment => AnnualAccount(employment.sequenceNumber, taxYear, rtiStatus))
 
   private def addEmploymentsToCache(nino: Nino, employments: Seq[Employment], taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =

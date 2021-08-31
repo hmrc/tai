@@ -35,7 +35,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier): Option[Employment] =
-      employments.filter(_.employerDesignation == account.employerDesignation) match {
+      employments.filter(_.sequenceNumber == account.sequenceNumber) match {
         case Seq(single) =>
           logger.warn(s"single match found for $nino for $taxYear")
           Some(single.copy(annualAccounts = Seq(account)))
@@ -45,7 +45,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
         case many =>
           logger.warn(s"multiple matches found for $nino for $taxYear")
 
-          val combinedEmploymentAndAccount = many.find(_.key == account.key).map(_.copy(annualAccounts = Seq(account)))
+          val combinedEmploymentAndAccount = many.find(_.sequenceNumber == account.sequenceNumber).map(_.copy(annualAccounts = Seq(account)))
 
           combinedEmploymentAndAccount orElse auditAssociatedEmployment(
             account,
@@ -55,8 +55,8 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       }
 
     def combinedDuplicates(employments: Seq[Employment]): Seq[Employment] =
-      employments.map(_.key).distinct map { distinctKey =>
-        val duplicates = employments.filter(_.key == distinctKey)
+      employments.map(_.sequenceNumber).distinct map { distinctKey =>
+        val duplicates = employments.filter(_.sequenceNumber == distinctKey)
         duplicates.head.copy(annualAccounts = duplicates.flatMap(_.annualAccounts))
       }
 
@@ -65,8 +65,8 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
     }
 
     val unified = combinedDuplicates(accountAssignedEmployments)
-    val nonUnified = employments.filterNot(emp => unified.map(_.key).contains(emp.key)) map { emp =>
-      emp.copy(annualAccounts = Seq(AnnualAccount(emp.key, taxYear, Unavailable, Nil, Nil)))
+    val nonUnified = employments.filterNot(emp => unified.map(_.sequenceNumber).contains(emp.sequenceNumber)) map { emp =>
+      emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, Unavailable, Nil, Nil)))
     }
 
     Employments(unified ++ nonUnified)
@@ -78,7 +78,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
     nino: String,
     taxYear: String)(implicit hc: HeaderCarrier): Option[Employment] = {
     val employerKey = employments.map { employment =>
-      s"${employment.name} : ${employment.key}; "
+      s"${employment.name} : ${employment.sequenceNumber}; "
     }.mkString
     auditor.sendDataEvent(
       transactionName = "NPS RTI Data Mismatch",
@@ -86,7 +86,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
         "nino"                -> nino,
         "tax year"            -> taxYear,
         "NPS Employment Keys" -> employerKey,
-        "RTI Account Key"     -> account.key)
+        "RTI Account Key"     -> account.sequenceNumber.toString)
     )
 
     logger.warn(
