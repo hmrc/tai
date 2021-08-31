@@ -24,11 +24,11 @@ class AnnualAccountSpec extends PlaySpec {
 
   "AnnualAccount" must {
     "create an instance given correct input" in {
-      val key = "0-0-0"
+      val sequenceNumber = 0
       val realTimeStatus = Available
       val taxYear = TaxYear()
 
-      AnnualAccount(key, taxYear, realTimeStatus) mustBe AnnualAccount(key, taxYear, realTimeStatus, Nil, Nil)
+      AnnualAccount(sequenceNumber, taxYear, realTimeStatus) mustBe AnnualAccount(sequenceNumber, taxYear, realTimeStatus, Nil, Nil)
     }
   }
 
@@ -46,45 +46,45 @@ class AnnualAccountSpec extends PlaySpec {
         SutWithNoPayments.totalIncomeYearToDate mustBe 0
       }
     }
-
-    "Generate a unique employer designation, consisting of tax district and paye ref extracted from the id string" in {
-      val desig = SutWithNoPayments.employerDesignation
-      desig mustBe "taxdistrict-payeref"
-    }
+ // TODO - Need to remove
+  //    "Generate a unique employer designation, consisting of tax district and paye ref extracted from the id string" in {
+  //      val desig = SutWithNoPayments.employerDesignation
+  //      desig mustBe "taxdistrict-payeref"
+  //    }
 
     "Generate a full key (unique employer designation plus optional employee payroll number)" when {
       "Employment has an employee payrollNumber present" in {
 
-        val desig = SutWithNoPayments.key
-        desig mustBe "taxdistrict-payeref-payroll"
+        val desig = SutWithNoPayments.sequenceNumber
+        desig mustBe 0
       }
     }
     "Generate a full key consisting of only tax district and paye ref" when {
 
       "Employment has no employee payrollNumber" in {
 
-        val desig = SutWithNoPayroll.key
-        desig mustBe "taxdistrict-payeref"
+        val desig = SutWithNoPayroll.sequenceNumber
+        desig mustBe 0
       }
     }
   }
 
   val SutWithNoPayments = AnnualAccount(
-    "taxdistrict-payeref-payroll",
+    0,
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
   val SutWithNoPayroll = AnnualAccount(
-    "taxdistrict-payeref",
+    0,
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
   val SutWithOnePayment = AnnualAccount(
-    "",
+    0,
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = List(

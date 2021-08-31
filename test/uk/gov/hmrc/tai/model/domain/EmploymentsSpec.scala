@@ -47,9 +47,9 @@ class EmploymentsSpec extends PlaySpec {
 
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
-    key: String = "0-0-0",
+    sequenceNumber: Int = 0,
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
-    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
+    AnnualAccount(sequenceNumber , taxYear, rtiStatus, Nil, Nil)
 
   "Employments" must {
     "return a sequence of employments with only accounts for a given year" in {
@@ -159,7 +159,7 @@ class EmploymentsSpec extends PlaySpec {
             false,
             false)
 
-        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val annualAccount2CTY = createAnnualAccount(sequenceNumber = 1, taxYear = currentTaxYear)
         val employment2 =
           Employment(
             "EMPLOYER2",
@@ -202,7 +202,7 @@ class EmploymentsSpec extends PlaySpec {
             false,
             false)
 
-        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val annualAccount2CTY = createAnnualAccount(sequenceNumber = 1, taxYear = currentTaxYear)
         val employment2 =
           Employment(
             "EMPLOYER2",
@@ -265,7 +265,7 @@ class EmploymentsSpec extends PlaySpec {
           false,
           false)
 
-      val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+      val annualAccount2CTY = createAnnualAccount(sequenceNumber = 1, taxYear = currentTaxYear)
       val employment2 =
         Employment(
           "EMPLOYER2",

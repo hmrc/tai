@@ -119,7 +119,7 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             new LocalDate("2017-05-26"),
             None,
             List(AnnualAccount(
-              "",
+              0,
               TaxYear(2017),
               Available,
               List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),

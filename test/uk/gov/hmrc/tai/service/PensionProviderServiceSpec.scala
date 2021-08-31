@@ -165,7 +165,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           Some("12345"),
           LocalDate.now(),
           None,
-          List(AnnualAccount("", currentTaxYear, Available, Nil, Nil)),
+          List(AnnualAccount(0, currentTaxYear, Available, Nil, Nil)),
           "",
           "",
           2,

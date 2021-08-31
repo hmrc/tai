@@ -64,15 +64,19 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     "Remove any leading zeroes from a numeric 'taxDistrictNumber' field" in {
       val employment = getJson("npsLeadingZeroTaxDistrictNumber").as[EmploymentCollection]
       employment.employments.head.taxDistrictNumber mustBe "000"
-      employment.employments.head.employerDesignation mustBe "000-00000"
-      employment.employments.head.key mustBe "000-00000-0000"
+      employment.employments.head.sequenceNumber mustBe 2
+      // TODO Need to be removed
+//      employment.employments.head.employerDesignation mustBe "000-00000"
+//      employment.employments.head.key mustBe "000-00000-0000"
     }
 
     "Correctly handle a non numeric 'taxDistrictNumber' field" in {
       val employment = getJson("npsNonNumericTaxDistrictNumber").as[EmploymentCollection]
       employment.employments.head.taxDistrictNumber mustBe "000"
-      employment.employments.head.employerDesignation mustBe "000-00000"
-      employment.employments.head.key mustBe "000-00000-0000"
+      employment.employments.head.sequenceNumber mustBe 2
+      // TODO Need to be removed
+//      employment.employments.head.employerDesignation mustBe "000-00000"
+//      employment.employments.head.key mustBe "000-00000-0000"
     }
   }
 
@@ -94,7 +98,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
 
         val annualAccount =
           getJson("rtiSingleEmploymentSinglePayment").as[Seq[AnnualAccount]](annualAccountHodReads).head
-        annualAccount mustBe AnnualAccount("0000-0000-0000", TaxYear(2016), Available, Seq(payment), Nil)
+        annualAccount mustBe AnnualAccount(39, TaxYear(2016), Available, Seq(payment), Nil)
       }
 
       "there is one Payment and one EndOfTaxYearUpdate" in {
@@ -121,7 +125,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
 
         val annualAccount =
           getJson("rtiSingleEmploymentSinglePaymentOneEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
-        annualAccount mustBe AnnualAccount("0000-0000-0000", TaxYear(2016), Available, Seq(payment), Seq(eyu))
+        annualAccount mustBe AnnualAccount(39, TaxYear(2016), Available, Seq(payment), Seq(eyu))
       }
     }
 
@@ -151,14 +155,18 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
 
     "generate key and employerDesignation attributes with any leading zeroes removed from a numeric 'officeNo' (aka tax district number) field" in {
       val annualAccount = getJson("rtiLeadingZeroOfficeNo").as[Seq[AnnualAccount]](annualAccountHodReads).head
-      annualAccount.employerDesignation mustBe "0000-0000"
-      annualAccount.key mustBe "0000-0000-0000"
+      annualAccount.sequenceNumber mustBe 39
+      // TODO
+//      annualAccount.employerDesignation mustBe "0000-0000"
+//      annualAccount.key mustBe "0000-0000-0000"
     }
 
     "generate key and employerDesignation attributes incorporating non-numeric 'officeNo' (aka tax district number) field" in {
       val annualAccount = getJson("rtiNonNumericOfficeNo").as[Seq[AnnualAccount]](annualAccountHodReads).head
-      annualAccount.employerDesignation mustBe "0000-0000"
-      annualAccount.key mustBe "0000-0000-0000"
+      annualAccount.sequenceNumber mustBe 39
+      // TODO
+//      annualAccount.employerDesignation mustBe "0000-0000"
+//      annualAccount.key mustBe "0000-0000-0000"
     }
   }
 
