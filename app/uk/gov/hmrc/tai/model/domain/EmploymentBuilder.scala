@@ -39,7 +39,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
         case Seq(single) =>
           logger.warn(s"single match found for $nino for $taxYear")
           Some(single.copy(annualAccounts = Seq(account)))
-        case _ =>
+        case Nil =>
           logger.warn(s"no match found for $nino for $taxYear")
           auditAssociatedEmployment(account, employments, nino.nino, taxYear.twoDigitRange)
         case many =>
