@@ -60,7 +60,10 @@ class EmploymentRepository @Inject()(
       case Employments(Nil) => hodCallWithCaching(nino, taxYear)
       case cachedEmployments @ Employments(_) =>
         cachedEmployments.accountsForYear(taxYear) match {
-          case Employments(Nil) => hodCallWithCacheMerge(nino, taxYear, cachedEmployments)
+          case Employments(Nil) =>
+            println("*" * 50)
+            println(s"Nil employments found for $taxYear")
+            hodCallWithCacheMerge(nino, taxYear, cachedEmployments)
           case employmentsForYear => {
             if (isCallToRtiRequired(taxYear, employmentsForYear)) {
               rtiCallWithCacheUpdate(nino, taxYear, employmentsForYear, cachedEmployments)

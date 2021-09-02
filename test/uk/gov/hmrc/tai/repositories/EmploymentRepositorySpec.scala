@@ -91,9 +91,9 @@ class EmploymentRepositorySpec extends BaseSpec {
   )
 
   def createAnnualAccount(
-                           rtiStatus: RealTimeStatus = Available,
-                           sequenceNumber: Int = 1,
-                           taxYear: TaxYear = currentTaxYear): AnnualAccount =
+    rtiStatus: RealTimeStatus = Available,
+    sequenceNumber: Int = 1,
+    taxYear: TaxYear = currentTaxYear): AnnualAccount =
     AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
   "employmentsForYear" must {
@@ -738,7 +738,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             val cachedEmploymentsFor2018 = List(cachedEmployment1, cachedEmployment2)
 
             val expectedAnnualAccount = AnnualAccount(
-              1,
+              3,
               currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -748,7 +748,22 @@ class EmploymentRepositorySpec extends BaseSpec {
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
-            val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount)))
+            val expectedEmployments = Seq(
+              Employment(
+                "EMPLOYER3",
+                Live,
+                Some("0"),
+                new LocalDate(2016, 4, 6),
+                None,
+                Seq(expectedAnnualAccount),
+                "0",
+                "0",
+                3,
+                None,
+                false,
+                false)
+            )
+
             val updatedCacheContents = cachedEmploymentsFor2018 ++ expectedEmployments
 
             val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
@@ -1366,10 +1381,10 @@ class EmploymentRepositorySpec extends BaseSpec {
   }
 
   private def testRepository(
-                              rtiConnector: RtiConnector = mock[RtiConnector],
-                              cacheConnector: CacheConnector = mock[CacheConnector],
-                              npsConnector: NpsConnector = mock[NpsConnector],
-                              employmentBuilder: EmploymentBuilder = mock[EmploymentBuilder]): EmploymentRepository =
+    rtiConnector: RtiConnector = mock[RtiConnector],
+    cacheConnector: CacheConnector = mock[CacheConnector],
+    npsConnector: NpsConnector = mock[NpsConnector],
+    employmentBuilder: EmploymentBuilder = mock[EmploymentBuilder]): EmploymentRepository =
     new EmploymentRepository(rtiConnector, cacheConnector, npsConnector, employmentBuilder)
 
   private def getJson(fileName: String): JsValue = {
