@@ -46,25 +46,17 @@ class AnnualAccountSpec extends PlaySpec {
         SutWithNoPayments.totalIncomeYearToDate mustBe 0
       }
     }
- // TODO - Need to remove
-  //    "Generate a unique employer designation, consisting of tax district and paye ref extracted from the id string" in {
-  //      val desig = SutWithNoPayments.employerDesignation
-  //      desig mustBe "taxdistrict-payeref"
-  //    }
 
-    "Generate a full key (unique employer designation plus optional employee payroll number)" when {
+    "Check for sequenceNumber" when {
       "Employment has an employee payrollNumber present" in {
 
         val desig = SutWithNoPayments.sequenceNumber
         desig mustBe 0
       }
-    }
-    "Generate a full key consisting of only tax district and paye ref" when {
-
       "Employment has no employee payrollNumber" in {
 
         val desig = SutWithNoPayroll.sequenceNumber
-        desig mustBe 0
+        desig mustBe 1
       }
     }
   }
@@ -77,14 +69,14 @@ class AnnualAccountSpec extends PlaySpec {
     endOfTaxYearUpdates = Nil)
 
   val SutWithNoPayroll = AnnualAccount(
-    0,
+    1,
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = Nil,
     endOfTaxYearUpdates = Nil)
 
   val SutWithOnePayment = AnnualAccount(
-    0,
+    2,
     taxYear = TaxYear("2017"),
     realTimeStatus = Available,
     payments = List(

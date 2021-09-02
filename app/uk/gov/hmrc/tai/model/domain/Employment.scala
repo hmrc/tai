@@ -37,12 +37,6 @@ case class Employment(
   hasPayrolledBenefit: Boolean,
   receivingOccupationalPension: Boolean) {
 
-
- // TODO - Need to remove
-  //  lazy val key: String = employerDesignation + payrollNumber.map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
-  //
-  //  lazy val employerDesignation: String = taxDistrictNumber + "-" + payeNumber
-
   lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
