@@ -211,7 +211,6 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts = List(
-          AnnualAccount(0, TaxYear(2017), Available, Nil, Nil),
           AnnualAccount(1, TaxYear(2017), Available, Nil, Nil),
           AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)
         )
@@ -259,7 +258,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
         unifiedEmployments.size mustBe 2
 
-        verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
+        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
       }
     }
 
