@@ -17,10 +17,10 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.model.domain.{Address, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
 
@@ -46,6 +46,30 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
                                         |   "etag":"$etag"
                                         |}
     """.stripMargin)
+
+  "getPerson" must {
+    "return a person's information from citizen details" in {
+
+      import uk.gov.hmrc.tai.model.domain.Person
+
+      val person = Person(
+        nino,
+        "fname",
+        "sname",
+        None,
+        Address("l1", "l2", "l3", "postcode", "country")
+      )
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(
+          ok().withBody(Json.toJson(person)(PersonFormatter.personMongoFormat).toString())
+        )
+      )
+
+      val result = sut.getPerson(nino).futureValue
+      result mustBe person
+    }
+  }
 
   "Get data from citizen-details service" must {
     "return person information when requesting " in {

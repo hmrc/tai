@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.{Logger, Logging}
+import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
@@ -122,7 +122,6 @@ class EmploymentRepository @Inject()(
     rtiConnector.getPaymentsForYear(nino, taxYear)
 
   private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] = {
-    implicit val ty = taxYear
 
     def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
       rtiCall(nino, taxYear) map {

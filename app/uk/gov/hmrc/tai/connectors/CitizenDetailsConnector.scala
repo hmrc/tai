@@ -22,10 +22,11 @@ import play.api.http.Status._
 import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
+import uk.gov.hmrc.tai.model.domain.Person
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.PersonDetails
 
@@ -40,6 +41,8 @@ class CitizenDetailsConnector @Inject()(
     extends BaseConnector(auditor, metrics, httpClient) with Logging {
 
   override val originatorId: String = ""
+
+  def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] =  ???
 
   def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] =
     getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)
