@@ -30,7 +30,16 @@ case class Person(
   isDeceased: Boolean = false,
   manualCorrespondenceInd: Boolean = false)
 
+object Person {
+  def createLockedUser(nino: Nino) =
+    Person(nino, "", "", None, Address.emptyAddress, false, true)
+}
+
 case class Address(line1: String, line2: String, line3: String, postcode: String, country: String)
+
+object Address {
+  val emptyAddress = Address("", "", "", "", "")
+}
 
 object PersonFormatter {
 
@@ -46,7 +55,7 @@ object PersonFormatter {
       ((JsPath \ "person" \ "firstName").read[String] or Reads.pure("")) and
       ((JsPath \ "person" \ "lastName").read[String] or Reads.pure("")) and
       (JsPath \ "person" \ "dateOfBirth").readNullable[LocalDate] and
-      ((JsPath \ "address").read[Address] or Reads.pure(Address("", "", "", "", ""))) and
+      ((JsPath \ "address").read[Address] or Reads.pure(Address.emptyAddress)) and
       ((JsPath \ "person" \ "deceased").read[Boolean] or Reads.pure(false)) and
       ((JsPath \ "person" \ "manualCorrespondenceInd").read[Boolean] or Reads.pure(false))
   )(Person.apply _)
