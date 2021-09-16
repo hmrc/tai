@@ -54,7 +54,7 @@ class EmploymentRepositorySpec extends BaseSpec {
     Seq.empty[AnnualAccount],
     "0",
     "0",
-    2,
+    1,
     None,
     false,
     false)
@@ -92,9 +92,9 @@ class EmploymentRepositorySpec extends BaseSpec {
 
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
-    key: String = "0-0-0",
+    sequenceNumber: Int = 1,
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
-    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
+    AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
   "employmentsForYear" must {
     "return the employment domain model" when {
@@ -197,7 +197,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
 
           val annualAccount = AnnualAccount(
-            key = "0-0-0",
+            sequenceNumber = 1,
             taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments,
@@ -213,7 +213,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Seq(annualAccount),
               "0",
               "0",
-              2,
+              1,
               None,
               false,
               false))
@@ -265,7 +265,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
 
           val annualAccount = AnnualAccount(
-            key = "0-0-0",
+            sequenceNumber = 1,
             taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments,
@@ -281,7 +281,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Seq(annualAccount),
               "0",
               "0",
-              2,
+              1,
               None,
               false,
               false))
@@ -335,14 +335,14 @@ class EmploymentRepositorySpec extends BaseSpec {
             List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
 
           val annualAccount1 = AnnualAccount(
-            key = "0-0-0",
+            sequenceNumber = 1,
             taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments1,
             endOfTaxYearUpdates = eyus1)
 
           val annualAccount2 = AnnualAccount(
-            key = "00-00-00",
+            sequenceNumber = 2,
             taxYear = currentTaxYear,
             realTimeStatus = Available,
             payments = payments2,
@@ -439,10 +439,10 @@ class EmploymentRepositorySpec extends BaseSpec {
                 Some("12345"),
                 LocalDate.now(),
                 None,
-                List(AnnualAccount("0", currentTaxYear, Available, Nil, Nil)),
+                List(AnnualAccount(1, currentTaxYear, Available, Nil, Nil)),
                 "",
                 "",
-                2,
+                1,
                 Some(100),
                 false,
                 false))
@@ -482,10 +482,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("12345"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("0", currentTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(1, currentTaxYear, Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false)
@@ -496,7 +496,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("123456"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("0", previousTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(2, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
               2,
@@ -541,11 +541,11 @@ class EmploymentRepositorySpec extends BaseSpec {
                 LocalDate.now(),
                 None,
                 List(
-                  AnnualAccount("0", currentTaxYear, Available, Nil, Nil),
-                  AnnualAccount("0", previousTaxYear, Available, Nil, Nil)),
+                  AnnualAccount(1, currentTaxYear, Available, Nil, Nil),
+                  AnnualAccount(1, previousTaxYear, Available, Nil, Nil)),
                 "",
                 "",
-                2,
+                1,
                 Some(100),
                 false,
                 false
@@ -558,10 +558,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("12345"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("0", previousTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(1, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false)
@@ -602,11 +602,11 @@ class EmploymentRepositorySpec extends BaseSpec {
               LocalDate.now(),
               None,
               List(
-                AnnualAccount("12345", currentTaxYear, Available, Nil, Nil),
-                AnnualAccount("12345", previousTaxYear, Available, Nil, Nil)),
+                AnnualAccount(1, currentTaxYear, Available, Nil, Nil),
+                AnnualAccount(1, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false
@@ -618,8 +618,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               LocalDate.now(),
               None,
               List(
-                AnnualAccount("123456", currentTaxYear, Available, Nil, Nil),
-                AnnualAccount("123456", previousTaxYear, Available, Nil, Nil)),
+                AnnualAccount(2, currentTaxYear, Available, Nil, Nil),
+                AnnualAccount(2, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
               2,
@@ -636,10 +636,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("12345"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("12345", currentTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(1, currentTaxYear, Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false),
@@ -649,7 +649,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("123456"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("123456", currentTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(2, currentTaxYear, Available, Nil, Nil)),
               "",
               "",
               2,
@@ -665,10 +665,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("12345"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("12345", previousTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(1, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false),
@@ -678,7 +678,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("123456"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("123456", previousTaxYear, Available, Nil, Nil)),
+              List(AnnualAccount(2, previousTaxYear, Available, Nil, Nil)),
               "",
               "",
               2,
@@ -713,10 +713,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("1"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("1", TaxYear(2018), Available, Nil, Nil)),
+              List(AnnualAccount(1, TaxYear(2018), Available, Nil, Nil)),
               "",
               "",
-              2,
+              1,
               Some(100),
               false,
               false)
@@ -727,7 +727,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("2"),
               LocalDate.now(),
               None,
-              List(AnnualAccount("2", TaxYear(2018), Available, Nil, Nil)),
+              List(AnnualAccount(2, TaxYear(2018), Available, Nil, Nil)),
               "",
               "",
               2,
@@ -738,7 +738,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             val cachedEmploymentsFor2018 = List(cachedEmployment1, cachedEmployment2)
 
             val expectedAnnualAccount = AnnualAccount(
-              "0-0-0",
+              3,
               currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -748,7 +748,22 @@ class EmploymentRepositorySpec extends BaseSpec {
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
-            val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(expectedAnnualAccount)))
+            val expectedEmployments = Seq(
+              Employment(
+                "EMPLOYER3",
+                Live,
+                Some("0"),
+                new LocalDate(2016, 4, 6),
+                None,
+                Seq(expectedAnnualAccount),
+                "0",
+                "0",
+                3,
+                None,
+                false,
+                false)
+            )
+
             val updatedCacheContents = cachedEmploymentsFor2018 ++ expectedEmployments
 
             val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
@@ -817,7 +832,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val now = LocalDate.now()
 
-            val annualAccount1 = AnnualAccount("0-0-0", TaxYear(2018), Available, Nil, Nil)
+            val annualAccount1 = AnnualAccount(1, TaxYear(2018), Available, Nil, Nil)
             val employment1 = npsSingleEmployment.copy(annualAccounts = Seq(annualAccount1))
 
             val employment2 = Employment(
@@ -826,7 +841,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               Some("00"),
               now,
               None,
-              List(AnnualAccount("00", TaxYear(2018), Available, Nil, Nil)),
+              List(AnnualAccount(2, TaxYear(2018), Available, Nil, Nil)),
               "",
               "",
               2,
@@ -840,7 +855,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             )
 
             val expectedAnnualAccount = AnnualAccount(
-              "0-0-0",
+              1,
               currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -923,7 +938,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
 
             val expectedAnnualAccount = AnnualAccount(
-              "0-0-0",
+              1,
               currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -982,10 +997,10 @@ class EmploymentRepositorySpec extends BaseSpec {
           "a subsequent call is made to RTI and an AnnualAccount with a status of Unavailable is returned and the stubbed account" +
             "is removed from the cache" in {
 
-            val cachedAnnualAccount = createAnnualAccount(TemporarilyUnavailable, "00")
+            val cachedAnnualAccount = createAnnualAccount(TemporarilyUnavailable, sequenceNumber = 2)
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
             val expectedAnnualAccount = AnnualAccount(
-              "0-0-0",
+              1,
               currentTaxYear,
               Unavailable,
               List(),
@@ -1040,7 +1055,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           "a subsequent call is made to RTI and a ServiceUnavailableError is returned" in {
 
-            val tempUnavailableAccount = createAnnualAccount(TemporarilyUnavailable, "00")
+            val tempUnavailableAccount = createAnnualAccount(TemporarilyUnavailable, sequenceNumber = 2)
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(tempUnavailableAccount))
 
             val mockCacheConnector = mock[CacheConnector]
@@ -1078,7 +1093,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             val cachedEmployment =
               npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount1, cachedAnnualAccount2))
             val expectedAnnualAccount = AnnualAccount(
-              "0-0-0",
+              1,
               currentTaxYear,
               Available,
               List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -1139,7 +1154,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
         "the cached data contains an annualAccount with a status not equal to TemporarilyUnavailable" in {
 
-          val cachedAnnualAccount = createAnnualAccount(Available, "00")
+          val cachedAnnualAccount = createAnnualAccount(Available, sequenceNumber = 2)
           val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
 
           val mockCacheConnector = mock[CacheConnector]
@@ -1161,7 +1176,7 @@ class EmploymentRepositorySpec extends BaseSpec {
       val annualAccountCY = createAnnualAccount(taxYear = currentTaxYear)
       val annualAccountPY = createAnnualAccount(taxYear = previousTaxYear)
 
-      val employment1Id = 4
+      val employment1Id = 1
 
       val emp1 = Employment(
         "TEST",
@@ -1217,7 +1232,7 @@ class EmploymentRepositorySpec extends BaseSpec {
         List(annualAccountCY, annualAccountPY),
         "",
         "",
-        4,
+        1,
         Some(100),
         false,
         false
@@ -1288,7 +1303,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
-      sut.employment(nino, 2).futureValue mustBe Right(employmentWithUnavailableAnnualAccount)
+      sut.employment(nino, 1).futureValue mustBe Right(employmentWithUnavailableAnnualAccount)
     }
 
     "get the current year employments from the hod" when {
@@ -1313,7 +1328,7 @@ class EmploymentRepositorySpec extends BaseSpec {
         )
 
         val expectedAnnualAccount = AnnualAccount(
-          "0-0-0",
+          1,
           currentTaxYear,
           Available,
           List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
@@ -1356,7 +1371,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
-        val result = controller.employment(nino, 2).futureValue
+        val result = controller.employment(nino, 1).futureValue
         result mustBe Right(expectedEmployment)
 
         verify(mockNpsConnector, times(1))

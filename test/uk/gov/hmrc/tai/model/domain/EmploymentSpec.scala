@@ -25,33 +25,6 @@ class EmploymentSpec extends PlaySpec {
 
   "Employment" must {
 
-    "Generate a unique employer designation, consisting of tax district and paye ref" in {
-      val desig = singleEmploymentWithAllRefs.head.employerDesignation
-      desig mustBe "754-AZ00070"
-    }
-
-    "Generate a full key (unique employer designation plus optional employee payroll number)" when {
-      "Employment has an employee payrollNumber present" in {
-
-        val desig = singleEmploymentWithAllRefs.head.key
-        desig mustBe "754-AZ00070-64765"
-      }
-    }
-    "Generate a full key consisting of only tax district and paye ref" when {
-
-      "Employment has no employee payrollNumber" in {
-
-        val desig = singleEmploymentWithMissingPayrollNumber.head.key
-        desig mustBe "754-AZ00070"
-      }
-
-      "Employment has empty string as employee payroll number" in {
-
-        val desig = singleEmploymentWithEmptyStringPayrollNumber.head.key
-        desig mustBe "754-AZ00070"
-      }
-    }
-
     "return true if any annual account exists, with a status of temporarily unavailable, for the requested year" in {
       val accounts =
         Seq(createAnnualAccount(TemporarilyUnavailable), createAnnualAccount(Available, taxYear))
@@ -111,7 +84,7 @@ class EmploymentSpec extends PlaySpec {
   val taxYear = TaxYear()
 
   def createAnnualAccount(rtiStatus: RealTimeStatus, taxYear: TaxYear = taxYear): AnnualAccount =
-    AnnualAccount("0-0-0", taxYear, rtiStatus, Nil, Nil)
+    AnnualAccount(0, taxYear, rtiStatus, Nil, Nil)
 
   val singleEmploymentWithAllRefs = List(
     Employment(

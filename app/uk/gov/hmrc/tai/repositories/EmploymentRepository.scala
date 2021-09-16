@@ -60,7 +60,8 @@ class EmploymentRepository @Inject()(
       case Employments(Nil) => hodCallWithCaching(nino, taxYear)
       case cachedEmployments @ Employments(_) =>
         cachedEmployments.accountsForYear(taxYear) match {
-          case Employments(Nil) => hodCallWithCacheMerge(nino, taxYear, cachedEmployments)
+          case Employments(Nil) =>
+            hodCallWithCacheMerge(nino, taxYear, cachedEmployments)
           case employmentsForYear => {
             if (isCallToRtiRequired(taxYear, employmentsForYear)) {
               rtiCallWithCacheUpdate(nino, taxYear, employmentsForYear, cachedEmployments)
@@ -145,7 +146,7 @@ class EmploymentRepository @Inject()(
     rtiStatus: RealTimeStatus,
     employments: Seq[Employment],
     taxYear: TaxYear): Seq[AnnualAccount] =
-    employments map (employment => AnnualAccount(employment.key, taxYear, rtiStatus))
+    employments map (employment => AnnualAccount(employment.sequenceNumber, taxYear, rtiStatus))
 
   private def addEmploymentsToCache(nino: Nino, employments: Seq[Employment], taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
