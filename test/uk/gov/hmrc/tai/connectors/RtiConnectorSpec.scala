@@ -215,7 +215,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
           val expectedPayments = Seq(
             AnnualAccount(
-              "267-000-000",
+              26,
               TaxYear(2016),
               Available,
               List(

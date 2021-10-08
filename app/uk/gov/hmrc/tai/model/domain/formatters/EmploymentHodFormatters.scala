@@ -187,11 +187,7 @@ trait EmploymentHodFormatters {
       }
 
       JsSuccess(employments.map { emp =>
-        val officeNo = numberChecked((emp \ "empRefs" \ "officeNo").as[String])
-        val payeRef = (emp \ "empRefs" \ "payeRef").as[String]
-        val currentPayId = (emp \ "currentPayId").asOpt[String].map(pr => if (pr == "") "" else "-" + pr).getOrElse("")
-        val key = officeNo + "-" + payeRef + currentPayId
-
+        val sequenceNumber = (emp \ "sequenceNumber").as[Int]
         val payments =
           (emp \ "payments" \ "inYear").validate[JsArray] match {
             case JsSuccess(arr, path) =>
@@ -218,7 +214,7 @@ trait EmploymentHodFormatters {
 
         val taxYear = (json \ "individual" \ "relatedTaxYear").as[TaxYear](taxYearHodReads)
 
-        AnnualAccount(key, taxYear, Available, payments, eyus)
+        AnnualAccount(sequenceNumber, taxYear, Available, payments, eyus)
       })
     }
   }

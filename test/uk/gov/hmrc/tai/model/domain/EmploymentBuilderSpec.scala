@@ -74,8 +74,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts = List(
-          AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil),
-          AnnualAccount("taxDistrict2-payeRefemployer2", TaxYear(2017), Available, Nil, Nil)
+          AnnualAccount(1, TaxYear(2017), Available, Nil, Nil),
+          AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)
         )
 
         val unifiedEmployments =
@@ -90,7 +90,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             None,
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil)),
+            List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil)),
             "taxDistrict1",
             "payeRefemployer1",
             1,
@@ -106,7 +106,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("taxDistrict2-payeRefemployer2", TaxYear(2017), Available, Nil, Nil)),
+            List(AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)),
             "taxDistrict2",
             "payeRefemployer2",
             2,
@@ -138,7 +138,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false,
             false),
           Employment(
-            "TestEmp1",
+            "TestEmp2",
             Live,
             Some("payrollNo14"),
             LocalDate.parse("2017-07-24"),
@@ -153,7 +153,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts =
-          List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil))
+          List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil))
 
         val unifiedEmployments =
           testEmploymentBuilder
@@ -167,7 +167,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("payrollNo88"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil)),
+            List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil)),
             "taxDistrict1",
             "payeRefemployer1",
             1,
@@ -211,9 +211,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts = List(
-          AnnualAccount("taxDistrict1-payeRefemployer1", TaxYear(2017), Available, Nil, Nil),
-          AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil),
-          AnnualAccount("taxDistrict2-payeRefemployer2-payrollNo1", TaxYear(2017), Available, Nil, Nil)
+          AnnualAccount(1, TaxYear(2017), Available, Nil, Nil),
+          AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)
         )
 
         val unifiedEmployments =
@@ -229,8 +228,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             LocalDate.parse("2017-07-24"),
             None,
             List(
-              AnnualAccount("taxDistrict1-payeRefemployer1", TaxYear(2017), Available, Nil, Nil),
-              AnnualAccount("taxDistrict1-payeRefemployer1-payrollNo88", TaxYear(2017), Available, Nil, Nil)
+              AnnualAccount(1, TaxYear(2017), Available, Nil, Nil)
             ),
             "taxDistrict1",
             "payeRefemployer1",
@@ -248,7 +246,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("payrollNo1"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("taxDistrict2-payeRefemployer2-payrollNo1", TaxYear(2017), Available, Nil, Nil)),
+            List(AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)),
             "taxDistrict2",
             "payeRefemployer2",
             2,
@@ -283,7 +281,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false,
             false),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
@@ -298,8 +296,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts = List(
-          AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
-          AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil))
+          AnnualAccount(1, ty, Available, Nil, Nil),
+          AnnualAccount(5, ty, Available, Nil, Nil))
 
         val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
@@ -310,7 +308,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil)),
+            List(AnnualAccount(1, ty, Available, Nil, Nil)),
             "tdNo",
             "payeNumber",
             1,
@@ -319,12 +317,12 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           ),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("tdNo-payeNumber-12346", ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             2,
@@ -353,7 +351,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false,
             false),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
@@ -378,7 +376,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("tdNo-payeNumber-12345", ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(1, ty, Unavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             1,
@@ -387,12 +385,12 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           ),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("tdNo-payeNumber-12346", ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             2,
@@ -422,7 +420,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false,
             false),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("88888"),
             LocalDate.parse("2017-07-24"),
@@ -437,9 +435,9 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         )
 
         val accounts = List(
-          AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
-          AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
-          AnnualAccount("tdNo-payeNumber-77777", ty, Available, Nil, Nil)
+          AnnualAccount(1, ty, Available, Nil, Nil),
+          AnnualAccount(1, ty, Available, Nil, Nil),
+          AnnualAccount(5, ty, Available, Nil, Nil)
         )
 
         val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
@@ -452,8 +450,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             LocalDate.parse("2017-07-24"),
             None,
             List(
-              AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil),
-              AnnualAccount("tdNo-payeNumber-12345", ty, Available, Nil, Nil)),
+              AnnualAccount(1, ty, Available, Nil, Nil),
+              AnnualAccount(1, ty, Available, Nil, Nil)),
             "tdNo",
             "payeNumber",
             1,
@@ -462,12 +460,12 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             false
           ),
           Employment(
-            "TEST",
+            "TEST2",
             Live,
             Some("88888"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount("tdNo-payeNumber-88888", ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             2,
