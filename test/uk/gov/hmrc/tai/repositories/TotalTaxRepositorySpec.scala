@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class TotalTaxRepositorySpec extends BaseSpec {
 
