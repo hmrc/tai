@@ -22,17 +22,14 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{verify, when, reset => resetMock}
 import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.language.postfixOps
 import scala.util.Random
 
 class BaseConnectorSpec extends ConnectorBaseSpec {
@@ -65,23 +62,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
   val rtiData: RtiData = RtiData(nino.nino, TaxYear(2017), "req123", Nil)
   val rtiDataBody: String = Json.toJson(rtiData).toString()
-
-  val fakePersonalDetails: PersonDetails = PersonDetails(
-    "4",
-    Person(
-      Some("TestName"),
-      None,
-      None,
-      None,
-      Some("TestTitle"),
-      Some("TestHonours"),
-      None,
-      None,
-      Nino(nino.nino),
-      Some(true),
-      Some(false)))
-
-  val fakePersonalDetailsString: String = Json.toJson(fakePersonalDetails).toString()
 
   val eTagKey: String = "ETag"
   val eTag: Int = 34
@@ -178,28 +158,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino, Seq.empty).futureValue
-
-        verify(mockMetrics).startTimer(any())
-        verify(mockTimerContext).stop()
-      }
-
-      "making a GET request to Citizen Details" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(fakePersonalDetailsString)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        sutWithMockedMetrics.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -523,61 +481,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         resStatus.status mustBe IM_A_TEAPOT
         resStatus.response mustBe exMessage
 
-      }
-    }
-
-    "return a success response from citizen details" when {
-      "it returns a success Http response for GET transactions" in {
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(fakePersonalDetailsString)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val res = sut.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
-
-        res mustBe fakePersonalDetails
-      }
-
-      "it returns a locked Http response for GET transactions" in {
-
-        val fakePersonalDetails =
-          PersonDetails("0", Person(None, None, None, None, None, None, None, None, Nino(nino.nino), Some(true), None))
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(LOCKED)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val res = sut.getPersonDetailsFromCitizenDetails(url, nino, apiType).futureValue
-
-        res mustBe fakePersonalDetails
-      }
-    }
-
-    "return an error response from citizen details" when {
-      "it returns an unknown http response" in {
-
-        val exMessage = "Access denied"
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(IM_A_TEAPOT)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        assertConnectorException[HttpException](
-          sut.getPersonDetailsFromCitizenDetails(url, nino, apiType),
-          IM_A_TEAPOT,
-          exMessage
-        )
       }
     }
 

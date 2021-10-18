@@ -21,7 +21,7 @@ import play.api.Logger
 import play.api.http.Status._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -62,16 +62,6 @@ class RtiConnector @Inject()(
         HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
         "CorrelationId"        -> UUID.randomUUID().toString
       )
-
-  def getRTI(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[(Option[RtiData], RtiStatus)] = {
-    val ninoWithoutSuffix = withoutSuffix(nino)
-    getFromRTIWithStatus[RtiData](
-      url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
-      api = APITypes.RTIAPI,
-      reqNino = ninoWithoutSuffix,
-      headers = createHeader
-    )
-  }
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
