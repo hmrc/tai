@@ -17,14 +17,11 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
-
-import scala.language.postfixOps
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 

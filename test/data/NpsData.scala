@@ -16,14 +16,13 @@
 
 package data
 
-import java.io.{File, FileOutputStream}
-
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.TaxSummaryDetails
 import uk.gov.hmrc.tai.model.nps.{NpsEmployment, NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
+import java.io.File
 import scala.io.BufferedSource
 import scala.util.Random
 

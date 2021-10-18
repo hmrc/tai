@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats, nps2}
 
-import scala.language.postfixOps
 import scala.util.Random
 
 class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {

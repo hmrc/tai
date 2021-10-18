@@ -27,8 +27,6 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, Intern
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import scala.language.postfixOps
-
 class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
   val empSeqNumber: Int = 1

@@ -26,8 +26,6 @@ import uk.gov.hmrc.tai.model.nps.{NpsIabdRoot, NpsTaxAccount}
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.util.Random
 
 class DesConnectorSpec extends ConnectorBaseSpec {
