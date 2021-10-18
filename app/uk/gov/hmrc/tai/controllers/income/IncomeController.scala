@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiLink, ApiResponse}
@@ -29,15 +29,13 @@ import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateSuccess, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
+import uk.gov.hmrc.tai.service.IncomeService
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class IncomeController @Inject()(
   incomeService: IncomeService,
-  taxAccountService: TaxAccountService,
-  employmentService: EmploymentService,
   authentication: AuthenticationPredicate,
   cc: ControllerComponents)(
   implicit ec: ExecutionContext

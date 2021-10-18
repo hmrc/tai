@@ -20,15 +20,14 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model._
-import uk.gov.hmrc.tai.service.TaiService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EstimatedPayCalculatorController @Inject()(
-  taiService: TaiService,
   authentication: AuthenticationPredicate,
   cc: ControllerComponents
 )(
@@ -37,7 +36,10 @@ class EstimatedPayCalculatorController @Inject()(
 
   def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[PayDetails] { payDetails =>
-      Future(Ok(Json.toJson(taiService.getCalculatedEstimatedPay(payDetails))))
+      Future(Ok(Json.toJson(getCalculatedEstimatedPay(payDetails))))
     }
   }
+
+  private def getCalculatedEstimatedPay(payDetails: PayDetails) =
+    EstimatedPayCalculator.calculate(payDetails)
 }
