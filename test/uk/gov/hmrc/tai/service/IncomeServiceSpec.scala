@@ -32,9 +32,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
 
 class IncomeServiceSpec extends BaseSpec {
 

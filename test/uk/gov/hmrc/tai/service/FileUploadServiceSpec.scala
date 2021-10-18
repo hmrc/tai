@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.mockito.Mockito
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
@@ -28,7 +27,6 @@ import uk.gov.hmrc.tai.model.domain.MimeContentType
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
 
 class FileUploadServiceSpec extends BaseSpec {
