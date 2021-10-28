@@ -403,7 +403,7 @@ class EmploymentServiceSpec extends BaseSpec {
     Some("12345"),
     LocalDate.now(),
     None,
-    List(AnnualAccount("", TaxYear(), Available, Nil, Nil)),
+    List(AnnualAccount(0, TaxYear(), Available, Nil, Nil)),
     "",
     "",
     2,

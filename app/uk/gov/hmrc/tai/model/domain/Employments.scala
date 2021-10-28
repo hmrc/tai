@@ -38,7 +38,7 @@ case class Employments(employments: Seq[Employment]) {
   def mergeEmploymentsForTaxYear(employmentsToMerge: Seq[Employment], taxYear: TaxYear): Seq[Employment] = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
-      employmentsToMerge.find(_.key == employment.key).fold(employment) { employmentToMerge =>
+      employmentsToMerge.find(_.sequenceNumber == employment.sequenceNumber).fold(employment) { employmentToMerge =>
         val accountsFromOtherYears = employment.annualAccounts.filterNot(_.taxYear == taxYear)
         employment.copy(annualAccounts = employmentToMerge.annualAccounts ++ accountsFromOtherYears)
     }
@@ -49,7 +49,7 @@ case class Employments(employments: Seq[Employment]) {
   def mergeEmployments(employmentsToMerge: Seq[Employment]): Seq[Employment] = {
 
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
-      employmentsToMerge.find(_.key == employment.key).fold(employment) { employmentToMerge =>
+      employmentsToMerge.find(_.sequenceNumber == employment.sequenceNumber).fold(employment) { employmentToMerge =>
         employment.copy(annualAccounts = employment.annualAccounts ++ employmentToMerge.annualAccounts)
     }
 
@@ -62,7 +62,7 @@ case class Employments(employments: Seq[Employment]) {
 
     val modifiedEmployments = employments map (amendEmployment(_, employmentsToMerge))
     val unmodifiedEmployments =
-      employmentsToMerge.filterNot(employment => modifiedEmployments.map(_.key).contains(employment.key))
+      employmentsToMerge.filterNot(employment => modifiedEmployments.map(_.sequenceNumber).contains(employment.sequenceNumber))
 
     unmodifiedEmployments ++ modifiedEmployments
   }

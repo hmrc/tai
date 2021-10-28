@@ -19,19 +19,15 @@ package uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class AnnualAccount(
-  key: String,
+  sequenceNumber : Int,
   taxYear: TaxYear,
   realTimeStatus: RealTimeStatus,
   payments: Seq[Payment],
-  endOfTaxYearUpdates: Seq[EndOfTaxYearUpdate]) {
+  endOfTaxYearUpdates: Seq[EndOfTaxYearUpdate]
+  ) {
 
   lazy val totalIncomeYearToDate: BigDecimal =
     if (payments.isEmpty) 0 else payments.max.amountYearToDate
-
-  lazy val employerDesignation: String = {
-    val split = key.split("-")
-    split(0) + "-" + split(1)
-  }
 
   lazy val latestPayment: Option[Payment] = if (payments.isEmpty) None else Some(payments.max)
 }
@@ -39,7 +35,7 @@ case class AnnualAccount(
 object AnnualAccount {
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
-  def apply(key: String, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
-    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
+  def apply(sequenceNumber : Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
+    AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
 }

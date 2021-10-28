@@ -47,9 +47,9 @@ class EmploymentsSpec extends PlaySpec {
 
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
-    key: String = "0-0-0",
+    sequenceNumber: Int = 1,
     taxYear: TaxYear = currentTaxYear): AnnualAccount =
-    AnnualAccount(key, taxYear, rtiStatus, Nil, Nil)
+    AnnualAccount(sequenceNumber , taxYear, rtiStatus, Nil, Nil)
 
   "Employments" must {
     "return a sequence of employments with only accounts for a given year" in {
@@ -127,7 +127,7 @@ class EmploymentsSpec extends PlaySpec {
     }
 
     "merge employments" when {
-      "the employments have the same key and contain different tax year annual account records" in {
+      "the employments have the different sequenceNumber and contain different tax year annual account records" in {
 
         val employment1 =
           Employment(
@@ -139,7 +139,7 @@ class EmploymentsSpec extends PlaySpec {
             Seq(annualAccountCTY),
             "0",
             "0",
-            2,
+            1,
             None,
             false,
             false)
@@ -154,12 +154,12 @@ class EmploymentsSpec extends PlaySpec {
             Seq(annualAccountPTY),
             "0",
             "0",
-            2,
+            1,
             None,
             false,
             false)
 
-        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
         val employment2 =
           Employment(
             "EMPLOYER2",
@@ -183,7 +183,7 @@ class EmploymentsSpec extends PlaySpec {
         mergedEmployments mustBe Seq(expectedMergedEmployment, employment2)
       }
 
-      "the employments have different keys" in {
+      "the employments have different sequence number" in {
         val now = LocalDate.now()
 
         val annualAccountCTY = createAnnualAccount(taxYear = currentTaxYear)
@@ -197,12 +197,12 @@ class EmploymentsSpec extends PlaySpec {
             Seq(annualAccountCTY),
             "0",
             "0",
-            2,
+            1,
             None,
             false,
             false)
 
-        val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+        val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
         val employment2 =
           Employment(
             "EMPLOYER2",
@@ -245,7 +245,7 @@ class EmploymentsSpec extends PlaySpec {
           Seq(annualAccountCTYTempUnavailable, annualAccountPTYTempUnavailable),
           "0",
           "0",
-          2,
+          1,
           None,
           false,
           false)
@@ -260,12 +260,12 @@ class EmploymentsSpec extends PlaySpec {
           Seq(annualAccountCTYAvailable),
           "0",
           "0",
-          2,
+          1,
           None,
           false,
           false)
 
-      val annualAccount2CTY = createAnnualAccount(key = "01-01-01", taxYear = currentTaxYear)
+      val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
       val employment2 =
         Employment(
           "EMPLOYER2",
