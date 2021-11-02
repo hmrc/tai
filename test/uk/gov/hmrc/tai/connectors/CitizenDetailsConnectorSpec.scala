@@ -17,14 +17,9 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.http.Status._
 import play.api.libs.json._
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.model.nps._
-import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
-
-import scala.language.postfixOps
+import uk.gov.hmrc.tai.model.ETag
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
@@ -34,155 +29,12 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
   val designatoryDetailsUrl: String = s"$baseUrl/designatory-details"
   val eTagUrl: String = s"$baseUrl/etag"
 
-  val data: PersonDetails = PersonDetails(
-    "100",
-    Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, nino, Some(false), Some(false)))
-
-  val jsonData: String = Json.toJson(data).toString()
-
   val etag: String = "123"
   val etagJson: JsValue = Json.parse(s"""
                                         |{
                                         |   "etag":"$etag"
                                         |}
     """.stripMargin)
-
-  "Get data from citizen-details service" must {
-    "return person information when requesting " in {
-
-      server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
-      )
-
-      val personDetails = sut.getPersonDetails(nino).futureValue
-
-      personDetails.person.nino.value mustBe nino.nino
-      personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(
-        nino.nino,
-        100,
-        "Mr",
-        "FName",
-        None,
-        "LName",
-        "FName LName",
-        manualCorrespondenceInd = false,
-        Some(false))
-    }
-
-    "return Record Locked when requesting designatory details" in {
-
-      server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(LOCKED).withBody("Record locked"))
-      )
-
-      val personDetails =
-        sut.getPersonDetails(nino)(HeaderCarrier(), PersonDetails.formats).futureValue
-
-      personDetails.person.nino.value mustBe nino.nino
-      personDetails.etag mustBe "0"
-      personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = true, None)
-    }
-
-    List(
-      BAD_REQUEST,
-      NOT_FOUND,
-      IM_A_TEAPOT
-    ).foreach { httpResponse =>
-      s"return a HttpException when a $httpResponse occurs" in {
-
-        server.stubFor(
-          get(urlEqualTo(designatoryDetailsUrl))
-            .willReturn(
-              aResponse()
-                .withStatus(httpResponse)
-            )
-        )
-
-        assertConnectorException[HttpException](
-          sut.getPersonDetails(nino),
-          httpResponse,
-          ""
-        )
-      }
-    }
-
-    "return Internal server error when requesting " in {
-
-      val exMessage = "An error occurred"
-
-      server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl))
-          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-      )
-
-      assertConnectorException[HttpException](
-        sut.getPersonDetails(nino),
-        INTERNAL_SERVER_ERROR,
-        exMessage
-      )
-    }
-
-    "return deceased indicator as false if no value is returned from citizen details" in {
-
-      val body = Json
-        .toJson(
-          data.copy(
-            person = data.person.copy(manualCorrespondenceInd = None)
-          ))
-        .toString()
-
-      server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
-      )
-
-      val personDetails =
-        sut.getPersonDetails(nino).futureValue
-
-      personDetails.person.nino.value mustBe nino.nino
-      personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(
-        nino.nino,
-        100,
-        "Mr",
-        "FName",
-        None,
-        "LName",
-        "FName LName",
-        manualCorrespondenceInd = false,
-        Some(false))
-    }
-
-    "return deceased indicator as true" in {
-
-      val body = Json
-        .toJson(
-          data.copy(
-            person = data.person.copy(deceased = Some(true))
-          ))
-        .toString()
-
-      server.stubFor(
-        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
-      )
-
-      val personDetails =
-        sut.getPersonDetails(nino).futureValue
-
-      personDetails.person.nino.value mustBe nino.nino
-      personDetails.etag mustBe "100"
-      personDetails.toTaiRoot mustBe TaiRoot(
-        nino.nino,
-        100,
-        "Mr",
-        "FName",
-        None,
-        "LName",
-        "FName LName",
-        manualCorrespondenceInd = false,
-        Some(true))
-    }
-  }
 
   "getEtag" must {
     "return an etag on success" in {

@@ -19,16 +19,14 @@ package uk.gov.hmrc.tai.repositories
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CitizenDetailsUrls, HttpHandler}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.util.BaseSpec
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
+import scala.concurrent.Future
 
 class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 

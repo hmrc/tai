@@ -19,15 +19,11 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.nps.PersonDetails
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,9 +36,6 @@ class CitizenDetailsConnector @Inject()(
     extends BaseConnector(auditor, metrics, httpClient) with Logging {
 
   override val originatorId: String = ""
-
-  def getPersonDetails(nino: Nino)(implicit hc: HeaderCarrier, formats: Format[PersonDetails]): Future[PersonDetails] =
-    getPersonDetailsFromCitizenDetails(urls.designatoryDetailsUrl(nino), nino, APITypes.NpsPersonAPI)
 
   def getEtag(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[ETag]] =
     httpClient.GET(urls.etagUrl(nino)) flatMap { response =>

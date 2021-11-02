@@ -26,9 +26,7 @@ import uk.gov.hmrc.tai.model.domain.{CommunityInvestmentTaxCredit, EstimatedTaxY
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
+import scala.concurrent.Future
 
 class TaxAccountSummaryRepositorySpec extends BaseSpec {
 

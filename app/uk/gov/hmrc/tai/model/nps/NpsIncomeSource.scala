@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
+import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxHelper}
 import uk.gov.hmrc.tai.model.nps2.{AllowanceType, DeductionType}
 import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
-import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.util.TaiConstants
 
 case class NpsIncomeSource(

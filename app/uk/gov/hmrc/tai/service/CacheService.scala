@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain
+package uk.gov.hmrc.tai.service
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
+import com.google.inject.Inject
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
 
-case class BenefitsOLD(companyCarBenefits: Option[Seq[CompanyCarBenefit]])
-
-object BenefitsOLD {
-  implicit val formats = Json.format[BenefitsOLD]
+class CacheService @Inject()(mongoConfig: MongoConfig, cacheConnector: CacheConnector) {
+  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
+    if (mongoConfig.mongoEnabled) {
+      cacheConnector.removeById(CacheId(nino))
+    } else {
+      ()
+    }
 }

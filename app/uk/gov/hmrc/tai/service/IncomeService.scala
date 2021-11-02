@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
-import uk.gov.hmrc.tai.model.enums.APITypes.FusCreateEnvelope
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}

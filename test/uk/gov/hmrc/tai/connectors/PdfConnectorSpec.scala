@@ -20,8 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqua
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpException
 
-import scala.language.postfixOps
-
 class PdfConnectorSpec extends ConnectorBaseSpec {
 
   lazy val sut: PdfConnector = inject[PdfConnector]

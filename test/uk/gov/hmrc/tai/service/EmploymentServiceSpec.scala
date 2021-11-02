@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
@@ -31,7 +30,6 @@ import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class EmploymentServiceSpec extends BaseSpec {
 

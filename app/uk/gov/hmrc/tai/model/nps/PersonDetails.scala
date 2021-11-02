@@ -21,11 +21,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.model.TaiRoot
 
-object Person {
-  implicit val formats = Json.format[Person]
-}
 case class Person(
   firstName: Option[String],
   middleName: Option[String],
@@ -39,29 +35,6 @@ case class Person(
   manualCorrespondenceInd: Option[Boolean],
   deceased: Option[Boolean])
 
-object PersonDetails {
-  implicit val formats = Json.format[PersonDetails]
-}
-
-case class PersonDetails(etag: String, person: Person) {
-
-  def toTaiRoot: TaiRoot = {
-    val firstName = person.firstName.getOrElse("")
-    val surname = person.lastName.getOrElse("")
-    val secondName = person.middleName
-    val nino = person.nino.value
-    val title = person.title.getOrElse("")
-    val deceasedIndicator = person.deceased
-    val manualCorrespondenceInd = person.manualCorrespondenceInd.getOrElse(false)
-    TaiRoot(
-      nino,
-      etag.toInt,
-      title,
-      firstName,
-      secondName,
-      surname,
-      s"$firstName $surname",
-      manualCorrespondenceInd,
-      deceasedIndicator)
-  }
+object Person {
+  implicit val formats = Json.format[Person]
 }
