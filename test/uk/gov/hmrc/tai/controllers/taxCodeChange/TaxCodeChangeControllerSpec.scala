@@ -24,7 +24,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -282,6 +282,42 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual """{"reason":"Error"}"""
+      }
+    }
+
+    "respond with NOT_FOUND" when {
+      "a NotFoundException has occurred" in {
+        when(taxCodeService.latestTaxCodes(any(), any())(any()))
+          .thenReturn(Future.failed(new NotFoundException("Not Found")))
+
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
+
+        status(result) mustEqual NOT_FOUND
+        contentAsString(result) mustEqual """{"reason":"Not Found"}"""
+      }
+    }
+
+    "respond with INTERNAL_SERVER_ERROR" when {
+      "a InternalServerException has occurred" in {
+        when(taxCodeService.latestTaxCodes(any(), any())(any()))
+          .thenReturn(Future.failed(new InternalServerException("Internal server error")))
+
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
+
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
+      }
+    }
+
+    "respond with NOT_IMPLEMENTED" when {
+      "a NotImplementedException has occurred" in {
+        when(taxCodeService.latestTaxCodes(any(), any())(any()))
+          .thenReturn(Future.failed(new NotImplementedException("Not implemented")))
+
+        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
+
+        status(result) mustEqual NOT_IMPLEMENTED
+        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
       }
     }
   }
