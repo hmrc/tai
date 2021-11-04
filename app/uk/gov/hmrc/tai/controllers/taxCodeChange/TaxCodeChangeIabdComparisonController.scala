@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
@@ -39,8 +40,17 @@ class TaxCodeChangeIabdComparisonController @Inject()(
     taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
       Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
     } recover {
-      case ex: Exception => {
+      case ex: BadRequestException => {
         BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: NotFoundException => {
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: InternalServerException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: ServiceUnavailableException => {
+        ServiceUnavailable(Json.toJson(Map("reason" -> ex.getMessage)))
       }
     }
   }
