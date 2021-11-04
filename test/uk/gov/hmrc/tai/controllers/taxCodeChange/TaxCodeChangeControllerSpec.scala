@@ -317,7 +317,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
         status(result) mustEqual NOT_IMPLEMENTED
-        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
+        contentAsString(result) mustEqual """{"reason":"Not implemented"}"""
       }
     }
   }
