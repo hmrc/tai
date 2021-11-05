@@ -30,16 +30,15 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeController @Inject()(
-  authentication: AuthenticationPredicate,
-  taxCodeChangeService: TaxCodeChangeService,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
-) extends BackendController(cc) {
+                                         authentication: AuthenticationPredicate,
+                                         taxCodeChangeService: TaxCodeChangeService,
+                                         cc: ControllerComponents)(
+                                         implicit ec: ExecutionContext
+                                       ) extends BackendController(cc) {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
-      {
-        Ok(Json.toJson(taxCodeChanged))
+    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged => {
+      Ok(Json.toJson(taxCodeChanged))
       }
     }
   }
@@ -47,6 +46,19 @@ class TaxCodeChangeController @Inject()(
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
       Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+    } recover {
+      case ex: BadRequestException => {
+        BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: NotFoundException => {
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: InternalServerException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: NotImplementedException => {
+        NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
     }
   }
 
@@ -54,9 +66,19 @@ class TaxCodeChangeController @Inject()(
     taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
       Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
     } recover {
-      case ex: NotFoundException   => NotFound(Json.toJson(Map("reason"   -> ex.getMessage)))
-      case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
-    }
+        case ex: BadRequestException => {
+          BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+        case ex: NotFoundException => {
+          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+        case ex: InternalServerException => {
+          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+        case ex: NotImplementedException => {
+          NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+      }
   }
 
   def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
@@ -79,7 +101,5 @@ class TaxCodeChangeController @Inject()(
           NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
         }
       }
-
   }
-
 }
