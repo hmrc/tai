@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
+import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException, NotImplementedException}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
@@ -47,17 +47,14 @@ class TaxCodeChangeController @Inject()(
     taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
       Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
     } recover {
-      case ex: BadRequestException => {
-        BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
       case ex: NotFoundException => {
         NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
       }
-      case ex: InternalServerException => {
-        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: HttpException if ex.responseCode >= 500 => {
+        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
       }
-      case ex: NotImplementedException => {
-        NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: HttpException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
       }
     }
   }
