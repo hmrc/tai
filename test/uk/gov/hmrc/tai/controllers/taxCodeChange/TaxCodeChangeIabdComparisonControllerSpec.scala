@@ -61,7 +61,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual INTERNAL_SERVER_ERROR
       }
     }
 
@@ -87,7 +87,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
+        status(result) mustEqual BAD_GATEWAY
       }
     }
 
@@ -100,7 +100,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 
-        status(result) mustEqual SERVICE_UNAVAILABLE
+        status(result) mustEqual BAD_GATEWAY
       }
     }
   }
