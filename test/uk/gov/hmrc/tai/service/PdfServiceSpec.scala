@@ -18,11 +18,14 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.tai.connectors.PdfConnector
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 class PdfServiceSpec extends BaseSpec {
 

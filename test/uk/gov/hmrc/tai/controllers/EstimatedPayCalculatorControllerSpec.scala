@@ -17,13 +17,15 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.joda.time.LocalDate
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.enums.PayFreq
-import uk.gov.hmrc.tai.model.PayDetails
+import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
+import uk.gov.hmrc.tai.service.TaiService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 class EstimatedPayCalculatorControllerSpec extends BaseSpec {
@@ -31,7 +33,12 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
   "Estimated pay calculator controller" must {
     "return an OK response with CalculatedPay json" when {
       "given a valid request" in {
-        val sut = createSUT()
+
+        val mockTaiService = mock[TaiService]
+        when(mockTaiService.getCalculatedEstimatedPay(any()))
+          .thenReturn(testCalculation)
+
+        val sut = createSUT(mockTaiService)
         val response = sut.calculateFullYearEstimatedPay().apply(createRequest(payDetails))
 
         status(response) mustBe OK
@@ -40,8 +47,9 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     }
     "return a bad request response" when {
       "the given request has an invalid json body" in {
+        val mockTaiService = mock[TaiService]
 
-        val sut = createSUT()
+        val sut = createSUT(mockTaiService)
         val response = sut.calculateFullYearEstimatedPay().apply(createRequest("a simple String"))
 
         status(response) mustBe BAD_REQUEST
@@ -50,8 +58,9 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
   }
 
   private def createSUT(
+    taiService: TaiService,
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new EstimatedPayCalculatorController(authentication, cc)
+    new EstimatedPayCalculatorController(taiService, authentication, cc)
 
   val date = new LocalDate(2017, 4, 14)
 
@@ -64,7 +73,12 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     Some(date)
   )
 
-  private val testCalculation = EstimatedPayCalculator.calculate(payDetails)
+  private val testCalculation = CalculatedPay(
+    Some(1000),
+    Some(800),
+    Some(date),
+    Some(500)
+  )
 
   private def createRequest[T](payload: T)(implicit w: Writes[T]) = FakeRequest(
     "POST",

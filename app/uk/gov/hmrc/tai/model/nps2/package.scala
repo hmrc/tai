@@ -20,6 +20,7 @@ import org.joda.time.LocalDate
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import play.api.libs.json._
 
+import scala.language.implicitConversions
 import scala.util.matching.Regex
 
 package object nps2 {

@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
+import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}

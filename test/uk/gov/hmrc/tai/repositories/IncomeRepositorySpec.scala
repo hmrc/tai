@@ -25,7 +25,9 @@ import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
 class IncomeRepositorySpec extends BaseSpec {
 

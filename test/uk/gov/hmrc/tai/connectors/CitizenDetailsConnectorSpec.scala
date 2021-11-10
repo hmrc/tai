@@ -16,10 +16,22 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.joda.time.LocalDate
+import org.mockito.Mockito.{verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.http.Status._
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.ETag
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.domain.Address
+import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.nps._
+import uk.gov.hmrc.tai.model.{ETag, TaiRoot}
+
+import scala.concurrent.Future
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
@@ -29,12 +41,246 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
   val designatoryDetailsUrl: String = s"$baseUrl/designatory-details"
   val eTagUrl: String = s"$baseUrl/etag"
 
+  val data: PersonDetails = PersonDetails(
+    "100",
+    Person(Some("FName"), None, Some("LName"), None, Some("Mr"), None, None, None, nino, Some(false), Some(false)))
+
+  val jsonData: String = Json.toJson(data).toString()
+
   val etag: String = "123"
   val etagJson: JsValue = Json.parse(s"""
                                         |{
                                         |   "etag":"$etag"
                                         |}
     """.stripMargin)
+
+  val jsonPayload = Json.parse(s"""
+                                  |{
+                                  | "etag":"1",
+                                  | "person":{
+                                  |   "firstName":"FName",
+                                  |   "lastName":"LName",
+                                  |   "title":"Mr",
+                                  |   "sex":"M",
+                                  |   "dateOfBirth":"1975-09-15",
+                                  |   "nino":"${nino.nino}",
+                                  |   "deceased":false
+                                  | },
+                                  | "address":{
+                                  |   "line1":"1 Test Line",
+                                  |   "line2":"Test Line 2",
+                                  |   "postcode":"TEST",
+                                  |   "startDate":"2013-11-28",
+                                  |   "country":"GREAT BRITAIN",
+                                  |   "type":"Residential"
+                                  | }
+                                  |}""".stripMargin).toString
+
+
+  "getPerson" must {
+    import uk.gov.hmrc.tai.model.domain.Person
+
+    "return a person's information from citizen details" in {
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(
+          ok().withBody(jsonPayload)
+        )
+      )
+
+      val result = sut.getPerson(nino).futureValue
+      result mustBe Person(
+        nino,
+        "FName",
+        "LName",
+        Some(LocalDate.parse("1975-09-15")),
+        Address("", "", "", "", ""),
+        false,
+        false)
+    }
+
+    "return a locked Person when designatory details returns a LOCKED status code" in {
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(
+          aResponse().withStatus(LOCKED).withBody("Locked user")
+        )
+      )
+
+      val result = sut.getPerson(nino).futureValue
+      result mustBe Person.createLockedUser(nino)
+    }
+
+    "throws an internal server error on anything else" in {
+      val exceptionMessage = "An exception occured"
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(
+          aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exceptionMessage)
+        )
+      )
+
+      assertConnectorException[HttpException](
+        sut.getPerson(nino),
+        INTERNAL_SERVER_ERROR,
+        exceptionMessage
+      )
+    }
+
+    "handles missing fields" in {
+      val jsonWithMissingFields = Json.obj(
+        "etag" -> "000",
+        "person" -> Json.obj(
+          "nino"    -> nino.nino,
+          "address" -> Json.obj()
+        )
+      )
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(
+          ok().withBody(jsonWithMissingFields.toString)
+        )
+      )
+
+      val result = sut.getPerson(nino).futureValue
+      result mustBe Person(nino, "", "", None, Address.emptyAddress, false, false)
+    }
+  }
+
+  "Get data from citizen-details service" must {
+    "return person information when requesting " in {
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))
+      )
+
+      val personDetails = sut.getPersonDetails(nino).futureValue
+
+      personDetails.person.nino.value mustBe nino.nino
+      personDetails.etag mustBe "100"
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = false,
+        Some(false))
+    }
+
+    "return Record Locked when requesting designatory details" in {
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(LOCKED).withBody("Record locked"))
+      )
+
+      val personDetails =
+        sut.getPersonDetails(nino)(HeaderCarrier(), PersonDetails.formats).futureValue
+
+      personDetails.person.nino.value mustBe nino.nino
+      personDetails.etag mustBe "0"
+      personDetails.toTaiRoot mustBe TaiRoot(nino.nino, 0, "", "", None, "", " ", manualCorrespondenceInd = true, None)
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT
+    ).foreach { httpResponse =>
+      s"return a HttpException when a $httpResponse occurs" in {
+
+        server.stubFor(
+          get(urlEqualTo(designatoryDetailsUrl))
+            .willReturn(
+              aResponse()
+                .withStatus(httpResponse)
+            )
+        )
+
+        assertConnectorException[HttpException](
+          sut.getPersonDetails(nino),
+          httpResponse,
+          ""
+        )
+      }
+    }
+
+    "return Internal server error when requesting " in {
+
+      val exMessage = "An error occurred"
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+      )
+
+      assertConnectorException[HttpException](
+        sut.getPersonDetails(nino),
+        INTERNAL_SERVER_ERROR,
+        exMessage
+      )
+    }
+
+    "return deceased indicator as false if no value is returned from citizen details" in {
+
+      val body = Json
+        .toJson(
+          data.copy(
+            person = data.person.copy(manualCorrespondenceInd = None)
+          ))
+        .toString()
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+      )
+
+      val personDetails =
+        sut.getPersonDetails(nino).futureValue
+
+      personDetails.person.nino.value mustBe nino.nino
+      personDetails.etag mustBe "100"
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = false,
+        Some(false))
+    }
+
+    "return deceased indicator as true" in {
+
+      val body = Json
+        .toJson(
+          data.copy(
+            person = data.person.copy(deceased = Some(true))
+          ))
+        .toString()
+
+      server.stubFor(
+        get(urlEqualTo(designatoryDetailsUrl)).willReturn(aResponse().withStatus(OK).withBody(body))
+      )
+
+      val personDetails =
+        sut.getPersonDetails(nino).futureValue
+
+      personDetails.person.nino.value mustBe nino.nino
+      personDetails.etag mustBe "100"
+      personDetails.toTaiRoot mustBe TaiRoot(
+        nino.nino,
+        100,
+        "Mr",
+        "FName",
+        None,
+        "LName",
+        "FName LName",
+        manualCorrespondenceInd = false,
+        Some(true))
+    }
+  }
 
   "getEtag" must {
     "return an etag on success" in {
@@ -122,6 +368,68 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
       )
 
       sut.getEtag(nino).futureValue mustBe None
+    }
+  }
+
+  "metrics" must {
+    "increment the success counter on an OK response" in {
+      val metrics = mock[Metrics]
+
+      val mockTimerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(mockTimerContext)
+
+      val httpClient = mock[HttpClient]
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
+        Future.successful(HttpResponse(OK, jsonPayload))
+      )
+
+      connector.getPerson(nino).futureValue
+
+      verify(metrics).incrementSuccessCounter(meq(APITypes.NpsPersonAPI))
+    }
+
+    "increment the success counter on an LOCKED response" in {
+      val metrics = mock[Metrics]
+
+      val mockTimerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(mockTimerContext)
+
+      val httpClient = mock[HttpClient]
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
+        Future.successful(HttpResponse(LOCKED, "a locked user"))
+      )
+
+      connector.getPerson(nino).futureValue
+
+      verify(metrics).incrementSuccessCounter(meq(APITypes.NpsPersonAPI))
+    }
+
+    "increment the failure counter on an INTERNAL_SERVER_ERROR response" in {
+      val metrics = mock[Metrics]
+
+      val mockTimerContext = mock[Timer.Context]
+      when(metrics.startTimer(any()))
+        .thenReturn(mockTimerContext)
+
+      val httpClient = mock[HttpClient]
+
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+
+      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
+        Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "an error occured"))
+      )
+
+      connector.getPerson(nino).failed.futureValue
+
+      verify(metrics).incrementFailedCounter(meq(APITypes.NpsPersonAPI))
     }
   }
 }

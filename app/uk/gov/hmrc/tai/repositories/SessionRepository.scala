@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
 
 import scala.concurrent.Future

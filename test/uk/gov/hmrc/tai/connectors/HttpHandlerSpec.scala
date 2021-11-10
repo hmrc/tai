@@ -30,6 +30,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import scala.concurrent.ExecutionContext
+import scala.language.postfixOps
 
 class HttpHandlerSpec
     extends AnyWordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures {

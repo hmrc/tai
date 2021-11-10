@@ -78,6 +78,19 @@ class DesConnector @Inject()(
     getFromDes[List[NpsIabdRoot]](url = urlToRead, api = APITypes.DesIabdAllAPI, headers = createDesHeader).map(x => x._1)
   }
 
+  def getCalculatedTaxAccountFromDes(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
+    val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
+    getFromDes[JsValue](url = urlToRead, api = APITypes.DesTaxAccountAPI, headers = createDesHeader).map(x =>
+      (x._1.as[NpsTaxAccount], x._2, x._1))
+  }
+
+  def getCalculatedTaxAccountRawResponseFromDes(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val urlToRead = desPathUrl(nino, s"tax-account/tax-year/$year?calculation=true")
+    httpClient.GET[HttpResponse](url = urlToRead, headers = createDesHeader)
+  }
+
   def updateEmploymentDataToDes(
     nino: Nino,
     year: Int,

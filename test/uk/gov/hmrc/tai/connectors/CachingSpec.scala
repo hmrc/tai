@@ -18,13 +18,14 @@ package uk.gov.hmrc.tai.connectors
 
 import org.mockito.ArgumentMatchers.{eq => meq}
 import org.mockito.Mockito._
-import org.scalatest.concurrent.IntegrationPatience
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 class CachingSpec extends BaseSpec with IntegrationPatience {
 

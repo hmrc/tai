@@ -19,10 +19,13 @@ package uk.gov.hmrc.tai.connectors
 import play.Logger
 import play.api.http.Status
 import play.api.libs.json.{Format, Writes}
-import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
+import uk.gov.hmrc.tai.model.nps.{Person, PersonDetails}
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -149,6 +152,36 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
         case _ => {
           Logger.warn(s"RTIAPI - An error returned from RTI HODS for $reqNino for url $url")
           Future.successful((None, RtiStatus(res.status, res.body)))
+        }
+      }
+    }
+  }
+
+  def getPersonDetailsFromCitizenDetails[A](url: String, nino: Nino, api: APITypes)(
+    implicit hc: HeaderCarrier,
+    formats: Format[PersonDetails]): Future[PersonDetails] = {
+    val timerContext = metrics.startTimer(api)
+    val futureResponse = httpClient.GET[HttpResponse](url)
+    futureResponse.flatMap { httpResponse =>
+      timerContext.stop()
+      httpResponse.status match {
+        case Status.OK => {
+          metrics.incrementSuccessCounter(api)
+          val personDetail = httpResponse.json.as[PersonDetails]
+          Future.successful(personDetail)
+        }
+        case Status.LOCKED => {
+          metrics.incrementSuccessCounter(api)
+          Logger.warn(
+            s"Calling person details from citizen details found Locked: " + httpResponse.status + " url " + url)
+          Future.successful(
+            PersonDetails("0", Person(None, None, None, None, None, None, None, None, nino, Some(true), None)))
+        }
+        case _ => {
+          metrics.incrementFailedCounter(api)
+          Logger.warn(s"Calling person details from citizen details failed: " + httpResponse.status + " url " + url)
+          metrics.incrementFailedCounter(api)
+          Future.failed(new HttpException(httpResponse.body, httpResponse.status))
         }
       }
     }

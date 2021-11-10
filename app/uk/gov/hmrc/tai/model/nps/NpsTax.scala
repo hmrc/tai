@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.model.nps
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.tai.model.TaxBand
+import uk.gov.hmrc.tai.model.{Tax, TaxBand}
+import uk.gov.hmrc.tai.model.helpers.TaxHelper
 
 case class NpsTax(
   totalIncome: Option[NpsComponent] = None,

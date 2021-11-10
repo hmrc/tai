@@ -1,7 +1,13 @@
 # microservice app routes
 
-# TODO: tai-frontend still calling this old endpoint
+GET           /:nino                                                                                                  @uk.gov.hmrc.tai.controllers.TaiController.getTaiRoot(nino: Nino)
+
+POST          /:nino/incomes/:year/update                                                                             @uk.gov.hmrc.tai.controllers.TaxSummaryController.updateEmployments(nino: Nino, year: Int)
+
 POST          /calculator/calculate-estimated-pay                                                                     @uk.gov.hmrc.tai.controllers.EstimatedPayCalculatorController.calculateFullYearEstimatedPay()
+
+GET           /:nino/tai-data                                                                                         @uk.gov.hmrc.tai.controllers.TaiController.taiData(nino: Nino)
+PUT           /:nino/tai-data                                                                                         @uk.gov.hmrc.tai.controllers.TaiController.updateTaiData(nino: Nino)
 
 #New endpoints**************************************************************
 

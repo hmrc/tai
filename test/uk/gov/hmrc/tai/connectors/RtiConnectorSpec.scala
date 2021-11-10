@@ -24,16 +24,20 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
+import play.api.libs.json.Json
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.rti.QaData
+import uk.gov.hmrc.tai.model.rti.{QaData, RtiData}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.Future
+import scala.language.postfixOps
+import scala.util.Random
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
@@ -68,6 +72,137 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     "withoutSuffix is called" must {
       "return a nino without the suffix" in {
         sut.withoutSuffix(nino) mustBe nino.withoutSuffix
+      }
+    }
+
+    "getRti is called" must {
+      "return RTI data when the response is OK (200)" in {
+        val fakeRtiData = Json.toJson(RtiData(nino.withoutSuffix, taxYear, "req123", Nil))
+
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(fakeRtiData.toString()))
+        )
+
+        val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+        rtiStatus.status mustBe OK
+        rtiData mustBe Some(fakeRtiData.as[RtiData])
+
+        verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
+
+      }
+
+      "return No RTI data" when {
+        "the ninos are mismatched" in {
+          val mismatchedNino = new Generator(new Random).nextNino.withoutSuffix
+          val fakeRtiData = Json.toJson(RtiData(mismatchedNino, taxYear, "req123", Nil))
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(fakeRtiData.toString()))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe OK
+          rtiStatus.response mustBe "Incorrect RTI Payload"
+          rtiData mustBe None
+        }
+
+        "connector returns 400" in {
+
+          val errorMessage = "Invalid query"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe BAD_REQUEST
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 404" in {
+
+          val errorMessage = "No RTI found"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe NOT_FOUND
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 4xx" in {
+
+          val errorMessage = "RTI record locked"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(LOCKED)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe LOCKED
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 500" in {
+
+          val errorMessage = "An error occurred"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe INTERNAL_SERVER_ERROR
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
+
+        "connector returns 5xx" in {
+
+          val errorMessage = "Can not reach gateway"
+
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_GATEWAY)
+                .withBody(errorMessage))
+          )
+
+          val (rtiData, rtiStatus) = sut.getRTI(nino, taxYear).futureValue
+
+          rtiStatus.status mustBe BAD_GATEWAY
+          rtiStatus.response mustBe errorMessage
+          rtiData mustBe None
+        }
       }
     }
 

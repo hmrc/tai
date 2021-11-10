@@ -38,11 +38,13 @@ import scala.util.control.NonFatal
 
 @Singleton
 class BenefitsService @Inject()(
+  taxAccountService: TaxAccountService,
   companyCarBenefitRepository: CompanyCarBenefitRepository,
   companyCarConnector: CompanyCarConnector,
   taxComponentService: CodingComponentService,
   iFormSubmissionService: IFormSubmissionService,
-  cacheService: CacheService,
+  fileUploadService: FileUploadService,
+  pdfService: PdfService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
@@ -60,7 +62,7 @@ class BenefitsService @Inject()(
     carSeqNum: Int,
     removeCarAndFuel: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] =
     companyCarConnector.withdrawCarBenefit(nino, TaxYear(), employmentSeqNum, carSeqNum, removeCarAndFuel).andThen {
-      case Success(_) => cacheService.invalidateTaiCacheData(nino)
+      case Success(_) => taxAccountService.invalidateTaiCacheData(nino)
     }
 
   def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] =

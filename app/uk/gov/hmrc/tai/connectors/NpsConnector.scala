@@ -80,6 +80,17 @@ class NpsConnector @Inject()(
     getFromNps[List[NpsIabdRoot]](urlToRead, APITypes.NpsIabdAllAPI, basicNpsHeaders(hc)).map(x => x._1)
   }
 
+  def getCalculatedTaxAccount(nino: Nino, year: Int)(
+    implicit hc: HeaderCarrier): Future[(NpsTaxAccount, Int, JsValue)] = {
+    val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
+    getFromNps[JsValue](urlToRead, APITypes.NpsTaxAccountAPI, basicNpsHeaders(hc)).map(x => (x._1.as[NpsTaxAccount], x._2, x._1))
+  }
+
+  def getCalculatedTaxAccountRawResponse(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val urlToRead = npsPathUrl(nino, s"tax-account/$year/calculation")
+    httpClient.GET[HttpResponse](url = urlToRead, headers = basicNpsHeaders(hc))
+  }
+
   private def extraNpsHeaders(hc: HeaderCarrier, version: Int, txId: String) =
     Seq(
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),

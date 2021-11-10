@@ -23,7 +23,9 @@ import org.mockito.stubbing.Answer
 import uk.gov.hmrc.tai.connectors.CacheConnector
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
 class JourneyCacheRepositorySpec extends BaseSpec {
 

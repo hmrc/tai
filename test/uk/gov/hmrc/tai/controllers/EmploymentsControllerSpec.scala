@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.service.EmploymentService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 class EmploymentsControllerSpec extends BaseSpec {
 

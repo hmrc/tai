@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import org.scalatest.concurrent.ScalaFutures
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}

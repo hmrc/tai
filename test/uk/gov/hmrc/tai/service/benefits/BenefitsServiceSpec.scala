@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service.benefits
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
@@ -30,7 +31,9 @@ import uk.gov.hmrc.tai.repositories.CompanyCarBenefitRepository
 import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
+import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 class BenefitsServiceSpec extends BaseSpec {
   "companyCarBenefit" must {
@@ -82,6 +85,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -117,6 +121,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -153,6 +158,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -187,6 +193,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -234,6 +241,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -293,6 +301,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mockCompanyCarBenefitRepository,
           mock[CompanyCarConnector],
           mockCodingComponentService)
@@ -313,18 +322,17 @@ class BenefitsServiceSpec extends BaseSpec {
         val taxYear = TaxYear()
         val removeCarAndFuel = WithdrawCarAndFuel(10, carWithdrawDate, fuelWithdrawDate)
 
-        val mockCompanyCarConnector = mock[CompanyCarConnector]
+        val mockTaxAccountService = mock[TaxAccountService]
 
+        val mockCompanyCarConnector = mock[CompanyCarConnector]
         when(
           mockCompanyCarConnector.withdrawCarBenefit(nino, taxYear, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc))
           .thenReturn(Future.successful(expectedResult))
 
-        val cacheService = mock[CacheService]
-
-        val sut = createSUT(mock[CompanyCarBenefitRepository], mockCompanyCarConnector, cacheService = cacheService)
+        val sut = createSUT(mockTaxAccountService, mock[CompanyCarBenefitRepository], mockCompanyCarConnector)
         sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc).futureValue mustBe expectedResult
 
-        verify(cacheService, times(1)).invalidateTaiCacheData(meq(nino))(any())
+        verify(mockTaxAccountService, times(1)).invalidateTaiCacheData(meq(nino))(any())
         verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }
@@ -525,11 +533,13 @@ class BenefitsServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(
+          mock[TaxAccountService],
           mock[CompanyCarBenefitRepository],
           mock[CompanyCarConnector],
           mock[CodingComponentService],
           mockIFormSubmissionService,
-          mock[CacheService],
+          mock[FileUploadService],
+          mock[PdfService],
           mockAuditable
         )
         val result =
@@ -564,11 +574,13 @@ class BenefitsServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(
+        mock[TaxAccountService],
         mock[CompanyCarBenefitRepository],
         mock[CompanyCarConnector],
         mock[CodingComponentService],
         mockIFormSubmissionService,
-        mock[CacheService],
+        mock[FileUploadService],
+        mock[PdfService],
         mockAuditable
       )
       sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc).futureValue mustBe "1"
@@ -621,18 +633,22 @@ class BenefitsServiceSpec extends BaseSpec {
   )
 
   private def createSUT(
+    taxAccountService: TaxAccountService = mock[TaxAccountService],
     companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
     companyCarConnector: CompanyCarConnector = mock[CompanyCarConnector],
     codingComponentService: CodingComponentService = mock[CodingComponentService],
     iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
-    cacheService: CacheService = mock[CacheService],
+    fileUploadService: FileUploadService = mock[FileUploadService],
+    pdfService: PdfService = mock[PdfService],
     auditable: Auditor = mock[Auditor]) =
     new BenefitsService(
+      taxAccountService,
       companyCarBenefitRepository,
       companyCarConnector,
       codingComponentService,
       iFormSubmissionService,
-      cacheService,
+      fileUploadService,
+      pdfService,
       auditable
     )
 }

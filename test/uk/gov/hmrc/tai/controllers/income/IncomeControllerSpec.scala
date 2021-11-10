@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.controllers.income
 
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{times, verify, when}
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.IncomeService
+import uk.gov.hmrc.tai.service.{EmploymentService, IncomeService, TaxAccountService}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -38,12 +38,14 @@ import scala.concurrent.Future
 class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
   val employmentId = 1
+  val mockTaxAccountService: TaxAccountService = generateMockAccountServiceWithAnyResponse
   val expectedJsonEmpty: JsObject = Json.obj(
     "data"  -> Json.arr(),
     "links" -> Json.arr()
   )
 
   val mockIncomeService = mock[IncomeService]
+  val mockEmploymentService = mock[EmploymentService]
 
   val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
     TaxCodeIncome(
@@ -247,6 +249,8 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       hasPayrolledBenefit = false,
       receivingOccupationalPension = true
     )
+    val employments = Seq(employment, employment.copy(sequenceNumber = 1))
+    val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return tax code incomes and employments JSON" in {
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
@@ -254,6 +258,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
       val sut = createSUT(
         incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
         authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
@@ -314,6 +319,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       val nextTaxYear = TaxYear().next
       val sut = createSUT(
         incomeService = mockIncomeService,
+        employmentService = mockEmploymentService,
         authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(FakeRequest())
 
@@ -391,29 +397,32 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return a bad request" when {
       "an invalid update amount is provided" in {
-        val SUT = setup(Future.successful(InvalidAmount("")))
+        val SUT = setup(Future.successful(InvalidAmount("")), mockTaxAccountService)
 
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe BAD_REQUEST
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
     }
 
     "return internal server error" when {
 
       "income update exception has been thrown" in {
-        val SUT = setup(Future.successful(IncomeUpdateFailed("Failed")))
+        val SUT = setup(Future.successful(IncomeUpdateFailed("Failed")), mockTaxAccountService)
 
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
 
       "any exception has been thrown" in {
-        val SUT = setup(Future.failed(new RuntimeException("Error")))
+        val SUT = setup(Future.failed(new RuntimeException("Error")), mockTaxAccountService)
         val result = SUT.updateTaxCodeIncome(nino, TaxYear(), employmentId)(fakeTaxCodeIncomeRequest)
 
         status(result) mustBe INTERNAL_SERVER_ERROR
+        verify(mockTaxAccountService, times(0)).invalidateTaiCacheData(meq(nino))(any())
       }
     }
   }
@@ -423,8 +432,10 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],
+    taxAccountService: TaxAccountService = mock[TaxAccountService],
+    employmentService: EmploymentService = mock[EmploymentService],
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
-    new IncomeController(incomeService, authentication, cc)
+    new IncomeController(incomeService, taxAccountService, employmentService, authentication, cc)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
     val updateTaxCodeIncomeRequest = UpdateTaxCodeIncomeRequest(1234)
@@ -432,13 +443,20 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       .withHeaders(("content-type", "application/json"))
   }
 
+  private def generateMockAccountServiceWithAnyResponse: TaxAccountService = {
+    val mockTaxAccountService = mock[TaxAccountService]
+    when(mockTaxAccountService.version(any(), any())(any())).thenReturn(Future.successful(Some(1)))
+    mockTaxAccountService
+  }
+
   private def setup(
-    response: Future[IncomeUpdateResponse]): IncomeController = {
+    response: Future[IncomeUpdateResponse],
+    mockTaxAccountService: TaxAccountService): IncomeController = {
     val mockIncomeService: IncomeService = {
       val mockIncomeService: IncomeService = mock[IncomeService]
       when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any())).thenReturn(response)
       mockIncomeService
     }
-    createSUT(mockIncomeService)
+    createSUT(mockIncomeService, mockTaxAccountService)
   }
 }

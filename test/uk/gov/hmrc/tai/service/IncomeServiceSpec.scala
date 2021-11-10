@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -31,8 +32,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
 class IncomeServiceSpec extends BaseSpec {
 

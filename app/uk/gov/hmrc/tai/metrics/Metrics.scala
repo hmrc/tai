@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.metrics
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.Timer.Context
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
