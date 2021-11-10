@@ -85,17 +85,14 @@ class TaxCodeChangeController @Inject()(
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
-        case ex: BadRequestException => {
-          BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
-        }
         case ex: NotFoundException => {
           NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
         }
-        case ex: InternalServerException => {
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+        case ex: HttpException if ex.responseCode >= 500 => {
+          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
         }
-        case ex: NotImplementedException => {
-          NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
+        case ex: HttpException => {
+          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
         }
       }
   }
