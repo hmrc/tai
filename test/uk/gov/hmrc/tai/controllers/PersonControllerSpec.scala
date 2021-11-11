@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.controllers
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -30,7 +29,6 @@ import uk.gov.hmrc.tai.service.PersonService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class PersonControllerSpec extends BaseSpec {
 
@@ -61,7 +59,7 @@ class PersonControllerSpec extends BaseSpec {
                 "country"  -> "country"
               ),
               "isDeceased"     -> false,
-              "hasCorruptData" -> false
+              "manualCorrespondenceInd" -> false
             ),
           "links" -> Json.arr()
         )
