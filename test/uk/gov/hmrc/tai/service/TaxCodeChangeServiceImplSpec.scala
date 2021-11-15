@@ -1528,7 +1528,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         val taxCodeRecordList = Seq.empty
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())(any())) thenReturn Future   //change the rest of the failing unit tests to use any()
+        when(taxCodeChangeConnector.taxCodeHistory(any(), any(), any())(any())) thenReturn Future
           .successful(taxCodeHistory)
 
         val latestTaxCodes =
