@@ -142,7 +142,7 @@ class TaxCodeChangeServiceImpl @Inject()(
     }
 
   def latestTaxCodes(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeSummary]] =
-    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear).map { taxCodeHistory =>
+    taxCodeHistory(nino, taxYear).map { taxCodeHistory =>
       val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
 
       groupedTaxCodeRecords.values.flatMap { taxCodeRecords =>
