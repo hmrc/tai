@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class TaxCodeMismatchSpec extends IntegrationSpec {
@@ -42,114 +41,85 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     }
 
     "for nps iabds failures" must {
-      "return a BAD_REQUEST when the NPS iabds API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_REQUEST)
+      List(500, 501, 502, 503, 504).foreach { status =>
+
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(BAD_GATEWAY)
+        }
       }
 
-      "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      List(400, 401, 403, 409, 412).foreach { status =>
 
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+        }
+      }
+
+      "return 404 when we receive 404 from downstream" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)
-      }
-
-      "throws an InternalServerException when the NPS iabds API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[InternalServerException])
-      }
-
-      "throws a HttpException when the NPS iabds API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
-      }
-
-      "throws a HttpException when the NPS iabds API returns a IM_A_TEAPOT" in {
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
       }
     }
 
     "for nps tax account failures" must {
-      "return a BAD_REQUEST when the NPS tax account API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_REQUEST)
+      List(500, 501, 502, 503, 504).foreach { status =>
+
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(BAD_GATEWAY)
+        }
       }
 
-      "return a NOT_FOUND when the NPS tax account API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      List(400, 401, 403, 409, 412).foreach { status =>
 
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+        }
+      }
+
+      "return 404 when we receive 404 from downstream" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)
-      }
-
-      "throws an InternalServerException when the NPS tax account API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[InternalServerException])
-      }
-
-      "throws a HttpException when the NPS tax account API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
-      }
-
-      "throws a HttpException when the NPS tax account API returns a IM_A_TEAPOT" in {
-        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
       }
     }
 
     "for tax-code-history failures" must {
-      "return a BAD_REQUEST when the tax-code-history API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_REQUEST)
+      List(500, 501, 502, 503, 504).foreach { status =>
+
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(BAD_GATEWAY)
+        }
       }
 
-      "return a NOT_FOUND when the tax-code-history API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+      List(400, 401, 403, 409, 412).foreach { status =>
 
+        s"return $status when we receive $status downstream" in {
+          server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
+        }
+      }
+
+      "return 404 when we receive 404 from downstream" in {
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)
       }
-
-      "throws an InternalServerException when the tax-code-history API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[InternalServerException])
-      }
-
-      "throws a HttpException when the tax-code-history API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
-      }
-
-      "throws a HttpException when the tax-code-history API returns a IM_A_TEAPOT" in {
-        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
-
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
-      }
     }
+
   }
 }

@@ -52,7 +52,7 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       }
     }
 
-    "respond with a BAD_REQUEST" when {
+    "respond with a INTERNAL_SERVER_ERROR" when {
       "fetching tax free amount comparison returns BadRequestException :(" in {
         val nino = ninoGenerator
 
@@ -78,25 +78,12 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       }
     }
 
-    "respond with a INTERNAL_SERVER_ERROR" when {
+    "respond with a BAD_GATEWAY" when {
       "fetching tax free amount comparison returns InternalServerException :(" in {
         val nino = ninoGenerator
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
           .thenReturn(Future.failed(new InternalServerException("Server error")))
-
-        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
-
-        status(result) mustEqual BAD_GATEWAY
-      }
-    }
-
-    "respond with a SERVICE_UNAVAILABLE" when {
-      "fetching tax free amount comparison returns ServiceUnavailableException :(" in {
-        val nino = ninoGenerator
-
-        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
-          .thenReturn(Future.failed(new ServiceUnavailableException("service unavailable")))
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 

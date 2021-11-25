@@ -63,19 +63,16 @@ class TaxCodeChangeController @Inject()(
     taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
       Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
     } recover {
-        case ex: BadRequestException => {
-          BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
-        }
-        case ex: NotFoundException => {
-          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        }
-        case ex: InternalServerException => {
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
-        }
-        case ex: NotImplementedException => {
-          NotImplemented(Json.toJson(Map("reason" -> ex.getMessage)))
-        }
+      case ex: NotFoundException => {
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
       }
+      case ex: HttpException if ex.responseCode >= 500 => {
+        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: HttpException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+    }
   }
 
   def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {

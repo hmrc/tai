@@ -24,7 +24,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -147,14 +147,14 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       contentAsJson(response) mustEqual expectedResponse
     }
 
-    "respond with BAD_REQUEST" when {
-      "a bad request exception has occurred" in {
+    "respond with BAD_GATEWAY" when {
+      "a bad gateway exception has occurred" in {
         when(taxCodeService.taxCodeChange(any())(any()))
-          .thenReturn(Future.failed(new BadRequestException("Error")))
+          .thenReturn(Future.failed(new BadGatewayException("Error")))
 
         val result = controller.taxCodeChange(testNino)(FakeRequest())
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual BAD_GATEWAY
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
@@ -171,31 +171,17 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         when(taxCodeService.taxCodeChange(any())(any()))
-          .thenReturn(Future.failed(new InternalServerException("Internal server error")))
+          .thenReturn(Future.failed(new InternalServerException("Bad gateway")))
 
         val result = controller.taxCodeChange(testNino)(FakeRequest())
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
+        status(result) mustEqual BAD_GATEWAY
+        contentAsString(result) mustEqual """{"reason":"Bad gateway"}"""
       }
     }
-
-    "respond with NOT_IMPLEMENTED" when {
-      "a NotImplementedException has occurred" in {
-        when(taxCodeService.taxCodeChange(any())(any()))
-          .thenReturn(Future.failed(new NotImplementedException("Not implemented")))
-
-        val result = controller.taxCodeChange(testNino)(FakeRequest())
-
-        status(result) mustEqual NOT_IMPLEMENTED
-        contentAsString(result) mustEqual """{"reason":"Not implemented"}"""
-      }
-    }
-
-
   }
 
   "taxCodeMismatch" must {
@@ -243,14 +229,14 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "return a BadRequest 400" when {
-      "a bad request exception has occurred" in {
+    "return a BAD_GATEWAY" when {
+      "a bad gateway exception has occurred" in {
         when(taxCodeService.taxCodeMismatch(any())(any()))
-          .thenReturn(Future.failed(new BadRequestException("Error")))
+          .thenReturn(Future.failed(new BadGatewayException("Error")))
 
         val result = controller.taxCodeMismatch(testNino)(FakeRequest())
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual BAD_GATEWAY
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
@@ -267,27 +253,15 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         when(taxCodeService.taxCodeMismatch(any())(any()))
-          .thenReturn(Future.failed(new InternalServerException("Internal server error")))
+          .thenReturn(Future.failed(new InternalServerException("Bad gateway")))
 
         val result = controller.taxCodeMismatch(testNino)(FakeRequest())
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
-      }
-    }
-
-    "respond with NOT_IMPLEMENTED" when {
-      "a NotImplementedException has occurred" in {
-        when(taxCodeService.taxCodeMismatch(any())(any()))
-          .thenReturn(Future.failed(new NotImplementedException("Not implemented")))
-
-        val result = controller.taxCodeMismatch(testNino)(FakeRequest())
-
-        status(result) mustEqual NOT_IMPLEMENTED
-        contentAsString(result) mustEqual """{"reason":"Not implemented"}"""
+        status(result) mustEqual BAD_GATEWAY
+        contentAsString(result) mustEqual """{"reason":"Bad gateway"}"""
       }
     }
   }
@@ -341,14 +315,14 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with BAD_REQUEST" when {
-      "a bad request exception has occurred" in {
+    "respond with BAD_GATEWAY" when {
+      "a bad gateway exception has occurred" in {
         when(taxCodeService.latestTaxCodes(any(), any())(any()))
-          .thenReturn(Future.failed(new BadRequestException("Error")))
+          .thenReturn(Future.failed(new BadGatewayException("Error")))
 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual BAD_GATEWAY
         contentAsString(result) mustEqual """{"reason":"Error"}"""
       }
     }
@@ -365,27 +339,15 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
 
-    "respond with INTERNAL_SERVER_ERROR" when {
+    "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
         when(taxCodeService.latestTaxCodes(any(), any())(any()))
-          .thenReturn(Future.failed(new InternalServerException("Internal server error")))
+          .thenReturn(Future.failed(new InternalServerException("Bad gateway")))
 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 
-        status(result) mustEqual INTERNAL_SERVER_ERROR
-        contentAsString(result) mustEqual """{"reason":"Internal server error"}"""
-      }
-    }
-
-    "respond with NOT_IMPLEMENTED" when {
-      "a NotImplementedException has occurred" in {
-        when(taxCodeService.latestTaxCodes(any(), any())(any()))
-          .thenReturn(Future.failed(new NotImplementedException("Not implemented")))
-
-        val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
-
-        status(result) mustEqual NOT_IMPLEMENTED
-        contentAsString(result) mustEqual """{"reason":"Not implemented"}"""
+        status(result) mustEqual BAD_GATEWAY
+        contentAsString(result) mustEqual """{"reason":"Bad gateway"}"""
       }
     }
   }
