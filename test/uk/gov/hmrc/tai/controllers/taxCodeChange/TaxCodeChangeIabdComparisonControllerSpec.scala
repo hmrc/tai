@@ -23,6 +23,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -51,16 +52,42 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       }
     }
 
-    "respond with a BadRequest" when {
-      "fetching tax free amount comparison fails :(" in {
+    "respond with a INTERNAL_SERVER_ERROR" when {
+      "fetching tax free amount comparison returns BadRequestException :(" in {
         val nino = ninoGenerator
 
         when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
-          .thenReturn(Future.failed(new RuntimeException("Its all gone wrong")))
+          .thenReturn(Future.failed(new BadRequestException("Bad request")))
 
         val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
 
-        status(result) mustEqual BAD_REQUEST
+        status(result) mustEqual INTERNAL_SERVER_ERROR
+      }
+    }
+
+    "respond with a NOT_FOUND" when {
+      "fetching tax free amount comparison returns NotFoundException :(" in {
+        val nino = ninoGenerator
+
+        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
+          .thenReturn(Future.failed(new NotFoundException("Resource not found")))
+
+        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
+
+        status(result) mustEqual NOT_FOUND
+      }
+    }
+
+    "respond with a BAD_GATEWAY" when {
+      "fetching tax free amount comparison returns InternalServerException :(" in {
+        val nino = ninoGenerator
+
+        when(taxFreeAmountComparisonService.taxFreeAmountComparison(meq(nino))(any()))
+          .thenReturn(Future.failed(new InternalServerException("Server error")))
+
+        val result: Future[Result] = testController.taxCodeChangeIabdComparison(nino)(FakeRequest())
+
+        status(result) mustEqual BAD_GATEWAY
       }
     }
   }

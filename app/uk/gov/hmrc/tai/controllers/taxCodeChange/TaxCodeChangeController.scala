@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException, NotImplementedException}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
@@ -30,16 +30,15 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeController @Inject()(
-  authentication: AuthenticationPredicate,
-  taxCodeChangeService: TaxCodeChangeService,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
-) extends BackendController(cc) {
+                                         authentication: AuthenticationPredicate,
+                                         taxCodeChangeService: TaxCodeChangeService,
+                                         cc: ControllerComponents)(
+                                         implicit ec: ExecutionContext
+                                       ) extends BackendController(cc) {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
-      {
-        Ok(Json.toJson(taxCodeChanged))
+    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged => {
+      Ok(Json.toJson(taxCodeChanged))
       }
     }
   }
@@ -47,6 +46,16 @@ class TaxCodeChangeController @Inject()(
   def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
       Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
+    } recover {
+      case ex: NotFoundException => {
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: HttpException if ex.responseCode >= 500 => {
+        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: HttpException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
     }
   }
 
@@ -54,8 +63,15 @@ class TaxCodeChangeController @Inject()(
     taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
       Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
     } recover {
-      case ex: NotFoundException   => NotFound(Json.toJson(Map("reason"   -> ex.getMessage)))
-      case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: NotFoundException => {
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: HttpException if ex.responseCode >= 500 => {
+        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
+      case ex: HttpException => {
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+      }
     }
   }
 
@@ -66,9 +82,15 @@ class TaxCodeChangeController @Inject()(
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
-        case ex: BadRequestException => BadRequest(Json.toJson(Map("reason" -> ex.getMessage)))
+        case ex: NotFoundException => {
+          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+        case ex: HttpException if ex.responseCode >= 500 => {
+          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
+        case ex: HttpException => {
+          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+        }
       }
-
   }
-
 }
