@@ -41,7 +41,6 @@ class TaxCodeChangeIabdComparisonController @Inject()(
       Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
     } recover {
       case ex: NotFoundException => {
-        println("3"*100)
         NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
       }
       case ex: HttpException if (ex.responseCode >= 500) => {

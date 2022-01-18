@@ -113,12 +113,6 @@ class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 class TaxCodeChangeUrl @Inject()(config: DesConfig) {
 
   def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String = {
-    println("7"*100)
-    println(nino)
-    println(start)
-    println(end)
-    println(s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}")
-    println("8"*100)
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
   }
 }

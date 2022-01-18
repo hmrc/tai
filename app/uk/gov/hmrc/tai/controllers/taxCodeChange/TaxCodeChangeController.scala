@@ -79,8 +79,6 @@ class TaxCodeChangeController @Inject()(
     implicit request =>
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
-      println("x"*100)
-
       latestTaxCodeRecords.map { records =>
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
