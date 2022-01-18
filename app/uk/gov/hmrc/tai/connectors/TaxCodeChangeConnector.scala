@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,12 @@ class TaxCodeChangeConnector @Inject()(
   }
 
   def taxCodeHistory(nino: Nino, from: TaxYear, to: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    print("*"*100)
+    println(from)
+    println(to)
+    print("*"*100)
+
+
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, from, to)
 
     getFromDes[TaxCodeHistory](url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader).map(_._1)

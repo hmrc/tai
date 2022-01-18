@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class TaxCodeChangeIabdComparisonController @Inject()(
       Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
     } recover {
       case ex: NotFoundException => {
+        println("3"*100)
         NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
       }
       case ex: HttpException if (ex.responseCode >= 500) => {

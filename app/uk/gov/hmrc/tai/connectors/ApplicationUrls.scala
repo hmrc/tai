@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,13 @@ class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 @Singleton
 class TaxCodeChangeUrl @Inject()(config: DesConfig) {
 
-  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String =
+  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String = {
+    println("7"*100)
+    println(nino)
+    println(start)
+    println(end)
+    println(s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}")
+    println("8"*100)
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
+  }
 }
