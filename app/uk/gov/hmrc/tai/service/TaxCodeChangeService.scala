@@ -155,7 +155,7 @@ class TaxCodeChangeServiceImpl @Inject()(
     }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    taxCodeChangeConnector.taxCodeHistory(nino, taxYear, taxYear)
+    taxCodeChangeConnector.taxCodeHistory(nino, taxYear)
 
   private def previousStartDate(date: LocalDate): LocalDate = {
     val startOfCurrentTaxYear = TaxYear().start
