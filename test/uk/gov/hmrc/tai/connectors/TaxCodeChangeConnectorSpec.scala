@@ -40,7 +40,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
   private lazy val url = {
     val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear))
-    s"${path.getPath}?${path.getQuery}"
+    s"${path.getPath}"
   }
 
   lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
