@@ -79,7 +79,6 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfi
 @Singleton
 class CyPlusOneConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val cyPlusOneEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("cy-plus-one.enabled")
-  lazy val cyPlusOneEnableDate: Option[String] = runModeConfiguration.getOptional[String]("cy-plus-one.startDayMonth")
 }
 
 @Singleton
