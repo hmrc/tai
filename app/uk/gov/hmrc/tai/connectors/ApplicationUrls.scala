@@ -112,6 +112,7 @@ class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 @Singleton
 class TaxCodeChangeUrl @Inject()(config: DesConfig) {
 
-  def taxCodeChangeUrl(nino: Nino, start: TaxYear, end: TaxYear): String =
-    s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${start.year}?endTaxYear=${end.year}"
+  def taxCodeChangeUrl(nino: Nino, year: TaxYear): String = {
+    s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${year.year}?endTaxYear=${year.year}"
+  }
 }

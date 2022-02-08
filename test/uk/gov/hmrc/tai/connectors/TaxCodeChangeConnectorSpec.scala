@@ -39,7 +39,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
   private val taxYear = TaxYear()
 
   private lazy val url = {
-    val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear, taxYear))
+    val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear))
     s"${path.getPath}?${path.getQuery}"
   }
 
@@ -77,7 +77,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         val connector = createSut()
 
-        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
+        val result = connector.taxCodeHistory(nino, taxYear).futureValue
 
         result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
@@ -99,7 +99,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         val connector = createSut()
 
-        val result = connector.taxCodeHistory(nino, taxYear, taxYear).futureValue
+        val result = connector.taxCodeHistory(nino, taxYear).futureValue
 
         result mustEqual TaxCodeHistory(
           nino.nino,
@@ -123,7 +123,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
       val connector = createSut()
 
-      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+      val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
 
       result mustBe a[JsResultException]
 
@@ -137,7 +137,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
       val connector = createSut()
 
-      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+      val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
 
       result mustBe a[BadRequestException]
     }
@@ -148,7 +148,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
       val connector = createSut()
 
-      val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+      val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
 
       result mustBe a[NotFoundException]
     }
@@ -164,7 +164,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
 
         val connector = createSut()
 
-        val result = connector.taxCodeHistory(nino, taxYear, taxYear).failed.futureValue
+        val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
 
         result mustBe a[HttpException]
       }
