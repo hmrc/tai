@@ -32,6 +32,7 @@ import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIn
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 import play.api.inject.bind
+import uk.gov.hmrc.tai.repositories.TaxCodeChangeRepository
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -40,6 +41,7 @@ import scala.util.Random
 class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants with BeforeAndAfterEach {
 
   private val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
+  private val taxCodeChangeRepository: TaxCodeChangeRepository = mock[TaxCodeChangeRepository]
   private val auditor = mock[Auditor]
   private val incomeService: IncomeService = mock[IncomeService]
 

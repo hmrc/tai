@@ -248,6 +248,7 @@ trait MongoConstants {
   val CarBenefitKey = "CarBenefit"
   val TaxAccountBaseKey: String = "TaxAccountData"
   val IabdMongoKey = "IabdsData"
+  val TaxCodeChangeKey: String = "TaxCodeChangeData"
 }
 
 object IFormConstants {
