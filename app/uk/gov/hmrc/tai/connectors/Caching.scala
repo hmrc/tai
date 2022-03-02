@@ -69,6 +69,4 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
       }
     }
   }
-
-
 }
