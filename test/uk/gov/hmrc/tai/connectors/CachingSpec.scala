@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.ArgumentMatchers.{eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
+import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -57,6 +59,39 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
         result mustBe jsonFromFunction
 
         verify(metrics, times(1)).incrementCacheMissCounter()
+      }
+    }
+  }
+
+  val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+
+  "cacheFromApiV2" must {
+    "return the TaxCodeHistory from cache" when {
+      "the key is present in the cache" in {
+        val sut = cacheTest
+        when(cacheConnector.find[TaxCodeHistory](meq(cacheId), meq(mongoKey))(any()))
+          .thenReturn(Future.successful(Some(taxCodeHistory)))
+        val result = sut.cacheFromApiV2[TaxCodeHistory](nino, mongoKey, Future.successful(taxCodeHistory)).futureValue
+        result mustBe taxCodeHistory
+
+        verify(metrics, times(2)).incrementCacheHitCounter()
+      }
+    }
+
+    "return the TaxCodeHistory from the supplied function" when {
+      "the key is not present in the cache" in {
+        val sut = cacheTest
+        val jsonFromFunction = Json.obj("c" -> "d")
+        when(cacheConnector.find[TaxCodeHistory](meq(cacheId), meq(mongoKey))(any()))
+          .thenReturn(Future.successful(None))
+        when(
+          cacheConnector
+            .createOrUpdate[TaxCodeHistory](meq(cacheId), meq(taxCodeHistory), meq(mongoKey))(any()))
+          .thenReturn(Future.successful(taxCodeHistory))
+        val result = sut.cacheFromApiV2[TaxCodeHistory](nino, mongoKey, Future.successful(taxCodeHistory)).futureValue
+        result mustBe taxCodeHistory
+
+        verify(metrics, times(2)).incrementCacheMissCounter()
       }
     }
   }
