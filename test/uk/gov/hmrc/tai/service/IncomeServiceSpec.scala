@@ -98,46 +98,12 @@ class IncomeServiceSpec extends BaseSpec {
           BigDecimal(0))
       )
 
-      val employment = Employment(
-        "company name",
-        Live,
-        Some("888"),
-        new LocalDate(TaxYear().next.year, 5, 26),
-        None,
-        Nil,
-        "",
-        "",
-        1,
-        Some(100),
-        hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
-      )
-      val employment2 = Employment(
-        "company name",
-        Live,
-        Some("888"),
-        new LocalDate(TaxYear().next.year, 5, 26),
-        None,
-        Nil,
-        "",
-        "",
-        2,
-        Some(100),
-        hasPayrolledBenefit = false,
-        receivingOccupationalPension = true
-      )
-
-      val mockEmploymentService = mock[EmploymentService]
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
-      when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
-        .thenReturn(Future.successful(Seq(employment, employment2)))
-
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
-      val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
-
+      val SUT = createSUT(incomeRepository = mockIncomeRepository)
+      val result = SUT.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
 
       result mustBe taxCodeIncomes
     }
