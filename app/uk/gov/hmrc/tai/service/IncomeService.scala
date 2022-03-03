@@ -52,7 +52,7 @@ class IncomeService @Inject()(
         .filter(_.endDate.isDefined)
 
     for {
-      taxCodeIncomes <- incomeRepository.taxCodeIncomes(nino, year)
+      taxCodeIncomes <- taxCodeIncomes(nino, year)
       filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
       employments <- employmentService.employments(nino, year)
       result = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
@@ -77,7 +77,7 @@ class IncomeService @Inject()(
       }
 
     for {
-      taxCodeIncomes <- incomeRepository.taxCodeIncomes(nino, year)
+      taxCodeIncomes <- taxCodeIncomes(nino, year)
       filteredTaxCodeIncomes = filterIncomesByType(taxCodeIncomes, incomeType)
       employments <- employments(filteredTaxCodeIncomes, nino, year)
     } yield
@@ -87,25 +87,8 @@ class IncomeService @Inject()(
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 
-  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
-    val eventualEmployments = employmentService.employments(nino, year)
-
-    for {
-      employments <- eventualEmployments
-      taxCodes <- eventualIncomes
-    } yield {
-      val map = employments.groupBy(_.sequenceNumber)
-      taxCodes.map { taxCode =>
-        val employmentStatus = for {
-          id <- taxCode.employmentId
-          employment <- map.get(id).flatMap(_.headOption)
-        } yield employment.employmentStatus
-
-        taxCode.copy(status = employmentStatus.getOrElse(taxCode.status))
-      }
-    }
-  }
+  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] =
+    incomeRepository.taxCodeIncomes(nino, year)
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     incomeRepository.incomes(nino, year)
@@ -156,7 +139,7 @@ class IncomeService @Inject()(
 
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(
     implicit hc: HeaderCarrier): Future[Option[String]] =
-    incomeRepository.taxCodeIncomes(nino, year) map { taxCodeIncomes =>
+    taxCodeIncomes(nino, year) map { taxCodeIncomes =>
       taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
     }
 
