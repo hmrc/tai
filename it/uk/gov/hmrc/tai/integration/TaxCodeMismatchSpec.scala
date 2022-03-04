@@ -29,6 +29,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
     server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+    server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
   }
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
