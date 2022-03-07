@@ -183,7 +183,7 @@ class IncomeServiceSpec extends BaseSpec {
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
 
-      result mustBe taxCodeIncomes.map(_.copy(status = Live))
+      result mustBe taxCodeIncomes
     }
   }
 
