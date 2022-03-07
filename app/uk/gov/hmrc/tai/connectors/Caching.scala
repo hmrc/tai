@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.tai.model.TaxCodeHistory
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,6 +46,26 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
           metrics.incrementCacheMissCounter()
 
         jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(cacheId, _, mongoKey))
+      }
+    }
+  }
+
+  def cacheFromApiV2[A](nino: Nino, mongoKey: String, jsonFromApi: => Future[A])(
+    implicit hc: HeaderCarrier, writes: Writes[A], reads: Reads[A]): Future[A] = {
+    val cacheId = CacheId(nino)
+
+    cacheConnector.find[A](cacheId, mongoKey).flatMap {
+      case Some(jsonFromCache) => {
+        if (cacheMetricsConfig.cacheMetricsEnabled)
+          metrics.incrementCacheHitCounter()
+
+        Future.successful(jsonFromCache)
+      }
+      case _ => {
+        if (cacheMetricsConfig.cacheMetricsEnabled)
+          metrics.incrementCacheMissCounter()
+
+        jsonFromApi.flatMap(cacheConnector.createOrUpdate[A](cacheId, _, mongoKey))
       }
     }
   }

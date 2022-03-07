@@ -19,7 +19,9 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.IntegrationPatience
 import play.api.Application
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsResultException
 import uk.gov.hmrc.tai.audit.Auditor
@@ -30,16 +32,19 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.TaxCodeChangeRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
-import play.api.inject.bind
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.util.Random
 
-class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants with BeforeAndAfterEach {
+class TaxCodeChangeServiceImplSpec extends BaseSpec
+  with TaxCodeHistoryConstants
+  with BeforeAndAfterEach
+  with IntegrationPatience {
 
   private val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
+  private val taxCodeChangeRepository: TaxCodeChangeRepository = mock[TaxCodeChangeRepository]
   private val auditor = mock[Auditor]
   private val incomeService: IncomeService = mock[IncomeService]
 
@@ -131,7 +136,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
@@ -153,7 +158,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
       }
@@ -186,7 +191,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
@@ -213,7 +218,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
@@ -239,7 +244,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
@@ -267,7 +272,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
       }
@@ -288,7 +293,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
 
@@ -306,7 +311,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
 
@@ -320,7 +325,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
 
@@ -334,7 +339,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
       }
@@ -354,7 +359,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
+
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
       }
 
@@ -373,7 +378,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
 
@@ -392,7 +397,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
           when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
-    
+
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
         }
       }
@@ -403,7 +408,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
+
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
       }
 
@@ -411,7 +416,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.failed(JsResultException(Nil)))
 
-  
 
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
       }
@@ -468,7 +472,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
@@ -519,7 +522,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
@@ -576,7 +578,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
 
@@ -663,7 +664,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2),
@@ -733,7 +733,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2),
@@ -803,7 +802,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1),
@@ -888,7 +886,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2),
@@ -958,7 +955,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1, expectedCurrentTaxCodeChange2),
@@ -1028,7 +1024,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(
           Seq(expectedCurrentTaxCodeChange1),
@@ -1049,7 +1044,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val taxCodeChangeRecord = TaxCodeSummary(
           taxCodeRecord.taxCodeId,
@@ -1077,7 +1071,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val taxCodeChangeRecord = TaxCodeSummary(
           taxCodeRecord.taxCodeId,
@@ -1103,7 +1096,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
       when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
-
 
 
       val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -1136,7 +1128,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
 
@@ -1166,7 +1157,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
-  
 
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
 
@@ -1216,17 +1206,17 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         SUT.taxCodeChange(nino).futureValue
 
         val expectedDetailMap = Map(
-          "nino"                            -> nino.nino,
-          "numberOfCurrentTaxCodes"         -> "3",
-          "numberOfPreviousTaxCodes"        -> "1",
-          "dataOfTaxCodeChange"             -> currentStartDate.toString,
-          "primaryCurrentTaxCode"           -> "1000L",
-          "secondaryCurrentTaxCodes"        -> "1001L,1002L",
-          "primaryPreviousTaxCode"          -> "1185L",
-          "secondaryPreviousTaxCodes"       -> "",
-          "primaryCurrentPayrollNumber"     -> payrollNumberCurr,
-          "secondaryCurrentPayrollNumbers"  -> s"$payrollNumberCurr,$payrollNumberCurr2",
-          "primaryPreviousPayrollNumber"    -> payrollNumberPrev,
+          "nino" -> nino.nino,
+          "numberOfCurrentTaxCodes" -> "3",
+          "numberOfPreviousTaxCodes" -> "1",
+          "dataOfTaxCodeChange" -> currentStartDate.toString,
+          "primaryCurrentTaxCode" -> "1000L",
+          "secondaryCurrentTaxCodes" -> "1001L,1002L",
+          "primaryPreviousTaxCode" -> "1185L",
+          "secondaryPreviousTaxCodes" -> "",
+          "primaryCurrentPayrollNumber" -> payrollNumberCurr,
+          "secondaryCurrentPayrollNumbers" -> s"$payrollNumberCurr,$payrollNumberCurr2",
+          "primaryPreviousPayrollNumber" -> payrollNumberPrev,
           "secondaryPreviousPayrollNumbers" -> ""
         )
 
@@ -1328,7 +1318,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val expectedResult = TaxCodeMismatch(false, unconfirmedTaxCodes, confirmedTaxCodes)
 
-  
+
         SUT.taxCodeMismatch(nino).futureValue mustEqual expectedResult
       }
 
@@ -1401,7 +1391,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val expectedResult = TaxCodeMismatch(true, Seq("1000LX"), Seq("1185L"))
 
-  
+
         SUT.taxCodeMismatch(nino).futureValue mustEqual expectedResult
       }
 
@@ -1446,7 +1436,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
 
         val expectedResult = TaxCodeMismatch(true, unconfirmedTaxCodes, confirmedTaxCodes)
 
-  
+
         SUT.taxCodeMismatch(nino).futureValue mustEqual expectedResult
       }
     }
@@ -1488,7 +1478,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec with TaxCodeHistoryConstants
         .thenReturn(Future.successful(taxCodeIncomes))
       when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.failed(new RuntimeException("Runtime")))
-
 
 
       val ex = the[RuntimeException] thrownBy SUT.taxCodeMismatch(nino).futureValue
