@@ -37,7 +37,7 @@ class JourneyCacheController @Inject()(
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     repository.currentCache(CacheId(request.nino), journeyName) map {
       case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
-      case _                             => NotFound
+      case _                             => NoContent
     } recover {
       case _ => InternalServerError
     }
@@ -47,7 +47,7 @@ class JourneyCacheController @Inject()(
     implicit request =>
       repository.currentCache(CacheId(request.nino), journeyName, key) map {
         case Some(value) if value.trim != "" => Ok(Json.toJson(value))
-        case _                               => NotFound
+        case _                               => NoContent
       } recover {
         case _ => InternalServerError
       }
