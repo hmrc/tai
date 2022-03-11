@@ -91,7 +91,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
       status(result) mustBe NO_CONTENT
     }
 
-    "return a 404 not found response" when {
+    "return a 204 not found response" when {
 
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
@@ -101,10 +101,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("testjourney")(fakeRequest)
-        status(result) mustBe NOT_FOUND
+        status(result) mustBe NO_CONTENT
 
         val emptyMapResult = sut.currentCache("testjourney")(fakeRequest)
-        status(emptyMapResult) mustBe NOT_FOUND
+        status(emptyMapResult) mustBe NO_CONTENT
       }
 
       "an individual value is not found within an existing cache" in {
@@ -114,7 +114,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
-        status(result) mustBe NOT_FOUND
+        status(result) mustBe NO_CONTENT
       }
 
       "an individual value is found within an existing cache, but is the empty string" in {
@@ -124,7 +124,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCacheValue("testjourney", "key3")(fakeRequest)
-        status(result) mustBe NOT_FOUND
+        status(result) mustBe NO_CONTENT
       }
     }
 
