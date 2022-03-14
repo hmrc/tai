@@ -91,7 +91,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
       status(result) mustBe NO_CONTENT
     }
 
-    "return a 204 not found response" when {
+    "return a 204 no content response" when {
 
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
