@@ -143,7 +143,7 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
 
-    "return the list of taxCodeIncomes for passed nino even if employments is nill" in {
+    "return the list of taxCodeIncomes for passed nino even if employments is nil" in {
       val taxCodeIncomes = Seq(
         TaxCodeIncome(
           EmploymentIncome,
@@ -179,6 +179,49 @@ class IncomeServiceSpec extends BaseSpec {
 
       when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq.empty))
+
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
+
+      result mustBe taxCodeIncomes
+    }
+
+    "return the list of taxCodeIncomes for passed nino even if employments fails" in {
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(1),
+          BigDecimal(0),
+          "EmploymentIncome",
+          "1150L",
+          "Employer1",
+          Week1Month1BasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0)
+        ),
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(2),
+          BigDecimal(0),
+          "EmploymentIncome",
+          "1100L",
+          "Employer2",
+          OtherBasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0))
+      )
+
+      val mockEmploymentService = mock[EmploymentService]
+      val mockIncomeRepository = mock[IncomeRepository]
+      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
+        .thenReturn(Future.failed(new Exception("Error")))
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
