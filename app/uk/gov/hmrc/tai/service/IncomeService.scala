@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncome
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,8 @@ class IncomeService @Inject()(
   citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
   taxAccountRepository: TaxAccountRepository,
-  auditor: Auditor)(implicit ec: ExecutionContext) {
+  auditor: Auditor,
+  config: FeatureTogglesConfig)(implicit ec: ExecutionContext) {
 
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
@@ -89,11 +91,16 @@ class IncomeService @Inject()(
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
-    val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
-      Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}")
-      Seq.empty[Employment]
-    }
-
+    val eventualEmployments =
+      if (config.employmentsStatusEnabled) {
+        employmentService.employments(nino, year).recover { case ex =>
+          Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}")
+          Seq.empty[Employment]
+        }
+      }
+      else {
+        Future.successful(Seq.empty[Employment])
+      }
     for {
       employments <- eventualEmployments
       taxCodes <- eventualIncomes

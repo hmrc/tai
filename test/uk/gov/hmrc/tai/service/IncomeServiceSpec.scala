@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.joda.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{doNothing, times, verify, when}
+import org.mockito.Mockito.{doNothing, never, times, verify, when}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -30,6 +30,7 @@ import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -135,7 +136,10 @@ class IncomeServiceSpec extends BaseSpec {
       when(mockEmploymentService.employments(any[Nino], any[TaxYear])(any[HeaderCarrier]))
         .thenReturn(Future.successful(Seq(employment, employment2)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val mockConfig = mock[FeatureTogglesConfig]
+      when(mockConfig.employmentsStatusEnabled)
+        .thenReturn(true)
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository, config = mockConfig)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
 
 
@@ -225,6 +229,82 @@ class IncomeServiceSpec extends BaseSpec {
 
       val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
+
+      result mustBe taxCodeIncomes
+    }
+
+    " not use the employments API if toggle is disabled" in {
+
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(1),
+          BigDecimal(0),
+          "EmploymentIncome",
+          "1150L",
+          "Employer1",
+          Week1Month1BasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0)
+        ),
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(2),
+          BigDecimal(0),
+          "EmploymentIncome",
+          "1100L",
+          "Employer2",
+          OtherBasisOperation,
+          Live,
+          BigDecimal(0),
+          BigDecimal(0),
+          BigDecimal(0))
+      )
+
+      val employment = Employment(
+        "company name",
+        Ceased,
+        Some("888"),
+        new LocalDate(TaxYear().next.year, 5, 26),
+        None,
+        Nil,
+        "",
+        "",
+        1,
+        Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = true
+      )
+      val employment2 = Employment(
+        "company name",
+        Ceased,
+        Some("888"),
+        new LocalDate(TaxYear().next.year, 5, 26),
+        None,
+        Nil,
+        "",
+        "",
+        2,
+        Some(100),
+        hasPayrolledBenefit = false,
+        receivingOccupationalPension = true
+      )
+
+      val mockEmploymentService = mock[EmploymentService]
+      val mockIncomeRepository = mock[IncomeRepository]
+      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      verify(mockEmploymentService, never()).employments(any[Nino], any[TaxYear])(any[HeaderCarrier])
+
+      val mockConfig = mock[FeatureTogglesConfig]
+      when(mockConfig.employmentsStatusEnabled)
+        .thenReturn(false)
+      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository, config = mockConfig)
+      val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier()).futureValue
+
 
       result mustBe taxCodeIncomes
     }
@@ -1296,6 +1376,7 @@ class IncomeServiceSpec extends BaseSpec {
     citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
     incomeRepository: IncomeRepository = mock[IncomeRepository],
     taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
+    config: FeatureTogglesConfig = mock[FeatureTogglesConfig],
     auditor: Auditor = mock[Auditor]) =
-    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, taxAccountRepository, auditor)
+    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, taxAccountRepository, auditor, config)
 }
