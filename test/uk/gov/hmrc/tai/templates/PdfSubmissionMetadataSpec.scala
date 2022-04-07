@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.templates
 
-import org.joda.time.LocalDateTime
+import java.time.LocalDateTime
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.scalatestplus.play.PlaySpec

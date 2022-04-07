@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsTax}
 import uk.gov.hmrc.tai.model.tai.TaxYear

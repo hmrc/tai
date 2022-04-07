@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.format.DateTimeFormat
+import java.time.format.DateTimeFormatter
 import scala.util.Try
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.nps.NpsDate._
+
 import scala.language.implicitConversions
 
 object NpsDate {
 
-  private val taxPlatformDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+  private val taxPlatformDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
 
@@ -37,7 +39,7 @@ object NpsDate {
       }
   }
 
-  private val npsDateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")
+  private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   implicit val writes = new Writes[NpsDate] {
     override def writes(date: NpsDate): JsValue =
@@ -47,8 +49,8 @@ object NpsDate {
 }
 
 case class NpsDate(localDate: LocalDate) {
-  val toTaxPlatformString: String = NpsDate.taxPlatformDateFormat.print(localDate)
-  val toNpsString: String = NpsDate.npsDateFormat.print(localDate)
+  val toTaxPlatformString: String = localDate.format(taxPlatformDateFormat)
+  val toNpsString: String = localDate.format(npsDateFormat)
 }
 
 object NpsDateImplicitConversions {
@@ -79,7 +81,7 @@ object localDateSerializer {
   }
 
   def serialize(value: LocalDate): String =
-    "%04d-%02d-%02d".format(value.getYear, value.getMonthOfYear, value.getDayOfMonth)
+    "%04d-%02d-%02d".format(value.getYear, value.getMonth, value.getDayOfMonth)
 
   private def parseError(str: String) =
     s"Unable to parse '$str' to type 'LocalDate', expected a valid value with format: yyyy-MM-dd"

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.domain.{Address, Person}

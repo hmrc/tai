@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements

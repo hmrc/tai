@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import java.io.File
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection

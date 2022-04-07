@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.joda.time.LocalDate
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.slf4j._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -43,9 +43,9 @@ package object rti {
       }
     },
     new Writes[LocalDate] {
-      val dateFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+      val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       override def writes(date: LocalDate): JsValue =
-        JsString(dateFormat.print(date))
+        JsString(date.format(dateFormat))
     }
   )
 

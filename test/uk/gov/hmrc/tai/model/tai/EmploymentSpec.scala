@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter

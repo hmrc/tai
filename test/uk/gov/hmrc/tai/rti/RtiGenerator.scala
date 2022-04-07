@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.Days
-import org.joda.time.LocalDate
+import java.time.Days
+import java.time.LocalDate
 import org.scalacheck._
 
 import Gen._

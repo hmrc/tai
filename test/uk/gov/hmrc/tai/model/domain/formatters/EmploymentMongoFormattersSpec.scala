@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNumber, JsString, Json}
 import uk.gov.hmrc.tai.model.domain._

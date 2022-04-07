@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 

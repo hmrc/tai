@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.nps2
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.model.enums.BasisOperation

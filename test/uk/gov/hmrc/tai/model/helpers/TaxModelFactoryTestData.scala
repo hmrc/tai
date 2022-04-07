@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.helpers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.tai.model.TaxCode
 import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model._

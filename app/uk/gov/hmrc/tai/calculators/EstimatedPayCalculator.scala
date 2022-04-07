@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.{Days, LocalDate}
+import java.time.LocalDate
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.enums.PayFreq.PayFreq
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{CalculatedPay, PayDetails}
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.time.temporal.ChronoUnit
 import scala.math.BigDecimal.RoundingMode
 
 object EstimatedPayCalculator {
@@ -76,7 +77,8 @@ object EstimatedPayCalculator {
     val startDateNY = startDateCY.plusDays(TaiConstants.DAYS_IN_YEAR)
     val workingStartDate = TaxCalculator.getStartDateInCurrentFinancialYear(startDate)
 
-    val daysToBePaidFor: Int = Days.daysBetween(workingStartDate, startDateNY).getDays
+    startDateNY.until(workingStartDate, ChronoUnit.DAYS)
+    val daysToBePaidFor = startDateNY.until(workingStartDate, ChronoUnit.DAYS)
 
     if (daysToBePaidFor > 0) {
       if (annualAmount > 0 && daysToBePaidFor < TaiConstants.DAYS_IN_YEAR) {

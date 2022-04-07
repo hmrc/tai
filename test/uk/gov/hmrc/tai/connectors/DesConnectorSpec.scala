@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.joda.time.DateTime
+import java.time.LocalTime
 import play.api.http.Status._
 import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.http.{SessionId, _}

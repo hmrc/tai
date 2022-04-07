@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import com.github.nscala_time.time.Imports._
-import org.joda.time.LocalDate
 
+
+import java.time.{LocalDate, ZoneId}
 import scala.util.matching.Regex
 
 object TaxYearDates {
@@ -40,8 +40,8 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def startPrev: LocalDate = new LocalDate(prev.year, endMonth, startDay)
   def endPrev: LocalDate = new LocalDate(prev.year + 1, startMonth, endDay)
   def compare(that: TaxYear): Int = this.year compare that.year
-  def twoDigitRange = s"${start.year.get % 100}-${end.year.get % 100}"
-  def fourDigitRange = s"${start.year.get}-${end.year.get}"
+  def twoDigitRange = s"${start.getYear % 100}-${end.getYear % 100}"
+  def fourDigitRange = s"${start.getYear}-${end.getYear}"
 
   def withinTaxYear(currentDate: LocalDate): Boolean =
     (currentDate.isEqual(TaxYear().start) || currentDate.isAfter(TaxYear().start)) &&
@@ -54,7 +54,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   }
 
   def taxYearFor(dateToResolve: LocalDate): Int = {
-    val year = dateToResolve.year.get
+    val year = dateToResolve.getYear
 
     if (dateToResolve.isBefore(new LocalDate(year, 4, 6)))
       year - 1
@@ -65,13 +65,11 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
 }
 
 object TaxYear {
-  def apply(from: LocalDate = new LocalDate): TaxYear = {
-    val naiveYear = TaxYear(from.year.get)
-    if (from < naiveYear.start) {
+  def apply(from: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))): TaxYear = {
+    val naiveYear = TaxYear(from.getYear)
+    if (from isBefore naiveYear.start) {
       naiveYear.prev
-    } else {
-      naiveYear
-    }
+    } else { naiveYear }
   }
 
   def apply(from: String): TaxYear = {

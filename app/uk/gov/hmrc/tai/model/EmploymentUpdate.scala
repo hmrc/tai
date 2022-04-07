@@ -16,6 +16,6 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 
 case class EmploymentUpdate(employmentId: Int, name: String, endDate: LocalDate)

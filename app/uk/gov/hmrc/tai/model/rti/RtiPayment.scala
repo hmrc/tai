@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import com.github.nscala_time.time.Imports._
 
 /**
@@ -45,7 +45,7 @@ case class RtiPayment(
   nicPaidYTD: Option[BigDecimal] = None
 ) extends Ordered[RtiPayment] {
 
-  def compare(that: RtiPayment): Int = this.paidOn compare that.paidOn
+  def compare(that: RtiPayment): Int = this.paidOn compareTo that.paidOn
 
   def isIrregular: Boolean = payFrequency == PayFrequency.Irregular
 }

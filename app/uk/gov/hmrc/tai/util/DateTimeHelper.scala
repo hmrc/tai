@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.LocalDate
 
 object DateTimeHelper {
 
   def convertToLocalDate(pattern: String, date: String): LocalDate = {
-    val dateTimeFormatter = DateTimeFormat.forPattern(pattern)
+    val dateTimeFormatter = DateTimeFormatter.ofPattern(pattern)
 
-    dateTimeFormatter.parseLocalDate(date)
+    LocalDate.parse(date, dateTimeFormatter)
   }
 
   implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)

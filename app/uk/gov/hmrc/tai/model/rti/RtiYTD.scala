@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.Json
 
 case class RtiYTD(

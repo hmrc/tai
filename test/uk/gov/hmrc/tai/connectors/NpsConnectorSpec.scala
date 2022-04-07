@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json, Writes}
 import uk.gov.hmrc.http._

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json, JsonValidationError}
 import uk.gov.hmrc.tai.model.rti.QaData._

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
