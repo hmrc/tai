@@ -45,7 +45,7 @@ trait IabdHodFormatters extends IabdTypeConstants {
 
         override def reads(json: JsValue): JsResult[LocalDate] = json match {
           case JsString(dateRegex(d, m, y)) =>
-            JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
+            JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
           case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
         }
       },

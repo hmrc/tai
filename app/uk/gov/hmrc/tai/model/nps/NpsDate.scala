@@ -33,7 +33,7 @@ object NpsDate {
   implicit val reads = new Reads[NpsDate] {
     override def reads(json: JsValue): JsResult[NpsDate] =
       json match {
-        case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(new LocalDate(y.toInt, m.toInt, d.toInt)))
+        case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
         case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
         case invalid                         => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
       }
@@ -75,7 +75,7 @@ object localDateSerializer {
 
   def deserialize(str: String): LocalDate = str match {
     case localDateRegex(y, m, d) => {
-      new LocalDate(y.toInt, m.toInt, d.toInt)
+      LocalDate.of(y.toInt, m.toInt, d.toInt)
     }
     case _ => throw new Exception(parseError(str))
   }

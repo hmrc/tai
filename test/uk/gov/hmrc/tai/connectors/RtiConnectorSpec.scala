@@ -38,7 +38,7 @@ import scala.concurrent.Future
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
   val taxYear: TaxYear = TaxYear()
-  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/21-22"
+  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${taxYear.twoDigitRange}"
 
   val mockHttp = mock[HttpClient]
 

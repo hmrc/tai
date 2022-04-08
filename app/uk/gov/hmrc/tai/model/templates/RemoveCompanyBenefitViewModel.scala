@@ -21,6 +21,8 @@ import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
+import java.time.format.DateTimeFormatter
+
 case class RemoveCompanyBenefitViewModel(
   nino: String,
   firstName: String,
@@ -40,13 +42,14 @@ case class RemoveCompanyBenefitViewModel(
   endDate: String)
 
 object RemoveCompanyBenefitViewModel {
+  private val dateFormat = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 
   def apply(person: Person, removeCompanyBenefit: RemoveCompanyBenefit): RemoveCompanyBenefitViewModel =
     RemoveCompanyBenefitViewModel(
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
-      dateOfBirth = person.dateOfBirth.map(_.toString(IFormConstants.DateFormat)).getOrElse(""),
+      dateOfBirth = person.dateOfBirth.map(_.format(dateFormat)).getOrElse(""),
       telephoneContactAllowed = removeCompanyBenefit.contactByPhone,
       telephoneNumber = removeCompanyBenefit.phoneNumber.getOrElse(""),
       addressLine1 = person.address.line1,

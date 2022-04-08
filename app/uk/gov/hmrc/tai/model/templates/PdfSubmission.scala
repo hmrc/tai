@@ -26,7 +26,7 @@ case class PdfSubmission(
   formId: String,
   numberOfPages: Int,
   attachmentCount: Int = 0,
-  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London")),
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London")), //TODO extract from config
   submissionMark: String = "",
   casKey: String = "",
   businessArea: String = "PSA",

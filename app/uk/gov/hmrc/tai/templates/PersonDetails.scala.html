@@ -14,6 +14,7 @@
  * limitations under the License.
  *@
 
+@import java.time.format.DateTimeFormatter
 @(personDetails: uk.gov.hmrc.tai.model.domain.Person)
 <h3 class="heading-medium">Your details</h3>
 <table>
@@ -32,7 +33,7 @@
     </tr>
     <tr>
         <td>Date of birth</td>
-        <td>@personDetails.dateOfBirth.map(_.toString("d MMMM yyyy")).getOrElse("")</td>
+        <td>@personDetails.dateOfBirth.map(_.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))).getOrElse("")</td>
     </tr>
     <tr>
         <td>Telephone number</td>

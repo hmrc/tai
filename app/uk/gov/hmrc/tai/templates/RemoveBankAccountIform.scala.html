@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@import java.time.format.DateTimeFormatter
+
 @(viewmodel: uk.gov.hmrc.tai.model.templates.CloseBankAccount)
 <!DOCTYPE html>
 <html lang="en" class="no-js">
@@ -88,7 +90,7 @@
                 </tr>
                 <tr>
                     <td>Date you closed the account</td>
-                    <td>@viewmodel.endDate.toString("d MMMM yyyy")</td>
+                    <td>@viewmodel.endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))</td>
                 </tr>
 
                 @if(viewmodel.bankAccountClosedInCurrentTaxYear) {

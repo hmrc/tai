@@ -33,12 +33,12 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
 
   require(year.toString.length == 4, "Invalid year")
 
-  def start: LocalDate = new LocalDate(year, startMonth, startDay)
-  def end: LocalDate = new LocalDate(year + 1, endMonth, endDay)
+  def start: LocalDate = LocalDate.of(year, startMonth, startDay)
+  def end: LocalDate = LocalDate.of(year + 1, endMonth, endDay)
   def next: TaxYear = TaxYear(year + 1)
   def prev = TaxYear(year - 1)
-  def startPrev: LocalDate = new LocalDate(prev.year, endMonth, startDay)
-  def endPrev: LocalDate = new LocalDate(prev.year + 1, startMonth, endDay)
+  def startPrev: LocalDate = LocalDate.of(prev.year, endMonth, startDay)
+  def endPrev: LocalDate = LocalDate.of(prev.year + 1, startMonth, endDay)
   def compare(that: TaxYear): Int = this.year compare that.year
   def twoDigitRange = s"${start.getYear % 100}-${end.getYear % 100}"
   def fourDigitRange = s"${start.getYear}-${end.getYear}"
@@ -56,7 +56,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def taxYearFor(dateToResolve: LocalDate): Int = {
     val year = dateToResolve.getYear
 
-    if (dateToResolve.isBefore(new LocalDate(year, 4, 6)))
+    if (dateToResolve.isBefore(LocalDate.of(year, 4, 6)))
       year - 1
     else
       year

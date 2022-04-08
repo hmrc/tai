@@ -30,7 +30,7 @@ case class Person(
   title: Option[String],
   honours: Option[String],
   sex: Option[String],
-  dateOfBirth: Option[DateTime],
+  dateOfBirth: Option[LocalDate],
   nino: Nino,
   manualCorrespondenceInd: Option[Boolean],
   deceased: Option[Boolean])
