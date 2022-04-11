@@ -79,7 +79,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "there is one Payment" in {
 
         val payment = Payment(
-          date = new LocalDate("2016-04-30"),
+          date = LocalDate.parse("2016-04-30"),
           amountYearToDate = 5000,
           taxAmountYearToDate = 1500,
           nationalInsuranceAmountYearToDate = 600,
@@ -98,7 +98,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "there is one Payment and one EndOfTaxYearUpdate" in {
 
         val payment = Payment(
-          date = new LocalDate("2016-04-30"),
+          date = LocalDate.parse("2016-04-30"),
           amountYearToDate = 5000,
           taxAmountYearToDate = 1500,
           nationalInsuranceAmountYearToDate = 600,
@@ -110,7 +110,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
         )
 
         val eyu = EndOfTaxYearUpdate(
-          date = new LocalDate("2016-06-17"),
+          date = LocalDate.parse("2016-06-17"),
           Seq(
             Adjustment(TaxAdjustment, -27.99),
             Adjustment(NationalInsuranceAdjustment, 12.3)
@@ -133,18 +133,18 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       val annualAccount =
         getJson("rtiSingleEmploymentMultiplePayments").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.payments.size mustBe 3
-      annualAccount.payments(0).date mustBe new LocalDate("2016-04-30")
-      annualAccount.payments(1).date mustBe new LocalDate("2016-06-09")
-      annualAccount.payments(2).date mustBe new LocalDate("2017-06-09")
+      annualAccount.payments(0).date mustBe LocalDate.parse("2016-04-30")
+      annualAccount.payments(1).date mustBe LocalDate.parse("2016-06-09")
+      annualAccount.payments(2).date mustBe LocalDate.parse("2017-06-09")
     }
 
     "return end of tax year updates in chronological order" in {
       val annualAccount =
         getJson("rtiSingleEmploymentSinglePaymentMutipleEyu").as[Seq[AnnualAccount]](annualAccountHodReads).head
       annualAccount.endOfTaxYearUpdates.size mustBe 3
-      annualAccount.endOfTaxYearUpdates(0).date mustBe new LocalDate("2016-06-09")
-      annualAccount.endOfTaxYearUpdates(1).date mustBe new LocalDate("2016-06-17")
-      annualAccount.endOfTaxYearUpdates(2).date mustBe new LocalDate("2017-06-09")
+      annualAccount.endOfTaxYearUpdates(0).date mustBe LocalDate.parse("2016-06-09")
+      annualAccount.endOfTaxYearUpdates(1).date mustBe LocalDate.parse("2016-06-17")
+      annualAccount.endOfTaxYearUpdates(2).date mustBe LocalDate.parse("2017-06-09")
     }
 
     "generate key and employerDesignation attributes with any leading zeroes removed from a numeric 'officeNo' (aka tax district number) field" in {
@@ -233,7 +233,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
   }
 
   val samplePayment = Payment(
-    date = new LocalDate(2017, 5, 26),
+    date = LocalDate.of(2017, 5, 26),
     amountYearToDate = 2000,
     taxAmountYearToDate = 1200,
     nationalInsuranceAmountYearToDate = 300,
@@ -244,15 +244,15 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     duplicate = None
   )
 
-  val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(new LocalDate(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
+  val sampleEndOfTaxYearUpdate = EndOfTaxYearUpdate(LocalDate.of(2016, 6, 4), Seq(Adjustment(TaxAdjustment, -20.99)))
   val sampleEndOfTaxYearUpdateMultipleAdjusts = EndOfTaxYearUpdate(
-    new LocalDate(2016, 6, 4),
+    LocalDate.of(2016, 6, 4),
     Seq(
       Adjustment(TaxAdjustment, -20.99),
       Adjustment(IncomeAdjustment, -21.99),
       Adjustment(NationalInsuranceAdjustment, 44.2)))
   val sampleEndOfTaxYearUpdateTwoAdjusts = EndOfTaxYearUpdate(
-    new LocalDate(2016, 6, 4),
+    LocalDate.of(2016, 6, 4),
     Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
@@ -269,7 +269,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "EMPLOYER1",
       Live,
       Some("0000"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "000",
@@ -283,7 +283,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "EMPLOYER1",
       Live,
       Some("0000"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "000",
@@ -296,7 +296,7 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       "EMPLOYER2",
       Live,
       Some("0000"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "000",

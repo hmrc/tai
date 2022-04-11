@@ -116,14 +116,14 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
             "TEST",
             Live,
             Some("12345"),
-            new LocalDate("2017-05-26"),
+            LocalDate.parse("2017-05-26"),
             None,
             List(AnnualAccount(
               0,
               TaxYear(2017),
               Available,
-              List(Payment(new LocalDate("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
-              List(EndOfTaxYearUpdate(new LocalDate("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10))))
+              List(Payment(LocalDate.parse("2017-05-26"), 10, 10, 10, 10, 10, 10, Monthly, Some(true))),
+              List(EndOfTaxYearUpdate(LocalDate.parse("2017-05-26"), List(Adjustment(NationalInsuranceAdjustment, 10))))
             )),
             "",
             "",

@@ -39,10 +39,7 @@ case class PdfSubmission(
     val maxSubmissionReferenceLength = 12
     Random.alphanumeric.take(maxSubmissionReferenceLength).mkString
   }
-  val reconciliationId: String = {
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-    s"$submissionReference-${dateFormatter.format(Instant.now)}"
-  }
+  val reconciliationId: String = s"$submissionReference-${Instant.now().formatted("yyyyMMddHHmmss")}"
   val fileFormat: String = "pdf"
   val mimeType: String = "application/pdf"
 }

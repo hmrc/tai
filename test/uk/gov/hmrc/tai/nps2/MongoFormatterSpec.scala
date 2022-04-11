@@ -162,7 +162,7 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
               districtNumber = 1,
               iabds = List(testIabd),
               cessationPay = Some(2200.22),
-              start = new LocalDate(2017, 12, 12)
+              start = LocalDate.of(2017, 12, 12)
             )),
           basisOperation = Some(BasisOperation.Week1Month1)
         )

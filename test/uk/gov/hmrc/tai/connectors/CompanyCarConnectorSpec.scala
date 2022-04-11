@@ -243,7 +243,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
   "removeCarBenefit" must {
 
-    val removeCarAndFuelModel = WithdrawCarAndFuel(1, new LocalDate(), None)
+    val removeCarAndFuelModel = WithdrawCarAndFuel(1, LocalDate.now(), None)
 
     "call remove Api and return id with success" in {
 

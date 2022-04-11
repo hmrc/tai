@@ -73,7 +73,7 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
     "Use bodge list to" when {
       "write to Json" in {
         implicit val formatRtiEyuList: Format[List[RtiEyu]] = JsonExtra.bodgeList[RtiEyu]
-        val json = Json.toJson(List(RtiEyu(None, None, None, new LocalDate(2016, 6, 9))))
+        val json = Json.toJson(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9))))
         json.toString() must be(
           """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
       }
@@ -82,7 +82,7 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
         val json: JsValue = Json.parse(
           """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
         val result = JsonExtra.bodgeList[RtiEyu].reads(json)
-        result.asOpt must be(Some(List(RtiEyu(None, None, None, new LocalDate(2016, 6, 9)))))
+        result.asOpt must be(Some(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9)))))
       }
 
       "read empty Json and return error" in {

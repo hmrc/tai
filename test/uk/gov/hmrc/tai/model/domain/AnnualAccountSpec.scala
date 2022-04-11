@@ -81,7 +81,7 @@ class AnnualAccountSpec extends PlaySpec {
     realTimeStatus = Available,
     payments = List(
       Payment(
-        date = new LocalDate(2017, 5, 26),
+        date = LocalDate.of(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,
@@ -97,7 +97,7 @@ class AnnualAccountSpec extends PlaySpec {
   val SutWithMultiplePayments = SutWithOnePayment.copy(
     payments = SutWithOnePayment.payments :+
       Payment(
-        date = new LocalDate(2017, 5, 26),
+        date = LocalDate.of(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,
@@ -108,7 +108,7 @@ class AnnualAccountSpec extends PlaySpec {
         duplicate = None
       ) :+
       Payment(
-        date = new LocalDate(2017, 5, 26),
+        date = LocalDate.of(2017, 5, 26),
         amountYearToDate = 2000,
         taxAmountYearToDate = 1200,
         nationalInsuranceAmountYearToDate = 1500,

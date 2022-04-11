@@ -81,7 +81,7 @@ object localDateSerializer {
   }
 
   def serialize(value: LocalDate): String =
-    "%04d-%02d-%02d".format(value.getYear, value.getMonth, value.getDayOfMonth)
+    "%04d-%02d-%02d".format(value.getYear, value.getMonth.getValue, value.getDayOfMonth)
 
   private def parseError(str: String) =
     s"Unable to parse '$str' to type 'LocalDate', expected a valid value with format: yyyy-MM-dd"

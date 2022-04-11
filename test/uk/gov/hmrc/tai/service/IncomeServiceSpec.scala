@@ -102,7 +102,7 @@ class IncomeServiceSpec extends BaseSpec {
         "company name",
         Ceased,
         Some("888"),
-        new LocalDate(TaxYear().next.year, 5, 26),
+        LocalDate.of(TaxYear().next.year, 5, 26),
         None,
         Nil,
         "",
@@ -116,7 +116,7 @@ class IncomeServiceSpec extends BaseSpec {
         "company name",
         Ceased,
         Some("888"),
-        new LocalDate(TaxYear().next.year, 5, 26),
+        LocalDate.of(TaxYear().next.year, 5, 26),
         None,
         Nil,
         "",
@@ -294,7 +294,7 @@ class IncomeServiceSpec extends BaseSpec {
       "company name",
       Live,
       Some("888"),
-      new LocalDate(TaxYear().next.year, 5, 26),
+      LocalDate.of(TaxYear().next.year, 5, 26),
       None,
       Nil,
       "",
@@ -566,7 +566,7 @@ class IncomeServiceSpec extends BaseSpec {
       "company name",
       Live,
       Some("888"),
-      new LocalDate(TaxYear().next.year, 5, 26),
+      LocalDate.of(TaxYear().next.year, 5, 26),
       None,
       Nil,
       "",
@@ -584,7 +584,7 @@ class IncomeServiceSpec extends BaseSpec {
           employment.copy(
             employmentStatus = Ceased,
             sequenceNumber = 1,
-            endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+            endDate = Some(LocalDate.of(TaxYear().next.year, 8, 10))))
 
       when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
@@ -601,7 +601,7 @@ class IncomeServiceSpec extends BaseSpec {
           employment.copy(
             employmentStatus = Ceased,
             sequenceNumber = 1,
-            endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+            endDate = Some(LocalDate.of(TaxYear().next.year, 8, 10))))
 
       result mustBe expectedResult
     }
@@ -724,7 +724,7 @@ class IncomeServiceSpec extends BaseSpec {
         "company name",
         Live,
         Some("888"),
-        new LocalDate(2017, 5, 26),
+        LocalDate.of(2017, 5, 26),
         None,
         Nil,
         "",

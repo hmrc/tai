@@ -36,7 +36,7 @@ class PensionProviderControllerSpec extends BaseSpec {
       "called with valid add pension request" in {
         val envelopeId = "envelopId"
         val pensionProvider =
-          AddPensionProvider("pensionProviderName", new LocalDate("2017-06-09"), "1234", "Yes", Some("123456789"))
+          AddPensionProvider("pensionProviderName", LocalDate.parse("2017-06-09"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(pensionProvider)
 
         val mockPensionProviderService = mock[PensionProviderService]

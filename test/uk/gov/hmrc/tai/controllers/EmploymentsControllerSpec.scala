@@ -40,7 +40,7 @@ class EmploymentsControllerSpec extends BaseSpec {
       "company name",
       Live,
       Some("888"),
-      new LocalDate(2017, 5, 26),
+      LocalDate.of(2017, 5, 26),
       None,
       Nil,
       "",
@@ -192,7 +192,7 @@ class EmploymentsControllerSpec extends BaseSpec {
   "endEmployment" must {
     "return an envelope Id" when {
       "given a valid request" in {
-        val employment = EndEmployment(new LocalDate("2017-05-05"), "Yes", Some("123456789"))
+        val employment = EndEmployment(LocalDate.parse("2017-05-05"), "Yes", Some("123456789"))
         val json = Json.toJson(employment)
         val envelopeId = "EnvelopeId"
 
@@ -213,7 +213,7 @@ class EmploymentsControllerSpec extends BaseSpec {
     "return envelop Id" when {
       "called with valid add employment request" in {
         val envelopeId = "envelopId"
-        val employment = AddEmployment("employerName", new LocalDate("2017-05-05"), "1234", "Yes", Some("123456789"))
+        val employment = AddEmployment("employerName", LocalDate.parse("2017-05-05"), "1234", "Yes", Some("123456789"))
         val json = Json.toJson(employment)
 
         when(mockEmploymentService.addEmployment(meq(nino), meq(employment))(any()))

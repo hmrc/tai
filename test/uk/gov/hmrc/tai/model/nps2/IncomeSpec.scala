@@ -49,5 +49,5 @@ class IncomeSpec extends PlaySpec {
     }
   }
 
-  val ceasedStatus = Income.Ceased(new LocalDate())
+  val ceasedStatus = Income.Ceased(LocalDate.now())
 }

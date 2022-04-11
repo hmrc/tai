@@ -237,7 +237,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       "company name",
       Live,
       Some("888"),
-      new LocalDate(TaxYear().next.year, 5, 26),
+      LocalDate.of(TaxYear().next.year, 5, 26),
       None,
       Nil,
       "",
@@ -293,7 +293,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       "company name",
       Live,
       Some("888"),
-      new LocalDate(TaxYear().next.year, 5, 26),
+      LocalDate.of(TaxYear().next.year, 5, 26),
       None,
       Nil,
       "",
@@ -306,7 +306,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return non matching ceased employments JSON" in {
       val employments =
-        Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(new LocalDate(TaxYear().next.year, 8, 10))))
+        Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(LocalDate.of(TaxYear().next.year, 8, 10))))
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(employments))

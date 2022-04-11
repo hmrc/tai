@@ -77,8 +77,7 @@ object EstimatedPayCalculator {
     val startDateNY = startDateCY.plusDays(TaiConstants.DAYS_IN_YEAR)
     val workingStartDate = TaxCalculator.getStartDateInCurrentFinancialYear(startDate)
 
-    startDateNY.until(workingStartDate, ChronoUnit.DAYS)
-    val daysToBePaidFor = startDateNY.until(workingStartDate, ChronoUnit.DAYS)
+    val daysToBePaidFor: Int = ChronoUnit.DAYS.between(workingStartDate, startDateNY).toInt
 
     if (daysToBePaidFor > 0) {
       if (annualAmount > 0 && daysToBePaidFor < TaiConstants.DAYS_IN_YEAR) {

@@ -112,8 +112,8 @@ class EmploymentSpec extends PlaySpec {
 
   private val payment = RtiPayment(
     PayFrequency.FourWeekly,
-    new LocalDate(2017, 4, 20),
-    new LocalDate(2017, 4, 20),
+    LocalDate.of(2017, 4, 20),
+    LocalDate.of(2017, 4, 20),
     BigDecimal(20),
     BigDecimal(20000),
     BigDecimal(0),

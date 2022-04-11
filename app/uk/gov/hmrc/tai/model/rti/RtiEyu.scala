@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.rti
 
 import java.time.LocalDate
-import com.github.nscala_time.time.Imports._
+
 
 case class RtiEyu(
   taxablePayDelta: Option[BigDecimal],

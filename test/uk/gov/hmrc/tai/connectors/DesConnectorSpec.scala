@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import java.time.LocalTime
 import play.api.http.Status._
 import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.http.{SessionId, _}
@@ -26,6 +25,7 @@ import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.time.LocalDate
 import scala.util.Random
 
 class DesConnectorSpec extends ConnectorBaseSpec {
@@ -35,7 +35,7 @@ class DesConnectorSpec extends ConnectorBaseSpec {
     inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
   def intGen: Int = Random.nextInt(50)
   val empSeqNum: Int = intGen
-  val taxYear: Int = DateTime.now().getYear
+  val taxYear: Int = LocalDate.now().getYear
   val iabdType: Int = 27
 
   val baseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"

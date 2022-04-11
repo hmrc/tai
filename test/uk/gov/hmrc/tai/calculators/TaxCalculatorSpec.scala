@@ -296,7 +296,7 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "last year date is provided" in {
         val sut = SUT
-        sut.getStartDateInCurrentFinancialYear(new LocalDate(2016, 6, 9)) must be(startDateCY)
+        sut.getStartDateInCurrentFinancialYear(LocalDate.of(2016, 6, 9)) must be(startDateCY)
       }
 
       "future date is provided" in {

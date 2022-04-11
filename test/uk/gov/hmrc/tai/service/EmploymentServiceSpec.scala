@@ -29,6 +29,7 @@ import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class EmploymentServiceSpec extends BaseSpec {
@@ -92,7 +93,7 @@ class EmploymentServiceSpec extends BaseSpec {
   "endEmployment" must {
     "return an envelopeId" when {
       "given valid inputs" in {
-        val endEmployment = EndEmployment(new LocalDate(2017, 6, 20), "1234", Some("123456789"))
+        val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
         val mockEmploymentRepository = mock[EmploymentRepository]
         when(mockEmploymentRepository.employment(any(), any())(any()))
@@ -130,13 +131,13 @@ class EmploymentServiceSpec extends BaseSpec {
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
           any(),
-          contains(s"1-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          contains(s"1-EndEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
           any())(any())
       }
     }
 
     "Send end journey audit event for envelope id" in {
-      val endEmployment = EndEmployment(new LocalDate(2017, 6, 20), "1234", Some("123456789"))
+      val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
       val mockEmploymentRepository = mock[EmploymentRepository]
       when(mockEmploymentRepository.employment(any(), any())(any()))
@@ -179,7 +180,7 @@ class EmploymentServiceSpec extends BaseSpec {
   "addEmployment" must {
     "return an envelopeId" when {
       "given valid inputs" in {
-        val addEmployment = AddEmployment("testName", new LocalDate(2017, 8, 1), "1234", "Yes", Some("123456789"))
+        val addEmployment = AddEmployment("testName", LocalDate.of(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
         val mockPersonRepository = mock[PersonRepository]
         when(mockPersonRepository.getPerson(any())(any()))
@@ -214,13 +215,13 @@ class EmploymentServiceSpec extends BaseSpec {
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
           any(),
-          contains(s"1-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+          contains(s"1-AddEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
           any())(any())
       }
     }
 
     "Send add journey audit event for envelope id" in {
-      val addEmployment = AddEmployment("testName", new LocalDate(2017, 8, 1), "1234", "Yes", Some("123456789"))
+      val addEmployment = AddEmployment("testName", LocalDate.of(2017, 8, 1), "1234", "Yes", Some("123456789"))
 
       val mockPersonRepository = mock[PersonRepository]
       when(mockPersonRepository.getPerson(any())(any()))

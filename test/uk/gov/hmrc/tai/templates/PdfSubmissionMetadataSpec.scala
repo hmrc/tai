@@ -24,6 +24,7 @@ import play.twirl.api.Xml
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 
+import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class PdfSubmissionMetadataSpec extends PlaySpec {
@@ -61,6 +62,7 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
     }
 
     "populate the correct attribute details for the hmrc_time_of_receipt attribute" when {
+      val fomatter = formatter
 
       "the pdf submission xml is generated" in {
 
@@ -72,7 +74,7 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         section.select("attribute_name").text() mustBe "hmrc_time_of_receipt"
         section.select("attribute_type").text() mustBe "time"
-        section.select("attribute_value").text() mustBe pdfSubmission.hmrcReceivedAt.toString("dd/MM/yyyy HH:mm:ss")
+        section.select("attribute_value").text() mustBe pdfSubmission.hmrcReceivedAt.format(formatter)
       }
     }
 
@@ -88,7 +90,7 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
         section.select("attribute_name").text() mustBe "time_xml_created"
         section.select("attribute_type").text() mustBe "time"
-        section.select("attribute_value").text() mustBe pdfSubmission.xmlCreatedAt.toString("dd/MM/yyyy HH:mm:ss")
+        section.select("attribute_value").text() mustBe pdfSubmission.xmlCreatedAt.format(formatter)
       }
     }
 
@@ -267,4 +269,6 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
 
   private def createSUT(pdfSubmission: PdfSubmission): Xml =
     uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata(pdfSubmission)
+
+  private val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 }

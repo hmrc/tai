@@ -74,7 +74,7 @@ class NpsTaxAccountSpec extends PlaySpec {
           ))
 
         val npsEmployments =
-          List(NpsEmployment(1, NpsDate(new LocalDate(2017, 4, 24)), None, "1234", "1234", Some("PAYEEMPLOYER"), 2))
+          List(NpsEmployment(1, NpsDate(LocalDate.of(2017, 4, 24)), None, "1234", "1234", Some("PAYEEMPLOYER"), 2))
 
         val iabds = List(NpsIabdRoot(nino = nino.nino, None, `type` = IabdType.ChildBenefit.code, grossAmount = None))
 
@@ -84,7 +84,7 @@ class NpsTaxAccountSpec extends PlaySpec {
             employmentId = 2,
             employmentStatus = 1,
             employerName = "PAYEEMPLOYER",
-            paymentDate = Some(new LocalDate(2016, 7, 3)),
+            paymentDate = Some(LocalDate.of(2016, 7, 3)),
             totalPayToDate = BigDecimal(8000),
             payFrequency = Some(PayFrequency.Annually),
             calculationResult = Some(BigDecimal(10000))

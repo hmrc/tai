@@ -90,7 +90,7 @@
                 </tr>
                 <tr>
                     <td>Date you closed the account</td>
-                    <td>@viewmodel.endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))</td>
+                    <td>@viewmodel.endDate.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))</td>
                 </tr>
 
                 @if(viewmodel.bankAccountClosedInCurrentTaxYear) {

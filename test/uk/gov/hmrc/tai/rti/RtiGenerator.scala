@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import java.time.Days
 import java.time.LocalDate
 import org.scalacheck._
-
 import Gen._
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.temporal.ChronoUnit
 
 /**
   * A ScalaCheck generator for RtiData records, some day this may be used to
@@ -37,17 +37,17 @@ object RtiGenerator {
     } yield (f, v)
 
   def dateBetween(
-    from: LocalDate = new LocalDate(2000, 1, 1),
-    to: LocalDate = new LocalDate(2016, 5, 1)
+    from: LocalDate = LocalDate.of(2000, 1, 1),
+    to: LocalDate = LocalDate.of(2016, 5, 1)
   ): Gen[LocalDate] = {
-    val dist: Int = Days.daysBetween(from, to).getDays
+    val dist = ChronoUnit.DAYS.between(from, to)
     choose(0, dist).map(from.plusDays)
   }
 
   val year: Gen[RtiPayment] = for {
     freq          <- oneOf(PayFrequency.values.toSeq)
-    paymentDate   <- dateBetween(new LocalDate(2014, 4, 6), new LocalDate(2016, 5, 1))
-    receivedDate  <- dateBetween(paymentDate, new LocalDate(2016, 5, 1))
+    paymentDate   <- dateBetween(LocalDate.of(2014, 4, 6), LocalDate.of(2016, 5, 1))
+    receivedDate  <- dateBetween(paymentDate, LocalDate.of(2016, 5, 1))
     taxablePay    <- choose(1, 1000)
     taxablePayYTD <- choose(1, 1000)
     taxed         <- choose(1, 1000)

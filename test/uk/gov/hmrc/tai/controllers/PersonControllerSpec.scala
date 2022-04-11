@@ -88,7 +88,7 @@ class PersonControllerSpec extends BaseSpec {
     nino,
     "firstname",
     "surname",
-    Some(new LocalDate(1982, 5, 26)),
+    Some(LocalDate.of(1982, 5, 26)),
     Address("l1", "l2", "l3", "pc", "country"),
     false,
     false)

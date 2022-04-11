@@ -23,9 +23,9 @@ class RtiPaymentSpec extends PlaySpec {
 
   "RtiPayment compare method" must {
     "implement comparison behaviour" in {
-      rtiPayment1.compare(rtiPayment2) mustBe -1
+      rtiPayment1.compare(rtiPayment2) mustBe -2
       rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(7))) mustBe 0
-      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(9))) mustBe 1
+      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(9))) mustBe 2
     }
   }
 

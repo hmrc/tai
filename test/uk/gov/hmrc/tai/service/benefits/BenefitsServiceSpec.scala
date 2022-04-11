@@ -306,8 +306,8 @@ class BenefitsServiceSpec extends BaseSpec {
       "PAYE company car returns a successful response with id" in {
         val expectedResult = "id"
         val currentTaxYear = TaxYear().year
-        val carWithdrawDate = new LocalDate(currentTaxYear, 4, 24)
-        val fuelWithdrawDate = Some(new LocalDate(currentTaxYear, 4, 24))
+        val carWithdrawDate = LocalDate.of(currentTaxYear, 4, 24)
+        val fuelWithdrawDate = Some(LocalDate.of(currentTaxYear, 4, 24))
         val carSeqNum = 10
         val employmentSeqNum = 11
         val taxYear = TaxYear()

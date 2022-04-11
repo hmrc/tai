@@ -570,8 +570,8 @@ class IncomeHelperSpec extends PlaySpec {
 
   val employment1 = new NpsEmployment(
     sequenceNumber = 1,
-    startDate = NpsDate(new LocalDate(2006, 12, 31)),
-    endDate = Some(NpsDate(new LocalDate(2014, 12, 31))),
+    startDate = NpsDate(LocalDate.of(2006, 12, 31)),
+    endDate = Some(NpsDate(LocalDate.of(2014, 12, 31))),
     taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
     payeNumber = TaiConstants.ESA_PAYE_NUMBER,
     employerName = Some("AAA"),
@@ -582,7 +582,7 @@ class IncomeHelperSpec extends PlaySpec {
   )
   val employment2 = new NpsEmployment(
     sequenceNumber = 2,
-    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    startDate = NpsDate(LocalDate.of(2006, 12, 12)),
     endDate = None,
     taxDistrictNumber = "1",
     payeNumber = "payeno",
@@ -594,7 +594,7 @@ class IncomeHelperSpec extends PlaySpec {
   )
   val employmentESA = new NpsEmployment(
     sequenceNumber = 2,
-    startDate = NpsDate(new LocalDate(2006, 12, 12)),
+    startDate = NpsDate(LocalDate.of(2006, 12, 12)),
     endDate = None,
     taxDistrictNumber = TaiConstants.ESA_TAX_DISTRICT.toString,
     payeNumber = TaiConstants.ESA_PAYE_NUMBER,

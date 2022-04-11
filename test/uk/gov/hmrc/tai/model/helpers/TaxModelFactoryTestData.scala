@@ -240,12 +240,12 @@ trait TaxModelFactoryTestData {
     basisOperation = Some(BasisOperation.Cumulative)
   )
 
-  private val CurrentYear: Int = 2017
+  private val currentYear: Int = 2017
 
   val npsEmployment = NpsEmployment(
     1,
-    NpsDate(new LocalDate(CurrentYear, 4, 23)),
-    Some(NpsDate(new LocalDate(CurrentYear, 3, 30))),
+    NpsDate(LocalDate.of(currentYear, 4, 23)),
+    Some(NpsDate(LocalDate.of(currentYear, 3, 30))),
     "23",
     "123",
     None,

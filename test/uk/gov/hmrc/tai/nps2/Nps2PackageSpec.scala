@@ -54,13 +54,13 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
     "provide Json formatting of LocalDate" when {
       "marshall a LocalDate into JsValue" in {
-        val jsonObj = Json.toJson(new LocalDate("2017-05-03"))
+        val jsonObj = Json.toJson(LocalDate.parse("2017-05-03"))
         jsonObj.toString() mustBe """"03/05/2017""""
       }
 
       "unmarshall a valid Json date string into a LocalDate" in {
         val unmarshalledTestClass = Json.parse(""""03/05/2017"""").as[LocalDate]
-        unmarshalledTestClass mustBe new LocalDate("2017-05-03")
+        unmarshalledTestClass mustBe LocalDate.parse("2017-05-03")
       }
 
       "produce a JsError when attempting to unmarshall an invalid date string" in {

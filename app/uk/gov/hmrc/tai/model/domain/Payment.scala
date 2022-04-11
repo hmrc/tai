@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import java.time.LocalDate
-import com.github.nscala_time.time.Imports._
+
 
 case class Payment(
   date: LocalDate,

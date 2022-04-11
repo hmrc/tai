@@ -31,7 +31,7 @@ class RtiPackageSpec extends PlaySpec {
       "Parse received date" in {
         val jsonContent = """{"rcvdDate":"2016-07-29"}""".stripMargin
         val parsedJson: RtiEyu = Json.parse(jsonContent).as[RtiEyu]
-        parsedJson.rcvdDate must be(new LocalDate(2016, 7, 29))
+        parsedJson.rcvdDate must be(LocalDate.of(2016, 7, 29))
       }
 
       "throw error when trying to parse invalid received date" in {
@@ -55,7 +55,7 @@ class RtiPackageSpec extends PlaySpec {
       }
 
       "convert received date object to json" in {
-        val rti = RtiEyu(None, None, None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(None, None, None, (LocalDate.of(2016, 7, 29)))
         Json.toJson(rti).toString must be(
           """{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
@@ -94,7 +94,7 @@ class RtiPackageSpec extends PlaySpec {
         parsedJson.totalTaxDelta must be(Some(BigDecimal("15.99")))
         parsedJson.taxablePayDelta must be(Some(BigDecimal("10.99")))
         parsedJson.empeeContribnsDelta must be(Some(BigDecimal("600.99")))
-        parsedJson.rcvdDate must be(new LocalDate(2016, 7, 29))
+        parsedJson.rcvdDate must be(LocalDate.of(2016, 7, 29))
       }
 
       "Parse EYU Data and get one field" in {
@@ -160,19 +160,19 @@ class RtiPackageSpec extends PlaySpec {
       }
 
       "convert EYU object having taxablePayDelta only to json " in {
-        val rti = RtiEyu(Some(10), None, None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), None, None, (LocalDate.of(2016, 7, 29)))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object having taxablePayDelta and totalTaxDelta to json " in {
-        val rti = RtiEyu(Some(10), Some(10), None, (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), Some(10), None, (LocalDate.of(2016, 7, 29)))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-07-29"}""")
       }
 
       "convert EYU object to json " in {
-        val rti = RtiEyu(Some(10), Some(10), Some(10), (new LocalDate(2016, 7, 29)))
+        val rti = RtiEyu(Some(10), Some(10), Some(10), (LocalDate.of(2016, 7, 29)))
         Json.toJson(rti).toString() must be(
           """{"optionalAdjustmentAmount":[{"type":"TaxablePayDelta","amount":10},{"type":"TotalTaxDelta","amount":10}],"niLettersAndValues":[{"niFigure":[{"type":"EmpeeContribnsDelta","amount":10}]}],"rcvdDate":"2016-07-29"}""")
       }
@@ -301,8 +301,8 @@ class RtiPackageSpec extends PlaySpec {
 
         parsedJson.payFrequency must be(PayFrequency.Monthly)
         parsedJson.occupationalPensionAmount.isDefined must be(false)
-        parsedJson.paidOn must be(new LocalDate(2013, 10, 25))
-        parsedJson.submittedOn must be(new LocalDate(2013, 10, 24))
+        parsedJson.paidOn must be(LocalDate.of(2013, 10, 25))
+        parsedJson.submittedOn must be(LocalDate.of(2013, 10, 24))
         parsedJson.nicPaid must be(Some(150))
         parsedJson.nicPaidYTD must be(Some(300))
       }
@@ -349,8 +349,8 @@ class RtiPackageSpec extends PlaySpec {
         parsedJson.taxablePayYTD must be(BigDecimal("2135.41"))
 
         parsedJson.payFrequency must be(PayFrequency.Monthly)
-        parsedJson.paidOn must be(new LocalDate(2013, 10, 25))
-        parsedJson.submittedOn must be(new LocalDate(2013, 10, 24))
+        parsedJson.paidOn must be(LocalDate.of(2013, 10, 25))
+        parsedJson.submittedOn must be(LocalDate.of(2013, 10, 24))
       }
 
       "payment json with no EmpeeContribnsInPd and EmpeeContribnsYTD is parsed" in {
@@ -393,15 +393,15 @@ class RtiPackageSpec extends PlaySpec {
         parsedJson.taxablePayYTD must be(BigDecimal("2135.41"))
 
         parsedJson.payFrequency must be(PayFrequency.Monthly)
-        parsedJson.paidOn must be(new LocalDate(2013, 10, 25))
-        parsedJson.submittedOn must be(new LocalDate(2013, 10, 24))
+        parsedJson.paidOn must be(LocalDate.of(2013, 10, 25))
+        parsedJson.submittedOn must be(LocalDate.of(2013, 10, 24))
         parsedJson.nicPaid must be(None)
         parsedJson.nicPaidYTD must be(None)
       }
 
       "RtiPayment object is converted to json" in {
         val rtiPayment =
-          RtiPayment(PayFrequency.Monthly, new LocalDate(2016, 11, 23), new LocalDate(2016, 12, 20), 200, 300, 100, 200)
+          RtiPayment(PayFrequency.Monthly, LocalDate.of(2016, 11, 23), LocalDate.of(2016, 12, 20), 200, 300, 100, 200)
         Json.toJson(rtiPayment).toString must be(
           """{"payFreq":"M1","pmtDate":"2016-11-23","rcvdDate":"2016-12-20","mandatoryMonetaryAmount":[{"type":
               "TaxablePayYTD","amount":300},{"type":"TotalTaxYTD","amount":200},{"type":"TaxablePay","amount":200},{"type":"TaxDeductedOrRefunded","amount":100}],

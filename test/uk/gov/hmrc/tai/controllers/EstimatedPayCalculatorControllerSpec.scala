@@ -53,7 +53,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new EstimatedPayCalculatorController(authentication, cc)
 
-  val date = new LocalDate(2017, 4, 14)
+  val date = LocalDate.of(2017, 4, 14)
 
   private val payDetails = PayDetails(
     PayFreq.monthly,

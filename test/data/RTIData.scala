@@ -60,10 +60,10 @@ object RTIData {
       employment.copy(payments = employment.payments.map { inYear =>
         //We can finally try to change the value for the payment data
         inYear.copy(
-          paidOn = new LocalDate(
+          paidOn = LocalDate.of(
             TaxYear().year,
-            inYear.paidOn.getMonthOfYear,
-            inYear.paidOn.getDayOfWeek
+            inYear.paidOn.getMonth.getValue,
+            inYear.paidOn.getDayOfWeek.getValue
           ))
       })
     }
