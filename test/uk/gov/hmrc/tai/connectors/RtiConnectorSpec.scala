@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
@@ -38,7 +38,7 @@ import scala.concurrent.Future
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
   val taxYear: TaxYear = TaxYear()
-  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/21-22"
+  val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${taxYear.twoDigitRange}"
 
   val mockHttp = mock[HttpClient]
 
@@ -85,7 +85,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
               Available,
               List(
                 Payment(
-                  new LocalDate(2016, 4, 30),
+                  LocalDate.of(2016, 4, 30),
                   5000.00,
                   1500.00,
                   600.00,
@@ -95,7 +95,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   Quarterly,
                   None),
                 Payment(
-                  new LocalDate(2016, 7, 31),
+                  LocalDate.of(2016, 7, 31),
                   11000.00,
                   3250.00,
                   1320.00,
@@ -105,7 +105,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   Quarterly,
                   None),
                 Payment(
-                  new LocalDate(2016, 10, 31),
+                  LocalDate.of(2016, 10, 31),
                   15000.00,
                   4250.00,
                   1800.00,
@@ -115,7 +115,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   Quarterly,
                   None),
                 Payment(
-                  new LocalDate(2017, 2, 28),
+                  LocalDate.of(2017, 2, 28),
                   19000.00,
                   5250.00,
                   2280.00,

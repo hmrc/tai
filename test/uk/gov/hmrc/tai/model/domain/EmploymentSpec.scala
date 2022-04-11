@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -91,7 +91,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       Some("64765"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "754",
@@ -105,7 +105,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       None,
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "754",
@@ -119,7 +119,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       Some(""),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "754",
@@ -133,7 +133,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       Some("64765"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "754",
@@ -146,7 +146,7 @@ class EmploymentSpec extends PlaySpec {
       "XXX PPPP",
       Live,
       Some("64766"),
-      new LocalDate(2016, 4, 6),
+      LocalDate.of(2016, 4, 6),
       None,
       Nil,
       "754",

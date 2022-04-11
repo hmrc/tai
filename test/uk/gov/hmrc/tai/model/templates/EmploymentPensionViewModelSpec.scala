@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
+import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class EmploymentPensionViewModelSpec extends PlaySpec {
@@ -33,7 +34,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model with date of birth" when {
       "date of birth is present in person" in {
         val addEmployment =
-          AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
+          AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
         val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
         sut mustBe addEmploymentModel
       }
@@ -41,7 +42,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model without date of birth" when {
       "date of birth is absent from person" in {
         val addEmployment =
-          AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "Yes", Some("123456789"))
+          AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "Yes", Some("123456789"))
         val noDobPerson = person.copy(dateOfBirth = None)
         val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = noDobPerson, employment = addEmployment)
         sut mustBe addEmploymentModel.copy(dateOfBirth = "")
@@ -49,13 +50,13 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     }
     "generate a view model without phone number" when {
       "phone number is absent from AddEmployment model" in {
-        val addEmployment = AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "No", None)
+        val addEmployment = AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "No", None)
         val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
         sut mustBe addEmploymentModel.copy(telephoneContactAllowed = "No", telephoneNumber = "")
       }
     }
     "generate a view model with the correct yes/no combination" in {
-      val addEmployment = AddEmployment("employerName", new LocalDate("2018-12-13"), "12345", "No", None)
+      val addEmployment = AddEmployment("employerName", LocalDate.parse("2018-12-13"), "12345", "No", None)
       val sut = EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, employment = addEmployment)
       sut.isAdd mustBe Yes
       sut.isEnd mustBe No
@@ -65,7 +66,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
   "EmploymentPensionViewModel 'end employment' apply method" must {
     "generate a view model with the correct yes/no combination" in {
-      val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
+      val endEmployment = EndEmployment(LocalDate.parse("2018-12-13"), "Yes", Some("123456789"))
       val sut = EmploymentPensionViewModel(
         taxYear = TaxYear(2017),
         person = person,
@@ -77,7 +78,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     }
 
     "generate a view model with the employer name and payroll number present" in {
-      val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
+      val endEmployment = EndEmployment(LocalDate.parse("2018-12-13"), "Yes", Some("123456789"))
       val sut = EmploymentPensionViewModel(
         taxYear = TaxYear(2017),
         person = person,
@@ -88,7 +89,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     }
 
     "generate a view model with the payroll number set to 'No', where not present on the existing employment record" in {
-      val endEmployment = EndEmployment(new LocalDate("2018-12-13"), "Yes", Some("123456789"))
+      val endEmployment = EndEmployment(LocalDate.parse("2018-12-13"), "Yes", Some("123456789"))
       val sut = EmploymentPensionViewModel(
         taxYear = TaxYear(2017),
         person = person,
@@ -128,7 +129,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model with date of birth" when {
       "date of birth is present in person" in {
         val addPensionProvider =
-          AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
+          AddPensionProvider("pension name", LocalDate.parse("2017-06-09"), "12345", "Yes", Some("123456789"))
         val sut =
           EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
         sut mustBe addPensionModel
@@ -138,7 +139,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "generate a view model without date of birth" when {
       "date of birth is absent from person" in {
         val addPensionProvider =
-          AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "Yes", Some("123456789"))
+          AddPensionProvider("pension name", LocalDate.parse("2017-06-09"), "12345", "Yes", Some("123456789"))
         val noDobPerson = person.copy(dateOfBirth = None)
         val sut = EmploymentPensionViewModel(
           taxYear = TaxYear(2017),
@@ -150,7 +151,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
     "generate a view model without phone number" when {
       "phone number is absent from AddEmployment model" in {
-        val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "No", None)
+        val addPensionProvider = AddPensionProvider("pension name", LocalDate.parse("2017-06-09"), "12345", "No", None)
         val sut =
           EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
         sut mustBe addPensionModel.copy(telephoneContactAllowed = "No", telephoneNumber = "")
@@ -158,7 +159,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     }
 
     "generate a view model with the correct yes/no combination" in {
-      val addPensionProvider = AddPensionProvider("pension name", new LocalDate("2017-06-09"), "12345", "No", None)
+      val addPensionProvider = AddPensionProvider("pension name", LocalDate.parse("2017-06-09"), "12345", "No", None)
       val sut =
         EmploymentPensionViewModel(taxYear = TaxYear(2017), person = person, pensionProvider = addPensionProvider)
       sut.isAdd mustBe Yes
@@ -175,11 +176,11 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
 
       sut mustBe EmploymentPensionViewModel(
         taxYearRange =
-          s"${year.start.toString(IFormConstants.DateFormat)} to ${year.end.toString(IFormConstants.DateFormat)}",
+          s"${year.start.format(formatter)} to ${year.end.format(formatter)}",
         nino = person.nino.nino,
         firstName = person.firstName,
         lastName = person.surname,
-        dateOfBirth = person.dateOfBirth.map(_.toString(IFormConstants.DateFormat)).getOrElse(""),
+        dateOfBirth = person.dateOfBirth.map(_.format(formatter)).getOrElse(""),
         telephoneContactAllowed = incorrectEmployment.telephoneContactAllowed,
         telephoneNumber = incorrectEmployment.telephoneNumber.getOrElse(""),
         addressLine1 = person.address.line1,
@@ -228,7 +229,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     nino,
     "firstname",
     "lastname",
-    Some(new LocalDate("1982-04-03")),
+    Some(LocalDate.parse("1982-04-03")),
     Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
   private val addEmploymentModel = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
@@ -288,4 +289,5 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     false,
     false)
 
+  private val formatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 }

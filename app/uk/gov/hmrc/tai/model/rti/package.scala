@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.joda.time.LocalDate
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.slf4j._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -38,14 +38,14 @@ package object rti {
       val dateRegex: Regex = """^(\d\d\d\d)-(\d\d)-(\d\d)$""".r
       override def reads(json: JsValue): JsResult[LocalDate] = json match {
         case JsString(dateRegex(y, m, d)) =>
-          JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
+          JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
         case invalid => JsError(JsonValidationError(s"Invalid date format [yyyy-MM-dd]: $invalid"))
       }
     },
     new Writes[LocalDate] {
-      val dateFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+      val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       override def writes(date: LocalDate): JsValue =
-        JsString(dateFormat.print(date))
+        JsString(date.format(dateFormat))
     }
   )
 

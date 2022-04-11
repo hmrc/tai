@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.enums.IncomeType.IncomeTypeEmployment
@@ -30,8 +30,8 @@ class NpsIncomeSourceSpec extends PlaySpec {
   "toTaxCodeIncomeSummary" must {
     "create a tax code income summary" when {
       "there is an employment but no adjusted net income" in {
-        val startDate = NpsDate(new LocalDate("2017-01-01"))
-        val endDate = NpsDate(new LocalDate("2017-01-02"))
+        val startDate = NpsDate(LocalDate.parse("2017-01-01"))
+        val endDate = NpsDate(LocalDate.parse("2017-01-02"))
         val employmentType = 42
         val worksNumber = "This is the works number"
         val jobTitle = "This is the job title"

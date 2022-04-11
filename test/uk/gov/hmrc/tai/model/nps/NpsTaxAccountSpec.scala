@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import data.{NpsData, RTIData}
-import org.joda.time.{DateTime, LocalDate}
+import data.NpsData
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.nps2.{DeductionType, IabdType, TaxAccount, TaxDetail, TaxObject}
 import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
-import uk.gov.hmrc.tai.model.{TaxBand, TaxCodeComponent, _}
-import uk.gov.hmrc.tai.model.enums.BasisOperation
+import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.time.{LocalDate, LocalDateTime, ZoneId}
 import scala.util.Random
 
 class NpsTaxAccountSpec extends PlaySpec {
@@ -74,7 +74,7 @@ class NpsTaxAccountSpec extends PlaySpec {
           ))
 
         val npsEmployments =
-          List(NpsEmployment(1, NpsDate(new LocalDate(2017, 4, 24)), None, "1234", "1234", Some("PAYEEMPLOYER"), 2))
+          List(NpsEmployment(1, NpsDate(LocalDate.of(2017, 4, 24)), None, "1234", "1234", Some("PAYEEMPLOYER"), 2))
 
         val iabds = List(NpsIabdRoot(nino = nino.nino, None, `type` = IabdType.ChildBenefit.code, grossAmount = None))
 
@@ -84,7 +84,7 @@ class NpsTaxAccountSpec extends PlaySpec {
             employmentId = 2,
             employmentStatus = 1,
             employerName = "PAYEEMPLOYER",
-            paymentDate = Some(new LocalDate(2016, 7, 3)),
+            paymentDate = Some(LocalDate.of(2016, 7, 3)),
             totalPayToDate = BigDecimal(8000),
             payFrequency = Some(PayFrequency.Annually),
             calculationResult = Some(BigDecimal(10000))
@@ -2070,7 +2070,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private val taxYear: Int = DateTime.now().getYear
+  private val taxYear: Int = LocalDateTime.now(ZoneId.of("Europe/London")).getYear
 
   private def createSUT(
     adjustedNetIncome: Option[NpsComponent] = None,

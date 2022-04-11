@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
@@ -88,7 +88,7 @@ class PersonControllerSpec extends BaseSpec {
     nino,
     "firstname",
     "surname",
-    Some(new LocalDate(1982, 5, 26)),
+    Some(LocalDate.of(1982, 5, 26)),
     Address("l1", "l2", "l3", "pc", "country"),
     false,
     false)

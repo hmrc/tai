@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, verify, when}
@@ -74,7 +74,7 @@ class BbsiServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(mockBbsiRepository, mockIFormSubmissionService, mockAuditor)
-        val result = sut.closeBankAccount(nino, 1, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))).futureValue
+        val result = sut.closeBankAccount(nino, 1, CloseAccountRequest(LocalDate.of(2017, 6, 20), Some(0))).futureValue
 
 
         result mustBe "1"
@@ -91,7 +91,7 @@ class BbsiServiceSpec extends BaseSpec {
 
         val sut = createSUT(mockBbsiRepository, mock[IFormSubmissionService], mock[Auditor])
 
-        val result = sut.closeBankAccount(nino, 49, CloseAccountRequest(new LocalDate(2017, 6, 20), Some(0))).failed.futureValue
+        val result = sut.closeBankAccount(nino, 49, CloseAccountRequest(LocalDate.of(2017, 6, 20), Some(0))).failed.futureValue
 
         result mustBe a[BankAccountNotFound]
       }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -192,7 +192,7 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
   "companyCarRemoveWrites" must {
     "create json as per API spec" when {
       "provided with minimal details" in {
-        val removeCarAndFuel = WithdrawCarAndFuel(1, new LocalDate("2017-01-01"), None)
+        val removeCarAndFuel = WithdrawCarAndFuel(1, LocalDate.parse("2017-01-01"), None)
         val json = Json.toJson(removeCarAndFuel)(companyCarRemoveWrites)
         val expectedJson =
           Json.obj("version" -> 1, "removeCarAndFuel" -> Json.obj("car" -> Json.obj("withdrawDate" -> "2017-01-01")))
@@ -201,7 +201,7 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
       }
 
       "provided with all the details" in {
-        val removeCarAndFuel = WithdrawCarAndFuel(1, new LocalDate("2017-01-01"), Some(new LocalDate("2017-02-03")))
+        val removeCarAndFuel = WithdrawCarAndFuel(1, LocalDate.parse("2017-01-01"), Some(LocalDate.parse("2017-02-03")))
         val json = Json.toJson(removeCarAndFuel)(companyCarRemoveWrites)
         val expectedJson = Json.obj(
           "version" -> 1,

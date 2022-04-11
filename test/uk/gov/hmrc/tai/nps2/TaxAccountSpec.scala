@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.nps2
 
 import data.NpsData
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.nps2.TaxObject.Type._

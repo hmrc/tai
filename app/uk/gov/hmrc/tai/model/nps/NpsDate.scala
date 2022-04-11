@@ -16,28 +16,30 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.format.DateTimeFormat
+import java.time.format.DateTimeFormatter
 import scala.util.Try
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.nps.NpsDate._
+
 import scala.language.implicitConversions
 
 object NpsDate {
 
-  private val taxPlatformDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+  private val taxPlatformDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
 
   implicit val reads = new Reads[NpsDate] {
     override def reads(json: JsValue): JsResult[NpsDate] =
       json match {
-        case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(new LocalDate(y.toInt, m.toInt, d.toInt)))
+        case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
         case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
         case invalid                         => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
       }
   }
 
-  private val npsDateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")
+  private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   implicit val writes = new Writes[NpsDate] {
     override def writes(date: NpsDate): JsValue =
@@ -47,8 +49,8 @@ object NpsDate {
 }
 
 case class NpsDate(localDate: LocalDate) {
-  val toTaxPlatformString: String = NpsDate.taxPlatformDateFormat.print(localDate)
-  val toNpsString: String = NpsDate.npsDateFormat.print(localDate)
+  val toTaxPlatformString: String = localDate.format(taxPlatformDateFormat)
+  val toNpsString: String = localDate.format(npsDateFormat)
 }
 
 object NpsDateImplicitConversions {
@@ -73,13 +75,13 @@ object localDateSerializer {
 
   def deserialize(str: String): LocalDate = str match {
     case localDateRegex(y, m, d) => {
-      new LocalDate(y.toInt, m.toInt, d.toInt)
+      LocalDate.of(y.toInt, m.toInt, d.toInt)
     }
     case _ => throw new Exception(parseError(str))
   }
 
   def serialize(value: LocalDate): String =
-    "%04d-%02d-%02d".format(value.getYear, value.getMonthOfYear, value.getDayOfMonth)
+    "%04d-%02d-%02d".format(value.getYear, value.getMonthValue, value.getDayOfMonth)
 
   private def parseError(str: String) =
     s"Unable to parse '$str' to type 'LocalDate', expected a valid value with format: yyyy-MM-dd"

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 
 case class NpsEmployment(
   employerName: Option[String],

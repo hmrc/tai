@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 
@@ -27,14 +27,14 @@ class DateTimeHelperSpec extends PlaySpec with MockitoSugar  {
     "convert to local date with the provided format (dd/MM/yyyy) " in {
 
       val localDate = DateTimeHelper.convertToLocalDate("dd/MM/yyyy", "01/01/2016")
-      val dt = new LocalDate(2016, 1, 1)
+      val dt = LocalDate.of(2016, 1, 1)
       localDate mustBe dt
     }
 
     "convert to local date with the provided format (dd-MM-yyyy) " in {
 
       val localDate = DateTimeHelper.convertToLocalDate("dd-MM-yyyy", "01-01-2016")
-      val dt = new LocalDate(2016, 1, 1)
+      val dt = LocalDate.of(2016, 1, 1)
       localDate mustBe dt
     }
   }

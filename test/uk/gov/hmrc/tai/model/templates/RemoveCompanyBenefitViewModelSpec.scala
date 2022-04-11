@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
@@ -78,7 +78,7 @@ class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
     nino,
     "firstname",
     "lastname",
-    Some(new LocalDate("1984-04-03")),
+    Some(LocalDate.parse("1984-04-03")),
     Address("addressLine1", "addressLine2", "addressLine3", "postcode", "UK"))
 
   private val removeCompanyBenefitModel = RemoveCompanyBenefitViewModel(

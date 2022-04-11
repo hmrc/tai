@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -24,6 +24,7 @@ import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.CloseBankAccount
 
+import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class RemoveBankAccountIformSpec extends PlaySpec {
@@ -87,8 +88,7 @@ class RemoveBankAccountIformSpec extends PlaySpec {
       endSection.select("tr:nth-of-type(5) td:nth-of-type(1)").text() mustBe "Is this a joint account?"
       endSection.select("tr:nth-of-type(5) td:nth-of-type(2)").text() mustBe "No"
       endSection.select("tr:nth-of-type(6) td:nth-of-type(1)").text() mustBe "Date you closed the account"
-      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.toString(
-        "d MMMM yyyy")
+      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
     }
 
     "display ended section with interest supplied and within current tax year" in {

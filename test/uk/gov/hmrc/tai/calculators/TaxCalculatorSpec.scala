@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsTax}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -296,7 +296,7 @@ class TaxCalculatorSpec extends PlaySpec {
 
       "last year date is provided" in {
         val sut = SUT
-        sut.getStartDateInCurrentFinancialYear(new LocalDate(2016, 6, 9)) must be(startDateCY)
+        sut.getStartDateInCurrentFinancialYear(LocalDate.of(2016, 6, 9)) must be(startDateCY)
       }
 
       "future date is provided" in {

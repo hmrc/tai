@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service.benefits
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import uk.gov.hmrc.http.UnprocessableEntityException
@@ -306,8 +306,8 @@ class BenefitsServiceSpec extends BaseSpec {
       "PAYE company car returns a successful response with id" in {
         val expectedResult = "id"
         val currentTaxYear = TaxYear().year
-        val carWithdrawDate = new LocalDate(currentTaxYear, 4, 24)
-        val fuelWithdrawDate = Some(new LocalDate(currentTaxYear, 4, 24))
+        val carWithdrawDate = LocalDate.of(currentTaxYear, 4, 24)
+        val fuelWithdrawDate = Some(LocalDate.of(currentTaxYear, 4, 24))
         val carSeqNum = 10
         val employmentSeqNum = 11
         val taxYear = TaxYear()

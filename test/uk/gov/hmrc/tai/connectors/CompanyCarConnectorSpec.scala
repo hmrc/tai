@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.fasterxml.jackson.core.JsonParseException
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.http.Status._
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
@@ -243,7 +243,7 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
 
   "removeCarBenefit" must {
 
-    val removeCarAndFuelModel = WithdrawCarAndFuel(1, new LocalDate(), None)
+    val removeCarAndFuelModel = WithdrawCarAndFuel(1, LocalDate.now(), None)
 
     "call remove Api and return id with success" in {
 

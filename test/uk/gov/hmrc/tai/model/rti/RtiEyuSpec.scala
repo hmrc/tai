@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 
 class RtiEyuSpec extends PlaySpec {
@@ -24,14 +24,14 @@ class RtiEyuSpec extends PlaySpec {
   "Rti eyu" must {
     "sort a list of Rti Eyu objects" when {
       "given in random order" in {
-        val rtiEyu1: RtiEyu = RtiEyu(None, None, None, new LocalDate(2015, 1, 1))
-        val rtiEyu2: RtiEyu = RtiEyu(None, None, None, new LocalDate(2015, 2, 1))
-        val rtiEyu3: RtiEyu = RtiEyu(None, None, None, new LocalDate(2015, 3, 1))
+        val rtiEyu1: RtiEyu = RtiEyu(None, None, None, LocalDate.of(2015, 1, 1))
+        val rtiEyu2: RtiEyu = RtiEyu(None, None, None, LocalDate.of(2015, 2, 1))
+        val rtiEyu3: RtiEyu = RtiEyu(None, None, None, LocalDate.of(2015, 3, 1))
 
         val rtiEyuList: List[RtiEyu] = List(rtiEyu2, rtiEyu3, rtiEyu1)
         val sortedList = rtiEyuList.sorted
-        sortedList.head.rcvdDate mustBe (new LocalDate(2015, 1, 1))
-        sortedList.last.rcvdDate mustBe (new LocalDate(2015, 3, 1))
+        sortedList.head.rcvdDate mustBe (LocalDate.of(2015, 1, 1))
+        sortedList.last.rcvdDate mustBe (LocalDate.of(2015, 3, 1))
       }
     }
   }
