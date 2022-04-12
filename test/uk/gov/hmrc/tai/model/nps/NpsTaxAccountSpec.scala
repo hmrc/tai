@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.nps
 
 import data.{NpsData, RTIData}
-import java.time.{ZonedDateTime, LocalDate}
+import java.time.{LocalDateTime, LocalDate}
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.nps2.IabdType._
@@ -2070,7 +2070,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private val taxYear: Int = ZonedDateTime.now().getYear
+  private val taxYear: Int = LocalDateTime.now().getYear
 
   private def createSUT(
     adjustedNetIncome: Option[NpsComponent] = None,
