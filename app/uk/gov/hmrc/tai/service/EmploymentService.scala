@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import org.joda.time.LocalDate
+
+import java.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -31,6 +32,7 @@ import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
 
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -46,17 +48,19 @@ class EmploymentService @Inject()(
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
 
+  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
+
   private def endEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"
+    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
 
   private def endEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"
+    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   private def addEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"
+    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
 
   private def addEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"
+    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
     employmentRepository.employmentsForYear(nino, year) map (_.employments)
@@ -93,7 +97,7 @@ class EmploymentService @Inject()(
         detail = Map(
           "nino"        -> nino.nino,
           "envelope Id" -> envelopeId,
-          "end-date"    -> endEmployment.endDate.toString()
+          "end-date"    -> endEmployment.endDate.toString
         ))
 
       envelopeId

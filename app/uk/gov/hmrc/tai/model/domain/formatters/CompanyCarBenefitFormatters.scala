@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.JodaWrites._

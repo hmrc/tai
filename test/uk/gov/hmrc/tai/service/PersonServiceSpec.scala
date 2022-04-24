@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -53,7 +53,7 @@ class PersonServiceSpec extends BaseSpec {
     nino,
     "firstname",
     "surname",
-    Some(new LocalDate()),
+    Some(LocalDate.now()),
     Address("l1", "l2", "l3", "pc", "country"),
     false,
     false)

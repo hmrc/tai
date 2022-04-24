@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.slf4j._
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation

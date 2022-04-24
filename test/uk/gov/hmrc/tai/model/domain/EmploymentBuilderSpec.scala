@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify}
 import org.scalatestplus.mockito.MockitoSugar

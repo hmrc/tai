@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.helpers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{spy, times, verify}
 import org.scalatestplus.play.PlaySpec

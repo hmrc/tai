@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -53,7 +53,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new EstimatedPayCalculatorController(authentication, cc)
 
-  val date = new LocalDate(2017, 4, 14)
+  val date = LocalDate.of(2017, 4, 14)
 
   private val payDetails = PayDetails(
     PayFreq.monthly,

@@ -17,10 +17,8 @@
 package uk.gov.hmrc.tai.model.templates
 
 import java.util.UUID
-
-import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
-
+import java.time.{Instant, LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 case class PdfSubmission(
@@ -28,7 +26,7 @@ case class PdfSubmission(
   formId: String,
   numberOfPages: Int,
   attachmentCount: Int = 0,
-  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(),
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London")), //TODO extract from config
   submissionMark: String = "",
   casKey: String = "",
   businessArea: String = "PSA",
@@ -41,10 +39,7 @@ case class PdfSubmission(
     val maxSubmissionReferenceLength = 12
     Random.alphanumeric.take(maxSubmissionReferenceLength).mkString
   }
-  val reconciliationId: String = {
-    val dateFormatter = DateTimeFormat.forPattern("yyyyMMddHHmmss")
-    s"$submissionReference-${dateFormatter.print(System.currentTimeMillis())}"
-  }
+  val reconciliationId: String = s"$submissionReference-${Instant.now().formatted("yyyyMMddHHmmss")}"
   val fileFormat: String = "pdf"
   val mimeType: String = "application/pdf"
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import java.io.File
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
@@ -49,7 +49,7 @@ class EmploymentRepositorySpec extends BaseSpec {
     "EMPLOYER1",
     Live,
     Some("0"),
-    new LocalDate(2016, 4, 6),
+    LocalDate.of(2016, 4, 6),
     None,
     Seq.empty[AnnualAccount],
     "0",
@@ -64,7 +64,7 @@ class EmploymentRepositorySpec extends BaseSpec {
       name = "EMPLOYER1",
       employmentStatus = Live,
       payrollNumber = Some("0"),
-      startDate = new LocalDate(2016, 4, 6),
+      startDate = LocalDate.of(2016, 4, 6),
       endDate = None,
       annualAccounts = Seq.empty[AnnualAccount],
       taxDistrictNumber = "0",
@@ -78,7 +78,7 @@ class EmploymentRepositorySpec extends BaseSpec {
       name = "EMPLOYER2",
       employmentStatus = Live,
       payrollNumber = Some("00"),
-      startDate = new LocalDate(2016, 4, 6),
+      startDate = LocalDate.of(2016, 4, 6),
       endDate = None,
       annualAccounts = Seq.empty[AnnualAccount],
       taxDistrictNumber = "00",
@@ -190,11 +190,11 @@ class EmploymentRepositorySpec extends BaseSpec {
         "data from hods includes corresponding annual account data (a single payment, and a single end tax year update)" in {
           val eyus = List(
             EndOfTaxYearUpdate(
-              new LocalDate("2016-06-17"),
+              LocalDate.parse("2016-06-17"),
               List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
 
           val payments =
-            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
+            List(Payment(LocalDate.parse("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None))
 
           val annualAccount = AnnualAccount(
             sequenceNumber = 1,
@@ -208,7 +208,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               "EMPLOYER1",
               Live,
               Some("0"),
-              new LocalDate(2016, 4, 6),
+              LocalDate.of(2016, 4, 6),
               None,
               Seq(annualAccount),
               "0",
@@ -254,15 +254,15 @@ class EmploymentRepositorySpec extends BaseSpec {
         "data from hods includes corresponding annual account data (a single payment, and two end tax year updates)" in {
           val eyus = List(
             EndOfTaxYearUpdate(
-              new LocalDate("2016-06-17"),
+              LocalDate.parse("2016-06-17"),
               List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))),
             EndOfTaxYearUpdate(
-              new LocalDate("2016-06-17"),
+              LocalDate.parse("2016-06-17"),
               List(Adjustment(TaxAdjustment, -28.99), Adjustment(NationalInsuranceAdjustment, 13.3)))
           )
 
           val payments =
-            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
+            List(Payment(LocalDate.parse("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, OneOff, None))
 
           val annualAccount = AnnualAccount(
             sequenceNumber = 1,
@@ -276,7 +276,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               "EMPLOYER1",
               Live,
               Some("0"),
-              new LocalDate(2016, 4, 6),
+              LocalDate.of(2016, 4, 6),
               None,
               Seq(annualAccount),
               "0",
@@ -322,17 +322,17 @@ class EmploymentRepositorySpec extends BaseSpec {
           "and a single end tax year update)" in {
           val eyus1 = List(
             EndOfTaxYearUpdate(
-              new LocalDate("2016-06-17"),
+              LocalDate.parse("2016-06-17"),
               List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
           val eyus2 = List(
             EndOfTaxYearUpdate(
-              new LocalDate("2016-06-17"),
+              LocalDate.parse("2016-06-17"),
               List(Adjustment(TaxAdjustment, -66.6), Adjustment(NationalInsuranceAdjustment, 66.6))))
 
           val payments1 =
-            List(Payment(new LocalDate("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually, None))
+            List(Payment(LocalDate.parse("2016-04-30"), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, Annually, None))
           val payments2 =
-            List(Payment(new LocalDate("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
+            List(Payment(LocalDate.parse("2016-04-30"), 6600.0, 1600.0, 600.0, 6600.0, 1600.0, 600.0, FourWeekly, None))
 
           val annualAccount1 = AnnualAccount(
             sequenceNumber = 1,
@@ -353,7 +353,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               "EMPLOYER1",
               Live,
               Some("0"),
-              new LocalDate(2016, 4, 6),
+              LocalDate.of(2016, 4, 6),
               None,
               Seq(annualAccount1),
               "0",
@@ -366,7 +366,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               "EMPLOYER2",
               Live,
               Some("00"),
-              new LocalDate(2016, 4, 6),
+              LocalDate.of(2016, 4, 6),
               None,
               Seq(annualAccount2),
               "00",
@@ -741,10 +741,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               3,
               currentTaxYear,
               Available,
-              List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
+              List(Payment(LocalDate.of(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
                 EndOfTaxYearUpdate(
-                  new LocalDate(2016, 6, 17),
+                  LocalDate.of(2016, 6, 17),
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
@@ -753,7 +753,7 @@ class EmploymentRepositorySpec extends BaseSpec {
                 "EMPLOYER3",
                 Live,
                 Some("0"),
-                new LocalDate(2016, 4, 6),
+                LocalDate.of(2016, 4, 6),
                 None,
                 Seq(expectedAnnualAccount),
                 "0",
@@ -858,10 +858,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               1,
               currentTaxYear,
               Available,
-              List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
+              List(Payment(LocalDate.of(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
                 EndOfTaxYearUpdate(
-                  new LocalDate(2016, 6, 17),
+                  LocalDate.of(2016, 6, 17),
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
@@ -941,10 +941,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               1,
               currentTaxYear,
               Available,
-              List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
+              List(Payment(LocalDate.of(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
                 EndOfTaxYearUpdate(
-                  new LocalDate(2016, 6, 17),
+                  LocalDate.of(2016, 6, 17),
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
@@ -1096,10 +1096,10 @@ class EmploymentRepositorySpec extends BaseSpec {
               1,
               currentTaxYear,
               Available,
-              List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
+              List(Payment(LocalDate.of(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
               List(
                 EndOfTaxYearUpdate(
-                  new LocalDate(2016, 6, 17),
+                  LocalDate.of(2016, 6, 17),
                   List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
             )
 
@@ -1331,10 +1331,10 @@ class EmploymentRepositorySpec extends BaseSpec {
           1,
           currentTaxYear,
           Available,
-          List(Payment(new LocalDate(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
+          List(Payment(LocalDate.of(2016, 4, 30), 5000.0, 1500.0, 600.0, 5000.0, 1500.0, 600.0, BiAnnually, None)),
           List(
             EndOfTaxYearUpdate(
-              new LocalDate(2016, 6, 17),
+              LocalDate.of(2016, 6, 17),
               List(Adjustment(TaxAdjustment, -27.99), Adjustment(NationalInsuranceAdjustment, 12.3))))
         )
 

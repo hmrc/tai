@@ -19,13 +19,16 @@ package uk.gov.hmrc.tai.model.templates
 import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.format.DateTimeFormatter
+
 case class IncorrectBankAccount(
   personDetails: Person,
   taxYear: TaxYear,
   bankAccount: BankAccount,
   interest: Option[BigDecimal] = None) {
 
-  private val dateFormat = "d MMMM yyyy"
+  private val dateFormat = DateTimeFormatter.ofPattern("d MMMM yyyy")
+
   val displayableTaxYearRange: String =
-    s"${taxYear.start.toString(dateFormat)} to ${taxYear.end.toString(dateFormat)}"
+    s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}"
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers.benefits
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.Json
@@ -193,8 +193,8 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
   "removeCompanyCarAndFuel" must {
 
     "return OK when called with correct parameters" in {
-      val carWithdrawDate = new LocalDate(2017, 4, 24)
-      val fuelWithdrawDate = Some(new LocalDate(2017, 4, 24))
+      val carWithdrawDate = LocalDate.of(2017, 4, 24)
+      val fuelWithdrawDate = Some(LocalDate.of(2017, 4, 24))
       val carSeqNum = 10
       val employmentSeqNum = 11
       val removeCarAndFuel = WithdrawCarAndFuel(10, carWithdrawDate, fuelWithdrawDate)

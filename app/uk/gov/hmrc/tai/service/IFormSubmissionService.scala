@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import org.joda.time.LocalDate
+
+import java.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -26,6 +27,7 @@ import uk.gov.hmrc.tai.model.templates.PdfSubmission
 import uk.gov.hmrc.tai.repositories.PersonRepository
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
+import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -36,11 +38,13 @@ class IFormSubmissionService @Inject()(
 
   private val logger: Logger = Logger(getClass.getName)
 
+  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
+
   private def iformFilename(envelopeId: String, iformSubmissionKey: String) =
-    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"
+    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().format(dateFormat)}-iform.pdf"
 
   private def metadataFilename(envelopeId: String, iformSubmissionKey: String) =
-    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"
+    s"$envelopeId-$iformSubmissionKey-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   def uploadIForm(
     nino: Nino,

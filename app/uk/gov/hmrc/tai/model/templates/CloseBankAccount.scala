@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.format.DateTimeFormatter
 
 case class CloseBankAccount(
   personDetails: Person,
@@ -27,10 +29,10 @@ case class CloseBankAccount(
   endDate: LocalDate,
   interestEarnedThisTaxYear: Option[BigDecimal]) {
 
-  private val dateFormat = "d MMMM yyyy"
+  private val dateFormat = DateTimeFormatter.ofPattern("d MMMM yyyy")
 
   val displayableTaxYearRange: String =
-    s"${taxYear.start.toString(dateFormat)} to ${taxYear.end.toString(dateFormat)}"
+    s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}"
 
   val bankAccountClosedInCurrentTaxYear: Boolean = TaxYear().withinTaxYear(endDate)
 }

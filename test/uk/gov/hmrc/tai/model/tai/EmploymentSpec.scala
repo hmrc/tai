@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter
@@ -112,8 +112,8 @@ class EmploymentSpec extends PlaySpec {
 
   private val payment = RtiPayment(
     PayFrequency.FourWeekly,
-    new LocalDate(2017, 4, 20),
-    new LocalDate(2017, 4, 20),
+    LocalDate.of(2017, 4, 20),
+    LocalDate.of(2017, 4, 20),
     BigDecimal(20),
     BigDecimal(20000),
     BigDecimal(0),

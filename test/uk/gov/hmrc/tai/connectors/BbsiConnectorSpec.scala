@@ -34,7 +34,7 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
 
   lazy val config = inject[DesConfig]
 
-  val url = s"/pre-population-of-investment-income/nino/${nino.nino.take(8)}/tax-year/2021"
+  val url = s"/pre-population-of-investment-income/nino/${nino.nino.take(8)}/tax-year/${taxYear.year}"
 
   private val singleBankAccount = Json.obj(
     "nino"    -> nino.nino,

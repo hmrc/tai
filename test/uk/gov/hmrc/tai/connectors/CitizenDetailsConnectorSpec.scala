@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import java.time.LocalDate
 import com.codahale.metrics.Timer
-import com.github.nscala_time.time.Imports.LocalDate
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{verify, when}

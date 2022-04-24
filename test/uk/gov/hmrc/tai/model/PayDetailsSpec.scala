@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.enums.PayFreq

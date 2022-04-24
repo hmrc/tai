@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.joda.time.LocalDate
-import com.github.nscala_time.time.Imports._
+import java.time.LocalDate
+
 
 case class RtiEyu(
   taxablePayDelta: Option[BigDecimal],
@@ -26,6 +26,6 @@ case class RtiEyu(
   rcvdDate: LocalDate
 ) extends Ordered[RtiEyu] {
 
-  def compare(that: RtiEyu): Int = this.rcvdDate compare that.rcvdDate
+  def compare(that: RtiEyu): Int = this.rcvdDate compareTo that.rcvdDate
 
 }

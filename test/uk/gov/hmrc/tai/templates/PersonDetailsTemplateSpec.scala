@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.templates
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -25,6 +25,7 @@ import play.twirl.api.Html
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 
+import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class PersonDetailsTemplateSpec extends PlaySpec {
@@ -82,7 +83,7 @@ class PersonDetailsTemplateSpec extends PlaySpec {
   }
   private val nino: Nino = new Generator(new Random).nextNino
   private val dateOfBirth = LocalDate.parse("2017-02-01")
-  private val dateOfBirthString: String = dateOfBirth.toString("d MMMM yyyy")
+  private val dateOfBirthString: String = dateOfBirth.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
 
   private val personDetails = Person(
     Nino(nino.nino),

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.joda.time.LocalDate
-import com.github.nscala_time.time.Imports._
+import java.time.LocalDate
+
 
 case class Payment(
   date: LocalDate,
@@ -31,9 +31,10 @@ case class Payment(
   duplicate: Option[Boolean]
 ) extends Ordered[Payment] {
 
-  def compare(that: Payment): Int = this.date compare that.date
+  def compare(that: Payment): Int = this.date compareTo that.date
 }
 
 object Payment {
-  implicit val dateOrdering: Ordering[Payment] = Ordering.by(_.date.toDate())
+  private implicit val LocalDateOrder: Ordering[LocalDate] = (x: LocalDate, y: LocalDate) => x.compareTo(y)
+  implicit val dateOrdering: Ordering[Payment] = Ordering.by(_.date)
 }

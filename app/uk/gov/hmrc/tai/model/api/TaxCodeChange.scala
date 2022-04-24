@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 

@@ -18,7 +18,7 @@ package data
 
 import java.io.File
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.rti.{RtiData, RtiEmployment}
@@ -60,10 +60,10 @@ object RTIData {
       employment.copy(payments = employment.payments.map { inYear =>
         //We can finally try to change the value for the payment data
         inYear.copy(
-          paidOn = new LocalDate(
+          paidOn = LocalDate.of(
             TaxYear().year,
-            inYear.paidOn.getMonthOfYear,
-            inYear.paidOn.getDayOfWeek
+            inYear.paidOn.getMonthValue,
+            inYear.paidOn.getDayOfWeek.getValue
           ))
       })
     }

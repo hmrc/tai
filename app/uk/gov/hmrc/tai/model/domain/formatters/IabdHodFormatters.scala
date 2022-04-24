@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import play.api.libs.json.{JsError, _}
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 
@@ -45,15 +45,15 @@ trait IabdHodFormatters extends IabdTypeConstants {
 
         override def reads(json: JsValue): JsResult[LocalDate] = json match {
           case JsString(dateRegex(d, m, y)) =>
-            JsSuccess(new LocalDate(y.toInt, m.toInt, d.toInt))
+            JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
           case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
         }
       },
       new Writes[LocalDate] {
-        val dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy")
+        val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         override def writes(date: LocalDate): JsValue =
-          JsString(dateFormat.print(date))
+          JsString(date.format(dateFormat))
       }
     )
 

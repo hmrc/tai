@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import org.joda.time.Days
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.temporal.ChronoUnit
 import scala.math.BigDecimal.RoundingMode
 
 class EstimatedPayCalculatorSpec extends PlaySpec {
@@ -105,7 +105,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
 
       "an employment start date is supplied which falls in the current tax year" in {
 
-        val daysInHalfYear: Int = Days.daysBetween(TaxYear().start, TaxYear().next.start).getDays() / 2
+        val daysInHalfYear: Int = ChronoUnit.DAYS.between(TaxYear().start, TaxYear().next.start).toInt / 2
 
         val startDateHalfThroughYear = TaxYear().end.minusDays(daysInHalfYear)
 

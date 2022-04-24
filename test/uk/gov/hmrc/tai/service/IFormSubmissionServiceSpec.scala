@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito._
 import uk.gov.hmrc.http.HttpResponse
@@ -25,6 +25,7 @@ import uk.gov.hmrc.tai.repositories.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.nio.file.{Files, Paths}
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class IFormSubmissionServiceSpec extends BaseSpec {
@@ -55,12 +56,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
         any())(any())
     }
 
@@ -86,12 +87,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-iform.pdf"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any())(any())
       verify(mockFileUploadService, never()).uploadFile(
         any(),
         any(),
-        contains(s"1-$iformSubmissionKey-${LocalDate.now().toString("YYYYMMdd")}-metadata.xml"),
+        contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
         any())(any())
     }
   }
@@ -102,6 +103,8 @@ class IFormSubmissionServiceSpec extends BaseSpec {
   private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+  
+  private val formatter = DateTimeFormatter.ofPattern("YYYYMMdd")
 
   private def createSUT(
     personRepository: PersonRepository,

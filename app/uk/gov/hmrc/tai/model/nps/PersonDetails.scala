@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import org.joda.time.DateTime
+import java.time.LocalDate
 import play.api.libs.json.Json
 import play.api.libs.json.JodaWrites._
 import play.api.libs.json.JodaReads._
@@ -30,7 +30,7 @@ case class Person(
   title: Option[String],
   honours: Option[String],
   sex: Option[String],
-  dateOfBirth: Option[DateTime],
+  dateOfBirth: Option[LocalDate],
   nino: Nino,
   manualCorrespondenceInd: Option[Boolean],
   deceased: Option[Boolean])

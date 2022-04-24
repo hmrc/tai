@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.nps2
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
@@ -162,7 +162,7 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
               districtNumber = 1,
               iabds = List(testIabd),
               cessationPay = Some(2200.22),
-              start = new LocalDate(2017, 12, 12)
+              start = LocalDate.of(2017, 12, 12)
             )),
           basisOperation = Some(BasisOperation.Week1Month1)
         )

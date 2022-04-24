@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 
 class IncomeSpec extends PlaySpec {
@@ -49,5 +49,5 @@ class IncomeSpec extends PlaySpec {
     }
   }
 
-  val ceasedStatus = Income.Ceased(new LocalDate())
+  val ceasedStatus = Income.Ceased(LocalDate.now())
 }

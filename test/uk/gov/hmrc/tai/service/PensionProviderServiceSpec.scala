@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
@@ -37,7 +37,7 @@ class PensionProviderServiceSpec extends BaseSpec {
     "return an envelopeId" when {
       "given valid inputs" in {
         val addPensionProvider =
-          AddPensionProvider("testName", new LocalDate(2017, 6, 9), "1234", "Yes", Some("123456789"))
+          AddPensionProvider("testName", LocalDate.of(2017, 6, 9), "1234", "Yes", Some("123456789"))
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
@@ -56,7 +56,7 @@ class PensionProviderServiceSpec extends BaseSpec {
     }
 
     "send pension provider journey audit event" in {
-      val pensionProvider = AddPensionProvider("testName", new LocalDate(2017, 6, 9), "1234", "Yes", Some("123456789"))
+      val pensionProvider = AddPensionProvider("testName", LocalDate.of(2017, 6, 9), "1234", "Yes", Some("123456789"))
       val map = Map(
         "nino"                -> nino.nino,
         "envelope Id"         -> "1",
@@ -86,12 +86,12 @@ class PensionProviderServiceSpec extends BaseSpec {
     "return the correct employment IForm" when {
       "applied with Person" in {
         val pensionProvider =
-          AddPensionProvider("testName", new LocalDate(2017, 6, 9), "1234", "Yes", Some("123456789"))
+          AddPensionProvider("testName", LocalDate.of(2017, 6, 9), "1234", "Yes", Some("123456789"))
         val person = Person(
           nino,
           "firstname",
           "lastname",
-          Some(new LocalDate("1982-04-03")),
+          Some(LocalDate.parse("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
@@ -156,7 +156,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           nino,
           "firstname",
           "lastname",
-          Some(new LocalDate("1982-04-03")),
+          Some(LocalDate.parse("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
         val currentTaxYear = TaxYear()
         val employment = Employment(
