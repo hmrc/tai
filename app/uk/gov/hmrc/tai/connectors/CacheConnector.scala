@@ -33,9 +33,15 @@ class TaiCacheRepository @Inject()(mongo: ReactiveMongoComponent, mongoConfig: M
   implicit ec: ExecutionContext)
     extends CacheMongoRepository("TAI", mongoConfig.mongoTTL)(mongo.mongoConnector.db, ec)
 
+class TaiCacheRepositoryUpdateIncome @Inject()(mongo: ReactiveMongoComponent, mongoConfig: MongoConfig)(
+  implicit ec: ExecutionContext)
+  extends CacheMongoRepository("TaiUpdateIncome", 172800)(mongo.mongoConnector.db, ec)
+
+
 @Singleton
 class CacheConnector @Inject()(
   cacheRepository: TaiCacheRepository,
+  cacheRepositoryUpdateIncome: TaiCacheRepositoryUpdateIncome,
   mongoConfig: MongoConfig,
   configuration: Configuration)(implicit ec: ExecutionContext)
     extends MongoFormatter {
@@ -43,6 +49,16 @@ class CacheConnector @Inject()(
   implicit lazy val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
+
+  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[T]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
+    cacheRepositoryUpdateIncome.createOrUpdate(cacheId.value, key, jsonData).map(_ => data)
+  }
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
@@ -102,6 +118,34 @@ class CacheConnector @Inject()(
         }
       }
     }
+
+  def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] = {
+    println("hoy"*100)
+    if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonDecryptor = new JsonDecryptor[T]()
+      cacheRepositoryUpdateIncome.findById(cacheId.value) map {
+        case Some(cache) =>
+          cache.data flatMap { json =>
+            (json \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
+          }
+        case None => {
+          None
+        }
+      }
+    } recover {
+      case JsResultException(_) => None
+    } else {
+      cacheRepositoryUpdateIncome.findById(cacheId.value) map {
+        case Some(cache) =>
+          cache.data flatMap { json =>
+            (json \ key).validateOpt[T].asOpt.flatten
+          }
+        case None => {
+          None
+        }
+      }
+    }
+  }
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
