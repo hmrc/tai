@@ -120,7 +120,6 @@ class CacheConnector @Inject()(
     }
 
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] = {
-    println("hoy"*100)
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[T]()
       cacheRepositoryUpdateIncome.findById(cacheId.value) map {
