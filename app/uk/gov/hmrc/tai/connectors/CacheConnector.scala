@@ -35,7 +35,7 @@ class TaiCacheRepository @Inject()(mongo: ReactiveMongoComponent, mongoConfig: M
 
 class TaiCacheRepositoryUpdateIncome @Inject()(mongo: ReactiveMongoComponent, mongoConfig: MongoConfig)(
   implicit ec: ExecutionContext)
-  extends CacheMongoRepository("TaiUpdateIncome", 172800)(mongo.mongoConnector.db, ec)
+  extends CacheMongoRepository("TaiUpdateIncome", mongoConfig.mongoTTLUpdateIncome)(mongo.mongoConnector.db, ec)
 
 
 @Singleton
