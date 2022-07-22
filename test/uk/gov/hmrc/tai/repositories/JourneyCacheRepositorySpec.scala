@@ -338,12 +338,15 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
 
     "delete a named journey cache *UpdateIncome" in {
+      //TODO: Failing test, mock not being called properly due to SUT. Need to add few more tests e.g. flushUpdateIncome
       val mockConnector = echoProgrammed(mock[CacheConnector])
+      val sut = createSUT(mockConnector)
+
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
+      when(sut.currentCache(cacheIdNoSession, "update-income")) thenReturn Future.successful(Some(Map.empty[String, String]))
 
-      val sut = createSUT(mockConnector)
-      sut.flush(cacheId, "update-income").futureValue
+      sut.flushUpdateIncome(cacheIdNoSession, "update-income").futureValue
 
       verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
         any(),

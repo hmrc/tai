@@ -28,46 +28,84 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class JourneyCacheController @Inject()(
-  repository: JourneyCacheRepository,
-  authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
-) extends BackendController(cc) {
+                                        repository: JourneyCacheRepository,
+                                        authentication: AuthenticationPredicate,
+                                        cc: ControllerComponents)(
+                                        implicit ec: ExecutionContext
+                                      ) extends BackendController(cc) {
 
-  def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.currentCache(CacheId(request.nino), journeyName) map {
-      case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
-      case _                             => NoContent
-    } recover {
-      case _ => InternalServerError
+  def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request => {
+    journeyName match {
+      case "update-income" => repository.currentCache(CacheId.noSession(request.nino), journeyName) map {
+        case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
+        case _ => NoContent
+      } recover {
+        case _ => InternalServerError
+      }
+      case _ => repository.currentCache(CacheId(request.nino), journeyName) map {
+        case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
+        case _ => NoContent
+      } recover {
+        case _ => InternalServerError
+      }
     }
+  }
   }
 
   def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async {
-    implicit request =>
-      repository.currentCache(CacheId(request.nino), journeyName, key) map {
-        case Some(value) if value.trim != "" => Ok(Json.toJson(value))
-        case _                               => NoContent
-      } recover {
-        case _ => InternalServerError
+    implicit request => {
+      journeyName match {
+        case "update-income" => repository.currentCache(CacheId.noSession(request.nino), journeyName, key) map {
+          case Some(value) if value.trim != "" => Ok(Json.toJson(value))
+          case _ => NoContent
+        } recover {
+          case _ => InternalServerError
+        }
+        case _ => repository.currentCache(CacheId(request.nino), journeyName, key) map {
+          case Some(value) if value.trim != "" => Ok(Json.toJson(value))
+          case _ => NoContent
+        } recover {
+          case _ => InternalServerError
+        }
       }
-  }
 
-  def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
-    withJsonBody[Map[String, String]] { cache =>
-      repository.cached(CacheId(request.nino), journeyName, cache) map { cache =>
-        Created(Json.toJson(cache))
-      } recover {
-        case _ => InternalServerError
-      }
     }
   }
 
-  def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    repository.flush(CacheId(request.nino), journeyName) map { res =>
-      NoContent
-    } recover {
-      case _ => InternalServerError
+  def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request => {
+    journeyName match {
+      case "update-income" => withJsonBody[Map[String, String]] { cache =>
+        repository.cached(CacheId.noSession(request.nino), journeyName, cache) map { cache =>
+          Created(Json.toJson(cache))
+        } recover {
+          case _ => InternalServerError
+        }
+      }
+      case _ => withJsonBody[Map[String, String]] { cache =>
+        repository.cached(CacheId(request.nino), journeyName, cache) map { cache =>
+          Created(Json.toJson(cache))
+        } recover {
+          case _ => InternalServerError
+        }
+      }
+    }
+
+  }
+  }
+
+  def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request => {
+    journeyName match {
+      case "update-income" => repository.flushUpdateIncome(CacheId.noSession(request.nino), journeyName) map { res =>
+        NoContent
+      } recover {
+        case _ => InternalServerError
+      }
+      case _ => repository.flush(CacheId(request.nino), journeyName) map { res =>
+        NoContent
+      } recover {
+        case _ => InternalServerError
+        }
+      }
     }
   }
 }
