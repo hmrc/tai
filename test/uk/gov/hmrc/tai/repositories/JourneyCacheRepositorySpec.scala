@@ -352,5 +352,21 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         meq(Map.empty[String, String]),
         meq("update-income" + sut.JourneyCacheSuffix))(any())
     }
+
+    "delete a named journey cache but keep updated income confirmed amounts *UpdateIncome" in {
+      val mockConnector = echoProgrammed(mock[CacheConnector])
+      val sut = createSUT(mockConnector)
+
+      when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
+        .thenReturn(Future.successful(Map.empty[String, String]))
+      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "thisShouldBeDeleted" -> "deleteMe")))
+
+      sut.flushUpdateIncome(cacheIdNoSession, "update-income").futureValue
+
+      verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
+        any(),
+        meq(Map("updateIncomeConfirmedAmountKey-1" -> "70000")),
+        meq("update-income" + sut.JourneyCacheSuffix))(any())
+    }
   }
 }
