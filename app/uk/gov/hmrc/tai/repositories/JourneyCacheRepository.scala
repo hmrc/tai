@@ -74,9 +74,9 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
   }
   def flushUpdateIncome(cacheId: CacheId, journeyName: String): Future[Unit] =
     for {
-      maybeCache <- currentCache(cacheId, journeyName)
-      cache = maybeCache.getOrElse(Map.empty[String, String])
-      cacheKeys = cache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
-      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, cacheKeys, journeyName + JourneyCacheSuffix)
+      maybeCacheOption <- currentCache(cacheId, journeyName)
+      maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
+      maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
+      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, maybeUpdatedIncomeCacheMap, journeyName + JourneyCacheSuffix)
     } yield()
 }
