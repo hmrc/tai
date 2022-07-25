@@ -368,5 +368,37 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         meq(Map("updateIncomeConfirmedAmountKey-1" -> "70000")),
         meq("update-income" + sut.JourneyCacheSuffix))(any())
     }
+
+    "delete a specific value using employmentId and keep other updated income confirmed amounts *UpdateIncome" in {
+      val mockConnector = echoProgrammed(mock[CacheConnector])
+      val sut = createSUT(mockConnector)
+
+      when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
+        .thenReturn(Future.successful(Map.empty[String, String]))
+      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "updateIncomeConfirmedAmountKey-3" -> "50000")))
+
+      sut.flushUpdateIncomeWithEmpId(cacheIdNoSession, "update-income", 1).futureValue
+
+      verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
+        any(),
+        meq(Map("updateIncomeConfirmedAmountKey-3" -> "50000")),
+        meq("update-income" + sut.JourneyCacheSuffix))(any())
+    }
+
+    "Keep all values in cache when using employmentId if no employmentId matches in the cache *UpdateIncome" in {
+      val mockConnector = echoProgrammed(mock[CacheConnector])
+      val sut = createSUT(mockConnector)
+
+      when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
+        .thenReturn(Future.successful(Map.empty[String, String]))
+      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-5" -> "70000", "updateIncomeConfirmedAmountKey-7" -> "50000")))
+
+      sut.flushUpdateIncomeWithEmpId(cacheIdNoSession, "update-income", 1).futureValue
+
+      verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
+        any(),
+        meq(Map("updateIncomeConfirmedAmountKey-5" -> "70000", "updateIncomeConfirmedAmountKey-7" -> "50000")),
+        meq("update-income" + sut.JourneyCacheSuffix))(any())
+    }
   }
 }

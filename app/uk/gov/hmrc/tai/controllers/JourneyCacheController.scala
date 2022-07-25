@@ -108,4 +108,20 @@ class JourneyCacheController @Inject()(
       }
     }
   }
+  def flushWithEmpId(journeyName: String, empId: Int): Action[AnyContent] = authentication.async { implicit request => {
+    journeyName match {
+      case "update-income" => repository.flushUpdateIncomeWithEmpId(CacheId.noSession(request.nino), journeyName, empId) map { res =>
+        NoContent
+      } recover {
+        case _ => InternalServerError
+      }
+      case _ => repository.flush(CacheId(request.nino), journeyName) map { res =>
+        NoContent
+      } recover {
+        case _ => InternalServerError
+      }
+    }
+  }
+  }
+
 }

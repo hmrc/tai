@@ -219,6 +219,16 @@ class JourneyCacheControllerSpec extends BaseSpec {
       status(result) mustBe NO_CONTENT
     }
 
+    "accept and process a DELETE cache flush instruction with empId *UpdateIncome" in {
+      val mockRepository = mock[JourneyCacheRepository]
+      when(mockRepository.flushUpdateIncomeWithEmpId(any(), any(), any()))
+        .thenReturn(Future.successful())
+
+      val sut = createSUT(mockRepository)
+      val result = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+      status(result) mustBe NO_CONTENT
+    }
+
     "return a 204 no content response *UpdateIncome" when {
 
       "a cache is not found for the requested journey" in {
@@ -270,6 +280,8 @@ class JourneyCacheControllerSpec extends BaseSpec {
           .thenReturn(failResult)
         when(mockRepository.flushUpdateIncome(any(), any()))
           .thenReturn(failResult)
+        when(mockRepository.flushUpdateIncomeWithEmpId(any(), any(), any()))
+          .thenReturn(failResult)
 
         val sut = createSUT(mockRepository)
         val result1 = sut.currentCache("update-income")(fakeRequest)
@@ -285,6 +297,9 @@ class JourneyCacheControllerSpec extends BaseSpec {
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+        status(result4) mustBe INTERNAL_SERVER_ERROR
+
+        val result5 = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
