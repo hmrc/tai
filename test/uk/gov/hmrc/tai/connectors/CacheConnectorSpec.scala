@@ -319,7 +319,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
         val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> encryptedData)))))
         when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
 
-        val data = sut.findUpdateIncome[String](cacheId).futureValue
+          val data = sut.findUpdateIncome[String](cacheId).futureValue
 
         data mustBe Some("DATA")
 
