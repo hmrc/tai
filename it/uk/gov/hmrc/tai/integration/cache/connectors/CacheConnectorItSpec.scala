@@ -31,7 +31,7 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository, TaiCacheRepositoryUpdateIncome}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
@@ -66,114 +66,181 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
   val mockMongo: MongoConfig = mock[MongoConfig]
   Mockito.when(mockMongo.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(mockReactiveMongo, mockMongo), mockMongo, configuration)
+  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(mockReactiveMongo, mockMongo), new TaiCacheRepositoryUpdateIncome(mockReactiveMongo, mockMongo), mockMongo, configuration)
 
-    "Cache Connector" must {
-      "insert and read the data from mongodb" when {
-        "session data has been passed" in {
-          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
-          val cachedData = sut.find[SessionData](cacheId).futureValue
+  "Cache Connector" must {
+    "insert and read the data from mongodb" when {
+      "session data has been passed" in {
+        val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+        val cachedData = sut.find[SessionData](cacheId).futureValue
 
-          Some(data) mustBe cachedData
-        }
+        Some(data) mustBe cachedData
+      }
 
-        "data has been passed" in {
-          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
-          val cachedData = sut.find[String](cacheId).futureValue
+      "data has been passed" in {
+        val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+        val cachedData = sut.find[String](cacheId).futureValue
 
-          Some(data) mustBe cachedData
-        }
+        Some(data) mustBe cachedData
+      }
 
-        "session data has been passed without key" in {
-          val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
-          val cachedData = sut.find[SessionData](cacheId).futureValue
+      "session data has been passed without key" in {
+        val data = sut.createOrUpdate[SessionData](cacheId, sessionData).futureValue
+        val cachedData = sut.find[SessionData](cacheId).futureValue
 
-          Some(data) mustBe cachedData
-        }
+        Some(data) mustBe cachedData
+      }
 
-        "data has been passed without key" in {
+      "data has been passed without key" in {
 
-          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
-          val cachedData = sut.find[String](cacheId).futureValue
+        val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+        val cachedData = sut.find[String](cacheId).futureValue
 
-          Some(data) mustBe cachedData
-
-        }
-
-        "sequence has been passed" in {
-          val data = sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
-          val cachedData = sut.findSeq[SessionData](cacheId).futureValue
-
-          data mustBe cachedData
-        }
-
-        "saved and returned json is valid" in {
-          val data = sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
-          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
-          cachedData mustBe Some(data)
-        }
+        Some(data) mustBe cachedData
 
       }
 
-      "delete the data from cache" when {
-        "time to live is over" in {
-          val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
-          val cachedData = sut.find[String](cacheId).futureValue
-          Some(data) mustBe cachedData
+      "sequence has been passed" in {
+        val data = sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+        val cachedData = sut.findSeq[SessionData](cacheId).futureValue
 
-          Thread.sleep(100000L)
-
-          val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
-          cachedDataAfterTTL mustBe None
-        }
-
-        "calling removeById" in {
-         val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
-          val cachedData = sut.find[String](cacheId).futureValue
-          Some(data) mustBe cachedData
-
-          sut.removeById(cacheId).futureValue
-
-          val dataAfterRemove = sut.find[String](cacheId).futureValue
-          dataAfterRemove mustBe None
-        }
+        data mustBe cachedData
       }
 
-      "return the data from cache" when {
-        "Nil is saved in cache" in {
-          sut.createOrUpdate[Seq[SessionData]](cacheId, Nil).futureValue
-          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
-
-          Some(Nil) mustBe cachedData
-        }
-
-        "sequence is saved in cache" in {
-          sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
-          val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
-
-          Some(List(sessionData, sessionData)) mustBe cachedData
-        }
-      }
-
-      "return None" when {
-
-        "returned json is invalid" in {
-          val badJson = Json.parse("""
-                                     | {
-                                     |  "invalid": "key"
-                                     | }
-                                     |""".stripMargin).toString
-          sut.createOrUpdate[String](cacheId, badJson).futureValue
-          val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
-          cachedData mustBe None
-        }
-
-        "cache id doesn't exist" in {
-          val idWithNoData = CacheId(new Generator(Random).nextNino)
-          val cachedData = sut.findOptSeq[SessionData](idWithNoData).futureValue
-
-          cachedData mustBe None
-        }
+      "saved and returned json is valid" in {
+        val data = sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+        val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
+        cachedData mustBe Some(data)
       }
     }
+
+    "delete the data from cache" when {
+      "time to live is over" in {
+        val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+        val cachedData = sut.find[String](cacheId).futureValue
+        Some(data) mustBe cachedData
+
+        Thread.sleep(100000L)
+
+        val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
+        cachedDataAfterTTL mustBe None
+      }
+
+      "calling removeById" in {
+        val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
+        val cachedData = sut.find[String](cacheId).futureValue
+        Some(data) mustBe cachedData
+
+        sut.removeById(cacheId).futureValue
+
+        val dataAfterRemove = sut.find[String](cacheId).futureValue
+        dataAfterRemove mustBe None
+      }
+    }
+
+    "return the data from cache" when {
+      "Nil is saved in cache" in {
+        sut.createOrUpdate[Seq[SessionData]](cacheId, Nil).futureValue
+        val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
+
+        Some(Nil) mustBe cachedData
+      }
+
+      "sequence is saved in cache" in {
+        sut.createOrUpdate[Seq[SessionData]](cacheId, List(sessionData, sessionData)).futureValue
+        val cachedData = sut.findOptSeq[SessionData](cacheId).futureValue
+
+        Some(List(sessionData, sessionData)) mustBe cachedData
+      }
+    }
+
+    "return None" when {
+
+      "returned json is invalid" in {
+        val badJson = Json.parse(
+          """
+            | {
+            |  "invalid": "key"
+            | }
+            |""".stripMargin).toString
+        sut.createOrUpdate[String](cacheId, badJson).futureValue
+        val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
+        cachedData mustBe None
+      }
+
+      "cache id doesn't exist" in {
+        val idWithNoData = CacheId(new Generator(Random).nextNino)
+        val cachedData = sut.findOptSeq[SessionData](idWithNoData).futureValue
+
+        cachedData mustBe None
+      }
+    }
+  }
+
+  //update-income
+  "insert and read the data from mongodb *Update-Income" when {
+    "session data has been passed *Update-Income" in {
+      val data = sut.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
+      val cachedData = sut.findUpdateIncome[SessionData](cacheId).futureValue
+
+      Some(data) mustBe cachedData
+    }
+
+    "data has been passed *Update-Income" in {
+      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+
+      Some(data) mustBe cachedData
+    }
+
+    "session data has been passed without key *Update-Income" in {
+      val data = sut.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
+      val cachedData = sut.findUpdateIncome[SessionData](cacheId).futureValue
+
+      Some(data) mustBe cachedData
+    }
+
+    "data has been passed without key *Update-Income" in {
+
+      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+
+      Some(data) mustBe cachedData
+
+    }
+
+    "saved and returned json is valid *Update-Income" in {
+      val data = sut.createOrUpdateIncome[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+      val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
+      cachedData mustBe Some(data)
+    }
+  }
+
+  "delete the data from cache using createOrUpdateIncome *Update-Income" when {
+
+    "calling removeById *Update-Income" in {
+      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+      Some(data) mustBe cachedData
+
+      sut.createOrUpdateIncome(cacheId, Map.empty[String, String]).futureValue
+
+      val dataAfterRemove = sut.findUpdateIncome[String](cacheId).futureValue
+      dataAfterRemove mustBe None
+    }
+  }
+
+  "return None" when {
+    "returned json is invalid" in {
+      val badJson = Json.parse(
+        """
+          | {
+          |  "invalid": "key"
+          | }
+          |""".stripMargin).toString
+      sut.createOrUpdateIncome[String](cacheId, badJson).futureValue
+      val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
+      cachedData mustBe None
+    }
+  }
 }

@@ -27,4 +27,7 @@ object CacheId {
       hc.sessionId
         .map(s => s"${s.value} - $nino")
         .getOrElse(throw new RuntimeException("Error while fetching session id"))) {}
+
+  def noSession(nino: Nino)(implicit hc: HeaderCarrier): CacheId =
+    new CacheId(nino.toString()) {}
 }

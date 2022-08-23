@@ -53,12 +53,15 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
   val atMost = 5 seconds
 
   val taiCacheRepository = mock[TaiCacheRepository]
+  val taiCacheRepositoryUpdateIncome = mock[TaiCacheRepositoryUpdateIncome]
 
   def createSUT(mongoConfig: MongoConfig = mock[MongoConfig], metrics: Metrics = mock[Metrics]) =
-    new CacheConnector(taiCacheRepository, mongoConfig, configuration)
+    new CacheConnector(taiCacheRepository, taiCacheRepositoryUpdateIncome, mongoConfig, configuration)
 
-  override protected def beforeEach(): Unit =
+  override protected def beforeEach(): Unit = {
+    reset(taiCacheRepositoryUpdateIncome)
     reset(taiCacheRepository)
+  }
 
   "TaiCacheRepository" must {
 
@@ -70,6 +73,22 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
 
     "use mongoFormats from Cache" in {
       sut.domainFormatImplicit mustBe Cache.mongoFormats
+    }
+  }
+
+  "TaiCacheRepositoryUpdateIncome" must {
+
+    lazy val sut = inject[TaiCacheRepositoryUpdateIncome]
+
+    "have the correct collection name" in {
+      sut.collection.name mustBe "TaiUpdateIncome"
+    }
+
+    "use mongoFormats from Cache" in {
+      sut.domainFormatImplicit mustBe Cache.mongoFormats
+    }
+    "have 2 day ttl" in {
+      sut.expireAfterSeconds mustBe 172800
     }
   }
 
@@ -143,6 +162,50 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
         data mustBe stringSeq
       }
 
+      //update-income
+      "provided with string data *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+
+        val data = sut.createOrUpdateIncome(cacheId, "DATA", emptyKey).futureValue
+
+        data mustBe "DATA"
+      }
+
+      "encryption is enabled and provided with string data *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+
+        val data = sut.createOrUpdateIncome(cacheId, "DATA", emptyKey).futureValue
+
+        data mustBe "DATA"
+      }
+
+      "provided with int data *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+
+        val data = sut.createOrUpdateIncome(cacheId, 10, emptyKey).futureValue
+
+        data mustBe 10
+      }
+
+      "provided with session data *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.createOrUpdate(any(), any(), any())).thenReturn(databaseUpdate)
+
+        val data = sut.createOrUpdateIncome(cacheId, sessionData, emptyKey).futureValue
+
+        data mustBe sessionData
+      }
     }
 
     "retrieve the data from cache" when {
@@ -231,10 +294,96 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
 
         verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
+
+      //update-income
+      "id is present in the cache *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> "DATA")))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe Some("DATA")
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "id is present in the cache and encryption is enabled *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+        val sut = createSUT(mockMongoConfig)
+        val jsonEncryptor = new JsonEncryptor[String]()
+        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> encryptedData)))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+          val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe Some("DATA")
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "id is not present in the cache *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(None))
+
+        val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "id is not present in the cache and encryption is enabled *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+        val sut = createSUT(mockMongoConfig)
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(None))
+
+        val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "key is not present in the cache *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("WRONG_KEY" -> "DATA")))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "key is not present in the cache and encryption is enabled *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+        val sut = createSUT(mockMongoConfig)
+        val jsonEncryptor = new JsonEncryptor[String]()
+        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("WRONG_KEY" -> encryptedData)))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.findUpdateIncome[String](cacheId).futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
     }
 
     "retrieve the session data from cache" when {
-
       "id is present in the cache" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
@@ -261,6 +410,36 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
         data mustBe None
 
         verify(taiCacheRepository, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      //updateIncome
+
+      "id is present in the cache *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-SESSION" -> sessionData)))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.findUpdateIncome[SessionData](cacheId, "TAI-SESSION").futureValue
+
+        data mustBe Some(sessionData)
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
+      }
+
+      "id is present in the cache but with wrong type conversion *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUT(mockMongoConfig)
+        val eventualSomeCache = Some(Cache(Id(cacheIdValue), Some(Json.toJson(Map("TAI-DATA" -> sessionData)))))
+        when(taiCacheRepositoryUpdateIncome.findById(any(), any())(any())).thenReturn(Future.successful(eventualSomeCache))
+
+        val data = sut.findUpdateIncome[String](cacheId, "TAI-DATA").futureValue
+
+        data mustBe None
+
+        verify(taiCacheRepositoryUpdateIncome, times(1)).findById(Meq(Id(cacheIdValue)), any())(any())
       }
     }
 

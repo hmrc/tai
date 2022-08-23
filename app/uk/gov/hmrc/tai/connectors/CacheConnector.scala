@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.tai.connectors
+
 import com.google.inject.{Inject, Singleton}
 import play.Logger
 import play.api.Configuration
@@ -25,17 +26,26 @@ import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
+import cats.implicits._
+import cats.data.OptionT
+import uk.gov.hmrc.cache.model.Cache
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaiCacheRepository @Inject()(mongo: ReactiveMongoComponent, mongoConfig: MongoConfig)(
   implicit ec: ExecutionContext)
-    extends CacheMongoRepository("TAI", mongoConfig.mongoTTL)(mongo.mongoConnector.db, ec)
+  extends CacheMongoRepository("TAI", mongoConfig.mongoTTL)(mongo.mongoConnector.db, ec)
+
+class TaiCacheRepositoryUpdateIncome @Inject()(mongo: ReactiveMongoComponent, mongoConfig: MongoConfig)(
+  implicit ec: ExecutionContext)
+  extends CacheMongoRepository("TaiUpdateIncome", mongoConfig.mongoTTLUpdateIncome)(mongo.mongoConnector.db, ec)
+
 
 @Singleton
 class CacheConnector @Inject()(
   cacheRepository: TaiCacheRepository,
+  cacheRepositoryUpdateIncome: TaiCacheRepositoryUpdateIncome,
   mongoConfig: MongoConfig,
   configuration: Configuration)(implicit ec: ExecutionContext)
     extends MongoFormatter {
@@ -43,6 +53,16 @@ class CacheConnector @Inject()(
   implicit lazy val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
+
+  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[T]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
+    cacheRepositoryUpdateIncome.createOrUpdate(cacheId.value, key, jsonData).map(_ => data)
+  }
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
@@ -102,6 +122,28 @@ class CacheConnector @Inject()(
         }
       }
     }
+
+  def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] = {
+    if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonDecryptor = new JsonDecryptor[T]()
+      OptionT(cacheRepositoryUpdateIncome.findById(cacheId.value)).map { cache =>
+        cache.data flatMap { json =>
+          (json \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
+        }
+      }.value.map(_.flatten)
+    } recover {
+      case JsResultException(_) => None
+    } else {
+      cacheRepositoryUpdateIncome.findById(cacheId.value) map {
+        case Some(cache) =>
+          cache.data flatMap { json =>
+            (json \ key).validateOpt[T].asOpt.flatten
+          }
+        case None => None
+
+      }
+    }
+  }
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)

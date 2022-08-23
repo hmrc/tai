@@ -26,32 +26,65 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
 
   val JourneyCacheSuffix = "_journey_cache"
 
-  def currentCache(cacheId: CacheId, journeyName: String): Future[Option[Map[String, String]]] =
-    cacheConnector.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+  def currentCache(cacheId: CacheId, journeyName: String): Future[Option[Map[String, String]]] = {
+    journeyName match {
+      case "update-income" => cacheConnector.findUpdateIncome[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+      case _ => cacheConnector.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+
+    }
+  }
 
   def currentCache(cacheId: CacheId, journeyName: String, key: String): Future[Option[String]] =
     currentCache(cacheId, journeyName).map({
       case Some(cache) => cache.get(key)
-      case _           => None
+      case _ => None
     })
 
-  def cached(cacheId: CacheId, journeyName: String, cache: Map[String, String]): Future[Map[String, String]] =
-    currentCache(cacheId, journeyName).flatMap(existingCache => {
-      val toCache =
-        existingCache match {
-          case Some(existing) => existing ++ cache
-          case _              => cache
-        }
-      cacheConnector.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
-    })
+  def cached(cacheId: CacheId, journeyName: String, cache: Map[String, String]): Future[Map[String, String]] = {
+    journeyName match {
+      case "update-income" =>
+        currentCache(cacheId, journeyName).flatMap(existingCache => {
+          val toCache =
+            existingCache match {
+              case Some(existing) => existing ++ cache
+              case _ => cache
+            }
+          cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
+        })
+      case _ =>
+        currentCache(cacheId, journeyName).flatMap(existingCache => {
+          val toCache =
+            existingCache match {
+              case Some(existing) => existing ++ cache
+              case _ => cache
+            }
+          cacheConnector.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
+        })
+    }
+
+  }
 
   def cached(cacheId: CacheId, journeyName: String, key: String, value: String): Future[Map[String, String]] =
     cached(cacheId, journeyName, Map(key -> value))
 
-  def flush(cacheId: CacheId, journeyName: String): Future[Boolean] =
-    cacheConnector
-      .createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map {
-      _ =>
-        true
+  def flush(cacheId: CacheId, journeyName: String): Future[Boolean] = {
+    journeyName match {
+      case _ => cacheConnector.createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map { _ => true }
     }
+  }
+  def flushUpdateIncome(cacheId: CacheId, journeyName: String): Future[Unit] =
+    for {
+      maybeCacheOption <- currentCache(cacheId, journeyName)
+      maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
+      maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
+      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, maybeUpdatedIncomeCacheMap, journeyName + JourneyCacheSuffix)
+    } yield()
+
+  def flushUpdateIncomeWithEmpId(cacheId: CacheId, journeyName: String, empId: Int): Future[Unit] =
+    for {
+      maybeCacheOption <- currentCache(cacheId, journeyName)
+      maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
+      maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey")).filterKeys(!_.startsWith(s"updateIncomeConfirmedAmountKey-$empId"))
+      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, maybeUpdatedIncomeCacheMap, journeyName + JourneyCacheSuffix)
+    } yield()
 }

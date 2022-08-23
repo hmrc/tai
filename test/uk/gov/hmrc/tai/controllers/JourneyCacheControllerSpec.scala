@@ -17,7 +17,9 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito._
+import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -157,6 +159,147 @@ class JourneyCacheControllerSpec extends BaseSpec {
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+        status(result4) mustBe INTERNAL_SERVER_ERROR
+      }
+    }
+    //update-income
+
+    val testMapUpdateIncome = Map("key1" -> "value1", "key2" -> "value2")
+
+    "supply a named journey cache on GET request *UpdateIncome" in {
+      val mockRepository = mock[JourneyCacheRepository]
+
+      when(mockRepository.currentCache(any(), any()))
+        .thenReturn(Future.successful(Some(testMap)))
+
+      val sut = createSUT(mockRepository)
+      val result = sut.currentCache("update-income")(fakeRequest)
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.obj("key1" -> "value1", "key2" -> "value2")
+    }
+
+    "supply an individual cache entry on GET request *UpdateIncome" in {
+      val mockRepository = mock[JourneyCacheRepository]
+
+      when(mockRepository.currentCache(any(), any(), any()))
+        .thenReturn(Future.successful(Some("value3")))
+
+      val sut = createSUT(mockRepository)
+      val result = sut.currentCacheValue("update-income", "key3")(fakeRequest)
+      status(result) mustBe OK
+      contentAsJson(result) mustBe JsString("value3")
+    }
+
+    "accept and persist a valid POST'ed cache *UpdateIncome" in {
+      val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
+      val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), cacheJson)
+        .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test"))
+
+      val mockRepository = mock[JourneyCacheRepository]
+      when(mockRepository.cached(any(), any(), any()))
+        .thenReturn(Future.successful(testMap))
+
+      val sut = createSUT(mockRepository)
+      val result = sut.cached("update-income")(fakeRequest)
+      status(result) mustBe CREATED
+
+      val json = contentAsJson(result)
+      json mustBe cacheJson
+      json.as[Map[String, String]] mustBe testMap
+    }
+
+    "accept and process a DELETE cache flush instruction *UpdateIncome" in {
+      val mockRepository = mock[JourneyCacheRepository]
+      when(mockRepository.flushUpdateIncome(any(), any()))
+        .thenReturn(Future.successful())
+
+      val sut = createSUT(mockRepository)
+      val result = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+      status(result) mustBe NO_CONTENT
+    }
+
+    "accept and process a DELETE cache flush instruction with empId *UpdateIncome" in {
+      val mockRepository = mock[JourneyCacheRepository]
+      when(mockRepository.flushUpdateIncomeWithEmpId(any(), any(), any()))
+        .thenReturn(Future.successful())
+
+      val sut = createSUT(mockRepository)
+      val result = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+      status(result) mustBe NO_CONTENT
+    }
+
+    "return a 204 no content response *UpdateIncome" when {
+
+      "a cache is not found for the requested journey" in {
+        val mockRepository = mock[JourneyCacheRepository]
+        when(mockRepository.currentCache(any(), any()))
+          .thenReturn(Future.successful(None))
+          .thenReturn(Future.successful(Some(Map.empty[String, String])))
+
+        val sut = createSUT(mockRepository)
+        val result = sut.currentCache("update-income")(fakeRequest)
+        status(result) mustBe NO_CONTENT
+
+        val emptyMapResult = sut.currentCache("update-income")(fakeRequest)
+        status(emptyMapResult) mustBe NO_CONTENT
+      }
+
+      "an individual value is not found within an existing cache " in {
+        val mockRepository = mock[JourneyCacheRepository]
+        when(mockRepository.currentCache(any(), any(), any()))
+          .thenReturn(Future.successful(None))
+
+        val sut = createSUT(mockRepository)
+        val result = sut.currentCacheValue("update-income", "key3")(fakeRequest)
+        status(result) mustBe NO_CONTENT
+      }
+
+      "an individual value is found within an existing cache, but is the empty string" in {
+        val mockRepository = mock[JourneyCacheRepository]
+        when(mockRepository.currentCache(any(), any(), any()))
+          .thenReturn(Future.successful(Some(" ")))
+
+        val sut = createSUT(mockRepository)
+        val result = sut.currentCacheValue("update-income", "key3")(fakeRequest)
+        status(result) mustBe NO_CONTENT
+      }
+    }
+
+    "return an 500 internal server error response *UpdateIncome" when {
+
+      "an internal error is encountered on any request" in {
+        val failResult = Future.failed(new HttpException("something broke", BAD_GATEWAY))
+
+        val mockRepository = mock[JourneyCacheRepository]
+        when(mockRepository.currentCache(any(), any()))
+          .thenReturn(failResult)
+        when(mockRepository.currentCache(any(), any(), any()))
+          .thenReturn(failResult)
+        when(mockRepository.cached(any(), any(), any()))
+          .thenReturn(failResult)
+        when(mockRepository.flushUpdateIncome(any(), any()))
+          .thenReturn(failResult)
+        when(mockRepository.flushUpdateIncomeWithEmpId(any(), any(), any()))
+          .thenReturn(failResult)
+
+        val sut = createSUT(mockRepository)
+        val result1 = sut.currentCache("update-income")(fakeRequest)
+        status(result1) mustBe INTERNAL_SERVER_ERROR
+
+        val result2 = sut.currentCacheValue("update-income", "key3")(fakeRequest)
+        status(result2) mustBe INTERNAL_SERVER_ERROR
+
+        val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
+        val result3 = sut.cached("update-income")(
+          FakeRequest("POST", "/", FakeHeaders(), cacheJson)
+            .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test")))
+        status(result3) mustBe INTERNAL_SERVER_ERROR
+
+        val result4 = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+        status(result4) mustBe INTERNAL_SERVER_ERROR
+
+        val result5 = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
