@@ -82,7 +82,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey, and the supplied cache replaces one of the existing values" in {
         val existingCache = Map("key3" -> "value3")
-        val newCache = Map("key1" -> "value1", "key3" -> "revised")
+        val newCache = Map("key1"      -> "value1", "key3" -> "revised")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
@@ -114,7 +114,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey" in {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
-        val expectedMap = Map("key3" -> "value3", "key4" -> "value4", "key5" -> "value5")
+        val expectedMap = Map("key3"   -> "value3", "key4" -> "value4", "key5" -> "value5")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
@@ -131,7 +131,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey, and the supplied value replaces one of the existing values" in {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
-        val expectedMap = Map("key3" -> "value3", "key4" -> "updated")
+        val expectedMap = Map("key3"   -> "value3", "key4" -> "updated")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
@@ -190,7 +190,6 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         meq("testJourney" + sut.JourneyCacheSuffix))(any())
     }
 
-
     //update income
 
     "persist a named journey cache, and return the updated cache *UpdateIncome" when {
@@ -222,7 +221,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey, and the supplied cache replaces one of the existing values *UpdateIncome" in {
         val existingCache = Map("key3" -> "value3")
-        val newCache = Map("key1" -> "value1", "key3" -> "revised")
+        val newCache = Map("key1"      -> "value1", "key3" -> "revised")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.findUpdateIncome[Map[String, String]](any(), any())(any()))
@@ -254,7 +253,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey *UpdateIncome" in {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
-        val expectedMap = Map("key3" -> "value3", "key4" -> "value4", "key5" -> "value5")
+        val expectedMap = Map("key3"   -> "value3", "key4" -> "value4", "key5" -> "value5")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.findUpdateIncome[Map[String, String]](any(), any())(any()))
@@ -271,7 +270,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       "an existing cache is present for the named journey, and the supplied value replaces one of the existing values *UpdateIncome" in {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
-        val expectedMap = Map("key3" -> "value3", "key4" -> "updated")
+        val expectedMap = Map("key3"   -> "value3", "key4" -> "updated")
 
         val mockConnector = echoProgrammed(mock[CacheConnector])
         when(mockConnector.findUpdateIncome[Map[String, String]](any(), any())(any()))
@@ -294,7 +293,6 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       when(mockConnector.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
 
-
       val sut = createSUT(mockConnector)
       sut.currentCache(cacheId, "update-income").futureValue mustBe Some(existingCache)
     }
@@ -305,11 +303,9 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       when(mockConnector.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
-
       val sut = createSUT(mockConnector)
       sut.currentCache(cacheId, "update-income").futureValue mustBe None
     }
-
 
     "retrive an individual cached value, by journey name and key *UpdateIncome" in {
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
@@ -317,7 +313,6 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       val mockConnector = echoProgrammed(mock[CacheConnector])
       when(mockConnector.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
-
 
       val sut = createSUT(mockConnector)
       sut.currentCache(cacheId, "update-income", "key3").futureValue mustBe Some("value3")
@@ -330,12 +325,10 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       when(mockConnector.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
-
       val sut = createSUT(mockConnector)
       sut.currentCache(cacheId, "update-income", "key5").futureValue mustBe None
       sut.currentCache(cacheId, "update-income", "nochance").futureValue mustBe None
     }
-
 
     "delete a named journey cache *UpdateIncome" in {
       val mockConnector = echoProgrammed(mock[CacheConnector])
@@ -343,7 +336,9 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
-      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map.empty[String, String]))
+      when(
+        mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(
+          any())) thenReturn Future.successful(Some(Map.empty[String, String]))
 
       sut.flushUpdateIncome(cacheIdNoSession, "update-income").futureValue
 
@@ -359,7 +354,10 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
-      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "thisShouldBeDeleted" -> "deleteMe")))
+      when(
+        mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(
+          any())) thenReturn Future.successful(
+        Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "thisShouldBeDeleted" -> "deleteMe")))
 
       sut.flushUpdateIncome(cacheIdNoSession, "update-income").futureValue
 
@@ -375,7 +373,10 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
-      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "updateIncomeConfirmedAmountKey-3" -> "50000")))
+      when(
+        mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(
+          any())) thenReturn Future.successful(
+        Some(Map("updateIncomeConfirmedAmountKey-1" -> "70000", "updateIncomeConfirmedAmountKey-3" -> "50000")))
 
       sut.flushUpdateIncomeWithEmpId(cacheIdNoSession, "update-income", 1).futureValue
 
@@ -391,13 +392,31 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
-      when(mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(any())) thenReturn Future.successful(Some(Map("updateIncomeConfirmedAmountKey-5" -> "70000", "updateIncomeConfirmedAmountKey-7" -> "50000")))
+      when(
+        mockConnector.findUpdateIncome[Map[String, String]](meq(cacheIdNoSession), meq("update-income_journey_cache"))(
+          any())) thenReturn Future.successful(
+        Some(Map("updateIncomeConfirmedAmountKey-5" -> "70000", "updateIncomeConfirmedAmountKey-7" -> "50000")))
 
       sut.flushUpdateIncomeWithEmpId(cacheIdNoSession, "update-income", 1).futureValue
 
       verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
         any(),
         meq(Map("updateIncomeConfirmedAmountKey-5" -> "70000", "updateIncomeConfirmedAmountKey-7" -> "50000")),
+        meq("update-income" + sut.JourneyCacheSuffix))(any())
+    }
+
+    "delete the update-income journey is dropping the cache and setting an empty map" in {
+      val mockConnector = echoProgrammed(mock[CacheConnector])
+      val sut = createSUT(mockConnector)
+
+      when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
+        .thenReturn(Future.successful(Map.empty[String, String]))
+
+      sut.deleteUpdateIncome(cacheId).futureValue
+
+      verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
+        any(),
+        meq(Map.empty[String, String]),
         meq("update-income" + sut.JourneyCacheSuffix))(any())
     }
   }

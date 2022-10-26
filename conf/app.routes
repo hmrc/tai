@@ -60,7 +60,7 @@ GET           /journey-cache/:journey/values/:key                               
 POST          /journey-cache/:journey                                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.cached(journey: String)
 DELETE        /journey-cache/:journey                                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.flush(journey: String)
 DELETE        /journey-cache/:journey/:empId                                                                          @uk.gov.hmrc.tai.controllers.JourneyCacheController.flushWithEmpId(journey: String, empId: Int)
-DELETE        /journey-cache/delete-update-income                                                                     @uk.gov.hmrc.tai.controllers.JourneyCacheController.delete()
+DELETE        /test-only/journey-cache/delete-update-income                                                                     @uk.gov.hmrc.tai.controllers.JourneyCacheController.delete()
 
 # Invalidate Session Cache
 DELETE        /session-cache                                                                                          @uk.gov.hmrc.tai.controllers.SessionController.invalidateCache

@@ -99,14 +99,13 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
             journeyName + JourneyCacheSuffix)
     } yield ()
 
-  def deleteUpdateIncomeWithEmpId(cacheId: CacheId): Future[Unit] =
+  def deleteUpdateIncome(cacheId: CacheId): Future[Unit] =
     for {
       _ <- cacheConnector
             .createOrUpdateIncome[Map[String, String]](
               cacheId,
               Map.empty[String, String],
               "update-income" + JourneyCacheSuffix)
-      _ <- cacheConnector.removeById(cacheId)
     } yield ()
 
 }
