@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
 import java.time.{LocalDate, LocalDateTime, ZoneId}
 import scala.util.Random
@@ -2070,7 +2071,7 @@ class NpsTaxAccountSpec extends PlaySpec {
 
   private val nino: Nino = new Generator(new Random).nextNino
 
-  private val taxYear: Int = LocalDateTime.now(ZoneId.of("Europe/London")).getYear
+  private val taxYear: Int = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)).getYear
 
   private def createSUT(
     adjustedNetIncome: Option[NpsComponent] = None,

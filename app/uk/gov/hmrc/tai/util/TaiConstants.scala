@@ -242,6 +242,8 @@ object TaiConstants {
   val contentType: String = "application/json"
 
   val EmergencyTaxCode = "X"
+
+  val LondonEuropeTimezone = "Europe/London"
 }
 
 trait MongoConstants {
