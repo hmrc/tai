@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.templates
 
+import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
+
 import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZoneId}
 import java.time.format.DateTimeFormatter
@@ -26,7 +28,7 @@ case class PdfSubmission(
   formId: String,
   numberOfPages: Int,
   attachmentCount: Int = 0,
-  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Europe/London")), //TODO extract from config
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)), //TODO extract from config
   submissionMark: String = "",
   casKey: String = "",
   businessArea: String = "PSA",

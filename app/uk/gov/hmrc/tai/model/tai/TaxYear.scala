@@ -18,6 +18,8 @@ package uk.gov.hmrc.tai.model.tai
 
 
 
+import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
+
 import java.time.{LocalDate, ZoneId}
 import scala.util.matching.Regex
 
@@ -65,7 +67,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
 }
 
 object TaxYear {
-  def apply(from: LocalDate = LocalDate.now(ZoneId.of("Europe/London"))): TaxYear = {
+  def apply(from: LocalDate = LocalDate.now(ZoneId.of(LondonEuropeTimezone))): TaxYear = {
     val naiveYear = TaxYear(from.getYear)
     if (from isBefore naiveYear.start) {
       naiveYear.prev
