@@ -119,12 +119,4 @@ class JourneyCacheController @Inject()(
     }
   }
 
-  def delete(): Action[AnyContent] = authentication.async { implicit request =>
-    repository.deleteUpdateIncome(CacheId.noSession(request.nino)) map { res =>
-      NoContent
-    } recover {
-      case _ => InternalServerError
-    }
-
-  }
 }

@@ -13,6 +13,6 @@
 # microservice specific routes
 
 
-DELETE        /test-only/journey-cache/delete-update-income             @uk.gov.hmrc.tai.controllers.JourneyCacheController.delete()
+DELETE        /tai/test-only/journey-cache/delete-update-income             @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyCacheController.delete()
 
 ->            /                              prod.Routes

@@ -17,9 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
 import org.mockito.Mockito._
-import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -90,16 +88,6 @@ class JourneyCacheControllerSpec extends BaseSpec {
 
       val sut = createSUT(mockRepository)
       val result = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
-      status(result) mustBe NO_CONTENT
-    }
-
-    "accept and process a DELETE cache instruction *UpdateIncome" in {
-      val mockRepository = mock[JourneyCacheRepository]
-      when(mockRepository.deleteUpdateIncome(any()))
-        .thenReturn(Future.successful())
-
-      val sut = createSUT(mockRepository)
-      val result = sut.delete()(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
       status(result) mustBe NO_CONTENT
     }
 
