@@ -17,9 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
 import org.mockito.Mockito._
-import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -225,7 +223,8 @@ class JourneyCacheControllerSpec extends BaseSpec {
         .thenReturn(Future.successful())
 
       val sut = createSUT(mockRepository)
-      val result = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+      val result =
+        sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
       status(result) mustBe NO_CONTENT
     }
 
@@ -299,7 +298,8 @@ class JourneyCacheControllerSpec extends BaseSpec {
         val result4 = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
 
-        val result5 = sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
+        val result5 =
+          sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
