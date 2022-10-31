@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories
 
+import akka.Done
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
@@ -412,7 +413,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       when(mockConnector.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
 
-      sut.deleteUpdateIncome(cacheId).futureValue
+      sut.deleteUpdateIncome(cacheId).futureValue mustBe Done
 
       verify(mockConnector, times(1)).createOrUpdateIncome[Map[String, String]](
         any(),

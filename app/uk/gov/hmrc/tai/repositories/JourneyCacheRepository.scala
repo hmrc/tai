@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories
 
+import akka.Done
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
 
@@ -66,15 +67,10 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
     cached(cacheId, journeyName, Map(key -> value))
 
   def flush(cacheId: CacheId, journeyName: String): Future[Boolean] =
-    journeyName match {
-      case _ =>
-        cacheConnector.createOrUpdate[Map[String, String]](
-          cacheId,
-          Map.empty[String, String],
-          journeyName + JourneyCacheSuffix) map { _ =>
-          true
-        }
-    }
+    cacheConnector
+      .createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map (
+      _ => true)
+
   def flushUpdateIncome(cacheId: CacheId, journeyName: String): Future[Unit] =
     for {
       maybeCacheOption <- currentCache(cacheId, journeyName)
@@ -99,13 +95,12 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
             journeyName + JourneyCacheSuffix)
     } yield ()
 
-  def deleteUpdateIncome(cacheId: CacheId): Future[Unit] =
-    for {
-      _ <- cacheConnector
-            .createOrUpdateIncome[Map[String, String]](
-              cacheId,
-              Map.empty[String, String],
-              "update-income" + JourneyCacheSuffix)
-    } yield ()
+  def deleteUpdateIncome(cacheId: CacheId): Future[Done] =
+    cacheConnector
+      .createOrUpdateIncome[Map[String, String]](
+        cacheId,
+        Map.empty[String, String],
+        "update-income" + JourneyCacheSuffix)
+      .map(_ => Done)
 
 }
