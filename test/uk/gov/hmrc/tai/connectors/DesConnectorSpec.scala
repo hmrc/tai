@@ -41,7 +41,6 @@ class DesConnectorSpec extends ConnectorBaseSpec {
   val baseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
   val iabdsUrl: String = s"$baseUrl/iabds/tax-year/$taxYear"
   val iabdsForTypeUrl: String = s"$iabdsUrl?type=$iabdType"
-  val calcTaxAccUrl: String = s"$baseUrl/tax-account/tax-year/$taxYear?calculation=true"
   val updateEmploymentUrl: String = s"$baseUrl/iabds/$taxYear/employment/$iabdType"
   val updateExpensesUrl: String = s"$baseUrl/iabds/$taxYear/$iabdType"
 
