@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.rti
 
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+
 import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 
@@ -23,9 +25,9 @@ class RtiPaymentSpec extends PlaySpec {
 
   "RtiPayment compare method" must {
     "implement comparison behaviour" in {
-      rtiPayment1.compare(rtiPayment2) mustBe -2
-      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(7))) mustBe 0
-      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.now().minusDays(9))) mustBe 2
+      rtiPayment1.compare(rtiPayment2) should be < 0
+      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.of(2022, 12, 18))) should be < 0
+      rtiPayment1.compare(rtiPayment2.copy(paidOn = LocalDate.of(2023, 10, 18))) should be < 0
     }
   }
 
@@ -47,7 +49,7 @@ class RtiPaymentSpec extends PlaySpec {
 
   val rtiPayment1 = RtiPayment(
     payFrequency = PayFrequency.Irregular,
-    paidOn = LocalDate.now().minusDays(7),
+    paidOn = LocalDate.of(2022, 11, 15),
     submittedOn = LocalDate.now(),
     taxablePay = 2000,
     taxablePayYTD = 12000,
@@ -57,7 +59,7 @@ class RtiPaymentSpec extends PlaySpec {
 
   val rtiPayment2 = RtiPayment(
     payFrequency = PayFrequency.Monthly,
-    paidOn = LocalDate.now().minusDays(5),
+    paidOn = LocalDate.of(2022, 11, 20),
     submittedOn = LocalDate.now(),
     taxablePay = 2000,
     taxablePayYTD = 12000,
