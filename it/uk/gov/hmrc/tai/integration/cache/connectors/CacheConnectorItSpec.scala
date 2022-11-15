@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.integration.cache.connectors
 
-
 import org.mockito.Mockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -30,6 +29,8 @@ import play.api.test.Injecting
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
+import uk.gov.hmrc.mongo.TimestampSupport
+import uk.gov.hmrc.mongo.test.MongoSupport
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository, TaiCacheRepositoryUpdateIncome}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
@@ -41,13 +42,16 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures with Injecting {
+class CacheConnectorItSpec
+    extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoSupport with MongoFormatter with MockitoSugar
+    with ScalaFutures with Injecting {
 
-  override def fakeApplication = GuiceApplicationBuilder()
-    .configure(
-      "tai.cache.expiryInSeconds" -> 10
-    )
-    .build()
+  override def fakeApplication =
+    GuiceApplicationBuilder()
+      .configure(
+        "tai.cache.expiryInSeconds" -> 10
+      )
+      .build()
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
@@ -66,7 +70,14 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
   val mockMongo: MongoConfig = mock[MongoConfig]
   Mockito.when(mockMongo.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(new TaiCacheRepository(mockReactiveMongo, mockMongo), new TaiCacheRepositoryUpdateIncome(mockReactiveMongo, mockMongo), mockMongo, configuration)
+  private val timestampSupport: TimestampSupport = app.injector.instanceOf[TimestampSupport]
+
+  private lazy val sut: CacheConnector = new CacheConnector(
+    new TaiCacheRepository(mongoComponent, mockMongo, timestampSupport),
+    new TaiCacheRepositoryUpdateIncome(mongoComponent, mockMongo, timestampSupport),
+    mockMongo,
+    configuration
+  )
 
   "Cache Connector" must {
     "insert and read the data from mongodb" when {
@@ -108,7 +119,12 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       }
 
       "saved and returned json is valid" in {
-        val data = sut.createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+        val data = sut
+          .createOrUpdate[Person](
+            cacheId,
+            Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(
+            PersonFormatter.personMongoFormat)
+          .futureValue
         val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
         cachedData mustBe Some(data)
       }
@@ -157,12 +173,11 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     "return None" when {
 
       "returned json is invalid" in {
-        val badJson = Json.parse(
-          """
-            | {
-            |  "invalid": "key"
-            | }
-            |""".stripMargin).toString
+        val badJson = Json.parse("""
+                                   | {
+                                   |  "invalid": "key"
+                                   | }
+                                   |""".stripMargin).toString
         sut.createOrUpdate[String](cacheId, badJson).futureValue
         val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
         cachedData mustBe None
@@ -210,7 +225,12 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "saved and returned json is valid *Update-Income" in {
-      val data = sut.createOrUpdateIncome[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(PersonFormatter.personMongoFormat).futureValue
+      val data = sut
+        .createOrUpdateIncome[Person](
+          cacheId,
+          Person(nino, "Name", "Surname", None, Address("", "", "", "", ""), false, false))(
+          PersonFormatter.personMongoFormat)
+        .futureValue
       val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
       cachedData mustBe Some(data)
     }
@@ -232,12 +252,11 @@ class CacheConnectorItSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
   "return None" when {
     "returned json is invalid" in {
-      val badJson = Json.parse(
-        """
-          | {
-          |  "invalid": "key"
-          | }
-          |""".stripMargin).toString
+      val badJson = Json.parse("""
+                                 | {
+                                 |  "invalid": "key"
+                                 | }
+                                 |""".stripMargin).toString
       sut.createOrUpdateIncome[String](cacheId, badJson).futureValue
       val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
       cachedData mustBe None
