@@ -16,9 +16,9 @@ object AppDependencies {
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"              % hmrcMongoVersion,
     "uk.gov.hmrc"       %% "domain"                          % s"6.1.0-$playVersion",
     "uk.gov.hmrc"       %% "json-encryption"                 % s"4.10.0-$playVersion",
-    "uk.gov.hmrc"       %% "mongo-caching"                   % s"7.0.0-$playVersion" exclude ("uk.gov.hmrc", "time_2.11"),
-    "com.typesafe.play" %% "play-json-joda"                  % "2.9.2",
-    "org.typelevel"     %% "cats-core"                       % "2.0.0",
+    //"uk.gov.hmrc"       %% "mongo-caching"                   % s"7.0.0-$playVersion" exclude ("uk.gov.hmrc", "time_2.11"),
+    "com.typesafe.play" %% "play-json-joda" % "2.9.2",
+    "org.typelevel"     %% "cats-core"      % "2.0.0",
   )
 
   lazy val Test: String = "test,it"
