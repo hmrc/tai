@@ -16,29 +16,20 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import cats.data.OptionT
+import cats.implicits._
 import com.google.inject.{Inject, Singleton}
-import play.Logger
 import play.api.Configuration
-import play.api.libs.json.{JsResultException, JsValue, Json, Reads, Writes}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import uk.gov.hmrc.cache.repository.CacheMongoRepository
+import play.api.libs.json._
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
+import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-import cats.implicits._
-import cats.data.OptionT
-import com.mongodb.client.model.Indexes.ascending
-import org.mongodb.scala.model._
-import uk.gov.hmrc.cache.model.Cache
-import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
-import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-
-import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 
 import scala.concurrent.duration.{Duration, SECONDS}
+import scala.concurrent.{ExecutionContext, Future}
 
 /*@Singleton
 class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConfig)(implicit ec: ExecutionContext)
@@ -68,7 +59,11 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
       ttl = Duration(mongoConfig.mongoTTLUpdateIncome, SECONDS),
       timestampSupport = timestampSupport,
       cacheIdType = CacheIdType.SimpleCacheId
-    )
+    ) {
+
+  def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] =
+    put[A](cacheId)(DataKey(key), data)
+}
 
 class TaiCacheRepositoryUpdateIncome @Inject()(
   mongo: MongoComponent,
@@ -81,8 +76,12 @@ class TaiCacheRepositoryUpdateIncome @Inject()(
       ttl = Duration(mongoConfig.mongoTTLUpdateIncome, SECONDS),
       timestampSupport = timestampSupport,
       cacheIdType = CacheIdType.SimpleCacheId
-    )
-//indexes = Seq(IndexModel(ascending("_id_"), IndexOptions().unique(true)))
+    ) {
+
+  def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] =
+    put[A](cacheId)(DataKey(key), data)
+
+}
 
 @Singleton
 class CacheConnector @Inject()(
@@ -104,7 +103,7 @@ class CacheConnector @Inject()(
     } else {
       Json.toJson(data)
     }
-    cacheRepositoryUpdateIncome.put(cacheId.value)(DataKey(key), jsonData).map(_ => data)
+    cacheRepositoryUpdateIncome.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
@@ -114,8 +113,7 @@ class CacheConnector @Inject()(
     } else {
       Json.toJson(data)
     }
-    println("Calling cacheRepository.put")
-    cacheRepository.put[String](cacheId.value)(DataKey[String](key), jsonData.toString()).map(_ => data)
+    cacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
   def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
@@ -126,7 +124,7 @@ class CacheConnector @Inject()(
       json
     }
 
-    cacheRepository.put(cacheId.value)(DataKey(key), jsonData).map(_ => json)
+    cacheRepository.save(cacheId.value)(key, jsonData).map(_ => json)
   }
 
   def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
@@ -137,7 +135,7 @@ class CacheConnector @Inject()(
     } else {
       Json.toJson(data)
     }
-    cacheRepository.put(cacheId.value)(DataKey(key), jsonData).map(_ => data)
+    cacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
@@ -190,9 +188,7 @@ class CacheConnector @Inject()(
           } else {
             Nil
           }
-        case None => {
-          Nil
-        }
+        case None => Nil
       }
     } else {
       cacheRepository.findById(cacheId.value) map {
@@ -202,9 +198,7 @@ class CacheConnector @Inject()(
           } else {
             Nil
           }
-        case None => {
-          Nil
-        }
+        case None => Nil
       }
     }
 
