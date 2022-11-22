@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.{JsResultException, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}

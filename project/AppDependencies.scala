@@ -7,7 +7,7 @@ object AppDependencies {
 
   private val pegdownVersion = "1.6.0"
 
-  private val hmrcMongoVersion = "0.59.0"
+  private val hmrcMongoVersion = "0.74.0"
 
   val compile = Seq(
     filters,

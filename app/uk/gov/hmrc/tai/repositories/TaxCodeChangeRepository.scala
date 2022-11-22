@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{Caching, TaxCodeChangeConnector}
@@ -28,13 +27,14 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector) extends MongoConstants{
+class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector)
+    extends MongoConstants {
 
-  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[TaxCodeHistory] = {
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier,
+    ec: ExecutionContext): Future[TaxCodeHistory] =
     cache.cacheFromApiV2[TaxCodeHistory](nino, TaxAccountBaseKey, taxCodeHistoryFromApi(nino, taxYear))
-  }
 
-  private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+  private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear)
-  }
 }
