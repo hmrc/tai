@@ -30,7 +30,7 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
     extends MongoCacheRepository[String](
       mongoComponent = mongo,
       collectionName = "TAI",
-      replaceIndexes = false,
+      replaceIndexes = true,
       ttl = Duration(mongoConfig.mongoTTLUpdateIncome, SECONDS),
       timestampSupport = timestampSupport,
       cacheIdType = CacheIdType.SimpleCacheId
