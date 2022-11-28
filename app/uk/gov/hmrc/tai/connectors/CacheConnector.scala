@@ -148,25 +148,15 @@ class CacheConnector @Inject()(
   def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
-          if ((cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
-            Some((cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue)
-          } else {
-            None
-          }
-        case None => None
-      }
+      (for {
+        cache <- OptionT(taiCacheRepository.findById(cacheId.value))
+        if (cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess
+      } yield (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue).value
     } else {
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
-          if ((cache.data \ key).validate[Seq[T]].isSuccess) {
-            Some((cache.data \ key).as[Seq[T]])
-          } else {
-            None
-          }
-        case None => None
-      }
+      (for {
+        cache <- OptionT(taiCacheRepository.findById(cacheId.value))
+        if (cache.data \ key).validate[Seq[T]].isSuccess
+      } yield (cache.data \ key).as[Seq[T]]).value
     }
 
   def removeById(cacheId: CacheId): Future[Boolean] =
