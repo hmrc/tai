@@ -16,28 +16,23 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import java.io.File
-
-import java.time.LocalDate
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.SessionId
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.domain.{AnnualAccount, EndOfTaxYearUpdate, _}
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import java.io.File
+import java.time.LocalDate
+import scala.concurrent.Future
 import scala.io.BufferedSource
 import scala.language.postfixOps
-import scala.util.Random
 
 class EmploymentRepositorySpec extends BaseSpec {
 

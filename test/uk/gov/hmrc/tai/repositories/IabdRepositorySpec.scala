@@ -25,8 +25,7 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class IabdRepositorySpec extends BaseSpec with MongoConstants {
 

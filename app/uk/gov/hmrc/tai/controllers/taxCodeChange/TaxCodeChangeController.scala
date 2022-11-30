@@ -20,8 +20,8 @@ import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, HttpException, InternalServerException, NotFoundException, NotImplementedException}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.http.{HttpException, NotFoundException}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -30,15 +30,16 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeController @Inject()(
-                                         authentication: AuthenticationPredicate,
-                                         taxCodeChangeService: TaxCodeChangeService,
-                                         cc: ControllerComponents)(
-                                         implicit ec: ExecutionContext
-                                       ) extends BackendController(cc) {
+  authentication: AuthenticationPredicate,
+  taxCodeChangeService: TaxCodeChangeService,
+  cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) {
 
   def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged => {
-      Ok(Json.toJson(taxCodeChanged))
+    taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
+      {
+        Ok(Json.toJson(taxCodeChanged))
       }
     }
   }
