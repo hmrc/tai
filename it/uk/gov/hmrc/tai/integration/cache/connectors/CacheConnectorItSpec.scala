@@ -26,7 +26,6 @@ import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Injecting
-import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
@@ -64,7 +63,6 @@ class CacheConnectorItSpec
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  lazy val mockReactiveMongo: ReactiveMongoComponent = inject[ReactiveMongoComponent]
   lazy val mongoComponent: MongoComponent = inject[MongoComponent]
 
   val mockConfig: MongoConfig = mock[MongoConfig]

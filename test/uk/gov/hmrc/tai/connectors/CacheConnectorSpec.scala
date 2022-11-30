@@ -21,7 +21,6 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
 import play.api.libs.json.{JsObject, JsString, Json}
-import reactivemongo.api.commands.WriteError
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
@@ -543,9 +542,8 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        val writeErrors = Seq(WriteError(0, 0, "Failed"))
         when(taiRepository.deleteEntity(any()))
-          .thenReturn(Future.failed(new RuntimeException(writeErrors.head.errmsg)))
+          .thenReturn(Future.failed(new RuntimeException("Failed")))
 
         val result = sut.removeById(cacheId).failed.futureValue
 
