@@ -46,12 +46,8 @@ class TaxCodeChangeServiceImpl @Inject()(
     taxCodeHistory(nino, TaxYear())
       .flatMap { taxCodeHistory =>
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
-
           logger.debug("change is valid for service")
-
-          taxCodeMismatch(nino).map { taxCodeMismatch =>
-            !taxCodeMismatch.mismatch
-          }
+          taxCodeMismatch(nino).map(_.mismatch)
         } else {
           logger.debug("change is not valid for service")
           Future.successful(false)
