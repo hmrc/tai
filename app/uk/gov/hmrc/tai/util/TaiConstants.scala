@@ -295,6 +295,5 @@ trait TaxCodeHistoryConstants {
   val Primary = "PRIMARY"
   val Secondary = "SECONDARY"
   val Cumulative = "Cumulative"
-  //TODO: This needs to be fixed after PAYEE-772. We are doing this to match previosu functioanlity before week1/month1 DES change
-  val Week1Month1 = "asdf"
+  val Week1Month1 = "Week 1 Month 1"
 }
