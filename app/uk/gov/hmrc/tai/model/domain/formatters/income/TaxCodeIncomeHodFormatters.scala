@@ -28,8 +28,12 @@ trait TaxCodeIncomeHodFormatters {
   private val basisOperationReads = new Reads[BasisOperation] {
     override def reads(json: JsValue): JsResult[BasisOperation] = {
       val result = json.asOpt[Int] match {
-        case Some(1) => Week1Month1BasisOperation
-        case _       => OtherBasisOperation
+        case Some(1) =>
+          println("hereeeeeeeeeeeeee")
+          Week1Month1BasisOperation
+        case _       =>
+          println("ghghghghghghghghghgh")
+          OtherBasisOperation
       }
       JsSuccess(result)
     }

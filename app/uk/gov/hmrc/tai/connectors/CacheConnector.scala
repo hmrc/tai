@@ -40,46 +40,20 @@ class CacheConnector @Inject()(
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[T] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[T]()
-      Json.toJson(Protected(data))(jsonEncryptor)
-    } else {
-      Json.toJson(data)
-    }
-    taiUpdateIncomeCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
+  def createOrUpdateIncome[T: Writes](cacheId: CacheId, data: T, key: String = defaultKey): Future[T] = {
+    taiUpdateIncomeCacheRepository.save(cacheId.value)(key, data).map(_ => data)
   }
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[T]()
-      Json.toJson(Protected(data))(jsonEncryptor)
-    } else {
-      Json.toJson(data)
-    }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
+    taiCacheRepository.save(cacheId.value)(key, data).map(_ => data)
   }
 
   def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[JsValue]()
-      Json.toJson(Protected(json))(jsonEncryptor)
-    } else {
-      json
-    }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => json)
+    taiCacheRepository.save(cacheId.value)(key, json).map(_ => json)
   }
 
-  def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[Seq[T]] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[Seq[T]]()
-      Json.toJson(Protected(data))(jsonEncryptor)
-    } else {
-      Json.toJson(data)
-    }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
+  def createOrUpdateSeq[T: Writes](cacheId: CacheId, data: Seq[T], key: String = defaultKey): Future[Seq[T]] = {
+    taiCacheRepository.save(cacheId.value)(key, data).map(_ => data)
   }
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =

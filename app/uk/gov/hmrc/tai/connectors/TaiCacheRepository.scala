@@ -17,7 +17,10 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Writes
+import play.api.Configuration
+import play.api.libs.json.{JsValue, Json, Writes}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
@@ -25,7 +28,7 @@ import uk.gov.hmrc.tai.config.MongoConfig
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton
-class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConfig, timestampSupport: TimestampSupport)(
+class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConfig, timestampSupport: TimestampSupport, configuration: Configuration)(
   implicit ec: ExecutionContext)
     extends MongoCacheRepository[String](
       mongoComponent = mongo,
@@ -36,6 +39,17 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
       cacheIdType = CacheIdType.SimpleCacheId
     ) {
 
-  def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] =
-    put[A](cacheId)(DataKey(key), data)
+  implicit lazy val compositeSymmetricCrypto
+  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
+
+  def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] = {
+
+    val jsonData: JsValue = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[A]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
+    put[JsValue](cacheId)(DataKey(key), jsonData)
+  }
 }
