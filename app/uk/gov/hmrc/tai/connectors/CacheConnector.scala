@@ -60,23 +60,7 @@ class CacheConnector @Inject()(
 
 
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
-    if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonDecryptor = new JsonDecryptor[T]()
-      OptionT(taiUpdateIncomeCacheRepository.findById(cacheId.value))
-        .map { cache =>
-          (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
-        }
-        .value
-        .map(_.flatten)
-    } recover {
-      case JsResultException(_) => None
-    } else {
-      taiUpdateIncomeCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
-          (cache.data \ key).validateOpt[T].asOpt.flatten
-        case None => None
-      }
-    }
+    taiUpdateIncomeCacheRepository.findById(cacheId, key)
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)

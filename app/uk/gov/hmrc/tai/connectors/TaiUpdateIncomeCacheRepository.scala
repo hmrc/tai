@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import cats.data.OptionT
+import cats.implicits._
 import com.google.inject.Inject
 import play.api.Configuration
-import play.api.libs.json.{JsValue, Json, Writes}
-import uk.gov.hmrc.crypto.json.JsonEncryptor
+import play.api.libs.json.{JsResultException, JsValue, Json, Reads, Writes}
+import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
@@ -55,4 +57,21 @@ class TaiUpdateIncomeCacheRepository @Inject()(
     }
     put[JsValue](cacheId)(DataKey(key), jsonData)
   }
-}
+
+  def findById[T: Reads](cacheId: CacheId, key: String): Future[Option[T]] =
+    if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonDecryptor = new JsonDecryptor[T]()
+      OptionT(super.findById(cacheId.value))
+        .map { cache =>
+          (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
+        }
+        .value
+        .map(_.flatten)
+    } recover {
+      case JsResultException(_) => None
+    } else {
+      OptionT(super.findById(cacheId.value)).map {
+        cache =>
+          (cache.data \ key).validateOpt[T].asOpt.flatten
+      }.value.map(_.flatten)
+    }}
