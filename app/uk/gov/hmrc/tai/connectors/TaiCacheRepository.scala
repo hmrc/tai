@@ -67,7 +67,7 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
       case JsResultException(_) => None
     }
 
-  def findSeq[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Seq[T]] =
+  def findSeq[T: Reads](cacheId: CacheId, key: String): Future[Seq[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
       OptionT(super.findById(cacheId.value)).map {
@@ -87,5 +87,19 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
             Nil
           }
       }.value.map(_.getOrElse(Nil))
+    }
+
+  def findOptSeq[T: Reads](cacheId: CacheId, key: String): Future[Option[Seq[T]]] =
+    if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonDecryptor = new JsonDecryptor[Seq[T]]()
+      (for {
+        cache <- OptionT(super.findById(cacheId.value))
+        if (cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess
+      } yield (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue).value
+    } else {
+      (for {
+        cache <- OptionT(super.findById(cacheId.value))
+        if (cache.data \ key).validate[Seq[T]].isSuccess
+      } yield (cache.data \ key).as[Seq[T]]).value
     }
 }
