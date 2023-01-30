@@ -65,6 +65,27 @@ class TaiCacheRepository @Inject()(mongo: MongoComponent, mongoConfig: MongoConf
         else (cache.data \ key).validateOpt[T].asOpt.flatten
     }.value.map(_.flatten).recover {
       case JsResultException(_) => None
+    }
 
+  def findSeq[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Seq[T]] =
+    if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonDecryptor = new JsonDecryptor[Seq[T]]()
+      OptionT(super.findById(cacheId.value)).map {
+        cache =>
+          if ((cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
+            (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue
+          } else {
+            Nil
+          }
+      }.value.map(_.getOrElse(Nil))
+    } else {
+      OptionT(super.findById(cacheId.value)).map {
+        case cache =>
+          if ((cache.data \ key).validate[Seq[T]].isSuccess) {
+            (cache.data \ key).as[Seq[T]]
+          } else {
+            Nil
+          }
+      }.value.map(_.getOrElse(Nil))
     }
 }
