@@ -71,8 +71,8 @@ class CacheConnectorItSpec
   Mockito.when(mockConfig.mongoEncryptionEnabled).thenReturn(true)
 
   private lazy val sut: CacheConnector = new CacheConnector(
-    new TaiCacheRepository(mongoComponent, mockConfig, timestampSupport),
-    new TaiUpdateIncomeCacheRepository(mongoComponent, mockConfig, timestampSupport),
+    new TaiCacheRepository(mongoComponent, mockConfig, timestampSupport, configuration),
+    new TaiUpdateIncomeCacheRepository(mongoComponent, mockConfig, timestampSupport, configuration),
     mockConfig,
     configuration
   )

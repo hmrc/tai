@@ -33,8 +33,7 @@ class CacheConnector @Inject()(
   taiCacheRepository: TaiCacheRepository,
   taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository,
   mongoConfig: MongoConfig,
-  configuration: Configuration)(implicit ec: ExecutionContext)
-    extends MongoFormatter {
+  configuration: Configuration)(implicit ec: ExecutionContext) {
 
   implicit lazy val compositeSymmetricCrypto
     : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
