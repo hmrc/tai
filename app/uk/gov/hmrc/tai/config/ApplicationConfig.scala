@@ -96,6 +96,7 @@ class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration) ex
 @Singleton
 class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def rtiEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabled").getOrElse(true)
+  def rtiEnabledCY1: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabledCY1").getOrElse(true)
 }
 
 @Singleton

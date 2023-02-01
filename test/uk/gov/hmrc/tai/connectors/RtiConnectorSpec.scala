@@ -19,13 +19,11 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -33,6 +31,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
@@ -74,71 +73,15 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     "getPaymentsForYear" must {
       "return a sequence of annual accounts" when {
         "a successful Http response is received from RTI" in {
-          val taxYearRange = "16-17"
-          val fileName = "1"
-          val rtiJson = QaData.paymentDetailsForYear(taxYearRange)(fileName)
+          successfulCall(rti = true, cy1 = true, taxYear)
+        }
 
-          val expectedPayments = Seq(
-            AnnualAccount(
-              26,
-              TaxYear(2016),
-              Available,
-              List(
-                Payment(
-                  LocalDate.of(2016, 4, 30),
-                  5000.00,
-                  1500.00,
-                  600.00,
-                  5000.00,
-                  1500.00,
-                  600.00,
-                  Quarterly,
-                  None),
-                Payment(
-                  LocalDate.of(2016, 7, 31),
-                  11000.00,
-                  3250.00,
-                  1320.00,
-                  6000.00,
-                  1750.00,
-                  720.00,
-                  Quarterly,
-                  None),
-                Payment(
-                  LocalDate.of(2016, 10, 31),
-                  15000.00,
-                  4250.00,
-                  1800.00,
-                  4000.00,
-                  1000.00,
-                  480.00,
-                  Quarterly,
-                  None),
-                Payment(
-                  LocalDate.of(2017, 2, 28),
-                  19000.00,
-                  5250.00,
-                  2280.00,
-                  4000.00,
-                  1000.00,
-                  480.00,
-                  Quarterly,
-                  None)
-              ),
-              List()
-            ))
+        "a successful Http response is received from RTI when retrieving CY+1" in {
+          successfulCall(rti = true, cy1 = true, taxYear.next)
+        }
 
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(
-              aResponse()
-                .withStatus(OK)
-                .withBody(rtiJson.toString()))
-          )
-
-          val result = sut.getPaymentsForYear(nino, taxYear).futureValue
-          result mustBe Right(expectedPayments)
-
-          verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
+        "a successful Http response is received from RTI when RTI CY+1 calls are disabled but the year is not CY+1" in {
+          successfulCall(rti = true, cy1 = false, taxYear)
         }
       }
 
@@ -251,23 +194,126 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
     "return a ServiceUnavailableError " when {
       "the rti toggle is set to false" in {
+        failure(rti = false, cy1 = true, year = taxYear)
+      }
 
-        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
-          override def rtiEnabled: Boolean = false
-        }
+      "the rti toggle are set to false" in {
+        failure(rti = false, cy1 = false, year = taxYear)
+      }
 
-        lazy val sutWithRTIDisabled = new RtiConnector(
-          inject[HttpClient],
-          inject[Metrics],
-          inject[Auditor],
-          inject[DesConfig],
-          inject[RtiUrls],
-          stubbedRtiConfig
-        )
+      "the rti toggle is set to false, CY+1 is enabled and year is CY+1" in {
+        failure(rti = false, cy1 = true, year = taxYear.next)
+      }
 
-        sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).futureValue mustBe
-          Left(ServiceUnavailableError)
+      "the rti toggle is enabled, rti CY+1 is disabled and the requested year is CY+1" in {
+        failure(rti = true, cy1 = false, year = taxYear.next)
+      }
+
+      "the rti toggle is disabled, rti CY+1 is disabled and the requested year is CY+1" in {
+        failure(rti = false, cy1 = false, year = taxYear.next)
       }
     }
+  }
+
+  private def failure(rti: Boolean, cy1: Boolean, year: TaxYear) = {
+    lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+      override def rtiEnabled: Boolean = rti
+      override def rtiEnabledCY1: Boolean = cy1
+    }
+
+    lazy val sutWithRTIDisabled = new RtiConnector(
+      inject[HttpClient],
+      inject[Metrics],
+      inject[Auditor],
+      inject[DesConfig],
+      inject[RtiUrls],
+      stubbedRtiConfig
+    )
+
+    sutWithRTIDisabled.getPaymentsForYear(nino, year).futureValue mustBe
+      Left(ServiceUnavailableError)
+  }
+
+  private def successfulCall(rti: Boolean, cy1: Boolean, taxYear: TaxYear) = {
+    val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${taxYear.twoDigitRange}"
+    lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+      override def rtiEnabled: Boolean = rti
+      override def rtiEnabledCY1: Boolean = cy1
+    }
+
+    lazy val sutWithConfig = new RtiConnector(
+      inject[HttpClient],
+      inject[Metrics],
+      inject[Auditor],
+      inject[DesConfig],
+      inject[RtiUrls],
+      stubbedRtiConfig
+    )
+
+    val taxYearRange = "16-17"
+    val fileName = "1"
+    val rtiJson = QaData.paymentDetailsForYear(taxYearRange)(fileName)
+
+    val expectedPayments = Seq(
+      AnnualAccount(
+        26,
+        TaxYear(2016),
+        Available,
+        List(
+          Payment(
+            LocalDate.of(2016, 4, 30),
+            5000.00,
+            1500.00,
+            600.00,
+            5000.00,
+            1500.00,
+            600.00,
+            Quarterly,
+            None),
+          Payment(
+            LocalDate.of(2016, 7, 31),
+            11000.00,
+            3250.00,
+            1320.00,
+            6000.00,
+            1750.00,
+            720.00,
+            Quarterly,
+            None),
+          Payment(
+            LocalDate.of(2016, 10, 31),
+            15000.00,
+            4250.00,
+            1800.00,
+            4000.00,
+            1000.00,
+            480.00,
+            Quarterly,
+            None),
+          Payment(
+            LocalDate.of(2017, 2, 28),
+            19000.00,
+            5250.00,
+            2280.00,
+            4000.00,
+            1000.00,
+            480.00,
+            Quarterly,
+            None)
+        ),
+        List()
+      ))
+
+    server.stubFor(
+      get(urlEqualTo(url)).willReturn(
+        aResponse()
+          .withStatus(OK)
+          .withBody(rtiJson.toString()))
+    )
+
+    val result = sutWithConfig.getPaymentsForYear(nino, taxYear).futureValue
+    result mustBe Right(expectedPayments)
+
+    verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
   }
 }

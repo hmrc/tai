@@ -63,7 +63,7 @@ class RtiConnector @Inject()(
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
-    if (rtiToggle.rtiEnabled) {
+    if (rtiToggle.rtiEnabled && (taxYear.year < TaxYear().next.year || rtiToggle.rtiEnabledCY1)) {
       val NGINX_TIMEOUT = 499
       val timerContext = metrics.startTimer(APITypes.RTIAPI)
       val ninoWithoutSuffix = withoutSuffix(nino)
