@@ -64,7 +64,7 @@ class RtiConnector @Inject()(
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
     if (rtiToggle.rtiEnabled && taxYear.year < TaxYear().next.year) {
-      logger.info(s"RTIAPI - Calling RTI Payments for the year: ${taxYear.year}")
+      logger.info(s"RTIAPI - call for the year: $taxYear}")
       val NGINX_TIMEOUT = 499
       val timerContext = metrics.startTimer(APITypes.RTIAPI)
       val ninoWithoutSuffix = withoutSuffix(nino)
@@ -130,6 +130,7 @@ class RtiConnector @Inject()(
         }
       }
     } else {
+      logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
       Future.successful(Left(ServiceUnavailableError))
     }
 }
