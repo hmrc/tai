@@ -268,6 +268,25 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).futureValue mustBe
           Left(ServiceUnavailableError)
       }
+
+      "the year is CY+1" in {
+
+        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+          override def rtiEnabled: Boolean = true
+        }
+
+        lazy val sutWithRTIDisabled = new RtiConnector(
+          inject[HttpClient],
+          inject[Metrics],
+          inject[Auditor],
+          inject[DesConfig],
+          inject[RtiUrls],
+          stubbedRtiConfig
+        )
+
+        sutWithRTIDisabled.getPaymentsForYear(nino, taxYear.next).futureValue mustBe
+          Left(ServiceUnavailableError)
+      }
     }
   }
 }
