@@ -52,22 +52,24 @@ class RtiConnector @Inject()(
   }
 
   private def createHeader(implicit hc: HeaderCarrier): Seq[(String, String)] =
-      Seq(
-        "Environment"          -> rtiConfig.environment,
-        "Authorization"        -> rtiConfig.authorization,
-        "Gov-Uk-Originator-Id" -> originatorId,
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId"        -> UUID.randomUUID().toString
-      )
+    Seq(
+      "Environment"          -> rtiConfig.environment,
+      "Authorization"        -> rtiConfig.authorization,
+      "Gov-Uk-Originator-Id" -> originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
     if (rtiToggle.rtiEnabled && taxYear.year < TaxYear().next.year) {
+      logger.info(s"RTIAPI - Calling RTI Payments for the year: ${taxYear.year}")
       val NGINX_TIMEOUT = 499
       val timerContext = metrics.startTimer(APITypes.RTIAPI)
       val ninoWithoutSuffix = withoutSuffix(nino)
-      val futureResponse = httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader)
+      val futureResponse =
+        httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader)
       futureResponse map { res =>
         timerContext.stop()
         res.status match {
