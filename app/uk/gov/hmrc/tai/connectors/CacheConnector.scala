@@ -128,6 +128,7 @@ class CacheConnector @Inject()(
             (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue
           case false if (cache.data \ key).validate[Seq[T]].isSuccess =>
             (cache.data \ key).as[Seq[T]]
+          case _ => Nil
         }
     }.value.map(_.getOrElse(Nil))
 
