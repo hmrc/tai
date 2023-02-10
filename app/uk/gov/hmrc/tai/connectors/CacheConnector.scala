@@ -85,18 +85,16 @@ class CacheConnector @Inject()(
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[T]()
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
+      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+        cache =>
           (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
-        case None => None
-      }
+      }.value.map(_.flatten)
     } recover {
       case JsResultException(_) => None
     } else {
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) => (cache.data \ key).validateOpt[T].asOpt.flatten
-        case None        => None
-      }
+      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+        cache => (cache.data \ key).validateOpt[T].asOpt.flatten
+      }.value.map(_.flatten)
     }
 
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
@@ -111,11 +109,10 @@ class CacheConnector @Inject()(
     } recover {
       case JsResultException(_) => None
     } else {
-      taiUpdateIncomeCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
+      OptionT(taiUpdateIncomeCacheRepository.findById(cacheId.value)).map {
+        cache =>
           (cache.data \ key).validateOpt[T].asOpt.flatten
-        case None => None
-      }
+      }.value.map(_.flatten)
     }
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
@@ -124,25 +121,23 @@ class CacheConnector @Inject()(
   def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
+      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+        cache =>
           if ((cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess) {
             (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue
           } else {
             Nil
           }
-        case None => Nil
-      }
+      }.value.map(_.getOrElse(Nil))
     } else {
-      taiCacheRepository.findById(cacheId.value) map {
-        case Some(cache) =>
+      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+        cache =>
           if ((cache.data \ key).validate[Seq[T]].isSuccess) {
             (cache.data \ key).as[Seq[T]]
           } else {
             Nil
           }
-        case None => Nil
-      }
+      }.value.map(_.getOrElse(Nil))
     }
 
   def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
