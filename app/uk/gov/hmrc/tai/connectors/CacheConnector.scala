@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.util.Helpers.Requiring
 import cats.data.OptionT
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
@@ -116,18 +115,18 @@ class CacheConnector @Inject()(
     findOptSeq(cacheId, key)(reads).map(_.getOrElse(Nil))
 
   def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
-
-    OptionT(taiCacheRepository.findById(cacheId.value)).map {
+    if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cache =>
-        mongoConfig.mongoEncryptionEnabled match {
-          case true if (cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess =>
-            (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue
-          case false if (cache.data \ key).validate[Seq[T]].isSuccess =>
-            (cache.data \ key).as[Seq[T]].value
-          case _ => Nil
-        }
-    }.value
+      (for {
+        cache <- OptionT(taiCacheRepository.findById(cacheId.value))
+        if (cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess
+      } yield (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue).value
+    } else {
+      (for {
+        cache <- OptionT(taiCacheRepository.findById(cacheId.value))
+        if (cache.data \ key).validate[Seq[T]].isSuccess
+      } yield (cache.data \ key).as[Seq[T]]).value
+    }
 
   def removeById(cacheId: CacheId): Future[Boolean] =
     taiCacheRepository.deleteEntity(cacheId.value).map(_ => true)
