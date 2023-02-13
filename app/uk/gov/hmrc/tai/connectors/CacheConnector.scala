@@ -23,6 +23,7 @@ import play.api.Configuration
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
@@ -82,38 +83,26 @@ class CacheConnector @Inject()(
     taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-  def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
+  private def findById[T](cacheId: CacheId, key: String = defaultKey)(func: String => Future[Option[CacheItem]])(implicit reads: Reads[T]): Future[Option[T]] =
     if (mongoConfig.mongoEncryptionEnabled) {
       val jsonDecryptor = new JsonDecryptor[T]()
-      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+      OptionT(func(cacheId.value)).map {
         cache =>
           (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
       }.value.map(_.flatten)
     } recover {
       case JsResultException(_) => None
     } else {
-      OptionT(taiCacheRepository.findById(cacheId.value)).map {
+      OptionT(func(cacheId.value)).map {
         cache => (cache.data \ key).validateOpt[T].asOpt.flatten
       }.value.map(_.flatten)
     }
 
+  def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
+    findById(cacheId, key)(taiCacheRepository.findById)(reads)
+
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
-    if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonDecryptor = new JsonDecryptor[T]()
-      OptionT(taiUpdateIncomeCacheRepository.findById(cacheId.value))
-        .map { cache =>
-          (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
-        }
-        .value
-        .map(_.flatten)
-    } recover {
-      case JsResultException(_) => None
-    } else {
-      OptionT(taiUpdateIncomeCacheRepository.findById(cacheId.value)).map {
-        cache =>
-          (cache.data \ key).validateOpt[T].asOpt.flatten
-      }.value.map(_.flatten)
-    }
+    findById(cacheId, key)(taiUpdateIncomeCacheRepository.findById)(reads)
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
