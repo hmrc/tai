@@ -108,18 +108,7 @@ class CacheConnector @Inject()(
     find[JsValue](cacheId, key)
 
   def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
-
-    OptionT(taiCacheRepository.findById(cacheId.value)).map {
-      val jsonDecryptor = new JsonDecryptor[Seq[T]]()
-      cache =>
-        mongoConfig.mongoEncryptionEnabled match {
-          case true if (cache.data \ key).validate[Protected[Seq[T]]](jsonDecryptor).isSuccess =>
-            (cache.data \ key).as[Protected[Seq[T]]](jsonDecryptor).decryptedValue
-          case false if (cache.data \ key).validate[Seq[T]].isSuccess =>
-            (cache.data \ key).as[Seq[T]]
-          case _ => Nil
-        }
-    }.value.map(_.getOrElse(Nil))
+    findOptSeq(cacheId, key)(reads).map(_.getOrElse(Nil))
 
   def findOptSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[Seq[T]]] =
     if (mongoConfig.mongoEncryptionEnabled) {
