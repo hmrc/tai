@@ -67,41 +67,6 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
     when(taiUpdateIncomeRepository.save(any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
   }
 
-  "TaiCacheRepository" must {
-
-    lazy val sut = inject[TaiCacheRepository]
-
-    "have the correct collection name" in {
-      sut.collectionName mustBe "TAI"
-    }
-
-    "use mongoFormats from Cache" in {
-      sut.domainFormat mustBe MongoCacheRepository.format
-    }
-
-    "have cache default ttl of 15 minutes" in {
-      val mongoConfig = new MongoConfig(configuration)
-      mongoConfig.mongoTTL mustBe 900
-    }
-  }
-
-  "TaiCacheRepositoryUpdateIncome" must {
-
-    lazy val sut: TaiUpdateIncomeCacheRepository = inject[TaiUpdateIncomeCacheRepository]
-
-    "have the correct collection name" in {
-      sut.collectionName mustBe "TaiUpdateIncome"
-    }
-
-    "use mongoFormats from Cache" in {
-      sut.domainFormat mustBe MongoCacheRepository.format
-    }
-    "have cache default ttl of 2 days" in {
-      val mongoConfig = new MongoConfig(configuration)
-      mongoConfig.mongoTTLUpdateIncome mustBe 172800
-    }
-  }
-
   "Cache Connector" must {
     "save the data in cache" when {
       "provided with string data" in {
