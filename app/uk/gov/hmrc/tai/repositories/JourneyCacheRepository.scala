@@ -18,19 +18,19 @@ package uk.gov.hmrc.tai.repositories
 
 import akka.Done
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
+import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheConnectorUpdateIncome, CacheId}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit ec: ExecutionContext) {
+class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector, cacheConnectorUpdateIncome: CacheConnectorUpdateIncome)(implicit ec: ExecutionContext) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
   def currentCache(cacheId: CacheId, journeyName: String): Future[Option[Map[String, String]]] =
     journeyName match {
       case "update-income" =>
-        cacheConnector.findUpdateIncome[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+        cacheConnectorUpdateIncome.findUpdateIncome[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
       case _ => cacheConnector.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
 
     }
@@ -50,7 +50,7 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
               case Some(existing) => existing ++ cache
               case _              => cache
             }
-          cacheConnector.createOrUpdateIncome[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
+          cacheConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
         })
       case _ =>
         currentCache(cacheId, journeyName).flatMap(existingCache => {
@@ -76,7 +76,7 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
       maybeCacheOption <- currentCache(cacheId, journeyName)
       maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
       maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
-      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](
+      _ <- cacheConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,
             journeyName + JourneyCacheSuffix)
@@ -89,14 +89,14 @@ class JourneyCacheRepository @Inject()(cacheConnector: CacheConnector)(implicit 
       maybeUpdatedIncomeCacheMap = maybeCache
         .filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
         .filterKeys(!_.startsWith(s"updateIncomeConfirmedAmountKey-$empId"))
-      _ <- cacheConnector.createOrUpdateIncome[Map[String, String]](
+      _ <- cacheConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,
             journeyName + JourneyCacheSuffix)
     } yield ()
 
   def deleteUpdateIncome(cacheId: CacheId): Future[Done] =
-    cacheConnector
+    cacheConnectorUpdateIncome
       .createOrUpdateIncome[Map[String, String]](
         cacheId,
         Map.empty[String, String],

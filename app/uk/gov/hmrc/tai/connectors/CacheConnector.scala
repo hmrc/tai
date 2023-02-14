@@ -41,17 +41,6 @@ class CacheConnector @Inject()(
   : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[T] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[T]()
-      Json.toJson(Protected(data))(jsonEncryptor)
-    } else {
-      Json.toJson(data)
-    }
-    taiUpdateIncomeCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
-  }
-
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val jsonEncryptor = new JsonEncryptor[T]()
@@ -104,10 +93,7 @@ class CacheConnector @Inject()(
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     findById(cacheId, key)(taiCacheRepository.findById)(reads)
-
-  def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
-    findById(cacheId, key)(taiUpdateIncomeCacheRepository.findById)(reads)
-
+  
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
 
