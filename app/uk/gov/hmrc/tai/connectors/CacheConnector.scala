@@ -32,7 +32,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CacheConnector @Inject()(
                                 taiCacheRepository: TaiCacheRepository,
-                                taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository,
                                 mongoConfig: MongoConfig,
                                 configuration: Configuration)(implicit ec: ExecutionContext)
   extends MongoFormatter {
@@ -93,7 +92,7 @@ class CacheConnector @Inject()(
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     findById(cacheId, key)(taiCacheRepository.findById)(reads)
-  
+
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
 

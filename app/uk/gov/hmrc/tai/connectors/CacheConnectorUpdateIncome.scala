@@ -31,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CacheConnectorUpdateIncome @Inject()(
-                                taiCacheRepository: TaiCacheRepository,
                                 taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository,
                                 mongoConfig: MongoConfig,
                                 configuration: Configuration)(implicit ec: ExecutionContext)
