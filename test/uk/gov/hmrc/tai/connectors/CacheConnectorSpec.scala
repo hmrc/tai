@@ -68,7 +68,9 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
   }
 
   "Cache Connector" must {
+
     "save the data in cache" when {
+
       "provided with string data" in {
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
