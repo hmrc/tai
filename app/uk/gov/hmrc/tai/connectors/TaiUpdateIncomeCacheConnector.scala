@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.config.MongoConfig
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 
-class TaiUpdateIncomeCacheRepository @Inject()(
+class TaiUpdateIncomeCacheConnector @Inject()(
   mongo: MongoComponent,
   mongoConfig: MongoConfig,
   timestampSupport: TimestampSupport)(implicit ec: ExecutionContext)

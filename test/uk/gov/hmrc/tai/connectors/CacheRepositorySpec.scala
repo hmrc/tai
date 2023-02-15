@@ -51,8 +51,8 @@ class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationP
   private val sessionData =
     SessionData(nino = nino.nino, taxSummaryDetailsCY = TaxSummaryDetails(nino = nino.nino, version = 0))
 
-  private val taiRepository = mock[TaiCacheRepository]
-  private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheRepository]
+  private val taiRepository = mock[TaiCacheConnector]
+  private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheConnector]
 
   private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig]) =
     new CacheRepository(taiRepository, taiUpdateIncomeRepository, mongoConfig, configuration)
@@ -70,7 +70,7 @@ class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationP
 
   "TaiCacheRepository" must {
 
-    lazy val sut = inject[TaiCacheRepository]
+    lazy val sut = inject[TaiCacheConnector]
 
     "have the correct collection name" in {
       sut.collectionName mustBe "TAI"
@@ -88,7 +88,7 @@ class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationP
 
   "TaiCacheRepositoryUpdateIncome" must {
 
-    lazy val sut: TaiUpdateIncomeCacheRepository = inject[TaiUpdateIncomeCacheRepository]
+    lazy val sut: TaiUpdateIncomeCacheConnector = inject[TaiUpdateIncomeCacheConnector]
 
     "have the correct collection name" in {
       sut.collectionName mustBe "TaiUpdateIncome"
