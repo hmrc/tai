@@ -9,7 +9,7 @@ class TaiCacheConnectorSpec extends BaseSpec {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
-  "TaiCacheRepository" must {
+  "TaiCacheConnector" must {
 
     lazy val sut = inject[TaiCacheConnector]
 

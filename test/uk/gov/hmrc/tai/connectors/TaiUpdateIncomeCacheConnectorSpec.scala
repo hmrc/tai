@@ -9,7 +9,7 @@ class TaiUpdateIncomeCacheConnectorSpec extends BaseSpec {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
-  "TaiCacheRepositoryUpdateIncome" must {
+  "TaiCacheConnectorUpdateIncome" must {
 
     lazy val sut: TaiUpdateIncomeCacheConnector = inject[TaiUpdateIncomeCacheConnector]
 
