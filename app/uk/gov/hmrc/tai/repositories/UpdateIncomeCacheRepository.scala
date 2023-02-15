@@ -25,7 +25,7 @@ import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.connectors.{CacheId, TaiUpdateIncomeCacheConnector}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.{ExecutionContext, Future}
