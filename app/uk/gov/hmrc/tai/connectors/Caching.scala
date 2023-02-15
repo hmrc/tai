@@ -22,18 +22,19 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.repositories.CacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig)(
+class Caching @Inject()(cacheRepository: CacheRepository, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig)(
   implicit ec: ExecutionContext) {
 
   def cacheFromApi(nino: Nino, mongoKey: String, jsonFromApi: => Future[JsValue])(
     implicit hc: HeaderCarrier): Future[JsValue] = {
     val cacheId = CacheId(nino)
 
-    cacheConnector.findJson(cacheId, mongoKey).flatMap {
+    cacheRepository.findJson(cacheId, mongoKey).flatMap {
       case Some(jsonFromCache) =>
         if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheHitCounter()
@@ -43,7 +44,7 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
         if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheMissCounter()
         }
-        jsonFromApi.flatMap(cacheConnector.createOrUpdateJson(cacheId, _, mongoKey))
+        jsonFromApi.flatMap(cacheRepository.createOrUpdateJson(cacheId, _, mongoKey))
     }
   }
 
@@ -53,7 +54,7 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
     reads: Reads[A]): Future[A] = {
     val cacheId = CacheId(nino)
 
-    cacheConnector.find[A](cacheId, mongoKey).flatMap {
+    cacheRepository.find[A](cacheId, mongoKey).flatMap {
       case Some(jsonFromCache) =>
         if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheHitCounter()
@@ -63,7 +64,7 @@ class Caching @Inject()(cacheConnector: CacheConnector, metrics: Metrics, cacheM
         if (cacheMetricsConfig.cacheMetricsEnabled) {
           metrics.incrementCacheMissCounter()
         }
-        jsonFromApi.flatMap(cacheConnector.createOrUpdate[A](cacheId, _, mongoKey))
+        jsonFromApi.flatMap(cacheRepository.createOrUpdate[A](cacheId, _, mongoKey))
     }
   }
 }

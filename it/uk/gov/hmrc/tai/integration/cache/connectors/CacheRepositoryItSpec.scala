@@ -30,17 +30,18 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository, TaiUpdateIncomeCacheRepository}
+import uk.gov.hmrc.tai.connectors.{CacheId, TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
+import uk.gov.hmrc.tai.repositories.CacheRepository
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec
+class CacheRepositoryItSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures
     with Injecting {
 
@@ -70,7 +71,7 @@ class CacheConnectorItSpec
 
   Mockito.when(mockConfig.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(
+  private lazy val sut: CacheRepository = new CacheRepository(
     new TaiCacheRepository(mongoComponent, mockConfig, timestampSupport),
     new TaiUpdateIncomeCacheRepository(mongoComponent, mockConfig, timestampSupport),
     mockConfig,

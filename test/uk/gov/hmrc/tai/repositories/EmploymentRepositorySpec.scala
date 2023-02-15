@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.NotFoundException
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CacheId, NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
@@ -103,7 +103,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
             .thenReturn(Future.successful(Left(ResourceNotFoundError)))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
           when(
             mockCacheConnector
@@ -125,7 +125,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
-            cacheConnector = mockCacheConnector,
+            cacheRepository = mockCacheConnector,
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
@@ -150,7 +150,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
             .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
           when(
             mockCacheConnector
@@ -169,7 +169,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
-            cacheConnector = mockCacheConnector,
+            cacheRepository = mockCacheConnector,
             npsConnector = mockNpsConnector,
             mockEmploymentBuilder)
 
@@ -227,7 +227,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
             .thenReturn(Future.successful(Right(Seq(annualAccount))))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
           when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
             .thenReturn(Future.successful(expectedEmployments))
@@ -238,7 +238,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
-            cacheConnector = mockCacheConnector,
+            cacheRepository = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
           val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -295,7 +295,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
             .thenReturn(Future.successful(Right(Seq(annualAccount))))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
           when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
             .thenReturn(Future.successful(expectedEmploymentDetails))
@@ -306,7 +306,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
-            cacheConnector = mockCacheConnector,
+            cacheRepository = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
           val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -387,7 +387,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
             .thenReturn(Future.successful(Right(Seq(annualAccount1, annualAccount2))))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
           when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
             .thenReturn(Future.successful(expectedEmploymentDetails))
@@ -398,7 +398,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val sut = testRepository(
             rtiConnector = mockRtiConnector,
-            cacheConnector = mockCacheConnector,
+            cacheRepository = mockCacheConnector,
             npsConnector = mockNpsConnector,
             employmentBuilder = mockEmploymentBuilder)
           val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -407,14 +407,14 @@ class EmploymentRepositorySpec extends BaseSpec {
 
         "result in an exception" when {
           "data is not present in cache or the hods for the given year" in {
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
 
             val mockNpsConnector = mock[NpsConnector]
             when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
               .thenReturn(Future.failed(new NotFoundException("nothing")))
 
-            val sut = testRepository(cacheConnector = mockCacheConnector, npsConnector = mockNpsConnector)
+            val sut = testRepository(cacheRepository = mockCacheConnector, npsConnector = mockNpsConnector)
 
             val result = sut.employmentsForYear(nino, currentTaxYear).failed.futureValue
 
@@ -442,14 +442,14 @@ class EmploymentRepositorySpec extends BaseSpec {
                 false,
                 false))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(employments))
             val mockNpsConnector = mock[NpsConnector]
             val mockRtiConnector = mock[RtiConnector]
 
             val sut = testRepository(
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
             val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -499,14 +499,14 @@ class EmploymentRepositorySpec extends BaseSpec {
               false,
               false)
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(List(cyEmployment, pyEmployment)))
             val mockNpsConnector = mock[NpsConnector]
             val mockRtiConnector = mock[RtiConnector]
 
             val sut = testRepository(
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
             val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -561,14 +561,14 @@ class EmploymentRepositorySpec extends BaseSpec {
               false,
               false)
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(cachedEmployments))
             val mockNpsConnector = mock[NpsConnector]
             val mockRtiConnector = mock[RtiConnector]
 
             val sut = testRepository(
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               rtiConnector = mockRtiConnector)
             val result = sut.employmentsForYear(nino, previousTaxYear).futureValue
@@ -686,11 +686,11 @@ class EmploymentRepositorySpec extends BaseSpec {
             taxYearAndEmployment =>
               s"the request is for ${taxYearAndEmployment._1} return those related employments" in {
 
-                val mockCacheConnector = mock[CacheConnector]
+                val mockCacheConnector = mock[CacheRepository]
                 when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
                   .thenReturn(Future.successful(cachedEmployments))
 
-                val sut = testRepository(cacheConnector = mockCacheConnector)
+                val sut = testRepository(cacheRepository = mockCacheConnector)
                 val result = sut.employmentsForYear(nino, taxYearAndEmployment._1).futureValue
 
                 result mustBe Employments(taxYearAndEmployment._2)
@@ -782,7 +782,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
               .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(cachedEmploymentsFor2018))
 
@@ -791,7 +791,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
@@ -886,7 +886,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
               .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(cachedEmploymentsFor2018))
 
@@ -895,7 +895,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
@@ -957,7 +957,7 @@ class EmploymentRepositorySpec extends BaseSpec {
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(List(cachedEmployment)))
             when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
@@ -971,7 +971,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
@@ -1016,7 +1016,7 @@ class EmploymentRepositorySpec extends BaseSpec {
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(List(cachedEmployment)))
             when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
@@ -1030,7 +1030,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
@@ -1053,7 +1053,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             val tempUnavailableAccount = createAnnualAccount(TemporarilyUnavailable, sequenceNumber = 2)
             val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(tempUnavailableAccount))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(List(cachedEmployment)))
 
@@ -1065,7 +1065,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector)
 
             val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
@@ -1112,7 +1112,7 @@ class EmploymentRepositorySpec extends BaseSpec {
                 )(any()))
               .thenReturn(Employments(expectedEmployments))
 
-            val mockCacheConnector = mock[CacheConnector]
+            val mockCacheConnector = mock[CacheRepository]
             when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
               .thenReturn(Future.successful(Seq(cachedEmployment)))
             when(mockCacheConnector.createOrUpdateSeq[Employment](any(), any(), any())(any()))
@@ -1125,7 +1125,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
             val sut = testRepository(
               rtiConnector = mockRtiConnector,
-              cacheConnector = mockCacheConnector,
+              cacheRepository = mockCacheConnector,
               npsConnector = mockNpsConnector,
               employmentBuilder = mockEmploymentBuilder)
 
@@ -1152,11 +1152,11 @@ class EmploymentRepositorySpec extends BaseSpec {
           val cachedAnnualAccount = createAnnualAccount(Available, sequenceNumber = 2)
           val cachedEmployment = npsSingleEmployment.copy(annualAccounts = Seq(cachedAnnualAccount))
 
-          val mockCacheConnector = mock[CacheConnector]
+          val mockCacheConnector = mock[CacheRepository]
           when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
             .thenReturn(Future.successful(Seq(cachedEmployment)))
 
-          val sut = testRepository(cacheConnector = mockCacheConnector)
+          val sut = testRepository(cacheRepository = mockCacheConnector)
           val result = sut.employmentsForYear(nino, currentTaxYear).futureValue
 
           result mustBe Employments(Seq(cachedEmployment))
@@ -1205,11 +1205,11 @@ class EmploymentRepositorySpec extends BaseSpec {
 
       val expectedEmployment = emp1.copy(annualAccounts = Seq(annualAccountCY))
 
-      val mockCacheConnector = mock[CacheConnector]
+      val mockCacheConnector = mock[CacheRepository]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
-      val sut = testRepository(cacheConnector = mockCacheConnector)
+      val sut = testRepository(cacheRepository = mockCacheConnector)
 
       sut.employment(nino, employment1Id).futureValue mustBe Right(expectedEmployment)
     }
@@ -1248,13 +1248,13 @@ class EmploymentRepositorySpec extends BaseSpec {
         false
       )
 
-      val mockCacheConnector = mock[CacheConnector]
+      val mockCacheConnector = mock[CacheRepository]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(List(emp1, emp2)))
 
       val notFoundEmploymentId = 5
 
-      val sut = testRepository(cacheConnector = mockCacheConnector)
+      val sut = testRepository(cacheRepository = mockCacheConnector)
       sut.employment(nino, notFoundEmploymentId).futureValue mustBe Left(EmploymentNotFound)
     }
 
@@ -1279,7 +1279,7 @@ class EmploymentRepositorySpec extends BaseSpec {
           )(any()))
         .thenReturn(Employments(Seq(employmentWithUnavailableAnnualAccount)))
 
-      val mockCacheConnector = mock[CacheConnector]
+      val mockCacheConnector = mock[CacheRepository]
       when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
         .thenReturn(Future.successful(Seq(employmentWithUnavailableAnnualAccount)))
       when(
@@ -1294,7 +1294,7 @@ class EmploymentRepositorySpec extends BaseSpec {
       val sut =
         testRepository(
           rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
+          cacheRepository = mockCacheConnector,
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
@@ -1346,7 +1346,7 @@ class EmploymentRepositorySpec extends BaseSpec {
             )(any()))
           .thenReturn(Employments(Seq(expectedEmployment)))
 
-        val mockCacheConnector = mock[CacheConnector]
+        val mockCacheConnector = mock[CacheRepository]
         when(mockCacheConnector.findSeq[Employment](any(), any())(any()))
           .thenReturn(Future.successful(List(emp2015)))
         when(mockCacheConnector.createOrUpdateSeq(any(), any(), any())(any()))
@@ -1362,7 +1362,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
         val controller = testRepository(
           rtiConnector = mockRtiConnector,
-          cacheConnector = mockCacheConnector,
+          cacheRepository = mockCacheConnector,
           npsConnector = mockNpsConnector,
           employmentBuilder = mockEmploymentBuilder)
 
@@ -1376,11 +1376,11 @@ class EmploymentRepositorySpec extends BaseSpec {
   }
 
   private def testRepository(
-    rtiConnector: RtiConnector = mock[RtiConnector],
-    cacheConnector: CacheConnector = mock[CacheConnector],
-    npsConnector: NpsConnector = mock[NpsConnector],
-    employmentBuilder: EmploymentBuilder = mock[EmploymentBuilder]): EmploymentRepository =
-    new EmploymentRepository(rtiConnector, cacheConnector, npsConnector, employmentBuilder)
+                              rtiConnector: RtiConnector = mock[RtiConnector],
+                              cacheRepository: CacheRepository = mock[CacheRepository],
+                              npsConnector: NpsConnector = mock[NpsConnector],
+                              employmentBuilder: EmploymentBuilder = mock[EmploymentBuilder]): EmploymentRepository =
+    new EmploymentRepository(rtiConnector, cacheRepository, npsConnector, employmentBuilder)
 
   private def getJson(fileName: String): JsValue = {
     val jsonFilePath = "test/resources/data/EmploymentRepositoryTesting/" + fileName + ".json"

@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
-import uk.gov.hmrc.tai.connectors.{BbsiConnector, CacheConnector}
+import uk.gov.hmrc.tai.connectors.BbsiConnector
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -33,7 +33,7 @@ class BbsiRepositorySpec extends BaseSpec {
     "return accounts" when {
       "data exist in cache" in {
         val mockBbsiConnector = mock[BbsiConnector]
-        val mockCacheConnector = mock[CacheConnector]
+        val mockCacheConnector = mock[CacheRepository]
         when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
           .thenReturn(Future.successful(Some(Seq(bankAccount))))
 
@@ -52,7 +52,7 @@ class BbsiRepositorySpec extends BaseSpec {
         val expectedBankAccount1 = bankAccount.copy(id = 1)
         val expectedBankAccount2 = bankAccount.copy(id = 2)
 
-        val mockCacheConnector = mock[CacheConnector]
+        val mockCacheConnector = mock[CacheRepository]
         when(mockCacheConnector.findOptSeq[BankAccount](any(), any())(any()))
           .thenReturn(Future.successful(None))
         when(mockCacheConnector.createOrUpdateSeq[BankAccount](any(), any(), any())(any()))
@@ -79,6 +79,6 @@ class BbsiRepositorySpec extends BaseSpec {
 
   private val bankAccount = BankAccount(0, Some("123"), Some("123456"), Some("TEST"), 10.80, Some("Customer"), Some(1))
 
-  private def createSUT(cacheConnector: CacheConnector, bbsiConnector: BbsiConnector) =
-    new BbsiRepository(cacheConnector, bbsiConnector)
+  private def createSUT(cacheRepository: CacheRepository, bbsiConnector: BbsiConnector) =
+    new BbsiRepository(cacheRepository, bbsiConnector)
 }

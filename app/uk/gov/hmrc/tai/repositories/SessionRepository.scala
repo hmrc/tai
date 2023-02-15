@@ -17,12 +17,12 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
+import uk.gov.hmrc.tai.connectors.CacheId
 
 import scala.concurrent.Future
 
 @Singleton
-class SessionRepository @Inject()(cacheConnector: CacheConnector) {
+class SessionRepository @Inject()(cacheRepository: CacheRepository) {
   def invalidateCache(cacheId: CacheId): Future[Boolean] =
-    cacheConnector.removeById(cacheId)
+    cacheRepository.removeById(cacheId)
 }

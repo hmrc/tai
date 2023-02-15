@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.repositories
 
 import cats.data.OptionT
 import cats.implicits._
@@ -24,12 +24,13 @@ import play.api.libs.json._
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.connectors.{CacheId, TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CacheConnector @Inject()(
+class CacheRepository @Inject()(
   taiCacheRepository: TaiCacheRepository,
   taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository,
   mongoConfig: MongoConfig,

@@ -19,13 +19,13 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, CitizenDetailsConnector}
+import uk.gov.hmrc.tai.connectors.{CacheId, CitizenDetailsConnector}
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonRepository @Inject()(cacheConnector: CacheConnector, citizenDetailsConnector: CitizenDetailsConnector)(
+class PersonRepository @Inject()(cacheRepository: CacheRepository, citizenDetailsConnector: CitizenDetailsConnector)(
   implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
@@ -41,10 +41,10 @@ class PersonRepository @Inject()(cacheConnector: CacheConnector, citizenDetailsC
   }
 
   private[repositories] def getPersonFromStorage(cacheId: CacheId): Future[Option[Person]] =
-    cacheConnector.find(cacheId, PersonMongoKey)(PersonFormatter.personMongoFormat)
+    cacheRepository.find(cacheId, PersonMongoKey)(PersonFormatter.personMongoFormat)
 
   private[repositories] def getPersonFromAPI(nino: Nino, cacheId: CacheId)(implicit hc: HeaderCarrier): Future[Person] =
     citizenDetailsConnector.getPerson(nino).flatMap { person =>
-      cacheConnector.createOrUpdate(cacheId, person, PersonMongoKey)(PersonFormatter.personMongoFormat)
+      cacheRepository.createOrUpdate(cacheId, person, PersonMongoKey)(PersonFormatter.personMongoFormat)
     }
 }

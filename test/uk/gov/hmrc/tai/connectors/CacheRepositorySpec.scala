@@ -27,13 +27,14 @@ import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
+import uk.gov.hmrc.tai.repositories.CacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 import scala.language.postfixOps
 
-class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPatience {
+class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
@@ -54,7 +55,7 @@ class CacheConnectorSpec extends BaseSpec with MongoFormatter with IntegrationPa
   private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheRepository]
 
   private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig]) =
-    new CacheConnector(taiRepository, taiUpdateIncomeRepository, mongoConfig, configuration)
+    new CacheRepository(taiRepository, taiUpdateIncomeRepository, mongoConfig, configuration)
 
   private def setCacheItem(id: String = cacheIdValue, data: JsObject) =
     Future.successful(
