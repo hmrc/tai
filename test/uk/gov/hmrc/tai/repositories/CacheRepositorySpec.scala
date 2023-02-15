@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -25,9 +25,9 @@ import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.connectors.{TaiCacheConnector, TaiUpdateIncomeCacheConnector}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
-import uk.gov.hmrc.tai.repositories.CacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
@@ -66,41 +66,6 @@ class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationP
     reset(taiUpdateIncomeRepository)
     when(taiRepository.save[String](any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
     when(taiUpdateIncomeRepository.save(any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
-  }
-
-  "TaiCacheRepository" must {
-
-    lazy val sut = inject[TaiCacheConnector]
-
-    "have the correct collection name" in {
-      sut.collectionName mustBe "TAI"
-    }
-
-    "use mongoFormats from Cache" in {
-      sut.domainFormat mustBe MongoCacheRepository.format
-    }
-
-    "have cache default ttl of 15 minutes" in {
-      val mongoConfig = new MongoConfig(configuration)
-      mongoConfig.mongoTTL mustBe 900
-    }
-  }
-
-  "TaiCacheRepositoryUpdateIncome" must {
-
-    lazy val sut: TaiUpdateIncomeCacheConnector = inject[TaiUpdateIncomeCacheConnector]
-
-    "have the correct collection name" in {
-      sut.collectionName mustBe "TaiUpdateIncome"
-    }
-
-    "use mongoFormats from Cache" in {
-      sut.domainFormat mustBe MongoCacheRepository.format
-    }
-    "have cache default ttl of 2 days" in {
-      val mongoConfig = new MongoConfig(configuration)
-      mongoConfig.mongoTTLUpdateIncome mustBe 172800
-    }
   }
 
   "Cache Connector" must {
