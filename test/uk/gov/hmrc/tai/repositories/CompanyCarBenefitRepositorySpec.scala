@@ -21,6 +21,7 @@ import org.mockito.Mockito._
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -33,7 +34,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
       "return empty list" in {
         val carBenefitSeq = Nil
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
           .thenReturn(Future.successful(Some(carBenefitSeq)))
 
@@ -48,7 +49,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           CompanyCarBenefit(10, 10, Nil, Some(sampleNinoVersion)),
           CompanyCarBenefit(20, 20, Nil, Some(sampleNinoVersion)))
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
           .thenReturn(Future.successful(Some(carBenefitSeqWithVersion)))
 
@@ -62,7 +63,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
         val carBenefitSeqFromCache = None
         val carBenefitFromCompanyCarService = Nil
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
           .thenReturn(Future.successful(carBenefitSeqFromCache))
         when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any()))
@@ -87,7 +88,7 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
         val carBenefitSeq = Seq(CompanyCarBenefit(10, 10, Nil))
         val carBenefitSeqWithVersion = Seq(CompanyCarBenefit(10, 10, Nil, Some(sampleNinoVersion)))
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
           .thenReturn(Future.successful(carBenefitSeqFromCache))
         when(mockCacheConnector.createOrUpdate[Seq[CompanyCarBenefit]](any(), any(), any())(any()))
@@ -109,8 +110,8 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
 
   private val sampleNinoVersion = 4
 
-  private def createSUT(cacheRepository: CacheRepository, companyCarConnector: CompanyCarConnector) =
-    new CompanyCarBenefitRepository(cacheRepository, companyCarConnector) {
+  private def createSUT(taiCacheRepository: TaiCacheRepository, companyCarConnector: CompanyCarConnector) =
+    new CompanyCarBenefitRepository(taiCacheRepository, companyCarConnector) {
       when(companyCarConnector.ninoVersion(any())(any()))
         .thenReturn(Future.successful(sampleNinoVersion))
     }

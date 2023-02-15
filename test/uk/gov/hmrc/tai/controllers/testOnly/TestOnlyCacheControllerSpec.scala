@@ -22,9 +22,9 @@ import org.mockito.Mockito.when
 import play.api.http.Status.NO_CONTENT
 import play.api.test.FakeRequest
 import play.api.test.Helpers.status
-import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 import play.api.test.Helpers._
+import uk.gov.hmrc.tai.repositories.cache.JourneyCacheRepository
 
 import scala.concurrent.Future
 

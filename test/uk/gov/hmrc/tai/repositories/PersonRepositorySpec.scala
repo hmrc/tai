@@ -23,6 +23,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -33,8 +34,8 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
   val personMongoKey = "PersonData"
   val dateOfBirth = LocalDate.parse("2017-02-01")
 
-  def createSUT(cacheRepository: CacheRepository, citizenDetailsConnector: CitizenDetailsConnector) =
-    new PersonRepository(cacheRepository, citizenDetailsConnector)
+  def createSUT(taiCacheRepository: TaiCacheRepository, citizenDetailsConnector: CitizenDetailsConnector) =
+    new PersonRepository(taiCacheRepository, citizenDetailsConnector)
 
   "The getPerson method" must {
     "retrieve person details from mongo cache, bypassing an API call" when {
@@ -42,7 +43,7 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 
         val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         val citizenDetailsConnector = mock[CitizenDetailsConnector]
         when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(Some(person)))
@@ -65,7 +66,7 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 
         val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
 
-        val mockCacheConnector = mock[CacheRepository]
+        val mockCacheConnector = mock[TaiCacheRepository]
         val citizenDetailsConnector = mock[CitizenDetailsConnector]
         when(mockCacheConnector.find[Person](meq(cacheId), meq(personMongoKey))(any()))
           .thenReturn(Future.successful(None))

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.cache
 
 import cats.data.OptionT
 import cats.implicits._
@@ -25,15 +25,15 @@ import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheId, TaiCacheConnector}
+import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
-                                mongoConfig: MongoConfig,
-                                configuration: Configuration)(implicit ec: ExecutionContext)
+class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
+                                   mongoConfig: MongoConfig,
+                                   configuration: Configuration)(implicit ec: ExecutionContext)
   extends MongoFormatter {
 
   implicit lazy val compositeSymmetricCrypto

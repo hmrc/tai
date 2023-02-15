@@ -21,10 +21,12 @@ import org.mockito.Mockito._
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, HodsSource, MongoConstants}
 
 import scala.concurrent.Future
@@ -35,14 +37,14 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
   val metrics = mock[Metrics]
   val cacheConfig = mock[CacheMetricsConfig]
   val iabdConnector = mock[IabdConnector]
-  val cacheRepository = mock[CacheRepository]
+  val taiCacheRepository = mock[TaiCacheRepository]
 
   val taxAccountConnector = mock[TaxAccountConnector]
 
   "updateTaxCodeAmount" must {
     "update tax code amount" in {
 
-      val cache = new Caching(cacheRepository, metrics, cacheConfig)
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
       when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateSuccess))
@@ -57,7 +59,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
     "return an error status when amount can't be updated" in {
 
-      val cache = new Caching(cacheRepository, metrics, cacheConfig)
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
       when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateFailure))
@@ -72,7 +74,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
 
     "update income" in {
 
-      val cache = new Caching(cacheRepository, metrics, cacheConfig)
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
       when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateSuccess))
@@ -85,7 +87,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
     }
 
     "return an error status when income can't be updated" in {
-      val cache = new Caching(cacheRepository, metrics, cacheConfig)
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
       when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(HodUpdateFailure))
@@ -102,9 +104,9 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
         "tax account is in cache" in {
           val taxYear = TaxYear(2017)
 
-          val cache = new Caching(cacheRepository, metrics, cacheConfig)
+          val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-          when(cacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+          when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
             .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
 
           val sut = createSUT(cache, taxAccountConnector)
@@ -119,13 +121,13 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
     "tax account is NOT in cache" in {
       val taxYear = TaxYear(2017)
 
-      val cache = new Caching(cacheRepository, metrics, cacheConfig)
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(cacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+      when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(None))
 
       when(
-        cacheRepository
+        taiCacheRepository
           .createOrUpdateJson(meq(cacheId), meq(taxAccountJsonResponse), meq(s"$TaxAccountBaseKey${taxYear.year}")))
         .thenReturn(Future.successful(taxAccountJsonResponse))
 
@@ -142,7 +144,7 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
       "return json from the taxAccountHistoryConnector" in {
         val taxCodeId = 1
 
-        val cache = new Caching(cacheRepository, metrics, cacheConfig)
+        val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
         val sut = createSUT(cache, taxAccountConnector)
 

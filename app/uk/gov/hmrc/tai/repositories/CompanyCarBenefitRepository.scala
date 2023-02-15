@@ -18,23 +18,25 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.connectors.{CacheId, CompanyCarConnector}
+import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.MongoConstants
 
 @Singleton
-class CompanyCarBenefitRepository @Inject()(cacheRepository: CacheRepository, companyCarConnector: CompanyCarConnector)(
+class CompanyCarBenefitRepository @Inject()(taiCacheRepository: TaiCacheRepository, companyCarConnector: CompanyCarConnector)(
   implicit ec: ExecutionContext)
     extends MongoConstants {
 
   def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
     val cacheId = CacheId(nino)
 
-    cacheRepository.find[Seq[CompanyCarBenefit]](cacheId, CarBenefitKey) flatMap {
+    taiCacheRepository.find[Seq[CompanyCarBenefit]](cacheId, CarBenefitKey) flatMap {
       case None => {
         val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)
         val version = companyCarConnector.ninoVersion(nino)
@@ -45,7 +47,7 @@ class CompanyCarBenefitRepository @Inject()(cacheRepository: CacheRepository, co
         } yield cc.map(cc => CompanyCarBenefit(cc.employmentSeqNo, cc.grossAmount, cc.companyCars, Some(ver)))
 
         companyCarBenefitsWithVersion.flatMap { result =>
-          cacheRepository.createOrUpdate(cacheId, result, CarBenefitKey).map(_ => result)
+          taiCacheRepository.createOrUpdate(cacheId, result, CarBenefitKey).map(_ => result)
         }
       }
       case Some(seq) => Future.successful(seq)

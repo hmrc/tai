@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.connectors.cache
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Writes

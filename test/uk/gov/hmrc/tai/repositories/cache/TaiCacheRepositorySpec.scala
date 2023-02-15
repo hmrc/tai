@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.cache
 
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -23,9 +23,9 @@ import play.api.Configuration
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
-import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
+import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.connectors.cache.{TaiCacheConnector, TaiUpdateIncomeCacheConnector}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -34,7 +34,7 @@ import java.time.Instant
 import scala.concurrent.Future
 import scala.language.postfixOps
 
-class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
+class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
@@ -55,10 +55,10 @@ class CacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationP
   private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheConnector]
 
   private def createSUT(mongoConfig: MongoConfig = mock[MongoConfig]) =
-    new CacheRepository(taiRepository, mongoConfig, configuration)
+    new TaiCacheRepository(taiRepository, mongoConfig, configuration)
 
   private def createSUTUpdateIncome(mongoConfig: MongoConfig = mock[MongoConfig]) =
-    new UpdateIncomeCacheRepository(taiUpdateIncomeRepository, mongoConfig, configuration)
+    new TaiUpdateIncomeCacheRepository(taiUpdateIncomeRepository, mongoConfig, configuration)
 
   private def setCacheItem(id: String = cacheIdValue, data: JsObject) =
     Future.successful(

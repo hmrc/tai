@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.cache
 
 import akka.Done
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.CacheId
+import uk.gov.hmrc.tai.connectors.cache.CacheId
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateIncomeCacheRepository: UpdateIncomeCacheRepository)(implicit ec: ExecutionContext) {
+class JourneyCacheRepository @Inject()(taiCacheRepository: TaiCacheRepository, taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository)(implicit ec: ExecutionContext) {
 
   val JourneyCacheSuffix = "_journey_cache"
 
   def currentCache(cacheId: CacheId, journeyName: String): Future[Option[Map[String, String]]] =
     journeyName match {
       case "update-income" =>
-        updateIncomeCacheRepository.findUpdateIncome[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
-      case _ => cacheRepository.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+        taiUpdateIncomeCacheRepository.findUpdateIncome[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
+      case _ => taiCacheRepository.find[Map[String, String]](cacheId, journeyName + JourneyCacheSuffix)
 
     }
 
@@ -50,7 +50,7 @@ class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateI
               case Some(existing) => existing ++ cache
               case _              => cache
             }
-          updateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
+          taiUpdateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
         })
       case _ =>
         currentCache(cacheId, journeyName).flatMap(existingCache => {
@@ -59,7 +59,7 @@ class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateI
               case Some(existing) => existing ++ cache
               case _              => cache
             }
-          cacheRepository.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
+          taiCacheRepository.createOrUpdate[Map[String, String]](cacheId, toCache, journeyName + JourneyCacheSuffix)
         })
     }
 
@@ -67,7 +67,7 @@ class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateI
     cached(cacheId, journeyName, Map(key -> value))
 
   def flush(cacheId: CacheId, journeyName: String): Future[Boolean] =
-    cacheRepository
+    taiCacheRepository
       .createOrUpdate[Map[String, String]](cacheId, Map.empty[String, String], journeyName + JourneyCacheSuffix) map (
       _ => true)
 
@@ -76,7 +76,7 @@ class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateI
       maybeCacheOption <- currentCache(cacheId, journeyName)
       maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
       maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
-      _ <- updateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
+      _ <- taiUpdateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,
             journeyName + JourneyCacheSuffix)
@@ -89,14 +89,14 @@ class JourneyCacheRepository @Inject()(cacheRepository: CacheRepository, updateI
       maybeUpdatedIncomeCacheMap = maybeCache
         .filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
         .filterKeys(!_.startsWith(s"updateIncomeConfirmedAmountKey-$empId"))
-      _ <- updateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
+      _ <- taiUpdateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,
             journeyName + JourneyCacheSuffix)
     } yield ()
 
   def deleteUpdateIncome(cacheId: CacheId): Future[Done] =
-    updateIncomeCacheRepository
+    taiUpdateIncomeCacheRepository
       .createOrUpdateIncome[Map[String, String]](
         cacheId,
         Map.empty[String, String],

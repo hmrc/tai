@@ -20,16 +20,18 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
-import uk.gov.hmrc.tai.connectors.{Caching, IabdConnector}
+import uk.gov.hmrc.tai.connectors.IabdConnector
+import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
 
 import scala.concurrent.Future
 
 class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
-  val cacheRepository = mock[CacheRepository]
+  val taiCacheRepository = mock[TaiCacheRepository]
   val metrics = mock[Metrics]
   val cacheConfig = mock[CacheMetricsConfig]
   val iabdConnector = mock[IabdConnector]
@@ -38,10 +40,10 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
     "return json" when {
       "data is present in cache" in {
 
-        val cache = new Caching(cacheRepository, metrics, cacheConfig)
+        val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
         when(iabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(jsonAfterFormat))
-        when(cacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
+        when(taiCacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
           .thenReturn(Future.successful(Some(jsonAfterFormat)))
 
         val sut = createTestCache(cache, iabdConnector)
@@ -51,11 +53,11 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
       }
 
       "data is not present in cache" in {
-        val cache = new Caching(cacheRepository, metrics, cacheConfig)
+        val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-        when(cacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
+        when(taiCacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
           .thenReturn(Future.successful(None))
-        when(cacheRepository.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
+        when(taiCacheRepository.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
         when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(jsonFromIabdApi))
 
         val sut = createTestCache(cache, iabdConnector)

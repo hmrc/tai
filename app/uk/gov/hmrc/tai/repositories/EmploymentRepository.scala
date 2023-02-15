@@ -20,19 +20,21 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.{CacheId, NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.cache.CacheId
+import uk.gov.hmrc.tai.connectors.{NpsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.error.{EmploymentNotFound, EmploymentRetrievalError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentRepository @Inject()(
                                       rtiConnector: RtiConnector,
-                                      cacheRepository: CacheRepository,
+                                      taiCacheRepository: TaiCacheRepository,
                                       npsConnector: NpsConnector,
                                       employmentBuilder: EmploymentBuilder)(implicit ec: ExecutionContext) {
 
@@ -149,11 +151,11 @@ class EmploymentRepository @Inject()(
 
   private def addEmploymentsToCache(nino: Nino, employments: Seq[Employment], taxYear: TaxYear)(
     implicit hc: HeaderCarrier): Future[Seq[Employment]] =
-    cacheRepository.createOrUpdateSeq[Employment](CacheId(nino), employments, employmentMongoKey(taxYear))(
+    taiCacheRepository.createOrUpdateSeq[Employment](CacheId(nino), employments, employmentMongoKey(taxYear))(
       EmploymentMongoFormatters.formatEmployment)
 
   private def fetchEmploymentFromCache(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
-    cacheRepository
+    taiCacheRepository
       .findSeq[Employment](CacheId(nino), employmentMongoKey(taxYear))(EmploymentMongoFormatters.formatEmployment) map (Employments(
       _))
 }

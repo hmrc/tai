@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.cache
 
 import akka.Done
 import org.mockito.ArgumentMatchers.{any, eq => meq}
@@ -27,8 +27,8 @@ import scala.concurrent.Future
 
 class JourneyCacheRepositorySpec extends BaseSpec {
 
-  private def createSUT(cacheRepository: CacheRepository, updateIncomeCacheRepository: UpdateIncomeCacheRepository) = new JourneyCacheRepository(cacheRepository, updateIncomeCacheRepository)
-  private def echoProgrammed(mock: CacheRepository): CacheRepository = {
+  private def createSUT(taiCacheRepository: TaiCacheRepository, taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository) = new JourneyCacheRepository(taiCacheRepository, taiUpdateIncomeCacheRepository)
+  private def echoProgrammed(mock: TaiCacheRepository): TaiCacheRepository = {
     when(mock.createOrUpdate[Map[String, String]](any(), any(), any())(any())).thenAnswer(
       new Answer[Future[Map[String, String]]]() {
         override def answer(invocation: InvocationOnMock): Future[Map[String, String]] = {
@@ -40,7 +40,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     mock
   }
 
-  private def echoProgrammedUpdateIncome(mock: UpdateIncomeCacheRepository): UpdateIncomeCacheRepository = {
+  private def echoProgrammedUpdateIncome(mock: TaiUpdateIncomeCacheRepository): TaiUpdateIncomeCacheRepository = {
     when(mock.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any())).thenAnswer(
       new Answer[Future[Map[String, String]]]() {
         override def answer(invocation: InvocationOnMock): Future[Map[String, String]] = {
@@ -52,8 +52,8 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     mock
   }
 
-  val mockConnector: CacheRepository = echoProgrammed(mock[CacheRepository])
-  val mockConnectorUpdateIncome = echoProgrammedUpdateIncome(mock[UpdateIncomeCacheRepository])
+  val mockConnector: TaiCacheRepository = echoProgrammed(mock[TaiCacheRepository])
+  val mockConnectorUpdateIncome = echoProgrammedUpdateIncome(mock[TaiUpdateIncomeCacheRepository])
 
   val testCache = Map("key1" -> "value1", "key2" -> "value2")
 
@@ -62,7 +62,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "persist a named journey cache, and return the updated cache" when {
 
       "no existing cache is present for the specified journey" in {
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(None))
 
@@ -77,7 +77,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       "an existing cache is present for the named journey" in {
         val existingCache = Map("key3" -> "value3")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -90,7 +90,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3")
         val newCache = Map("key1"      -> "value1", "key3" -> "revised")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -105,7 +105,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       "no existing cache is present for the specified journey" in {
         val expectedMap = Map("key3" -> "value3")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(None))
 
@@ -122,7 +122,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
         val expectedMap = Map("key3"   -> "value3", "key4" -> "value4", "key5" -> "value5")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -139,7 +139,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
         val expectedMap = Map("key3"   -> "value3", "key4" -> "updated")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnector.find[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -156,7 +156,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "retrive an existing cache, by journey name" in {
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnector.find[Map[String, String]](any(), meq("exists_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
       when(mockConnector.find[Map[String, String]](any(), meq("doesntexist_journey_cache"))(any()))
@@ -170,7 +170,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "retrive an individual cached value, by journey name and key" in {
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnector.find[Map[String, String]](any(), meq("exists_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
       when(mockConnector.find[Map[String, String]](any(), meq("doesntexist_journey_cache"))(any()))
@@ -183,7 +183,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "delete a named journey cache" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnector.createOrUpdate[Map[String, String]](any(), any(), any())(any()))
         .thenReturn(Future.successful(Map.empty[String, String]))
 
@@ -201,7 +201,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "persist a named journey cache, and return the updated cache *UpdateIncome" when {
 
       "no existing cache is present for the specified journey *UpdateIncome" in {
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(None))
 
@@ -216,7 +216,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       "an existing cache is present for the named journey *UpdateIncome" in {
         val existingCache = Map("key3" -> "value3")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -229,7 +229,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3")
         val newCache = Map("key1"      -> "value1", "key3" -> "revised")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -244,7 +244,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       "no existing cache is present for the specified journey *UpdateIncome" in {
         val expectedMap = Map("key3" -> "value3")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(None))
 
@@ -261,7 +261,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
         val expectedMap = Map("key3"   -> "value3", "key4" -> "value4", "key5" -> "value5")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -278,7 +278,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
         val existingCache = Map("key3" -> "value3", "key4" -> "value4")
         val expectedMap = Map("key3"   -> "value3", "key4" -> "updated")
 
-        val mockConnector = echoProgrammed(mock[CacheRepository])
+        val mockConnector = echoProgrammed(mock[TaiCacheRepository])
         when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), any())(any()))
           .thenReturn(Future.successful(Some(existingCache)))
 
@@ -295,7 +295,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "retrieve an existing cache, by journey name *UpdateIncome" in {
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
 
@@ -305,7 +305,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
     "return none for empty cache, by journey name *UpdateIncome" in {
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
@@ -316,7 +316,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     "retrive an individual cached value, by journey name and key *UpdateIncome" in {
       val existingCache = Map("key3" -> "value3", "key4" -> "value4")
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(Some(existingCache)))
 
@@ -327,7 +327,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
     "return none for an individual cached value, by journey name and key *UpdateIncome" in {
 
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       when(mockConnectorUpdateIncome.findUpdateIncome[Map[String, String]](any(), meq("update-income_journey_cache"))(any()))
         .thenReturn(Future.successful(None))
 
@@ -337,7 +337,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "delete a named journey cache *UpdateIncome" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       val sut = createSUT(mockConnector, mockConnectorUpdateIncome)
 
       when(mockConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
@@ -355,7 +355,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "delete a named journey cache but keep updated income confirmed amounts *UpdateIncome" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       val sut = createSUT(mockConnector, mockConnectorUpdateIncome)
 
       when(mockConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
@@ -374,7 +374,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "delete a specific value using employmentId and keep other updated income confirmed amounts *UpdateIncome" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       val sut = createSUT(mockConnector, mockConnectorUpdateIncome)
 
       when(mockConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
@@ -393,7 +393,7 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "Keep all values in cache when using employmentId if no employmentId matches in the cache *UpdateIncome" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
       val sut = createSUT(mockConnector, mockConnectorUpdateIncome)
 
       when(mockConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
@@ -412,8 +412,8 @@ class JourneyCacheRepositorySpec extends BaseSpec {
     }
 
     "delete the update-income journey is dropping the cache and setting an empty map" in {
-      val mockConnector = echoProgrammed(mock[CacheRepository])
-      val mockConnectorUpdateIncome = echoProgrammedUpdateIncome(mock[UpdateIncomeCacheRepository])
+      val mockConnector = echoProgrammed(mock[TaiCacheRepository])
+      val mockConnectorUpdateIncome = echoProgrammedUpdateIncome(mock[TaiUpdateIncomeCacheRepository])
       val sut = createSUT(mockConnector, mockConnectorUpdateIncome)
 
       when(mockConnectorUpdateIncome.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any()))
