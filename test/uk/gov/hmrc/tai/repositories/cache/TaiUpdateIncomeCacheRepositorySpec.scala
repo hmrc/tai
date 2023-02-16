@@ -51,7 +51,6 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
   private val sessionData =
     SessionData(nino = nino.nino, taxSummaryDetailsCY = TaxSummaryDetails(nino = nino.nino, version = 0))
 
-  private val taiRepository = mock[TaiCacheConnector]
   private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheConnector]
 
   private def createSUTUpdateIncome(mongoConfig: MongoConfig = mock[MongoConfig]) =
@@ -62,9 +61,7 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
       Option(CacheItem(id, data, createdAt = java.time.Instant.now, modifiedAt = java.time.Instant.now)))
 
   override protected def beforeEach(): Unit = {
-    reset(taiRepository)
     reset(taiUpdateIncomeRepository)
-    when(taiRepository.save[String](any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
     when(taiUpdateIncomeRepository.save(any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
   }
 
