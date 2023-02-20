@@ -113,6 +113,6 @@ class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
   }.value
 
   def removeById(cacheId: CacheId): Future[Boolean] =
-    taiCacheConnector.deleteEntity(cacheId.value).map(_ => true)
+    taiCacheConnector.deleteEntity(cacheId.value).map(_ => true) 
 
 }
