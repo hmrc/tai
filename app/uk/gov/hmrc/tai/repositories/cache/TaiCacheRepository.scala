@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.repositories.cache
 
 import cats.data.OptionT
 import cats.implicits._
@@ -25,32 +25,21 @@ import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CacheConnector @Inject()(
-                                taiCacheRepository: TaiCacheRepository,
-                                taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository,
-                                mongoConfig: MongoConfig,
-                                configuration: Configuration)(implicit ec: ExecutionContext)
+class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
+                                   mongoConfig: MongoConfig,
+                                   configuration: Configuration)(implicit ec: ExecutionContext)
   extends MongoFormatter {
 
   implicit lazy val compositeSymmetricCrypto
   : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[T] = {
-    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
-      val jsonEncryptor = new JsonEncryptor[T]()
-      Json.toJson(Protected(data))(jsonEncryptor)
-    } else {
-      Json.toJson(data)
-    }
-    taiUpdateIncomeCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
-  }
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
@@ -59,7 +48,7 @@ class CacheConnector @Inject()(
     } else {
       Json.toJson(data)
     }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
+    taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
   def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
@@ -69,7 +58,7 @@ class CacheConnector @Inject()(
     } else {
       json
     }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => json)
+    taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => json)
   }
 
   def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
@@ -80,7 +69,7 @@ class CacheConnector @Inject()(
     } else {
       Json.toJson(data)
     }
-    taiCacheRepository.save(cacheId.value)(key, jsonData).map(_ => data)
+    taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
   private def findById[T](cacheId: CacheId, key: String = defaultKey)
@@ -103,10 +92,7 @@ class CacheConnector @Inject()(
 
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
-    findById(cacheId, key)(taiCacheRepository.findById)(reads)
-
-  def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
-    findById(cacheId, key)(taiUpdateIncomeCacheRepository.findById)(reads)
+    findById(cacheId, key)(taiCacheConnector.findById)(reads)
 
   def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
@@ -121,12 +107,12 @@ class CacheConnector @Inject()(
       (json: JsValue) => implicitly[Reads[Seq[T]]].reads(json).map(Protected(_))
     }
     for {
-      cache <- OptionT(taiCacheRepository.findById(cacheId.value))
+      cache <- OptionT(taiCacheConnector.findById(cacheId.value))
       if (cache.data \ key).validate[Protected[Seq[T]]].isSuccess
     } yield (cache.data \ key).as[Protected[Seq[T]]].decryptedValue
   }.value
 
   def removeById(cacheId: CacheId): Future[Boolean] =
-    taiCacheRepository.deleteEntity(cacheId.value).map(_ => true)
+    taiCacheConnector.deleteEntity(cacheId.value).map(_ => true) 
 
 }

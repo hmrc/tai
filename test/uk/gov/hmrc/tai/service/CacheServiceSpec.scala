@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.CacheConnector
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -29,7 +29,7 @@ class CacheServiceSpec extends BaseSpec {
   "invalidateTaiData" must {
     "remove the session data" when {
       "cache is enabled" in {
-        val mockCacheConnector = mock[CacheConnector]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.removeById(any()))
           .thenReturn(Future.successful(true))
 
@@ -50,7 +50,7 @@ class CacheServiceSpec extends BaseSpec {
 
     "not call remove data operation" when {
       "cache is disabled" in {
-        val mockCacheConnector = mock[CacheConnector]
+        val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.removeById(any()))
           .thenReturn(Future.successful(true))
 

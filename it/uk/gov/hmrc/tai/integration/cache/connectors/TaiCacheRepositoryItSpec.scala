@@ -30,17 +30,18 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId, TaiCacheRepository, TaiUpdateIncomeCacheRepository}
+import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
+import uk.gov.hmrc.tai.repositories.cache.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Random
 
-class CacheConnectorItSpec
+class TaiCacheRepositoryItSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures
     with Injecting {
 
@@ -70,9 +71,14 @@ class CacheConnectorItSpec
 
   Mockito.when(mockConfig.mongoEncryptionEnabled).thenReturn(true)
 
-  private lazy val sut: CacheConnector = new CacheConnector(
-    new TaiCacheRepository(mongoComponent, mockConfig, timestampSupport),
-    new TaiUpdateIncomeCacheRepository(mongoComponent, mockConfig, timestampSupport),
+  private lazy val sut: TaiCacheRepository = new TaiCacheRepository(
+    new TaiCacheConnector(mongoComponent, mockConfig, timestampSupport),
+    mockConfig,
+    configuration
+  )
+
+  private lazy val sutUpdateIncome: TaiUpdateIncomeCacheRepository = new TaiUpdateIncomeCacheRepository(
+    new TaiUpdateIncomeCacheConnector(mongoComponent, mockConfig, timestampSupport),
     mockConfig,
     configuration
   )
@@ -191,41 +197,41 @@ class CacheConnectorItSpec
   //update-income
   "insert and read the data from mongodb *Update-Income" when {
     "session data has been passed *Update-Income" in {
-      val data = sut.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
-      val cachedData = sut.findUpdateIncome[SessionData](cacheId).futureValue
+      val data = sutUpdateIncome.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[SessionData](cacheId).futureValue
 
       Some(data) mustBe cachedData
     }
 
     "data has been passed *Update-Income" in {
-      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
 
       Some(data) mustBe cachedData
     }
 
     "session data has been passed without key *Update-Income" in {
-      val data = sut.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
-      val cachedData = sut.findUpdateIncome[SessionData](cacheId).futureValue
+      val data = sutUpdateIncome.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[SessionData](cacheId).futureValue
 
       Some(data) mustBe cachedData
     }
 
     "data has been passed without key *Update-Income" in {
 
-      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
 
       Some(data) mustBe cachedData
 
     }
 
     "saved and returned json is valid *Update-Income" in {
-      val data = sut
+      val data = sutUpdateIncome
         .createOrUpdateIncome[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", "")))(
           PersonFormatter.personMongoFormat)
         .futureValue
-      val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
       cachedData mustBe Some(data)
     }
   }
@@ -233,13 +239,13 @@ class CacheConnectorItSpec
   "delete the data from cache using createOrUpdateIncome *Update-Income" when {
 
     "calling removeById *Update-Income" in {
-      val data = sut.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sut.findUpdateIncome[String](cacheId).futureValue
+      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
       Some(data) mustBe cachedData
 
-      sut.createOrUpdateIncome(cacheId, Map.empty[String, String]).futureValue
+      sutUpdateIncome.createOrUpdateIncome(cacheId, Map.empty[String, String]).futureValue
 
-      val dataAfterRemove = sut.findUpdateIncome[String](cacheId).futureValue
+      val dataAfterRemove = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
       dataAfterRemove mustBe None
     }
   }
@@ -251,8 +257,8 @@ class CacheConnectorItSpec
                                  |  "invalid": "key"
                                  | }
                                  |""".stripMargin).toString
-      sut.createOrUpdateIncome[String](cacheId, badJson).futureValue
-      val cachedData = sut.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
+      sutUpdateIncome.createOrUpdateIncome[String](cacheId, badJson).futureValue
+      val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
       cachedData mustBe None
     }
   }

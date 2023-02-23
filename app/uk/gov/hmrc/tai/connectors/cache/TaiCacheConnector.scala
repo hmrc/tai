@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.connectors.cache
 
-import com.google.inject.Inject
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Writes
 import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
@@ -24,21 +24,18 @@ import uk.gov.hmrc.tai.config.MongoConfig
 
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
-
-class TaiUpdateIncomeCacheRepository @Inject()(
-  mongo: MongoComponent,
-  mongoConfig: MongoConfig,
-  timestampSupport: TimestampSupport)(implicit ec: ExecutionContext)
-    extends MongoCacheRepository(
+@Singleton
+class TaiCacheConnector @Inject()(mongo: MongoComponent, mongoConfig: MongoConfig, timestampSupport: TimestampSupport)(
+  implicit ec: ExecutionContext)
+    extends MongoCacheRepository[String](
       mongoComponent = mongo,
-      collectionName = "TaiUpdateIncome",
+      collectionName = "TAI",
       replaceIndexes = true,
-      ttl = Duration(mongoConfig.mongoTTLUpdateIncome, SECONDS),
+      ttl = Duration(mongoConfig.mongoTTL, SECONDS),
       timestampSupport = timestampSupport,
       cacheIdType = CacheIdType.SimpleCacheId
     ) {
 
   def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] =
     put[A](cacheId)(DataKey(key), data)
-
 }

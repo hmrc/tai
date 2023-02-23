@@ -20,9 +20,9 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
-import uk.gov.hmrc.tai.connectors.CacheId
+import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.repositories.JourneyCacheRepository
+import uk.gov.hmrc.tai.repositories.cache.JourneyCacheRepository
 
 import scala.concurrent.ExecutionContext
 

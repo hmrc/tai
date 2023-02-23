@@ -20,12 +20,13 @@ import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.{CacheConnector, CacheId}
+import uk.gov.hmrc.tai.connectors.cache.CacheId
+import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 
-class CacheService @Inject()(mongoConfig: MongoConfig, cacheConnector: CacheConnector) {
+class CacheService @Inject()(mongoConfig: MongoConfig, taiCacheRepository: TaiCacheRepository) {
   def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
     if (mongoConfig.mongoEnabled) {
-      cacheConnector.removeById(CacheId(nino))
+      taiCacheRepository.removeById(CacheId(nino))
     } else {
       ()
     }
