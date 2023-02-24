@@ -22,7 +22,7 @@ object PayFreq extends Enumeration {
 
   type PayFreq = Value
 
-  val weekly, fortnightly, monthly, other = Value
+  val weekly, fortnightly, fourWeekly, monthly, other = Value
 
   implicit val enumFormat = nps2.enumerationFormat(PayFreq)
 

@@ -46,6 +46,17 @@ class PayDetailsSpec extends PlaySpec {
       payDetails.paymentFrequency mustBe PayFreq.fortnightly
     }
 
+    "successfully convert json paymentFrequency into PaymentDetails when a 'fourWeekly' payment frequency is supplied." in {
+      val payDetailsJson = Json.parse("""
+                                        | {
+                                        |   "paymentFrequency": "fourWeekly"
+                                        | }
+        """.stripMargin)
+
+      val payDetails = payDetailsJson.as[PayDetails]
+      payDetails.paymentFrequency mustBe PayFreq.fourWeekly
+    }
+
     "successfully convert json paymentFrequency into PaymentDetails when a 'monthly' payment frequency is supplied." in {
       val payDetailsJson = Json.parse("""
                                         | {
