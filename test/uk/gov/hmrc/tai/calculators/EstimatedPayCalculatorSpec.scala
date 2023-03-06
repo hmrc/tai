@@ -53,6 +53,14 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
         calculated.netAnnualPay mustBe Some(BigDecimal(260))
       }
 
+      "4 weekly amount is entered" in {
+        val payDetails = PayDetails(paymentFrequency = PayFreq.fourWeekly, pay = Some(12), taxablePay = Some(10))
+        val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
+
+        calculated.grossAnnualPay mustBe Some(BigDecimal(156))
+        calculated.netAnnualPay mustBe Some(BigDecimal(130))
+      }
+
       "other amount is entered and days have been entered with no bonus" in {
         val payDetails =
           PayDetails(paymentFrequency = PayFreq.other, pay = Some(100), taxablePay = Some(80), days = Some(27))
