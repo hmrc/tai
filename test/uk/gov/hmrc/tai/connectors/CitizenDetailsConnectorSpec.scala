@@ -85,7 +85,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
         "FName",
         "LName",
         Some(LocalDate.parse("1975-09-15")),
-        Address("", "", "", "", ""),
+        Address(Some("1 Test Line"), Some("Test Line 2"), None, Some("TEST"), Some("GREAT BRITAIN")),
         false,
         false)
     }
