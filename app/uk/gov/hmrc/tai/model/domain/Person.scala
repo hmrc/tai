@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.domain.Nino
+
+import java.time.LocalDate
 
 case class Person(
   nino: Nino,
@@ -35,10 +34,20 @@ object Person {
     Person(nino, "", "", None, Address.emptyAddress, false, true)
 }
 
-case class Address(line1: String, line2: String, line3: String, postcode: String, country: String)
+case class Address(
+  line1: Option[String],
+  line2: Option[String],
+  line3: Option[String],
+  postcode: Option[String],
+  country: Option[String])
 
 object Address {
-  val emptyAddress = Address("", "", "", "", "")
+  val emptyAddress = Address(None, None, None, None, None)
+
+  def apply(line1: String, line2: String, line3: String, postcode: String, country: String): Address = {
+    import cats.syntax.option._
+    Address(line1.some, line2.some, line3.some, postcode.some, country.some)
+  }
 }
 
 object PersonFormatter {
