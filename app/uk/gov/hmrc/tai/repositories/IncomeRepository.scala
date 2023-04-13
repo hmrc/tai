@@ -59,9 +59,9 @@ class IncomeRepository @Inject()(
     }
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    val taxCodeIncomeFuture = taxAccountRepository
+    lazy val taxCodeIncomeFuture = taxAccountRepository
       .taxAccount(nino, year) map (_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
-    val iabdDetailsFuture = iabdRepository.iabds(nino, year) map (_.as[Seq[IabdDetails]])
+    lazy val iabdDetailsFuture = iabdRepository.iabds(nino, year) map (_.as[Seq[IabdDetails]])
 
     for {
       taxCodeIncomes <- taxCodeIncomeFuture

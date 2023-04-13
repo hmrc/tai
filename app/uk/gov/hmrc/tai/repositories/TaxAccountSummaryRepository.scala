@@ -111,7 +111,7 @@ class TaxAccountSummaryRepository @Inject()(
   }
 
   def taxReliefComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[TaxAdjustment]] = {
-    val taxReliefsComponentsFuture = taxAdjustmentComponents(nino, year).map {
+    lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(nino, year).map {
       case Some(taxAdjustment) =>
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
