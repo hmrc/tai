@@ -31,7 +31,8 @@ object AppDependencies {
     "org.mockito"            % "mockito-core"             % "4.3.1",
     "org.scalatestplus"      %% "mockito-3-4"             % "3.2.10.0",
     "com.github.tomakehurst" % "wiremock-jre8"            % "2.27.2" % Test,
-    "com.vladsch.flexmark"   % "flexmark-all"             % "0.35.10"
+    "com.vladsch.flexmark"   % "flexmark-all"             % "0.35.10" % Test,
+    "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion" % "5.7.0" % Test,
   )
 
   def apply(): Seq[ModuleID] = compile ++ compileTest
