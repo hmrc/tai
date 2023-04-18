@@ -503,6 +503,102 @@ class IncomeRepositorySpec extends BaseSpec {
           )
         )
       }
+
+      "iabd overrides the gross amount if there is a new estimated pay for same employment" in {
+        val json = Json.obj(
+          "taxYear" -> JsNumber(2017),
+          "totalLiability" -> Json.obj(
+            "untaxedInterest" -> Json.obj(
+              "totalTaxableIncome" -> JsNumber(123)
+            )
+          ),
+          "incomeSources" -> JsArray(
+            Seq(
+              Json.obj(
+                "employmentId"     -> JsNumber(1),
+                "taxCode"          -> JsString("1150L"),
+                "name"             -> JsString("Employer1"),
+                "basisOperation"   -> JsNumber(1),
+                "employmentStatus" -> JsNumber(1)
+              ),
+              Json.obj(
+                "employmentId"     -> JsNumber(2),
+                "taxCode"          -> JsString("1100L"),
+                "name"             -> JsString("Employer2"),
+                "basisOperation"   -> JsNumber(2),
+                "employmentStatus" -> JsNumber(1)
+              )
+            ))
+        )
+
+        val newAmount = 32000
+        val iabdJson = Json.arr(
+          Json.obj(
+            "nino"                     -> nino.withoutSuffix,
+            "employmentSequenceNumber" -> 1,
+            "taxYear"                  -> 2017,
+            "type"                     -> 10,
+            "source"                   -> 15,
+            "grossAmount"              -> JsNull,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "Total gift aid Payments",
+            "netAmount"                -> 100
+          ),
+          Json.obj(
+            "nino"                     -> nino.withoutSuffix,
+            "employmentSequenceNumber" -> 2,
+            "taxYear"                  -> 2017,
+            "type"                     -> 27,
+            "source"                   -> 18,
+            "grossAmount"              -> newAmount,
+            "receiptDate"              -> JsNull,
+            "captureDate"              -> JsNull,
+            "typeDescription"          -> "New Estimated Pay",
+            "netAmount"                -> 100
+          )
+        )
+
+        val mockTaxAccountRepository = mock[TaxAccountRepository]
+        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(json))
+        val mockIabdRepository = mock[IabdRepository]
+        when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
+
+        val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
+        val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
+
+        result mustBe Seq(
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(1),
+            BigDecimal(0),
+            "EmploymentIncome",
+            "1150L",
+            "Employer1",
+            Week1Month1BasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            Some(ManualTelephone)
+          ),
+          TaxCodeIncome(
+            EmploymentIncome,
+            Some(2),
+            BigDecimal(newAmount),
+            "EmploymentIncome",
+            "1100L",
+            "Employer2",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0),
+            Some(AgentContact)
+          )
+        )
+      }
     }
   }
 

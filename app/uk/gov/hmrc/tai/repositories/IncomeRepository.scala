@@ -78,7 +78,12 @@ class IncomeRepository @Inject()(
     taxCodeIncome.copy(
       iabdUpdateSource = iabdDetail.flatMap(_.source).flatMap(code => IabdUpdateSource.fromCode(code)),
       updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
-      updateActionDate = iabdDetail.flatMap(_.captureDate)
+      updateActionDate = iabdDetail.flatMap(_.captureDate),
+      amount = iabdDetail.flatMap(_.grossAmount) match {
+        //Check if there is a "New Estimated Pay" (27)
+        case Some(value) if iabdDetail.exists(_.`type`.contains(27)) => BigDecimal(value)
+        case _ => taxCodeIncome.amount
+      }
     )
   }
 }
