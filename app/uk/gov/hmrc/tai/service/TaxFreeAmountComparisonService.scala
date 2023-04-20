@@ -36,8 +36,8 @@ class TaxFreeAmountComparisonService @Inject()(
 ) {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
-    val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
-    val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
+    lazy val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
+    lazy val previousComponents: Future[Seq[CodingComponent]] = getPreviousComponents(nino)
 
     for {
       current  <- currentComponents

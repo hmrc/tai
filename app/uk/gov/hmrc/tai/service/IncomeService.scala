@@ -88,8 +88,8 @@ class IncomeService @Inject()(
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
-    val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
+    lazy val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
+    lazy val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
       Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}")
       Seq.empty[Employment]
     }
