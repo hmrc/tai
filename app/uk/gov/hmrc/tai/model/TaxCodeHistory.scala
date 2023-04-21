@@ -22,12 +22,12 @@ import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-case class TaxCodeHistory(nino: String, taxCodeRecords: Seq[TaxCodeRecord]) {
+case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 
   private val logger: Logger = Logger(getClass.getName)
 
   def applicableTaxCodeRecords: Seq[TaxCodeRecord] = {
-    val applicableRecords = inYearTaxCodeRecords(operatedTaxCodeRecords(taxCodeRecords))
+    val applicableRecords = inYearTaxCodeRecords(operatedTaxCodeRecords(taxCodeRecord))
     logger.debug(s"applicableRecords are \n $applicableRecords")
     applicableRecords
   }

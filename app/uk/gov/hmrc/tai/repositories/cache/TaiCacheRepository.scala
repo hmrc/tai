@@ -80,10 +80,14 @@ class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
       cache =>
         if (mongoConfig.mongoEncryptionEnabled) {
           val jsonDecryptor = new JsonDecryptor[T]()
-          (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
+          (cache.data \ key).toOption.map { jsValue =>
+            jsValue.as[Protected[T]](jsonDecryptor).decryptedValue
+          }
         }
         else {
-          (cache.data \ key).validateOpt[T].asOpt.flatten
+          (cache.data \ key).toOption.map { jsValue =>
+            jsValue.as[T]
+          }
         }
     }.value.map(_.flatten) recover {
       case JsResultException(_) => None
