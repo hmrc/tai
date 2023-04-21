@@ -61,7 +61,7 @@ class TaxCodeChangeServiceImpl @Inject()(
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] =
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
-      val taxCodeRecordList = taxCodeHistory.taxCodeRecords
+      val taxCodeRecordList = taxCodeHistory.taxCodeRecord
 
       if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
 
@@ -141,7 +141,7 @@ class TaxCodeChangeServiceImpl @Inject()(
 
   def latestTaxCodes(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeSummary]] =
     taxCodeHistory(nino, taxYear).map { taxCodeHistory =>
-      val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecords.groupBy(_.employerName)
+      val groupedTaxCodeRecords: Map[String, Seq[TaxCodeRecord]] = taxCodeHistory.taxCodeRecord.groupBy(_.employerName)
 
       groupedTaxCodeRecords.values.flatMap { taxCodeRecords =>
         val sortedTaxCodeRecords = taxCodeRecords.sortBy(_.dateOfCalculation)
