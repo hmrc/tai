@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsNull, Json}
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
@@ -37,6 +38,22 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val iabdConnector = mock[IabdConnector]
 
   "IABD repository" must {
+    "return exception " when {
+      "Not found is received from iabds" in {
+        val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+        when(iabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.failed(new NotFoundException("iabds not found")))
+        when(taiCacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
+          .thenReturn(Future.successful(Some(Json.obj("error" -> "NOT_FOUND"))))
+
+        val sut = createTestCache(cache, iabdConnector)
+        val result = sut.iabds(nino, TaxYear())
+
+        whenReady(result.failed) { ex =>
+          ex mustBe a[NotFoundException]
+        }
+      }
+    }
     "return json" when {
       "data is present in cache" in {
 
