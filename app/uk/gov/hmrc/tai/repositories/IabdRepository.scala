@@ -17,9 +17,9 @@
 package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
@@ -32,9 +32,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(implicit ec: ExecutionContext)
     extends MongoConstants with IabdHodFormatters {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
     cache.cacheFromApi(
       nino,
       s"$IabdMongoKey${taxYear.year}",
-      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)))
+      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)) recover {
+        case _: NotFoundException => Json.toJson(Json.obj("error" -> "NOT_FOUND"))
+      }).map { json =>
+      val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")
+      if (responseNotFound) {
+        throw new NotFoundException(s"No iadbs found for year $taxYear")
+      } else {
+        json.as[JsValue](iabdEstimatedPayReads)
+      }
+    }
+  }
 }

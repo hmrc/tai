@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, getRequestedFor, ok, urlEqualTo}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{route, status => getStatus, _}
 import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 

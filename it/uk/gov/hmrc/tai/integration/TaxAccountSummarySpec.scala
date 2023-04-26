@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.tai.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class TaxAccountSummarySpec extends IntegrationSpec {
 
@@ -54,6 +56,17 @@ class TaxAccountSummarySpec extends IntegrationSpec {
 
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)
+      }
+
+      "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+        val requestConst = request
+        val result = (for {
+          _ <- route(app, requestConst).get
+          _ <- route(app, requestConst).get
+        } yield ()).futureValue
+
+        server.verify(1, WireMock.getRequestedFor(urlEqualTo(npsIabdsUrl)))
       }
 
       "throws an InternalServerException when the NPS iabds API returns an INTERNAL_SERVER_ERROR" in {
