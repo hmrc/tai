@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.cache.CacheId
@@ -43,7 +44,7 @@ class EmploymentRepository @Inject()(
   private def employmentMongoKey(taxYear: TaxYear) = s"EmploymentData-${taxYear.year}"
 
   def employment(nino: Nino, id: Int)(
-    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] = {
+    implicit hc: HeaderCarrier, request: Request[_]): Future[Either[EmploymentRetrievalError, Employment]] = {
     val taxYear = TaxYear()
     employmentsForYear(nino, taxYear) map { employments =>
       employments.employmentById(id) match {
@@ -57,7 +58,7 @@ class EmploymentRepository @Inject()(
     }
   }
 
-  def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
+  def employmentsForYear(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Employments] =
     fetchEmploymentFromCache(nino, taxYear) flatMap {
       case Employments(Nil) => hodCallWithCaching(nino, taxYear)
       case cachedEmployments @ Employments(_) =>
@@ -75,13 +76,13 @@ class EmploymentRepository @Inject()(
     }
 
   private def hodCallWithCacheMerge(nino: Nino, taxYear: TaxYear, cachedEmployments: Employments)(
-    implicit hc: HeaderCarrier): Future[Employments] =
+    implicit hc: HeaderCarrier, request: Request[_]): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap { employmentsWithAccounts =>
       val mergedEmployments = cachedEmployments.mergeEmployments(employmentsWithAccounts.employments)
       addEmploymentsToCache(nino, mergedEmployments, taxYear).map(_ => employmentsWithAccounts)
     }
 
-  private def hodCallWithCaching(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] =
+  private def hodCallWithCaching(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Employments] =
     employmentsFromHod(nino, taxYear) flatMap (employmentsWithAccounts =>
       addEmploymentsToCache(nino, employmentsWithAccounts.employments, taxYear).map(_ => employmentsWithAccounts))
 
@@ -89,20 +90,20 @@ class EmploymentRepository @Inject()(
     nino: Nino,
     taxYear: TaxYear,
     originalEmployments: Employments,
-    cachedEmployments: Employments)(implicit hc: HeaderCarrier): Future[Employments] = {
+    cachedEmployments: Employments)(implicit hc: HeaderCarrier, request: Request[_]): Future[Employments] = {
 
     def rtiCallCombinedWithEmployments(
       originalEmployments: Employments,
       nino: Nino,
-      taxYear: TaxYear): Future[Employments] =
+      taxYear: TaxYear)(implicit request: Request[_]): Future[Employments] =
       rtiCall(nino, taxYear) map {
-        case Right(accounts) =>
-          employmentBuilder.combineAccountsWithEmployments(originalEmployments.employments, accounts, nino, taxYear)
-        case Left(ResourceNotFoundError) => {
+        case Right(accounts: Seq[AnnualAccount]) if accounts.isEmpty => {
           val unavailableAccounts = stubAccounts(Unavailable, originalEmployments.employments, taxYear)
           employmentBuilder
             .combineAccountsWithEmployments(originalEmployments.employments, unavailableAccounts, nino, taxYear)
         }
+        case Right(accounts: Seq[AnnualAccount]) =>
+          employmentBuilder.combineAccountsWithEmployments(originalEmployments.employments, accounts, nino, taxYear)
         case Left(_) => originalEmployments
       }
 
@@ -121,18 +122,16 @@ class EmploymentRepository @Inject()(
     employmentsForYear.containsTempAccount(taxYear)
 
   private def rtiCall(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
-    rtiConnector.getPaymentsForYear(nino, taxYear)
+    implicit hc: HeaderCarrier, request: Request[_]): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
+    rtiConnector.getPaymentsForYear(nino, taxYear).value
 
-  private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Employments] = {
+  private def employmentsFromHod(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Employments] = {
 
-    def rtiAnnualAccounts(employments: Seq[Employment]): Future[Seq[AnnualAccount]] =
+    def rtiAnnualAccounts(employments: Seq[Employment])(implicit request: Request[_]): Future[Seq[AnnualAccount]] =
       rtiCall(nino, taxYear) map {
+        case Right(accounts) if accounts.isEmpty => stubAccounts(Unavailable, employments, taxYear)
         case Right(accounts) => accounts
-        case Left(rtiStatus) => {
-          val realTimeStatus = if (rtiStatus == ResourceNotFoundError) Unavailable else TemporarilyUnavailable
-          stubAccounts(realTimeStatus, employments, taxYear)
-        }
+        case Left(rtiStatus) => stubAccounts(TemporarilyUnavailable, employments, taxYear)
       }
 
     for {

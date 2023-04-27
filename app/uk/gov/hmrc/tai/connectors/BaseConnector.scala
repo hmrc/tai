@@ -105,55 +105,6 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
     }
   }
 
-  def getFromRTIWithStatus[A](url: String, api: APITypes, reqNino: String, headers: Seq[(String, String)])(
-    implicit hc: HeaderCarrier,
-    formats: Format[A]): Future[(Option[RtiData], RtiStatus)] = {
-    val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)
-    futureResponse.flatMap { res =>
-      timerContext.stop()
-      res.status match {
-        case Status.OK => {
-          metrics.incrementSuccessCounter(api)
-
-          val rtiData = res.json.as[RtiData]
-          if (reqNino != rtiData.nino) {
-            Logger.warn(s"RTIAPI - Incorrect Payload returned from RTI HODS for $reqNino")
-
-            auditor.sendDataEvent(
-              "RTI returned incorrect account",
-              Map(
-                "request Nino"      -> reqNino,
-                "rti response Nino" -> rtiData.nino,
-                "tax year"          -> rtiData.taxYear.twoDigitRange,
-                "request Id"        -> rtiData.requestId)
-            )
-
-            Future.successful((None, RtiStatus(res.status, "Incorrect RTI Payload")))
-          } else {
-            Future.successful((Some(rtiData), RtiStatus(res.status, "Success")))
-          }
-        }
-        case Status.BAD_REQUEST => {
-          Logger.warn(s"RTIAPI - Bad Request error returned from RTI HODS for $reqNino and url $url")
-          Future.successful((None, RtiStatus(res.status, res.body)))
-        }
-        case Status.NOT_FOUND => {
-          Logger.warn(s"RTIAPI - No DATA Found error returned from RTI HODS for $reqNino and url $url")
-          Future.successful((None, RtiStatus(res.status, res.body)))
-        }
-        case Status.INTERNAL_SERVER_ERROR => {
-          Logger.warn(s"RTIAPI - Internal Server error returned from RTI HODS for $reqNino for url $url")
-          Future.successful((None, RtiStatus(res.status, res.body)))
-        }
-        case _ => {
-          Logger.warn(s"RTIAPI - An error returned from RTI HODS for $reqNino for url $url")
-          Future.successful((None, RtiStatus(res.status, res.body)))
-        }
-      }
-    }
-  }
-
   def getFromDes[A](url: String, api: APITypes, headers: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)

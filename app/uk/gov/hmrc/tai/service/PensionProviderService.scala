@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -69,7 +70,7 @@ class PensionProviderService @Inject()(
   }
 
   def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(
-    implicit hc: HeaderCarrier): Future[String] =
+    implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,
       IFormConstants.IncorrectPensionProviderSubmissionKey,
@@ -95,7 +96,7 @@ class PensionProviderService @Inject()(
   private[service] def incorrectPensionProviderForm(
     nino: Nino,
     id: Int,
-    incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier) = { person: Person =>
+    incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
     {
       for {
         Right(existingEmployment) <- employmentRepository.employment(nino, id)

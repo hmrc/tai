@@ -20,6 +20,7 @@ import com.google.inject.{Inject, Singleton}
 
 import java.time.LocalDate
 import play.api.Logger
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -62,16 +63,16 @@ class EmploymentService @Inject()(
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
-  def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] =
+  def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] =
     employmentRepository.employmentsForYear(nino, year) map (_.employments)
 
   def employment(nino: Nino, id: Int)(
-    implicit hc: HeaderCarrier): Future[Either[EmploymentRetrievalError, Employment]] =
+    implicit hc: HeaderCarrier, request: Request[_]): Future[Either[EmploymentRetrievalError, Employment]] =
     employmentRepository.employment(nino, id)
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
-  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier): Future[String] =
+  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
     for {
       person                    <- personRepository.getPerson(nino)
       Right(existingEmployment) <- employment(nino, id)
@@ -138,7 +139,7 @@ class EmploymentService @Inject()(
     }
 
   def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(
-    implicit hc: HeaderCarrier): Future[String] =
+    implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,
       IFormConstants.IncorrectEmploymentSubmissionKey,

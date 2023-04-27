@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
@@ -39,7 +40,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val employmentsForYear = Seq(employment)
 
       val mockEmploymentRepository = mock[EmploymentRepository]
-      when(mockEmploymentRepository.employmentsForYear(any(), any())(any()))
+      when(mockEmploymentRepository.employmentsForYear(any(), any())(any(), any()))
         .thenReturn(Future.successful(Employments(employmentsForYear)))
 
       val sut = createSut(
@@ -49,14 +50,14 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = sut.employments(nino, TaxYear())(HeaderCarrier()).futureValue
+      val employments = sut.employments(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       employments mustBe employmentsForYear
     }
 
     "return employment for passed nino, year and id" in {
       val mockEmploymentRepository = mock[EmploymentRepository]
-      when(mockEmploymentRepository.employment(any(), any())(any()))
+      when(mockEmploymentRepository.employment(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(employment)))
 
       val sut = createSut(
@@ -66,15 +67,15 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = sut.employment(nino, 2)(HeaderCarrier()).futureValue
+      val employments = sut.employment(nino, 2)(HeaderCarrier(), FakeRequest()).futureValue
 
       employments mustBe Right(employment)
-      verify(mockEmploymentRepository, times(1)).employment(any(), meq(2))(any())
+      verify(mockEmploymentRepository, times(1)).employment(any(), meq(2))(any(), any())
     }
 
     "return the correct Error Type when the employment doesn't exist" in {
       val mockEmploymentRepository = mock[EmploymentRepository]
-      when(mockEmploymentRepository.employment(any(), any())(any()))
+      when(mockEmploymentRepository.employment(any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
       val sut = createSut(
@@ -84,7 +85,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mock[Auditor])
-      val employments = sut.employment(nino, 5)(HeaderCarrier()).futureValue
+      val employments = sut.employment(nino, 5)(HeaderCarrier(), FakeRequest()).futureValue
 
       employments mustBe Left(EmploymentNotFound)
     }
@@ -96,7 +97,7 @@ class EmploymentServiceSpec extends BaseSpec {
         val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
         val mockEmploymentRepository = mock[EmploymentRepository]
-        when(mockEmploymentRepository.employment(any(), any())(any()))
+        when(mockEmploymentRepository.employment(any(), any())(any(), any()))
           .thenReturn(Future.successful(Right(employment)))
 
         val mockPersonRepository = mock[PersonRepository]
@@ -126,7 +127,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockPdfService,
           mockAuditable)
 
-        sut.endEmployment(nino, 2, endEmployment).futureValue mustBe "1"
+        sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).futureValue mustBe "1"
 
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
@@ -140,7 +141,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
       val mockEmploymentRepository = mock[EmploymentRepository]
-      when(mockEmploymentRepository.employment(any(), any())(any()))
+      when(mockEmploymentRepository.employment(any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(employment)))
 
       val mockPersonRepository = mock[PersonRepository]
@@ -169,7 +170,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockFileUploadService,
         mockPdfService,
         mockAuditable)
-      sut.endEmployment(nino, 2, endEmployment).futureValue
+      sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1)).sendDataEvent(
         meq("EndEmploymentRequest"),
@@ -287,7 +288,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[FileUploadService],
           mock[PdfService],
           mockAuditable)
-        val result = sut.incorrectEmployment(nino, 1, employment).futureValue
+        val result = sut.incorrectEmployment(nino, 1, employment)(implicitly, FakeRequest()).futureValue
 
         result mustBe "1"
       }
@@ -321,7 +322,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[FileUploadService],
         mock[PdfService],
         mockAuditable)
-      sut.incorrectEmployment(nino, 1, employment).futureValue
+      sut.incorrectEmployment(nino, 1, employment)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.IncorrectEmploymentAuditTxnName), meq(map))(any())

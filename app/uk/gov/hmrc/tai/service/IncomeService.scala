@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import play.Logger
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -42,7 +43,7 @@ class IncomeService @Inject()(
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
 
-  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[Employment]] = {
+  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] = {
     def filterNonMatchingCeasedEmploymentsWithEndDate(
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
@@ -63,12 +64,12 @@ class IncomeService @Inject()(
     nino: Nino,
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier): Future[Seq[IncomeSource]] = {
+    status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[IncomeSource]] = {
 
     def filterMatchingEmploymentsToIncomeSource(
       employments: Seq[Employment],
       filteredTaxCodeIncomes: Seq[TaxCodeIncome],
-      status: TaxCodeIncomeStatus): Seq[IncomeSource] =
+      status: TaxCodeIncomeStatus)(implicit request: Request[_]): Seq[IncomeSource] =
       filteredTaxCodeIncomes.flatMap { income =>
         employments
           .filter(emp => if (status == NotLive) emp.employmentStatus != Live else emp.employmentStatus == status)
@@ -87,7 +88,7 @@ class IncomeService @Inject()(
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 
-  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
+  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
     lazy val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
       Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}")
@@ -114,7 +115,7 @@ class IncomeService @Inject()(
     incomeRepository.incomes(nino, year)
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(
-    implicit headerCarrier: HeaderCarrier): Future[Seq[Employment]] =
+    implicit headerCarrier: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] =
     if (filteredTaxCodeIncomes.isEmpty) {
       Future.successful(Seq.empty[Employment])
     } else {

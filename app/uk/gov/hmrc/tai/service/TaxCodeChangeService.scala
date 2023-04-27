@@ -17,8 +17,10 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
+
 import java.time.LocalDate
 import play.api.Logging
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
@@ -35,14 +37,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(
-  taxCodeChangeConnector: TaxCodeChangeConnector,
   taxCodeChangeRepository: TaxCodeChangeRepository,
   auditor: Auditor,
   incomeService: IncomeService)(
   implicit ec: ExecutionContext
 ) extends TaxCodeChangeService with TaxCodeHistoryConstants with Logging {
 
-  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean] =
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] =
     taxCodeHistory(nino, TaxYear())
       .flatMap { taxCodeHistory =>
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
@@ -103,7 +104,7 @@ class TaxCodeChangeServiceImpl @Inject()(
       }
     }
 
-  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch] = {
+  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[TaxCodeMismatch] = {
     val futureMismatch = for {
       unconfirmedTaxCodes: Seq[TaxCodeIncome] <- incomeService.taxCodeIncomes(nino, TaxYear())
       confirmedTaxCodes: TaxCodeChange        <- taxCodeChange(nino)
@@ -196,11 +197,11 @@ class TaxCodeChangeServiceImpl @Inject()(
 @ImplementedBy(classOf[TaxCodeChangeServiceImpl])
 trait TaxCodeChangeService {
 
-  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier): Future[Boolean]
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean]
 
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange]
 
-  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeMismatch]
+  def taxCodeMismatch(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[TaxCodeMismatch]
 
   def latestTaxCodes(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeSummary]]
 

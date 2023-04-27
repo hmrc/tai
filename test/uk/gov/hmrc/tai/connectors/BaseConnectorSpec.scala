@@ -141,28 +141,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         verify(mockTimerContext).stop()
       }
 
-      "making a GET request to RTI" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(rtiDataBody)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, nino.nino, Seq.empty).futureValue
-
-        verify(mockMetrics).startTimer(any())
-        verify(mockTimerContext).stop()
-      }
-
       "making a GET request to DES" in {
 
         val mockTimerContext = mock[Timer.Context]
@@ -205,31 +183,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
-      }
-    }
-
-    "create an audit event" when {
-      "The RTI response does not match the nino that was requested" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(rtiDataBody)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val randomNino = new Generator(new Random).nextNino
-
-        sutWithMockedMetrics.getFromRTIWithStatus(url, apiType, randomNino.nino, Seq.empty).futureValue
-
-        verify(mockAuditor).sendDataEvent(meq("RTI returned incorrect account"), any())(any())
       }
     }
 
@@ -360,127 +313,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
           CONFLICT,
           exMessage
         )
-      }
-    }
-
-    "return a success response from RTI" when {
-      "it returns a success Http response for GET transactions with matching nino data" in {
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(rtiDataBody)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
-
-        resData mustBe Some(rtiData)
-        resStatus.status mustBe OK
-      }
-
-      "it returns a success Http response for GET transactions with incorrect nino data" in {
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(rtiDataBody)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val randomNino = new Generator(new Random).nextNino
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, randomNino.nino, Seq.empty).futureValue
-
-        resData mustBe None
-        resStatus.response mustBe "Incorrect RTI Payload"
-      }
-    }
-
-    "return an error response from RTI" when {
-      "it returns a bad request Http response for GET transactions" in {
-
-        val exMessage = "Incorrect query"
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(BAD_REQUEST)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
-
-        resData mustBe None
-        resStatus.status mustBe BAD_REQUEST
-        resStatus.response mustBe exMessage
-      }
-
-      "it returns a not found Http response for GET transactions" in {
-
-        val exMessage = "Not found"
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(NOT_FOUND)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
-
-        resData mustBe None
-        resStatus.status mustBe NOT_FOUND
-        resStatus.response mustBe exMessage
-      }
-
-      "it returns a internal server error Http response for GET transactions" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
-
-        resData mustBe None
-        resStatus.status mustBe INTERNAL_SERVER_ERROR
-        resStatus.response mustBe exMessage
-      }
-
-      "it returns an unknown Http response for GET transactions" in {
-
-        val exMessage = "Access denied"
-
-        server.stubFor(
-          get(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(IM_A_TEAPOT)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val (resData, resStatus) =
-          sut.getFromRTIWithStatus[ResponseObject](url, apiType, nino.nino, Seq.empty).futureValue
-
-        resData mustBe None
-        resStatus.status mustBe IM_A_TEAPOT
-        resStatus.response mustBe exMessage
-
       }
     }
 

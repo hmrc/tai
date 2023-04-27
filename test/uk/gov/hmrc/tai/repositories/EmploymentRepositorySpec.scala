@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.tai.repositories
 
+import cats.data.EitherT
+import cats.implicits._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.connectors.{NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.model.{domain, tai}
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
@@ -41,6 +45,7 @@ class EmploymentRepositorySpec extends BaseSpec {
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
   val employmentDataKey = s"EmploymentData-${currentTaxYear.year}"
+  implicit val request = FakeRequest()
 
   val npsSingleEmployment = Employment(
     "EMPLOYER1",
@@ -102,8 +107,8 @@ class EmploymentRepositorySpec extends BaseSpec {
           val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(annualAccount)))
 
           val mockRtiConnector = mock[RtiConnector]
-          when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Left(ResourceNotFoundError)))
+          when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+            .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ResourceNotFoundError: RtiPaymentsForYearError))
 
           val mockCacheRepository = mock[TaiCacheRepository]
           when(mockCacheRepository.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
@@ -145,8 +150,8 @@ class EmploymentRepositorySpec extends BaseSpec {
           val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(annualAccount)))
 
           val mockRtiConnector = mock[RtiConnector]
-          when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Left(ServiceUnavailableError)))
+          when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+            .thenReturn(EitherT.leftT[Future, Seq[domain.AnnualAccount]](ServiceUnavailableError: RtiPaymentsForYearError))
 
           val mockNpsConnector = mock[NpsConnector]
           when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -226,8 +231,8 @@ class EmploymentRepositorySpec extends BaseSpec {
             .thenReturn(Employments(expectedEmployments))
 
           val mockRtiConnector = mock[RtiConnector]
-          when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Right(Seq(annualAccount))))
+          when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+            .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(annualAccount)))
 
           val mockCacheRepository = mock[TaiCacheRepository]
           when(mockCacheRepository.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
@@ -294,8 +299,8 @@ class EmploymentRepositorySpec extends BaseSpec {
             .thenReturn(Employments(expectedEmploymentDetails))
 
           val mockRtiConnector = mock[RtiConnector]
-          when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Right(Seq(annualAccount))))
+          when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+            .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(annualAccount)))
 
           val mockCacheRepository = mock[TaiCacheRepository]
           when(mockCacheRepository.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
@@ -386,8 +391,8 @@ class EmploymentRepositorySpec extends BaseSpec {
             .thenReturn(Employments(expectedEmploymentDetails))
 
           val mockRtiConnector = mock[RtiConnector]
-          when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-            .thenReturn(Future.successful(Right(Seq(annualAccount1, annualAccount2))))
+          when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+            .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(annualAccount1, annualAccount2)))
 
           val mockCacheRepository = mock[TaiCacheRepository]
           when(mockCacheRepository.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
@@ -462,7 +467,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
-              .getPaymentsForYear(any(), any())(any())
+              .getPaymentsForYear(any(), any())(any(), any())
 
             verify(mockCacheRepository, times(0))
               .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(employments), meq(employmentDataKey))(any())
@@ -519,7 +524,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
-              .getPaymentsForYear(any(), any())(any())
+              .getPaymentsForYear(any(), any())(any(), any())
 
             verify(mockCacheRepository, times(0))
               .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(Seq(cyEmployment)), meq(employmentDataKey))(any())
@@ -581,7 +586,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               .getEmploymentDetails(meq(nino), any())(any())
 
             verify(mockRtiConnector, times(0))
-              .getPaymentsForYear(any(), any())(any())
+              .getPaymentsForYear(any(), any())(any(), any())
 
             verify(mockCacheRepository, times(0))
               .createOrUpdateSeq[Employment](meq(CacheId(nino)), meq(Seq(expectedEmployment)), meq(employmentDataKey))(
@@ -777,8 +782,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Employments(expectedEmployments))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
 
             val mockNpsConnector = mock[NpsConnector]
             when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -804,7 +809,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               .getEmploymentDetails(meq(nino), meq(currentTaxYear.year))(any())
 
             verify(mockRtiConnector, times(1))
-              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any())
+              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any(), any())
 
             verify(mockCacheRepository, times(1))
               .findSeq[Employment](meq(CacheId(nino)), any())(any())
@@ -881,8 +886,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Employments(expectedEmployments))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
 
             val mockNpsConnector = mock[NpsConnector]
             when(mockNpsConnector.getEmploymentDetails(any(), any())(any()))
@@ -908,7 +913,7 @@ class EmploymentRepositorySpec extends BaseSpec {
               .getEmploymentDetails(meq(nino), meq(currentTaxYear.year))(any())
 
             verify(mockRtiConnector, times(1))
-              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any())
+              .getPaymentsForYear(meq(nino), meq(currentTaxYear))(any(), any())
 
             verify(mockCacheRepository, times(1))
               .findSeq[Employment](meq(CacheId(nino)), any())(any())
@@ -966,8 +971,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Future.successful(expectedEmployments))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
 
             val mockNpsConnector = mock[NpsConnector]
 
@@ -1025,8 +1030,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Future.successful(expectedEmployments))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
 
             val mockNpsConnector = mock[NpsConnector]
 
@@ -1060,8 +1065,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Future.successful(List(cachedEmployment)))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Left(ServiceUnavailableError)))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError: RtiPaymentsForYearError))
 
             val mockNpsConnector = mock[NpsConnector]
 
@@ -1121,8 +1126,8 @@ class EmploymentRepositorySpec extends BaseSpec {
               .thenReturn(Future.successful(expectedEmployments))
 
             val mockRtiConnector = mock[RtiConnector]
-            when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-              .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+            when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+              .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
             val mockNpsConnector = mock[NpsConnector]
 
             val sut = testRepository(
@@ -1267,8 +1272,8 @@ class EmploymentRepositorySpec extends BaseSpec {
         npsSingleEmployment.copy(annualAccounts = Seq(temporaryUnavailableAnnualAccount))
 
       val mockRtiConnector = mock[RtiConnector]
-      when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-        .thenReturn(Future.successful(Left(ServiceUnavailableError)))
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError: RtiPaymentsForYearError))
 
       val mockEmploymentBuilder = mock[EmploymentBuilder]
       when(
@@ -1359,8 +1364,8 @@ class EmploymentRepositorySpec extends BaseSpec {
           .thenReturn(Future.successful(getJson("npsSingleEmployment")))
 
         val mockRtiConnector = mock[RtiConnector]
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any()))
-          .thenReturn(Future.successful(Right(Seq(expectedAnnualAccount))))
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq(expectedAnnualAccount)))
 
         val controller = testRepository(
           rtiConnector = mockRtiConnector,
