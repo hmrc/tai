@@ -108,7 +108,7 @@ class EmploymentRepositorySpec extends BaseSpec {
 
           val mockRtiConnector = mock[RtiConnector]
           when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-            .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ResourceNotFoundError: RtiPaymentsForYearError))
+            .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](Seq.empty: Seq[AnnualAccount]))
 
           val mockCacheRepository = mock[TaiCacheRepository]
           when(mockCacheRepository.findSeq[Employment](any(), any())(any())).thenReturn(Future.successful(Nil))
