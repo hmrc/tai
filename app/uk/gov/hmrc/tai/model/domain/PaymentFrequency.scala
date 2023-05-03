@@ -16,36 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Reads, Writes}
-
 sealed trait PaymentFrequency {
   val value: String
-}
-
-object PaymentFrequency {
-
-  implicit val reads: Reads[PaymentFrequency] = new Reads[PaymentFrequency] {
-    override def reads(json: JsValue): JsResult[PaymentFrequency] =
-      json match {
-        case name if name == JsString(Weekly.value) => JsSuccess(Weekly)
-        case name if name == JsString(FortNightly.value) => JsSuccess(FortNightly)
-        case name if name == JsString(Monthly.value) => JsSuccess(Monthly)
-        case name if name == JsString(Quarterly.value) => JsSuccess(Quarterly)
-        case name if name == JsString(BiAnnually.value) => JsSuccess(BiAnnually)
-        case name if name == JsString(Annually.value) => JsSuccess(Annually)
-        case name if name == JsString(OneOff.value) => JsSuccess(OneOff)
-        case name if name == JsString(Irregular.value) => JsSuccess(Irregular)
-        case _                                         => JsError("Unknown PaymentFrequency")
-      }
-  }
-
-  implicit val formats: Format[PaymentFrequency] =
-    Format(reads, writes)
-
-  implicit val writes: Writes[PaymentFrequency] = new Writes[PaymentFrequency] {
-    override def writes(o: PaymentFrequency): JsValue = JsString(o.value)
-  }
-
 }
 
 case object Weekly extends PaymentFrequency {

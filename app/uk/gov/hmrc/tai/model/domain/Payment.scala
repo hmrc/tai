@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat}
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentMongoFormatters
 
 import java.time.LocalDate
 
@@ -38,6 +39,7 @@ case class Payment(
 
 object Payment {
   implicit val format: OFormat[Payment] = Json.format[Payment]
+  implicit val paymentFrequencyFormat: Format[PaymentFrequency] = EmploymentMongoFormatters.paymentFrequencyFormat
 
   private implicit val LocalDateOrder: Ordering[LocalDate] = (x: LocalDate, y: LocalDate) => x.compareTo(y)
   implicit val dateOrdering: Ordering[Payment] = Ordering.by(_.date)

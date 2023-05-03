@@ -29,7 +29,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
+import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.SessionCacheRepository
@@ -65,7 +65,7 @@ class CachingRtiConnector @Inject() (
                                                            @Named("default") underlying: RtiConnector,
                                                            sessionCacheRepository: SessionCacheRepository
                                                          )(implicit ec: ExecutionContext)
-  extends RtiConnector {
+  extends RtiConnector with EmploymentMongoFormatters {
 
   private def cache[L, A: Format](
                                    key: String
