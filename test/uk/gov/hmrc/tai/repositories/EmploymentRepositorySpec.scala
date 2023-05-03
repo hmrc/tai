@@ -101,7 +101,7 @@ class EmploymentRepositorySpec extends BaseSpec {
   "employmentsForYear" must {
     "return the employment domain model" when {
       "there is no data in the cache" when {
-        "a call to rti results in a ResourceNotFound error response" ignore {
+        "a call to rti results in a ResourceNotFound error response" in {
 
           val annualAccount = createAnnualAccount(Unavailable)
           val expectedEmployments = Seq(npsSingleEmployment.copy(annualAccounts = Seq(annualAccount)))

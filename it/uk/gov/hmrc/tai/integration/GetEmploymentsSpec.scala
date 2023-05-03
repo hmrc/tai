@@ -34,7 +34,7 @@ class GetEmploymentsSpec extends IntegrationSpec {
   def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   "Get Employment" must {
-    "return an OK response for a valid user" ignore {
+    "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
     }
