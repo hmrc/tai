@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class AnnualAccount(
@@ -33,6 +34,8 @@ case class AnnualAccount(
 }
 
 object AnnualAccount {
+  implicit val format: OFormat[AnnualAccount] = Json.format[AnnualAccount]
+
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber : Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =

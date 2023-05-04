@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -37,7 +38,7 @@ class TaxAccountSummaryService @Inject()(
   implicit ec: ExecutionContext
 ) extends TaxAccountSummaryHodFormatters {
 
-  def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxAccountSummary] =
+  def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[TaxAccountSummary] =
     for {
       totalEstimatedTax       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)

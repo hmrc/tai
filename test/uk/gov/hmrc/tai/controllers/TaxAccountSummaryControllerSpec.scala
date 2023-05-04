@@ -37,7 +37,7 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     "return the tax summary for the given year" when {
       "tax year is CY+1" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear().next))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear().next))(any(), any()))
           .thenReturn(Future.successful(taxAccountSummaryForYearCY1))
 
         val sut = createSUT(mockTaxAccountSummaryService)
@@ -63,7 +63,7 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     "return Locked exception" when {
       "nps throws locked exception" in {
         val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
-        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear()))(any()))
+        when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear()))(any(), any()))
           .thenReturn(Future.failed(new LockedException("Account is locked")))
 
         val sut = createSUT(mockTaxAccountSummaryService)

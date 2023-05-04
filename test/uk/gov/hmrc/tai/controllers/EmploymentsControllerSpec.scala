@@ -62,7 +62,7 @@ class EmploymentsControllerSpec extends BaseSpec {
   "employments" must {
     "return Ok" when {
       "called with a valid nino and year" in {
-        when(mockEmploymentService.employments(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any(), any()))
           .thenReturn(Future.successful(Nil))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
@@ -71,7 +71,7 @@ class EmploymentsControllerSpec extends BaseSpec {
     }
     "return a valid API json response" when {
       "called with a valid nino and year" in {
-        when(mockEmploymentService.employments(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any(), any()))
           .thenReturn(Future.successful(List(emp)))
 
         val jsonResult = Json.obj(
@@ -97,14 +97,14 @@ class EmploymentsControllerSpec extends BaseSpec {
     }
     "return a non success http response" when {
       "the employments are not found" in {
-        when(mockEmploymentService.employments(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any(), any()))
           .thenReturn(Future.failed(new NotFoundException("employment not found")))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
       "the employments service returns a bad request exception" in {
-        when(mockEmploymentService.employments(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any(), any()))
           .thenReturn(Future.failed(new BadRequestException("no employments recorded for this individual")))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
@@ -113,7 +113,7 @@ class EmploymentsControllerSpec extends BaseSpec {
 
       }
       "the employments service returns an error" in {
-        when(mockEmploymentService.employments(any(), any())(any()))
+        when(mockEmploymentService.employments(any(), any())(any(), any()))
           .thenReturn(Future.failed(new InternalServerException("employment service failed")))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
@@ -125,7 +125,7 @@ class EmploymentsControllerSpec extends BaseSpec {
   "employment" must {
     "return ok" when {
       "called with valid nino, year and id" in {
-        when(mockEmploymentService.employment(any(), any())(any()))
+        when(mockEmploymentService.employment(any(), any())(any(), any()))
           .thenReturn(Future.successful(Right(emp)))
 
         val result = sut.employment(nino, 2)(FakeRequest())
@@ -150,41 +150,41 @@ class EmploymentsControllerSpec extends BaseSpec {
         status(result) mustBe OK
         contentAsJson(result) mustBe jsonResult
 
-        verify(mockEmploymentService, times(1)).employment(any(), meq(2))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(2))(any(), any())
       }
     }
 
     "return not found" when {
       "called with valid nino, year and id but id doesn't present" in {
-        when(mockEmploymentService.employment(any(), any())(any()))
+        when(mockEmploymentService.employment(any(), any())(any(), any()))
           .thenReturn(Future.successful(Left(EmploymentNotFound)))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
       }
 
       "throw not found exception" in {
-        when(mockEmploymentService.employment(any(), any())(any()))
+        when(mockEmploymentService.employment(any(), any())(any(), any()))
           .thenReturn(Future.failed(new NotFoundException("")))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
       }
     }
 
     "return internal server" when {
       "employment service throws an error" in {
-        when(mockEmploymentService.employment(any(), any())(any()))
+        when(mockEmploymentService.employment(any(), any())(any(), any()))
           .thenReturn(Future.failed(new InternalServerException("")))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any())
+        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
       }
     }
   }
@@ -196,7 +196,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val json = Json.toJson(employment)
         val envelopeId = "EnvelopeId"
 
-        when(mockEmploymentService.endEmployment(any(), any(), any())(any()))
+        when(mockEmploymentService.endEmployment(any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.endEmployment(nino, 3)(
@@ -236,7 +236,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val employment = IncorrectEmployment("whatYouToldUs", "Yes", Some("123123"))
         val id = 1
 
-        when(mockEmploymentService.incorrectEmployment(meq(nino), meq(id), meq(employment))(any()))
+        when(mockEmploymentService.incorrectEmployment(meq(nino), meq(id), meq(employment))(any(), any()))
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.incorrectEmployment(nino, id)(

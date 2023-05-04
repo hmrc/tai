@@ -44,7 +44,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
     "return true" when {
       "there has been a tax code change" in {
 
-        when(taxCodeService.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(true))
+        when(taxCodeService.hasTaxCodeChanged(any())(any(), any())).thenReturn(Future.successful(true))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -57,7 +57,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
     "return false" when {
       "there has not been a tax code change" in {
 
-        when(taxCodeService.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(false))
+        when(taxCodeService.hasTaxCodeChanged(any())(any(), any())).thenReturn(Future.successful(false))
 
         val response: Future[Result] = controller.hasTaxCodeChanged(testNino)(FakeRequest())
 
@@ -192,7 +192,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        when(taxCodeService.taxCodeMismatch(any())(any()))
+        when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
@@ -212,7 +212,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
     "return false and list of tax code changes" when {
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
-        when(taxCodeService.taxCodeMismatch(any())(any()))
+        when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
 
         val expectedResponse = Json.obj(
@@ -231,7 +231,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
     "return a BAD_GATEWAY" when {
       "a bad gateway exception has occurred" in {
-        when(taxCodeService.taxCodeMismatch(any())(any()))
+        when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.failed(new BadGatewayException("Error")))
 
         val result = controller.taxCodeMismatch(testNino)(FakeRequest())
@@ -243,7 +243,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
     "return a NotFound 404" when {
       "a not found exception has occurred" in {
-        when(taxCodeService.taxCodeMismatch(any())(any()))
+        when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.failed(new NotFoundException("Error")))
 
         val result = controller.taxCodeMismatch(testNino)(FakeRequest())
@@ -255,7 +255,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
     "respond with BAD_GATEWAY" when {
       "a InternalServerException has occurred" in {
-        when(taxCodeService.taxCodeMismatch(any())(any()))
+        when(taxCodeService.taxCodeMismatch(any())(any(), any()))
           .thenReturn(Future.failed(new InternalServerException("Bad gateway")))
 
         val result = controller.taxCodeMismatch(testNino)(FakeRequest())

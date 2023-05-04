@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.service
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
+import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
@@ -124,7 +125,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -137,7 +138,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val res = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -190,7 +191,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -203,7 +204,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
-        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val res = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(0)
         res.totalInYearAdjustment mustBe BigDecimal(0)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(0)
@@ -246,7 +247,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(codingComponents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -260,7 +261,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val res = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val res = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
         res.totalInYearAdjustmentIntoCY mustBe BigDecimal(67.44)
         res.totalInYearAdjustment mustBe BigDecimal(23.20)
         res.totalInYearAdjustmentIntoCYPlusOne mustBe BigDecimal(11.60)
@@ -318,7 +319,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
         val mockTotalTaxService = mock[TotalTaxService]
@@ -328,7 +329,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        sut.taxAccountSummary(nino, TaxYear()).futureValue mustBe
+        sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue mustBe
           TaxAccountSummary(1111, -620, 67.46, 0, 0, 0, 10000)
       }
     }
@@ -343,7 +344,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -366,7 +367,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val result = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
         result.totalEstimatedIncome mustBe 22000
         result.taxFreeAllowance mustBe 1000
@@ -382,7 +383,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -400,7 +401,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val result = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
         result.totalEstimatedIncome mustBe 1000
         result.taxFreeAllowance mustBe 0
@@ -416,7 +417,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(taxFreeAmountCompnents))
 
         val mockIncomeService = mock[IncomeService]
-        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any()))
+        when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val mockTaxAccountSummaryRepository = mock[TaxAccountSummaryRepository]
@@ -434,7 +435,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         val sut =
           createSUT(mockTaxAccountSummaryRepository, mockcodingComponentService, mockIncomeService, mockTotalTaxService)
 
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
+        val result = sut.taxAccountSummary(nino, TaxYear())(implicitly, FakeRequest()).futureValue
 
         result.totalEstimatedIncome mustBe 8000
         result.taxFreeAllowance mustBe 11500

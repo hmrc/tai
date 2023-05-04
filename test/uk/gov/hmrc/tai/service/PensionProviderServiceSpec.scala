@@ -20,6 +20,7 @@ import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{doNothing, times, verify, when}
 import org.scalatest.concurrent.ScalaFutures
+import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -116,7 +117,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-        val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider).futureValue
+        val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider)(implicitly, FakeRequest()).futureValue
 
         result mustBe "1"
       }
@@ -141,7 +142,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
-      sut.incorrectPensionProvider(nino, 1, pensionProvider).futureValue
+      sut.incorrectPensionProvider(nino, 1, pensionProvider)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq(map))(any())
@@ -175,12 +176,12 @@ class PensionProviderServiceSpec extends BaseSpec {
         )
 
         val mockEmploymentRepository = mock[EmploymentRepository]
-        when(mockEmploymentRepository.employment(any(), any())(any()))
+        when(mockEmploymentRepository.employment(any(), any())(any(), any()))
           .thenReturn(Future.successful(Right(employment)))
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
 
-        val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc)(person).futureValue
+        val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc, FakeRequest())(person).futureValue
         result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
 
       }

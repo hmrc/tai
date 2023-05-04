@@ -137,7 +137,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return Not Found" when {
       "Nil is returned by income service" in {
-        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
         val SUT = createSUT(mockIncomeService)
@@ -147,7 +147,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       }
 
       "a Not Found Exception occurs" in {
-        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any(), any()))
           .thenReturn(Future.failed(new NotFoundException("Error")))
 
         val SUT = createSUT(mockIncomeService)
@@ -188,7 +188,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
           )
         )
 
-        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+        when(mockIncomeService.taxCodeIncomes(any(), meq(TaxYear().next))(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomesNoPension))
 
         val SUT = createSUT(mockIncomeService)
@@ -249,7 +249,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
     )
 
     "return tax code incomes and employments JSON" in {
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(Future.successful(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
       val sut = createSUT(
@@ -267,7 +267,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return NotFound when a NotFoundException occurs" in {
 
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -278,7 +278,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return BadRequest when a BadRequestException occurs" in {
 
-      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any()))
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -308,7 +308,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       val employments =
         Seq(employment, employment.copy(sequenceNumber = 1, endDate = Some(LocalDate.of(TaxYear().next.year, 8, 10))))
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(Future.successful(employments))
 
       val nextTaxYear = TaxYear().next
@@ -327,7 +327,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return NotFound when a NotFoundException occurs" in {
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(Future.failed(new NotFoundException("Error")))
 
       val SUT = createSUT(mockIncomeService)
@@ -338,7 +338,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
     "return BadRequest when a BadRequestException occurs" in {
 
-      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any()))
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(Future.failed(new BadRequestException("Error")))
 
       val SUT = createSUT(mockIncomeService)

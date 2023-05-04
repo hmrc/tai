@@ -64,7 +64,7 @@ class PensionProviderControllerSpec extends BaseSpec {
         val mockPensionProviderService = mock[PensionProviderService]
         when(
           mockPensionProviderService
-            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any()))
+            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any(), any()))
           .thenReturn(Future.successful(envelopeId))
 
         val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)

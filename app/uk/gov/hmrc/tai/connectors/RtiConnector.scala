@@ -16,61 +16,115 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import cats.data.EitherT
+import cats.implicits._
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status._
+import play.api.libs.json.Format
+import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HttpClient, _}
-import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
+import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.cache.SessionCacheRepository
 
 import java.util.UUID
+import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-@Singleton
-class RtiConnector @Inject()(
-  httpClient: HttpClient,
-  metrics: Metrics,
-  auditor: Auditor,
-  rtiConfig: DesConfig,
-  urls: RtiUrls,
-  rtiToggle: RtiToggleConfig)(implicit ec: ExecutionContext)
-    extends BaseConnector(auditor, metrics, httpClient) {
-
-  override val originatorId = rtiConfig.originatorId
-  val logger = Logger(this.getClass)
+trait RtiConnector extends RawResponseReads {
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
+                                                       hc: HeaderCarrier,
+                                                       request: Request[_]
+  ): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]]
 
   def withoutSuffix(nino: Nino): String = {
     val BASIC_NINO_LENGTH = 8
     nino.value.take(BASIC_NINO_LENGTH)
   }
 
-  private def createHeader(implicit hc: HeaderCarrier): Seq[(String, String)] =
+  def createHeader(rtiConfig: DesConfig)(implicit hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
       "Environment"          -> rtiConfig.environment,
       "Authorization"        -> rtiConfig.authorization,
-      "Gov-Uk-Originator-Id" -> originatorId,
+      "Gov-Uk-Originator-Id" -> rtiConfig.originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
       "CorrelationId"        -> UUID.randomUUID().toString
     )
+}
+
+class CachingRtiConnector @Inject() (
+                                                           @Named("default") underlying: RtiConnector,
+                                                           sessionCacheRepository: SessionCacheRepository
+                                                         )(implicit ec: ExecutionContext)
+  extends RtiConnector with EmploymentMongoFormatters {
+
+  private def cache[L, A: Format](
+                                   key: String
+                                 )(f: => EitherT[Future, L, A])(implicit request: Request[_]): EitherT[Future, L, A] = {
+
+    def fetchAndCache: EitherT[Future, L, A] =
+      for {
+        result <- f
+        _      <- EitherT[Future, L, (String, String)](
+          sessionCacheRepository
+            .putSession[A](DataKey[A](key), result)
+            .map(Right(_))
+        )
+      } yield result
+
+    EitherT(
+      sessionCacheRepository
+        .getFromSession[A](DataKey[A](key))
+        .map {
+          case None        => fetchAndCache
+          case Some(value) => EitherT.rightT[Future, L](value)
+        }
+        .map(_.value)
+        .flatten
+    ) recoverWith { case NonFatal(_) =>
+      fetchAndCache
+    }
+  }
+
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
+                                    hc: HeaderCarrier,
+                                    request: Request[_]
+                                   ): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
+    cache(s"getPaymentsForYear${taxYear.year}") {
+      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
+    }
+}
+
+
+@Singleton
+class DefaultRtiConnector @Inject()(
+  httpClient: HttpClient,
+  metrics: Metrics,
+  rtiConfig: DesConfig,
+  urls: RtiUrls,
+  rtiToggle: RtiToggleConfig)(implicit ec: ExecutionContext) extends RtiConnector {
+
+  val logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
+    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
     if (rtiToggle.rtiEnabled && taxYear.year < TaxYear().next.year) {
       logger.info(s"RTIAPI - call for the year: $taxYear}")
       val NGINX_TIMEOUT = 499
       val timerContext = metrics.startTimer(APITypes.RTIAPI)
       val ninoWithoutSuffix = withoutSuffix(nino)
       val futureResponse =
-        httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader)
-      futureResponse map { res =>
+        httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
+      EitherT(futureResponse map { res =>
         timerContext.stop()
         res.status match {
           case OK => {
@@ -81,7 +135,7 @@ class RtiConnector @Inject()(
           }
           case NOT_FOUND => {
             metrics.incrementSuccessCounter(APITypes.RTIAPI)
-            Left(ResourceNotFoundError)
+            Right(Seq.empty)
           }
           case BAD_REQUEST => {
             metrics.incrementFailedCounter(APITypes.RTIAPI)
@@ -128,9 +182,10 @@ class RtiConnector @Inject()(
           timerContext.stop()
           throw e
         }
-      }
+      })
     } else {
       logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
-      Future.successful(Left(ServiceUnavailableError))
+      EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError)
     }
 }
+
