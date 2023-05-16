@@ -26,7 +26,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(DefaultBuildSettings.integrationTestSettings())
   .settings(
     resolvers += Resolver.jcenterRepo,
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint", "-Ypartial-unification"),
     routesImport ++= Seq(
       "scala.language.reflectiveCalls",
       "uk.gov.hmrc.tai.model.domain.income._",

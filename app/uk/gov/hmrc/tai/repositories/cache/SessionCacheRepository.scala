@@ -16,24 +16,55 @@
 
 package uk.gov.hmrc.tai.repositories.cache
 
-import uk.gov.hmrc.http.SessionKeys
-import uk.gov.hmrc.mongo.cache.{DataKey, SessionCacheRepository => CacheRepository}
-import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent}
-import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.model.domain.AnnualAccount
+import javax.inject.Inject
+import org.mongodb.scala.model.IndexModel
+import play.api.libs.json.{Reads, Writes}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 
-import java.util.concurrent.TimeUnit
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.mongo.{MongoComponent, MongoDatabaseCollection, TimestampSupport}
 
-@Singleton
-class SessionCacheRepository @Inject()(appConfig: MongoConfig, mongoComponent: MongoComponent)(implicit
-                                                                                               ec: ExecutionContext
-) extends CacheRepository(
-      mongoComponent = mongoComponent,
-      collectionName = "sessions",
-      ttl = Duration(appConfig.mongoTTL, TimeUnit.SECONDS),
-      timestampSupport = new CurrentTimestampSupport(),
-      sessionIdKey = SessionKeys.sessionId
-    )
+case object SessionCacheId extends CacheIdType[HeaderCarrier] {
+  override def run: HeaderCarrier => String =
+    _.sessionId.map(_.value)
+      .getOrElse(throw NoSessionException)
+
+  case object NoSessionException extends Exception("Could not find sessionId")
+}
+
+class SessionCacheRepository @Inject() (
+                                         mongoComponent: MongoComponent,
+                                         override val collectionName: String,
+                                         replaceIndexes: Boolean = true,
+                                         ttl: Duration,
+                                         timestampSupport: TimestampSupport
+                                       )(implicit ec: ExecutionContext)
+  extends MongoDatabaseCollection {
+  val cacheRepo = new MongoCacheRepository[HeaderCarrier](
+    mongoComponent   = mongoComponent,
+    collectionName   = collectionName,
+    replaceIndexes   = replaceIndexes,
+    ttl              = ttl,
+    timestampSupport = timestampSupport,
+    cacheIdType      = SessionCacheId
+  )
+
+  override val indexes: Seq[IndexModel] =
+    cacheRepo.indexes
+
+  def putSession[T: Writes](
+                             dataKey: DataKey[T],
+                             data: T
+                           )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String)] =
+    cacheRepo
+      .put[T](hc)(dataKey, data)
+      .map(res => "sessionId" -> res.id)
+
+  def getFromSession[T: Reads](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Option[T]] =
+    cacheRepo.get[T](hc)(dataKey)
+
+  def deleteFromSession[T](dataKey: DataKey[T])(implicit hc: HeaderCarrier): Future[Unit] =
+    cacheRepo.delete(hc)(dataKey)
+}

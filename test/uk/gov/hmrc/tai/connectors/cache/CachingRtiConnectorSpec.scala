@@ -30,7 +30,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.SessionCacheRepository
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -41,11 +41,11 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     bind(classOf[RtiConnector])
       .qualifiedWith("default")
       .toInstance(mockRtiConnector),
-    bind[SessionCacheRepository].toInstance(mockSessionCacheRepository)
+    bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository)
   ).build()
 
   val mockRtiConnector: RtiConnector = mock[RtiConnector]
-  val mockSessionCacheRepository: SessionCacheRepository  = mock[SessionCacheRepository]
+  val mockSessionCacheRepository: TaiSessionCacheRepository  = mock[TaiSessionCacheRepository]
 
   override implicit val hc: HeaderCarrier         = HeaderCarrier()
 

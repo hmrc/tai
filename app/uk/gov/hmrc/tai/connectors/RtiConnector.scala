@@ -24,7 +24,7 @@ import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -32,7 +32,8 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.SessionCacheRepository
+import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
+import uk.gov.hmrc.tai.service.LockService
 
 import java.util.UUID
 import javax.inject.Named
@@ -62,36 +63,60 @@ trait RtiConnector extends RawResponseReads {
 }
 
 class CachingRtiConnector @Inject() (
-                                                           @Named("default") underlying: RtiConnector,
-                                                           sessionCacheRepository: SessionCacheRepository
+                                      @Named("default") underlying: RtiConnector,
+                                      sessionCacheRepository: TaiSessionCacheRepository,
+                                      lockService: LockService
                                                          )(implicit ec: ExecutionContext)
   extends RtiConnector with EmploymentMongoFormatters {
 
   private def cache[L, A: Format](
                                    key: String
-                                 )(f: => EitherT[Future, L, A])(implicit request: Request[_]): EitherT[Future, L, A] = {
+                                 )(f: => EitherT[Future, L, A])(implicit request: Request[_], hc: HeaderCarrier): EitherT[Future, L, A] = {
 
     def fetchAndCache: EitherT[Future, L, A] =
-      for {
+      (for {
         result <- f
         _      <- EitherT[Future, L, (String, String)](
-          sessionCacheRepository
-            .putSession[A](DataKey[A](key), result)
-            .map(Right(_))
-        )
-      } yield result
+            sessionCacheRepository
+              .putSession[A](DataKey[A](key), result)
+              .map(Right(_))
+          )
+      } yield result)
 
-    EitherT(
-      sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
-        .map {
-          case None        => fetchAndCache
-          case Some(value) => EitherT.rightT[Future, L](value)
+    def recursiveReadAndUpdate(count: Int = 0): EitherT[Future, L, A] = {
+      lockService.takeLock(key).flatMap {
+        case true =>
+          EitherT(
+          sessionCacheRepository
+            .getFromSession[A](DataKey[A](key))
+            .map {
+              case None =>
+                fetchAndCache
+              case Some(value) =>
+                EitherT.rightT[Future, L](value)
+            }
+            .map { result =>
+              result.value.recover { case ex =>
+                lockService.releaseLock(key)
+                throw ex
+              }
+            }
+            .flatten) recoverWith { case NonFatal(_) =>
+          fetchAndCache
         }
-        .map(_.value)
-        .flatten
-    ) recoverWith { case NonFatal(_) =>
-      fetchAndCache
+        case false =>
+          if (count < 50 ) {
+            Thread.sleep(500)
+            recursiveReadAndUpdate(count + 1)
+          } else {
+            throw new RuntimeException("Oops, cannot acquire lock")
+          }
+      }
+    }
+
+    recursiveReadAndUpdate().transform { result =>
+      lockService.releaseLock(key)
+      result
     }
   }
 
@@ -116,7 +141,8 @@ class DefaultRtiConnector @Inject()(
   val logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
+    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] = {
+
     if (rtiToggle.rtiEnabled && taxYear.year < TaxYear().next.year) {
       logger.info(s"RTIAPI - call for the year: $taxYear}")
       val NGINX_TIMEOUT = 499
@@ -180,6 +206,7 @@ class DefaultRtiConnector @Inject()(
         case NonFatal(e) => {
           metrics.incrementFailedCounter(APITypes.RTIAPI)
           timerContext.stop()
+          logger.error(e.getMessage, e)
           throw e
         }
       })
@@ -187,5 +214,6 @@ class DefaultRtiConnector @Inject()(
       logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
       EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError)
     }
+  }
 }
 
