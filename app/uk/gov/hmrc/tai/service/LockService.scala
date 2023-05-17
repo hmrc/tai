@@ -17,43 +17,50 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
-import com.google.inject.{ImplementedBy, Inject}
+import com.google.inject.Inject
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
+import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
 
+import javax.inject.Singleton
+
 case object OopsCannotAcquireLock extends Exception
 
-@ImplementedBy(classOf[LockServiceImpl])
 trait LockService {
-  def requestId(implicit hc: HeaderCarrier): String
+  def sessionId(implicit hc: HeaderCarrier): String
 
   def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean]
 
   def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Unit]
 }
 
-class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext) extends LockService {
+@Singleton
+class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext) extends LockService with Logging {
 
-  def requestId(implicit hc: HeaderCarrier): String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+  def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold{
+    val ex = new RuntimeException("Session id is missing from HeaderCarrier")
+    logger.error(ex.getMessage, ex)
+    java.util.UUID.randomUUID.toString
+  }(_.value)
 
   def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] = {
     EitherT.right[L](lockRepo
         .takeLock(
-          lockId = requestId,
+          lockId = sessionId,
           owner = owner,
-          ttl = Duration(20, SECONDS) // this need to be longer than the timeout from http_verbs
+          ttl = Duration(appConfig.mongoLockTTL, SECONDS) // this need to be longer than the timeout from http_verbs
         ))
   }
 
   def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Unit] =
     EitherT.right[L](lockRepo
       .releaseLock(
-        lockId = requestId,
+        lockId = sessionId,
         owner = owner
       ))
 }

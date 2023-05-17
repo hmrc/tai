@@ -26,7 +26,7 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, MongoConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
@@ -62,29 +62,31 @@ trait RtiConnector extends RawResponseReads {
     )
 }
 
+@Singleton
 class CachingRtiConnector @Inject() (
                                       @Named("default") underlying: RtiConnector,
                                       sessionCacheRepository: TaiSessionCacheRepository,
-                                      lockService: LockService
+                                      lockService: LockService,
+                                      appConfig: MongoConfig
                                                          )(implicit ec: ExecutionContext)
   extends RtiConnector with EmploymentMongoFormatters {
 
-  private def cache[L, A: Format](
-                                   key: String
-                                 )(f: => EitherT[Future, L, A])(implicit request: Request[_], hc: HeaderCarrier): EitherT[Future, L, A] = {
+  private def cache[L, A: Format](key: String)
+                                 (f: => EitherT[Future, L, A])
+                                 (implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
 
     def fetchAndCache: EitherT[Future, L, A] =
-      (for {
+      for {
         result <- f
         _      <- EitherT[Future, L, (String, String)](
             sessionCacheRepository
               .putSession[A](DataKey[A](key), result)
               .map(Right(_))
           )
-      } yield result)
+      } yield result
 
     def recursiveReadAndUpdate(count: Int = 0): EitherT[Future, L, A] = {
-      lockService.takeLock(key).flatMap {
+      lockService.takeLock[L](key).flatMap {
         case true =>
           EitherT(
           sessionCacheRepository
@@ -94,18 +96,12 @@ class CachingRtiConnector @Inject() (
                 fetchAndCache
               case Some(value) =>
                 EitherT.rightT[Future, L](value)
-            }
-            .map { result =>
-              result.value.recover { case ex =>
-                lockService.releaseLock(key)
-                throw ex
-              }
-            }
-            .flatten) recoverWith { case NonFatal(_) =>
+            }.map(_.value).flatten) recoverWith {
+            case NonFatal(_) =>
           fetchAndCache
         }
         case false =>
-          if (count < 50 ) {
+          if (count < appConfig.mongoLockTTL / 0.5 ) {
             Thread.sleep(500)
             recursiveReadAndUpdate(count + 1)
           } else {
@@ -114,10 +110,14 @@ class CachingRtiConnector @Inject() (
       }
     }
 
-    recursiveReadAndUpdate().transform { result =>
+    EitherT(recursiveReadAndUpdate().transform { result =>
       lockService.releaseLock(key)
       result
-    }
+    }.value.recover {
+      case ex =>
+        lockService.releaseLock(key)
+        throw ex
+    })
   }
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit

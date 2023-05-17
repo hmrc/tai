@@ -23,12 +23,14 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, DefaultRtiConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
+import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
     bind[IncomeHelper].toInstance(IncomeHelper).in[Singleton],
     bind(classOf[AuthorisedFunctions]).to(classOf[MicroserviceAuthorisedFunctions]).eagerly(),
     bind[RtiConnector].to[CachingRtiConnector],
-    bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector]
+    bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
+    bind[LockService].to[LockServiceImpl]
   )
 }
