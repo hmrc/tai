@@ -165,8 +165,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
     "returns an exception and the lock is released" when {
       "future failed" in {
+        val errorMessage = "Error message"
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](Future.failed(new Exception("Ooops"))))
+          .thenReturn(EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
 
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(None))
@@ -178,7 +179,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value
         whenReady(result.failed) { ex =>
-          ex.getMessage mustBe "Ooops"
+          ex.getMessage mustBe errorMessage
         }
 
         verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())

@@ -46,7 +46,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
         val result = sut.takeLock("lockId")
         result.value.futureValue mustBe Right(true)
 
-        find(Filters.equal("_id", "some session id")).map { result: Seq[Lock] =>
+        find(Filters.equal("_id", sessionIdValue)).map { result: Seq[Lock] =>
           result.size mustBe 1
           val expiry = result.head.expiryTime
           val start = result.head.timeCreated
@@ -64,7 +64,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
         } yield result
         result.futureValue mustBe Right(true)
 
-        find(Filters.equal("_id", "some session id")).map { result: Seq[Lock] =>
+        find(Filters.equal("_id", sessionIdValue)).map { result: Seq[Lock] =>
           result.size mustBe 1
           val expiry = result.head.expiryTime
           val start = result.head.timeCreated
@@ -90,7 +90,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
 
       sut.releaseLock[Boolean]("lockId").value.futureValue
 
-      find(Filters.equal("_id", "some session id")).map { result: Seq[Lock] =>
+      find(Filters.equal("_id", sessionIdValue)).map { result: Seq[Lock] =>
         result.isEmpty mustBe true
       }
     }
