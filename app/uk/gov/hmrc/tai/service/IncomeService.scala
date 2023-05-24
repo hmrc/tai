@@ -91,7 +91,7 @@ class IncomeService @Inject()(
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
     lazy val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
-      Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}")
+      Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}", ex)
       Seq.empty[Employment]
     }
 

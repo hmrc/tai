@@ -44,7 +44,8 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
   lazy val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService, cc)
 
   val nino = new Generator(Random).nextNino
-  implicit val hc = HeaderCarrier(sessionId = Some(SessionId("some session id")))
+  val sessionIdValue = "some session id"
+  implicit val hc = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
   val cacheId = CacheId(nino)
   val cacheIdNoSession = CacheId.noSession(nino)
 
