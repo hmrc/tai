@@ -137,6 +137,7 @@ class IncomeService @Inject()(
       )
     }
 
+    //TODO: incorrect use of an etag. A fresh etag should not be use at point of submission.
     citizenDetailsConnector
       .getEtag(nino)
       .flatMap {
