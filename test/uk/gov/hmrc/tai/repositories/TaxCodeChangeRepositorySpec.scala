@@ -31,15 +31,20 @@ import scala.concurrent.Future
 
 class TaxCodeChangeRepositorySpec extends BaseSpec {
 
-  val metrics = mock[Metrics]
-  val cacheConfig = mock[CacheMetricsConfig]
-  val taiCacheRepository = mock[TaiCacheRepository]
+  val metrics: Metrics = mock[Metrics]
+  val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+  val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
-  val taxCodeChangeConnector = mock[TaxCodeChangeConnector]
-  val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+  val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
+  val taxCodeHistory: TaxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
   def createSUT(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector) =
     new TaxCodeChangeRepository(cache, taxCodeChangeConnector)
+
+  override def beforeEach(): Unit ={
+    super.beforeEach()
+    reset(metrics, cacheConfig, taiCacheRepository, taxCodeChangeConnector)
+  }
 
   "taxCodeHistory" must {
     "return an existing tax code history" in {
@@ -65,28 +70,31 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
 
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().prev.year}"))(any())
+      verify(taiCacheRepository, times(0)).createOrUpdate[TaxCodeHistory](any(), any(), any())(any())
 
     }
-    "create a new tax code history in the cache " in {
+    "create a new tax code history in the cache and return it" in {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-      val taxCodeHistory2 = taxCodeHistory.copy(taxCodeRecord = Seq())
 
       when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
-        .thenReturn(Future.successful(Some(taxCodeHistory)))
-      when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().prev.year}"))(any()))
-        .thenReturn(Future.successful(Some(taxCodeHistory2)))
+        .thenReturn(Future.successful(None))
+
+      when(taiCacheRepository.createOrUpdate[TaxCodeHistory](meq(cacheId), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
+        .thenReturn(Future.successful(taxCodeHistory))
 
       val SUT = createSUT(cache, taxCodeChangeConnector)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
-      val result2 = SUT.taxCodeHistory(nino, TaxYear().prev).futureValue
 
       result mustBe taxCodeHistory
-      result2 mustBe taxCodeHistory2
+
+      verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
+      verify(taiCacheRepository, times(1)).createOrUpdate[TaxCodeHistory](any(), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
+
     }
   }
 }
