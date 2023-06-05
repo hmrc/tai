@@ -1,46 +1,41 @@
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.DefaultBuildSettings
+import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
 val appName: String = "tai"
 
 lazy val playSettings: Seq[Setting[_]] = Seq(routesImport ++= Seq("uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"))
 
-val silencerVersion = "1.7.3"
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtDistributablesPlugin)
+  .configs(IntegrationTest)
   .settings(playSettings ++ scoverageSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(
+    majorVersion := 0,
     libraryDependencies ++= AppDependencies(),
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesGenerator := InjectedRoutesGenerator,
     PlayKeys.playDefaultPort := 9331,
-    scalaVersion := "2.12.13"
-  )
-  .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
-  .configs(IntegrationTest)
-  .settings(DefaultBuildSettings.integrationTestSettings())
-  .settings(
+    scalaVersion := "2.13.10",
+    integrationTestSettings(),
     resolvers += Resolver.jcenterRepo,
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint", "-Ypartial-unification"),
-    routesImport ++= Seq(
-      "scala.language.reflectiveCalls",
-      "uk.gov.hmrc.tai.model.domain.income._",
-      "uk.gov.hmrc.tai.model.domain._")
-  )
-  .settings(majorVersion := 0)
-  .settings(
-    scalacOptions += "-P:silencer:pathFilters=views;routes",
-    libraryDependencies ++= Seq(
-      compilerPlugin(
-        "com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+    routesImport ++= Seq( "scala.language.reflectiveCalls", "uk.gov.hmrc.tai.model.domain.income._",
+      "uk.gov.hmrc.tai.model.domain._"
+    ),
+    scalacOptions ++= Seq(
+      "-Ywarn-unused",
+      "-feature",
+      "-Werror",
+      "-Wconf:cat=unused-imports&site=.*views\\.html.*:s",
+      "-Wconf:cat=unused-imports&site=<empty>:s",
+      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
+      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
+      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
     )
   )
+  .settings(inConfig(TemplateTest)(Defaults.testSettings): _*)
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -49,10 +44,10 @@ lazy val scoverageSettings = {
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
-    ScoverageKeys.coverageMinimum := 95,
+    ScoverageKeys.coverageMinimumStmtTotal := 95,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
-    parallelExecution in Test := false
+    Test / parallelExecution  := false
   )
 }
 
