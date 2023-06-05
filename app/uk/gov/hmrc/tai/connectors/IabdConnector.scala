@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton

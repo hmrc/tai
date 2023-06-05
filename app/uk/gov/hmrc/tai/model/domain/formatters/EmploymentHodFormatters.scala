@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import play.api.Logger
-import play.api.libs.json.JodaReads._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.income.{Ceased, Live, PotentiallyCeased, TaxCodeIncomeStatus}

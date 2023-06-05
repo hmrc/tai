@@ -18,9 +18,7 @@ package uk.gov.hmrc.tai.model.templates
 
 import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
-import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZoneId}
-import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 case class PdfSubmission(

@@ -31,9 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector)
     extends MongoConstants {
 
-  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[TaxCodeHistory] =
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cache.cacheFromApiV2[TaxCodeHistory](nino, TaxAccountBaseKey, taxCodeHistoryFromApi(nino, taxYear))
 
   private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =

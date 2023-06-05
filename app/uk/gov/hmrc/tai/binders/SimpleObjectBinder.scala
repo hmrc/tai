@@ -23,7 +23,7 @@ class SimpleObjectBinder[T](bind: String => T, unbind: T => String)(implicit m: 
     try {
       Right(bind(value))
     } catch {
-      case e: Throwable =>
+      case _ : Throwable =>
         Left(s"Cannot parse parameter '$key' with value '$value' as '${m.runtimeClass.getSimpleName}'")
     }
 

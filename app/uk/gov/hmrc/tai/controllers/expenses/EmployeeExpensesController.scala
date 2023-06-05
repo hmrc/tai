@@ -83,7 +83,7 @@ class EmployeeExpensesController @Inject()(
     implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
         Ok(Json.toJson(iabdData))
-      } recoverWith taxAccountErrorHandler
+      } recoverWith taxAccountErrorHandler()
   }
 }
 

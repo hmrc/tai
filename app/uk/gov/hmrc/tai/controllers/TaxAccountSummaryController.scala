@@ -41,6 +41,6 @@ class TaxAccountSummaryController @Inject()(
     implicit request =>
       taxAccountSummaryService.taxAccountSummary(nino, year) map { taxAccountSummary =>
         Ok(Json.toJson(ApiResponse(taxAccountSummary, Nil)))
-      } recoverWith taxAccountErrorHandler
+      } recoverWith taxAccountErrorHandler()
   }
 }

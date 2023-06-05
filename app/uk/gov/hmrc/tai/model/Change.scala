@@ -25,7 +25,7 @@ object Change {
     new Reads[Change[A, B]] {
       override def reads(json: JsValue): JsResult[Change[A, B]] =
         json match {
-          case JsObject(js) =>
+          case JsObject(_) =>
             val a = aReads.reads((json \ "currentYear").as[JsValue]).get
             val b = bReads.reads((json \ "currentYearPlusOne").as[JsValue]).get
             JsSuccess(Change(a, b))

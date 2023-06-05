@@ -44,7 +44,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
           case Status.OK =>
             Try(response) match {
               case Success(data) => data
-              case Failure(e)    => throw new RuntimeException("Unable to parse response")
+              case Failure(_)    => throw new RuntimeException("Unable to parse response")
             }
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")

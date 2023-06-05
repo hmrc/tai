@@ -49,7 +49,7 @@ class BbsiController @Inject()(
     bbsiService.bbsiAccount(nino, id).map {
       case Some(account) => Ok(Json.toJson(ApiResponse(account, Nil)))
       case None          => NotFound
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def closeBankAccount(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>

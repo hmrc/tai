@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvide
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.EmploymentRepository
-import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
+import uk.gov.hmrc.tai.templates.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,7 +61,7 @@ class PensionProviderService @Inject()(
       envelopeId
     }
 
-  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier) = {
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = {
     person: Person =>
       {
         val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
