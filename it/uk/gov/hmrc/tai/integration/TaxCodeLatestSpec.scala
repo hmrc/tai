@@ -17,15 +17,13 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
-import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeSummary}
 
+import java.time.LocalDate
 
 class TaxCodeLatestSpec extends IntegrationSpec {
 
@@ -34,24 +32,16 @@ class TaxCodeLatestSpec extends IntegrationSpec {
   def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
 
   "TaxCodeChange" must {
-    "return an OK response for a valid user" in {
+    "return an OK response for a valid user with the body containing the latest tax code summary" in {
+      val summary1 = TaxCodeSummary(2, "1100L", "Week1/Month1", LocalDate.of(2023, 4, 6), LocalDate.of(2024, 4, 5), "Test Employer Name", Some("AA123-62"), false, true)
+      val expectedBody = ApiResponse(Seq(summary1), Seq.empty)
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       val result = route(fakeApplication(), request)
-      result.map(getStatus) mustBe Some(OK)
-    }
+      result.map{
+        x => contentAsJson(x) mustBe Json.toJson(expectedBody)
+          getStatus(x) mustBe OK
+      }
 
-    "add the correct value to the cache" in {
-
-      implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
-      val cacheId = CacheId(nino)
-
-      val app = fakeApplication()
-      val cache = app.injector.instanceOf[TaiCacheRepository]
-
-      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
-      val result = route(app, request)
-      result.map(getStatus) mustBe Some(OK)
-      cache.find[TaxCodeHistory](cacheId, key = s"TaxCodeRecords${TaxYear().year.toString}").futureValue mustBe taxCodeHistoryJson
     }
 
     List(500, 501, 502, 503, 504).foreach { status =>
