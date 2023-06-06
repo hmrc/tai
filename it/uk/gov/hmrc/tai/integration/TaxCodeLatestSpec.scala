@@ -38,8 +38,8 @@ class TaxCodeLatestSpec extends IntegrationSpec {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       val result = route(fakeApplication(), request)
       result.map{
-        x => contentAsJson(x) mustBe Json.toJson(expectedBody)
-          getStatus(x) mustBe OK
+        response => contentAsJson(response) mustBe Json.toJson(expectedBody)
+          getStatus(response) mustBe OK
       }
 
     }
