@@ -20,10 +20,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import uk.gov.hmrc.tai.integration.utils.{IntegrationSpec, TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeSummary}
-
-import java.time.LocalDate
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class TaxCodeLatestSpec extends IntegrationSpec {
 
@@ -33,9 +32,13 @@ class TaxCodeLatestSpec extends IntegrationSpec {
 
   "TaxCodeChange" must {
     "return an OK response for a valid user with the body containing the latest tax code summary" in {
-      val summary1 = TaxCodeSummary(2, "1100L", "Week1/Month1", LocalDate.of(2023, 4, 6), LocalDate.of(2024, 4, 5), "Test Employer Name", Some("AA123-62"), false, true)
-      val expectedBody = ApiResponse(Seq(summary1), Seq.empty)
-      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+      val record1 = TaxCodeRecordFactory.createPrimaryEmployment()
+      val record1Json = TaxCodeRecordFactory.createPrimaryEmploymentJson()
+      val summary = TaxCodeSummary.apply(record1, TaxYear().end)
+      val historyJson = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino, Seq(record1Json))
+
+      val expectedBody = ApiResponse(Seq(summary), Seq.empty)
+      server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(historyJson.toString())))
       val result = route(fakeApplication(), request)
       result.map{
         response => contentAsJson(response) mustBe Json.toJson(expectedBody)
