@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.tai.integration.utils.{IntegrationSpec, TaxCodeHistoryFactory, TaxCodeRecordFactory}
+import uk.gov.hmrc.tai.integration.utils.{IntegrationSpec, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -35,7 +35,8 @@ class TaxCodeLatestSpec extends IntegrationSpec {
       val record1 = TaxCodeRecordFactory.createPrimaryEmployment()
       val record1Json = TaxCodeRecordFactory.createPrimaryEmploymentJson()
       val summary = TaxCodeSummary.apply(record1, TaxYear().end)
-      val historyJson = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino, Seq(record1Json))
+      val historyJson = Json.obj("nino"          -> nino.toString,
+        "taxCodeRecord" -> Seq(record1Json))
 
       val expectedBody = ApiResponse(Seq(summary), Seq.empty)
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(historyJson.toString())))
