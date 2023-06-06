@@ -81,8 +81,6 @@ class TaxCodeChangeController @Inject()(
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
       latestTaxCodeRecords.map { records =>
-        println("aaaaaa" + records)
-        println("bbbbbbb" + Json.toJson(ApiResponse(records, Seq.empty)))
         Ok(Json.toJson(ApiResponse(records, Seq.empty)))
       } recover {
         case ex: NotFoundException => {
