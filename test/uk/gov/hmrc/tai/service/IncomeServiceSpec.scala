@@ -837,7 +837,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -900,7 +900,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -979,7 +979,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -1125,7 +1125,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+          doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
@@ -1201,7 +1201,7 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockAuditor = mock[Auditor]
-      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val citizenDetailsConnector = mock[CitizenDetailsConnector]
       when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
@@ -1266,7 +1266,7 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockAuditor = mock[Auditor]
-      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val citizenDetailsConnector = mock[CitizenDetailsConnector]
       when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))

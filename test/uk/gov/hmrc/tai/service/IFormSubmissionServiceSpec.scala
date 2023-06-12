@@ -84,12 +84,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       result mustBe a[RuntimeException]
 
-      verify(mockFileUploadService, never()).uploadFile(
+      verify(mockFileUploadService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any())(any())
-      verify(mockFileUploadService, never()).uploadFile(
+      verify(mockFileUploadService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),

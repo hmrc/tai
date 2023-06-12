@@ -17,15 +17,14 @@
 package uk.gov.hmrc.tai.repositories.cache
 
 import org.mockito.ArgumentMatchers.{any, anyString}
-import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.crypto.json.JsonEncryptor
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.cache.{TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.connectors.cache.TaiUpdateIncomeCacheConnector
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.util.BaseSpec

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -161,8 +160,6 @@ class JourneyCacheControllerSpec extends BaseSpec {
       }
     }
     //update-income
-
-    val testMapUpdateIncome = Map("key1" -> "value1", "key2" -> "value2")
 
     "supply a named journey cache on GET request *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]

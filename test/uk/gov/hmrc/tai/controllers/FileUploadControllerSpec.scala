@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.model.FileUploadCallback

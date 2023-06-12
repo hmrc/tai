@@ -520,7 +520,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -559,7 +559,7 @@ class BenefitsServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 

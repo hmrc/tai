@@ -20,8 +20,6 @@ import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
-import java.time.format.DateTimeFormatter
-
 class NpsDateSpec extends PlaySpec {
 
   "NpsDate" must {

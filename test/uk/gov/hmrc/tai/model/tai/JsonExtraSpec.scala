@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.tai
 
 import java.time.LocalDate
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._

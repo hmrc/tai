@@ -47,7 +47,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
+        doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
         val result = sut.addPensionProvider(nino, addPensionProvider).futureValue
@@ -73,7 +73,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
       sut.addPensionProvider(nino, pensionProvider).futureValue
@@ -114,7 +114,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
+        doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
         val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider)(implicitly, FakeRequest()).futureValue
@@ -139,7 +139,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing().when(mockAuditable).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
       val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
       sut.incorrectPensionProvider(nino, 1, pensionProvider)(implicitly, FakeRequest()).futureValue

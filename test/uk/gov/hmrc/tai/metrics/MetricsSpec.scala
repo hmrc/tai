@@ -18,8 +18,7 @@ package uk.gov.hmrc.tai.metrics
 
 import com.codahale.metrics.{Counter, MetricRegistry, Timer}
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.enums.APITypes
 

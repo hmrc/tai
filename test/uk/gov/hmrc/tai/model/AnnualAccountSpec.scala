@@ -18,11 +18,9 @@ package uk.gov.hmrc.tai.model.tai
 
 import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.nps2
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
-import uk.gov.hmrc.tai.model.nps2.{Income, NpsEmployment, TaxAccount, TaxDetail, TaxObject}
+import uk.gov.hmrc.tai.model.nps2.{Income, NpsEmployment, TaxAccount}
 import uk.gov.hmrc.tai.model.rti._
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 

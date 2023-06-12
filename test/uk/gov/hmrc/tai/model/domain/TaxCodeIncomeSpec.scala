@@ -18,8 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{Format, JsObject, JsString, JsSuccess, JsValue, Json}
-import play.api.libs.json.JodaWrites._
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.factory.TaxCodeIncomeFactory
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, OtherBasisOperation}
 

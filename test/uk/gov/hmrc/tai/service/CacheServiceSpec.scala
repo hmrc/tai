@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -64,7 +63,7 @@ class CacheServiceSpec extends BaseSpec {
 
         sut.invalidateTaiCacheData(nino)(hc)
 
-        verify(mockCacheConnector, never())
+        verify(mockCacheConnector, never)
           .createOrUpdate(any(), any(), any())(any())
       }
     }

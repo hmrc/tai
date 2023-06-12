@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, JsString, Json}
+import play.api.libs.json.{JsNumber, Json}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear

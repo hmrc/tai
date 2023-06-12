@@ -18,13 +18,12 @@ package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
+import uk.gov.hmrc.http.{BadGatewayException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
