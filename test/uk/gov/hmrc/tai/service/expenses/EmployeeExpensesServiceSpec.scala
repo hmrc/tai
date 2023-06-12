@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{when, _}
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
@@ -33,15 +32,9 @@ import scala.language.postfixOps
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val mockDesConnector = mock[DesConnector]
-  private val mockNpsConnector = mock[NpsConnector]
-  private val mockIabdConnector = mock[IabdConnector]
   private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
-  private val service = new EmployeeExpensesService(
-    desConnector = mockDesConnector,
-    npsConnector = mockNpsConnector,
-    iabdConnector = mockIabdConnector,
-    featureTogglesConfig = mockFeaturesToggle)
+  private val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
@@ -98,13 +91,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockFeaturesToggle.desEnabled).thenReturn(true)
 
         val mockNpsConnector = mock[NpsConnector]
-        val mockIabdConnector = mock[IabdConnector]
 
-        val service = new EmployeeExpensesService(
-          desConnector = mockDesConnector,
-          npsConnector = mockNpsConnector,
-          iabdConnector = mockIabdConnector,
-          featureTogglesConfig = mockFeaturesToggle)
+        val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 

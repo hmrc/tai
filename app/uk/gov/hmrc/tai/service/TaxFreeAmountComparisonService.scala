@@ -50,7 +50,7 @@ class TaxFreeAmountComparisonService @Inject()(
   private def getCurrentComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     val currentCodingComponentFuture = codingComponentService.codingComponents(nino, TaxYear())
 
-    currentCodingComponentFuture.onFailure {
+    currentCodingComponentFuture.failed.foreach {
       case NonFatal(e) =>
         Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
     }
@@ -71,7 +71,7 @@ class TaxFreeAmountComparisonService @Inject()(
     implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
     val previousCodingComponentsFuture = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
 
-    previousCodingComponentsFuture.onFailure {
+    previousCodingComponentsFuture.failed.foreach {
       case NonFatal(e) =>
         Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
     }

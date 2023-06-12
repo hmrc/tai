@@ -75,7 +75,7 @@ class JourneyCacheRepository @Inject()(taiCacheRepository: TaiCacheRepository, t
     for {
       maybeCacheOption <- currentCache(cacheId, journeyName)
       maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
-      maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
+      maybeUpdatedIncomeCacheMap = maybeCache.filterKeys(_.startsWith("updateIncomeConfirmedAmountKey")).toMap
       _ <- taiUpdateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,
@@ -88,7 +88,7 @@ class JourneyCacheRepository @Inject()(taiCacheRepository: TaiCacheRepository, t
       maybeCache = maybeCacheOption.getOrElse(Map.empty[String, String])
       maybeUpdatedIncomeCacheMap = maybeCache
         .filterKeys(_.startsWith("updateIncomeConfirmedAmountKey"))
-        .filterKeys(!_.startsWith(s"updateIncomeConfirmedAmountKey-$empId"))
+        .filterKeys(!_.startsWith(s"updateIncomeConfirmedAmountKey-$empId")).toMap
       _ <- taiUpdateIncomeCacheRepository.createOrUpdateIncome[Map[String, String]](
             cacheId,
             maybeUpdatedIncomeCacheMap,

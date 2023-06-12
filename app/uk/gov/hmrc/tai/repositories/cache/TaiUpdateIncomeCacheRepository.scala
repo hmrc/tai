@@ -38,7 +38,8 @@ class TaiUpdateIncomeCacheRepository @Inject()(
   extends MongoFormatter {
 
   implicit lazy val compositeSymmetricCrypto
-  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
+  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto.asInstanceOf[CompositeSymmetricCrypto]
+
   private val defaultKey = "TAI-DATA"
 
 

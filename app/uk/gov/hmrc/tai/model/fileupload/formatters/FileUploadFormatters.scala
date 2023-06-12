@@ -28,7 +28,7 @@ trait FileUploadFormatters {
         val envelopeStatus = (json \ "status").as[String]
 
         val files: Seq[JsValue] = (json \ "files").validate[JsArray] match {
-          case JsSuccess(arr, _) => arr.value
+          case JsSuccess(arr, _) => arr.value.toSeq
           case _                 => Nil
         }
         val envelopeFiles: Seq[EnvelopeFile] = files map { file: JsValue =>

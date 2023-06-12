@@ -93,7 +93,7 @@ trait TaxOnOtherIncomeFormatters extends BaseTaxAccountHodFormatters {
     })
 
     details match {
-      case Some(rateBands) => rateBands.sortBy(-_.rate)
+      case Some(rateBands) => rateBands.toSeq.sortBy(-_.rate)
       case None            => Seq.empty[RateBand]
     }
   }

@@ -181,7 +181,7 @@ trait EmploymentHodFormatters {
     override def reads(json: JsValue): JsResult[Seq[AnnualAccount]] = {
 
       val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
-        case JsSuccess(arr, path) => arr.value
+        case JsSuccess(arr, path) => arr.value.toSeq
         case _                    => Nil
       }
 
