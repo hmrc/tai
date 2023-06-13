@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.repositories.cache
 
 import akka.Done
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import uk.gov.hmrc.tai.util.BaseSpec

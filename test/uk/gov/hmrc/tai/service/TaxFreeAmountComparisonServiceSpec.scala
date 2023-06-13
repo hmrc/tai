@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}

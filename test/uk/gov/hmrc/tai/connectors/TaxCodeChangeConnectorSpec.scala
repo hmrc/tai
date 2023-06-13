@@ -32,7 +32,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.net.URL
-import scala.language.postfixOps
 
 class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
 

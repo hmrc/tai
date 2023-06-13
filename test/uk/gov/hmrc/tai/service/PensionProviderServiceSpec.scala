@@ -18,8 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{doNothing, times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._

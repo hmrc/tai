@@ -29,7 +29,6 @@ import uk.gov.hmrc.tai.service.TotalTaxService
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 

@@ -213,7 +213,7 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
         income.employmentRecord mustBe Some(testNpsEmployment)
         income.basisOperation mustBe Some(BasisOperation.Week1Month1)
         income.incomeType mustBe IncomeType.Employment
-        income.status mustBe Income.Ceased
+        income.status mustBe Ceased
       }
 
       "reading the Income json with Live Status" in {

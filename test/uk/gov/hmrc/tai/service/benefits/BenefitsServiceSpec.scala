@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service.benefits
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector

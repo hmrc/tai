@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.helpers
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tai.model.{DecreasesTax, IabdSummary, TaxCodeDetails, TaxComponent}
+import uk.gov.hmrc.tai.model.{DecreasesTax, IabdSummary, TaxComponent}
 
 class TaxModelFactoryDecreasesTaxSpec extends PlaySpec with TaxModelFactoryTestData {
 

@@ -26,7 +26,6 @@ import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class CompanyCarBenefitControllerSpec extends BaseSpec {
 

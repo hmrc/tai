@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class CompanyCarBenefitRepositorySpec extends BaseSpec {
 

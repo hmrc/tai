@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class CodingComponentRepositorySpec extends BaseSpec {
 

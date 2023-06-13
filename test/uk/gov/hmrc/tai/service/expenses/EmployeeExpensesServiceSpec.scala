@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{when, _}
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
@@ -27,7 +26,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 

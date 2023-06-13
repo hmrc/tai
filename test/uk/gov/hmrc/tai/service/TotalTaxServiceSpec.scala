@@ -17,17 +17,13 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TotalTaxServiceSpec extends BaseSpec {
 

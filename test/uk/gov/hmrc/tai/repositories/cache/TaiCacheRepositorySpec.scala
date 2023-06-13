@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
 

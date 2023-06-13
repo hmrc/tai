@@ -26,7 +26,7 @@ class NpsEmploymentTest extends PlaySpec with NpsFormatter {
   val data: Seq[JsValue] = {
     val resource = this.getClass.getResourceAsStream("nps-employments.json")
     val stream = scala.io.Source.fromInputStream(resource)
-    Json.parse(stream.getLines.mkString) match {
+    Json.parse(stream.getLines().mkString) match {
       case JsArray(e) => e
       case _          => throw new IllegalArgumentException("Cannot read test NPS employment data")
     }

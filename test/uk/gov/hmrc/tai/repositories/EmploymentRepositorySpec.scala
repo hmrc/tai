@@ -37,7 +37,6 @@ import java.io.File
 import java.time.LocalDate
 import scala.concurrent.Future
 import scala.io.BufferedSource
-import scala.language.postfixOps
 
 class EmploymentRepositorySpec extends BaseSpec {
 

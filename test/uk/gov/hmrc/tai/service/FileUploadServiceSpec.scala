@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.mockito.Mockito
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor

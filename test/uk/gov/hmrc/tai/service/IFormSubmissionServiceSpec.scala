@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
-import org.mockito.Mockito._
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
