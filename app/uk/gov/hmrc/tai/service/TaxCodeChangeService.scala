@@ -127,6 +127,7 @@ class TaxCodeChangeServiceImpl @Inject()(
     futureMismatch.failed.foreach {
       case NonFatal(exception) =>
         logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+      case _ => None
     }
 
     futureMismatch

@@ -62,7 +62,6 @@ class PdfSubmissionMetadataSpec extends PlaySpec {
     }
 
     "populate the correct attribute details for the hmrc_time_of_receipt attribute" when {
-      val fomatter = formatter
 
       "the pdf submission xml is generated" in {
 

@@ -255,15 +255,6 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     LocalDate.of(2016, 6, 4),
     Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
 
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
-    for {
-      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
-      error: JsonValidationError                       <- errors
-      message: String                                  <- error.messages
-    } yield {
-      path.toString() + " -> " + message
-    }
-
   val sampleSingleEmployment = List(
     Employment(
       "EMPLOYER1",

@@ -95,7 +95,7 @@ class PensionProviderServiceSpec extends BaseSpec {
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
 
-        val result = sut.addPensionProviderForm(pensionProvider)(hc)(person).futureValue
+        val result = sut.addPensionProviderForm(pensionProvider)(person).futureValue
         result mustBe PensionProviderIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider)).toString
       }
     }

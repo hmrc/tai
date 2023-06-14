@@ -95,8 +95,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-          .thenReturn(Future.successful(None))
-          .thenReturn(Future.successful(Some(Map.empty[String, String])))
+        .thenReturn(
+          Future.successful(None),
+          Future.successful(Some(Map.empty[String, String]))
+        )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("testjourney")(fakeRequest)
@@ -230,8 +232,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-          .thenReturn(Future.successful(None))
-          .thenReturn(Future.successful(Some(Map.empty[String, String])))
+        .thenReturn(
+          Future.successful(None),
+          Future.successful(Some(Map.empty[String, String]))
+        )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("update-income")(fakeRequest)

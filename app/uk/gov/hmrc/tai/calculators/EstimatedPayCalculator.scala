@@ -71,6 +71,7 @@ object EstimatedPayCalculator {
         (if (days > 0 && days <= daysInYear) pay * (BigDecimal(daysInYear) / days) else BigDecimal(0))
           .setScale(0, RoundingMode.DOWN)
       }
+      case _ => BigDecimal(0)
     }
   }
 

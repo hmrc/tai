@@ -53,6 +53,7 @@ class TaxFreeAmountComparisonService @Inject()(
     currentCodingComponentFuture.failed.foreach {
       case NonFatal(e) =>
         Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case _ => None
     }
 
     currentCodingComponentFuture
@@ -74,6 +75,7 @@ class TaxFreeAmountComparisonService @Inject()(
     previousCodingComponentsFuture.failed.foreach {
       case NonFatal(e) =>
         Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
+      case _ => None
     }
 
     previousCodingComponentsFuture

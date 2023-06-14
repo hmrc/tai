@@ -61,7 +61,7 @@ class NpsDateSpec extends PlaySpec {
         val p = NpsDate.reads.reads(JsNull)
         p match {
           case error: JsError => {
-            val valErrors: Seq[JsonValidationError] = error.errors.head._2
+            val valErrors: Seq[JsonValidationError] = error.errors.head._2.toSeq
             valErrors.size mustBe 1
             valErrors.head.message mustBe "Cannot convert null to NpsDate"
           }
@@ -121,8 +121,8 @@ class NpsDateSpec extends PlaySpec {
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
-      (_: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
-      error: JsonValidationError                       <- errors
+      (_: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
+      error: JsonValidationError                       <- errors.toSeq
       message: String                                  <- error.messages
     } yield {
       message
