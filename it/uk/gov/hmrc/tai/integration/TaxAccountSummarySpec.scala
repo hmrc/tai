@@ -61,7 +61,7 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val requestConst = request
-        val result = (for {
+        (for {
           _ <- route(app, requestConst).get
           _ <- route(app, requestConst).get
         } yield ()).futureValue
