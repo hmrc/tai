@@ -21,15 +21,13 @@ object AppDependencies {
   )
 
   val compileTest: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc.mongo"      %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion,
-    "org.pegdown"            % "pegdown"                        % "1.6.0",
-    "org.jsoup"              % "jsoup"                          % "1.16.1",
-    "org.scalacheck"         %% "scalacheck"                    % "1.17.0",
+    "com.github.tomakehurst" % "wiremock-jre8"                  % "2.35.0",
+    "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion"  % bootstrapVersion,
     "org.mockito"            %% "mockito-scala-scalatest"       % "1.17.14",
     "org.scalatestplus"      %% "scalacheck-1-16"               % "3.2.14.0",
-    "com.github.tomakehurst" % "wiremock-jre8"                  % "2.35.0",
     "com.vladsch.flexmark"   % "flexmark-all"                   % "0.62.2",
-    "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion"  % bootstrapVersion
+    "org.jsoup"              % "jsoup"                          % "1.15.4",
+    "uk.gov.hmrc.mongo"      %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion
   ).map(_  % "test, it")
 
   val all: Seq[ModuleID] = compile ++ compileTest
