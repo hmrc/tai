@@ -9,7 +9,7 @@ object AppDependencies {
 
   private val bootstrapVersion = "7.15.0"
 
-  val compile = Seq(
+  val compile: Seq[ModuleID] = Seq(
     filters,
     ws,
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % bootstrapVersion,
@@ -20,20 +20,17 @@ object AppDependencies {
     "org.typelevel"     %% "cats-core"                       % "2.9.0",
   )
 
-  lazy val Test: String = "test,it"
+  val compileTest: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc.mongo"      %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion,
+    "org.pegdown"            % "pegdown"                        % "1.6.0",
+    "org.jsoup"              % "jsoup"                          % "1.16.1",
+    "org.scalacheck"         %% "scalacheck"                    % "1.17.0",
+    "org.mockito"            %% "mockito-scala-scalatest"       % "1.17.14",
+    "org.scalatestplus"      %% "scalacheck-1-16"               % "3.2.14.0",
+    "com.github.tomakehurst" % "wiremock-jre8"                  % "2.35.0",
+    "com.vladsch.flexmark"   % "flexmark-all"                   % "0.62.2",
+    "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion"  % bootstrapVersion
+  ).map(_  % "test, it")
 
-  val compileTest = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play"      % "5.1.0",
-    "uk.gov.hmrc.mongo"      %% "hmrc-mongo-test-play-28" % hmrcMongoVersion,
-    "org.pegdown"            % "pegdown"                  % "1.6.0",
-    "org.jsoup"              % "jsoup"                    % "1.16.1",
-    "org.scalacheck"         %% "scalacheck"              % "1.17.0",
-    "org.mockito"            %% "mockito-scala-scalatest" % "1.17.14",
-    "org.scalatestplus"      %% "scalacheck-1-16"         % "3.2.14.0",
-    "com.github.tomakehurst" % "wiremock-jre8"            % "2.35.0",
-    "com.vladsch.flexmark"   % "flexmark-all"             % "0.62.2",
-    "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion" % bootstrapVersion
-  ).map(_ % "test,it")
-
-  def apply(): Seq[ModuleID] = compile ++ compileTest
+  val all: Seq[ModuleID] = compile ++ compileTest
 }

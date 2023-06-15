@@ -13,7 +13,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(
     majorVersion := 0,
-    libraryDependencies ++= AppDependencies(),
+    libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     routesGenerator := InjectedRoutesGenerator,
