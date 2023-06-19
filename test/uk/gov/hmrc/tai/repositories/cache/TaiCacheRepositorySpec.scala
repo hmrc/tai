@@ -37,7 +37,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
   implicit lazy val configuration: Configuration = inject[Configuration]
 
   lazy implicit val compositeSymmetricCrypto
-    : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto.asInstanceOf[CompositeSymmetricCrypto]
+    : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
 
   val mongoKey = "key1"
   val emptyKey = ""

@@ -22,7 +22,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
-import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected, SymmetricCryptoFactory}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiUpdateIncomeCacheConnector}
@@ -38,7 +38,8 @@ class TaiUpdateIncomeCacheRepository @Inject()(
   extends MongoFormatter {
 
   implicit lazy val compositeSymmetricCrypto
-  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto.asInstanceOf[CompositeSymmetricCrypto]
+  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
+
 
   private val defaultKey = "TAI-DATA"
 
