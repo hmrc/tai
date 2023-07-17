@@ -18,9 +18,10 @@ package uk.gov.hmrc.tai.connectors.cache
 
 import com.google.inject.Inject
 import play.api.libs.json.Writes
-import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
+import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.model.domain.CacheItem
 
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
