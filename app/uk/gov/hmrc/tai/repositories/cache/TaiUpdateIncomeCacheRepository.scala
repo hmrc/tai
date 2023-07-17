@@ -22,7 +22,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
-import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected, SymmetricCryptoFactory}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiUpdateIncomeCacheConnector}
@@ -32,17 +32,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaiUpdateIncomeCacheRepository @Inject()(
-                                             taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector,
-                                             mongoConfig: MongoConfig,
-                                             configuration: Configuration)(implicit ec: ExecutionContext)
-  extends MongoFormatter {
+  taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector,
+  mongoConfig: MongoConfig,
+  configuration: Configuration)(implicit ec: ExecutionContext)
+    extends MongoFormatter {
 
-  implicit lazy val compositeSymmetricCrypto
-  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
-
+  implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
+    new ApplicationCrypto(configuration.underlying).JsonCrypto
 
   private val defaultKey = "TAI-DATA"
-
 
   def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
     implicit writes: Writes[T]): Future[T] = {
@@ -55,24 +53,21 @@ class TaiUpdateIncomeCacheRepository @Inject()(
     taiUpdateIncomeCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-
-  private def findById[T](cacheId: CacheId, key: String = defaultKey)
-                         (func: String => Future[Option[CacheItem]])
-                         (implicit reads: Reads[T]): Future[Option[T]] = {
-
-    OptionT(func(cacheId.value)).map {
-      cache =>
+  private def findById[T](cacheId: CacheId, key: String = defaultKey)(func: String => Future[Option[CacheItem]])(
+    implicit reads: Reads[T]): Future[Option[T]] =
+    OptionT(func(cacheId.value))
+      .map { cache =>
         if (mongoConfig.mongoEncryptionEnabled) {
           val jsonDecryptor = new JsonDecryptor[T]()
           (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
-        }
-        else {
+        } else {
           (cache.data \ key).validateOpt[T].asOpt.flatten
         }
-    }.value.map(_.flatten) recover {
+      }
+      .value
+      .map(_.flatten) recover {
       case JsResultException(_) => None
     }
-  }
 
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     findById(cacheId, key)(taiUpdateIncomeCacheConnector.findById)(reads)

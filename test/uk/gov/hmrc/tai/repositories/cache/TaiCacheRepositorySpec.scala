@@ -21,7 +21,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.crypto.json.JsonEncryptor
-import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter, Protected}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.TaiCacheConnector
@@ -36,8 +36,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
-  lazy implicit val compositeSymmetricCrypto
-    : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
+  implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
+    new ApplicationCrypto(configuration.underlying).JsonCrypto
 
   val mongoKey = "key1"
   val emptyKey = ""
