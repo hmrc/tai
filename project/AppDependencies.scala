@@ -18,7 +18,6 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "json-encryption"                 % s"5.1.0-$playVersion",
     "com.typesafe.play" %% "play-json-joda"                  % "2.9.2",
     "org.typelevel"     %% "cats-core"                       % "2.9.0",
-    "uk.gov.hmrc"       %% s"crypto-json-$playVersion"       % "7.3.0"
   )
 
   val compileTest: Seq[ModuleID] = Seq(

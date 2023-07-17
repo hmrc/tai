@@ -18,53 +18,59 @@ package uk.gov.hmrc.tai.repositories.cache
 
 import cats.data.OptionT
 import cats.implicits._
-import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
-
-import java.time.{Clock, Instant}
+import play.api.Configuration
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.Protected
-import uk.gov.hmrc.mongo.play.json.Codecs
+import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected}
+import uk.gov.hmrc.mongo.cache.CacheItem
+import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector}
-import uk.gov.hmrc.tai.model.domain.{CacheItem, DataKey}
+import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
-import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
-trait TaiCacheRepository {
-  def createOrUpdate[T](cacheId: CacheId, data: T, key: String)(implicit writes: Writes[T]): Future[T]
-  def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String): Future[JsValue]
-
-  def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String)(
-    implicit writes: Writes[T]): Future[Seq[T]]
-
-  def find[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Option[T]]
-  def findJson(cacheId: CacheId, key: String): Future[Option[JsValue]]
-  def findSeq[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Seq[T]]
-  def findOptSeq[T: Reads](cacheId: CacheId, key: String): Future[Option[Seq[T]]]
-  def removeById(cacheId: CacheId): Future[Boolean]
-}
-
 @Singleton
-class DefaultTaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector)(implicit ec: ExecutionContext) extends TaiCacheRepository {
+class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
+                                   mongoConfig: MongoConfig,
+                                   configuration: Configuration)(implicit ec: ExecutionContext)
+  extends MongoFormatter {
 
+  implicit lazy val compositeSymmetricCrypto
+  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto.asInstanceOf[CompositeSymmetricCrypto]
   private val defaultKey = "TAI-DATA"
 
-  override def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
-    val jsonData = Json.toJson(data)
+
+  def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[T]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
     taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-  override def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
-    taiCacheConnector.save(cacheId.value)(key, json).map(_ => json)
+  def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[JsValue]()
+      Json.toJson(Protected(json))(jsonEncryptor)
+    } else {
+      json
+    }
+    taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => json)
   }
 
-  override def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(implicit writes: Writes[T]): Future[Seq[T]] = {
-    val jsonData = Json.toJson(data)
+  def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
+    implicit writes: Writes[T]): Future[Seq[T]] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[Seq[T]]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
     taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
-
 
   private def findById[T](cacheId: CacheId, key: String = defaultKey)
                          (func: String => Future[Option[CacheItem]])
@@ -72,123 +78,45 @@ class DefaultTaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector)(
 
     OptionT(func(cacheId.value)).map {
       cache =>
-          (cache.data \ key).toOption.map { jsValue => jsValue.as[T] }
+        if (mongoConfig.mongoEncryptionEnabled) {
+          val jsonDecryptor = new JsonDecryptor[T]()
+          (cache.data \ key).toOption.map { jsValue =>
+            jsValue.as[Protected[T]](jsonDecryptor).decryptedValue
+          }
+        }
+        else {
+          (cache.data \ key).toOption.map { jsValue =>
+            jsValue.as[T]
+          }
+        }
     }.value.map(_.flatten) recover {
       case JsResultException(_) => None
     }
   }
 
-  override def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
+
+  def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     findById(cacheId, key)(taiCacheConnector.findById)(reads)
-  override def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
+
+  def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] =
     find[JsValue](cacheId, key)
 
-  override def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
+  def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] =
     findOptSeq(cacheId, key)(reads).map(_.getOrElse(Nil))
-
-  override def findOptSeq[T: Reads](cacheId: CacheId, key: String = defaultKey): Future[Option[Seq[T]]] = {
-    implicit val reads: Reads[Protected[Seq[T]]] =
-      (json: JsValue) => implicitly[Reads[Seq[T]]].reads(json).map(Protected(_))
-
-    for {
-      cache <- OptionT(taiCacheConnector.findById(cacheId.value))
-      if (cache.data \ key).validate[Protected[Seq[T]]].isSuccess
-    } yield (cache.data \ key).as[Protected[Seq[T]]].decryptedValue
-  }.value
 
   def findOptSeq[T: Reads](cacheId: CacheId, key: String = defaultKey): Future[Option[Seq[T]]] = {
-    implicit val reads: Reads[Protected[Seq[T]]] =
+    implicit val reads: Reads[Protected[Seq[T]]] = if (mongoConfig.mongoEncryptionEnabled) {
+      new JsonDecryptor[Seq[T]]()
+    } else {
       (json: JsValue) => implicitly[Reads[Seq[T]]].reads(json).map(Protected(_))
-
+    }
     for {
       cache <- OptionT(taiCacheConnector.findById(cacheId.value))
       if (cache.data \ key).validate[Protected[Seq[T]]].isSuccess
     } yield (cache.data \ key).as[Protected[Seq[T]]].decryptedValue
   }.value
 
-  override def removeById(cacheId: CacheId): Future[Boolean] =
-    taiCacheConnector.deleteEntity(cacheId.value).map(_ : Boolean => true)
-}
+  def removeById(cacheId: CacheId): Future[Boolean] =
+    taiCacheConnector.deleteEntity(cacheId.value).map(_ => true) 
 
-
-class CachingTaiCacheRepository @Inject()(
-                                           @Named("default") underlying: TaiCacheRepository,
-                                           taiCacheMongoRepository: TaiCacheMongoRepository
-                                         )(implicit ec: ExecutionContext)
-  extends TaiCacheRepository {
-
-
-  private val defaultKey = "TAI-DATA"
-  override def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
-    val jsonData = Json.toJson(data)
-    save(cacheId, jsonData, key)
-  }
-
-  override def createOrUpdateJson(cacheId: CacheId, json: JsValue, key: String = defaultKey): Future[JsValue] = {
-    save(cacheId, json, key)
-  }
-
-  override def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[Seq[T]] = {
-
-    val jsonData = Json.toJson(data)
-    save(cacheId, jsonData, key)
-  }
-
-  private def save(cacheId: CacheId, data: JsValue, key: String): Future[T] = {
-
-    val id = cacheId.value
-    val dataKey = DataKey(key)
-    taiCacheMongoRepository.collection
-      .findOneAndUpdate(
-        filter = Filters.eq("id", id),
-        update = Updates.combine(
-          Updates.setOnInsert("id", id),
-          Updates.set("data." + dataKey.unwrap, Codecs.toBson(data)),
-          Updates.set("modifiedAt", Instant.now(Clock)),
-          Updates.setOnInsert("createdAt", Instant.now(Clock))
-        ),
-        options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-      )
-      .toFuture()
-      .map(_ => data)
-  }
-
-  override def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] = {
-
-    taiCacheMongoRepository.collection
-      .find(Filters.eq("id", cacheId.value))
-      .headOption()
-      .map(_.flatMap(cacheItem => (cacheItem.data \ key).validateOpt[T].asOpt).flatten)
-      .recover { case JsResultException(_) => None }
-  }
-
-  override def findJson(cacheId: CacheId, key: String = defaultKey): Future[Option[JsValue]] = {
-    find[JsValue](cacheId, key)
-  }
-
-  override def findSeq[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Seq[T]] = {
-    findOptSeq(cacheId, key)(reads).map(_.getOrElse(Nil))
-  }
-
-  override def findOptSeq[T: Reads](cacheId: CacheId, key: String = defaultKey): Future[Option[Seq[T]]] = {
-    implicit val reads: Reads[Protected[Seq[T]]] = (json: JsValue) => implicitly[Reads[Seq[T]]].reads(json).map(Protected(_))
-
-    for {
-      cache <- OptionT({
-        taiCacheMongoRepository.collection
-          .find(Filters.eq("id", cacheId.value))
-          .headOption()
-      })
-      if (cache.data \ key).validate[Seq[T]].isSuccess
-    } yield (cache.data \ key).as[Seq[T]]
-  }.value
-
-
-  override def removeById(cacheId: CacheId): Future[Boolean] = {
-    taiCacheMongoRepository.collection
-      .deleteOne(Filters.eq("id", cacheId.value))
-      .toFuture()
-      .map(_ => true)
-  }
 }

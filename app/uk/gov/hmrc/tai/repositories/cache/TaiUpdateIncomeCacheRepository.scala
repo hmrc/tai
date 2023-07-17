@@ -19,81 +19,61 @@ package uk.gov.hmrc.tai.repositories.cache
 import cats.data.OptionT
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
-import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, ReturnDocument, Updates}
+import play.api.Configuration
 import play.api.libs.json._
-import uk.gov.hmrc.mongo.play.json.Codecs
-import com.google.inject.name.Named
+import uk.gov.hmrc.crypto.json.{JsonDecryptor, JsonEncryptor}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Protected, SymmetricCryptoFactory}
+import uk.gov.hmrc.mongo.cache.CacheItem
+import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiUpdateIncomeCacheConnector}
-import uk.gov.hmrc.tai.model.domain.{CacheItem, DataKey}
+import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
-import java.time.{Clock, Instant}
 import scala.concurrent.{ExecutionContext, Future}
 
-trait TaiUpdateIncomeCacheRepository {
-  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String)(implicit writes: Writes[T]): Future[T]
-  def findUpdateIncome[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Option[T]]
-}
-
 @Singleton
-class DefaultTaiUpdateIncomeCacheRepository @Inject()(taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector)(
-  implicit ec: ExecutionContext)
-    extends TaiUpdateIncomeCacheRepository {
+class TaiUpdateIncomeCacheRepository @Inject()(
+                                             taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector,
+                                             mongoConfig: MongoConfig,
+                                             configuration: Configuration)(implicit ec: ExecutionContext)
+  extends MongoFormatter {
+
+  implicit lazy val compositeSymmetricCrypto
+  : CompositeSymmetricCrypto = new ApplicationCrypto(configuration.underlying).JsonCrypto
+
 
   private val defaultKey = "TAI-DATA"
 
-  override def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[T] = {
 
-    val jsonData = Json.toJson(data)
+  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
+    implicit writes: Writes[T]): Future[T] = {
+    val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
+      val jsonEncryptor = new JsonEncryptor[T]()
+      Json.toJson(Protected(data))(jsonEncryptor)
+    } else {
+      Json.toJson(data)
+    }
     taiUpdateIncomeCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-  private def findById[T](cacheId: CacheId, key: String = defaultKey)(func: String => Future[Option[CacheItem]])(
-    implicit reads: Reads[T]): Future[Option[T]] =
-    OptionT(func(cacheId.value))
-      .map { cache =>
-        (cache.data \ key).validateOpt[T].asOpt.flatten
-      }
-      .value
-      .map(_.flatten) recover {
+
+  private def findById[T](cacheId: CacheId, key: String = defaultKey)
+                         (func: String => Future[Option[CacheItem]])
+                         (implicit reads: Reads[T]): Future[Option[T]] = {
+
+    OptionT(func(cacheId.value)).map {
+      cache =>
+        if (mongoConfig.mongoEncryptionEnabled) {
+          val jsonDecryptor = new JsonDecryptor[T]()
+          (cache.data \ key).validateOpt[Protected[T]](jsonDecryptor).asOpt.flatten.map(_.decryptedValue)
+        }
+        else {
+          (cache.data \ key).validateOpt[T].asOpt.flatten
+        }
+    }.value.map(_.flatten) recover {
       case JsResultException(_) => None
     }
-
-  override def findUpdateIncome[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Option[T]] =
-    findById(cacheId, key)(taiUpdateIncomeCacheConnector.findById)(reads)
-
-}
-
-class CachingTaiUpdateIncomeCacheRepository @Inject()(
-  @Named("default") underlying: TaiUpdateIncomeCacheRepository, // TODO -- SEE UNDERLYING
-  taiUpdateIncomeMongoRepository: TaiUpdateIncomeMongoRepository
-)(implicit ec: ExecutionContext)
-    extends TaiUpdateIncomeCacheRepository {
-  override def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String)(
-    implicit writes: Writes[T]): Future[T] = {
-
-    val jsonData = Json.toJson(data)
-    val id = cacheId.value
-    val dataKey = DataKey(key)
-    taiUpdateIncomeMongoRepository.collection
-      .findOneAndUpdate(
-        filter = Filters.eq("id", id),
-        update = Updates.combine(
-          Updates.setOnInsert("id", id),
-          Updates.set("data." + dataKey.unwrap, Codecs.toBson(jsonData)),
-          Updates.set("modifiedAt", Instant.now(Clock)),
-          Updates.setOnInsert("createdAt", Instant.now(Clock))
-        ),
-        options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
-      )
-      .toFuture()
-      .map(_ => data)
   }
 
-  override def findUpdateIncome[T](cacheId: CacheId, key: String)(implicit reads: Reads[T]): Future[Option[T]] =
-    taiUpdateIncomeMongoRepository.collection
-      .find(Filters.eq("id", cacheId.value))
-      .headOption()
-      .map(_.flatMap(cacheItem => (cacheItem.data \ key).validateOpt[T].asOpt).flatten)
-      .recover { case JsResultException(_) => None }
+  def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
+    findById(cacheId, key)(taiUpdateIncomeCacheConnector.findById)(reads)
 }
