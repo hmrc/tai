@@ -37,8 +37,6 @@ import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.repositories.cache.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.util.Random
 
 class TaiCacheRepositoryItSpec
