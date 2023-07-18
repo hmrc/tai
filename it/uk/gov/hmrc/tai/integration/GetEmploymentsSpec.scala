@@ -31,7 +31,8 @@ class GetEmploymentsSpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/employments/years/$year"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
 
   "Get Employment" must {
     "return an OK response for a valid user" in {

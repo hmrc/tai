@@ -30,7 +30,9 @@ class PutWorkingFromHomeEmployeeExpenses extends IntegrationSpec {
 
   val postRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
 
-  def request = FakeRequest(POST, apiUrl).withJsonBody(postRequest)
+  def request = FakeRequest(POST, apiUrl)
+    .withJsonBody(postRequest)
+    .withHeaders( "AUTHORIZATION" -> "Bearer 11")
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"

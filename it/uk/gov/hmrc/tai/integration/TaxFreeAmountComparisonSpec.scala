@@ -24,7 +24,8 @@ import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
 
   "TaxFreeAmountComparison" must {
     "return an OK response for a valid user" in {

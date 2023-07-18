@@ -27,7 +27,8 @@ import scala.concurrent.ExecutionContext
 class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"

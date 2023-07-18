@@ -59,7 +59,6 @@ class TaiCacheRepositoryItSpec
 
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
-  private val atMost = 5 seconds
 
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]

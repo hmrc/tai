@@ -24,7 +24,8 @@ import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 class TaxCodeChangeSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {

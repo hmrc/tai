@@ -35,7 +35,8 @@ class TaxAccountSummarySpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
 
   "TaxAccountSummary" must {
     "return an OK response for a valid user" in {
