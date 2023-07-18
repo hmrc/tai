@@ -32,7 +32,7 @@ class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: 
     extends MongoConstants {
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    cache.cacheFromApiV2[TaxCodeHistory](nino, TaxAccountBaseKey, taxCodeHistoryFromApi(nino, taxYear))
+    cache.cacheFromApiV2[TaxCodeHistory](nino, s"TaxCodeRecords${taxYear.year}", taxCodeHistoryFromApi(nino, taxYear))
 
   private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     taxCodeChangeConnector.taxCodeHistory(nino, taxYear)
