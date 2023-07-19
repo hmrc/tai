@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.{IntegrationSpec, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.api.{ApiResponse, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -29,7 +30,8 @@ class TaxCodeLatestSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/tax-code/latest"
   def request = FakeRequest(GET, apiUrl)
-    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   "TaxCodeChange" must {
     "return an OK response for a valid user with the body containing the latest tax code summary" in {

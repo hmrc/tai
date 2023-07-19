@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class GetEmploymentsSpec extends IntegrationSpec {
@@ -32,7 +33,8 @@ class GetEmploymentsSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/employments/years/$year"
   def request = FakeRequest(GET, apiUrl)
-    .withHeaders("X-SESSION-ID" -> generateSessionId, "AUTHORIZATION" -> "Bearer 11")
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   "Get Employment" must {
     "return an OK response for a valid user" in {

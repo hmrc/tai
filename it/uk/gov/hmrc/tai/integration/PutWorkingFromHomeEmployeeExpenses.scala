@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, url
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.HttpException
+import uk.gov.hmrc.http.{HeaderNames, HttpException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
 
@@ -32,7 +32,7 @@ class PutWorkingFromHomeEmployeeExpenses extends IntegrationSpec {
 
   def request = FakeRequest(POST, apiUrl)
     .withJsonBody(postRequest)
-    .withHeaders( "AUTHORIZATION" -> "Bearer 11")
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
