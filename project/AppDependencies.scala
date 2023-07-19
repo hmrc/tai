@@ -7,7 +7,7 @@ object AppDependencies {
 
   private val hmrcMongoVersion = "0.74.0"
 
-  private val bootstrapVersion = "7.0.0"
+  private val bootstrapVersion = "7.19.0"
 
   val compile: Seq[ModuleID] = Seq(
     filters,

@@ -72,7 +72,7 @@ trait TaxOnOtherIncomeFormatters extends BaseTaxAccountHodFormatters {
           case xs if nonCodedIncome <= xs.head.income =>
             val newTotal = nonCodedIncome * (xs.head.rate / 100)
             total + newTotal
-          case _ => BigDecimal(0)
+          case _ => throw new RuntimeException("Incorrect rate band")
         }
 
       (nonCodedIncomeAmount, incomeAndRateBands(json)) match {
