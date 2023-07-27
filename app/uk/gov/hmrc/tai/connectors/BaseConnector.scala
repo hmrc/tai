@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import play.Logger
+import play.api.Logging
 import play.api.http.Status
 import play.api.libs.json.{Format, Writes}
 import uk.gov.hmrc.http.{HttpClient, _}
@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: HttpClient)(
   implicit ec: ExecutionContext
-) extends RawResponseReads {
+) extends RawResponseReads with Logging{
 
   def originatorId: String
 
@@ -51,28 +51,28 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
         }
 
         case Status.NOT_FOUND => {
-          Logger.warn(
+          logger.warn(
             s"NPSAPI - No DATA Found error returned from NPS for $api with status ${httpResponse.status} for url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new NotFoundException(httpResponse.body))
         }
 
         case Status.INTERNAL_SERVER_ERROR => {
-          Logger.warn(
+          logger.warn(
             s"NPSAPI - Internal Server error returned from NPS for $api with status ${httpResponse.status} for url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new InternalServerException(httpResponse.body))
         }
 
         case Status.BAD_REQUEST => {
-          Logger.warn(
+          logger.warn(
             s"NPSAPI - Bad request exception returned from NPS for $api with status ${httpResponse.status} for url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new BadRequestException(httpResponse.body))
         }
 
         case _ => {
-          Logger.warn(
+          logger.warn(
             s"NPSAPI - A Server error returned from NPS for $api with status ${httpResponse.status} for url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))
@@ -94,7 +94,7 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
           Future.successful(httpResponse)
         }
         case _ => {
-          Logger.warn(
+          logger.warn(
             s"NPSAPI - A server error returned from NPS HODS in postToNps with status " +
               httpResponse.status + " url " + url)
           metrics.incrementFailedCounter(api)
@@ -116,25 +116,25 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
         }
 
         case Status.NOT_FOUND => {
-          Logger.warn(s"DESAPI - No DATA Found error returned from DES HODS for $api and url $url")
+          logger.warn(s"DESAPI - No DATA Found error returned from DES HODS for $api and url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new NotFoundException(httpResponse.body))
         }
 
         case Status.INTERNAL_SERVER_ERROR => {
-          Logger.warn(s"DESAPI - Internal Server error returned from DES HODS for $api and url $url")
+          logger.warn(s"DESAPI - Internal Server error returned from DES HODS for $api and url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new InternalServerException(httpResponse.body))
         }
 
         case Status.BAD_REQUEST => {
-          Logger.warn(s"DESAPI - Bad request exception returned from DES HODS for $api and url $url")
+          logger.warn(s"DESAPI - Bad request exception returned from DES HODS for $api and url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new BadRequestException(httpResponse.body))
         }
 
         case _ => {
-          Logger.warn(s"DESAPI - A Server error returned from DES HODS for $api and url $url")
+          logger.warn(s"DESAPI - A Server error returned from DES HODS for $api and url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))
         }
@@ -155,7 +155,7 @@ abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: Htt
           Future.successful(httpResponse)
         }
         case _ => {
-          Logger.warn(
+          logger.warn(
             s"DESAPI - A server error returned from DES HODS in postToDes with status ${httpResponse.status}, " +
               s"url $url")
           metrics.incrementFailedCounter(api)

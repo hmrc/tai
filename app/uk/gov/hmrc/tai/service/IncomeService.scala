@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.Logger
+import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,7 +38,7 @@ class IncomeService @Inject()(
   citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
   taxAccountRepository: TaxAccountRepository,
-  auditor: Auditor)(implicit ec: ExecutionContext) {
+  auditor: Auditor)(implicit ec: ExecutionContext) extends Logging{
 
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
@@ -91,7 +91,7 @@ class IncomeService @Inject()(
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
     lazy val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
-      Logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}", ex)
+      logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}", ex)
       Seq.empty[Employment]
     }
 
@@ -154,7 +154,7 @@ class IncomeService @Inject()(
       }
       .recover {
         case ex: Exception =>
-          Logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
+          logger.error(s"IncomeService.updateTaxCodeIncome - failed to update income: ${ex.getMessage}")
           IncomeUpdateFailed("Could not parse etag")
       }
   }
