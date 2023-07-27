@@ -27,7 +27,6 @@ import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
 
 @Singleton
 class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) {

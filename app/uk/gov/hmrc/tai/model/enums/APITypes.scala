@@ -72,6 +72,6 @@ object BasisOperation extends Enumeration {
             }
           ))
 
-    def writes(enum: BasisOperation) = JsString(enum.toString)
+    def writes(`enum`: BasisOperation) = JsString(`enum`.toString)
   }
 }
