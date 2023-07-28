@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.util.UUID
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -33,6 +31,7 @@ import uk.gov.hmrc.tai.model.nps._
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.{GateKeeperRule, IabdUpdateAmount, IabdUpdateAmountFormats}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -44,7 +43,7 @@ class NpsConnector @Inject()(
   config: NpsConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override val originatorId = config.originatorId
+  override val originatorId: String = config.originatorId
 
   def npsPathUrl(nino: Nino, path: String) = s"${config.baseURL}/person/$nino/$path"
 

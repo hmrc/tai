@@ -16,28 +16,33 @@
 
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, InternalServerException, NotFoundException, NotImplementedException}
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.http.{BadGatewayException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeMismatch, api}
 import uk.gov.hmrc.tai.service.TaxCodeChangeServiceImpl
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Random
 
 class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants {
 
-  val testNino = ninoGenerator
+  val testNino: Nino = ninoGenerator
+
+  val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
+
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, cc)
+
+  private def ninoGenerator = new Generator(new Random).nextNino
 
   "hasTaxCodeChanged" must {
 
@@ -193,7 +198,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
         when(taxCodeService.taxCodeMismatch(any())(any(), any()))
-          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L"))))
+          .thenReturn(Future.successful(TaxCodeMismatch(mismatch = true, Seq("1185L", "BR"), Seq("1185L"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
@@ -213,7 +218,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       "there has been a tax code change but there is a mismatch between confirmed and unconfirmed codes" in {
 
         when(taxCodeService.taxCodeMismatch(any())(any(), any()))
-          .thenReturn(Future.successful(TaxCodeMismatch(true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
+          .thenReturn(Future.successful(TaxCodeMismatch(mismatch = true, Seq("1185L", "BR"), Seq("1185L", "BR"))))
 
         val expectedResponse = Json.obj(
           "data" -> Json.obj(
@@ -285,8 +290,8 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
                   LocalDate.now().plusDays(1),
                   "Employer 1",
                   Some("1234"),
-                  false,
-                  true
+                  pensionIndicator = false,
+                  primary = true
                 )
               )))
 
@@ -351,10 +356,4 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
       }
     }
   }
-
-  val mockConfig: FeatureTogglesConfig = mock[FeatureTogglesConfig]
-  val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
-
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, cc)
-  private def ninoGenerator = new Generator(new Random).nextNino
 }

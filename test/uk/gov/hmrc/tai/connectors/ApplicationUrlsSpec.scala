@@ -24,22 +24,16 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 class ApplicationUrlsSpec extends BaseSpec {
 
-  val mockConfigNps = mock[NpsConfig]
-  val mockConfigDes = mock[DesConfig]
-  val mockConfigFileUpload = mock[FileUploadConfig]
-  val mockFeatureToggleConfig = mock[FeatureTogglesConfig]
+  val mockConfigNps: NpsConfig = mock[NpsConfig]
+  val mockConfigDes: DesConfig = mock[DesConfig]
+  val mockConfigFileUpload: FileUploadConfig = mock[FileUploadConfig]
 
   when(mockConfigNps.baseURL).thenReturn("")
   when(mockConfigDes.baseURL).thenReturn("")
   when(mockConfigFileUpload.baseURL).thenReturn("")
 
-  val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes, mockFeatureToggleConfig)
+  val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
   val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
-
-  def featureToggle(desEnabled: Boolean, confirmedAPIEnabled: Boolean) = {
-    when(mockFeatureToggleConfig.desEnabled).thenReturn(desEnabled)
-    when(mockFeatureToggleConfig.confirmedAPIEnabled).thenReturn(confirmedAPIEnabled)
-  }
 
   "RtiUrls" must {
     "return the correct urls" when {
@@ -127,38 +121,12 @@ class ApplicationUrlsSpec extends BaseSpec {
 
   "TaxAccountUrls" when {
     "toggled for calculation" must {
-      "return the correct DES url" when {
-        "given argument values" ignore {
-          featureToggle(true, false)
-          taxAccountUrls
-            .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017?calculation=true"
-        }
-      }
-
       "return the correct NPS url" when {
         "given argument values" ignore {
-          featureToggle(false, false)
           taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017/calculation"
         }
       }
     }
-
-    "toggled for confirmed" must {
-      "return the correct DES url" when {
-        "given argument values" in {
-          featureToggle(true, true)
-          taxAccountUrls
-            .taxAccountUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year/2017"
-        }
-      }
-      "return the correct NPS url" when {
-        "given argument values" in {
-          featureToggle(false, true)
-          taxAccountUrls.taxAccountUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/tax-account/2017"
-        }
-      }
-    }
-
   }
 
   "IabdUrls" must {
@@ -172,8 +140,6 @@ class ApplicationUrlsSpec extends BaseSpec {
     "return the correct iabd employment url" when {
       "given argument values" in {
         iabdUrls.npsIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
-        iabdUrls
-          .desIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017/employment/1"
       }
     }
 

@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.util.UUID
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -33,21 +30,22 @@ import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DesConnector @Inject()(
-  httpClient: HttpClient,
-  metrics: Metrics,
-  auditor: Auditor,
-  formats: IabdUpdateAmountFormats,
-  config: DesConfig)(
-  implicit ec: ExecutionContext
-) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
+                              httpClient: HttpClient,
+                              metrics: Metrics,
+                              auditor: Auditor,
+                              formats: IabdUpdateAmountFormats,
+                              config: DesConfig)(
+                              implicit ec: ExecutionContext
+                            ) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
 
-  override def originatorId = config.originatorId
+  override def originatorId: String = config.originatorId
 
-  def daPtaOriginatorId = config.daPtaOriginatorId
+  def daPtaOriginatorId: String = config.daPtaOriginatorId
 
   private def desPathUrl(nino: Nino, path: String) = s"${config.baseURL}/pay-as-you-earn/individuals/$nino/$path"
 
@@ -63,9 +61,9 @@ class DesConnector @Inject()(
 
   private def headerForUpdate(version: Int, originatorId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
     createDesHeader ++ Seq(
-        "Originator-Id" -> originatorId,
-        "ETag"          -> version.toString
-      )
+      "Originator-Id" -> originatorId,
+      "ETag"          -> version.toString
+    )
 
   def getIabdsForTypeFromDes(nino: Nino, year: Int, iabdType: Int)(
     implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
@@ -79,12 +77,12 @@ class DesConnector @Inject()(
   }
 
   def updateEmploymentDataToDes(
-    nino: Nino,
-    year: Int,
-    iabdType: Int,
-    version: Int,
-    updateAmounts: List[IabdUpdateAmount],
-    apiType: APITypes = APITypes.DesIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+                                 nino: Nino,
+                                 year: Int,
+                                 iabdType: Int,
+                                 version: Int,
+                                 updateAmounts: List[IabdUpdateAmount],
+                                 apiType: APITypes = APITypes.DesIabdUpdateEstPayAutoAPI)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     if (updateAmounts.nonEmpty) {
       val postUrl = desPathUrl(nino, s"iabds/$year/employment/$iabdType")
       postToDes[List[IabdUpdateAmount]](postUrl, apiType, updateAmounts, headerForUpdate(version, originatorId))(
@@ -95,12 +93,12 @@ class DesConnector @Inject()(
     }
 
   def updateExpensesDataToDes(
-    nino: Nino,
-    year: Int,
-    iabdType: Int,
-    version: Int,
-    expensesData: List[UpdateIabdEmployeeExpense],
-    apiType: APITypes)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+                               nino: Nino,
+                               year: Int,
+                               iabdType: Int,
+                               version: Int,
+                               expensesData: List[UpdateIabdEmployeeExpense],
+                               apiType: APITypes)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
 
     val postUrl = desPathUrl(nino, s"iabds/$year/$iabdType")
 

@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service.expenses
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors.{DesConnector, IabdConnector, NpsConnector}
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -32,8 +31,7 @@ import scala.concurrent.Future
 class EmployeeExpensesService @Inject()(
   desConnector: DesConnector,
   npsConnector: NpsConnector,
-  iabdConnector: IabdConnector,
-  featureTogglesConfig: FeatureTogglesConfig) {
+  iabdConnector: IabdConnector) {
 
   def updateEmployeeExpensesData(
     nino: Nino,

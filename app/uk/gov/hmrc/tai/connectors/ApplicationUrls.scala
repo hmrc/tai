@@ -74,11 +74,7 @@ class BbsiUrls @Inject()(config: DesConfig) {
 }
 
 @Singleton
-class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featureTogglesConfig: FeatureTogglesConfig) {
-
-  private val desTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/tax-year" +
-      s"/${taxYear.year}"
+class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 
   private val npsTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
     s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
@@ -87,7 +83,7 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig, featu
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/tax-account/history/id/$iocdSeqNo"
 
   def taxAccountUrl(nino: Nino, taxYear: TaxYear): String =
-    if (featureTogglesConfig.desEnabled) desTaxAccountURL(nino, taxYear) else npsTaxAccountURL(nino, taxYear)
+    npsTaxAccountURL(nino, taxYear)
 }
 
 @Singleton

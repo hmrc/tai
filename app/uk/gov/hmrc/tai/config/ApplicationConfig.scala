@@ -63,7 +63,7 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig wit
 }
 
 @Singleton
-class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfig: ServicesConfig)
+class NpsConfig @Inject()(servicesConfig: ServicesConfig)
     extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
@@ -71,9 +71,6 @@ class NpsConfig @Inject()(val runModeConfiguration: Configuration, servicesConfi
   override lazy val environment = ""
   override lazy val authorization = ""
   override lazy val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
-  lazy val autoUpdatePayEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("auto-update-pay.enabled")
-  lazy val updateSourceEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-update-source.enabled")
-  lazy val postCalcEnabled: Option[Boolean] = runModeConfiguration.getOptional[Boolean]("nps-post-calc.enabled")
 }
 
 @Singleton
@@ -84,14 +81,6 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
   lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
   lazy val mongoTTLUpdateIncome: Int = runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600*48)
-}
-
-@Singleton
-class FeatureTogglesConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
-  def desEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.call").getOrElse(false)
-  def desUpdateEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.des.update.call").getOrElse(false)
-  def confirmedAPIEnabled: Boolean =
-    runModeConfiguration.getOptional[Boolean]("tai.confirmedAPI.enabled").getOrElse(false)
 }
 
 @Singleton

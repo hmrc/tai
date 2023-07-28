@@ -21,7 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.IabdUpdateAmount
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
@@ -38,23 +38,18 @@ class TaxAccountConnector @Inject()(
   taxAccountUrls: TaxAccountUrls,
   iabdUrls: IabdUrls,
   IabdUpdateAmountFormats: IabdUpdateAmountFormats,
-  httpHandler: HttpHandler,
-  featureTogglesConfig: FeatureTogglesConfig)(implicit ec: ExecutionContext)
+  httpHandler: HttpHandler)(implicit ec: ExecutionContext)
     extends HodsSource {
 
   private def getUuid = UUID.randomUUID().toString
 
   private def hcWithHodHeaders(implicit hc: HeaderCarrier) =
-    if (featureTogglesConfig.desEnabled) {
-      hcWithDesHeaders
-    } else {
-      Seq(
-        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId"        -> getUuid
-      )
-    }
+    Seq(
+      "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> getUuid
+    )
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI, hcWithHodHeaders)
@@ -67,23 +62,7 @@ class TaxAccountConnector @Inject()(
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
-    if (featureTogglesConfig.desUpdateEnabled) {
-      val url = iabdUrls.desIabdEmploymentUrl(nino, taxYear, iabdType)
-      val amountList = List(
-        IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(DesSource))
-      )
-      val requestHeader = headersForUpdate(hc, version, sessionOrUUID, desConfig.originatorId)
-
-      httpHandler
-        .postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.DesIabdUpdateEstPayAutoAPI, requestHeader)(
-          implicitly,
-          IabdUpdateAmountFormats.formatList
-        )
-        .map { _ =>
-          HodUpdateSuccess
-        }
-        .recover { case _ => HodUpdateFailure }
-    } else {
+     {
       val url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType)
       val amountList = List(
         IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
@@ -107,7 +86,7 @@ class TaxAccountConnector @Inject()(
       case None            => UUID.randomUUID().toString.replace("-", "")
     }
 
-  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String) =
+  def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): Seq[(String, String)] =
     Seq(
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
