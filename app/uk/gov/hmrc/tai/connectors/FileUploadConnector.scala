@@ -136,7 +136,7 @@ class FileUploadConnector @Inject()(
         if (response.status == OK) {
           metrics.incrementSuccessCounter(FusUploadFile)
           ahcWSClient.close()
-          HttpResponse(response.status)
+          HttpResponse(response.status, "")
         } else {
           logger.warn(s"FileUploadConnector.uploadFile - failed to upload file with status [${response.status}]")
           ahcWSClient.close()

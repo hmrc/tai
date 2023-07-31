@@ -103,7 +103,7 @@ class NpsConnector @Inject()(
         implicitly,
         formats.formatList)
     } else {
-      Future(HttpResponse(OK))
+      Future(HttpResponse(OK, ""))
     }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String =

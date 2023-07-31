@@ -52,7 +52,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
     "return 200" when {
       "success response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(200)))
+          .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
@@ -65,7 +65,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
     "return 500" when {
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
-          .thenReturn(Future.successful(HttpResponse(500)))
+          .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
