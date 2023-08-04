@@ -69,7 +69,7 @@ class BenefitsService @Inject()(
       case b                                  => reconcileCompanyCarsInBenefits(b, nino, taxYear)
     }
 
-  def removeCompanyBenefits(nino: Nino, empId: Int, removeCompanyBenefit: RemoveCompanyBenefit)(
+  def removeCompanyBenefits(nino: Nino, removeCompanyBenefit: RemoveCompanyBenefit)(
     implicit hc: HeaderCarrier): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,

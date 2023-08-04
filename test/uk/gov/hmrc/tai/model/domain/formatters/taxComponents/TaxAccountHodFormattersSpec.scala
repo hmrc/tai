@@ -262,8 +262,7 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         val benefitComponents = json.as[Seq[CodingComponent]](totalLiabilityReads)
 
         benefitComponents.size mustBe 28
-        benefitComponents.map(_.componentType) must contain allOf
-          (EmployerProvidedServices,
+        benefitComponents.map(_.componentType) must contain allElementsOf Seq(EmployerProvidedServices,
           CarFuelBenefit,
           MedicalInsurance,
           CarBenefit,
@@ -491,19 +490,17 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(51, 52), 1) ++ npsIabdSummaries(2, Seq(46, 50), 2)
       val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
 
-      json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allOf (CodingComponent(
-        CarFuelBenefit,
-        Some(1),
-        1,
-        "desc"),
-      CodingComponent(MedicalInsurance, Some(1), 1, "desc"),
-      CodingComponent(Mileage, Some(1), 1, "desc"),
-      CodingComponent(EmployerProvidedProfessionalSubscription, Some(1), 1, "desc"),
-      CodingComponent(IncomeTaxPaidButNotDeductedFromDirectorsRemuneration, Some(1), 1, "desc"),
-      CodingComponent(NonQualifyingRelocationExpenses, Some(2), 2, "desc"),
-      CodingComponent(PersonalIncidentalExpenses, Some(2), 2, "desc"),
-      CodingComponent(NurseryPlaces, Some(2), 2, "desc"),
-      CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "desc"))
+      val expectedCodingComponents = Seq(CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
+        CodingComponent(MedicalInsurance, Some(1), 1, "desc"),
+        CodingComponent(Mileage, Some(1), 1, "desc"),
+        CodingComponent(EmployerProvidedProfessionalSubscription, Some(1), 1, "desc"),
+        CodingComponent(IncomeTaxPaidButNotDeductedFromDirectorsRemuneration, Some(1), 1, "desc"),
+        CodingComponent(NonQualifyingRelocationExpenses, Some(2), 2, "desc"),
+        CodingComponent(PersonalIncidentalExpenses, Some(2), 2, "desc"),
+        CodingComponent(NurseryPlaces, Some(2), 2, "desc"),
+        CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "desc"))
+
+      json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allElementsOf expectedCodingComponents
     }
 
     "return Allowance instances of the appropriate TaxComponentType" when {
@@ -561,13 +558,12 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(98, 99), 1)
       val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
 
-      json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allOf (CodingComponent(
-        CommunityInvestmentTaxCredit,
-        Some(1),
-        1,
-        "desc"),
-      CodingComponent(GiftsSharesCharity, Some(1), 1, "desc"),
-      CodingComponent(RetirementAnnuityPayments, Some(1), 1, "desc"))
+      val expectedCodingComponents =
+        Seq(CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "desc"),
+          CodingComponent(GiftsSharesCharity, Some(1), 1, "desc"),
+          CodingComponent(RetirementAnnuityPayments, Some(1), 1, "desc"))
+
+      json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allElementsOf expectedCodingComponents
     }
   }
 
@@ -747,10 +743,10 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
 
   private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
     for {
-      i <- 1 to noOfIabds
+      _ <- 1 to noOfIabds
     } yield {
       Json.obj(
-        "amount"             -> 1,
+        "amount"      -> 1,
         "type"               -> iabdType,
         "npsDescription"     -> "desc",
         "employmentId"       -> 1,

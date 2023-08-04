@@ -46,7 +46,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
+      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => {
         Future("")
       })(hc).futureValue
 
@@ -77,7 +77,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
 
-      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (person: Person) => {
+      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => {
         Future("")
       })(hc).failed.futureValue
 

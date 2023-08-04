@@ -66,13 +66,13 @@ trait MongoFormatter {
 
     val fieldNames: Map[TaxObject.Type.Value, String] =
       TaxObject.Type.values.toSeq.map { x =>
-        (x, x.toString.head.toLower + x.toString.tail)
+        (x, s"${x.toString.head.toLower}${x.toString.tail}")
       }.toMap
 
     new Format[Map[TaxObjectType, TaxDetail]] {
       def reads(json: JsValue): JsResult[Map[TaxObjectType, TaxDetail]] =
         JsSuccess {
-          val fieldValues = fieldNames.mapValues { x =>
+          val fieldValues = fieldNames.view.mapValues { x =>
             TaxDetail(
               taxBands = (json \ x \ "taxBands").asOpt[Seq[nps2.TaxBand]].getOrElse(Nil),
               totalTax = (json \ x \ "totalTax").asOpt[BigDecimal],
