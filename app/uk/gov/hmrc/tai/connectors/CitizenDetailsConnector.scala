@@ -22,7 +22,6 @@ import play.api.http.Status
 import play.api.http.Status.OK
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpClient, _}
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
@@ -34,9 +33,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class CitizenDetailsConnector @Inject()(
   metrics: Metrics,
   httpClient: HttpClient,
-  auditor: Auditor,
   urls: CitizenDetailsUrls)(implicit ec: ExecutionContext)
-    extends BaseConnector(auditor, metrics, httpClient) with Logging {
+    extends BaseConnector(metrics, httpClient) with Logging {
 
   override val originatorId: String = ""
 

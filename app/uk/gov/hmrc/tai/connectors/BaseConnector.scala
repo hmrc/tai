@@ -20,13 +20,12 @@ import play.api.Logging
 import play.api.http.Status
 import play.api.libs.json.{Format, Writes}
 import uk.gov.hmrc.http.{HttpClient, _}
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class BaseConnector(auditor: Auditor, metrics: Metrics, httpClient: HttpClient)(
+abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
   implicit ec: ExecutionContext
 ) extends RawResponseReads with Logging{
 
