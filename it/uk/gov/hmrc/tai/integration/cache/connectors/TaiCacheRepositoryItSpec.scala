@@ -43,7 +43,7 @@ class TaiCacheRepositoryItSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures
     with Injecting {
 
-  override def fakeApplication =
+  override def fakeApplication() =
     GuiceApplicationBuilder()
       .configure(
         "tai.cache.expiryInSeconds" -> 10
