@@ -25,15 +25,13 @@ import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
 class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector)
     extends MongoConstants {
 
-  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier,
-    ec: ExecutionContext): Future[TaxCodeHistory] =
+  def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cache.cacheFromApiV2[TaxCodeHistory](nino, s"TaxCodeRecords${taxYear.year}", taxCodeHistoryFromApi(nino, taxYear))
 
   private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =

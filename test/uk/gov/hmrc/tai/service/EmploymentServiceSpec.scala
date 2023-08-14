@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
-import org.mockito.Mockito.{doNothing, times, verify, when}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tai.audit.Auditor
@@ -115,7 +114,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -159,7 +158,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -198,7 +197,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(HttpResponse(200)))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -239,7 +238,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200)))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -277,7 +276,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -311,7 +310,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -340,7 +339,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -375,7 +374,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 

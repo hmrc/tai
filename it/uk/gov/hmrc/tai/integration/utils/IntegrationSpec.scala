@@ -81,6 +81,7 @@ trait IntegrationSpec
   val nino = new Generator(new Random).nextNino
   val year = TaxYear().year
   val etag: String = "123"
+  val bearerToken = "Bearer 11"
 
   val cidEtagUrl = s"/citizen-details/$nino/etag"
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"

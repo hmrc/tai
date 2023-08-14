@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, getRequestedFor, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{route, status => getStatus, _}
-import uk.gov.hmrc.http.{HttpException, InternalServerException}
+import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +27,9 @@ import scala.concurrent.ExecutionContext
 class GetEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/59"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"

@@ -20,13 +20,12 @@ import cats.data.EitherT
 import cats.implicits._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.connectors.{NpsConnector, RtiConnector}
-import uk.gov.hmrc.tai.model.{domain, tai}
+import uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
@@ -38,7 +37,6 @@ import java.io.File
 import java.time.LocalDate
 import scala.concurrent.Future
 import scala.io.BufferedSource
-import scala.language.postfixOps
 
 class EmploymentRepositorySpec extends BaseSpec {
 

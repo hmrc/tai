@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service.benefits
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
@@ -520,7 +519,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -559,7 +558,7 @@ class BenefitsServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 

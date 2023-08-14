@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.mockito.Mockito
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
@@ -105,7 +104,7 @@ class FileUploadServiceSpec extends BaseSpec {
         val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "AVAILABLE", None)).futureValue
 
         result mustBe Open
-        verify(mockFileUploadConnector, never())
+        verify(mockFileUploadConnector, never)
           .closeEnvelope(meq("123"))(any())
       }
 
@@ -116,7 +115,7 @@ class FileUploadServiceSpec extends BaseSpec {
         val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "INFECTED", None)).futureValue
 
         result mustBe Open
-        verify(mockFileUploadConnector, never())
+        verify(mockFileUploadConnector, never)
           .closeEnvelope(meq("123"))(any())
       }
     }
@@ -126,7 +125,7 @@ class FileUploadServiceSpec extends BaseSpec {
         val details = FileUploadCallback("123", "11", "ERROR", Some("VIRUS"))
 
         val mockAuditor = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -149,7 +148,7 @@ class FileUploadServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("123"))
 
         val mockAuditor = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 

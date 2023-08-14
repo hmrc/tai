@@ -21,8 +21,7 @@ import uk.gov.hmrc.tai.calculators.TaxCalculator
 import uk.gov.hmrc.tai.model.Tax
 import uk.gov.hmrc.tai.model.nps.{NpsComponent, NpsTax}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import uk.gov.hmrc.tai.model.TaxBand
 
 class TaxHelperSpec extends PlaySpec with MockitoSugar {

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.config.CacheMetricsConfig

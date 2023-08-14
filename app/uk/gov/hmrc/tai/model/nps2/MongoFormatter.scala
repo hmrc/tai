@@ -80,7 +80,7 @@ trait MongoFormatter {
               totalTaxableIncome = (json \ x \ "totalTaxableIncome").asOpt[BigDecimal]
             )
           }
-          fieldValues.filter(_._2.taxBands.nonEmpty)
+          fieldValues.toMap.filter(_._2.taxBands.nonEmpty)
         }
 
       def writes(data: Map[TaxObjectType, TaxDetail]): JsValue =

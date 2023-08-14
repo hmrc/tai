@@ -17,25 +17,20 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
-import uk.gov.hmrc.http.BadRequestException
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
+import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val mockDesConnector = mock[DesConnector]
-  private val mockNpsConnector = mock[NpsConnector]
-  private val mockIabdConnector = mock[IabdConnector]
+  private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
-  private val service = new EmployeeExpensesService(
-    desConnector = mockDesConnector,
-    npsConnector = mockNpsConnector,
-    iabdConnector = mockIabdConnector)
+  private val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
   private val iabd = 56
 
@@ -60,12 +55,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
 
         val mockNpsConnector = mock[NpsConnector]
-        val mockIabdConnector = mock[IabdConnector]
 
-        val service = new EmployeeExpensesService(
-          desConnector = mockDesConnector,
-          npsConnector = mockNpsConnector,
-          iabdConnector = mockIabdConnector)
+        val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 

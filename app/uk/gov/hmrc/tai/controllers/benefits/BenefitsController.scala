@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
@@ -41,7 +41,7 @@ class BenefitsController @Inject()(
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     benefitService.benefits(nino, taxYear).map { benefitsFromService =>
       Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = authentication.async(parse.json) {

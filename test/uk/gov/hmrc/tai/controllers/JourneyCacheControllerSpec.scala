@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
 import play.api.libs.json.{JsString, Json}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -96,8 +95,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-          .thenReturn(Future.successful(None))
-          .thenReturn(Future.successful(Some(Map.empty[String, String])))
+        .thenReturn(
+          Future.successful(None),
+          Future.successful(Some(Map.empty[String, String]))
+        )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("testjourney")(fakeRequest)
@@ -161,8 +162,6 @@ class JourneyCacheControllerSpec extends BaseSpec {
       }
     }
     //update-income
-
-    val testMapUpdateIncome = Map("key1" -> "value1", "key2" -> "value2")
 
     "supply a named journey cache on GET request *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]
@@ -233,8 +232,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-          .thenReturn(Future.successful(None))
-          .thenReturn(Future.successful(Some(Map.empty[String, String])))
+        .thenReturn(
+          Future.successful(None),
+          Future.successful(Some(Map.empty[String, String]))
+        )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("update-income")(fakeRequest)

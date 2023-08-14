@@ -23,7 +23,6 @@ import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
-import uk.gov.hmrc.tai.model.rti.{RtiData, RtiStatus}
 
 import scala.concurrent.{ExecutionContext, Future}
 

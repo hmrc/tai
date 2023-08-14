@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.fileupload.formatters
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsError, Json}
+import play.api.libs.json.{JsArray, Json}
 import uk.gov.hmrc.tai.model.fileupload.{EnvelopeFile, EnvelopeSummary}
 
 class FileUploadFormattersSpec extends PlaySpec {

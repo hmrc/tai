@@ -41,8 +41,8 @@ trait IncomeSourcesHodReads {
 
   private[taxComponents] val incomeSourceReads = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val codingComponents = (json \ "incomeSources").validate[JsArray] match {
-        case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson)
+      val codingComponents: Seq[CodingComponent] = (json \ "incomeSources").validate[JsArray] match {
+        case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson).toSeq
         case _                            => Seq.empty[CodingComponent]
       }
       JsSuccess(codingComponents)
@@ -74,7 +74,7 @@ trait IncomeSourcesHodReads {
     codingComponentFactory: CodingComponentFactory): Seq[CodingComponent] =
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
       case JsSuccess(componentJsArray, _) => {
-        componentJsArray.value.flatMap { componentJsVal =>
+        componentJsArray.value.toSeq.flatMap { componentJsVal =>
           taxComponentFromNpsComponent(componentJsVal, codingComponentFactory)
         }
       }

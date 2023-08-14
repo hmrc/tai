@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.model
 
 import play.api.libs.json.Json
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 
 case class TaxCodeIncomeSummaryWrapper(version: Int, income: TaxCodeIncomeSummary)
 

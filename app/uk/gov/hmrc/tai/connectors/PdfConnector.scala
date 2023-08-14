@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status
@@ -32,9 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
-
-  private implicit val system = ActorSystem()
-  private implicit val materializer = ActorMaterializer()
 
   def generatePdf(html: String): Future[Array[Byte]] = {
 

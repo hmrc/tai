@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCarBenefit, WithdrawCarAndF
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers.testOnly
 
 import akka.Done
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.http.Status.NO_CONTENT
 import play.api.test.FakeRequest
 import play.api.test.Helpers.status

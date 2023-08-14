@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
@@ -31,7 +29,6 @@ import uk.gov.hmrc.tai.service.TotalTaxService
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 

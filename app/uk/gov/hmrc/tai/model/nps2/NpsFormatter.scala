@@ -114,7 +114,7 @@ trait NpsFormatter {
             )
           }
 
-          x.filter(_._2.taxBands.nonEmpty)
+          x.toMap.filter(_._2.taxBands.nonEmpty)
         }
 
       def writes(data: Map[TaxObjectType, TaxDetail]): JsValue =

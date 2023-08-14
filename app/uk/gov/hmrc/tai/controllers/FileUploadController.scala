@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.FileUploadCallback
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.service.FileUploadService

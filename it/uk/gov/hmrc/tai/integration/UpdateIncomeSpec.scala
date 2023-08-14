@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
@@ -39,7 +40,10 @@ class UpdateIncomeSpec extends IntegrationSpec {
   val amount = 123
   val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
 
-  def request = FakeRequest(PUT, apiUrl).withJsonBody(postRequest).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(PUT, apiUrl)
+    .withJsonBody(postRequest)
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val iabdType = 27
   val postNpsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year/employment/$iabdType"

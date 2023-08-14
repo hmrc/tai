@@ -45,7 +45,7 @@ class IncomeController @Inject()(
     incomeService.untaxedInterest(nino).map {
       case Some(untaxedInterest) => Ok(Json.toJson(ApiResponse(untaxedInterest, Nil)))
       case None                  => NotFound
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def taxCodeIncomesForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
@@ -53,7 +53,7 @@ class IncomeController @Inject()(
       case Seq() => NotFound
       case taxCodeIncomes =>
         Ok(Json.toJson(ApiResponse(Json.toJson(taxCodeIncomes), Nil)))
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def matchedTaxCodeIncomesForYear(
@@ -63,20 +63,20 @@ class IncomeController @Inject()(
     status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async { implicit request =>
     incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).map { result =>
       Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
       incomeService.nonMatchingCeasedEmployments(nino, year).map { result =>
         Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-      } recoverWith taxAccountErrorHandler
+      } recoverWith taxAccountErrorHandler()
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     incomeService.incomes(nino, year).map { income =>
       Ok(Json.toJson(ApiResponse(income, Seq.empty[ApiLink])))
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 
   def updateTaxCodeIncome(nino: Nino, snapshotId: TaxYear, employmentId: Int): Action[JsValue] =

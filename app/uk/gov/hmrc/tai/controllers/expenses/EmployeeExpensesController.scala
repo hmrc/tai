@@ -35,7 +35,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
@@ -83,7 +83,7 @@ class EmployeeExpensesController @Inject()(
     implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
         Ok(Json.toJson(iabdData))
-      } recoverWith taxAccountErrorHandler
+      } recoverWith taxAccountErrorHandler()
   }
 }
 

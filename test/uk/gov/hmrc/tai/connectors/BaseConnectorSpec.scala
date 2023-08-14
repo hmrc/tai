@@ -18,19 +18,16 @@ package uk.gov.hmrc.tai.connectors
 
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{verify, when, reset => resetMock}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{ reset => resetMock}
 import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
-import scala.util.Random
 
 class BaseConnectorSpec extends ConnectorBaseSpec {
 

@@ -69,7 +69,7 @@ class IncomeService @Inject()(
     def filterMatchingEmploymentsToIncomeSource(
       employments: Seq[Employment],
       filteredTaxCodeIncomes: Seq[TaxCodeIncome],
-      status: TaxCodeIncomeStatus)(implicit request: Request[_]): Seq[IncomeSource] =
+      status: TaxCodeIncomeStatus): Seq[IncomeSource] =
       filteredTaxCodeIncomes.flatMap { income =>
         employments
           .filter(emp => if (status == NotLive) emp.employmentStatus != Live else emp.employmentStatus == status)

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.util
 
+import org.mockito.MockitoSugar
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Injecting
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication

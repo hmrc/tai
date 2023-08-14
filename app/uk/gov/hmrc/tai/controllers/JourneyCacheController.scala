@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.controllers
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.cache.JourneyCacheRepository
@@ -87,13 +87,13 @@ class JourneyCacheController @Inject()(
   def flush(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
     journeyName match {
       case "update-income" =>
-        repository.flushUpdateIncome(CacheId.noSession(request.nino), journeyName) map { res =>
+        repository.flushUpdateIncome(CacheId.noSession(request.nino), journeyName) map { _ =>
           NoContent
         } recover {
           case _ => InternalServerError
         }
       case _ =>
-        repository.flush(CacheId(request.nino), journeyName) map { res =>
+        repository.flush(CacheId(request.nino), journeyName) map { _ =>
           NoContent
         } recover {
           case _ => InternalServerError
@@ -105,13 +105,13 @@ class JourneyCacheController @Inject()(
   def flushWithEmpId(journeyName: String, empId: Int): Action[AnyContent] = authentication.async { implicit request =>
     journeyName match {
       case "update-income" =>
-        repository.flushUpdateIncomeWithEmpId(CacheId.noSession(request.nino), journeyName, empId) map { res =>
+        repository.flushUpdateIncomeWithEmpId(CacheId.noSession(request.nino), journeyName, empId) map { _ =>
           NoContent
         } recover {
           case _ => InternalServerError
         }
       case _ =>
-        repository.flush(CacheId(request.nino), journeyName) map { res =>
+        repository.flush(CacheId(request.nino), journeyName) map { _ =>
           NoContent
         } recover {
           case _ => InternalServerError

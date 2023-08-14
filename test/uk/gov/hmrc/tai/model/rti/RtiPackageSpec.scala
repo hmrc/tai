@@ -41,7 +41,7 @@ class RtiPackageSpec extends PlaySpec {
         }
 
         val msg: Seq[String] = for {
-          (_, validations)                <- ex.errors
+          (_, validations)                <- ex.errors.toSeq
           validation: JsonValidationError <- validations
           messages: String                <- validation.messages
         } yield {

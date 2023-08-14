@@ -19,12 +19,15 @@ package uk.gov.hmrc.tai.integration
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class TaxCodeChangeSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {

@@ -44,7 +44,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
   def createEnvelope()(implicit hc: HeaderCarrier): Future[String] =
     fileUploadConnector.createEnvelope
 
-  def envelopeStatus(envelopeId: String)(implicit hc: HeaderCarrier): Future[EnvelopeStatus] =
+  def envelopeStatus(envelopeId: String): Future[EnvelopeStatus] =
     fileUploadConnector.envelope(envelopeId) map {
       case Some(envelopeSummary) =>
         if (envelopeSummary.status != FileUploadOpenStatus) {
