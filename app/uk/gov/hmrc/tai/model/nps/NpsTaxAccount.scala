@@ -223,15 +223,13 @@ case class NpsTaxAccount(
     //If we don't have an Income Source for this then look it up from the iadbSummaries
     def getIadbSummary(benefitIncomeSources: List[MergedEmployment], iadbType: Int): List[NpsIabdSummary] =
       //Check that the passed has some items
-      benefitIncomeSources match {
-        case Nil => {
-          //Lookup the relevant type from the adjustedNetIncome
-          adjustedNetIncome.flatMap(_.iabdSummaries.flatMap(_.find(_.`type`.contains(iadbType)))) match {
-            case None    => Nil
-            case Some(x) => List(x)
-          }
-        }
-        case incomeList => Nil
+      if (benefitIncomeSources.isEmpty) {
+        //Lookup the relevant type from the adjustedNetIncome
+        adjustedNetIncome
+          .flatMap(_.iabdSummaries.flatMap(_.find(_.`type`.contains(iadbType))))
+          .fold(List.empty[NpsIabdSummary])(x => List(x))
+      } else {
+         List.empty[NpsIabdSummary]
       }
 
     //Get the esa, jsa and ib from either the income source or relevant IADB_TYPE
@@ -288,7 +286,7 @@ case class NpsTaxAccount(
 
       val uniqueDeductions = deductions
         .groupBy(_.componentType)
-        .mapValues { y =>
+        .view.mapValues { y =>
           val sumAmount: BigDecimal = y.flatMap(_.amount).sum
           y.headOption.map(_.copy(amount = Some(sumAmount)))
         }

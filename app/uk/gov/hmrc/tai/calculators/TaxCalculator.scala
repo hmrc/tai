@@ -102,7 +102,7 @@ trait TaxCalculator {
   def getStartDateInCurrentFinancialYear(startDate: LocalDate): LocalDate = {
     val startDateCY = TaxYear().start
 
-    if (TaxYear().fallsInThisTaxYear(startDate)) {
+    if (TaxYear().withinTaxYear(startDate)) {
       startDate
     } else {
       startDateCY

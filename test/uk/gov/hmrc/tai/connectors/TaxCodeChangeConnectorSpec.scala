@@ -23,7 +23,6 @@ import play.api.libs.json.{JsResultException, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -59,10 +58,9 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
   private def createSut(
     metrics: Metrics = injector.instanceOf[Metrics],
     httpClient: HttpClient = injector.instanceOf[HttpClient],
-    auditor: Auditor = injector.instanceOf[Auditor],
     config: DesConfig = injector.instanceOf[DesConfig],
     taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
-    new TaxCodeChangeConnector(metrics, httpClient, auditor, config, taxCodeChangeUrl)
+    new TaxCodeChangeConnector(metrics, httpClient, config, taxCodeChangeUrl)
 
   "taxCodeHistory" must {
     "return tax code change response" when {

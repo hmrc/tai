@@ -332,7 +332,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
         val sut = createSUT(mockMongoConfig)
-        when(taiRepository.deleteEntity(any())).thenReturn(Future.successful())
+        when(taiRepository.deleteEntity(any())).thenReturn(Future.successful((): Unit))
 
         val result = sut.removeById(cacheId).futureValue
 

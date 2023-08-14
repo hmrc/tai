@@ -248,7 +248,7 @@ trait TaxModelFactory {
 
       totals match {
         case Nil => None
-        case x => Some(
+        case _ => Some(
           createIncomesWithTotal(employments = employments, statePension = statePension,
             statePensionLumpSum = statePensionLumpSum,
             occupationalPensions = occupationalPensions,
@@ -276,7 +276,7 @@ trait TaxModelFactory {
 
       totals match {
         case Nil => None
-        case x => Some(createIncreasesTaxWithTotal(incomes, benefitsFromEmployment))
+        case _ => Some(createIncreasesTaxWithTotal(incomes, benefitsFromEmployment))
       }
     }
     increasesTax
@@ -324,7 +324,7 @@ trait TaxModelFactory {
 
       totals match {
         case Nil => None
-        case x => Some(createDecreasesTaxWithTotal(personalAllowance = personalAllowance,
+        case _ => Some(createDecreasesTaxWithTotal(personalAllowance = personalAllowance,
           blindPerson = blindPerson, expenses = expenses,
           giftRelated = giftRelated, jobExpenses = jobExpenses, miscellaneous = miscellaneous,
           pensionContributions = pensionContributions, paReceivedAmount = allowanceTAMCAmount,

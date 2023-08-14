@@ -23,7 +23,6 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model
@@ -39,10 +38,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class NpsConnector @Inject()(
   metrics: Metrics,
   httpClient: HttpClient,
-  auditor: Auditor,
   formats: IabdUpdateAmountFormats,
   config: NpsConfig)(implicit ec: ExecutionContext)
-    extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
+    extends BaseConnector(metrics, httpClient) with NpsFormatter {
 
   override val originatorId = config.originatorId
 
@@ -103,7 +101,7 @@ class NpsConnector @Inject()(
         implicitly,
         formats.formatList)
     } else {
-      Future(HttpResponse(OK))
+      Future(HttpResponse(OK, ""))
     }
 
   private def sessionOrUUID(implicit hc: HeaderCarrier): String =

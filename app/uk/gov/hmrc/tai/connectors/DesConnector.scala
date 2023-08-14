@@ -21,8 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -38,11 +37,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class DesConnector @Inject()(
   httpClient: HttpClient,
   metrics: Metrics,
-  auditor: Auditor,
   formats: IabdUpdateAmountFormats,
   config: DesConfig)(
   implicit ec: ExecutionContext
-) extends BaseConnector(auditor, metrics, httpClient) with NpsFormatter {
+) extends BaseConnector(metrics, httpClient) with NpsFormatter {
 
   override def originatorId = config.originatorId
 
@@ -90,7 +88,7 @@ class DesConnector @Inject()(
         hc,
         formats.formatList)
     } else {
-      Future(HttpResponse(OK))
+      Future(HttpResponse(OK, ""))
     }
 
   def updateExpensesDataToDes(

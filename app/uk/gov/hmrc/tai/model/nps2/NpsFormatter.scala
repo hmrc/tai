@@ -93,14 +93,14 @@ trait NpsFormatter {
 
     val fieldNames: Map[TaxObject.Type.Value, String] =
       TaxObject.Type.values.toSeq.map { x =>
-        (x, x.toString.head.toLower + x.toString.tail)
+        (x, s"${x.toString.head.toLower}${x.toString.tail}")
       }.toMap
 
     new Format[Map[TaxObjectType, TaxDetail]] {
       def reads(json: JsValue): JsResult[Map[TaxObjectType, TaxDetail]] =
         JsSuccess {
 
-          val x = fieldNames.mapValues { liabilityType =>
+          val x = fieldNames.view.mapValues { liabilityType =>
             val npsTaxBands = (json \ liabilityType \ "taxBands").asOpt[Seq[nps2.TaxBand]]
             val npsPAAmount = (json \ liabilityType \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal]
 

@@ -90,15 +90,6 @@ object NpsData extends NpsFormatter {
     jsVal
   }
 
-  private def getSelectedNpsEmployment(fileName: String): NpsEmployment = {
-    val jsonFilePath = basePath + fileName
-    val file: File = new File(jsonFilePath)
-    val source: BufferedSource = scala.io.Source.fromFile(file)
-    val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
-    val result = Json.fromJson[NpsEmployment](jsVal)
-    result.get
-  }
-
   private def getNpsEmployment(fileName: String): List[NpsEmployment] = {
     val jsonFilePath = basePath + fileName
     val file: File = new File(jsonFilePath)
@@ -114,15 +105,6 @@ object NpsData extends NpsFormatter {
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
     val result = Json.fromJson[TaxSummaryDetails](jsVal)
-    result.get
-  }
-
-  private def getNpsEmploymentIABDs(fileName: String): List[NpsIabdRoot] = {
-    val jsonFilePath = basePath + fileName
-    val file: File = new File(jsonFilePath)
-    val source: BufferedSource = scala.io.Source.fromFile(file)
-    val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
-    val result = Json.fromJson[List[NpsIabdRoot]](jsVal)
     result.get
   }
 

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.{Inject, Singleton}
-import play.Logger
+import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
 import play.api.libs.json.{JsValue, Writes}
@@ -27,10 +27,9 @@ import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.util.{Failure, Success, Try}
 
 @Singleton
-class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) {
+class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
 
   def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(
     implicit hc: HeaderCarrier): Future[JsValue] = {
@@ -42,23 +41,23 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
         response.status match {
           case Status.OK => response
           case Status.NOT_FOUND => {
-            Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
+            logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)
           }
           case Status.INTERNAL_SERVER_ERROR => {
-            Logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
+            logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
             throw new InternalServerException(response.body)
           }
           case Status.BAD_REQUEST => {
-            Logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
+            logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
             throw new BadRequestException(response.body)
           }
           case Status.LOCKED => {
-            Logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
+            logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
             throw new LockedException(response.body)
           }
           case _ => {
-            Logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
+            logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
             throw new HttpException(response.body, response.status)
           }
         }
@@ -96,7 +95,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
           httpResponse
         }
         case _ => {
-          Logger.warn(
+          logger.warn(
             s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
           metrics.incrementFailedCounter(api)
           throw new HttpException(httpResponse.body, httpResponse.status)

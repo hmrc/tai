@@ -29,4 +29,5 @@ trait BaseSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures with Injecting {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+  val responseBody: String = ""
 }

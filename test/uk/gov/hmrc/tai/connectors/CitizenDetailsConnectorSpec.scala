@@ -23,7 +23,6 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain.Address
@@ -235,7 +234,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
       val httpClient = mock[HttpClient]
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
 
       when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
         Future.successful(HttpResponse(OK, jsonPayload))
@@ -255,7 +254,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
       val httpClient = mock[HttpClient]
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
 
       when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
         Future.successful(HttpResponse(LOCKED, "a locked user"))
@@ -275,7 +274,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
       val httpClient = mock[HttpClient]
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[Auditor], inject[CitizenDetailsUrls])
+      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
 
       when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
         Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "an error occured"))

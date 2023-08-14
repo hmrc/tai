@@ -54,7 +54,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
         val expectedJson = TaxCodeIncomeFactory.createJson
         val updatedJson = expectedJson
           .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
-          BasisOperation.formatBasisOperationType.writes))
+          BasisOperation.formatBasisOperationType.writes(_)))
 
         Json.toJson(model) mustEqual updatedJson
       }
@@ -69,7 +69,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
         val expectedJson = TaxCodeIncomeFactory.createJson
         val updatedJson = expectedJson
           .as[JsObject] + ("taxCode" -> Json.toJson("K100")) + ("basisOperation" -> Json.toJson(OtherBasisOperation)(
-          BasisOperation.formatBasisOperationType.writes)) + ("updateNotificationDate" -> Json
+          BasisOperation.formatBasisOperationType.writes(_))) + ("updateNotificationDate" -> Json
           .toJson(date))
 
         Json.toJson(model) mustEqual updatedJson

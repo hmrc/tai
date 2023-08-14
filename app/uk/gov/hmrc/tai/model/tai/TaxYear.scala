@@ -48,22 +48,6 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def withinTaxYear(currentDate: LocalDate): Boolean =
     (currentDate.isEqual(TaxYear().start) || currentDate.isAfter(TaxYear().start)) &&
       (currentDate.isBefore(TaxYear().end) || currentDate.isEqual(TaxYear().end))
-
-  @deprecated("Does not check if date is post tax year, use withinTaxYear instead")
-  def fallsInThisTaxYear(currentDate: LocalDate): Boolean = {
-    val earliestDateForCurrentTaxYear = start
-    earliestDateForCurrentTaxYear.isBefore(currentDate) || earliestDateForCurrentTaxYear.isEqual(currentDate)
-  }
-
-  def taxYearFor(dateToResolve: LocalDate): Int = {
-    val year = dateToResolve.getYear
-
-    if (dateToResolve.isBefore(LocalDate.of(year, 4, 6)))
-      year - 1
-    else
-      year
-  }
-
 }
 
 object TaxYear {

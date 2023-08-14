@@ -81,7 +81,6 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
     "return the TaxCodeHistory from the supplied function" when {
       "the key is not present in the cache" in {
         val sut = cacheTest
-        val jsonFromFunction = Json.obj("c" -> "d")
         when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(mongoKey))(any()))
           .thenReturn(Future.successful(None))
         when(

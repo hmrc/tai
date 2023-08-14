@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import com.google.inject.{Inject, Singleton}
-import play.Logger
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -37,7 +37,7 @@ class BbsiController @Inject()(
   authentication: AuthenticationPredicate,
   cc: ControllerComponents)(
   implicit ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
+) extends BackendController(cc) with ApiFormats with ControllerErrorHandler with Logging {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     bbsiService.bbsiDetails(nino) map { accounts =>
@@ -61,7 +61,7 @@ class BbsiController @Inject()(
       }
     } recoverWith {
       case BankAccountNotFound(body) =>
-        Logger.warn(s"Bbsi - No bank account found for nino $nino")
+        logger.warn(s"Bbsi - No bank account found for nino $nino")
         Future.successful(NotFound(body))
       case _ =>
         Future.successful(InternalServerError("Error while closing bank account"))
@@ -75,7 +75,7 @@ class BbsiController @Inject()(
       }
     } recoverWith {
       case BankAccountNotFound(body) =>
-        Logger.warn(s"Bbsi - No bank account found for nino $nino")
+        logger.warn(s"Bbsi - No bank account found for nino $nino")
         Future.successful(NotFound(body))
       case _ =>
         Future.successful(InternalServerError("Error while removing bank account"))
@@ -92,7 +92,7 @@ class BbsiController @Inject()(
         }
       } recoverWith {
         case BankAccountNotFound(body) =>
-          Logger.warn(s"Bbsi - No bank account found for nino $nino")
+          logger.warn(s"Bbsi - No bank account found for nino $nino")
           Future.successful(NotFound(body))
         case ex: HttpException =>
           Future.failed(ex)

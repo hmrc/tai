@@ -45,7 +45,7 @@ class NpsEmploymentTest extends PlaySpec with NpsFormatter {
 
     "have the property fromJson(toJson(x)) == x" in {
       tryParse.foreach {
-        case (k, Success(v)) => Json.toJson(v).as[NpsEmployment] must be(v)
+        case (_, Success(v)) => Json.toJson(v).as[NpsEmployment] must be(v)
         case _               =>
       }
     }

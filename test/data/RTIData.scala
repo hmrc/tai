@@ -16,12 +16,11 @@
 
 package data
 
-import java.io.File
 
 import java.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.model.rti.{RtiData, RtiEmployment}
+import uk.gov.hmrc.tai.model.rti.RtiData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.io.Source
@@ -42,15 +41,6 @@ object RTIData {
     val result = Json.fromJson[RtiData](jsVal)
     val rtiData: RtiData = result.get
     updatePmtDateToThisYear(rtiData)
-  }
-
-  private def getRTIEmployment(fileName: String): RtiEmployment = {
-    val jsonFilePath = basePath + fileName
-    val file: File = new File(jsonFilePath)
-    val source = scala.io.Source.fromFile(file).mkString("").replace("$NINO", nino.nino)
-    val jsVal = Json.parse(source)
-    val result = Json.fromJson[RtiEmployment](jsVal)
-    result.get
   }
 
   def getRtiData = getRTIData(RtiData)

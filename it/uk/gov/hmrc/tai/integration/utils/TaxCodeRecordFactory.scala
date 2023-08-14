@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.integration.utils
 
-import play.api.libs.json.{JsNull, JsObject, Json}
+import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.model.TaxCodeRecord
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants

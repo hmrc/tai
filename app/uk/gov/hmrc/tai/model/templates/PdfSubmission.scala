@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.templates
 
 import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
+import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDateTime, ZoneId}
 import scala.util.Random
 
@@ -39,7 +40,10 @@ case class PdfSubmission(
     val maxSubmissionReferenceLength = 12
     Random.alphanumeric.take(maxSubmissionReferenceLength).mkString
   }
-  val reconciliationId: String = s"$submissionReference-${Instant.now().formatted("yyyyMMddHHmmss")}"
-  val fileFormat: String = "pdf"
+  val instant: Instant = Instant.now()
+  val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+  val formattedTime: String = formatter.format(instant.atZone(ZoneId.of(LondonEuropeTimezone)).toLocalDateTime)
+  val reconciliationId: String = s"$submissionReference-$formattedTime"
+  val fileFormat = "pdf"
   val mimeType: String = "application/pdf"
 }

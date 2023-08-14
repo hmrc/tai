@@ -65,11 +65,11 @@ class BenefitsService @Inject()(
 
   def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] =
     taxComponentService.codingComponents(nino, taxYear).map(filterBenefits).flatMap {
-      case b @ Benefits(Seq(), otherbenefits) => Future.successful(b)
+      case b @ Benefits(Seq(), _) => Future.successful(b)
       case b                                  => reconcileCompanyCarsInBenefits(b, nino, taxYear)
     }
 
-  def removeCompanyBenefits(nino: Nino, empId: Int, removeCompanyBenefit: RemoveCompanyBenefit)(
+  def removeCompanyBenefits(nino: Nino, removeCompanyBenefit: RemoveCompanyBenefit)(
     implicit hc: HeaderCarrier): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,

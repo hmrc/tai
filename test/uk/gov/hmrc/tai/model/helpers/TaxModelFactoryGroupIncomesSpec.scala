@@ -78,7 +78,6 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
         val taxCodeIncomeTotal =
           TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
-        val resTaxCodeIncomes = TaxCodeIncomes(None, Some(taxCodeIncomeTotal), None, None, false, 50000, 40000, 5000)
         val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, None, None, None, None, None, None, 0)
         val total = BigDecimal(50000)
         val res = Some(
@@ -109,7 +108,6 @@ class TaxModelFactoryGroupIncomesSpec extends PlaySpec with TaxModelFactoryTestD
         val taxCodeIncomeTotal =
           TaxCodeIncomeTotal(taxCodeIncomeSummary, BigDecimal(50000), BigDecimal(5000), BigDecimal(40000))
 
-        val resTaxCodeIncomes = TaxCodeIncomes(None, Some(taxCodeIncomeTotal), None, None, false, 50000, 40000, 5000)
         val resNoneTaxCodeIncomes = NoneTaxCodeIncomes(None, None, None, None, None, None, None, None, None, None, 0)
         val resTotal = BigDecimal(50000)
         val res = Some(
