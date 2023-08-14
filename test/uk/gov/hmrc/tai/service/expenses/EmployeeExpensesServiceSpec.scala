@@ -18,9 +18,10 @@ package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -28,10 +29,10 @@ import scala.concurrent.Future
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val mockDesConnector = mock[DesConnector]
-  private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
   private val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
+  private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
 
   private val validNpsIabd: List[NpsIabdRoot] = List(
@@ -51,8 +52,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
-
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
           .status mustBe 200
@@ -63,8 +62,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
-
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
@@ -82,8 +79,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
           .thenReturn(Future.successful(validNpsIabd))
 
-
-        val mockNpsConnector = mock[NpsConnector]
 
         val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
