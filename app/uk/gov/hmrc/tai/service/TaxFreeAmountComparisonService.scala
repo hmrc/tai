@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.Logger
+import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
@@ -33,7 +33,7 @@ class TaxFreeAmountComparisonService @Inject()(
   taxCodeChangeService: TaxCodeChangeServiceImpl,
   codingComponentService: CodingComponentService)(
   implicit ec: ExecutionContext
-) {
+) extends Logging{
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
     lazy val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
@@ -52,7 +52,7 @@ class TaxFreeAmountComparisonService @Inject()(
 
     currentCodingComponentFuture.failed.foreach {
       case NonFatal(e) =>
-        Logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
+        logger.error("Could not fetch current coding components for TaxFreeAmountComparison - " + e.getMessage)
       case _ => throw new RuntimeException("Could not fetch current coding components for TaxFreeAmountComparison")
     }
 
@@ -74,7 +74,7 @@ class TaxFreeAmountComparisonService @Inject()(
 
     previousCodingComponentsFuture.failed.foreach {
       case NonFatal(e) =>
-        Logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
+        logger.error("Could not fetch previous coding components for TaxFreeAmountComparison - " + e.getMessage)
       case _ => throw new RuntimeException("Could not fetch previous coding components for TaxFreeAmountComparison")
     }
 

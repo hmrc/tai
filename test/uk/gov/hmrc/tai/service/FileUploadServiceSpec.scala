@@ -48,7 +48,7 @@ class FileUploadServiceSpec extends BaseSpec {
     "able to upload the file" in {
       val mockFileUploadConnector = mock[FileUploadConnector]
       when(mockFileUploadConnector.uploadFile(any(), any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HttpResponse(200)))
+        .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val sut = createSUT(mockFileUploadConnector, mock[Auditor])
       val result = sut.uploadFile(new Array[Byte](1), "123", fileName, contentType).futureValue

@@ -77,8 +77,6 @@ class TaxCodeRecordSpec extends PlaySpec with TaxCodeHistoryConstants with Match
     Primary
   )
 
-  private val payrollNumber2 = "999"
-
   val recordEmployer2 = mostRecentTaxCodeRecord.copy(employerName = "Employer 2")
 
   val recordNoPayrollPrimary = mostRecentTaxCodeRecord.copy(payrollNumber = None)

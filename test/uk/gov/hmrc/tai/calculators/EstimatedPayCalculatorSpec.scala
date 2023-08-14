@@ -151,8 +151,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
         val startDateInNextTaxYear = TaxYear().next.start
         val payDetails = PayDetails(
           paymentFrequency = PayFreq.weekly,
-          pay = Some(100),
-          taxablePay = Some(80),
+          pay = Some(0),
+          taxablePay = Some(0),
           bonus = None,
           startDate = Some(startDateInNextTaxYear))
 

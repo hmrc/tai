@@ -181,7 +181,7 @@ trait EmploymentHodFormatters {
     override def reads(json: JsValue): JsResult[Seq[AnnualAccount]] = {
 
       val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
-        case JsSuccess(arr, path) => arr.value.toSeq
+        case JsSuccess(arr, _) => arr.value.toSeq
         case _                    => Nil
       }
 
@@ -189,7 +189,7 @@ trait EmploymentHodFormatters {
         val sequenceNumber = (emp \ "sequenceNumber").as[Int]
         val payments =
           (emp \ "payments" \ "inYear").validate[JsArray] match {
-            case JsSuccess(arr, path) =>
+            case JsSuccess(arr, _) =>
               arr.value
                 .map { payment =>
                   payment.as[Payment](paymentHodReads)
@@ -201,7 +201,7 @@ trait EmploymentHodFormatters {
 
         val eyus =
           (emp \ "payments" \ "eyu").validate[JsArray] match {
-            case JsSuccess(arr, path) =>
+            case JsSuccess(arr, _) =>
               arr.value
                 .map { payment =>
                   payment.as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
@@ -226,7 +226,7 @@ trait EmploymentHodFormatters {
   val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
   def numberChecked(stringVal: String): String =
     stringVal match {
-      case numericWithLeadingZeros(zeros, numeric) => numeric
+      case numericWithLeadingZeros(_, numeric) => numeric
       case _                                       => stringVal
     }
 

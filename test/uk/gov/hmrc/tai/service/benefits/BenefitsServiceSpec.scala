@@ -508,7 +508,6 @@ class BenefitsServiceSpec extends BaseSpec {
   "removeCompanyBenefits" must {
     "return an envelopeId" when {
       "given valid inputs" in {
-        val employmentId = 1
         val removeCompanyBenefit =
           RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
 
@@ -532,13 +531,12 @@ class BenefitsServiceSpec extends BaseSpec {
           mockAuditable
         )
         val result =
-          sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc).futureValue
+          sut.removeCompanyBenefits(nino, removeCompanyBenefit)(hc).futureValue
 
         result mustBe "1"
       }
     }
     "send remove company benefit journey audit event" in {
-      val employmentId = 1
       val removeCompanyBenefit =
         RemoveCompanyBenefit("Mileage", "On Or After 6 April 2017", Some("1200"), "Yes", Some("123456789"))
       val map = Map(
@@ -570,7 +568,7 @@ class BenefitsServiceSpec extends BaseSpec {
         mock[CacheService],
         mockAuditable
       )
-      sut.removeCompanyBenefits(nino, employmentId, removeCompanyBenefit)(hc).futureValue mustBe "1"
+      sut.removeCompanyBenefits(nino, removeCompanyBenefit)(hc).futureValue mustBe "1"
 
       verify(mockAuditable, times(1))
         .sendDataEvent(meq(IFormConstants.RemoveCompanyBenefitAuditTxnName), meq(map))(any())

@@ -44,6 +44,35 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val taxYear = 2017
 
+  "updateEmployeeExpensesData" must {
+
+    "return 200" when {
+      "success response from des connector" in {
+        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(200, responseBody)))
+
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
+
+        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+          .futureValue
+          .status mustBe 200
+      }
+    }
+
+    "return 500" when {
+      "failure response from des connector" in {
+        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
+          .thenReturn(Future.successful(HttpResponse(500, responseBody)))
+
+        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
+
+        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+          .futureValue
+          .status mustBe 500
+      }
+    }
+  }
+
   "getEmployeeExpensesData" must {
 
     "return a list of NpsIabds" when {

@@ -35,7 +35,7 @@ import scala.util.Random
 class AuthenticationPredicateSpec extends BaseSpec {
 
   class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
-    def get: Action[AnyContent] = authentication.async { implicit request =>
+    def get: Action[AnyContent] = authentication.async { _ =>
       Future.successful(Ok)
     }
   }

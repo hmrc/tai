@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.ws.ahc.AhcWSClient
@@ -61,7 +61,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
   def uploadFile(data: Array[Byte], envelopeId: String, fileName: String, contentType: MimeContentType)(
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val system: ActorSystem = ActorSystem()
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    implicit val materializer: Materializer = Materializer(system)
 
     val ahcWSClient: AhcWSClient = AhcWSClient()
     fileUploadConnector
@@ -99,6 +99,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
 
         Closed
       case Open => Open
+      case _ => throw new RuntimeException("Invalid EnvelopeStatus")
     }
 
   private def removeExtension(fileName: String): String = fileName.split("\\.").head

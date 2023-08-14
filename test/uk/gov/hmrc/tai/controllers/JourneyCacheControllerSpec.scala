@@ -209,7 +209,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
     "accept and process a DELETE cache flush instruction *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]
       when(mockRepository.flushUpdateIncome(any(), any()))
-        .thenReturn(Future.successful())
+        .thenReturn(Future.successful((): Unit))
 
       val sut = createSUT(mockRepository)
       val result = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
@@ -219,7 +219,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
     "accept and process a DELETE cache flush instruction with empId *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]
       when(mockRepository.flushUpdateIncomeWithEmpId(any(), any(), any()))
-        .thenReturn(Future.successful())
+        .thenReturn(Future.successful((): Unit))
 
       val sut = createSUT(mockRepository)
       val result =
@@ -301,7 +301,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
 
         val result5 =
           sut.flushWithEmpId("update-income", 1)(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
-        status(result4) mustBe INTERNAL_SERVER_ERROR
+        status(result5) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

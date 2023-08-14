@@ -419,7 +419,7 @@ class RtiPackageSpec extends PlaySpec {
         records.foreach {
           case (_, _, Success(json)) => Json.toJson(json).as[RtiData] must be(json)
           case record =>
-            val (year, nino, json) = record
+            val (year, nino, _) = record
             fail("Not able to parse json " + (year, nino).toString)
         }
       }

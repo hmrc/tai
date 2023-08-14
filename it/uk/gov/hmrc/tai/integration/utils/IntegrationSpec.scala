@@ -64,7 +64,7 @@ trait IntegrationSpec
         .willReturn(ok(authResponse)))
   }
 
-  override def fakeApplication =
+  override def fakeApplication() =
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port"            -> server.port(),

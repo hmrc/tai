@@ -23,7 +23,6 @@ import org.mockito.Mockito.{ reset => resetMock}
 import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http.{HttpClient, _}
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.RtiData
@@ -31,11 +30,10 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class BaseConnectorSpec extends ConnectorBaseSpec {
 
-  lazy val auditor: Auditor = inject[Auditor]
   lazy val metrics: Metrics = inject[Metrics]
   lazy val httpClient: HttpClient = inject[HttpClient]
 
-  lazy val sut: BaseConnector = new BaseConnector(auditor, metrics, httpClient) {
+  lazy val sut: BaseConnector = new BaseConnector(metrics, httpClient) {
     override def originatorId: String = "testOriginatorId"
   }
 
@@ -63,15 +61,14 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
   val eTagKey: String = "ETag"
   val eTag: Int = 34
 
-  val mockAuditor: Auditor = mock[Auditor]
   val mockMetrics: Metrics = mock[Metrics]
 
-  def sutWithMockedMetrics: BaseConnector = new BaseConnector(mockAuditor, mockMetrics, httpClient) {
+  def sutWithMockedMetrics: BaseConnector = new BaseConnector(mockMetrics, httpClient) {
     override val originatorId: String = "testOriginatorId"
   }
 
   override def beforeEach(): Unit = {
-    resetMock(mockMetrics, mockAuditor)
+    resetMock(mockMetrics)
     super.beforeEach()
   }
 

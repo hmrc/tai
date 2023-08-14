@@ -37,7 +37,7 @@ object EstimatedPayCalculator {
       calculatePay(frequency = payDetails.paymentFrequency, pay = amount, days = payDetails.days.getOrElse(0)) + payDetails.bonus
         .getOrElse(BigDecimal(0)))
 
-    val inYear = payDetails.startDate.fold(false)(TaxYear().fallsInThisTaxYear(_))
+    val inYear = payDetails.startDate.fold(false)(TaxYear().withinTaxYear(_))
 
     if (payDetails.startDate.isDefined && inYear) {
       val apportioned = payDetails.startDate.map { startDate =>

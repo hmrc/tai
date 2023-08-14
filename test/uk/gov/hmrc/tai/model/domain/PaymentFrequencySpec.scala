@@ -46,15 +46,15 @@ class PaymentFrequencySpec extends PlaySpec {
 
     "create a valid json" when {
       "user received a valid payment frequency" in {
-        Json.toJson(Weekly)(paymentFrequencyFormat.writes) mustBe JsString("Weekly")
-        Json.toJson(FortNightly)(paymentFrequencyFormat.writes) mustBe JsString("FortNightly")
-        Json.toJson(FourWeekly)(paymentFrequencyFormat.writes) mustBe JsString("FourWeekly")
-        Json.toJson(Monthly)(paymentFrequencyFormat.writes) mustBe JsString("Monthly")
-        Json.toJson(Quarterly)(paymentFrequencyFormat.writes) mustBe JsString("Quarterly")
-        Json.toJson(BiAnnually)(paymentFrequencyFormat.writes) mustBe JsString("BiAnnually")
-        Json.toJson(Annually)(paymentFrequencyFormat.writes) mustBe JsString("Annually")
-        Json.toJson(OneOff)(paymentFrequencyFormat.writes) mustBe JsString("OneOff")
-        Json.toJson(Irregular)(paymentFrequencyFormat.writes) mustBe JsString("Irregular")
+        Json.toJson(Weekly)(paymentFrequencyFormat.writes(_)) mustBe JsString("Weekly")
+        Json.toJson(FortNightly)(paymentFrequencyFormat.writes(_)) mustBe JsString("FortNightly")
+        Json.toJson(FourWeekly)(paymentFrequencyFormat.writes(_)) mustBe JsString("FourWeekly")
+        Json.toJson(Monthly)(paymentFrequencyFormat.writes(_)) mustBe JsString("Monthly")
+        Json.toJson(Quarterly)(paymentFrequencyFormat.writes(_)) mustBe JsString("Quarterly")
+        Json.toJson(BiAnnually)(paymentFrequencyFormat.writes(_)) mustBe JsString("BiAnnually")
+        Json.toJson(Annually)(paymentFrequencyFormat.writes(_)) mustBe JsString("Annually")
+        Json.toJson(OneOff)(paymentFrequencyFormat.writes(_)) mustBe JsString("OneOff")
+        Json.toJson(Irregular)(paymentFrequencyFormat.writes(_)) mustBe JsString("Irregular")
       }
     }
   }

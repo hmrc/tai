@@ -131,7 +131,7 @@ class EmploymentRepository @Inject()(
       rtiCall(nino, taxYear) map {
         case Right(accounts) if accounts.isEmpty => stubAccounts(Unavailable, employments, taxYear)
         case Right(accounts) => accounts
-        case Left(rtiStatus) => stubAccounts(TemporarilyUnavailable, employments, taxYear)
+        case Left(_) => stubAccounts(TemporarilyUnavailable, employments, taxYear)
       }
 
     for {

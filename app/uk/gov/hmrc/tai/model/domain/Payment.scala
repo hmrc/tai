@@ -38,8 +38,8 @@ case class Payment(
 }
 
 object Payment {
-  implicit val format: OFormat[Payment] = Json.format[Payment]
   implicit val paymentFrequencyFormat: Format[PaymentFrequency] = EmploymentMongoFormatters.paymentFrequencyFormat
+  implicit val format: OFormat[Payment] = Json.format[Payment]
 
   private implicit val LocalDateOrder: Ordering[LocalDate] = (x: LocalDate, y: LocalDate) => x.compareTo(y)
   implicit val dateOrdering: Ordering[Payment] = Ordering.by(_.date)

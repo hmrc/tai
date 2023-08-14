@@ -37,7 +37,6 @@ class BenefitsControllerSpec extends BaseSpec {
   "benefits" must {
     "return Benefits case class with empty lists" when {
       "benefit service returns benefits case class with empty lists" in {
-        val nino = randomNino
         val mockBenefitService = mock[BenefitsService]
         val emptyBenefits = Benefits(Seq(), Seq())
         when(mockBenefitService.benefits(any(), any())(any()))
@@ -139,7 +138,7 @@ class BenefitsControllerSpec extends BaseSpec {
         val employmentId = 1
 
         val mockBenefitService = mock[BenefitsService]
-        when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(employmentId), meq(removeCompanyBenefit))(any()))
+        when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(removeCompanyBenefit))(any()))
           .thenReturn(Future.successful(envelopeId))
 
         val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)

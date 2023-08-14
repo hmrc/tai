@@ -466,6 +466,4 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
     "employmentRecord"            -> JsNull
   )
 
-  private def stripFormatting(string: String): String =
-    string.stripMargin.replaceAll("\\n+", "")
 }
