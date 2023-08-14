@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import play.api.Logger
-import play.api.libs.json.JodaReads._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.income.{Ceased, Live, PotentiallyCeased, TaxCodeIncomeStatus}
@@ -182,7 +181,7 @@ trait EmploymentHodFormatters {
     override def reads(json: JsValue): JsResult[Seq[AnnualAccount]] = {
 
       val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
-        case JsSuccess(arr, path) => arr.value
+        case JsSuccess(arr, path) => arr.value.toSeq
         case _                    => Nil
       }
 

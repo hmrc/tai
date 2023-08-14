@@ -39,6 +39,6 @@ class TotalTaxController @Inject()(
   def totalTax(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     totalTaxService.totalTax(nino, year) map { totalTax =>
       Ok(Json.toJson(ApiResponse(totalTax, Nil)))
-    } recoverWith taxAccountErrorHandler
+    } recoverWith taxAccountErrorHandler()
   }
 }

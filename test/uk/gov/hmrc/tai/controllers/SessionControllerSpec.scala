@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.tai.repositories.SessionRepository

@@ -33,7 +33,7 @@
 package uk.gov.hmrc.tai.model
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsResultException, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.tai.TaxYear

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.libs.json.{JsArray, JsNull, Json}
 import uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent

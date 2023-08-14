@@ -18,8 +18,6 @@ package uk.gov.hmrc.tai.model.nps
 
 import java.time.LocalDate
 import play.api.libs.json.Json
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.domain.Nino
 
 case class Person(

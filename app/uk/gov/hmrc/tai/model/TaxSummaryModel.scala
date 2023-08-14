@@ -18,8 +18,6 @@ package uk.gov.hmrc.tai.model
 
 import java.time.LocalDate
 import play.api.libs.json._
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.AnnualAccount

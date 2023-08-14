@@ -20,7 +20,6 @@ import java.time.LocalDate
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{verify, when}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._

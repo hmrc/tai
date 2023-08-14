@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{never, times, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.tai.connectors.BbsiConnector
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -45,7 +43,7 @@ class BbsiRepositorySpec extends BaseSpec {
         result mustBe Seq(bankAccount)
         verify(mockCacheConnector, times(1))
           .findOptSeq[BankAccount](any(), meq(sut.BBSIKey))(any())
-        verify(mockBbsiConnector, never())
+        verify(mockBbsiConnector, never)
           .bankAccounts(any(), any())(any())
       }
 

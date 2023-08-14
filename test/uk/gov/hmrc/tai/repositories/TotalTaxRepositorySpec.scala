@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear

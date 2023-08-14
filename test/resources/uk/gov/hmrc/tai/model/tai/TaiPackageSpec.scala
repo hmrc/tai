@@ -17,8 +17,7 @@
 package uk.gov.hmrc.tai.model.tai
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsError, JsNumber, JsResult, JsString, JsSuccess}
-import uk.gov.hmrc.tai.model.TaxSummaryDetails
+import play.api.libs.json.{JsError, JsNumber, JsString, JsSuccess}
 
 class TaiPackageSpec extends PlaySpec {
   "TaiPackage" should {

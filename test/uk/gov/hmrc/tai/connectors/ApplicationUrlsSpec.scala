@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.mockito.Mockito.when
 import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear

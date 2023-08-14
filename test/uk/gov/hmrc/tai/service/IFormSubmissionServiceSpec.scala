@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
-import org.mockito.Mockito._
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.PersonRepository
@@ -84,12 +83,12 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       result mustBe a[RuntimeException]
 
-      verify(mockFileUploadService, never()).uploadFile(
+      verify(mockFileUploadService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
         any())(any())
-      verify(mockFileUploadService, never()).uploadFile(
+      verify(mockFileUploadService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.connectors.cache.Caching

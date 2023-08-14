@@ -22,13 +22,11 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._

@@ -22,7 +22,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.{JsResultException, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
@@ -32,7 +32,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.net.URL
-import scala.language.postfixOps
 
 class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
 

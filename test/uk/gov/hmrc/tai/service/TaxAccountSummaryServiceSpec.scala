@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
-import org.scalatest.concurrent.ScalaFutures
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
@@ -27,9 +25,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TaxAccountSummaryServiceSpec extends BaseSpec {
 

@@ -20,7 +20,7 @@ import org.mockito.Mockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -37,8 +37,6 @@ import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.repositories.cache.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.util.Random
 
 class TaiCacheRepositoryItSpec
@@ -59,7 +57,6 @@ class TaiCacheRepositoryItSpec
 
   private val taxSummaryDetails = TaxSummaryDetails(nino = nino.nino, version = 0)
   private val sessionData = SessionData(nino = nino.nino, taxSummaryDetailsCY = taxSummaryDetails)
-  private val atMost = 5 seconds
 
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]

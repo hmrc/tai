@@ -20,7 +20,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.enums.IncomeType.{IncomeTypeESA, IncomeTypeIB, IncomeTypeJSA, IncomeTypeStatePensionLumpSum}
 import uk.gov.hmrc.tai.model.helpers.{IncomeHelper, TaxModelFactory}
-import uk.gov.hmrc.tai.model.nps2.AllowanceType
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, TaxYear}
 import uk.gov.hmrc.tai.model.nps2.IabdType._
 import uk.gov.hmrc.tai.model.enums.BasisOperation

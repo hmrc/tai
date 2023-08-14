@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.repositories.cache
 
 import akka.Done
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -30,11 +29,9 @@ class JourneyCacheRepositorySpec extends BaseSpec {
   private def createSUT(taiCacheRepository: TaiCacheRepository, taiUpdateIncomeCacheRepository: TaiUpdateIncomeCacheRepository) = new JourneyCacheRepository(taiCacheRepository, taiUpdateIncomeCacheRepository)
   private def echoProgrammed(mock: TaiCacheRepository): TaiCacheRepository = {
     when(mock.createOrUpdate[Map[String, String]](any(), any(), any())(any())).thenAnswer(
-      new Answer[Future[Map[String, String]]]() {
-        override def answer(invocation: InvocationOnMock): Future[Map[String, String]] = {
-          val suppliedMap: Map[String, String] = invocation.getArguments()(1).asInstanceOf[Map[String, String]]
-          Future.successful(suppliedMap)
-        }
+      (invocation: InvocationOnMock) => {
+        val suppliedMap: Map[String, String] = invocation.getArguments()(1).asInstanceOf[Map[String, String]]
+        Future.successful(suppliedMap)
       }
     )
     mock
@@ -42,11 +39,9 @@ class JourneyCacheRepositorySpec extends BaseSpec {
 
   private def echoProgrammedUpdateIncome(mock: TaiUpdateIncomeCacheRepository): TaiUpdateIncomeCacheRepository = {
     when(mock.createOrUpdateIncome[Map[String, String]](any(), any(), any())(any())).thenAnswer(
-      new Answer[Future[Map[String, String]]]() {
-        override def answer(invocation: InvocationOnMock): Future[Map[String, String]] = {
-          val suppliedMap: Map[String, String] = invocation.getArguments()(1).asInstanceOf[Map[String, String]]
-          Future.successful(suppliedMap)
-        }
+      (invocation: InvocationOnMock) => {
+        val suppliedMap: Map[String, String] = invocation.getArguments()(1).asInstanceOf[Map[String, String]]
+        Future.successful(suppliedMap)
       }
     )
     mock

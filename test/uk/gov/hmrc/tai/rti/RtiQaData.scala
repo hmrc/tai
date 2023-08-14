@@ -29,7 +29,7 @@ object QaData {
     Option(getClass.getResourceAsStream(f))
       .map { x =>
         Json.parse(
-          fromInputStream(x).getLines.mkString
+          fromInputStream(x).getLines().mkString
         )
       }
       .map { x =>
@@ -54,7 +54,7 @@ object QaData {
       (
         file.getName.takeWhile(_ != '.'),
         Json.parse(
-          fromFile(file).getLines.mkString
+          fromFile(file).getLines().mkString
         )
       )
     }

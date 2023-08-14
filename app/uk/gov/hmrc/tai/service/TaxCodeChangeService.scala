@@ -24,7 +24,6 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -125,9 +124,10 @@ class TaxCodeChangeServiceImpl @Inject()(
       taxCodeMismatch
     }
 
-    futureMismatch.onFailure {
+    futureMismatch.failed.foreach {
       case NonFatal(exception) =>
         logger.warn(s"Failed to compare tax codes for $nino with exception:${exception.getMessage}", exception)
+      case _ => throw new RuntimeException("Failed to compare tax codes")
     }
 
     futureMismatch

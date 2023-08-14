@@ -17,9 +17,8 @@
 package uk.gov.hmrc.tai.mocks
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
 import org.scalatest._
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.AuthorisedFunctions

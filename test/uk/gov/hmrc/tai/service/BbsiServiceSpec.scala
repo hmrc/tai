@@ -19,8 +19,6 @@ package uk.gov.hmrc.tai.service
 import java.time.LocalDate
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{doNothing, verify, when}
-import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.CloseAccountRequest
@@ -69,7 +67,7 @@ class BbsiServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Seq(bankAccount)))
 
         val mockAuditor = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -110,7 +108,7 @@ class BbsiServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditor = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -152,7 +150,7 @@ class BbsiServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditor = mock[Auditor]
-        doNothing()
+        doNothing
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -192,7 +190,7 @@ class BbsiServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditor = mock[Auditor]
-      doNothing()
+      doNothing
         .when(mockAuditor)
         .sendDataEvent(any(), any())(any())
 

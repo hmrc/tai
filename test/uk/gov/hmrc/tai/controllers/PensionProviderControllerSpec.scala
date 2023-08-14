@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.Helpers.{contentAsJson, status, _}
 import play.api.test.{FakeHeaders, FakeRequest}

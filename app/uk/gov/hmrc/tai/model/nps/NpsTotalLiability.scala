@@ -298,7 +298,7 @@ case class NpsTotalLiability(
   def benefitsFromEmployment(): Option[NpsComponent] = {
     val basicBenefits: List[NpsIabdSummary] =
       allIADBTypes.filter(x => filterTypeAndZero(x, TaiConstants.IABD_TYPE_BENEFITS_FROM_EMPLOYMENT))
-    createIADBGroup(basicBenefits ::: benefitsInKindRemovingTotalOrComponentParts)
+    createIADBGroup(basicBenefits ::: benefitsInKindRemovingTotalOrComponentParts())
   }
 
   def otherPensions(): Option[NpsComponent] =

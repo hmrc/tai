@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors.cache
 import cats.data.EitherT
 import cats.implicits._
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{reset, spy, times, verify, when}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -28,8 +27,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
@@ -37,9 +35,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 import scala.concurrent.Future
-import scala.concurrent.duration.{Duration, SECONDS}
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 

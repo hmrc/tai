@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest

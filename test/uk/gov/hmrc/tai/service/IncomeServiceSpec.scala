@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{doNothing, times, verify, when}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -837,7 +836,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -900,7 +899,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -979,7 +978,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing()
+          doNothing
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -1125,7 +1124,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
 
           val mockAuditor = mock[Auditor]
-          doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+          doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
@@ -1201,7 +1200,7 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockAuditor = mock[Auditor]
-      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val citizenDetailsConnector = mock[CitizenDetailsConnector]
       when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
@@ -1266,7 +1265,7 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockAuditor = mock[Auditor]
-      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val citizenDetailsConnector = mock[CitizenDetailsConnector]
       when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))

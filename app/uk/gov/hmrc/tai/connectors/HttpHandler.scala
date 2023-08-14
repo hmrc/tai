@@ -22,7 +22,6 @@ import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
@@ -41,11 +40,7 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
     implicit val responseHandler = new HttpReads[HttpResponse] {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse =
         response.status match {
-          case Status.OK =>
-            Try(response) match {
-              case Success(data) => data
-              case Failure(e)    => throw new RuntimeException("Unable to parse response")
-            }
+          case Status.OK => response
           case Status.NOT_FOUND => {
             Logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)

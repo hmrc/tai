@@ -61,7 +61,7 @@ class PensionProviderService @Inject()(
       envelopeId
     }
 
-  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider)(implicit hc: HeaderCarrier) = {
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = {
     person: Person =>
       {
         val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)

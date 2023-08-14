@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.repositories
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import org.scalatest.concurrent.IntegrationPatience
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
@@ -56,7 +55,7 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
         verify(mockCacheConnector, times(1))
           .find[Person](meq(cacheId), meq(personMongoKey))(any())
 
-        verify(citizenDetailsConnector, never())
+        verify(citizenDetailsConnector, never)
           .getPerson(any())(any())
       }
     }

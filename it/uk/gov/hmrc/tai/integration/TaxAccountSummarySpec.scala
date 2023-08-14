@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.http.{HttpException, InternalServerException}
+import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -35,7 +35,9 @@ class TaxAccountSummarySpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-  def request = FakeRequest(GET, apiUrl).withHeaders("X-SESSION-ID" -> generateSessionId)
+  def request = FakeRequest(GET, apiUrl)
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   "TaxAccountSummary" must {
     "return an OK response for a valid user" in {
@@ -61,7 +63,7 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val requestConst = request
-        val result = (for {
+        (for {
           _ <- route(app, requestConst).get
           _ <- route(app, requestConst).get
         } yield ()).futureValue

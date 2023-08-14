@@ -648,8 +648,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
   private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
     for {
-      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors
-      error: JsonValidationError                       <- errors
+      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
+      error: JsonValidationError                       <- errors.toSeq
       message: String                                  <- error.messages
     } yield {
       path.toString() + " -> " + message

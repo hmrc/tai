@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
@@ -30,7 +29,6 @@ import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, HodsSource, MongoConstants}
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConstants {
 

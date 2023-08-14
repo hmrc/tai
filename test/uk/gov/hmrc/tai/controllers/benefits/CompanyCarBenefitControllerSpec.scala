@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers.benefits
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -27,7 +26,6 @@ import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
-import scala.language.postfixOps
 
 class CompanyCarBenefitControllerSpec extends BaseSpec {
 
