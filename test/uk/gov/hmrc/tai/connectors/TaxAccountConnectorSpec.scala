@@ -18,17 +18,16 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import play.api.Configuration
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
-import uk.gov.hmrc.tai.config.{DesConfig, FeatureTogglesConfig, NpsConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.{TaiConstants, WireMockHelper}
+import uk.gov.hmrc.tai.util.WireMockHelper
 
 import java.net.URL
 import scala.concurrent.Await
@@ -44,20 +43,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
     def desUpdateIsEnabled: Boolean = true
 
     def apiEnabled: Boolean = true
-    def featureTogglesConfig: FeatureTogglesConfig = new FeatureTogglesConfig(inject[Configuration]) {
-      override def desEnabled: Boolean = desIsEnabled
 
-      override def desUpdateEnabled: Boolean = desUpdateIsEnabled
-
-      override def confirmedAPIEnabled: Boolean = apiEnabled
-    }
-
-    lazy val npsConfig = inject[NpsConfig]
-    lazy val desConfig = inject[DesConfig]
-    lazy val iabdUrls = inject[IabdUrls]
+    lazy val npsConfig: NpsConfig = inject[NpsConfig]
+    lazy val desConfig: DesConfig = inject[DesConfig]
+    lazy val iabdUrls: IabdUrls = inject[IabdUrls]
 
     def taxAccountUrls: TaxAccountUrls =
-      new TaxAccountUrls(npsConfig, desConfig, featureTogglesConfig)
+      new TaxAccountUrls(npsConfig, desConfig)
 
     def sut: TaxAccountConnector = new TaxAccountConnector(
       npsConfig,
@@ -65,13 +57,12 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
       taxAccountUrls,
       iabdUrls,
       inject[IabdUpdateAmountFormats],
-      inject[HttpHandler],
-      featureTogglesConfig
+      inject[HttpHandler]
     )
 
-    val taxYear = TaxYear()
+    val taxYear: TaxYear = TaxYear()
 
-    val jsonResponse = Json.obj(
+    val jsonResponse: JsObject = Json.obj(
       "taxYear"        -> taxYear.year,
       "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
       "incomeSources" -> Json.arr(
@@ -84,9 +75,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
   def verifyOutgoingDesUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
       requestPattern
-        .withHeader("Environment", equalTo("local"))
-        .withHeader("Authorization", equalTo("Bearer Local"))
-        .withHeader("Content-Type", equalTo(TaiConstants.contentType))
         .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
@@ -115,14 +103,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
 
           server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
-          val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: JsValue = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result mustBe jsonResponse
 
@@ -134,7 +122,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -144,7 +132,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               .withStatus(NOT_FOUND)
               .withBody("not found")))
 
-          val result = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe NOT_FOUND
         }
@@ -154,7 +142,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -163,7 +151,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(BAD_REQUEST)))
 
-          val result = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe BAD_REQUEST
         }
@@ -173,7 +161,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -182,7 +170,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(IM_A_TEAPOT)))
 
-          val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe IM_A_TEAPOT
         }
@@ -192,7 +180,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -201,7 +189,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)))
 
-          val result = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe INTERNAL_SERVER_ERROR
         }
@@ -211,7 +199,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -220,7 +208,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(SERVICE_UNAVAILABLE)))
 
-          val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe SERVICE_UNAVAILABLE
         }
@@ -230,7 +218,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           override def apiEnabled: Boolean = false
           override def desIsEnabled: Boolean = false
 
-          val url = {
+          val url: String = {
             val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
             s"${path.getPath}"
           }
@@ -239,7 +227,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(LOCKED)))
 
-          val result = the[LockedException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: LockedException = the[LockedException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe LOCKED
         }
@@ -250,14 +238,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
 
             server.stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
-            val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: JsValue = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result mustBe jsonResponse
 
@@ -268,7 +256,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
@@ -276,7 +264,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(NOT_FOUND)))
 
-            val result = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe NOT_FOUND
 
@@ -286,7 +274,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
@@ -294,7 +282,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(BAD_REQUEST)))
 
-            val result = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe BAD_REQUEST
 
@@ -304,7 +292,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
@@ -312,7 +300,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(IM_A_TEAPOT)))
 
-            val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe IM_A_TEAPOT
 
@@ -322,7 +310,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
@@ -330,7 +318,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)))
 
-            val result = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe INTERNAL_SERVER_ERROR
           }
@@ -339,7 +327,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
               s"${path.getPath}"
             }
@@ -347,7 +335,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
             server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
               .withStatus(SERVICE_UNAVAILABLE)))
 
-            val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe SERVICE_UNAVAILABLE
           }
@@ -360,7 +348,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desUpdateIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
               s"${path.getPath}"
             }
@@ -388,7 +376,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             override def desUpdateIsEnabled: Boolean = false
 
-            val url = {
+            val url: String = {
               val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
               s"${path.getPath}"
             }
@@ -410,7 +398,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           ).foreach { httpStatus =>
             s" return a failure status for $httpStatus  response" in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
                 s"${path.getPath}"
               }
@@ -432,15 +420,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
           val taxCodeId = 1
 
-          val json = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
+          val json: JsObject = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
 
-          val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+          val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
           server.stubFor(
             get(urlEqualTo(url)).willReturn(ok(json.toString))
           )
 
-          val result = Await.result(sut.taxAccountHistory(nino, taxCodeId), 5.seconds)
+          val result: JsValue = Await.result(sut.taxAccountHistory(nino, taxCodeId), 5.seconds)
 
           result mustEqual json
 
@@ -453,7 +441,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             val taxCodeId = 1
 
-            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -471,7 +459,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           "connector receives NOT_FOUND" in new ConnectorSetup {
             val taxCodeId = 1
 
-            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -490,7 +478,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             val taxCodeId = 1
 
-            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -509,7 +497,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             val taxCodeId = 1
 
-            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -528,7 +516,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             val taxCodeId = 1
 
-            val url = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
+            val url: String = new URL(taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, taxCodeId)).getPath
 
             server.stubFor(
               get(urlEqualTo(url)).willReturn(
@@ -550,7 +538,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             "return Tax Account as Json in the response" in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -558,16 +546,16 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server
                 .stubFor(get(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
-              val result = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: JsValue = Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result mustBe jsonResponse
 
-              verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
+              verifyOutgoingNpsUpdateHeaders(getRequestedFor(urlEqualTo(url)))
             }
 
             "return a NOT_FOUND response code when NOT_FOUND response" in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -575,7 +563,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(NOT_FOUND)))
 
-              val result = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe NOT_FOUND
 
@@ -583,7 +571,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             "return a BAD_REQUEST response code when BAD_REQUEST response" in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -591,7 +579,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(BAD_REQUEST)))
 
-              val result = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe BAD_REQUEST
 
@@ -599,7 +587,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             "return a IM_A_TEAPOT response code when IM_A_TEAPOT response" in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -607,7 +595,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(IM_A_TEAPOT)))
 
-              val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe IM_A_TEAPOT
 
@@ -615,7 +603,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             "return a INTERNAL_SERVER_ERROR response code when INTERNAL_SERVER_ERROR response " in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -623,14 +611,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(INTERNAL_SERVER_ERROR)))
 
-              val result = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe INTERNAL_SERVER_ERROR
             }
 
             "return a SERVICE_UNAVAILABLE response code when SERVICE_UNAVAILABLE response " in new ConnectorSetup {
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -638,7 +626,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(SERVICE_UNAVAILABLE)))
 
-              val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe SERVICE_UNAVAILABLE
             }
@@ -651,7 +639,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -660,14 +648,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               Await.result(sut.taxAccount(nino, taxYear), 5 seconds) mustBe jsonResponse
 
-              verifyOutgoingDesUpdateHeaders(getRequestedFor(urlEqualTo(url)))
+              verifyOutgoingNpsUpdateHeaders(getRequestedFor(urlEqualTo(url)))
             }
 
             "return a NOT_FOUND response code when NOT_FOUND response" in new ConnectorSetup {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -675,7 +663,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(NOT_FOUND)))
 
-              val result = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe NOT_FOUND
 
@@ -685,7 +673,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -693,7 +681,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(BAD_REQUEST)))
 
-              val result = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe BAD_REQUEST
 
@@ -703,7 +691,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -711,7 +699,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(IM_A_TEAPOT)))
 
-              val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe IM_A_TEAPOT
 
@@ -721,7 +709,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -729,7 +717,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(INTERNAL_SERVER_ERROR)))
 
-              val result = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe INTERNAL_SERVER_ERROR
             }
@@ -738,7 +726,7 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
               override def apiEnabled: Boolean = false
 
-              val url = {
+              val url: String = {
                 val path = new URL(taxAccountUrls.taxAccountUrl(nino, taxYear))
                 s"${path.getPath}"
               }
@@ -746,78 +734,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
                 .withStatus(SERVICE_UNAVAILABLE)))
 
-              val result = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe SERVICE_UNAVAILABLE
             }
 
           }
 
-        }
-
-        "updateTaxCodeIncome" must {
-
-          "update des with the new tax code income" in new ConnectorSetup {
-            val url = {
-              val path = new URL(iabdUrls.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              path.getPath
-            }
-
-            server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
-
-            val result =
-              Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
-
-            result mustBe HodUpdateSuccess
-
-            server.verify(
-              postRequestedFor(urlEqualTo(url))
-                .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
-                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-                .withHeader("ETag", equalTo("1"))
-                .withHeader("X-TXID", equalTo(sessionId))
-                .withHeader(
-                  "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
-          }
-
-          "return a failure status if the update fails" in new ConnectorSetup {
-            val url = {
-              val path = new URL(iabdUrls.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              path.getPath
-            }
-
-            server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
-
-            val result =
-              Await.result(sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345), 5 seconds)
-
-            result mustBe HodUpdateFailure
-          }
-
-          List(
-            BAD_REQUEST,
-            NOT_FOUND,
-            IM_A_TEAPOT,
-            INTERNAL_SERVER_ERROR,
-            SERVICE_UNAVAILABLE
-          ).foreach { httpStatus =>
-            s" return a failure status for $httpStatus  response" in new ConnectorSetup {
-
-              val url = {
-                val path = new URL(iabdUrls.desIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-                path.getPath
-              }
-
-              server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
-
-              Await.result(
-                sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
-                5 seconds
-              ) mustBe HodUpdateFailure
-            }
-          }
         }
       }
     }

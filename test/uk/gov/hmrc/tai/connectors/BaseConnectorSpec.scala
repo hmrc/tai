@@ -113,28 +113,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         verify(mockTimerContext).stop()
       }
 
-      "making a POST request to NPS" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        sutWithMockedMetrics.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty).futureValue
-
-        verify(mockMetrics).startTimer(any())
-        verify(mockTimerContext).stop()
-      }
-
       "making a GET request to DES" in {
 
         val mockTimerContext = mock[Timer.Context]
@@ -195,23 +173,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
         res mustBe bodyAsObj
         resEtag mustBe eTag
-      }
-
-      "it returns a success Http response for POST transactions" in {
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val res = sut.postToNps(url, apiType, bodyAsObj, Seq.empty).futureValue
-
-        res.status mustBe OK
-        res.json.as[ResponseObject] mustBe bodyAsObj
-        res.header(eTagKey) mustBe Some(eTag.toString)
       }
     }
 
@@ -285,25 +246,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
 
         assertConnectorException[HttpException](
           sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)),
-          CONFLICT,
-          exMessage
-        )
-      }
-
-      "it returns a non success Http response for POST transactions" in {
-
-        val exMessage = "There was a conflict"
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(CONFLICT)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        assertConnectorException[HttpException](
-          sut.postToNps[ResponseObject](url, apiType, bodyAsObj, Seq.empty),
           CONFLICT,
           exMessage
         )

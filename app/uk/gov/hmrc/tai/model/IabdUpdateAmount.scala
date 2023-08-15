@@ -19,12 +19,11 @@ package uk.gov.hmrc.tai.model
 import com.google.inject.Inject
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
 /*
   * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
   * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
-  * @param grossAmount
+  * @param grossAmount : 1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
   */
 case class IabdUpdateAmount(
   employmentSequenceNumber: Int,
@@ -36,14 +35,10 @@ case class IabdUpdateAmount(
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
 }
 
-class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
+class IabdUpdateAmountFormats @Inject()() {
 
   def empSeqNoFieldName =
-    if (config.desUpdateEnabled) {
-      "employmentSeqNo"
-    } else {
       "employmentSequenceNumber"
-    }
 
   def iabdUpdateAmountWrites: Writes[IabdUpdateAmount] =
     (
@@ -54,7 +49,7 @@ class IabdUpdateAmountFormats @Inject()(config: FeatureTogglesConfig) {
         (JsPath \ "source").writeNullable[Int]
     )(unlift(IabdUpdateAmount.unapply))
 
-  implicit def formats = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
+  implicit def formats: Format[IabdUpdateAmount] = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
 
   implicit val formatList = new Writes[List[IabdUpdateAmount]] {
     def writes(updateAmounts: List[IabdUpdateAmount]): JsValue =

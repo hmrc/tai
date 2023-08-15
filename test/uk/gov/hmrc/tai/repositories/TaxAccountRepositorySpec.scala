@@ -32,12 +32,21 @@ import scala.concurrent.Future
 
 class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConstants {
 
-  val metrics = mock[Metrics]
-  val cacheConfig = mock[CacheMetricsConfig]
-  val iabdConnector = mock[IabdConnector]
-  val taiCacheRepository = mock[TaiCacheRepository]
+  val metrics: Metrics = mock[Metrics]
+  val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+  val iabdConnector: IabdConnector = mock[IabdConnector]
+  val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
-  val taxAccountConnector = mock[TaxAccountConnector]
+  val taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
+
+  private val taxAccountJsonResponse = Json.obj(
+    "taxYear" -> 2017,
+    "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
+    "incomeSources" -> Json.arr(
+      Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
+      Json.obj("employmentId" -> 2, "taxCode" -> "1100L", "name" -> "Employer2", "basisOperation" -> 2)
+    )
+  )
 
   "updateTaxCodeAmount" must {
     "update tax code amount" in {
@@ -157,15 +166,6 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
       }
     }
   }
-
-  private val taxAccountJsonResponse = Json.obj(
-    "taxYear"        -> 2017,
-    "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
-    "incomeSources" -> Json.arr(
-      Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
-      Json.obj("employmentId" -> 2, "taxCode" -> "1100L", "name" -> "Employer2", "basisOperation" -> 2)
-    )
-  )
 
   def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) =
     new TaxAccountRepository(cache, taxAccountConnector)

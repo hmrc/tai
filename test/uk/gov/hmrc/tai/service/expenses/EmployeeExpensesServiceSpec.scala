@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
-import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
@@ -30,7 +29,6 @@ import scala.concurrent.Future
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val mockDesConnector = mock[DesConnector]
-  private val mockFeaturesToggle = mock[FeatureTogglesConfig]
 
   private val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
@@ -54,8 +52,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
-
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
           .status mustBe 200
@@ -66,8 +62,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
       "failure response from des connector" in {
         when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
-
-        when(mockFeaturesToggle.desUpdateEnabled).thenReturn(true)
 
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
@@ -85,10 +79,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
           .thenReturn(Future.successful(validNpsIabd))
 
-        val mockFeaturesToggle = mock[FeatureTogglesConfig]
-        when(mockFeaturesToggle.desEnabled).thenReturn(true)
-
-        val mockNpsConnector = mock[NpsConnector]
 
         val service = new EmployeeExpensesService(desConnector = mockDesConnector)
 
@@ -96,16 +86,12 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
         result.futureValue mustBe validNpsIabd
 
-        verify(mockNpsConnector, times(0))
-          .getIabdsForType(nino, taxYear, iabd)
-
         verify(mockDesConnector, times(1))
           .getIabdsForTypeFromDes(nino, taxYear, iabd)
       }
 
       "return exception" when {
         "failed response from des connector" in {
-          when(mockFeaturesToggle.desEnabled).thenReturn(true)
           when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
             .thenReturn(Future.failed(new BadRequestException("")))
 
