@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.json._
 
-/**
+/*
   * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*	
   *
   * @param grossAmount

@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.tai.config.FeatureTogglesConfig
 
-/**
+/*
   * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
   * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
   * @param grossAmount

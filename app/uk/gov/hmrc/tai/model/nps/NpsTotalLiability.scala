@@ -359,7 +359,7 @@ case class NpsTotalLiability(
   private def reverseFilterTypeAndZero(iadbSummary: NpsIabdSummary, filterTypes: List[Option[Int]]): Boolean =
     !filterTypes.contains(iadbSummary.`type`) && iadbSummary.amount.getOrElse(BigDecimal(0)) != BigDecimal(0)
 
-  /**
+  /*
     * Create a new group of components based on the list of iadbtypes
     * Order the returned list by amount, highest first
     */

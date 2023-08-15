@@ -41,7 +41,7 @@ case class NpsTaxAccount(
   nextYearTaxAccountId: Option[Int] = None,
   taxAccountId: Option[Int] = None) {
 
-  /**
+  /*
     * Convert the data into a format that the front end requires
     */
   def toTaxSummary(
@@ -215,7 +215,7 @@ case class NpsTaxAccount(
     IncomeData(incomeExplanations = incomeExplanations)
   }
 
-  /**
+  /*
     * Retrieve the taxable state benefit. These can either be stored as an income source, or as an adjustment to an income source
     */
   private[nps] def getTaxableStateBenefit(filteredIncomeSource: List[MergedEmployment]): Option[NpsComponent] = {

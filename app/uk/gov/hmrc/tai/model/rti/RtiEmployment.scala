@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.rti
 import PayFrequency._
 
-/**
+/*
   * A single employment, containing a list of payments for a given year
   *
   * @param officeRefNo office number which the scheme operates from
