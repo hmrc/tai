@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.temporal.ChronoUnit
 
-/**
+/*
   * A ScalaCheck generator for RtiData records, some day this may be used to
   * perform property-based testing or for implementation of a smart-stub
   * (infinite amount of deterministicly random records for testing)

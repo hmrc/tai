@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.helpers.IncomeHelper
 import uk.gov.hmrc.tai.model.nps2.Income.{Ceased, Live, PotentiallyCeased}
 import uk.gov.hmrc.tai.util.TaiConstants
 
-/**
+/*
   * Created by dev01 on 08/07/14.
   */
 class TaxModelSpec extends PlaySpec {

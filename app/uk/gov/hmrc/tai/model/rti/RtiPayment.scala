@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.rti
 import java.time.LocalDate
 
 
-/**
+/*
   *
   * @param payFrequency should really be at the employment record level
   * @param paidOn date the payment was made, can be no earlier than
