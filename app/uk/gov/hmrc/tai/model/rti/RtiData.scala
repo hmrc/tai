@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.rti
 
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-/**
+/*
   * The top-level successful response record from the Real Time Information
   * (RTI) Head of Duty (HoD)
   *
