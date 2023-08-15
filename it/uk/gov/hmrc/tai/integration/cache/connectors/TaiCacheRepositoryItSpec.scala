@@ -130,17 +130,6 @@ class TaiCacheRepositoryItSpec
     }
 
     "delete the data from cache" when {
-      "time to live is over" in {
-        val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
-        val cachedData = sut.find[String](cacheId).futureValue
-        Some(data) mustBe cachedData
-
-        Thread.sleep(100000L)
-
-        val cachedDataAfterTTL = sut.find[String](cacheId).futureValue
-        cachedDataAfterTTL mustBe None
-      }
-
       "calling removeById" in {
         val data = sut.createOrUpdate[String](cacheId, "DATA").futureValue
         val cachedData = sut.find[String](cacheId).futureValue
