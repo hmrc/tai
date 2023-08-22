@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.integration.cache.connectors
 
-import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.Mockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -27,10 +28,7 @@ import play.api.libs.json.Json
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
-import uk.gov.hmrc.mongo.cache.CacheItem
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.mongo.{CurrentTimestampSupport, TimestampSupport}
+import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
@@ -43,7 +41,7 @@ import scala.util.Random
 
 class TaiCacheRepositoryItSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures
-    with Injecting with DefaultPlayMongoRepositorySupport[CacheItem]{
+    with Injecting {
 
   override def fakeApplication() =
     GuiceApplicationBuilder()
@@ -51,8 +49,6 @@ class TaiCacheRepositoryItSpec
         "tai.cache.expiryInSeconds" -> 10
       )
       .build()
-
-  override protected def repository: PlayMongoRepository[CacheItem] = inject[TaiCacheConnector]
 
   implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId("testSession")))
 
@@ -64,6 +60,8 @@ class TaiCacheRepositoryItSpec
 
   lazy val configuration: Configuration = app.injector.instanceOf[Configuration]
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+
+  lazy val mongoComponent: MongoComponent = inject[MongoComponent]
 
   val mockConfig: MongoConfig = mock[MongoConfig]
   val timestampSupport: TimestampSupport = new CurrentTimestampSupport()
