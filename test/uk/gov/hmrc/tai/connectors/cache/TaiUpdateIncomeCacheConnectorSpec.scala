@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors.cache
 import play.api.Configuration
 import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.util.BaseSpec

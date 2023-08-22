@@ -27,7 +27,7 @@ lazy val microservice = Project(appName, file("."))
     scalacOptions ++= Seq(
       "-Ywarn-unused",
       "-feature",
-//      "-Werror",
+      "-Werror",
       "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",
       "-Wconf:cat=deprecation&msg=\\.*value readRaw in object HttpReads is deprecated\\.*:s",
