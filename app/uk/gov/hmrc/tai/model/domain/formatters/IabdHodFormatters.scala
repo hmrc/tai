@@ -36,7 +36,9 @@ trait IabdHodFormatters extends IabdTypeConstants {
     source: Option[Int],
     `type`: Option[Int],
     receiptDate: Option[LocalDate],
-    captureDate: Option[LocalDate])
+    captureDate: Option[LocalDate],
+    grossAmount: Option[Int]
+  )
 
   object IabdDetails {
     implicit val formatLocalDate: Format[LocalDate] = Format(
