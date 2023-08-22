@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.tai.connectors.cache
 
+import org.mongodb.scala.bson.BsonDocument
 import play.api.Configuration
+import uk.gov.hmrc.mongo.CurrentTimestampSupport
 import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
@@ -26,7 +28,11 @@ import uk.gov.hmrc.tai.util.BaseSpec
 class TaiCacheConnectorSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[CacheItem] {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
-  override protected def repository: PlayMongoRepository[CacheItem] = inject[TaiCacheConnector]
+  protected override val repository = new TaiCacheConnector(
+    mongoComponent,
+    inject[MongoConfig],
+    inject[CurrentTimestampSupport]
+  )
 
   "TaiCacheConnector" must {
     "have the correct collection name" in {
