@@ -1,0 +1,261 @@
+{
+  "taxAccountId": 57,
+  "date": "<cyDate>>",
+  "nino": "NINO1",
+  "noCYEmployment": false,
+  "taxYear": 2023,
+  "previousTaxAccountId": 56,
+  "previousYearTaxAccountId": 55,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 1149.4,
+  "totalEstPay": {
+    "npsDescription": null,
+    "amount": 18327,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 18327,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 16,
+        "defaultEstimatedPay": null,
+        "estimatedPaySource": 26
+      }
+    ],
+    "sourceAmount": null
+  },
+  "rtiPayToDateEstPays": [],
+  "inYearCalcResult": 1,
+  "inYearCalcAmount": 0,
+  "adjustedNetIncome": {
+    "npsDescription": null,
+    "amount": 39756,
+    "type": null,
+    "iabdSummaries": [
+      {
+        "amount": 18327,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 16,
+        "defaultEstimatedPay": null,
+        "estimatedPaySource": 26
+      },
+      {
+        "amount": 21429,
+        "type": 27,
+        "npsDescription": "New Estimated Pay",
+        "employmentId": 18,
+        "defaultEstimatedPay": null,
+        "estimatedPaySource": 49
+      }
+    ],
+    "sourceAmount": null
+  },
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "npsDescription": null,
+        "amount": 39756,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 18327,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 16,
+            "defaultEstimatedPay": null,
+            "estimatedPaySource": 26
+          },
+          {
+            "amount": 21429,
+            "type": 27,
+            "npsDescription": "New Estimated Pay",
+            "employmentId": 18,
+            "defaultEstimatedPay": null,
+            "estimatedPaySource": 49
+          }
+        ],
+        "sourceAmount": null
+      },
+      "allowReliefDeducts": {
+        "npsDescription": null,
+        "amount": 12570,
+        "type": null,
+        "iabdSummaries": [
+          {
+            "amount": 12570,
+            "type": 118,
+            "npsDescription": "Personal Allowance (PA)",
+            "employmentId": null
+          }
+        ],
+        "sourceAmount": null
+      },
+      "totalTax": 5437.2,
+      "totalTaxableIncome": 27186,
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 27186,
+          "tax": 5437.2,
+          "lowerBand": 0,
+          "upperBand": 37700,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 37700,
+          "upperBand": 125140,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "income": null,
+          "tax": null,
+          "lowerBand": 125140,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null,
+    "basicRateExtensions": {
+      "npsDescription": null,
+      "amount": 0,
+      "type": null,
+      "iabdSummaries": null,
+      "sourceAmount": null,
+      "personalPensionPayment": null,
+      "giftAidPayments": null,
+      "personalPensionPaymentRelief": null,
+      "giftAidPaymentsRelief": null
+    },
+    "reliefsGivingBackTax": null,
+    "otherTaxDue": null,
+    "alreadyTaxedAtSource": null,
+    "addTaxRefunded": null,
+    "lessTaxReceived": null,
+    "totalLiability": 5437.2
+  },
+  "incomeSources": [
+    {
+      "employmentId": 16,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 475,
+      "employmentPayeRef": "123456",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "Employer 2",
+      "taxCode": "1257L",
+      "basisOperation": 2,
+      "potentialUnderpayment": null,
+      "totalInYearAdjustment": 0,
+      "inYearAdjustmentIntoCY": 0,
+      "inYearAdjustmentIntoCYPlusOne": 0,
+      "inYearAdjustmentFromPreviousYear": 0,
+      "actualPUPCodedInCYPlusOneTaxYear": 0,
+      "rtiPayToDatePups": [
+        {
+          "employmentId": 18,
+          "taxablePay": 1785.77,
+          "totalTaxToDate": 357,
+          "rtiPayDate": "<cyDate>>",
+          "ptdWkNum": null,
+          "ptdMthNum": 1
+        }
+      ],
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 12570,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 12570,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 12570
+        }
+      ],
+      "deductions": [],
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 18327,
+          "type": null,
+          "iabdSummaries": [
+            {
+              "amount": 18327,
+              "type": 27,
+              "npsDescription": "New Estimated Pay",
+              "employmentId": 16,
+              "defaultEstimatedPay": null,
+              "estimatedPaySource": 26
+            }
+          ],
+          "sourceAmount": null
+        },
+        "allowReliefDeducts": {
+          "npsDescription": null,
+          "amount": 12579.84,
+          "type": null,
+          "iabdSummaries": null,
+          "sourceAmount": null
+        },
+        "totalTax": 1149.4,
+        "totalTaxableIncome": 5747,
+        "taxBands": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 5747,
+            "tax": 1149.4,
+            "lowerBand": 0,
+            "upperBand": 37700,
+            "rate": 20
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 37700,
+            "upperBand": 125140,
+            "rate": 40
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "income": null,
+            "tax": null,
+            "lowerBand": 125140,
+            "upperBand": 0,
+            "rate": 45
+          }
+        ]
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,29 @@
+[
+  {
+    "nino": "NINO1",
+    "sequenceNumber": 202300003,
+    "taxYear": <cyYear>,
+    "type": 118,
+    "source": null,
+    "grossAmount": 12570,
+    "receiptDate": null,
+    "captureDate": null,
+    "typeDescription": "Personal Allowance (PA)",
+    "netAmount": null
+  },
+  {
+    "nino": "NINO1",
+    "sequenceNumber": 202300009,
+    "taxYear": <cyYear>,
+    "type": 27,
+    "source": 39,
+    "grossAmount": 4584,
+    "receiptDate": "<cyDate>",
+    "captureDate": "<cyDate>",
+    "typeDescription": "New Estimated Pay",
+    "netAmount": null,
+    "employmentSequenceNumber": 18,
+    "defaultEstimatedPay": null
+  }
+]
+

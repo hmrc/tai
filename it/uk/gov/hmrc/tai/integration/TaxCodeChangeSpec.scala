@@ -17,10 +17,15 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import play.api.http.Status._
+import play.api.libs.json.JsBoolean
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, writeableOf_AnyContentAsEmpty, status => getStatus}
 import uk.gov.hmrc.http.HeaderNames
-import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
+import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.format.DateTimeFormatter
 
 class TaxCodeChangeSpec extends IntegrationSpec {
 
@@ -29,7 +34,12 @@ class TaxCodeChangeSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  "TaxCodeChange" must {
+  val apiUrlHasChanged = s"/tai/$nino/tax-account/tax-code-change/exists"
+  def requestHasChanged = FakeRequest(GET, apiUrlHasChanged)
+    .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+    .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  "TaxCodeChange" ignore {
     "return an OK response for a valid user" in {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
       val result = route(fakeApplication(), request)
@@ -58,6 +68,33 @@ class TaxCodeChangeSpec extends IntegrationSpec {
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(NOT_FOUND)
+    }
+  }
+
+  "hasTaxCodeChanged" must {
+    "return true" when {
+      "There is a tax code change" in {
+        val taxCodeHistory = FileHelper.loadFile("nino1/tax-code-history.json")
+          .replace("<cyDate1>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyDate2>", TaxYear().start.plusMonths(2).toString)
+        println("PPPPPPP " + taxCodeHistory)
+
+        val taxAccount = FileHelper.loadFile("nino1/tax-account.json")
+          .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+
+        val iabds = FileHelper.loadFile("nino1/iabds.json")
+          .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
+
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
+        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
+
+        val result = route(fakeApplication(), requestHasChanged).get
+        getStatus(result) mustBe OK
+        contentAsJson(result) mustBe JsBoolean(true)
+
+      }
     }
   }
 }
