@@ -17,24 +17,24 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import play.api.Configuration
-import uk.gov.hmrc.mongo.cache.MongoCacheRepository
+import uk.gov.hmrc.mongo.cache.{CacheItem, MongoCacheRepository}
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.util.BaseSpec
 
-class TaiUpdateIncomeCacheConnectorSpec extends BaseSpec {
+class TaiUpdateIncomeCacheConnectorSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[CacheItem] {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
+  override protected def repository: PlayMongoRepository[CacheItem] = inject[TaiUpdateIncomeCacheConnector]
 
   "TaiCacheConnectorUpdateIncome" must {
-
-    lazy val sut: TaiUpdateIncomeCacheConnector = inject[TaiUpdateIncomeCacheConnector]
-
     "have the correct collection name" in {
-      sut.collectionName mustBe "TaiUpdateIncome"
+      repository.collectionName mustBe "TaiUpdateIncome"
     }
 
     "use mongoFormats from Cache" in {
-      sut.domainFormat mustBe MongoCacheRepository.format
+      repository.domainFormat mustBe MongoCacheRepository.format
     }
     "have cache default ttl of 2 days" in {
       val mongoConfig = new MongoConfig(configuration)
