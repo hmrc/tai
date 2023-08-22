@@ -96,7 +96,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
       "the tax code has been operated for single employments" when {
 
-        "there has been a tax code change after Annual Coding" ignore {
+        "there has been a tax code change after Annual Coding" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start
           val taxCodeHistory = TaxCodeHistory(
@@ -106,7 +106,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
               TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = previousCodeDate)
             )
           )
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1285L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -115,7 +115,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been a tax code change after Annual Coding where Annual coding was before start of tax year" ignore {
+        "there has been a tax code change after Annual Coding where Annual coding was before start of tax year" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.minusMonths(1)
           val taxCodeHistory = TaxCodeHistory(
@@ -126,7 +126,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             )
           )
 
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1285L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -135,7 +135,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been a change in job with a different tax code after Annual Coding" ignore {
+        "there has been a change in job with a different tax code after Annual Coding" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start
           val taxCodeHistory = TaxCodeHistory(
@@ -145,7 +145,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
               TaxCodeRecordFactory.createPrimaryEmployment(taxCode = "1080L", dateOfCalculation = previousCodeDate)
             )
           )
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1280L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1180L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -154,7 +154,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been more than one daily tax code change in the year" ignore {
+        "there has been more than one daily tax code change in the year" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.plusMonths(1)
           val annualCodeDate = TaxYear().start.minusMonths(1)
@@ -166,7 +166,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
               TaxCodeRecordFactory.createPrimaryEmployment(taxCode = "1000L", dateOfCalculation = annualCodeDate)
             )
           )
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1150L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1180L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -178,7 +178,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
       "the tax code has been operated for multiple employments" when {
 
-        "there has been more than one daily tax code change in the year for 2 employments to 2 employments" ignore {
+        "there has been more than one daily tax code change in the year for 2 employments to 2 employments" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.plusMonths(1)
           val payrollNumber1 = randomInt().toString
@@ -198,7 +198,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             )
           )
 
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1175L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -207,7 +207,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been more than one daily tax code change in the year for 1 employment to 2 employments" ignore {
+        "there has been more than one daily tax code change in the year for 1 employment to 2 employments" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.plusMonths(1)
           val payrollNumber1 = randomInt().toString
@@ -224,7 +224,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
           val taxCodeHistory = TaxCodeHistory(nino = nino.withoutSuffix, taxCodeRecord = taxCodeRecords)
 
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1175L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -233,7 +233,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been more than one daily tax code change in the year for 2 employments to 1 employment" ignore {
+        "there has been more than one daily tax code change in the year for 2 employments to 1 employment" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.plusMonths(1)
           val payrollNumber1 = randomInt().toString
@@ -249,7 +249,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           )
 
           val taxCodeHistory = TaxCodeHistory(nino = nino.withoutSuffix, taxCodeRecord = taxCodeRecords)
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1285L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -258,7 +258,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
 
-        "there has been a tax code change after Annual Coding for 2 employments to 2 employments" ignore {
+        "there has been a tax code change after Annual Coding for 2 employments to 2 employments" in {
           val newCodeDate = TaxYear().start.plusMonths(2)
           val previousCodeDate = TaxYear().start.plusMonths(1)
           val payrollNumber1 = randomInt().toString
@@ -276,7 +276,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           )
 
           val taxCodeHistory = TaxCodeHistory(nino = nino.withoutSuffix, taxCodeRecord = taxCodeRecords)
-          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1187L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
+          val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
           when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
@@ -285,7 +285,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
         }
       }
-      "the user has a week 1 month 1 basis of operation" ignore {
+      "the user has a week 1 month 1 basis of operation" in {
 
         val newCodeDate = TaxYear().start.plusMonths(2)
         val previousCodeDate = TaxYear().start.plusMonths(1)
@@ -294,7 +294,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
         val taxCodeRecords = Seq(
           TaxCodeRecordFactory
-            .createPrimaryEmployment(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1)),
+            .createPrimaryEmployment(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber1), basisOfOperation = Week1Month1),
           TaxCodeRecordFactory
             .createSecondaryEmployment(dateOfCalculation = newCodeDate, payrollNumber = Some(payrollNumber2)),
           TaxCodeRecordFactory

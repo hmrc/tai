@@ -43,62 +43,30 @@ class TaxCodeChangeServiceImpl @Inject()(
   implicit ec: ExecutionContext
 ) extends TaxCodeChangeService with TaxCodeHistoryConstants with Logging {
 
-  def taxCodeMismatchAndValidate(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] =
+  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] =
     taxCodeHistory(nino, TaxYear())
-      .flatMap { taxCodeHistory =>
+      .flatMap { taxCodeHistory: TaxCodeHistory =>
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
           logger.debug("change is valid for service")
-          taxCodeMismatch(nino).map(_.mismatch)
+          taxCodeMismatch(nino).map { taxCodeMismatch =>
+            if(taxCodeMismatch.mismatch){
+              logger.debug("There is a mismatch therefore not returning a tax code change")
+              false
+            } else {
+              logger.debug("There is a tax code change and no mismatch")
+              true
+            }
+          }
         } else {
           logger.debug("change is not valid for service")
           Future.successful(false)
         }
       }
-
-  def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] = {
-
-    (for {
-      mismatch <- taxCodeMismatchAndValidate(nino)
-      taxCodeChange <- taxCodeChange(nino)
-    } yield {
-
-      val hasPrimaryChanged = (taxCodeChange.primaryCurrentTaxCode, taxCodeChange.primaryPreviousTaxCode) match {
-        case (Some(current), Some(previous)) if current == previous =>
-          logger.debug("Both primary tax codes are identical")
+      .recover {
+        case NonFatal(e) =>
+          logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
           false
-        case (None, None) =>
-          logger.debug("No primary taxcodes")
-          false
-        case (Some(_), None) =>
-          logger.debug("New primary taxcode without a previous taxcode")
-          false
-        case (None, Some(_)) =>
-          logger.debug("New primary previous taxcode without a current taxcode")
-          false
-        case (Some(_), Some(_)) =>
-          logger.debug("Primary tax code has changed")
-          true
       }
-      val hasSecondaryChanged = (taxCodeChange.secondaryCurrentTaxCodes, taxCodeChange.secondaryPreviousTaxCodes) match {
-        case (current, previous) if current == previous =>
-          logger.debug("Both secondary tax codes are identical")
-          false
-        case (current, previous) if current.isEmpty || previous.isEmpty  =>
-          logger.debug("Secondary current or previous tax code is empty")
-          false
-        case _ =>
-          logger.debug("Secondary tax code has changed")
-          true
-      }
-
-      (hasPrimaryChanged || hasSecondaryChanged) && !mismatch
-
-    }).recover {
-      case NonFatal(e) =>
-        logger.warn(s"Could not evaluate taxCodeChange with message ${e.getMessage}", e)
-        false
-    }
-  }
 
   @nowarn("msg=match may not be exhaustive")
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] =
