@@ -1,0 +1,47 @@
+{
+  "nino": "NINO1",
+  "taxCodeRecord": [
+    {
+      "taxYear": 2023,
+      "taxCodeId": 56,
+      "taxCode": "1257L",
+      "dateOfCalculation": "<cyDate1>",
+      "employmentId": 16,
+      "employmentReference": "123456",
+      "employerName": "Employer 2",
+      "pensionIndicator": false,
+      "employmentStatus": 1,
+      "operatedTaxCode": true,
+      "employmentType": "PRIMARY",
+      "p9xDate": "<cyDate1>",
+      "p2Issued": false,
+      "p6Issued": false,
+      "p9Issued": false,
+      "p9xIssued": true,
+      "basisOfOperation": "Cumulative",
+      "payrollNumber": "123456",
+      "codeType": "Annual Coding P9X"
+    },
+    {
+      "taxYear": 2023,
+      "taxCodeId": 56,
+      "taxCode": "1257L",
+      "dateOfCalculation": "<cyDate2>",
+      "employmentId": 16,
+      "employmentReference": "123456",
+      "employerName": "Employer 2",
+      "pensionIndicator": false,
+      "employmentStatus": 1,
+      "operatedTaxCode": true,
+      "employmentType": "PRIMARY",
+      "p9xDate": "<cyDate2>",
+      "p2Issued": false,
+      "p6Issued": false,
+      "p9Issued": false,
+      "p9xIssued": true,
+      "basisOfOperation": "Cumulative",
+      "payrollNumber": "123456",
+      "codeType": "Annual Coding P9X"
+    }
+  ]
+}
