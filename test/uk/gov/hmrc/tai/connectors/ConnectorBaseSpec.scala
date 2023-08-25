@@ -45,8 +45,9 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   val sessionId = "testSessionId"
   val requestId = "testRequestId"
 
-  lazy val mockFeatureFlagService = mock[FeatureFlagService]
+  lazy val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
+
   protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
     GuiceApplicationBuilder()
       .configure(
