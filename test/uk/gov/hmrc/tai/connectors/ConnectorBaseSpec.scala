@@ -49,18 +49,33 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
   protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
     GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.des-hod.port" -> server.port(),
+        "microservice.services.des-hod.host" -> "127.0.0.1",
+        "microservice.services.nps-hod.port" -> server.port(),
+        "microservice.services.nps-hod.host" -> "127.0.0.1",
+        "microservice.services.citizen-details.port" -> server.port(),
+        "microservice.services.paye.port" -> server.port(),
+        "microservice.services.file-upload.port" -> server.port(),
+        "microservice.services.file-upload-frontend.port" -> server.port(),
+        "microservice.services.pdf-generator-service.port" -> server.port(),
+        "microservice.services.nps-hod.originatorId" -> npsOriginatorId,
+        "microservice.services.des-hod.originatorId" -> desOriginatorId,
+        "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
+        "auditing.enabled" -> "false"
+      )
       .overrides(
         bind[FeatureFlagService].toInstance(mockFeatureFlagService),
         bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
       )
 
-  override implicit lazy val app = localGuiceApplicationBuilder().build()
+  implicit lazy val app = localGuiceApplicationBuilder().build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = true))
+      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
   }
 

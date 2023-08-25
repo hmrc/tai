@@ -21,11 +21,14 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
+import play.api.cache.AsyncCacheApi
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import play.api.inject.bind
 
 import java.util.UUID
 import scala.util.Random
@@ -64,7 +67,9 @@ trait IntegrationSpec
         .willReturn(ok(authResponse)))
   }
 
-  override def fakeApplication() =
+  lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
+
+  override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.auth.port"            -> server.port(),
@@ -75,6 +80,9 @@ trait IntegrationSpec
         "microservice.services.nps-hod.host"         -> "127.0.0.1",
         "auditing.enabled"                           -> false,
         "cache.isEnabled"                            -> false
+      )
+      .overrides(
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
       )
       .build()
 

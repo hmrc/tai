@@ -22,7 +22,9 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
+import play.api.{Application, Configuration}
+import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Injecting
@@ -31,6 +33,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.integration.utils.FakeAsyncCacheApi
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
@@ -43,10 +46,15 @@ class TaiCacheRepositoryItSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MongoFormatter with MockitoSugar with ScalaFutures
     with Injecting {
 
-  override def fakeApplication() =
+  lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
+
+  override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
         "tai.cache.expiryInSeconds" -> 10
+      )
+      .overrides(
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
       )
       .build()
 

@@ -32,10 +32,7 @@ import uk.gov.hmrc.tai.util.WireMockHelper
 import scala.concurrent.ExecutionContext
 
 class HttpHandlerSpec
-    extends AnyWordSpec with WireMockHelper with Matchers with MockitoSugar with Injecting with ScalaFutures {
-
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+    extends ConnectorBaseSpec {
 
   lazy val httpHandler = inject[HttpHandler]
 
