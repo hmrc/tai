@@ -28,11 +28,11 @@ import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
+    bind[ApplicationStartUp].toSelf.eagerly(),
     bind[IncomeHelper].toInstance(IncomeHelper).in[Singleton],
     bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions].eagerly(),
     bind[RtiConnector].to[CachingRtiConnector],
     bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
-    bind[LockService].to[LockServiceImpl],
-    bind[ApplicationStartUp].toSelf.eagerly()
+    bind[LockService].to[LockServiceImpl]
   )
 }

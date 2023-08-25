@@ -19,20 +19,18 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.any
 import play.api.Configuration
 import play.api.http.Status._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient}
 import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
@@ -49,7 +47,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     inject[Metrics],
     inject[DesConfig],
     inject[RtiUrls],
-    inject[RtiToggleConfig])
+    mockFeatureFlagService
+  )
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -275,7 +274,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           inject[Metrics],
           inject[DesConfig],
           inject[RtiUrls],
-          stubbedRtiConfig
+          mockFeatureFlagService
         )
 
         sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).value.futureValue mustBe
@@ -293,7 +292,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           inject[Metrics],
           inject[DesConfig],
           inject[RtiUrls],
-          stubbedRtiConfig
+          mockFeatureFlagService
         )
 
         sutWithRTIDisabled.getPaymentsForYear(nino, taxYear.next).value.futureValue mustBe
