@@ -84,11 +84,6 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
 }
 
 @Singleton
-class RtiToggleConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig { // TODO - Be removed
-  def rtiEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabled").getOrElse(true)
-}
-
-@Singleton
 class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)

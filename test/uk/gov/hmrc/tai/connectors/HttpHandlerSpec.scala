@@ -18,18 +18,10 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import org.mockito.MockitoSugar
 import play.api.http.Status._
 import play.api.libs.json.Json
-import play.api.test.Injecting
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.util.WireMockHelper
-
-import scala.concurrent.ExecutionContext
 
 class HttpHandlerSpec
     extends ConnectorBaseSpec {
