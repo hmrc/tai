@@ -27,7 +27,7 @@ import play.api.http.Status._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
 import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
+import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
@@ -49,7 +49,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     inject[Metrics],
     inject[DesConfig],
     inject[RtiUrls],
-    inject[RtiToggleConfig])
+    inject[RtiConfig])
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -266,7 +266,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     "return a ServiceUnavailableError " when {
       "the rti toggle is set to false" in {
 
-        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+        lazy val stubbedRtiConfig = new RtiConfig(inject[Configuration]) {
           override def rtiEnabled: Boolean = false
         }
 
@@ -284,7 +284,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
       "the year is CY+1" in {
 
-        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
+        lazy val stubbedRtiConfig = new RtiConfig(inject[Configuration]) {
           override def rtiEnabled: Boolean = true
         }
 

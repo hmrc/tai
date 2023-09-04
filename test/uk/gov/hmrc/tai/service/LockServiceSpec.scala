@@ -59,7 +59,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
         insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
 
         val result = for {
-          _ <- sut.releaseLock[Boolean]("lockId").value
+          _ <- sut.releaseLock[Boolean]("lockId")
           result <- sut.takeLock[Boolean]("lockId").value
         } yield result
         result.futureValue mustBe Right(true)
@@ -88,7 +88,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
       val timestamp = Instant.now()
       insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
 
-      sut.releaseLock[Boolean]("lockId").value.futureValue
+      sut.releaseLock[Boolean]("lockId").futureValue
 
       find(Filters.equal("_id", sessionIdValue)).map { result: Seq[Lock] =>
         result.isEmpty mustBe true
