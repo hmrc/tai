@@ -19,7 +19,11 @@ package uk.gov.hmrc.tai.util
 import org.mockito.MockitoSugar
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
+import play.api.Application
+import play.api.cache.AsyncCacheApi
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
+import play.api.inject.bind
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
@@ -30,4 +34,14 @@ trait BaseSpec
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""
+
+  lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
+
+  override implicit lazy val app: Application =
+    GuiceApplicationBuilder()
+      .overrides(
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+      )
+      .build()
+
 }

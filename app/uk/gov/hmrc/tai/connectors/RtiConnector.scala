@@ -26,8 +26,10 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.tai.config.{DesConfig, MongoConfig, RtiToggleConfig}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.config.{DesConfig, MongoConfig}
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -136,84 +138,77 @@ class DefaultRtiConnector @Inject()(
   metrics: Metrics,
   rtiConfig: DesConfig,
   urls: RtiUrls,
-  rtiToggle: RtiToggleConfig)(implicit ec: ExecutionContext) extends RtiConnector {
+  featureFlagService: FeatureFlagService)(implicit ec: ExecutionContext) extends RtiConnector {
 
   val logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] = {
+    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
+    EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](
+      getPaymentsForYearHandler(nino, taxYear)
+    )
 
-    if (rtiToggle.rtiEnabled && taxYear.year < TaxYear().next.year) {
-      logger.info(s"RTIAPI - call for the year: $taxYear}")
-      val NGINX_TIMEOUT = 499
-      val timerContext = metrics.startTimer(APITypes.RTIAPI)
-      val ninoWithoutSuffix = withoutSuffix(nino)
-      val futureResponse =
-        httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
-      EitherT(futureResponse map { res =>
-        timerContext.stop()
-        res.status match {
-          case OK => {
-            metrics.incrementSuccessCounter(APITypes.RTIAPI)
-            val rtiData = res.json
-            val annualAccounts = rtiData.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
-            Right(annualAccounts)
+  private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
+    featureFlagService.get(RtiCallToggle).flatMap { toggle =>
+      if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
+        logger.info(s"RTIAPI - call for the year: $taxYear}")
+        val NGINX_TIMEOUT = 499
+        val timerContext = metrics.startTimer(APITypes.RTIAPI)
+        val ninoWithoutSuffix = withoutSuffix(nino)
+        val futureResponse =
+          httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
+        futureResponse map { res =>
+          timerContext.stop()
+          res.status match {
+            case OK =>
+              metrics.incrementSuccessCounter(APITypes.RTIAPI)
+              val rtiData = res.json
+              val annualAccounts = rtiData.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
+              Right(annualAccounts)
+            case NOT_FOUND =>
+              metrics.incrementSuccessCounter(APITypes.RTIAPI)
+              Right(Seq.empty)
+            case BAD_REQUEST =>
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              logger.error(s"RTIAPI - Bad request error received: ${res.body}")
+              Left(BadRequestError)
+            case SERVICE_UNAVAILABLE =>
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              logger.warn(s"RTIAPI - Service unavailable error received")
+              Left(ServiceUnavailableError)
+            case INTERNAL_SERVER_ERROR =>
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              logger.error(s"RTIAPI - Internal Server error received: ${res.body}")
+              Left(ServerError)
+            case BAD_GATEWAY =>
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              Left(BadGatewayError)
+            case GATEWAY_TIMEOUT | NGINX_TIMEOUT =>
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              Left(TimeoutError)
+            case _ =>
+              logger.error(s"RTIAPI - ${res.status} error returned from RTI HODS")
+              metrics.incrementFailedCounter(APITypes.RTIAPI)
+              Left(UnhandledStatusError)
           }
-          case NOT_FOUND => {
-            metrics.incrementSuccessCounter(APITypes.RTIAPI)
-            Right(Seq.empty)
-          }
-          case BAD_REQUEST => {
+        } recover {
+          case _: GatewayTimeoutException =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
-            logger.error(s"RTIAPI - Bad request error received: ${res.body}")
-            Left(BadRequestError)
-          }
-          case SERVICE_UNAVAILABLE => {
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            logger.warn(s"RTIAPI - Service unavailable error received")
-            Left(ServiceUnavailableError)
-          }
-          case INTERNAL_SERVER_ERROR => {
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            logger.error(s"RTIAPI - Internal Server error received: ${res.body}")
-            Left(ServerError)
-          }
-          case BAD_GATEWAY => {
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            Left(BadGatewayError)
-          }
-          case GATEWAY_TIMEOUT | NGINX_TIMEOUT => {
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
+            timerContext.stop()
             Left(TimeoutError)
-          }
-          case _ => {
-            logger.error(s"RTIAPI - ${res.status} error returned from RTI HODS")
+          case _: BadGatewayException =>
             metrics.incrementFailedCounter(APITypes.RTIAPI)
-            Left(UnhandledStatusError)
-          }
+            timerContext.stop()
+            Left(BadGatewayError)
+          case NonFatal(e) =>
+            metrics.incrementFailedCounter(APITypes.RTIAPI)
+            timerContext.stop()
+            logger.error(e.getMessage, e)
+            throw e
         }
-      } recover {
-        case _: GatewayTimeoutException => {
-          metrics.incrementFailedCounter(APITypes.RTIAPI)
-          timerContext.stop()
-          Left(TimeoutError)
-        }
-        case _: BadGatewayException => {
-          metrics.incrementFailedCounter(APITypes.RTIAPI)
-          timerContext.stop()
-          Left(BadGatewayError)
-        }
-        case NonFatal(e) => {
-          metrics.incrementFailedCounter(APITypes.RTIAPI)
-          timerContext.stop()
-          logger.error(e.getMessage, e)
-          throw e
-        }
-      })
-    } else {
-      logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
-      EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError)
+      } else {
+        logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
+        Future.successful(Left(ServiceUnavailableError))
+      }
     }
-  }
 }
-

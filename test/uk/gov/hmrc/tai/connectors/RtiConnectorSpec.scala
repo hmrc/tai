@@ -19,20 +19,20 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.any
-import play.api.Configuration
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
-import uk.gov.hmrc.tai.config.{DesConfig, RtiToggleConfig}
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
@@ -49,7 +49,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     inject[Metrics],
     inject[DesConfig],
     inject[RtiUrls],
-    inject[RtiToggleConfig])
+    mockFeatureFlagService
+  )
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -62,6 +63,13 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         .withHeader(
           "CorrelationId",
           matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = true))
+    )
+  }
 
   "RtiConnector" when {
 
@@ -266,16 +274,16 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     "return a ServiceUnavailableError " when {
       "the rti toggle is set to false" in {
 
-        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
-          override def rtiEnabled: Boolean = false
-        }
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+          Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+        )
 
         lazy val sutWithRTIDisabled = new DefaultRtiConnector(
           inject[HttpClient],
           inject[Metrics],
           inject[DesConfig],
           inject[RtiUrls],
-          stubbedRtiConfig
+          mockFeatureFlagService
         )
 
         sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).value.futureValue mustBe
@@ -284,16 +292,12 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
       "the year is CY+1" in {
 
-        lazy val stubbedRtiConfig = new RtiToggleConfig(inject[Configuration]) {
-          override def rtiEnabled: Boolean = true
-        }
-
         lazy val sutWithRTIDisabled = new DefaultRtiConnector(
           inject[HttpClient],
           inject[Metrics],
           inject[DesConfig],
           inject[RtiUrls],
-          stubbedRtiConfig
+          mockFeatureFlagService
         )
 
         sutWithRTIDisabled.getPaymentsForYear(nino, taxYear.next).value.futureValue mustBe

@@ -19,9 +19,6 @@ package uk.gov.hmrc.tai.util
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
-import play.api.Application
-import play.api.inject.Injector
-import play.api.inject.guice.GuiceApplicationBuilder
 
 trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
   this: Suite =>
@@ -33,27 +30,6 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
   val desOriginatorId = "desOriginatorId"
 
   val desPtaOriginatorId = "desPtaOriginatorId"
-
-  implicit lazy val app: Application =
-    new GuiceApplicationBuilder()
-      .configure(
-        "microservice.services.des-hod.port"                -> server.port(),
-        "microservice.services.des-hod.host"                -> "127.0.0.1",
-        "microservice.services.nps-hod.port"                -> server.port(),
-        "microservice.services.nps-hod.host"                -> "127.0.0.1",
-        "microservice.services.citizen-details.port"        -> server.port(),
-        "microservice.services.paye.port"                   -> server.port(),
-        "microservice.services.file-upload.port"            -> server.port(),
-        "microservice.services.file-upload-frontend.port"   -> server.port(),
-        "microservice.services.pdf-generator-service.port"  -> server.port(),
-        "microservice.services.nps-hod.originatorId"        -> npsOriginatorId,
-        "microservice.services.des-hod.originatorId"        -> desOriginatorId,
-        "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
-        "auditing.enabled"                                  -> "false"
-      )
-      .build()
-
-  protected lazy val injector: Injector = app.injector
 
   override def beforeAll(): Unit = {
     server.start()

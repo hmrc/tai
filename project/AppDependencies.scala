@@ -13,11 +13,11 @@ object AppDependencies {
     filters,
     ws,
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % bootstrapVersion,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"              % hmrcMongoVersion,
     "uk.gov.hmrc"       %% "domain"                          % s"8.3.0-$playVersion",
     "uk.gov.hmrc"       %% "json-encryption"                 % s"5.1.0-$playVersion",
     "com.typesafe.play" %% "play-json-joda"                  % "2.9.2",
     "org.typelevel"     %% "cats-core"                       % "2.9.0",
+    "uk.gov.hmrc"       %% "mongo-feature-toggles-client"    % "0.3.0"
   )
 
   val compileTest: Seq[ModuleID] = Seq(

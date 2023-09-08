@@ -28,6 +28,7 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
@@ -58,7 +59,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[RtiConnector].to[CachingRtiConnector],
       bind[RtiConnector].qualifiedWith("default").toInstance(mockRtiConnector),
       bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository),
-      bind[LockService].toInstance(spyLockService)
+      bind[LockService].toInstance(spyLockService),
+      bind[FeatureFlagService].toInstance(mockFeatureFlagService)
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
