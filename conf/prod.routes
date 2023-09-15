@@ -1,5 +1,6 @@
 # Admin pages
-GET        /admin/metrics             @com.kenshoo.play.metrics.MetricsController.metrics
 ->         /                          health.Routes
+->         /admin                     admin.Routes
+
 # Add all the application routes to the app.routes file
--> /tai        app.Routes
+->         /tai                       app.Routes

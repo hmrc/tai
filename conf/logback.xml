@@ -45,7 +45,7 @@
         <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
 
-    <root level="ERROR">
+    <root level="WARN">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>

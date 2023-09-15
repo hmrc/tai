@@ -15,15 +15,23 @@
  */
 
 package uk.gov.hmrc.tai.connectors
+
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar
 import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
-import uk.gov.hmrc.tai.util.WireMockHelper
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -36,6 +44,41 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
 
   val sessionId = "testSessionId"
   val requestId = "testRequestId"
+
+  lazy val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
+  lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
+
+  protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
+    GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.des-hod.port" -> server.port(),
+        "microservice.services.des-hod.host" -> "127.0.0.1",
+        "microservice.services.nps-hod.port" -> server.port(),
+        "microservice.services.nps-hod.host" -> "127.0.0.1",
+        "microservice.services.citizen-details.port" -> server.port(),
+        "microservice.services.paye.port" -> server.port(),
+        "microservice.services.file-upload.port" -> server.port(),
+        "microservice.services.file-upload-frontend.port" -> server.port(),
+        "microservice.services.pdf-generator-service.port" -> server.port(),
+        "microservice.services.nps-hod.originatorId" -> npsOriginatorId,
+        "microservice.services.des-hod.originatorId" -> desOriginatorId,
+        "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
+        "auditing.enabled" -> "false"
+      )
+      .overrides(
+        bind[FeatureFlagService].toInstance(mockFeatureFlagService),
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+      )
+
+  implicit lazy val app = localGuiceApplicationBuilder().build()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+    )
+  }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(
     sessionId = Some(SessionId(sessionId)),

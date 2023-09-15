@@ -85,8 +85,6 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
 
 @Singleton
 class RtiConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
-  def rtiEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("tai.rti.call.enabled").getOrElse(true)
-
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }

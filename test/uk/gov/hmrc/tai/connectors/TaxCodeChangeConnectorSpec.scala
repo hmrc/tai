@@ -41,7 +41,7 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
     s"${path.getPath}?${path.getQuery}"
   }
 
-  lazy val urlConfig: TaxCodeChangeUrl = injector.instanceOf[TaxCodeChangeUrl]
+  lazy val urlConfig: TaxCodeChangeUrl = inject[TaxCodeChangeUrl]
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -56,9 +56,9 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
           matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
   private def createSut(
-    metrics: Metrics = injector.instanceOf[Metrics],
-    httpClient: HttpClient = injector.instanceOf[HttpClient],
-    config: DesConfig = injector.instanceOf[DesConfig],
+    metrics: Metrics = inject[Metrics],
+    httpClient: HttpClient = inject[HttpClient],
+    config: DesConfig = inject[DesConfig],
     taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
     new TaxCodeChangeConnector(metrics, httpClient, config, taxCodeChangeUrl)
 
