@@ -37,13 +37,13 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       implicit hc: HeaderCarrier): Option[Employment] =
       employments.filter(_.sequenceNumber == account.sequenceNumber) match {
         case Seq(single) =>
-          logger.warn(s"single match found for $nino for $taxYear")
+          logger.info(s"single match found for $nino for $taxYear")
           Some(single.copy(annualAccounts = Seq(account)))
         case Nil =>
-          logger.warn(s"no match found for $nino for $taxYear")
+          logger.info(s"no match found for $nino for $taxYear")
           auditAssociatedEmployment(account, employments, nino.nino, taxYear.twoDigitRange)
         case many =>
-          logger.warn(s"multiple matches found for $nino for $taxYear")
+          logger.info(s"multiple matches found for $nino for $taxYear")
 
           val combinedEmploymentAndAccount = many.find(_.sequenceNumber == account.sequenceNumber).map(_.copy(annualAccounts = Seq(account)))
 

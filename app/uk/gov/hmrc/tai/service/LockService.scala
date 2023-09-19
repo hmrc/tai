@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import javax.inject.Singleton
+import scala.util.control.NonFatal
 
 case object OopsCannotAcquireLock extends Exception
 
@@ -36,7 +37,7 @@ trait LockService {
 
   def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean]
 
-  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Unit]
+  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit]
 }
 
 @Singleton
@@ -54,14 +55,21 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
           lockId = sessionId,
           owner = owner,
           ttl = Duration(appConfig.mongoLockTTL, SECONDS) // this need to be longer than the timeout from http_verbs
-        ))
+        ).recover {
+      case NonFatal(ex) =>
+        logger.error(ex.getMessage, ex)
+        // This lock is used to lock the cache while it is populated by the HOD response
+        // if it is failing we still allow the caller to go through so the user gets a better experience
+        // Duplicates calls to HOD will be present in such a case
+        true
+    })
   }
 
-  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Unit] =
-    EitherT.right[L](lockRepo
+  def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
+    lockRepo
       .releaseLock(
         lockId = sessionId,
         owner = owner
-      ))
+      )
 }
 

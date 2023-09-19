@@ -84,6 +84,12 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
 }
 
 @Singleton
+class RtiConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
+  val hodRetryDelayInMillis: Int = 200
+  val hodRetryMaximum: Int = 20
+}
+
+@Singleton
 class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)

@@ -101,8 +101,6 @@ class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
   def desIabdByTypeUrl(nino: Nino, taxYear: TaxYear, iabd: IabdType): String =
     s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}?type=${iabd.code}"
 
-  def desIabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
-    s"${desIabdUrl(nino, taxYear)}/employment/$iabdType"
 }
 
 @Singleton

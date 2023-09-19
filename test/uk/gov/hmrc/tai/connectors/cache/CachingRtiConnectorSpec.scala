@@ -48,8 +48,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
       EitherT.rightT(true)
 
-    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Unit] =
-      EitherT.rightT(())
+    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
+      Future.successful(())
   }
 
   override implicit lazy val app: Application = GuiceApplicationBuilder()
