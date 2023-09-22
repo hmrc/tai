@@ -22,7 +22,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
@@ -39,8 +38,4 @@ class TaxAccountRepository @Inject()(cache: Caching, taxAccountConnector: TaxAcc
 
   private def taxAccountFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     taxAccountConnector.taxAccount(nino, taxYear)
-
-  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, version: Int, employmentId: Int, iabdType: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
-    taxAccountConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
 }

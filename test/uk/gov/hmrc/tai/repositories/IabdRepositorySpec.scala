@@ -20,9 +20,10 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
-import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.connectors.cache.Caching
+import uk.gov.hmrc.tai.connectors.cache.{Caching, IabdConnector}
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
+import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
@@ -31,12 +32,50 @@ import scala.concurrent.Future
 
 class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
-  val taiCacheRepository = mock[TaiCacheRepository]
-  val metrics = mock[Metrics]
-  val cacheConfig = mock[CacheMetricsConfig]
-  val iabdConnector = mock[IabdConnector]
+  val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
+  val metrics: Metrics = mock[Metrics]
+  val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+  val iabdConnector: IabdConnector = mock[IabdConnector]
 
-  "IABD repository" must {
+  private val jsonFromIabdApi = Json.arr(
+    Json.obj(
+      "nino" -> nino.withoutSuffix,
+      "taxYear" -> 2017,
+      "type" -> 10,
+      "source" -> 15,
+      "grossAmount" -> JsNull,
+      "receiptDate" -> JsNull,
+      "captureDate" -> "10/04/2017",
+      "typeDescription" -> "Total gift aid Payments",
+      "netAmount" -> 100
+    ),
+    Json.obj(
+      "nino" -> nino.withoutSuffix,
+      "employmentSequenceNumber" -> 1,
+      "taxYear" -> 2017,
+      "type" -> 27,
+      "source" -> 15,
+      "grossAmount" -> JsNull,
+      "receiptDate" -> JsNull,
+      "captureDate" -> "10/04/2017",
+      "typeDescription" -> "Total gift aid Payments",
+      "netAmount" -> 100
+    )
+  )
+
+  private val jsonAfterFormat = Json.arr(
+    Json.obj(
+      "nino" -> nino.withoutSuffix,
+      "employmentSequenceNumber" -> 1,
+      "source" -> 15,
+      "type" -> 27
+    )
+  )
+
+  def createTestCache(cache: Caching, iabdConnector: IabdConnector) = new IabdRepository(cache, iabdConnector)
+
+
+  "iabds" must {
     "return exception " when {
       "Not found is received from iabds" in {
         val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
@@ -85,41 +124,62 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
     }
   }
 
-  private val jsonFromIabdApi = Json.arr(
-    Json.obj(
-      "nino"            -> nino.withoutSuffix,
-      "taxYear"         -> 2017,
-      "type"            -> 10,
-      "source"          -> 15,
-      "grossAmount"     -> JsNull,
-      "receiptDate"     -> JsNull,
-      "captureDate"     -> "10/04/2017",
-      "typeDescription" -> "Total gift aid Payments",
-      "netAmount"       -> 100
-    ),
-    Json.obj(
-      "nino"                     -> nino.withoutSuffix,
-      "employmentSequenceNumber" -> 1,
-      "taxYear"                  -> 2017,
-      "type"                     -> 27,
-      "source"                   -> 15,
-      "grossAmount"              -> JsNull,
-      "receiptDate"              -> JsNull,
-      "captureDate"              -> "10/04/2017",
-      "typeDescription"          -> "Total gift aid Payments",
-      "netAmount"                -> 100
-    )
-  )
+  "updateTaxCodeAmount" must {
+    "update tax code amount" in {
 
-  private val jsonAfterFormat = Json.arr(
-    Json.obj(
-      "nino"                     -> nino.withoutSuffix,
-      "employmentSequenceNumber" -> 1,
-      "source"                   -> 15,
-      "type"                     -> 27
-    )
-  )
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-  def createTestCache(cache: Caching, iabdConnector: IabdConnector) = new IabdRepository(cache, iabdConnector)
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateSuccess))
 
+      val sut = createTestCache(cache, iabdConnector)
+
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
+
+      result mustBe HodUpdateSuccess
+
+    }
+
+    "return an error status when amount can't be updated" in {
+
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateFailure))
+
+      val sut = createTestCache(cache, iabdConnector)
+
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
+
+      result mustBe HodUpdateFailure
+
+    }
+
+    "update income" in {
+
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateSuccess))
+
+      val sut = createTestCache(cache, iabdConnector)
+
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
+
+      result mustBe HodUpdateSuccess
+    }
+
+    "return an error status when income can't be updated" in {
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(HodUpdateFailure))
+
+      val sut = createTestCache(cache, iabdConnector)
+
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
+
+      result mustBe HodUpdateFailure
+    }
+  }
 }

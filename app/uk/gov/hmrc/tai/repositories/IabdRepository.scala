@@ -20,9 +20,9 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
-import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.connectors.cache.Caching
+import uk.gov.hmrc.tai.connectors.cache.{Caching, IabdConnector}
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
+import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
@@ -47,4 +47,8 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
       }
     }
   }
+
+  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, version: Int, employmentId: Int, iabdType: Int, amount: Int)(
+    implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
+    iabdConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
 }

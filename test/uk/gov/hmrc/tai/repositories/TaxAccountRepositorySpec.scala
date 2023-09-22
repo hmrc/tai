@@ -22,19 +22,16 @@ import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
-import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
-import uk.gov.hmrc.tai.util.{BaseSpec, HodsSource, MongoConstants}
+import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
 
 import scala.concurrent.Future
 
-class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConstants {
+class TaxAccountRepositorySpec extends BaseSpec with MongoConstants {
 
   val metrics: Metrics = mock[Metrics]
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
-  val iabdConnector: IabdConnector = mock[IabdConnector]
   val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
   val taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
@@ -48,63 +45,8 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
     )
   )
 
-  "updateTaxCodeAmount" must {
-    "update tax code amount" in {
-
-      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HodUpdateSuccess))
-
-      val SUT = createSUT(cache, taxAccountConnector)
-
-      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
-
-      result mustBe HodUpdateSuccess
-
-    }
-
-    "return an error status when amount can't be updated" in {
-
-      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HodUpdateFailure))
-
-      val SUT = createSUT(cache, taxAccountConnector)
-
-      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
-
-      result mustBe HodUpdateFailure
-
-    }
-
-    "update income" in {
-
-      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HodUpdateSuccess))
-
-      val SUT = createSUT(cache, taxAccountConnector)
-
-      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
-
-      result mustBe HodUpdateSuccess
-    }
-
-    "return an error status when income can't be updated" in {
-      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-      when(taxAccountConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
-        .thenReturn(Future.successful(HodUpdateFailure))
-
-      val SUT = createSUT(cache, taxAccountConnector)
-
-      val result = SUT.updateTaxCodeAmount(nino, TaxYear(), 1, 1, NewEstimatedPay.code, 12345).futureValue
-
-      result mustBe HodUpdateFailure
-    }
+  def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) =
+    new TaxAccountRepository(cache, taxAccountConnector)
 
     "taxAccount" must {
       "return Tax Account as Json in the response" when {
@@ -165,8 +107,4 @@ class TaxAccountRepositorySpec extends BaseSpec with HodsSource with MongoConsta
         result mustEqual jsonResponse
       }
     }
-  }
-
-  def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) =
-    new TaxAccountRepository(cache, taxAccountConnector)
 }

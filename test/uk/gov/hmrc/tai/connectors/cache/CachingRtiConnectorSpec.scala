@@ -33,7 +33,7 @@ import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, RtiConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
+import uk.gov.hmrc.tai.repositories.cache.{APICacheRepository, TaiSessionCacheRepository}
 import uk.gov.hmrc.tai.service.LockService
 
 import java.time.LocalDate
@@ -60,7 +60,10 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[RtiConnector].qualifiedWith("default").toInstance(mockRtiConnector),
       bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository),
       bind[LockService].toInstance(spyLockService),
-      bind[FeatureFlagService].toInstance(mockFeatureFlagService)
+      bind[FeatureFlagService].toInstance(mockFeatureFlagService),
+      bind[IabdConnector].to[CachingIabdConnector],
+      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+      bind[APICacheRepository].toSelf.eagerly()
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]

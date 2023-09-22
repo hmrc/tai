@@ -18,22 +18,30 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.{JsNull, JsObject, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.connectors.cache.{DefaultIabdConnector, IabdConnector}
+import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
+import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
+import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.net.URL
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
 
-  def sut(): IabdConnector = new IabdConnector(
-    inject[NpsConfig],
-    inject[HttpHandler],
-    inject[IabdUrls]
-  )
+
+  lazy val iabdUrls: IabdUrls = inject[IabdUrls]
+
+  def sut(): IabdConnector = new DefaultIabdConnector(inject[HttpHandler], inject[NpsConfig],
+    iabdUrls, inject[IabdUpdateAmountFormats])
 
   val taxYear: TaxYear = TaxYear()
 
-  val desUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}"
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
 
   private val json = Json.arr(
@@ -50,7 +58,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     )
   )
 
-  "IABD Connector" when {
+  val jsonResponse: JsObject = Json.obj(
+    "taxYear" -> taxYear.year,
+    "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
+    "incomeSources" -> Json.arr(
+      Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
+      Json.obj("employmentId" -> 2, "taxCode" -> "1100L", "name" -> "Employer2", "basisOperation" -> 2)
+    )
+  )
+
+  "iabds" when {
     "toggled to use NPS" must {
       "return IABD json" in {
 
@@ -120,6 +137,72 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
       }
 
+    }
+  }
+
+  "updateTaxCodeIncome" when {
+    "update nps with the new tax code income" in {
+
+      val url: String = {
+        val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+        s"${path.getPath}"
+      }
+
+      server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+
+      Await.result(
+        sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+        5 seconds
+      ) mustBe HodUpdateSuccess
+
+      server.verify(
+        postRequestedFor(urlEqualTo(url))
+          .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+          .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+          .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+          .withHeader("ETag", equalTo("1"))
+          .withHeader("X-TXID", equalTo(sessionId))
+          .withHeader(
+            "CorrelationId",
+            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+    }
+
+    "return a failure status if the update fails" in {
+
+      val url: String = {
+        val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+        s"${path.getPath}"
+      }
+
+      server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
+
+      Await.result(
+        sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+        5 seconds
+      ) mustBe HodUpdateFailure
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT,
+      INTERNAL_SERVER_ERROR,
+      SERVICE_UNAVAILABLE
+    ).foreach { httpStatus =>
+      s" return a failure status for $httpStatus  response" in {
+
+        val url: String = {
+          val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
+          s"${path.getPath}"
+        }
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
+
+        Await.result(
+          sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+          5 seconds
+        ) mustBe HodUpdateFailure
+      }
     }
   }
 }

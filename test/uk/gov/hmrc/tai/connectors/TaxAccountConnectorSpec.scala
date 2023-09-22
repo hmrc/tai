@@ -23,9 +23,6 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
-import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
-import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
-import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
@@ -55,8 +52,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
       npsConfig,
       desConfig,
       taxAccountUrls,
-      iabdUrls,
-      inject[IabdUpdateAmountFormats],
       inject[HttpHandler]
     )
 
@@ -339,79 +334,6 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
 
             result.responseCode mustBe SERVICE_UNAVAILABLE
           }
-
-        }
-
-        "updateTaxCodeIncome" must {
-
-          "update nps with the new tax code income" in new ConnectorSetup {
-
-            override def desUpdateIsEnabled: Boolean = false
-
-            val url: String = {
-              val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              s"${path.getPath}"
-            }
-
-            server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
-
-            Await.result(
-              sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
-              5 seconds
-            ) mustBe HodUpdateSuccess
-
-            server.verify(
-              postRequestedFor(urlEqualTo(url))
-                .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
-                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-                .withHeader("ETag", equalTo("1"))
-                .withHeader("X-TXID", equalTo(sessionId))
-                .withHeader(
-                  "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
-          }
-
-          "return a failure status if the update fails" in new ConnectorSetup {
-
-            override def desUpdateIsEnabled: Boolean = false
-
-            val url: String = {
-              val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-              s"${path.getPath}"
-            }
-
-            server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
-
-            Await.result(
-              sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
-              5 seconds
-            ) mustBe HodUpdateFailure
-          }
-
-          List(
-            BAD_REQUEST,
-            NOT_FOUND,
-            IM_A_TEAPOT,
-            INTERNAL_SERVER_ERROR,
-            SERVICE_UNAVAILABLE
-          ).foreach { httpStatus =>
-            s" return a failure status for $httpStatus  response" in new ConnectorSetup {
-
-              val url: String = {
-                val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-                s"${path.getPath}"
-              }
-
-              server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
-
-              Await.result(
-                sut.updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
-                5 seconds
-              ) mustBe HodUpdateFailure
-            }
-          }
-
         }
       }
 

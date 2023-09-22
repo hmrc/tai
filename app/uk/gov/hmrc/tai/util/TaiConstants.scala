@@ -282,8 +282,7 @@ trait NpsExceptions {
   val CodingCalculationNoEmpCY = "No Employments recorded for current tax year"
 }
 
-trait HodsSource {
-  val DesSource = 39
+object HodsSource {
   val NpsSource = 0
 }
 
