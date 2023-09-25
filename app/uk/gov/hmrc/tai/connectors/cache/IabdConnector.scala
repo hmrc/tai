@@ -19,11 +19,12 @@ package uk.gov.hmrc.tai.connectors.cache
 import cats.data.OptionT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.{HttpHandler, IabdUrls}
+import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -55,13 +56,13 @@ class CachingIabdConnector @Inject()(@Named("default") underlying: IabdConnector
       Future.successful(None)
     })
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): CacheType[JsValue] = {
+  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): CacheType[Seq[IabdDetails]] = {
 
     val cacheKey = s"iabds-${nino.nino}-${taxYear.year}"
 
-    cache[JsValue](cacheKey).foldF(underlying.iabds(nino, taxYear)
+    cache[Seq[IabdDetails]](cacheKey).foldF(underlying.iabds(nino, taxYear)
       .map { data =>
-        cache.set(cacheKey, data)
+        cache.set(cacheKey, Json.toJson(data))
         data
       }
     )(some => Future.successful(some))
@@ -83,9 +84,9 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
                                      IabdUpdateAmountFormats: IabdUpdateAmountFormats)(implicit ec: ExecutionContext)
   extends IabdConnector {
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
     if (taxYear > TaxYear()) {
-      Future.successful(Json.arr())
+      Future.successful(Seq.empty)
     } else {
       val hodHeaders = Seq(
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
@@ -94,7 +95,7 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
         "CorrelationId" -> UUID.randomUUID().toString
       )
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, hodHeaders)
+      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, hodHeaders).map(_.as[Seq[IabdDetails]])
     }
 
   private def getUuid = UUID.randomUUID().toString
@@ -129,7 +130,7 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
 
 trait IabdConnector {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue]
+  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]]
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier): Future[HodUpdateResponse]

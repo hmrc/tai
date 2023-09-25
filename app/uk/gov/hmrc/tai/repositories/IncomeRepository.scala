@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.repositories
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
+import uk.gov.hmrc.tai.model.domain.formatters.{IabdDetails, IabdHodFormatters}
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.{BankAccount, UntaxedInterestIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear

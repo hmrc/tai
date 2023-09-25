@@ -23,11 +23,13 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFou
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.cache.{DefaultIabdConnector, IabdConnector}
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
+import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.net.URL
+import java.time.LocalDate
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -43,6 +45,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
+
+  val iabdDetails: IabdDetails =
+    IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
 
   private val json = Json.arr(
     Json.obj(
@@ -75,7 +80,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-       sut().iabds(nino, taxYear).futureValue mustBe json
+        sut().iabds(nino, taxYear).futureValue mustBe List(iabdDetails)
 
         server.verify(
           getRequestedFor(urlEqualTo(npsUrl))
@@ -95,7 +100,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next).futureValue mustBe Json.arr()
+          sut().iabds(nino, taxYear.next).futureValue mustBe List()
         }
 
         "looking for cy+2 year" in {
@@ -104,7 +109,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next.next).futureValue mustBe Json.arr()
+          sut().iabds(nino, taxYear.next.next).futureValue mustBe List()
         }
       }
 

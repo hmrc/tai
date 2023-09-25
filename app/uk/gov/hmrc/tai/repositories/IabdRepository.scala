@@ -36,7 +36,7 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
     cache.cacheFromApi(
       nino,
       s"$IabdMongoKey${taxYear.year}",
-      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)) recover {
+      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.filter(_.`type`.contains(NewEstimatedPay))).map(Json.toJson(_)) recover {
         case _: NotFoundException => Json.toJson(Json.obj("error" -> "NOT_FOUND"))
       }).map { json =>
       val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")
@@ -46,6 +46,9 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
         json.as[JsValue](iabdEstimatedPayReads)
       }
     }
+    /*.recover {
+        case _: NotFoundException => throw new NotFoundException(s"No iadbs found for year $taxYear")
+      })*/
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, version: Int, employmentId: Int, iabdType: Int, amount: Int)(
