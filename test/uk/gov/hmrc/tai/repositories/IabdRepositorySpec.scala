@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, TaiCacheRepository}
 import uk.gov.hmrc.tai.util.{BaseSpec, MongoConstants}
 
 import java.time.LocalDate

@@ -23,6 +23,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.domain.{CommunityInvestmentTaxCredit, EstimatedTaxYouOweThisYear, OutstandingDebt, UnderPaymentFromPreviousYear}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.deprecated.{CodingComponentRepository, TaxAccountRepository, TaxAccountSummaryRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

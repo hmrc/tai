@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 
 class CacheService @Inject()(mongoConfig: MongoConfig, taiCacheRepository: TaiCacheRepository) {
   def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =

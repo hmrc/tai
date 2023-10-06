@@ -23,7 +23,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.status
 import uk.gov.hmrc.tai.util.BaseSpec
 import play.api.test.Helpers._
-import uk.gov.hmrc.tai.repositories.cache.JourneyCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.JourneyCacheRepository
 
 import scala.concurrent.Future
 

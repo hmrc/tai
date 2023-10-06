@@ -22,6 +22,7 @@ import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.deprecated.{CodingComponentRepository, TaxAccountRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.repositories.EmploymentRepository
+import uk.gov.hmrc.tai.repositories.deprecated.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 

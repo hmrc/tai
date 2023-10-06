@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.BbsiConnector
 import uk.gov.hmrc.tai.connectors.cache.CacheId
+import uk.gov.hmrc.tai.connectors.deprecated.BbsiConnector
 import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 

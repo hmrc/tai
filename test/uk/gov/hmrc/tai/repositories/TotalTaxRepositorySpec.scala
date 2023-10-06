@@ -20,6 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsNull, Json}
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.repositories.deprecated.{TaxAccountRepository, TotalTaxRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

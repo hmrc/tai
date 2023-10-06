@@ -17,10 +17,10 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import uk.gov.hmrc.tai.connectors.CompanyCarConnector
+import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.{CompanyCarBenefitRepository, TaiCacheRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

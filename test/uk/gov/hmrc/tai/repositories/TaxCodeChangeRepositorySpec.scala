@@ -18,14 +18,15 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
-import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.connectors.cache.Caching
+import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.{TaiCacheRepository, TaxCodeChangeRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
+
 import scala.concurrent.Future
 
 class TaxCodeChangeRepositorySpec extends BaseSpec {

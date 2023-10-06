@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

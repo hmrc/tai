@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{IabdRepository, IncomeRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate

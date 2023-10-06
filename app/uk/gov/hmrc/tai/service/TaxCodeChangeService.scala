@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.repositories.TaxCodeChangeRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaxCodeChangeRepository
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 

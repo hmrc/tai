@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.tai.repositories.cache
 
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent}
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
 @Singleton
@@ -33,14 +32,4 @@ class TaiSessionCacheRepository @Inject()(appConfig: MongoConfig, mongoComponent
       collectionName = "sessions",
       ttl = Duration(appConfig.mongoTTL, TimeUnit.SECONDS),
       timestampSupport = new CurrentTimestampSupport()
-    ) {
-
-  def invalidateAll[A](f: => Future[A])(implicit hc: HeaderCarrier): Future[A] =
-    for {
-      _ <- deleteAllFromSession
-      result <- f
-    } yield result
-
-
-
-}
+    )

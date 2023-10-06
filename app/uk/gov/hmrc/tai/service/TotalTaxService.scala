@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.TotalTax
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{TaxAccountSummaryRepository, TotalTaxRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{TaxAccountSummaryRepository, TotalTaxRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 

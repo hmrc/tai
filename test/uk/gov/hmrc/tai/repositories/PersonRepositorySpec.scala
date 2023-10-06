@@ -22,7 +22,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.{PersonRepository, TaiCacheRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

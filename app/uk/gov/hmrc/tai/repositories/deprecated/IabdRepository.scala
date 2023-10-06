@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
@@ -39,6 +39,7 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
       nino,
       s"$IabdMongoKey${taxYear.year}",
       iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.filter(_.`type`.contains(NewEstimatedPay))).map(Json.toJson(_)) recover {
+        //todo: move this step (caching 404 response) into uk.gov.hmrc.tai.connectors.CachingIabdConnector.iabds
         case _: NotFoundException => Json.toJson(Json.obj("error" -> "NOT_FOUND"))
       }).map { json =>
       val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")

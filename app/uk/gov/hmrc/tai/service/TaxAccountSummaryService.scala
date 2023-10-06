@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.RtiConnector
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.connectors.{NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.error.{EmploymentNotFound, EmploymentRetrievalError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{IabdRepository, IncomeRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 

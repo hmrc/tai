@@ -21,6 +21,7 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment}
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear

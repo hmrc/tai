@@ -25,14 +25,14 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsResultException
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.TaxCodeChangeRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaxCodeChangeRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import scala.concurrent.Future

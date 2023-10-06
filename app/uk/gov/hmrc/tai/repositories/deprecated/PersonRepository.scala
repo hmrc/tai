@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
@@ -22,7 +22,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 

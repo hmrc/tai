@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories.cache
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import cats.data.OptionT
 import cats.implicits._

@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.CodingComponentRepository
+import uk.gov.hmrc.tai.repositories.deprecated.CodingComponentRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

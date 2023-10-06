@@ -24,13 +24,14 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.connectors.{NpsConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.RtiConnector
+import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.model.domain
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.repositories.deprecated.{EmploymentRepository, TaiCacheRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.io.File

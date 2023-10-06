@@ -37,7 +37,7 @@ import uk.gov.hmrc.tai.integration.utils.FakeAsyncCacheApi
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
-import uk.gov.hmrc.tai.repositories.cache.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Random

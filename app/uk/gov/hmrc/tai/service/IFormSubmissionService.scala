@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.{MimeContentType, Person}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
-import uk.gov.hmrc.tai.repositories.PersonRepository
+import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
 import java.time.format.DateTimeFormatter
