@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors.cache
+package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
 import com.google.inject.name.Named
@@ -24,7 +24,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.NpsConfig
-import uk.gov.hmrc.tai.connectors.{HttpHandler, IabdUrls}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}

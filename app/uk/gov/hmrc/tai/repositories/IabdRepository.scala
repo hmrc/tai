@@ -20,7 +20,8 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
-import uk.gov.hmrc.tai.connectors.cache.{Caching, IabdConnector}
+import uk.gov.hmrc.tai.connectors.IabdConnector
+import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
 import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
