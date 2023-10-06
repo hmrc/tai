@@ -21,6 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.cache.{Caching, IabdConnector}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
 import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -46,12 +47,9 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
         json.as[JsValue](iabdEstimatedPayReads)
       }
     }
-    /*.recover {
-        case _: NotFoundException => throw new NotFoundException(s"No iadbs found for year $taxYear")
-      })*/
   }
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, version: Int, employmentId: Int, iabdType: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[HodUpdateResponse] =
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
     iabdConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
 }

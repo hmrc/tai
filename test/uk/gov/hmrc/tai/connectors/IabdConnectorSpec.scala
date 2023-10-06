@@ -19,9 +19,11 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, JsObject, Json}
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.cache.{DefaultIabdConnector, IabdConnector}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.IabdUpdateAmountFormats
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
@@ -36,7 +38,7 @@ import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
 
-
+  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
   lazy val iabdUrls: IabdUrls = inject[IabdUrls]
 
   def sut(): IabdConnector = new DefaultIabdConnector(inject[HttpHandler], inject[NpsConfig],

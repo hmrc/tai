@@ -18,9 +18,11 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.cache.{Caching, IabdConnector}
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
@@ -38,6 +40,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val metrics: Metrics = mock[Metrics]
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val iabdConnector: IabdConnector = mock[IabdConnector]
+  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
 
   val iabdDetails1FromApi: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
@@ -112,7 +115,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(HodUpdateSuccess))
 
       val sut = createTestCache(cache, iabdConnector)
@@ -127,7 +130,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(HodUpdateFailure))
 
       val sut = createTestCache(cache, iabdConnector)
@@ -142,7 +145,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(HodUpdateSuccess))
 
       val sut = createTestCache(cache, iabdConnector)
@@ -155,7 +158,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
     "return an error status when income can't be updated" in {
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any()))
+      when(iabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
         .thenReturn(Future.successful(HodUpdateFailure))
 
       val sut = createTestCache(cache, iabdConnector)

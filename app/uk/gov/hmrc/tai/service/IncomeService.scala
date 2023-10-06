@@ -23,6 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
@@ -123,7 +124,7 @@ class IncomeService @Inject()(
     }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) => {
       auditor.sendDataEvent(
@@ -167,7 +168,7 @@ class IncomeService @Inject()(
     }
 
   private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] =
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[IncomeUpdateResponse] =
     for {
       updateAmountResult <- iabdRepository.updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
     } yield {

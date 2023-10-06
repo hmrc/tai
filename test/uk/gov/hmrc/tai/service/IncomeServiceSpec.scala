@@ -22,6 +22,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -43,6 +44,8 @@ class IncomeServiceSpec extends BaseSpec {
   private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc", Seq.empty[BankAccount])
   private val untaxedInterestWithBankAccount =
     UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc", Seq(account))
+
+  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
 
   private def createSUT(
                          employmentService: EmploymentService = mock[EmploymentService],
@@ -846,7 +849,7 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIabdRepository = mock[IabdRepository]
           when(
             mockIabdRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
-              any())
+              any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
@@ -864,7 +867,7 @@ class IncomeServiceSpec extends BaseSpec {
             auditor = mockAuditor
           )
 
-          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -908,7 +911,7 @@ class IncomeServiceSpec extends BaseSpec {
 
           val mockIabdRepository = mock[IabdRepository]
           when(mockIabdRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
-            any())).thenReturn(
+            any(), any())).thenReturn(
             Future.successful(HodUpdateSuccess))
 
           val mockAuditor = mock[Auditor]
@@ -924,7 +927,7 @@ class IncomeServiceSpec extends BaseSpec {
             auditor = mockAuditor
           )
 
-          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -985,7 +988,7 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIabdRepository = mock[IabdRepository]
           when(
             mockIabdRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
-              any())
+              any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
@@ -1003,7 +1006,7 @@ class IncomeServiceSpec extends BaseSpec {
             auditor = mockAuditor
           )
 
-          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
 
@@ -1062,7 +1065,7 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIabdRepository = mock[IabdRepository]
           when(
             mockIabdRepository.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(
-              any())
+              any(), any())
           ).thenReturn(
             Future.successful(HodUpdateFailure)
           )
@@ -1077,7 +1080,7 @@ class IncomeServiceSpec extends BaseSpec {
             citizenDetailsConnector = citizenDetailsConnector
           )
 
-          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
         }
@@ -1131,7 +1134,7 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIabdRepository = mock[IabdRepository]
           when(
             mockIabdRepository
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
+              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
           )
@@ -1147,11 +1150,11 @@ class IncomeServiceSpec extends BaseSpec {
             auditor = mockAuditor
           )
 
-          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier()).futureValue
+          val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
           verify(mockIabdRepository, times(1))
-            .updateTaxCodeAmount(meq(nino), meq(taxYear), any(), meq(1), any(), meq(1234))(any())
+            .updateTaxCodeAmount(meq(nino), meq(taxYear), any(), meq(1), any(), meq(1234))(any(), any())
 
           val auditMap = Map(
             "nino"          -> nino.value,
@@ -1207,7 +1210,7 @@ class IncomeServiceSpec extends BaseSpec {
       val mockIabdRepository = mock[IabdRepository]
       when(
         mockIabdRepository
-          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
+          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
       )
@@ -1226,7 +1229,7 @@ class IncomeServiceSpec extends BaseSpec {
         auditor = mockAuditor
       )
 
-      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
+      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly)
       result.futureValue mustBe IncomeUpdateFailed("Could not find an ETag")
     }
 
@@ -1272,7 +1275,7 @@ class IncomeServiceSpec extends BaseSpec {
       val mockIabdRepository = mock[IabdRepository]
       when(
         mockIabdRepository
-          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any())
+          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
       )
@@ -1291,7 +1294,7 @@ class IncomeServiceSpec extends BaseSpec {
         auditor = mockAuditor
       )
 
-      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier())
+      val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly)
       result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
     }
   }
