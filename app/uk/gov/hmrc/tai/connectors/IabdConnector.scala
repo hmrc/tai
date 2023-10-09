@@ -23,18 +23,21 @@ import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
-import uk.gov.hmrc.tai.util.InvalidateCaches
+import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
 import java.util.UUID
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -43,14 +46,15 @@ class CachingIabdConnector @Inject()(@Named("default") underlying: IabdConnector
                                      invalidateCaches: InvalidateCaches)(implicit ec: ExecutionContext)
   extends IabdConnector {
 
-  private def cache[L, A: Format](key: String)
+  @nowarn("msg=private method cacheEitherT in class CachingIabdConnector is never used")
+  private def cacheEitherT[L, A: Format](key: String)
                                  (f: => EitherT[Future, L, A])
                                  (implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
 
     def fetchAndCache: EitherT[Future, L, A] =
       for {
         result <- f
-        _      <- EitherT[Future, L, (String, String)](
+        _ <- EitherT[Future, L, (String, String)](
           sessionCacheRepository
             .putSession[A](DataKey[A](key), result)
             .map(Right(_))
@@ -59,54 +63,83 @@ class CachingIabdConnector @Inject()(@Named("default") underlying: IabdConnector
 
     def readAndUpdate: EitherT[Future, L, A] = {
       EitherT(sessionCacheRepository
-            .getFromSession[A](DataKey[A](key))
-            .flatMap {
-              case None =>
-                fetchAndCache.value
-              case Some(value) =>
-                Future.successful(Right(value))
-            })
+        .getFromSession[A](DataKey[A](key))
+        .flatMap {
+          case None =>
+            fetchAndCache.value
+          case Some(value) =>
+            Future.successful(Right(value))
+        })
+    }
+
+    readAndUpdate
+  }
+
+  private def cache[A: Format](key: String)
+                                        (f: => Future[A])
+                                        (implicit hc: HeaderCarrier): Future[A] = {
+
+    def fetchAndCache: Future[A] =
+      for {
+        result <- f
+        _ <- sessionCacheRepository
+            .putSession[A](DataKey[A](key), result)
+      } yield result
+
+    def readAndUpdate: Future[A] = {
+      sessionCacheRepository
+        .getFromSession[A](DataKey[A](key))
+        .flatMap {
+          case None => fetchAndCache
+          case Some(value) => Future.successful(value)
+        }
     }
 
     readAndUpdate
   }
 
 
+
   override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] = {
     cache(s"iabds-$nino-${taxYear.year}") {
-      EitherT(underlying.iabds(nino: Nino, taxYear: TaxYear).map(Right(_): Either[UpstreamErrorResponse, Seq[IabdDetails]]))
-    }.toOption.getOrRaise(new RuntimeException("Error"))
+      underlying.iabds(nino: Nino, taxYear: TaxYear)
+    }
   }
 
   override def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
-    underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount).flatMap { response =>
-      invalidateCaches.invalidateAll {
-        Future.successful(response)
-      }
+    invalidateCaches.invalidateAll {
+      underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
+    }
+  }
+
+  override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(
+    implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+
+    cache(s"iabds-$nino-$year-$iabdType") {
+      underlying.getIabdsForType(nino, year, iabdType)
+    }
+  }
+
+  override def updateExpensesData(
+                                   nino: Nino,
+                                   year: Int,
+                                   iabdType: Int,
+                                   version: Int,
+                                   expensesData: List[UpdateIabdEmployeeExpense],
+                                   apiType: APITypes)(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] = {
+    invalidateCaches.invalidateAll {
+      underlying.updateExpensesData(nino, year, iabdType, version, expensesData, apiType)
     }
   }
 }
 
 class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
                                      npsConfig: NpsConfig,
+                                     desConfig: DesConfig,
                                      iabdUrls: IabdUrls,
                                      IabdUpdateAmountFormats: IabdUpdateAmountFormats)(implicit ec: ExecutionContext)
   extends IabdConnector {
-
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
-    if (taxYear > TaxYear()) {
-      Future.successful(Seq.empty)
-    } else {
-      val hodHeaders = Seq(
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
-        "CorrelationId" -> UUID.randomUUID().toString
-      )
-      val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, hodHeaders).map(_.as[Seq[IabdDetails]])
-    }
 
   private def getUuid = UUID.randomUUID().toString
 
@@ -116,7 +149,14 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
       case None => UUID.randomUUID().toString.replace("-", "")
     }
 
-  private def headersForUpdate(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): Seq[(String, String)] =
+  private def headersForIabds(implicit hc: HeaderCarrier) = Seq(
+    HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+    HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+    "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+    "CorrelationId" -> UUID.randomUUID().toString
+  )
+
+  private def headerForUpdateTaxCodeAmount(hc: HeaderCarrier, version: Int, txId: String, originatorId: String): Seq[(String, String)] =
     Seq(
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
@@ -126,15 +166,65 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
       "CorrelationId" -> getUuid
     )
 
+  private def headersForGetIabdsForType(implicit hc: HeaderCarrier) =
+    Seq(
+      "Environment"          -> desConfig.environment,
+      "Authorization"        -> desConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString
+    )
+
+  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
+    if (taxYear > TaxYear()) {
+      Future.successful(Seq.empty)
+    } else {
+      val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
+      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds).map(_.as[Seq[IabdDetails]])
+    }
+
   override def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
     val url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType)
     val amountList = List(IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource)))
-    val requestHeader = headersForUpdate(hc, version, sessionOrUUID, npsConfig.originatorId)
+    val requestHeader = headerForUpdateTaxCodeAmount(hc, version, sessionOrUUID, npsConfig.originatorId)
 
     httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
       implicitly, IabdUpdateAmountFormats.formatList
     ).map { _ => HodUpdateSuccess }.recover { case _ => HodUpdateFailure }
+  }
+
+  override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(
+    implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
+
+    val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
+    httpHandler.getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType).map(_.as[List[NpsIabdRoot]])
+  }
+
+  private def headersForUpdateExpensesData(version: Int, originatorId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Environment"          -> desConfig.environment,
+      "Authorization"        -> desConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString,
+      "Originator-Id" -> originatorId,
+      "ETag"          -> version.toString
+    )
+
+  override def updateExpensesData(
+                               nino: Nino,
+                               year: Int,
+                               iabdType: Int,
+                               version: Int,
+                               expensesData: List[UpdateIabdEmployeeExpense],
+                               apiType: APITypes)(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] = {
+
+    val postUrl = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
+
+    httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](postUrl, expensesData, apiType, headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId))
   }
 }
 
@@ -144,4 +234,15 @@ trait IabdConnector {
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse]
+
+  def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(
+    implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]]
+
+  def updateExpensesData(
+                                        nino: Nino,
+                                        year: Int,
+                                        iabdType: Int,
+                                        version: Int,
+                                        expensesData: List[UpdateIabdEmployeeExpense],
+                                        apiType: APITypes)(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse]
 }

@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.config._
-import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
@@ -87,20 +86,13 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 }
 
 @Singleton
-class IabdUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
+class IabdUrls @Inject()(npsConfig: NpsConfig) {
 
   def npsIabdUrl(nino: Nino, taxYear: TaxYear): String =
     s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}"
 
   def npsIabdEmploymentUrl(nino: Nino, taxYear: TaxYear, iabdType: Int): String =
     s"${npsIabdUrl(nino, taxYear)}/employment/$iabdType"
-
-  def desIabdUrl(nino: Nino, taxYear: TaxYear): String =
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}"
-
-  def desIabdByTypeUrl(nino: Nino, taxYear: TaxYear, iabd: IabdType): String =
-    s"${desConfig.baseURL}/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/${taxYear.year}?type=${iabd.code}"
-
 }
 
 @Singleton

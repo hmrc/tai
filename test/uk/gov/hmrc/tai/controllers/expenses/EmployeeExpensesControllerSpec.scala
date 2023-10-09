@@ -64,7 +64,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -78,7 +78,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(204, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -92,7 +92,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(202, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -108,7 +108,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -124,7 +124,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseInternet), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(500, "")))
 
         val result = controller().updateEmployeeExpensesData(nino, TaxYear(), iabd)(fakeRequest)
@@ -146,7 +146,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
@@ -160,7 +160,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(204, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
@@ -174,7 +174,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(202, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
@@ -190,7 +190,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)
@@ -206,7 +206,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
 
         when(
           mockEmployeeExpensesService
-            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any()))
+            .updateEmployeeExpensesData(any(), any(), any(), meq(updateIabdEmployeeExpenseWFH), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(500, "")))
 
         val result = controller().updateWorkingFromHomeExpenses(nino, TaxYear(), iabd)(fakeRequest)

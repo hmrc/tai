@@ -135,28 +135,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
       }
-
-      "making a POST request to DES" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj, Seq.empty).futureValue
-
-        verify(mockMetrics).startTimer(any())
-        verify(mockTimerContext).stop()
-      }
     }
 
     "return a success response from NPS" when {
@@ -270,22 +248,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         resEtag mustBe eTag
       }
 
-      "it returns a success Http response for POST transactions" in {
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val res = sut.postToDes(url, apiType, bodyAsObj, Seq.empty).futureValue
-
-        res.status mustBe OK
-        res.json.as[ResponseObject] mustBe bodyAsObj
-        res.header(eTagKey) mustBe Some(eTag.toString)
-      }
     }
 
     "return an error response from DES" when {
@@ -365,24 +327,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
       }
 
-      "it returns a non success Http response for POST transactions" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(IM_A_TEAPOT)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        assertConnectorException[HttpException](
-          sut.postToDes(url, apiType, bodyAsObj, Seq.empty),
-          IM_A_TEAPOT,
-          exMessage
-        )
-      }
     }
 
     "throw a NumberFormatException" when {

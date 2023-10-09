@@ -17,8 +17,10 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.UpdateIabdEmployeeExpense
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -28,9 +30,9 @@ import scala.concurrent.Future
 
 class EmployeeExpensesServiceSpec extends BaseSpec  {
 
-  private val mockDesConnector = mock[DesConnector]
+  private val mockIabdConnector = mock[IabdConnector]
 
-  private val service = new EmployeeExpensesService(desConnector = mockDesConnector)
+  private val service = new EmployeeExpensesService(iabdConnector = mockIabdConnector)
 
   private val updateIabdEmployeeExpense = UpdateIabdEmployeeExpense(100, None)
   private val iabd = 56
@@ -45,11 +47,13 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val taxYear = 2017
 
+  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+
   "updateEmployeeExpensesData" must {
 
     "return 200" when {
       "success response from des connector" in {
-        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
@@ -60,7 +64,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
     "return 500" when {
       "failure response from des connector" in {
-        when(mockDesConnector.updateExpensesDataToDes(any(), any(), any(), any(), any(), any())(any()))
+        when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
         service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
@@ -75,24 +79,24 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
     "return a list of NpsIabds" when {
 
       "success response from des connector when desEnabled is true" in {
-        val mockDesConnector = mock[DesConnector]
-        when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
+        val mockIabdConnector = mock[IabdConnector]
+        when(mockIabdConnector.getIabdsForType(any(), any(), any())(any()))
           .thenReturn(Future.successful(validNpsIabd))
 
 
-        val service = new EmployeeExpensesService(desConnector = mockDesConnector)
+        val service = new EmployeeExpensesService(iabdConnector = mockIabdConnector)
 
         val result = service.getEmployeeExpenses(nino, taxYear, iabd)
 
         result.futureValue mustBe validNpsIabd
 
-        verify(mockDesConnector, times(1))
-          .getIabdsForTypeFromDes(nino, taxYear, iabd)
+        verify(mockIabdConnector, times(1))
+          .getIabdsForType(nino, taxYear, iabd)
       }
 
       "return exception" when {
         "failed response from des connector" in {
-          when(mockDesConnector.getIabdsForTypeFromDes(any(), any(), any())(any()))
+          when(mockIabdConnector.getIabdsForType(any(), any(), any())(any()))
             .thenReturn(Future.failed(new BadRequestException("")))
 
           val result = service.getEmployeeExpenses(nino, taxYear, iabd)
