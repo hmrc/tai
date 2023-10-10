@@ -53,14 +53,14 @@ trait IncomeCategoryHodFormatters extends Logging {
         val totalTax = (jsObject \ "totalTax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         val totalTaxableIncome = (jsObject \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         val totalIncome = (jsObject \ "totalIncome" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val taxBands = (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[TaxBand](taxBandReads))
+        val taxBands = (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
         val inComeCategory = categoryTypeFactory(category)
         IncomeCategory(inComeCategory, totalTax, totalTaxableIncome, totalIncome, taxBands.getOrElse(Seq()).filter(_.income > 0))
     }.toList
   }
 
-  val taxBandReads = new Reads[TaxBand] {
-    override def reads(json: JsValue): JsResult[TaxBand] = {
+  val taxBandReads = new Reads[Option[TaxBand]] {
+    override def reads(json: JsValue): JsResult[Option[TaxBand]] = {
       val bandType = (json \ "bandType").as[String]
       val code = (json \ "taxCode").as[String]
       val income = (json \ "income").asOpt[BigDecimal]
@@ -69,17 +69,17 @@ trait IncomeCategoryHodFormatters extends Logging {
       val upperBand = (json \ "upperBand").asOpt[BigDecimal]
       val rate = (json \ "rate").as[BigDecimal]
       (income, tax) match {
-        case (Some(income), Some(tax)) => JsSuccess(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate))
+        case (Some(income), Some(tax)) => JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
         case (None, None) =>
           logger.info("Empty tax returned, no income or tax")
-          JsSuccess(TaxBand(bandType, code, 0, 0, lowerBand, upperBand, rate))
+          JsSuccess(None)
         case (Some(income), None) => {
           logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
-          JsSuccess(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate))
+          JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
         }
         case (None, Some(_)) => {
           logger.error(s"Tax value was present at income was not in tax band: $bandType, code: $code")
-          JsSuccess(TaxBand(bandType, code, 0, 0, lowerBand, upperBand, rate))
+          JsSuccess(None)
         }
       }
     }
