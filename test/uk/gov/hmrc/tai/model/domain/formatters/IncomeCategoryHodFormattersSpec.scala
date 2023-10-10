@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.{JsNull, JsResultException, Json}
 import uk.gov.hmrc.tai.model.domain.calculation._
 
 class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFormatters {
@@ -32,11 +32,11 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
       "all the 6 income categories as null" in {
         val json = Json.obj(
           "totalLiability" -> Json.obj(
-            "nonSavings"       -> JsNull,
-            "untaxedInterest"  -> JsNull,
-            "bankInterest"     -> JsNull,
-            "ukDividends"      -> JsNull,
-            "foreignInterest"  -> JsNull,
+            "nonSavings" -> JsNull,
+            "untaxedInterest" -> JsNull,
+            "bankInterest" -> JsNull,
+            "ukDividends" -> JsNull,
+            "foreignInterest" -> JsNull,
             "foreignDividends" -> JsNull
           ))
 
@@ -49,7 +49,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalTax"           -> 1000.12,
+              "totalTax" -> 1000.12,
               "totalTaxableIncome" -> 1000.13,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.14
@@ -57,9 +57,9 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
             ),
             "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "totalTax"           -> JsNull,
+              "totalTax" -> JsNull,
               "totalTaxableIncome" -> JsNull,
-              "totalIncome"        -> JsNull
+              "totalIncome" -> JsNull
             ),
             "ukDividends" -> Json.obj(
               "totalIncome" -> Json.obj()
@@ -70,7 +70,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalTax"           -> 1000.23,
+              "totalTax" -> 1000.23,
               "totalTaxableIncome" -> 1000.24,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.25
@@ -91,54 +91,72 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
     }
 
     "return the list of the 6 income categories with their tax bands" when {
-      "all of the income categories are provided with tax bands" in {
+      "all of the income categories are provided with tax bands and income values greater than zero" in {
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalTax"           -> 1000.12,
+              "totalTax" -> 1000.12,
               "totalTaxableIncome" -> 1000.13,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.14
               ),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType"  -> JsNull,
-                  "code"      -> JsNull,
-                  "income"    -> JsNull,
-                  "tax"       -> JsNull,
+                  "bandType" -> "B",
+                  "taxCode" -> "BR",
+                  "income" -> 1000,
+                  "tax" -> 100,
                   "lowerBand" -> JsNull,
-                  "upperBand" -> JsNull,
-                  "rate"      -> JsNull
+                  "upperBand" -> 10000,
+                  "rate" -> 10
+                ),
+                Json.obj(
+                  "bandType" -> "D",
+                  "taxCode" -> "D1",
+                  "income" -> 0,
+                  "tax" -> 0,
+                  "lowerBand" -> 10000,
+                  "upperBand" -> 30000,
+                  "rate" -> 15
                 )
               )
             ),
             "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "totalTax"           -> JsNull,
+              "totalTax" -> JsNull,
               "totalTaxableIncome" -> JsNull,
-              "totalIncome"        -> JsNull,
-              "taxBands"           -> JsNull
+              "totalIncome" -> JsNull,
+              "taxBands" -> JsNull
             ),
             "ukDividends" -> Json.obj(
               "totalIncome" -> Json.obj(),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType"  -> JsNull,
-                  "code"      -> JsNull,
-                  "income"    -> JsNull,
-                  "tax"       -> JsNull,
-                  "lowerBand" -> JsNull,
-                  "upperBand" -> JsNull,
-                  "rate"      -> JsNull
-                ),
-                Json.obj(
-                  "bandType"  -> "B",
-                  "code"      -> "BR",
-                  "income"    -> 10000,
-                  "tax"       -> 500,
+                  "bandType" -> "B",
+                  "taxCode" -> "BR",
+                  "income" -> 10000,
+                  "tax" -> 1000,
                   "lowerBand" -> 5000,
                   "upperBand" -> 20000,
-                  "rate"      -> 10
+                  "rate" -> 10
+                ),
+                Json.obj(
+                  "bandType" -> "D",
+                  "taxCode" -> "D1",
+                  "income" -> 30000,
+                  "tax" -> 6000,
+                  "lowerBand" -> 20000,
+                  "upperBand" -> 50000,
+                  "rate" -> 20
+                ),
+                Json.obj(
+                  "bandType" -> "D",
+                  "taxCode" -> "D2",
+                  "income" -> 0,
+                  "tax" -> 0,
+                  "lowerBand" -> 50000,
+                  "upperBand" -> JsNull,
+                  "rate" -> 20
                 )
               )
             ),
@@ -148,7 +166,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalTax"           -> 1000.23,
+              "totalTax" -> 1000.23,
               "totalTaxableIncome" -> 1000.24,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.25
@@ -164,7 +182,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               1000.13,
               1000.14,
               Seq(
-                TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0))),
+                TaxBand(bandType = "B", code = "BR", income = 1000, tax = 100, lowerBand = None, upperBand = Some(10000), rate = 10))),
             IncomeCategory(UntaxedInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(BankInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(
@@ -173,124 +191,196 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               0,
               0,
               Seq(
-                TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
                 TaxBand(
                   bandType = "B",
                   code = "BR",
                   income = 10000,
-                  tax = 500,
+                  tax = 1000,
                   lowerBand = Some(5000),
                   upperBand = Some(20000),
-                  rate = 10)
-              )
+                  rate = 10),
+                TaxBand(bandType = "D", code = "D1", income = 30000, tax = 6000, lowerBand = Some(20000), upperBand = Some(50000), rate = 20)
+              ),
             ),
             IncomeCategory(ForeignInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
           )
       }
     }
-  }
 
-  "taxFreeAllowanceReads" must {
-    "return taxFreeAllowance" when {
-      "all the 6 income categories as null" in {
-        val json = Json.obj(
-          "totalLiability" -> Json.obj(
-            "nonSavings"       -> JsNull,
-            "untaxedInterest"  -> JsNull,
-            "bankInterest"     -> JsNull,
-            "ukDividends"      -> JsNull,
-            "foreignInterest"  -> JsNull,
-            "foreignDividends" -> JsNull
-          ))
-
-        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
-      }
-
-      "some income categories have allowance relief deduct" in {
+    "throw a JsResult exception" when {
+      "there is no tax code present in a tax band" in {
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
+              "totalTax" -> 1000.12,
+              "totalTaxableIncome" -> 1000.13,
+              "totalIncome" -> Json.obj(
+                "amount" -> 1000.14
+              ),
+              "taxBands" -> Json.arr(
+                Json.obj(
+                  "bandType" -> "B",
+                  "taxCode" -> "BR",
+                  "income" -> 1000,
+                  "tax" -> 100,
+                  "lowerBand" -> JsNull,
+                  "upperBand" -> 10000,
+                  "rate" -> 10
+                ),
+                Json.obj(
+                  "bandType" -> "D",
+                  "taxCode" -> "D1",
+                  "income" -> 0,
+                  "tax" -> 0,
+                  "lowerBand" -> 10000,
+                  "upperBand" -> 30000,
+                  "rate" -> 15
+                )
               )
             ),
-            "untaxedInterest" -> JsNull,
-            "bankInterest"    -> JsNull,
-            "ukDividends" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
-            "foreignInterest"  -> JsNull,
-            "foreignDividends" -> JsNull
-          ))
-
-        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
-      }
-
-      "ignore untaxed interest income categories" in {
-        val json = Json.obj(
-          "totalLiability" -> Json.obj(
-            "nonSavings" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
-            "untaxedInterest" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
-            "bankInterest" -> JsNull,
-            "ukDividends" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
-            "foreignInterest"  -> JsNull,
-            "foreignDividends" -> JsNull
-          ))
-
-        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
-      }
-
-      "all income categories are present" in {
-        val json = Json.obj(
-          "totalLiability" -> Json.obj(
-            "nonSavings" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
-            "untaxedInterest" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
-            ),
+            "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
-              )
+              "totalTax" -> JsNull,
+              "totalTaxableIncome" -> JsNull,
+              "totalIncome" -> JsNull,
+              "taxBands" -> JsNull
             ),
             "ukDividends" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
+              "totalIncome" -> Json.obj(),
+              "taxBands" -> Json.arr(
+                Json.obj(
+                  "bandType" -> "B",
+                  "taxCode" -> JsNull,
+                  "income" -> 10000,
+                  "tax" -> 1000,
+                  "lowerBand" -> 5000,
+                  "upperBand" -> 20000,
+                  "rate" -> 10
+                )
               )
             ),
             "foreignInterest" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
+              "totalIncome" -> Json.obj(
+                "amount" -> JsNull
               )
             ),
             "foreignDividends" -> Json.obj(
-              "allowReliefDeducts" -> Json.obj(
-                "amount" -> 100
+              "totalTax" -> 1000.23,
+              "totalTaxableIncome" -> 1000.24,
+              "totalIncome" -> Json.obj(
+                "amount" -> 1000.25
               )
             )
           ))
+        val error = intercept[Exception] {
+          json.as[Seq[IncomeCategory]](incomeCategorySeqReads)
+        }
+        error mustBe a[JsResultException]
+      }
+    }
 
-        json.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
+    "taxFreeAllowanceReads" must {
+      "return taxFreeAllowance" when {
+        "all the 6 income categories as null" in {
+          val json = Json.obj(
+            "totalLiability" -> Json.obj(
+              "nonSavings" -> JsNull,
+              "untaxedInterest" -> JsNull,
+              "bankInterest" -> JsNull,
+              "ukDividends" -> JsNull,
+              "foreignInterest" -> JsNull,
+              "foreignDividends" -> JsNull
+            ))
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+        }
+
+        "some income categories have allowance relief deduct" in {
+          val json = Json.obj(
+            "totalLiability" -> Json.obj(
+              "nonSavings" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "untaxedInterest" -> JsNull,
+              "bankInterest" -> JsNull,
+              "ukDividends" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "foreignInterest" -> JsNull,
+              "foreignDividends" -> JsNull
+            ))
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+        }
+
+        "ignore untaxed interest income categories" in {
+          val json = Json.obj(
+            "totalLiability" -> Json.obj(
+              "nonSavings" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "untaxedInterest" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "bankInterest" -> JsNull,
+              "ukDividends" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "foreignInterest" -> JsNull,
+              "foreignDividends" -> JsNull
+            ))
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+        }
+
+        "all income categories are present" in {
+          val json = Json.obj(
+            "totalLiability" -> Json.obj(
+              "nonSavings" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "untaxedInterest" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "bankInterest" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "ukDividends" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "foreignInterest" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              ),
+              "foreignDividends" -> Json.obj(
+                "allowReliefDeducts" -> Json.obj(
+                  "amount" -> 100
+                )
+              )
+            ))
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
+        }
       }
     }
   }
