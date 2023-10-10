@@ -1,9 +1,6 @@
 import sbt.Tests.{Group, SubProcess}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-
-import scala.annotation.nowarn
 
 val appName: String = "tai"
 
