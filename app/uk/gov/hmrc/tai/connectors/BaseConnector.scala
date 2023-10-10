@@ -34,10 +34,12 @@ abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
   val defaultVersion: Int = -1
 
   def getVersionFromHttpHeader(httpResponse: HttpResponse): Int = {
+    //todo: etag should be inserted in the case class with the data in order to avoid mis-use
     val npsVersion: Int = httpResponse.header("ETag").map(_.toInt).getOrElse(defaultVersion)
     npsVersion
   }
 
+  @deprecated("this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead", "")
   def getFromNps[A](url: String, api: APITypes, headerCarrier: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headerCarrier)
@@ -80,6 +82,7 @@ abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
     }
   }
 
+  @deprecated("this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead", "")
   def getFromDes[A](url: String, api: APITypes, headers: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)

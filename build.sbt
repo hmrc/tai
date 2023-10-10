@@ -3,6 +3,8 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.SbtAutoBuildPlugin
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 
+import scala.annotation.nowarn
+
 val appName: String = "tai"
 
 lazy val playSettings: Seq[Setting[_]] = Seq(routesImport ++= Seq("uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"))
@@ -26,8 +28,10 @@ lazy val microservice = Project(appName, file("."))
     ),
     scalacOptions ++= Seq(
       "-Ywarn-unused",
+      "-Xlint",
       "-feature",
       "-Werror",
+      "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",
       "-Wconf:cat=deprecation&msg=\\.*value readRaw in object HttpReads is deprecated\\.*:s",

@@ -27,6 +27,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
 import java.util.UUID
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -48,6 +49,7 @@ class NpsConnector @Inject()(
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
+  @nowarn("msg=method getFromNps in class BaseConnector is deprecated: this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead")
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
     getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc)).map(_._1)
