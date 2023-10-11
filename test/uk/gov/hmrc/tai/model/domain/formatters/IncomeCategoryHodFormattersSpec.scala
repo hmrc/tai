@@ -102,6 +102,15 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               ),
               "taxBands" -> Json.arr(
                 Json.obj(
+                  "bandType" -> "PSR",
+                  "taxCode" -> "BR",
+                  "income" -> 500,
+                  "tax" -> JsNull,
+                  "lowerBand" -> JsNull,
+                  "upperBand" -> 5000,
+                  "rate" -> 0
+                ),
+                Json.obj(
                   "bandType" -> "B",
                   "taxCode" -> "BR",
                   "income" -> 1000,
@@ -182,6 +191,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               1000.13,
               1000.14,
               Seq(
+                TaxBand(bandType = "PSR", code = "BR", income = 500, tax = 0, lowerBand = None, upperBand = Some(5000), rate = 0),
                 TaxBand(bandType = "B", code = "BR", income = 1000, tax = 100, lowerBand = None, upperBand = Some(10000), rate = 10))),
             IncomeCategory(UntaxedInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(BankInterestIncomeCategory, 0, 0, 0, Nil),

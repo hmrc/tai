@@ -78,7 +78,8 @@ trait IncomeCategoryHodFormatters extends Logging {
           JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
         }
         case (None, Some(_)) => {
-          logger.error(s"Tax value was present at income was not in tax band: $bandType, code: $code")
+          val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
+          logger.error(x.getMessage, x)
           JsSuccess(None)
         }
       }
