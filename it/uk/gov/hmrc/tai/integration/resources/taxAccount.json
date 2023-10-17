@@ -88,25 +88,12 @@
       "taxBands": [
         {
           "bandType": "B",
+          "taxCode": "BR",
           "income": 11900,
           "tax": 2380,
           "lowerBand": 0,
           "upperBand": 35100,
           "rate": 20
-        },
-        {
-          "income": null,
-          "tax": null,
-          "lowerBand": 35100,
-          "upperBand": 150000,
-          "rate": 40
-        },
-        {
-          "income": null,
-          "tax": null,
-          "lowerBand": 150000,
-          "upperBand": 0,
-          "rate": 45
         }
       ]
     },

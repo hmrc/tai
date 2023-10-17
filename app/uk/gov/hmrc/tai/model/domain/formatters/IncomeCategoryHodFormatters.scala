@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
+import play.api.Logging
 import play.api.libs.json._
+
 import scala.language.postfixOps
 import uk.gov.hmrc.tai.model.domain.calculation._
 
-trait IncomeCategoryHodFormatters {
+trait IncomeCategoryHodFormatters extends Logging {
 
   val taxFreeAllowanceReads = new Reads[BigDecimal] {
     override def reads(json: JsValue): JsResult[BigDecimal] = {
@@ -51,22 +53,36 @@ trait IncomeCategoryHodFormatters {
         val totalTax = (jsObject \ "totalTax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         val totalTaxableIncome = (jsObject \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         val totalIncome = (jsObject \ "totalIncome" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val taxBands = (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[TaxBand](taxBandReads))
+        val taxBands = (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
         val inComeCategory = categoryTypeFactory(category)
-        IncomeCategory(inComeCategory, totalTax, totalTaxableIncome, totalIncome, taxBands.getOrElse(Seq()))
+        IncomeCategory(inComeCategory, totalTax, totalTaxableIncome, totalIncome, taxBands.getOrElse(Seq()).filter(_.income > 0))
     }.toList
   }
 
-  val taxBandReads = new Reads[TaxBand] {
-    override def reads(json: JsValue): JsResult[TaxBand] = {
-      val bandType = (json \ "bandType").asOpt[String].getOrElse("")
-      val code = (json \ "code").asOpt[String].getOrElse("")
-      val income = (json \ "income").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val tax = (json \ "tax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+  val taxBandReads = new Reads[Option[TaxBand]] {
+    override def reads(json: JsValue): JsResult[Option[TaxBand]] = {
+      val bandType = (json \ "bandType").as[String]
+      val code = (json \ "taxCode").as[String]
+      val income = (json \ "income").asOpt[BigDecimal]
+      val tax = (json \ "tax").asOpt[BigDecimal]
       val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
       val upperBand = (json \ "upperBand").asOpt[BigDecimal]
-      val rate = (json \ "rate").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate))
+      val rate = (json \ "rate").as[BigDecimal]
+      (income, tax) match {
+        case (Some(income), Some(tax)) => JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
+        case (None, None) =>
+          logger.info("Empty tax returned, no income or tax")
+          JsSuccess(None)
+        case (Some(income), None) => {
+          logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
+          JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
+        }
+        case (None, Some(_)) => {
+          val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
+          logger.error(x.getMessage, x)
+          JsSuccess(None)
+        }
+      }
     }
   }
 

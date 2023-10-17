@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.{TaxAccountRepository, TotalTaxRepository}
@@ -41,7 +41,6 @@ class TotalTaxRepositorySpec extends BaseSpec {
           0,
           0,
           Seq(
-            TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
             TaxBand(
               bandType = "B",
               code = "BR",
@@ -78,17 +77,8 @@ class TotalTaxRepositorySpec extends BaseSpec {
         "totalIncome" -> Json.obj(),
         "taxBands" -> Json.arr(
           Json.obj(
-            "bandType"  -> JsNull,
-            "code"      -> JsNull,
-            "income"    -> JsNull,
-            "tax"       -> JsNull,
-            "lowerBand" -> JsNull,
-            "upperBand" -> JsNull,
-            "rate"      -> JsNull
-          ),
-          Json.obj(
             "bandType"  -> "B",
-            "code"      -> "BR",
+            "taxCode"      -> "BR",
             "income"    -> 10000,
             "tax"       -> 500,
             "lowerBand" -> 5000,
