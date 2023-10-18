@@ -36,7 +36,7 @@ case object SessionCacheId extends CacheIdType[HeaderCarrier] {
 }
 
 @Singleton
-class SessionCacheRepository @Inject() (
+abstract class SessionCacheRepository @Inject() (
                                          mongoComponent: MongoComponent,
                                          override val collectionName: String,
                                          replaceIndexes: Boolean = true,
@@ -50,7 +50,7 @@ class SessionCacheRepository @Inject() (
     This class has been adapted from the one from hmrc-mongo to use the session id from the headerCarrier instead.
    */
 
-  val cacheRepo = new MongoCacheRepository[HeaderCarrier](
+  private val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
     mongoComponent   = mongoComponent,
     collectionName   = collectionName,
     replaceIndexes   = replaceIndexes,
