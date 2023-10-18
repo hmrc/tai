@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.connectors.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient}
 import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.connectors.BaseConnector
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
 import java.util.UUID
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -48,6 +49,7 @@ class NpsConnector @Inject()(
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
+  @nowarn("msg=method getFromNps in class BaseConnector is deprecated: this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead")
   def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
     getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc)).map(_._1)

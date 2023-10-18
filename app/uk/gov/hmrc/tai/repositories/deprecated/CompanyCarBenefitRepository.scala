@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.connectors.CompanyCarConnector
-import uk.gov.hmrc.tai.model.tai.TaxYear
-
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.cache.CacheId
+import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
-import uk.gov.hmrc.tai.repositories.cache.TaiCacheRepository
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CompanyCarBenefitRepository @Inject()(taiCacheRepository: TaiCacheRepository, companyCarConnector: CompanyCarConnector)(

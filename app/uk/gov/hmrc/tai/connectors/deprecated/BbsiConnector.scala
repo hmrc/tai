@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.connectors.deprecated
 
 import com.google.inject.{Inject, Singleton}
-
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.tai.model.domain.BankAccount
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.connectors.{BbsiUrls, HttpHandler}
+import uk.gov.hmrc.tai.model.domain.BankAccount
 import uk.gov.hmrc.tai.model.domain.formatters.BbsiHodFormatters
+import uk.gov.hmrc.tai.model.enums.APITypes
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.util.UUID
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(

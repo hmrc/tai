@@ -19,10 +19,11 @@ package uk.gov.hmrc.tai.connectors
 import com.codahale.metrics.Timer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{ reset => resetMock}
+import org.mockito.Mockito.{reset => resetMock}
 import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.RtiData
@@ -130,28 +131,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
 
         sutWithMockedMetrics.getFromDes(url, apiType, Seq.empty).futureValue
-
-        verify(mockMetrics).startTimer(any())
-        verify(mockTimerContext).stop()
-      }
-
-      "making a POST request to DES" in {
-
-        val mockTimerContext = mock[Timer.Context]
-        when(mockTimerContext.stop())
-          .thenReturn(123L)
-        when(mockMetrics.startTimer(any()))
-          .thenReturn(mockTimerContext)
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        sutWithMockedMetrics.postToDes[ResponseObject](url, apiType, bodyAsObj, Seq.empty).futureValue
 
         verify(mockMetrics).startTimer(any())
         verify(mockTimerContext).stop()
@@ -269,22 +248,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         resEtag mustBe eTag
       }
 
-      "it returns a success Http response for POST transactions" in {
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(OK)
-              .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        val res = sut.postToDes(url, apiType, bodyAsObj, Seq.empty).futureValue
-
-        res.status mustBe OK
-        res.json.as[ResponseObject] mustBe bodyAsObj
-        res.header(eTagKey) mustBe Some(eTag.toString)
-      }
     }
 
     "return an error response from DES" when {
@@ -364,24 +327,6 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
         )
       }
 
-      "it returns a non success Http response for POST transactions" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(endpoint)).willReturn(
-            aResponse()
-              .withStatus(IM_A_TEAPOT)
-              .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
-        )
-
-        assertConnectorException[HttpException](
-          sut.postToDes(url, apiType, bodyAsObj, Seq.empty),
-          IM_A_TEAPOT,
-          exMessage
-        )
-      }
     }
 
     "throw a NumberFormatException" when {

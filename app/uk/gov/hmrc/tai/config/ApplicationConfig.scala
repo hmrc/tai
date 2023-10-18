@@ -79,6 +79,7 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
+  lazy val cacheTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiry").getOrElse(300)
   lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
   lazy val mongoTTLUpdateIncome: Int = runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600*48)
 }

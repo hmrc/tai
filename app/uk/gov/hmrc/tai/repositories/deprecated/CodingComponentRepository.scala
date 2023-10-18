@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
-import uk.gov.hmrc.tai.model.domain.formatters.IncomeCategoryHodFormatters
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
 import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository)(implicit ec: ExecutionContext)
-    extends TaxAccountHodFormatters with IncomeCategoryHodFormatters {
+class CodingComponentRepository @Inject()(taxAccountRepository: TaxAccountRepository)(implicit ec: ExecutionContext)
+    extends TaxAccountHodFormatters with TaxCodeIncomeHodFormatters {
 
-  def incomeCategories(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IncomeCategory]] =
+  def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     taxAccountRepository
       .taxAccount(nino, year)
-      .map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
+      .map(_.as[Seq[CodingComponent]](codingComponentReads))
 
-  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
+  def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(
+    implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     taxAccountRepository
-      .taxAccount(nino, year)
-      .map(_.as[BigDecimal](taxFreeAllowanceReads))
+      .taxAccountForTaxCodeId(nino, taxCodeId)
+      .map(_.as[Seq[CodingComponent]](codingComponentReads))
 }

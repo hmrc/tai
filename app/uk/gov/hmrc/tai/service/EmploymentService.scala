@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
-import uk.gov.hmrc.tai.repositories.{EmploymentRepository, PersonRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants

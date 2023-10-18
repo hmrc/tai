@@ -20,6 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.Writes
 import uk.gov.hmrc.mongo.cache.{CacheIdType, CacheItem, DataKey, MongoCacheRepository}
 import uk.gov.hmrc.mongo.{MongoComponent, TimestampSupport}
+import uk.gov.hmrc.play.http.logging.Mdc
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import scala.concurrent.duration.{Duration, SECONDS}
@@ -37,5 +38,7 @@ class TaiCacheConnector @Inject()(mongo: MongoComponent, mongoConfig: MongoConfi
     ) {
 
   def save[A: Writes](cacheId: String)(key: String, data: A): Future[CacheItem] =
-    put[A](cacheId)(DataKey(key), data)
+    Mdc.preservingMdc {
+      put[A](cacheId)(DataKey(key), data)
+    }
 }

@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.CloseAccountRequest
 import uk.gov.hmrc.tai.model.domain.{BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{CloseBankAccount, IncorrectBankAccount}
-import uk.gov.hmrc.tai.repositories.BbsiRepository
+import uk.gov.hmrc.tai.repositories.deprecated.BbsiRepository
 import uk.gov.hmrc.tai.templates.html.{IncorrectBankAccountIform, RemoveBankAccountIform}
 import uk.gov.hmrc.tai.util.IFormConstants
 

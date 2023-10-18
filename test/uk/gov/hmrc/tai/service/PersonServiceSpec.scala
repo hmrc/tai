@@ -20,7 +20,7 @@ import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
-import uk.gov.hmrc.tai.repositories.PersonRepository
+import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

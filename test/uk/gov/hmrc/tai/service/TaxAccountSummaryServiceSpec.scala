@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.TaxAccountSummaryRepository
+import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future

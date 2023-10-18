@@ -20,12 +20,12 @@ import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.CompanyCarConnector
+import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.benefits.{GenericBenefit, _}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.CompanyCarBenefitRepository
+import uk.gov.hmrc.tai.repositories.deprecated.CompanyCarBenefitRepository
 import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 

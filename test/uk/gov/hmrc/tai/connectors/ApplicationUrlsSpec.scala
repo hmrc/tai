@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import uk.gov.hmrc.tai.config._
-import uk.gov.hmrc.tai.model.nps2.IabdType
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -32,7 +31,7 @@ class ApplicationUrlsSpec extends BaseSpec {
   when(mockConfigFileUpload.baseURL).thenReturn("")
 
   val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
-  val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
+  val iabdUrls = new IabdUrls(mockConfigNps)
 
   "RtiUrls" must {
     "return the correct urls" when {
@@ -132,7 +131,6 @@ class ApplicationUrlsSpec extends BaseSpec {
     "return the correct urls" when {
       "given argument values" in {
         iabdUrls.npsIabdUrl(nino, TaxYear(2017)) mustBe s"/person/${nino.nino}/iabds/2017"
-        iabdUrls.desIabdUrl(nino, TaxYear(2017)) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017"
       }
     }
 
@@ -142,14 +140,6 @@ class ApplicationUrlsSpec extends BaseSpec {
       }
     }
 
-    "IabdByTypeUrls" must {
-      "return the correct urls" when {
-        "given argument values" in {
-          iabdUrls
-            .desIabdByTypeUrl(nino, TaxYear(2017), IabdType.FlatRateJobExpenses) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/tax-year/2017?type=56"
-        }
-      }
-    }
   }
 
 }

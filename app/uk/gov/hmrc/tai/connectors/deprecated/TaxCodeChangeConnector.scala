@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors
+package uk.gov.hmrc.tai.connectors.deprecated
 
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient}
 import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.connectors.{BaseConnector, TaxCodeChangeUrl}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -28,6 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.util.UUID
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeChangeConnector @Inject()(
@@ -51,6 +52,7 @@ class TaxCodeChangeConnector @Inject()(
     )
   }
 
+  @nowarn("msg=method getFromDes in class BaseConnector is deprecated: this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead")
   def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, year)
 

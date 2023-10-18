@@ -18,15 +18,17 @@ package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class TaxAccountSummarySpec extends IntegrationSpec {
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
@@ -35,7 +37,8 @@ class TaxAccountSummarySpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-  def request = FakeRequest(GET, apiUrl)
+
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
@@ -47,6 +50,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
 
     "for nps iabds failures" must {
       "return a BAD_REQUEST when the NPS iabds API returns a BAD_REQUEST" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
         val result = route(fakeApplication(), request)
@@ -54,6 +64,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       }
 
       "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
         val result = route(fakeApplication(), request)
@@ -61,6 +78,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       }
 
       "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val requestConst = request
         (for {
@@ -72,6 +96,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       }
 
       "throws an InternalServerException when the NPS iabds API returns an INTERNAL_SERVER_ERROR" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
 
         val result = route(fakeApplication(), request)
@@ -79,6 +110,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       }
 
       "throws a HttpException when the NPS iabds API returns a SERVICE_UNAVAILABLE" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
 
         val result = route(fakeApplication(), request)
@@ -86,6 +124,13 @@ class TaxAccountSummarySpec extends IntegrationSpec {
       }
 
       "throws a HttpException when the NPS iabds API returns a IM_A_TEAPOT" in {
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
 
         val result = route(fakeApplication(), request)

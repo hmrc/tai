@@ -23,12 +23,13 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.{IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,7 @@ class IncomeService @Inject()(
   employmentService: EmploymentService,
   citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
-  taxAccountRepository: TaxAccountRepository,
+  iabdRepository: IabdRepository,
   auditor: Auditor)(implicit ec: ExecutionContext) extends Logging{
 
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
@@ -123,7 +124,7 @@ class IncomeService @Inject()(
     }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] = {
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[IncomeUpdateResponse] = {
 
     val auditEventForIncomeUpdate: String => Unit = (currentAmount: String) => {
       auditor.sendDataEvent(
@@ -146,8 +147,9 @@ class IncomeService @Inject()(
             incomeAmount         <- incomeAmountForEmploymentId(nino, year, employmentId)
             incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
           } yield {
-            if (incomeUpdateResponse == IncomeUpdateSuccess)
+            if (incomeUpdateResponse == IncomeUpdateSuccess) {
               auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
+            }
             incomeUpdateResponse
           }
         case None => Future.successful(IncomeUpdateFailed("Could not find an ETag"))
@@ -166,10 +168,9 @@ class IncomeService @Inject()(
     }
 
   private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(
-    implicit hc: HeaderCarrier): Future[IncomeUpdateResponse] =
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[IncomeUpdateResponse] =
     for {
-      updateAmountResult <- taxAccountRepository
-                             .updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
+      updateAmountResult <- iabdRepository.updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
     } yield {
       updateAmountResult match {
         case HodUpdateSuccess => IncomeUpdateSuccess

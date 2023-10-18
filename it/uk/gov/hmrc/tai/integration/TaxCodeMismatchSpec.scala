@@ -17,14 +17,18 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
+import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
+import scala.util.Random
+
 class TaxCodeMismatchSpec extends IntegrationSpec {
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
@@ -34,7 +38,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
@@ -49,6 +53,21 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       List(500, 501, 502, 503, 504).foreach { status =>
 
         s"return $status when we receive $status downstream" in {
+          val nino = new Generator(new Random).nextNino
+          val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
+
+          val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
+          server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+          val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+          val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
+          server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+
+          val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+
           server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
           result.map(getStatus) mustBe Some(BAD_GATEWAY)
@@ -58,6 +77,21 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       List(400, 401, 403, 409, 412).foreach { status =>
 
         s"return $status when we receive $status downstream" in {
+          val nino = new Generator(new Random).nextNino
+          val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
+
+          val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
+          server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+          val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+          val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
+          server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+
+          val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+
           server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
           result.map(getStatus) mustBe Some(INTERNAL_SERVER_ERROR)
@@ -65,6 +99,21 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
 
       "return 404 when we receive 404 from downstream" in {
+        val nino = new Generator(new Random).nextNino
+        val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
+
+        val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
+        server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
+        val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+        val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
+        server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
+
+        val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+        val request = FakeRequest(GET, apiUrl)
+          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+          .withHeaders(HeaderNames.authorisation -> bearerToken)
+
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
         val result = route(fakeApplication(), request)
         result.map(getStatus) mustBe Some(NOT_FOUND)

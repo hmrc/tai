@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import play.api.Logging
 import play.api.http.Status
-import play.api.libs.json.{Format, Writes}
+import play.api.libs.json.Format
 import uk.gov.hmrc.http.{HttpClient, _}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
@@ -34,10 +34,12 @@ abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
   val defaultVersion: Int = -1
 
   def getVersionFromHttpHeader(httpResponse: HttpResponse): Int = {
+    //todo: etag should be inserted in the case class with the data in order to avoid mis-use
     val npsVersion: Int = httpResponse.header("ETag").map(_.toInt).getOrElse(defaultVersion)
     npsVersion
   }
 
+  @deprecated("this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead", "")
   def getFromNps[A](url: String, api: APITypes, headerCarrier: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headerCarrier)
@@ -80,6 +82,7 @@ abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
     }
   }
 
+  @deprecated("this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead", "")
   def getFromDes[A](url: String, api: APITypes, headers: Seq[(String, String)])(implicit hc: HeaderCarrier, formats: Format[A]): Future[(A, Int)] = {
     val timerContext = metrics.startTimer(api)
     val futureResponse = httpClient.GET[HttpResponse](url = url, headers = headers)
@@ -118,26 +121,4 @@ abstract class BaseConnector(metrics: Metrics, httpClient: HttpClient)(
     }
   }
 
-  def postToDes[A](url: String, api: APITypes, postData: A, headers: Seq[(String, String)])(
-    implicit hc: HeaderCarrier,
-    writes: Writes[A]): Future[HttpResponse] = {
-    val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.POST(url = url, body = postData, headers = headers)
-    futureResponse.flatMap { httpResponse =>
-      timerContext.stop()
-      httpResponse.status match {
-        case (Status.OK | Status.NO_CONTENT | Status.ACCEPTED) => {
-          metrics.incrementSuccessCounter(api)
-          Future.successful(httpResponse)
-        }
-        case _ => {
-          logger.warn(
-            s"DESAPI - A server error returned from DES HODS in postToDes with status ${httpResponse.status}, " +
-              s"url $url")
-          metrics.incrementFailedCounter(api)
-          Future.failed(new HttpException(httpResponse.body, httpResponse.status))
-        }
-      }
-    }
-  }
 }

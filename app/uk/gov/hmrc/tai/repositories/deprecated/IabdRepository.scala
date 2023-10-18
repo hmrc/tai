@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
@@ -22,7 +22,9 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdHodFormatters
+import uk.gov.hmrc.tai.model.domain.response.HodUpdateResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
@@ -36,7 +38,8 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
     cache.cacheFromApi(
       nino,
       s"$IabdMongoKey${taxYear.year}",
-      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.as[JsValue](iabdEstimatedPayReads)) recover {
+      iabdConnector.iabds(nino: Nino, taxYear: TaxYear).map(_.filter(_.`type`.contains(NewEstimatedPay))).map(Json.toJson(_)) recover {
+        //todo: move this step (caching 404 response) into uk.gov.hmrc.tai.connectors.CachingIabdConnector.iabds
         case _: NotFoundException => Json.toJson(Json.obj("error" -> "NOT_FOUND"))
       }).map { json =>
       val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")
@@ -47,4 +50,8 @@ class IabdRepository @Inject()(cache: Caching, iabdConnector: IabdConnector)(imp
       }
     }
   }
+
+  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, version: Int, employmentId: Int, iabdType: Int, amount: Int)(
+    implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
+    iabdConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
 }
