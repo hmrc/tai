@@ -19,8 +19,9 @@ package uk.gov.hmrc.tai.repositories.deprecated
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.IfConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
@@ -28,12 +29,14 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.Future
 
 @Singleton
-class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector)
+class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector, ifConnector: IfConnector)
     extends MongoConstants {
 
   def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cache.cacheFromApiV2[TaxCodeHistory](nino, s"TaxCodeRecords${taxYear.year}", taxCodeHistoryFromApi(nino, taxYear))
 
-  private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    taxCodeChangeConnector.taxCodeHistory(nino, taxYear)
+  private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    taxCodeChangeFromDesConnector.taxCodeHistory(nino, taxYear)
+    ifConnector.taxCodeHistory(nino, taxYear)
+  }
 }

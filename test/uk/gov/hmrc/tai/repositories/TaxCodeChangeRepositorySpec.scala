@@ -18,8 +18,9 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
+import uk.gov.hmrc.tai.connectors.IfConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
@@ -35,15 +36,17 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
-  val taxCodeChangeConnector: TaxCodeChangeConnector = mock[TaxCodeChangeConnector]
+  val taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector = mock[TaxCodeChangeFromDesConnector]
+  val ifConnector: IfConnector = mock[IfConnector]
+
   val taxCodeHistory: TaxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
-  def createSUT(cache: Caching, taxCodeChangeConnector: TaxCodeChangeConnector) =
-    new TaxCodeChangeRepository(cache, taxCodeChangeConnector)
+  def createSUT(cache: Caching, taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector, ifConnector: IfConnector) =
+    new TaxCodeChangeRepository(cache, taxCodeChangeFromDesConnector, ifConnector)
 
   override def beforeEach(): Unit ={
     super.beforeEach()
-    reset(metrics, cacheConfig, taiCacheRepository, taxCodeChangeConnector)
+    reset(metrics, cacheConfig, taiCacheRepository, taxCodeChangeFromDesConnector, ifConnector)
   }
 
   "taxCodeHistory" must {
@@ -52,7 +55,10 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
       val taxCodeHistory2 = taxCodeHistory.copy(taxCodeRecord = Seq())
 
-      when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
+      when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeHistory))
+
+      when(ifConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
@@ -60,7 +66,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().prev.year}"))(any()))
         .thenReturn(Future.successful(Some(taxCodeHistory2)))
 
-      val SUT = createSUT(cache, taxCodeChangeConnector)
+      val SUT = createSUT(cache, taxCodeChangeFromDesConnector, ifConnector)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
       val result2 = SUT.taxCodeHistory(nino, TaxYear().prev).futureValue
@@ -77,7 +83,10 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(taxCodeChangeConnector.taxCodeHistory(any(), any())(any()))
+      when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeHistory))
+
+      when(ifConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
@@ -86,7 +95,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taiCacheRepository.createOrUpdate[TaxCodeHistory](meq(cacheId), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      val SUT = createSUT(cache, taxCodeChangeConnector)
+      val SUT = createSUT(cache, taxCodeChangeFromDesConnector, ifConnector)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
 

@@ -23,19 +23,19 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import play.api.inject.bind
 
 import java.util.UUID
 import scala.util.Random
 
 trait IntegrationSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     val authResponse =
@@ -78,6 +78,8 @@ trait IntegrationSpec
         "microservice.services.nps-hod.port"         -> server.port(),
         "microservice.services.citizen-details.port" -> server.port(),
         "microservice.services.nps-hod.host"         -> "127.0.0.1",
+        "microservice.services.if-hod.host"          -> "127.0.0.1",
+        "microservice.services.if-hod.port"          -> server.port(),
         "auditing.enabled"                           -> false,
         "cache.isEnabled"                            -> false
       )
@@ -86,8 +88,8 @@ trait IntegrationSpec
       )
       .build()
 
-  val nino = new Generator(new Random).nextNino
-  val year = TaxYear().year
+  val nino: Nino = new Generator(new Random).nextNino
+  val year: Int = TaxYear().year
   val etag: String = "123"
   val bearerToken = "Bearer 11"
 
@@ -98,11 +100,11 @@ trait IntegrationSpec
   val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
   val rtiUrl = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${TaxYear().twoDigitRange}"
 
-  val taxAccountJson = FileHelper.loadFile("taxAccount.json")
-  val iabdsJson = FileHelper.loadFile("iabds.json")
-  val taxCodeHistoryJson = FileHelper.loadFile("taxCodeHistory.json")
-  val employmentJson = FileHelper.loadFile("employment.json")
-  val rtiJson = FileHelper.loadFile("rti.json")
+  val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
+  val iabdsJson: String = FileHelper.loadFile("iabds.json")
+  val taxCodeHistoryJson: String = FileHelper.loadFile("taxCodeHistory.json")
+  val employmentJson: String = FileHelper.loadFile("employment.json")
+  val rtiJson: String = FileHelper.loadFile("rti.json")
   val etagJson: JsValue = Json.parse(s"""
                                         |{
                                         |   "etag":"$etag"
