@@ -69,7 +69,6 @@ class JourneyCacheController @Inject()(
 
   def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     {
-      throw new RuntimeException("")
       def getCache(cacheId: CacheId): Future[Result] =
         withJsonBody[Map[String, String]] { cache =>
           repository.cached(cacheId, journeyName, cache) map { cache =>
