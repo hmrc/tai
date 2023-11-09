@@ -63,6 +63,15 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig wit
 }
 
 @Singleton
+class IfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+  lazy val baseURL: String = servicesConfig.baseUrl("if-hod")
+  lazy val environment: String = servicesConfig.getConfString("if-hod.env", "local")
+  lazy val authorization: String = "Bearer " + servicesConfig.getConfString("if-hod.authorizationToken", "local")
+  lazy val daPtaOriginatorId: String = servicesConfig.getConfString("if-hod.da-pta.originatorId", "")
+  lazy val originatorId: String = servicesConfig.getConfString("if-hod.originatorId", "")
+}
+
+@Singleton
 class NpsConfig @Inject()(servicesConfig: ServicesConfig)
     extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
@@ -79,13 +88,12 @@ class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends Bas
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
-  lazy val cacheTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiry").getOrElse(300)
   lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
   lazy val mongoTTLUpdateIncome: Int = runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600*48)
 }
 
 @Singleton
-class RtiConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
+class RtiConfig @Inject()() extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }

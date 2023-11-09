@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.HeaderNames
@@ -29,7 +30,8 @@ class TaxCodeLatestSpec extends IntegrationSpec {
 
 
   val apiUrl = s"/tai/$nino/tax-account/$year/tax-code/latest"
-  def request = FakeRequest(GET, apiUrl)
+
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 

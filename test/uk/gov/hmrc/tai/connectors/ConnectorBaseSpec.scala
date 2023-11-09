@@ -22,6 +22,7 @@ import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
+import play.api.Application
 import play.api.cache.AsyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -30,7 +31,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromDESToggle}
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -70,13 +71,16 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
         bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
       )
 
-  implicit lazy val app = localGuiceApplicationBuilder().build()
+  implicit lazy val app: Application = localGuiceApplicationBuilder().build()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromDESToggle))).thenReturn(
+      Future.successful(FeatureFlag(TaxCodeHistoryFromDESToggle, isEnabled = true))
     )
   }
 

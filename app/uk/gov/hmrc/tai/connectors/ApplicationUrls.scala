@@ -96,7 +96,15 @@ class IabdUrls @Inject()(npsConfig: NpsConfig) {
 }
 
 @Singleton
-class TaxCodeChangeUrl @Inject()(config: DesConfig) {
+class TaxCodeChangeFromDesUrl @Inject()(config: DesConfig) {
+
+  def taxCodeChangeFromDesUrl(nino: Nino, year: TaxYear): String = {
+    s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${year.year}?endTaxYear=${year.year}"
+  }
+}
+
+@Singleton
+class TaxCodeChangeFromIfUrl @Inject()(config: IfConfig) {
 
   def taxCodeChangeUrl(nino: Nino, year: TaxYear): String = {
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${year.year}?endTaxYear=${year.year}"

@@ -21,10 +21,9 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.{JsResultException, Json}
 import play.api.test.Helpers._
-import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpClient, HttpException, NotFoundException}
 import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeConnector
+import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
@@ -33,16 +32,16 @@ import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.net.URL
 
-class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
+class TaxCodeChangeFromDesConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants with IntegrationPatience {
 
   private val taxYear = TaxYear()
 
   private lazy val url = {
-    val path = new URL(urlConfig.taxCodeChangeUrl(nino, taxYear))
+    val path = new URL(urlConfig.taxCodeChangeFromDesUrl(nino, taxYear))
     s"${path.getPath}?${path.getQuery}"
   }
 
-  lazy val urlConfig: TaxCodeChangeUrl = inject[TaxCodeChangeUrl]
+  lazy val urlConfig: TaxCodeChangeFromDesUrl = inject[TaxCodeChangeFromDesUrl]
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -60,8 +59,8 @@ class TaxCodeChangeConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryCo
     metrics: Metrics = inject[Metrics],
     httpClient: HttpClient = inject[HttpClient],
     config: DesConfig = inject[DesConfig],
-    taxCodeChangeUrl: TaxCodeChangeUrl = urlConfig) =
-    new TaxCodeChangeConnector(metrics, httpClient, config, taxCodeChangeUrl)
+    taxCodeChangeUrl: TaxCodeChangeFromDesUrl = urlConfig) =
+    new TaxCodeChangeFromDesConnector(metrics, httpClient, config, taxCodeChangeUrl)
 
   "taxCodeHistory" must {
     "return tax code change response" when {

@@ -24,3 +24,10 @@ case object RtiCallToggle extends FeatureFlagName {
     "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
   )
 }
+
+case object TaxCodeHistoryFromDESToggle extends FeatureFlagName {
+  override val name: String = "tax-code-history-from-des-toggle"
+  override val description: Option[String] = Some(
+    "get the tax code history from DES and not IF"
+  )
+}
