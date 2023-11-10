@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromDESToggle
+import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.{TaiCacheRepository, TaxCodeChangeRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -65,8 +65,8 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromDESToggle))).thenReturn(
-        Future.successful(FeatureFlag(TaxCodeHistoryFromDESToggle, isEnabled = true))
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+        Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
       )
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
@@ -98,8 +98,8 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromDESToggle))).thenReturn(
-        Future.successful(FeatureFlag(TaxCodeHistoryFromDESToggle, isEnabled = true))
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+        Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
       )
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
@@ -122,15 +122,15 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
 
     }
 
-    "get the tax code history from the if when the TaxCodeHistoryFromDESToggle is false" in {
+    "get the tax code history from the if when the TaxCodeHistoryFromDESToggle is true" in {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
       when(ifConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromDESToggle))).thenReturn(
-        Future.successful(FeatureFlag(TaxCodeHistoryFromDESToggle, isEnabled = false))
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+        Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = true))
       )
 
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))

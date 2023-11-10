@@ -31,7 +31,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromDESToggle}
+import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -79,8 +79,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromDESToggle))).thenReturn(
-      Future.successful(FeatureFlag(TaxCodeHistoryFromDESToggle, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+      Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
     )
   }
 

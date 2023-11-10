@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.connectors.IfConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
 import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromDESToggle
+import uk.gov.hmrc.tai.model.admin. TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.MongoConstants
 
@@ -39,11 +39,11 @@ class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeFromDesConn
     cache.cacheFromApiV2[TaxCodeHistory](nino, s"TaxCodeRecords${taxYear.year}", taxCodeHistoryFromApi(nino, taxYear))
 
   private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
-    featureFlagService.get(TaxCodeHistoryFromDESToggle).flatMap { toggle =>
+    featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
       if (toggle.isEnabled) {
-        taxCodeChangeFromDesConnector.taxCodeHistory(nino, taxYear)
-      } else {
         ifConnector.taxCodeHistory(nino, taxYear)
+      } else {
+        taxCodeChangeFromDesConnector.taxCodeHistory(nino, taxYear)
       }
     }
   }
