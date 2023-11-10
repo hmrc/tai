@@ -17,13 +17,13 @@
 package uk.gov.hmrc.tai.config
 
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagNamesLibrary
-import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromDESToggle}
+import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
 
 class ApplicationStartUp {
   FeatureFlagNamesLibrary.addFlags(
     List(
       RtiCallToggle,
-      TaxCodeHistoryFromDESToggle
+      TaxCodeHistoryFromIfToggle
     )
   )
 }
