@@ -20,18 +20,10 @@ POST          /:nino/pensionProvider/:id/reason                                 
 
 #Benefits
 GET           /:nino/tax-account/:year/benefits                                                                       @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.benefits(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
-GET           /:nino/tax-account/tax-components/employments/:id/benefits/company-car                                  @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.companyCarBenefitForEmployment(nino: Nino, id: Int)
-PUT           /:nino/tax-account/tax-components/employments/:empId/benefits/company-car/:carId/withdrawn              @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.withdrawCompanyCarAndFuel(nino: Nino, empId: Int, carId: Int)
 GET           /:nino/tax-account/tax-components/benefits/company-cars                                                 @uk.gov.hmrc.tai.controllers.benefits.CompanyCarBenefitController.companyCarBenefits(nino: Nino)
 POST          /:nino/tax-account/tax-component/employments/:employmentId/benefits/ended-benefit                       @uk.gov.hmrc.tai.controllers.benefits.BenefitsController.removeCompanyBenefits(nino: Nino, employmentId: Int)
 
 #Incomes
-GET           /:nino/tax-account/income/savings-investments/untaxed-interest                                          @uk.gov.hmrc.tai.controllers.income.IncomeController.untaxedInterest(nino: Nino)
-GET           /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts                            @uk.gov.hmrc.tai.controllers.income.BbsiController.bbsiDetails(nino: Nino)
-GET           /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id                        @uk.gov.hmrc.tai.controllers.income.BbsiController.bbsiAccount(nino: Nino, id: Int)
-DELETE        /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id                        @uk.gov.hmrc.tai.controllers.income.BbsiController.removeAccount(nino: Nino, id: Int)
-PUT           /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id/closedAccount          @uk.gov.hmrc.tai.controllers.income.BbsiController.closeBankAccount(nino: Nino, id: Int)
-PUT           /:nino/tax-account/income/savings-investments/untaxed-interest/bank-accounts/:id/interest-amount        @uk.gov.hmrc.tai.controllers.income.BbsiController.updateAccountInterest(nino: Nino, id: Int)
 GET           /:nino/tax-account/:year/income/tax-code-incomes                                                        @uk.gov.hmrc.tai.controllers.income.IncomeController.taxCodeIncomesForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 GET           /:nino/tax-account/:year/income                                                                         @uk.gov.hmrc.tai.controllers.income.IncomeController.income(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
 PUT           /:nino/tax-account/snapshots/:snapshotId/incomes/tax-code-incomes/:employmentId/estimated-pay           @uk.gov.hmrc.tai.controllers.income.IncomeController.updateTaxCodeIncome(nino: Nino, snapshotId: uk.gov.hmrc.tai.model.tai.TaxYear, employmentId:Int)

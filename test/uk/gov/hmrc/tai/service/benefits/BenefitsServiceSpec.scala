@@ -20,7 +20,6 @@ import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.benefits.{GenericBenefit, _}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -82,7 +81,6 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
           mockCodingComponentService)
         sut.companyCarBenefits(nino)(hc).futureValue mustBe result
 
@@ -117,214 +115,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
           mockCodingComponentService)
         sut.companyCarBenefits(nino)(hc).futureValue mustBe result
-      }
-    }
-
-    "return the first matching companyCarBenefit for a given employment sequence number" when {
-      "the repository returned sequence of companyCarBenefit with no matching employment sequence number" in {
-        val result = Seq(
-          CompanyCarBenefit(
-            12,
-            200,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = true,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None))))
-
-        val taxFreeAmountComponents =
-          Seq(
-            CodingComponent(CarBenefit, Some(12), 200, "some other description")
-          )
-
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
-        when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
-          .thenReturn(Future.successful(result))
-
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(taxFreeAmountComponents))
-
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
-          mockCodingComponentService)
-        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe None
-      }
-
-      "the repository returned sequence of companyCarBenefit with one matching employment sequence number" in {
-        val result = Seq(
-          CompanyCarBenefit(
-            12,
-            200,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = true,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None))))
-
-        val taxFreeAmountComponents =
-          Seq(
-            CodingComponent(CarBenefit, Some(12), 200, "some other description")
-          )
-
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
-        when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
-          .thenReturn(Future.successful(result))
-
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(taxFreeAmountComponents))
-
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
-          mockCodingComponentService)
-        sut.companyCarBenefitForEmployment(nino, 12)(hc).futureValue mustBe Some(result.head)
-      }
-
-      "the repository returned sequence of multiple companyCarBenefits with one matching employment sequence number" in {
-        val result = Seq(
-          CompanyCarBenefit(
-            12,
-            200,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = true,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None))),
-          CompanyCarBenefit(
-            11,
-            400,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = false,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None)))
-        )
-
-        val taxFreeAmountComponents =
-          Seq(
-            CodingComponent(CarBenefit, Some(12), 200, "some other description"),
-            CodingComponent(CarBenefit, Some(11), 400, "some other description")
-          )
-
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
-        when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
-          .thenReturn(Future.successful(result))
-
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(taxFreeAmountComponents))
-
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
-          mockCodingComponentService)
-        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe Some(result.last)
-      }
-
-      "the repository returned sequence of multiple companyCarBenefits with multiple matching employment sequence numbers" in {
-        val result = Seq(
-          CompanyCarBenefit(
-            11,
-            200,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = true,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None))),
-          CompanyCarBenefit(
-            11,
-            400,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = false,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None))),
-          CompanyCarBenefit(
-            11,
-            600,
-            Seq(
-              CompanyCar(
-                10,
-                "Company car",
-                hasActiveFuelBenefit = true,
-                Some(LocalDate.parse("2014-06-10")),
-                None,
-                None)))
-        )
-
-        val taxFreeAmountComponents =
-          Seq(
-            CodingComponent(CarBenefit, Some(11), 200, "some other description"),
-            CodingComponent(CarBenefit, Some(11), 400, "some other description"),
-            CodingComponent(CarBenefit, Some(11), 600, "some other description")
-          )
-
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
-        when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
-          .thenReturn(Future.successful(result))
-
-        val mockCodingComponentService = mock[CodingComponentService]
-        when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(taxFreeAmountComponents))
-
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mock[CompanyCarConnector],
-          mockCodingComponentService)
-        sut.companyCarBenefitForEmployment(nino, 11)(hc).futureValue mustBe Some(result.head)
-      }
-    }
-  }
-
-  "remove company car and fuel" must {
-    "successfully call company car service (PAYE) and remove company car from db" when {
-      "PAYE company car returns a successful response with id" in {
-        val expectedResult = "id"
-        val currentTaxYear = TaxYear().year
-        val carWithdrawDate = LocalDate.of(currentTaxYear, 4, 24)
-        val fuelWithdrawDate = Some(LocalDate.of(currentTaxYear, 4, 24))
-        val carSeqNum = 10
-        val employmentSeqNum = 11
-        val taxYear = TaxYear()
-        val removeCarAndFuel = WithdrawCarAndFuel(10, carWithdrawDate, fuelWithdrawDate)
-
-        val mockCompanyCarConnector = mock[CompanyCarConnector]
-
-        when(
-          mockCompanyCarConnector.withdrawCarBenefit(nino, taxYear, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc))
-          .thenReturn(Future.successful(expectedResult))
-
-        val cacheService = mock[CacheService]
-
-        val sut = createSUT(mock[CompanyCarBenefitRepository], mockCompanyCarConnector, cacheService = cacheService)
-        sut.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel)(hc).futureValue mustBe expectedResult
-
-        verify(cacheService, times(1)).invalidateTaiCacheData(meq(nino))(any())
-        verify(mockCompanyCarConnector, times(1)).withdrawCarBenefit(any(), any(), any(), any(), any())(any())
       }
     }
   }
@@ -524,10 +316,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           mock[CompanyCarBenefitRepository],
-          mock[CompanyCarConnector],
           mock[CodingComponentService],
           mockIFormSubmissionService,
-          mock[CacheService],
           mockAuditable
         )
         val result =
@@ -562,10 +352,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
       val sut = createSUT(
         mock[CompanyCarBenefitRepository],
-        mock[CompanyCarConnector],
         mock[CodingComponentService],
         mockIFormSubmissionService,
-        mock[CacheService],
         mockAuditable
       )
       sut.removeCompanyBenefits(nino, removeCompanyBenefit)(hc).futureValue mustBe "1"
@@ -619,17 +407,13 @@ class BenefitsServiceSpec extends BaseSpec {
 
   private def createSUT(
     companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
-    companyCarConnector: CompanyCarConnector = mock[CompanyCarConnector],
     codingComponentService: CodingComponentService = mock[CodingComponentService],
     iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
-    cacheService: CacheService = mock[CacheService],
     auditable: Auditor = mock[Auditor]) =
     new BenefitsService(
       companyCarBenefitRepository,
-      companyCarConnector,
       codingComponentService,
       iFormSubmissionService,
-      cacheService,
       auditable
     )
 }

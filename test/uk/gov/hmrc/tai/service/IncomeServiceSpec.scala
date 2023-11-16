@@ -39,11 +39,9 @@ class IncomeServiceSpec extends BaseSpec {
 
   private val etag = ETag("1")
 
-  private val account = BankAccount(3, Some("12345678"), Some("234567"), Some("Bank Name"), 1000, None, None)
-
-  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc", Seq.empty[BankAccount])
+  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc")
   private val untaxedInterestWithBankAccount =
-    UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc", Seq(account))
+    UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc")
 
   implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
 

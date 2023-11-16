@@ -99,8 +99,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
           "data" -> Json.obj(
             "incomeComponentType" -> "UntaxedInterestIncome",
             "amount"              -> 123,
-            "description"         -> "Untaxed Interest",
-            "bankAccounts"        -> JsArray()
+            "description"         -> "Untaxed Interest"
           ),
           "links" -> Json.arr()
         )
@@ -418,7 +417,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
   }
 
   private val untaxedInterest =
-    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest", Seq.empty[BankAccount])
+    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest")
 
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],

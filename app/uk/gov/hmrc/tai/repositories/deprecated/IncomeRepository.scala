@@ -22,15 +22,14 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.formatters.{IabdDetails, IabdHodFormatters}
 import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain.{BankAccount, UntaxedInterestIncome}
+import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
+
 @Singleton
 class IncomeRepository @Inject()(
   taxAccountRepository: TaxAccountRepository,
-  bbsiRepository: BbsiRepository,
   iabdRepository: IabdRepository)(implicit ec: ExecutionContext)
     extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
 
@@ -41,18 +40,13 @@ class IncomeRepository @Inject()(
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
       if (untaxedInterestIncome.nonEmpty) {
-        for {
-          accounts <- bbsiRepository.bbsiDetails(nino, year).recover({ case NonFatal(_) => Seq.empty[BankAccount] })
-        } yield {
           val income = untaxedInterestIncome.head
           val untaxedInterest = UntaxedInterest(
             income.incomeComponentType,
             income.employmentId,
             income.amount,
-            income.description,
-            accounts)
-          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
-        }
+            income.description)
+        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome)))
       } else {
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }

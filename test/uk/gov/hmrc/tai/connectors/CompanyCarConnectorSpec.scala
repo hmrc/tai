@@ -25,7 +25,7 @@ import play.api.http.Status._
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
-import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
+import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class CompanyCarConnectorSpec extends ConnectorBaseSpec {
@@ -237,124 +237,6 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         assertConnectorException[HttpException](
           sut.carBenefits(nino, taxYear),
           BAD_GATEWAY,
-          exMessage
-        )
-      }
-    }
-  }
-
-  "removeCarBenefit" must {
-
-    val removeCarAndFuelModel = WithdrawCarAndFuel(1, LocalDate.now(), None)
-
-    "call remove Api and return id with success" in {
-
-      val sampleResponse = Json
-        .obj(
-          "transaction" -> Json.obj("oid" -> "4958621783d14007b71d55934d5ccca9"),
-          "taxCode"     -> "220T",
-          "allowance"   -> 1674)
-        .toString()
-
-      server.stubFor(
-        post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(sampleResponse))
-      )
-
-      val result = sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel).futureValue
-      result mustBe "4958621783d14007b71d55934d5ccca9"
-
-      verifyOutgoingUpdateHeaders(postRequestedFor(urlEqualTo(removeBenefitUrl)))
-    }
-
-    "throw" when {
-      "invalid json is returned" in {
-
-        val invalidResponse = Json
-          .obj("transact" -> Json.obj("uid" -> "45ccca9"), "taxCode" -> "220T", "allowance" -> 1674)
-          .toString()
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(OK).withBody(invalidResponse))
-        )
-
-
-        val result = sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel).failed.futureValue
-
-        result mustBe a[JsResultException]
-      }
-
-      "400 is returned" in {
-
-        val exMessage = "Invalid argument"
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
-          BAD_REQUEST,
-          exMessage
-        )
-      }
-
-      "404 is returned" in {
-
-        val exMessage = "Could not find car benefits"
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
-          NOT_FOUND,
-          exMessage
-        )
-      }
-
-      "4xx is returned" in {
-
-        val exMessage = "Request has been locked"
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(FORBIDDEN).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
-          FORBIDDEN,
-          exMessage
-        )
-      }
-
-      "500 is returned" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl))
-            .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
-          INTERNAL_SERVER_ERROR,
-          exMessage
-        )
-      }
-
-      "5xx is returned" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(removeBenefitUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut.withdrawCarBenefit(nino, taxYear, empSeqNumber, carSeqNumber, removeCarAndFuelModel),
-          SERVICE_UNAVAILABLE,
           exMessage
         )
       }
