@@ -21,7 +21,7 @@ import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{HttpHandler, PayeUrls}
-import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCarBenefit, WithdrawCarAndFuel}
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.domain.formatters.CompanyCarBenefitFormatters
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -42,19 +42,4 @@ class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(im
       json.as[Int]
     }
 
-  def withdrawCarBenefit(
-    nino: Nino,
-    taxYear: TaxYear,
-    employmentSequenceNumber: Int,
-    carSequenceNumber: Int,
-    postData: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] = {
-
-    val url = urls.removeCarBenefitUrl(nino, taxYear, employmentSequenceNumber, carSequenceNumber)
-    httpHandler
-      .postToApi[WithdrawCarAndFuel](url, postData, APITypes.CompanyCarAPI, Seq.empty)(hc, companyCarRemoveWrites) map {
-      httpResponse =>
-        val json = httpResponse.json
-        (json \ "transaction" \ "oid").as[String]
-    }
-  }
 }

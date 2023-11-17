@@ -17,12 +17,11 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.benefits.WithdrawCarAndFuel
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
@@ -44,19 +43,4 @@ class CompanyCarBenefitController @Inject()(
     } recoverWith taxAccountErrorHandler()
   }
 
-  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int): Action[AnyContent] = authentication.async {
-    implicit request =>
-      companyCarBenefitService.companyCarBenefitForEmployment(nino, employmentSeqNum).map {
-        case None    => NotFound
-        case Some(c) => Ok(Json.toJson(ApiResponse(c, Nil)))
-      } recoverWith taxAccountErrorHandler()
-  }
-
-  def withdrawCompanyCarAndFuel(nino: Nino, employmentSeqNum: Int, carSeqNum: Int): Action[JsValue] =
-    authentication.async(parse.json) { implicit request =>
-      withJsonBody[WithdrawCarAndFuel] { removeCarAndFuel =>
-        companyCarBenefitService.withdrawCompanyCarAndFuel(nino, employmentSeqNum, carSeqNum, removeCarAndFuel) map (
-          _ => Ok)
-      }
-    }
 }

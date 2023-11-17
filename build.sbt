@@ -11,7 +11,7 @@ lazy val microservice = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(playSettings ++ scoverageSettings: _*)
   .settings(
-    majorVersion := 0,
+    majorVersion := 1,
     libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),

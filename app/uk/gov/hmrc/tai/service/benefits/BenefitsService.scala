@@ -21,7 +21,6 @@ import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.deprecated.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -33,35 +32,19 @@ import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 import scala.util.control.NonFatal
 
 @Singleton
 class BenefitsService @Inject()(
   companyCarBenefitRepository: CompanyCarBenefitRepository,
-  companyCarConnector: CompanyCarConnector,
   taxComponentService: CodingComponentService,
   iFormSubmissionService: IFormSubmissionService,
-  cacheService: CacheService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
 
   def companyCarBenefits(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     benefits(nino, TaxYear()).map(_.companyCarBenefits)
-
-  def companyCarBenefitForEmployment(nino: Nino, employmentSeqNum: Int)(
-    implicit hc: HeaderCarrier): Future[Option[CompanyCarBenefit]] =
-    companyCarBenefits(nino).map(allCars => allCars.find(_.employmentSeqNo == employmentSeqNum))
-
-  def withdrawCompanyCarAndFuel(
-    nino: Nino,
-    employmentSeqNum: Int,
-    carSeqNum: Int,
-    removeCarAndFuel: WithdrawCarAndFuel)(implicit hc: HeaderCarrier): Future[String] =
-    companyCarConnector.withdrawCarBenefit(nino, TaxYear(), employmentSeqNum, carSeqNum, removeCarAndFuel).andThen {
-      case Success(_) => cacheService.invalidateTaiCacheData(nino)
-    }
 
   def benefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Benefits] =
     taxComponentService.codingComponents(nino, taxYear).map(filterBenefits).flatMap {
