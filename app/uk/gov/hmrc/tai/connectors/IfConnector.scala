@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class IfConnector @Inject()(config: DesConfig, httpHandler: HttpHandler, taxCodeChangeUrl: TaxCodeChangeFromIfUrl)(
+class IfConnector @Inject()(config: DesConfig, httpHandler: HttpHandler, taxCodeChangeUrl: TaxCodeChangeFromIfUrl, taxCodeChangeDesUrl: TaxCodeChangeFromDesUrl)(
   implicit ec: ExecutionContext) {
 
   implicit private def createHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
@@ -41,8 +41,9 @@ class IfConnector @Inject()(config: DesConfig, httpHandler: HttpHandler, taxCode
     )
   }
 
-  def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
-    val url = taxCodeChangeUrl.taxCodeChangeUrl(nino, year)
+  def taxCodeHistory(nino: Nino, year: TaxYear, useIF: Boolean)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    val url = if (useIF) taxCodeChangeUrl.taxCodeChangeUrl(nino, year)
+      else taxCodeChangeDesUrl.taxCodeChangeFromDesUrl(nino, year)
 
     httpHandler.getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader).map(json =>
       json.as[TaxCodeHistory]) recover { case e => throw e }

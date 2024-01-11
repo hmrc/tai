@@ -26,7 +26,6 @@ import play.api.libs.json.JsResultException
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
@@ -44,7 +43,6 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
   with BeforeAndAfterEach
   with IntegrationPatience {
 
-  private val taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector = mock[TaxCodeChangeFromDesConnector]
   private val taxCodeChangeRepository: TaxCodeChangeRepository = mock[TaxCodeChangeRepository]
   private val auditor = mock[Auditor]
   private val incomeService: IncomeService = mock[IncomeService]
@@ -52,12 +50,11 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(taxCodeChangeFromDesConnector, taxCodeChangeRepository)
+    reset(taxCodeChangeRepository)
   }
 
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
-      bind[TaxCodeChangeFromDesConnector].toInstance(taxCodeChangeFromDesConnector),
       bind[TaxCodeChangeRepository].toInstance(taxCodeChangeRepository),
       bind[Auditor].toInstance(auditor),
       bind[IncomeService].toInstance(incomeService)

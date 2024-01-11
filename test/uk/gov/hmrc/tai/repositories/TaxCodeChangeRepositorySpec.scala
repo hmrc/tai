@@ -23,7 +23,6 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.connectors.IfConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.TaxCodeHistory
@@ -40,20 +39,18 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
 
-  val taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector = mock[TaxCodeChangeFromDesConnector]
   val ifConnector: IfConnector = mock[IfConnector]
 
   val taxCodeHistory: TaxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
   lazy val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
-  def createSUT(cache: Caching, taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector,
-                ifConnector: IfConnector, mockFeatureFlagService: FeatureFlagService) =
-    new TaxCodeChangeRepository(cache, taxCodeChangeFromDesConnector, ifConnector, mockFeatureFlagService)
+  def createSUT(cache: Caching, ifConnector: IfConnector, mockFeatureFlagService: FeatureFlagService) =
+    new TaxCodeChangeRepository(cache, ifConnector, mockFeatureFlagService)
 
   override def beforeEach(): Unit ={
     super.beforeEach()
-    reset(metrics, cacheConfig, taiCacheRepository, taxCodeChangeFromDesConnector, ifConnector)
+    reset(metrics, cacheConfig, taiCacheRepository, ifConnector)
   }
 
   "taxCodeHistory" must {
@@ -62,7 +59,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
       val taxCodeHistory2 = taxCodeHistory.copy(taxCodeRecord = Seq())
 
-      when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
+      when(ifConnector.taxCodeHistory(any(), any(), meq(false))(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
@@ -74,7 +71,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taiCacheRepository.find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().prev.year}"))(any()))
         .thenReturn(Future.successful(Some(taxCodeHistory2)))
 
-      val SUT = createSUT(cache, taxCodeChangeFromDesConnector, ifConnector, mockFeatureFlagService)
+      val SUT = createSUT(cache, ifConnector, mockFeatureFlagService)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
       val result2 = SUT.taxCodeHistory(nino, TaxYear().prev).futureValue
@@ -82,8 +79,8 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       result mustBe taxCodeHistory
       result2 mustBe taxCodeHistory2
 
-      verify(taxCodeChangeFromDesConnector, times(0)).taxCodeHistory(any(), any())(any())
-      verify(ifConnector, times(0)).taxCodeHistory(any(), any())(any())
+      verify(ifConnector, times(0)).taxCodeHistory(any(), any(), meq(false))(any())
+      verify(ifConnector, times(0)).taxCodeHistory(any(), any(), meq(true))(any())
 
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().prev.year}"))(any())
@@ -95,7 +92,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(taxCodeChangeFromDesConnector.taxCodeHistory(any(), any())(any()))
+      when(ifConnector.taxCodeHistory(any(), any(), meq(false))(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
@@ -108,14 +105,14 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taiCacheRepository.createOrUpdate[TaxCodeHistory](meq(cacheId), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      val SUT = createSUT(cache, taxCodeChangeFromDesConnector, ifConnector, mockFeatureFlagService)
+      val SUT = createSUT(cache, ifConnector, mockFeatureFlagService)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
 
       result mustBe taxCodeHistory
 
-      verify(taxCodeChangeFromDesConnector, times(1)).taxCodeHistory(any(), any())(any())
-      verify(ifConnector, times(0)).taxCodeHistory(any(), any())(any())
+      verify(ifConnector, times(0)).taxCodeHistory(any(), any(), meq(true))(any())
+      verify(ifConnector, times(1)).taxCodeHistory(any(), any(), meq(false))(any())
 
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
       verify(taiCacheRepository, times(1)).createOrUpdate[TaxCodeHistory](any(), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
@@ -126,7 +123,7 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
 
       val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
-      when(ifConnector.taxCodeHistory(any(), any())(any()))
+      when(ifConnector.taxCodeHistory(any(), any(), any())(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
@@ -139,14 +136,13 @@ class TaxCodeChangeRepositorySpec extends BaseSpec {
       when(taiCacheRepository.createOrUpdate[TaxCodeHistory](meq(cacheId), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any()))
         .thenReturn(Future.successful(taxCodeHistory))
 
-      val SUT = createSUT(cache, taxCodeChangeFromDesConnector, ifConnector, mockFeatureFlagService)
+      val SUT = createSUT(cache, ifConnector, mockFeatureFlagService)
 
       val result = SUT.taxCodeHistory(nino, TaxYear()).futureValue
 
       result mustBe taxCodeHistory
 
-      verify(taxCodeChangeFromDesConnector, times(0)).taxCodeHistory(any(), any())(any())
-      verify(ifConnector, times(1)).taxCodeHistory(any(), any())(any())
+      verify(ifConnector, times(1)).taxCodeHistory(any(), any(), meq(true))(any())
       verify(taiCacheRepository, times(1)).find[TaxCodeHistory](meq(cacheId), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
       verify(taiCacheRepository, times(1)).createOrUpdate[TaxCodeHistory](any(), any(), meq(s"TaxCodeRecords${TaxYear().year}"))(any())
 

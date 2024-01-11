@@ -43,9 +43,5 @@
     <logger name="com.ning.http.client.providers.netty" additivity="false">
       <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
-    
-    <root level="DEBUG">
-      <appender-ref ref="STDOUT"/>
-      <appender-ref ref="FILE"/>
-    </root>
+
 </configuration>

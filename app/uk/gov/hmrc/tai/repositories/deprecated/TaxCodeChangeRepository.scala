@@ -22,7 +22,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.IfConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.admin. TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector,
+class TaxCodeChangeRepository @Inject()(cache: Caching,
                                         ifConnector: IfConnector, featureFlagService: FeatureFlagService)(implicit ec: ExecutionContext)
     extends MongoConstants {
 
@@ -40,11 +39,7 @@ class TaxCodeChangeRepository @Inject()(cache: Caching, taxCodeChangeFromDesConn
 
   private def taxCodeHistoryFromApi(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
-      if (toggle.isEnabled) {
-        ifConnector.taxCodeHistory(nino, taxYear)
-      } else {
-        taxCodeChangeFromDesConnector.taxCodeHistory(nino, taxYear)
-      }
+      ifConnector.taxCodeHistory(nino, taxYear, toggle.isEnabled)
     }
   }
 }
