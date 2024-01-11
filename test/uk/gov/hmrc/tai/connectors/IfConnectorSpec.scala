@@ -67,7 +67,7 @@ class IfConnectorSpec extends ConnectorBaseSpec with TaxCodeHistoryConstants wit
     new IfConnector( config, httpHandler, taxCodeChangeUrl, taxCodeChangeDesUrl)
 
   "taxCodeHistory" must {
-    s"return tax code change response from DES" when {
+    "return tax code change response from DES" when {
       "payroll number is returned and IF toggle is set to false" in {
 
         val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)

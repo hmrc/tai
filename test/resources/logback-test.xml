@@ -44,4 +44,8 @@
       <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
 
+    <root level="DEBUG">
+      <appender-ref ref="STDOUT"/>
+      <appender-ref ref="FILE"/>
+    </root>
 </configuration>
