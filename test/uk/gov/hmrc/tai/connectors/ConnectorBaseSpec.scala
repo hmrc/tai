@@ -64,6 +64,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
         "microservice.services.nps-hod.originatorId" -> npsOriginatorId,
         "microservice.services.des-hod.originatorId" -> desOriginatorId,
         "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
+        "microservice.services.if-hod.port" -> server.port(),
+        "microservice.services.if-hod.host" -> "127.0.0.1",
         "auditing.enabled" -> "false"
       )
       .overrides(

@@ -30,7 +30,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, ConnectorBaseSpec, DefaultIabdConnector, IabdConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultIabdConnector, DefaultTaxCodeHistoryConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
@@ -62,7 +62,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[LockService].toInstance(spyLockService),
       bind[FeatureFlagService].toInstance(mockFeatureFlagService),
       bind[IabdConnector].to[CachingIabdConnector],
-      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector]
+      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+      bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
+      bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector]
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]

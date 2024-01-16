@@ -24,11 +24,11 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.connectors.TaxCodeHistoryConnector
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.income.{BasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
-import uk.gov.hmrc.tai.repositories.deprecated.TaxCodeChangeRepository
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
@@ -37,7 +37,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class TaxCodeChangeServiceImpl @Inject()(
-  taxCodeChangeRepository: TaxCodeChangeRepository,
+  taxCodeHistoryConnector: TaxCodeHistoryConnector,
   auditor: Auditor,
   incomeService: IncomeService)(
   implicit ec: ExecutionContext
@@ -164,7 +164,7 @@ class TaxCodeChangeServiceImpl @Inject()(
     }
 
   private def taxCodeHistory(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    taxCodeChangeRepository.taxCodeHistory(nino, taxYear)
+    taxCodeHistoryConnector.taxCodeHistory(nino, taxYear)
 
   private def previousStartDate(date: LocalDate): LocalDate = {
     val startOfCurrentTaxYear = TaxYear().start

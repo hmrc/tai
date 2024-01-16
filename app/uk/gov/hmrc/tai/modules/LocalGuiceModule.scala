@@ -22,7 +22,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.config.ApplicationStartUp
-import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, DefaultIabdConnector, DefaultRtiConnector, IabdConnector, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxCodeHistoryConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.model.helpers.IncomeHelper
 import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
@@ -35,6 +35,8 @@ class LocalGuiceModule extends Module {
     bind[RtiConnector].to[CachingRtiConnector],
     bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
     bind[IabdConnector].to[CachingIabdConnector],
-    bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector]
+    bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+    bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
+    bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector]
   )
 }
