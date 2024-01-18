@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
@@ -45,30 +45,41 @@ extends TaxCodeHistoryConnector {
 }
 
 class DefaultTaxCodeHistoryConnector @Inject()(httpHandler: HttpHandler,
-                                               config: DesConfig,
+                                               desConfig: DesConfig,
+                                               ifConfig: IfConfig,
                                                desUrls: TaxCodeChangeFromDesUrl,
                                                ifUrls: TaxCodeChangeFromIfUrl,
                                                featureFlagService: FeatureFlagService)
                                               (implicit ec: ExecutionContext)
   extends TaxCodeHistoryConnector {
 
-  implicit private def createHeader(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-    Seq(
-      "Environment" -> config.environment,
-      "Authorization" -> config.authorization,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId" -> UUID.randomUUID().toString,
-      "OriginatorId" -> config.originatorId
-    )
+  private def createHeader(ifToggle: Boolean)(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+    if(ifToggle)
+      Seq(
+        "Environment" -> ifConfig.environment,
+        "Authorization" -> ifConfig.authorization,
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "CorrelationId" -> UUID.randomUUID().toString,
+        "OriginatorId" -> ifConfig.originatorId
+      )
+    else
+      Seq(
+        "Environment" -> desConfig.environment,
+        "Authorization" -> desConfig.authorization,
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+        "CorrelationId" -> UUID.randomUUID().toString,
+        "OriginatorId" -> desConfig.originatorId
+      )
   }
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap{ toggle =>
       val url = if(toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
                 else desUrls.taxCodeChangeFromDesUrl(nino, year)
-       httpHandler.getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader).map(json =>
-         json.as[TaxCodeHistory]) recover { case e => throw e }
+       httpHandler.getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled)).map(json =>
+         json.as[TaxCodeHistory])
       }
     }
 }

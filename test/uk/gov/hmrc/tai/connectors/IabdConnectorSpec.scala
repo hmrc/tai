@@ -243,7 +243,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         server.verify(
           getRequestedFor(urlEqualTo(iabdsForTypeUrl))
             .withHeader("Environment", equalTo("local"))
-            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Authorization", equalTo("Bearer desAuthorization"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
             .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
@@ -360,7 +360,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         server.verify(
           postRequestedFor(urlEqualTo(updateExpensesUrl))
             .withHeader("Environment", equalTo("local"))
-            .withHeader("Authorization", equalTo("Bearer Local"))
+            .withHeader("Authorization", equalTo("Bearer desAuthorization"))
             .withHeader("Content-Type", equalTo(TaiConstants.contentType))
             .withHeader("Etag", equalTo("1"))
             .withHeader("Originator-Id", equalTo(desPtaOriginatorId))

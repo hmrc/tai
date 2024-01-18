@@ -23,7 +23,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.TaxCodeHistory
@@ -40,6 +40,7 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   private val taxYear = TaxYear()
 
   lazy val desConfig = inject[DesConfig]
+  lazy val ifConfig = inject[IfConfig]
   lazy val desUrls = inject[TaxCodeChangeFromDesUrl]
   lazy val taxCodeChangeFromDesUrl: String = {
     val path = new URL(desUrls.taxCodeChangeFromDesUrl(nino, taxYear))
@@ -52,7 +53,7 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
     s"${path.getPath}?${path.getQuery}"
   }
 
-  def createSut(): TaxCodeHistoryConnector = new DefaultTaxCodeHistoryConnector(inject[HttpHandler], desConfig, desUrls, ifUrls, mockFeatureFlagService)
+  def createSut(): TaxCodeHistoryConnector = new DefaultTaxCodeHistoryConnector(inject[HttpHandler], desConfig, ifConfig, desUrls, ifUrls, mockFeatureFlagService)
 
   implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
 
@@ -71,6 +72,8 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
           desIFToggle("DES", false)
     ).foreach { toggle =>
       lazy val url = if(toggle.toggleState) taxCodeChangeFromIfUrl else taxCodeChangeFromDesUrl
+      lazy val authorizationToken = if(toggle.toggleState) "Bearer ifAuthorization" else "Bearer desAuthorization"
+
       s"toggled to use ${toggle.name}" must {
         "return tax code change json" when {
           "payroll number is returned" in {
@@ -91,6 +94,7 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
               getRequestedFor(urlEqualTo(url))
                 .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
                 .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+                .withHeader(HeaderNames.authorisation, equalTo(authorizationToken))
                 .withHeader(
                   "CorrelationId",
                   matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
