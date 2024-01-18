@@ -17,17 +17,15 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
-import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.DesConfig
+import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import java.util.UUID
 import javax.inject.Named
@@ -35,35 +33,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CachingTaxCodeHistoryConnector @Inject()(@Named("default")
                                                underlying: TaxCodeHistoryConnector,
-                                               sessionCacheRepository: TaiSessionCacheRepository
-                                              )(implicit ec: ExecutionContext)
+                                               cachingConnector: CachingConnector
+                                              )
 extends TaxCodeHistoryConnector {
 
-  private def cache[A: Format](key: String)
-                              (f: => Future[A])
-                              (implicit hc: HeaderCarrier): Future[A] = {
-
-    def fetchAndCache: Future[A] =
-      for {
-        result <- f
-        _ <- sessionCacheRepository
-          .putSession[A](DataKey[A](key), result)
-      } yield result
-
-    def readAndUpdate: Future[A] = {
-      sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
-        .flatMap {
-          case None => fetchAndCache
-          case Some(value) => Future.successful(value)
-        }
-    }
-
-    readAndUpdate
-  }
-
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    cache(s"tax-code-history-$nino-${year.year}") {
+    cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)
     }
 

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar
 import org.scalactic.source.Position
@@ -32,6 +33,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -100,5 +102,16 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
     val ex = intercept[A](Await.result(call, 5.seconds))
     ex.responseCode mustBe code
     ex.message mustBe message
+  }
+
+  class FakeLockService extends LockService {
+    override def sessionId(implicit hc: HeaderCarrier): String =
+      "some session id"
+
+    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
+      EitherT.rightT(true)
+
+    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
+      Future.successful(())
   }
 }

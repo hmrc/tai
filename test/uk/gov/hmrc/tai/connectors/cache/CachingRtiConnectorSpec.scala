@@ -41,17 +41,6 @@ import scala.concurrent.Future
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
-  class FakeLockService extends LockService {
-    override def sessionId(implicit hc: HeaderCarrier): String =
-      "some session id"
-
-    override def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
-      EitherT.rightT(true)
-
-    override def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
-      Future.successful(())
-  }
-
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
     .overrides(

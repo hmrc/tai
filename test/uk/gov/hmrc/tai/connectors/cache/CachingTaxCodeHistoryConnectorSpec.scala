@@ -17,12 +17,19 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.any
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.mongo.cache.DataKey
-import uk.gov.hmrc.tai.connectors.{CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultTaxCodeHistoryConnector}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxCodeHistoryConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
+import play.api.inject.bind
+import uk.gov.hmrc.auth.core.AuthorisedFunctions
+import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.service.LockService
 
 import scala.concurrent.Future
 
@@ -31,9 +38,26 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
   lazy val mockDefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
 
+
+  override implicit lazy val app: Application = GuiceApplicationBuilder()
+    .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
+    .overrides(
+      bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository),
+      bind[FeatureFlagService].toInstance(mockFeatureFlagService),
+      bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
+      bind[TaxCodeHistoryConnector].qualifiedWith("default").toInstance(mockDefaultTaxCodeHistoryConnector),
+      bind[RtiConnector].to[CachingRtiConnector],
+      bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
+      bind[IabdConnector].to[CachingIabdConnector],
+      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+      bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
+      bind[LockService].toInstance(spy(new FakeLockService))
+    )
+    .build()
+
   private val taxYear = TaxYear()
 
-  def createSut() = new CachingTaxCodeHistoryConnector(mockDefaultTaxCodeHistoryConnector, mockSessionCacheRepository)
+  val cachingTaxCodeHistoryConnector = app.injector.instanceOf[CachingTaxCodeHistoryConnector]
 
   override def beforeEach() = {
     super.beforeEach()
@@ -52,7 +76,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         when(mockDefaultTaxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(TaxCodeHistoryFactory.createTaxCodeHistory(nino)))
 
-        val result = createSut().taxCodeHistory(nino, taxYear).futureValue
+        val result = cachingTaxCodeHistoryConnector.taxCodeHistory(nino, taxYear).futureValue
 
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
         verify(mockDefaultTaxCodeHistoryConnector, times(1)).taxCodeHistory(any(), any())(any())
@@ -68,7 +92,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         when(mockDefaultTaxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(null)
 
-        val result = createSut().taxCodeHistory(nino, taxYear).futureValue
+        val result = cachingTaxCodeHistoryConnector.taxCodeHistory(nino, taxYear).futureValue
 
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
         verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())

@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Format
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
-import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
@@ -32,76 +30,22 @@ import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
-import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
 import java.util.UUID
-import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CachingIabdConnector @Inject()(@Named("default") underlying: IabdConnector,
-                                     sessionCacheRepository: TaiSessionCacheRepository,
-                                     invalidateCaches: InvalidateCaches)(implicit ec: ExecutionContext)
+                                     cachingConnector: CachingConnector,
+                                     invalidateCaches: InvalidateCaches)
   extends IabdConnector {
-
-  @nowarn("msg=private method cacheEitherT in class CachingIabdConnector is never used")
-  private def cacheEitherT[L, A: Format](key: String)
-                                 (f: => EitherT[Future, L, A])
-                                 (implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
-
-    def fetchAndCache: EitherT[Future, L, A] =
-      for {
-        result <- f
-        _ <- EitherT[Future, L, (String, String)](
-          sessionCacheRepository
-            .putSession[A](DataKey[A](key), result)
-            .map(Right(_))
-        )
-      } yield result
-
-    def readAndUpdate: EitherT[Future, L, A] = {
-      EitherT(sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
-        .flatMap {
-          case None =>
-            fetchAndCache.value
-          case Some(value) =>
-            Future.successful(Right(value))
-        })
-    }
-
-    readAndUpdate
-  }
-
-  private def cache[A: Format](key: String)
-                                        (f: => Future[A])
-                                        (implicit hc: HeaderCarrier): Future[A] = {
-
-    def fetchAndCache: Future[A] =
-      for {
-        result <- f
-        _ <- sessionCacheRepository
-            .putSession[A](DataKey[A](key), result)
-      } yield result
-
-    def readAndUpdate: Future[A] = {
-      sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
-        .flatMap {
-          case None => fetchAndCache
-          case Some(value) => Future.successful(value)
-        }
-    }
-
-    readAndUpdate
-  }
 
 
 
   override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] = {
-    cache(s"iabds-$nino-${taxYear.year}") {
+    cachingConnector.cache(s"iabds-$nino-${taxYear.year}") {
       underlying.iabds(nino: Nino, taxYear: TaxYear)
     }
   }
@@ -116,7 +60,7 @@ class CachingIabdConnector @Inject()(@Named("default") underlying: IabdConnector
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(
     implicit hc: HeaderCarrier): Future[List[NpsIabdRoot]] = {
 
-    cache(s"iabds-$nino-$year-$iabdType") {
+    cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
     }
   }
