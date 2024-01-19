@@ -26,14 +26,13 @@ import play.api.libs.json.JsResultException
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.deprecated.TaxCodeChangeFromDesConnector
+import uk.gov.hmrc.tai.connectors.TaxCodeHistoryConnector
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
 import uk.gov.hmrc.tai.model._
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
 import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxCodeChangeRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 
 import scala.concurrent.Future
@@ -44,21 +43,19 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
   with BeforeAndAfterEach
   with IntegrationPatience {
 
-  private val taxCodeChangeFromDesConnector: TaxCodeChangeFromDesConnector = mock[TaxCodeChangeFromDesConnector]
-  private val taxCodeChangeRepository: TaxCodeChangeRepository = mock[TaxCodeChangeRepository]
+  private val taxCodeHistoryConnector: TaxCodeHistoryConnector = mock[TaxCodeHistoryConnector]
   private val auditor = mock[Auditor]
   private val incomeService: IncomeService = mock[IncomeService]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(taxCodeChangeFromDesConnector, taxCodeChangeRepository)
+    reset(taxCodeHistoryConnector)
   }
 
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
-      bind[TaxCodeChangeFromDesConnector].toInstance(taxCodeChangeFromDesConnector),
-      bind[TaxCodeChangeRepository].toInstance(taxCodeChangeRepository),
+      bind[TaxCodeHistoryConnector].toInstance(taxCodeHistoryConnector),
       bind[Auditor].toInstance(auditor),
       bind[IncomeService].toInstance(incomeService)
     ).build()
@@ -110,7 +107,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -130,7 +127,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -149,7 +146,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1180L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -170,7 +167,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1180L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -202,7 +199,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -228,7 +225,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -253,7 +250,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -280,7 +277,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
           when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -308,7 +305,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeIncomes = Seq(baseTaxCodeIncomeWithWeek1Month1.copy(taxCode = "1185L"), baseTaxCodeIncome.copy(taxCode = "1185L"))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual true
@@ -328,7 +325,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             Seq(TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = newCodeDate))
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -345,7 +342,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             )
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -358,7 +355,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             Seq(TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = annualCodeDate))
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -371,7 +368,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             Seq(TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = annualCodeDate))
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -390,7 +387,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           )
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -408,7 +405,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             )
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -426,7 +423,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             )
           )
 
-          when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+          when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
             .thenReturn(Future.successful(taxCodeHistory))
 
           SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -436,14 +433,14 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
       "an empty sequence of TaxCodeRecords is returned in TaxCodeHistory" in {
         val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq.empty[TaxCodeRecord])
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
       }
 
       "a JsResultException is thrown by the connector" in {
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.failed(JsResultException(Nil)))
 
         SUT.hasTaxCodeChanged(nino).futureValue mustEqual false
@@ -498,7 +495,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord, currentTaxCodeRecord)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
@@ -547,7 +544,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord, currentTaxCodeRecord)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
@@ -602,7 +599,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(nonOperatedCode, previousTaxCodeRecord, currentTaxCodeRecord)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
           .thenReturn(Future.successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(Seq(expectedCurrentTaxCodeChange), Seq(expectedPreviousTaxCodeChange))
@@ -687,7 +684,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, previousTaxCodeRecord2, currentTaxCodeRecord1, currentTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -755,7 +752,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, currentTaxCodeRecord1, currentTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -822,7 +819,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, previousTaxCodeRecord2, currentTaxCodeRecord1)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -905,7 +902,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, previousTaxCodeRecord2, currentTaxCodeRecord1, currentTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -973,7 +970,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, currentTaxCodeRecord1, currentTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -1040,7 +1037,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, previousTaxCodeRecord2, currentTaxCodeRecord1)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(
@@ -1059,7 +1056,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           TaxCodeRecordFactory.createPrimaryEmployment(dateOfCalculation = previousStartDateInPrevYear)
         val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq(taxCodeRecord))
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val taxCodeChangeRecord = TaxCodeSummary(
@@ -1085,7 +1082,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
         val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq(taxCodeRecord))
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val taxCodeChangeRecord = TaxCodeSummary(
@@ -1110,7 +1107,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
       val taxCodeHistory = TaxCodeHistory(nino.withoutSuffix, Seq.empty)
 
-      when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+      when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
         .successful(taxCodeHistory))
 
       val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -1140,7 +1137,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(previousTaxCodeRecord1, previousTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -1168,7 +1165,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(currentTaxCodeRecord1, currentTaxCodeRecord2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
@@ -1212,7 +1209,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
             currentTaxCodeRecordSecondary2)
         )
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         SUT.taxCodeChange(nino).futureValue
@@ -1259,7 +1256,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
@@ -1280,7 +1277,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
@@ -1322,7 +1319,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         )
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val confirmedTaxCodes = Seq("1185L", "1155L", "1175L", "1195L").sorted
@@ -1343,7 +1340,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L"))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeMismatch(mismatch = true, Seq("1185L"), Seq())
@@ -1364,7 +1361,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeIncomes = Seq(baseTaxCodeIncome.copy(taxCode = "1185L", basisOperation = OtherBasisOperation))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeMismatch(mismatch = false, Seq("1185L"), Seq("1185L"))
@@ -1398,7 +1395,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           ))
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val expectedResult = TaxCodeMismatch(mismatch = true, Seq("1000LX"), Seq("1185L"))
@@ -1440,7 +1437,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         )
 
         when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val confirmedTaxCodes = Seq("1185L", "1155L", "1175L", "1195L").sorted
@@ -1467,7 +1464,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
       )
 
       when(incomeService.taxCodeIncomes(any(), any())(any(), any())).thenReturn(Future.successful(taxCodeIncomes))
-      when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+      when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
         .successful(taxCodeHistory))
 
       val unconfirmedTaxCodes = Seq("1155L", "1175L", "1195L").sorted
@@ -1488,7 +1485,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
       )
       when(incomeService.taxCodeIncomes(any(), any())(any(), any()))
         .thenReturn(Future.successful(taxCodeIncomes))
-      when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any()))
+      when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any()))
         .thenReturn(Future.failed(new RuntimeException("Runtime")))
 
 
@@ -1508,7 +1505,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
 
       when(incomeService.taxCodeIncomes(any(), any())(any(), any()))
         .thenReturn(Future.failed(new RuntimeException("Runtime")))
-      when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+      when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
         .successful(taxCodeHistory))
 
       val ex = the[RuntimeException] thrownBy SUT.taxCodeMismatch(nino).futureValue
@@ -1529,7 +1526,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeRecordList = Seq.empty
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1548,7 +1545,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", operatedTaxCode = true, dateOfCalculation, Some("123"), pensionIndicator = false, Primary))
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecords)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1566,7 +1563,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           TaxCodeRecord(TaxYear(), 1, "1185L", "", "Employer 1", operatedTaxCode = true, dateOfCalculation, Some("123"), pensionIndicator = false, Primary))
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecords)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1609,7 +1606,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeRecordList = Seq(taxCodeRecord1)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1652,7 +1649,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1687,7 +1684,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
         val taxCodeRecordList = Seq(taxCodeRecord1, taxCodeRecord2)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =
@@ -1816,7 +1813,7 @@ class TaxCodeChangeServiceImplSpec extends BaseSpec
           Seq(taxCodeRecord1, taxCodeRecord2, taxCodeRecord3, taxCodeRecord4, taxCodeRecord5, taxCodeRecord6)
         val taxCodeHistory = TaxCodeHistory(nino.toString(), taxCodeRecordList)
 
-        when(taxCodeChangeRepository.taxCodeHistory(any(), any())(any())).thenReturn(Future
+        when(taxCodeHistoryConnector.taxCodeHistory(any(), any())(any())).thenReturn(Future
           .successful(taxCodeHistory))
 
         val latestTaxCodes =

@@ -56,7 +56,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     server.verify(
       requestPattern
         .withHeader("Environment", equalTo("local"))
-        .withHeader("Authorization", equalTo("Bearer Local"))
+        .withHeader("Authorization", equalTo("Bearer desAuthorization"))
         .withHeader("Gov-Uk-Originator-Id", equalTo(desOriginatorId))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
