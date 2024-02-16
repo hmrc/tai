@@ -95,7 +95,7 @@ object TaxAccountHistoryFactory {
       "inYearAdjustmentIntoCYPlusOne"    -> 0,
       "inYearAdjustmentFromPreviousYear" -> 0,
       "actualPUPCodedInCYPlusOneTaxYear" -> 0,
-      "allowances"                       -> Json.arr(personalAllowance8105),
+      "allowances"                       -> Json.arr(personalAllowance8105, brDifferenceTaxReductionJson),
       "deductions"                       -> Json.arr(carBenefitDeduction),
       "payAndTax"                        -> Json.obj()
     )
@@ -132,6 +132,15 @@ object TaxAccountHistoryFactory {
         )
       ),
       "sourceAmount" -> 11850
+    )
+
+  private def brDifferenceTaxReductionJson: JsObject =
+    Json.obj(
+      "npsDescription" -> "BR Difference Tax Reduction",
+      "amount"         -> 10000,
+      "type"           -> 34,
+      "iabdSummaries" -> JsNull,
+      "sourceAmount" -> 10000
     )
 
   private def nonSavingLiabilityJson: JsObject =
