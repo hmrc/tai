@@ -73,12 +73,10 @@ trait IncomeSourcesHodReads {
     incomeSourceJsonElement: String,
     codingComponentFactory: CodingComponentFactory): Seq[CodingComponent] =
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
-      case JsSuccess(componentJsArray, _) => {
+      case JsSuccess(componentJsArray, _) =>
         componentJsArray.value.toSeq.flatMap { componentJsVal =>
-          println("ninini" + componentJsVal)
           taxComponentFromNpsComponent(componentJsVal, codingComponentFactory)
         }
-      }
       case _ => Seq.empty[CodingComponent]
     }
 
