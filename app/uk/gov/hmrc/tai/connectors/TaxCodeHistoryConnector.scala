@@ -61,7 +61,7 @@ class DefaultTaxCodeHistoryConnector @Inject()(httpHandler: HttpHandler,
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
         HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
         "CorrelationId" -> UUID.randomUUID().toString,
-        "OriginatorId" -> ifConfig.originatorId
+        "Originator-Id" -> ifConfig.originatorId
       )
     else
       Seq(
