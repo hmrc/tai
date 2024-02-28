@@ -22,7 +22,10 @@ import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
-import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment}
+import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, Employment}
+import uk.gov.hmrc.tai.model.domain.income.{Live, TaxCodeIncomeStatus}
+import uk.gov.hmrc.tai.model.nps.NpsDate
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -55,25 +58,19 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           "CorrelationId",
           matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
-  val employment: NpsEmployment = NpsEmployment(
-    intGen,
-    NpsDate(LocalDate.now().minusYears(1)),
+  val employment: Employment =  Employment(
+    "TEST",
+    Live,
+    Some("12345"),
+    LocalDate.parse("2017-07-24"),
     None,
-    intGen.toString,
-    intGen.toString,
-    Some("Big corp"),
+    Nil,
+    "tdNo",
+    "payeNumber",
     1,
-    None,
-    Some(intGen.toString),
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    Some(BigDecimal(intGen))
-  )
+    Some(100),
+    false,
+    false)
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 

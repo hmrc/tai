@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.model.nps
 
-import uk.gov.hmrc.tai.model.helpers.IncomeHelper
-import uk.gov.hmrc.tai.model.{Tax, TaxCodeIncomeSummary}
 import play.api.libs.json._
 
 case class NpsEmployment(
@@ -37,36 +35,7 @@ case class NpsEmployment(
   otherIncomeSourceIndicator: Option[Boolean] = None,
   payrolledTaxYear: Option[Boolean] = None,
   payrolledTaxYear1: Option[Boolean] = None,
-  cessationPayThisEmployment: Option[BigDecimal] = None) {
-
-  def toNpsIncomeSource(estimatedPay: BigDecimal): NpsIncomeSource = {
-    val payAndTax = NpsTax(totalIncome = Some(new NpsComponent(amount = Some(estimatedPay))))
-
-    NpsIncomeSource(
-      name = employerName,
-      taxCode = None,
-      employmentId = Some(sequenceNumber),
-      employmentStatus = employmentStatus,
-      employmentType = Some(employmentType),
-      payAndTax = Some(payAndTax),
-      pensionIndicator = receivingOccupationalPension,
-      otherIncomeSourceIndicator = otherIncomeSourceIndicator,
-      jsaIndicator = receivingJobseekersAllowance
-    )
-
-  }
-
-  def toTaxCodeIncomeSummary(estimatedPay: BigDecimal): TaxCodeIncomeSummary = {
-    val payAndTax = Tax(totalIncome = Some(estimatedPay))
-    TaxCodeIncomeSummary(
-      name = employerName.getOrElse(""),
-      taxCode = startingTaxCode.getOrElse(""),
-      employmentId = Some(sequenceNumber),
-      tax = payAndTax,
-      isLive = IncomeHelper.isLive(employmentStatus)
-    )
-  }
-}
+  cessationPayThisEmployment: Option[BigDecimal] = None)
 
 object NpsEmployment {
   implicit val formats = Json.format[NpsEmployment]
