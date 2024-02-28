@@ -16,15 +16,21 @@
 
 package uk.gov.hmrc.tai.service
 
+import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 
 import java.time.LocalDate
 import play.api.Logger
+import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
+import uk.gov.hmrc.tai.connectors.RtiConnector
+import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
+import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
@@ -38,6 +44,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentService @Inject()(
+                                   npsConnector: NpsConnector,
+                                   rtiConnector: RtiConnector,
+                                   employmentBuilder: EmploymentBuilder,
   employmentRepository: EmploymentRepository,
   personRepository: PersonRepository,
   iFormSubmissionService: IFormSubmissionService,
@@ -63,19 +72,50 @@ class EmploymentService @Inject()(
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
-  def employments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] =
-    employmentRepository.employmentsForYear(nino, year) map (_.employments)
+  def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] = {
+    val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = npsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
+      hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
+        .copy(etag = hodResponse.etag)
+    }
 
-  def employment(nino: Nino, id: Int)(
-    implicit hc: HeaderCarrier, request: Request[_]): Future[Either[EmploymentRetrievalError, Employment]] =
-    employmentRepository.employment(nino, id)
+    for {
+      employmentsCollection <- employmentsCollectionEitherT
+      accounts <- rtiConnector.getPaymentsForYearAsEitherT(nino, taxYear).transform {
+        case Right(accounts: Seq[AnnualAccount]) if accounts.isEmpty => Right(Seq.empty)
+        case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
+        case Left(error) => Right(Seq.empty)
+      }
+    } yield {
+      println("EEEEE " + employmentsCollection)
+      employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
+    }
+  }
+
+  def employmentAsEitherT(nino: Nino, id: Int)(
+    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employment] = {
+    employmentsAsEitherT(nino, TaxYear()).transform {
+      case Right(employments) =>
+        println("YYYYY " + employments)
+        employments.employmentById(id) match {
+        case Some(employment) => Right(employment)
+        case None => {
+          val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
+          logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
+          Left(UpstreamErrorResponse("Not found", NOT_FOUND))
+        }
+      }
+      case Left(error) => Left(error)
+    }
+  }
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
   def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
     for {
       person                    <- personRepository.getPerson(nino)
-      Right(existingEmployment) <- employment(nino, id)
+      existingEmployment <- employmentAsEitherT(nino, id).value.map{x =>
+        println(s"IIII + $x + $nino + $id")
+        x.right.get}
       templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
       endEmploymentHtml = EmploymentIForm(templateModel).toString
       pdf        <- pdfService.generatePdf(endEmploymentHtml)
@@ -146,9 +186,12 @@ class EmploymentService @Inject()(
       "TES1",
       (person: Person) => {
         for {
-          Right(existingEmployment) <- employment(nino, id)
+          existingEmployment <- employmentAsEitherT(nino, id)
           templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, existingEmployment)
         } yield EmploymentIForm(templateModel).toString
+      }.value.map {
+        case Right(result) => result
+        case Left(error) => throw error
       }
     ) map { envelopeId =>
       logger.info("Envelope Id for incorrect employment- " + envelopeId)

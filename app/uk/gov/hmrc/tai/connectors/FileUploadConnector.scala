@@ -27,7 +27,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
@@ -94,6 +94,7 @@ class FileUploadConnector @Inject()(
       .flatMap(envelopeSummary =>
         envelopeSummary match {
           case Some(es) if es.isOpen =>
+            println("PPPPPP 5555555" + es)
             uploadFileCall(byteArray, fileName, contentType, url, awsClient)
           case Some(es) if !es.isOpen =>
             logger.warn(
@@ -116,12 +117,14 @@ class FileUploadConnector @Inject()(
     fileName: String,
     contentType: MimeContentType,
     url: String,
-    ahcWSClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    ahcWSClient: WSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(FusUploadFile)
     val multipartFormData = Source(
       FilePart("attachment", fileName, Some(contentType.description), Source(ByteString(byteArray) :: Nil)) :: DataPart(
         "",
         "") :: Nil)
+    println(s"PPPP7777 starting upload $fileName")
+    println("PPP ccccc " + byteArray.length)
 
     ahcWSClient
       .url(url)
@@ -134,15 +137,21 @@ class FileUploadConnector @Inject()(
         timerContext.stop()
 
         if (response.status == OK) {
+          println(s"PPPP99 upload OK $fileName")
           metrics.incrementSuccessCounter(FusUploadFile)
           ahcWSClient.close()
           HttpResponse(response.status, "")
         } else {
+          println("PPPPP 77777777 " + response.status)
           logger.warn(s"FileUploadConnector.uploadFile - failed to upload file with status [${response.status}]")
           ahcWSClient.close()
           throw new RuntimeException("File upload failed")
         }
-      }
+      } recover {
+      case ex =>
+        println("PPPPP exception " + ex)
+        throw ex
+    }
   }
 
   def closeEnvelope(envId: String)(implicit hc: HeaderCarrier): Future[String] = {

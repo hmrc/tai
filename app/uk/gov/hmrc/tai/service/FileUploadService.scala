@@ -41,8 +41,10 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
   private val FileUploadSuccessAudit = "FileUploadSuccess"
   private val FileUploadFailureAudit = "FileUploadFailure"
 
-  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] =
+  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] = {
+    println("PPPPP3 createEnvelope")
     fileUploadConnector.createEnvelope
+  }
 
   def envelopeStatus(envelopeId: String): Future[EnvelopeStatus] =
     fileUploadConnector.envelope(envelopeId) map {
@@ -62,6 +64,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val system: ActorSystem = ActorSystem()
     implicit val materializer: Materializer = Materializer(system)
+    println("PPPPP6 uploadFIle " + fileName)
 
     val ahcWSClient: AhcWSClient = AhcWSClient()
     fileUploadConnector

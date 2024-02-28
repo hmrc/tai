@@ -32,6 +32,7 @@ class PersonRepository @Inject()(taiCacheRepository: TaiCacheRepository, citizen
   private val PersonMongoKey = "PersonData"
 
   def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
+    println("PPPP1 getPerson ")
     val cacheId = CacheId(nino)
     getPersonFromStorage(cacheId).flatMap { person: Option[Person] =>
       person match {

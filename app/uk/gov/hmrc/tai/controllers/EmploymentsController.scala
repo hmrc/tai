@@ -36,32 +36,25 @@ class EmploymentsController @Inject()(
   employmentService: EmploymentService,
   authentication: AuthenticationPredicate,
   cc: ControllerComponents)(implicit ec: ExecutionContext)
-    extends BackendController(cc) with ApiFormats {
+    extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
     employmentService
-      .employments(nino, year)
-      .map { employments =>
-        Ok(Json.toJson(ApiResponse(EmploymentCollection(employments), Nil)))
-      }
-      .recover {
-        case ex: NotFoundException   => NotFound(ex.getMessage)
-        case ex: BadRequestException => BadRequest(ex.getMessage)
-        case ex                      => InternalServerError(ex.getMessage)
-      }
+      .employmentsAsEitherT(nino, year)
+      .bimap(
+        error => errorToResponse(error),
+        employments =>
+        Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+      ).merge
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     employmentService
-      .employment(nino, id)
-      .map {
-        case Right(employment)        => Ok(Json.toJson(ApiResponse(employment, Nil)))
-        case Left(EmploymentNotFound) => NotFound("Employment not found")
-      }
-      .recover {
-        case _: NotFoundException => NotFound("Employment not found")
-        case error                => InternalServerError(error.getMessage)
-      }
+      .employmentAsEitherT(nino, id)
+      .bimap(
+      error => errorToResponse(error),
+        employment        => Ok(Json.toJson(ApiResponse(employment, Nil)))
+      ).merge
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>

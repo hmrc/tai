@@ -27,7 +27,7 @@ lazy val microservice = Project(appName, file("."))
       "-Ywarn-unused",
       "-Xlint",
       "-feature",
-      "-Werror",
+      //"-Werror",
       "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",

@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 trait MongoFormatter {
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  implicit val formatTaxBand: Format[nps2.TaxBand] = (
+  val formatTaxBand: Format[nps2.TaxBand] = (
     (__ \ "bandType").formatNullable[String] and
       (__ \ "code").formatNullable[String] and
       (__ \ "income").formatNullable[BigDecimal].inmap[BigDecimal](_.getOrElse(0), Some(_)) and
@@ -62,7 +62,7 @@ trait MongoFormatter {
 
   import nps2.TaxObject.Type.{Value => TaxObjectType}
 
-  implicit val formatliabilityMap: Format[Map[TaxObjectType, TaxDetail]] = {
+  val formatliabilityMap: Format[Map[TaxObjectType, TaxDetail]] = {
 
     val fieldNames: Map[TaxObject.Type.Value, String] =
       TaxObject.Type.values.toSeq.map { x =>

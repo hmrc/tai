@@ -69,7 +69,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, Unavailable, Nil, Nil)))
     }
 
-    Employments(unified ++ nonUnified)
+    Employments(unified ++ nonUnified, None)
   }
 
   private def auditAssociatedEmployment(

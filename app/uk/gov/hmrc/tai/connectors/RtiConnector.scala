@@ -26,7 +26,8 @@ import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
@@ -48,10 +49,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 trait RtiConnector extends RawResponseReads {
-  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
+  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
                                                        hc: HeaderCarrier,
                                                        request: Request[_]
-  ): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]]
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]]
 
   def withoutSuffix(nino: Nino): String = {
     val BASIC_NINO_LENGTH = 8
@@ -125,12 +126,12 @@ class CachingRtiConnector @Inject() (
     })
   }
 
-  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
-                                    hc: HeaderCarrier,
-                                    request: Request[_]
-                                   ): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
+  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+                                                       hc: HeaderCarrier,
+                                                       request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
-      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
+      underlying.getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)
     }
 }
 
@@ -150,6 +151,10 @@ class DefaultRtiConnector @Inject()(
     EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](
       getPaymentsForYearHandler(nino, taxYear)
     )
+
+  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(
+    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+      getPaymentsForYearHandlerAsEitherT(nino, taxYear)
 
   private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
     featureFlagService.get(RtiCallToggle).flatMap { toggle =>
@@ -212,6 +217,31 @@ class DefaultRtiConnector @Inject()(
       } else {
         logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
         Future.successful(Left(ServiceUnavailableError))
+      }
+    }
+
+  private def getPaymentsForYearHandlerAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+    featureFlagService.getAsEitherT(RtiCallToggle).flatMap { toggle =>
+      if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
+        logger.info(s"RTIAPI - call for the year: $taxYear}")
+        val ninoWithoutSuffix = withoutSuffix(nino)
+        val futureResponse =
+          httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
+        EitherT(futureResponse.map {
+            case Right(httpResponse) =>
+              Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+            case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
+              Right(Seq.empty)
+            case Left(error) =>
+              logger.error(s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}")
+            Left(error)
+          }.recover {
+          case error: HttpException =>
+            Left(UpstreamErrorResponse(error.message, BAD_GATEWAY))
+        })
+      } else {
+        logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
+        EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))
       }
     }
 }

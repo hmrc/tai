@@ -82,8 +82,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
       Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))

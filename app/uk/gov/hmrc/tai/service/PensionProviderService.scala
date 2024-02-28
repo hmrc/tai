@@ -34,7 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class PensionProviderService @Inject()(
   iFormSubmissionService: IFormSubmissionService,
-  employmentRepository: EmploymentRepository,
+  employmentService: EmploymentService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
@@ -98,10 +98,13 @@ class PensionProviderService @Inject()(
     id: Int,
     incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
     {
-      for {
-        Right(existingEmployment) <- employmentRepository.employment(nino, id)
+      (for {
+        existingEmployment <- employmentService.employmentAsEitherT(nino, id)
         templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
-      } yield EmploymentIForm(templateModel).toString
+      } yield EmploymentIForm(templateModel).toString).value.map {
+        case Right(result) => result
+        case Left(error) => throw error
+      }
     }
   }
 }

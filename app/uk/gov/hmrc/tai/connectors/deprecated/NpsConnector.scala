@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.connectors.deprecated
 
+import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.config.NpsConfig
-import uk.gov.hmrc.tai.connectors.BaseConnector
+import uk.gov.hmrc.tai.connectors.{BaseConnector, HodResponse, HttpHandler}
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
@@ -34,6 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class NpsConnector @Inject()(
   metrics: Metrics,
   httpClient: HttpClient,
+  httpHandler: HttpHandler,
   config: NpsConfig)(implicit ec: ExecutionContext)
     extends BaseConnector(metrics, httpClient) with NpsFormatter {
 
@@ -49,10 +51,8 @@ class NpsConnector @Inject()(
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  @nowarn("msg=method getFromNps in class BaseConnector is deprecated: this method will be removed. Use uk.gov.hmrc.tai.connectors.HttpHandler.getFromApi instead")
-  def getEmploymentDetails(nino: Nino, year: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    getFromNps[JsValue](urlToRead, APITypes.NpsEmploymentAPI, basicNpsHeaders(hc)).map(_._1)
+    httpHandler.getFromApiAsEitherT(urlToRead, basicNpsHeaders(hc))
   }
-
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-case class Employments(employments: Seq[Employment]) {
+case class Employments(employments: Seq[Employment], etag: Option[Int]) {
 
   def accountsForYear(year: TaxYear): Employments = {
     val accountsForYear = employments.collect {
@@ -26,7 +26,7 @@ case class Employments(employments: Seq[Employment]) {
         employment.copy(annualAccounts = employment.annualAccountsForYear(year))
     }
 
-    Employments(accountsForYear)
+    Employments(accountsForYear, None)
   }
 
   def employmentById(id: Int): Option[Employment] = employments.find(_.sequenceNumber == id)
@@ -41,7 +41,7 @@ case class Employments(employments: Seq[Employment]) {
       employmentsToMerge.find(_.sequenceNumber == employment.sequenceNumber).fold(employment) { employmentToMerge =>
         val accountsFromOtherYears = employment.annualAccounts.filterNot(_.taxYear == taxYear)
         employment.copy(annualAccounts = employmentToMerge.annualAccounts ++ accountsFromOtherYears)
-    }
+      }
 
     merge(employmentsToMerge, amendEmployment)
   }
@@ -51,14 +51,14 @@ case class Employments(employments: Seq[Employment]) {
     val amendEmployment: (Employment, Seq[Employment]) => Employment = (employment, employmentsToMerge) =>
       employmentsToMerge.find(_.sequenceNumber == employment.sequenceNumber).fold(employment) { employmentToMerge =>
         employment.copy(annualAccounts = employment.annualAccounts ++ employmentToMerge.annualAccounts)
-    }
+      }
 
     merge(employmentsToMerge, amendEmployment)
   }
 
   private def merge(
-    employmentsToMerge: Seq[Employment],
-    amendEmployment: (Employment, Seq[Employment]) => Employment): Seq[Employment] = {
+                     employmentsToMerge: Seq[Employment],
+                     amendEmployment: (Employment, Seq[Employment]) => Employment): Seq[Employment] = {
 
     val modifiedEmployments = employments map (amendEmployment(_, employmentsToMerge))
     val unmodifiedEmployments =

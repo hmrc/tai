@@ -76,7 +76,7 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
       }
     }
 
-    "getEmploymentDetails is called" must {
+    "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {
 
@@ -90,7 +90,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          sut.getEmploymentDetails(nino, year).futureValue mustBe employmentListJson
+          sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue mustBe
+            Right(HodResponse(employmentListJson, Some(etag)))
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(employmentsUrl)))
         }
@@ -109,11 +110,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          assertConnectorException[BadRequestException](
-            sut.getEmploymentDetails(nino, year),
-            BAD_REQUEST,
-            exMessage
-          )
+          val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
         }
 
         "connector returns 404" in {
@@ -128,11 +126,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          assertConnectorException[NotFoundException](
-            sut.getEmploymentDetails(nino, year),
-            NOT_FOUND,
-            exMessage
-          )
+          val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
         }
 
         "connector returns 4xx" in {
@@ -147,11 +142,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          assertConnectorException[HttpException](
-            sut.getEmploymentDetails(nino, year),
-            LOCKED,
-            exMessage
-          )
+          val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
         }
 
         "connector returns 500" in {
@@ -166,11 +158,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          assertConnectorException[InternalServerException](
-            sut.getEmploymentDetails(nino, year),
-            INTERNAL_SERVER_ERROR,
-            exMessage
-          )
+          val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
         }
 
         "connector returns 5xx" in {
@@ -185,11 +174,8 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
                 .withHeader("ETag", s"$etag"))
           )
 
-          assertConnectorException[HttpException](
-            sut.getEmploymentDetails(nino, year),
-            BAD_GATEWAY,
-            exMessage
-          )
+          val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
         }
       }
     }

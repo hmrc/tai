@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
@@ -23,7 +24,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient}
+import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.DesConfig
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -40,17 +41,10 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
   val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${taxYear.twoDigitRange}"
 
-  val mockHttp = mock[HttpClient]
   implicit val request = FakeRequest()
 
   lazy val sut: RtiConnector = inject[DefaultRtiConnector]
-  lazy val sutWithMockHttp = new DefaultRtiConnector(
-    mockHttp,
-    inject[Metrics],
-    inject[DesConfig],
-    inject[RtiUrls],
-    mockFeatureFlagService
-  )
+
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -66,8 +60,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = true))
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = true))
     )
   }
 
@@ -79,7 +73,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-    "getPaymentsForYear" must {
+    "getPaymentsForYearAsEitherT" must {
       "return a sequence of annual accounts" when {
         "a successful Http response is received from RTI" in {
           val taxYearRange = "16-17"
@@ -143,7 +137,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(rtiJson.toString()))
           )
 
-          val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
+          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
           result mustBe Right(expectedPayments)
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
@@ -159,9 +153,11 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withStatus(404)
           ))
 
-          val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
+          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
 
           result mustBe Right(Seq.empty)
+
+          server.verify(1, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
         }
       }
 
@@ -187,72 +183,10 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   .withBody(error._2))
             )
 
-            val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
+            val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
 
-            result mustBe Left(error._3)
+            result mustBe a[Left[UpstreamErrorResponse, _]]
           }
-        }
-      }
-
-      "return a BadGateway error" when {
-
-        val exMessage = "Bad gateway error"
-
-        "a BadGateway is received" in {
-
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(
-              aResponse()
-                .withStatus(BAD_GATEWAY)
-                .withBody(exMessage))
-          )
-
-          sut.getPaymentsForYear(nino, taxYear).value.futureValue mustBe Left(BadGatewayError)
-        }
-
-        "a BadGatewayException is received" in {
-
-          when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
-            new BadGatewayException(exMessage))
-
-          sutWithMockHttp.getPaymentsForYear(nino, taxYear).value.futureValue mustBe Left(BadGatewayError)
-        }
-      }
-
-      "return a TimeOutError" when {
-
-        val exMessage = "Could not reach gateway"
-
-        "a 499 is received" in {
-
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(
-              aResponse()
-                .withStatus(499)
-                .withBody(exMessage))
-          )
-
-          sut.getPaymentsForYear(nino, taxYear).value.futureValue mustBe Left(TimeoutError)
-        }
-
-        "a GatewayTimeout is received" in {
-
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(
-              aResponse()
-                .withStatus(GATEWAY_TIMEOUT)
-                .withBody(exMessage))
-          )
-
-          sut.getPaymentsForYear(nino, taxYear).value.futureValue mustBe Left(TimeoutError)
-        }
-
-        "a GatewayTimeoutException is received" in {
-
-          when(mockHttp.GET(any(), any(), any())(any(), any(), any())) thenReturn Future.failed(
-            new GatewayTimeoutException(exMessage))
-
-          sutWithMockHttp.getPaymentsForYear(nino, taxYear).value.futureValue mustBe Left(TimeoutError)
         }
       }
 
@@ -261,12 +195,13 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
           server.stubFor(
             get(urlEqualTo(url)).willReturn(aResponse()
-              .withFault(Fault.MALFORMED_RESPONSE_CHUNK))
-          )
+            ))
 
-          val result = sut.getPaymentsForYear(nino, taxYear).value.failed.futureValue
+          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.failed.futureValue
 
           result mustBe a[Exception]
+
+          server.verify(1, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
         }
       }
     }
@@ -274,34 +209,22 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     "return a ServiceUnavailableError " when {
       "the rti toggle is set to false" in {
 
-        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-          Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+        when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+          EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
         )
 
-        lazy val sutWithRTIDisabled = new DefaultRtiConnector(
-          inject[HttpClient],
-          inject[Metrics],
-          inject[DesConfig],
-          inject[RtiUrls],
-          mockFeatureFlagService
-        )
+        sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue mustBe
+          a[Left[UpstreamErrorResponse, _]]
 
-        sutWithRTIDisabled.getPaymentsForYear(nino, taxYear).value.futureValue mustBe
-          Left(ServiceUnavailableError)
+        server.verify(0, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
       }
 
       "the year is CY+1" in {
 
-        lazy val sutWithRTIDisabled = new DefaultRtiConnector(
-          inject[HttpClient],
-          inject[Metrics],
-          inject[DesConfig],
-          inject[RtiUrls],
-          mockFeatureFlagService
-        )
+        sut.getPaymentsForYearAsEitherT(nino, taxYear.next).value.futureValue mustBe
+          a[Left[UpstreamErrorResponse, _]]
 
-        sutWithRTIDisabled.getPaymentsForYear(nino, taxYear.next).value.futureValue mustBe
-          Left(ServiceUnavailableError)
+        server.verify(0, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
       }
     }
   }

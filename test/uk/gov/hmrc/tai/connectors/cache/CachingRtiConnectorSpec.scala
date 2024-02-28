@@ -20,12 +20,13 @@ import cats.data.EitherT
 import cats.implicits._
 import org.mockito.ArgumentMatchers.any
 import play.api.Application
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -74,7 +75,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   val annualAccount: AnnualAccount = AnnualAccount(0, TaxYear(2020), Available, Seq(payment), Seq.empty)
 
 
-  "Calling CachingRtiConnector.getPaymentsForYear" must {
+  "Calling CachingRtiConnector.getPaymentsForYearAsEitherT" must {
     "return a Right Seq[AnnualAccount] object" when {
       "no value is cached" in {
         val expected = Seq(annualAccount)
@@ -87,10 +88,10 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(Future.successful(("", "")))
 
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](expected))
+        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
 
-        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
 
         result mustBe Right(expected)
 
@@ -100,7 +101,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(1))
           .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
 
-        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
 
@@ -112,7 +113,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(Some(expected)))
 
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
+        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
           .thenReturn(null)
 
         when(
@@ -120,7 +121,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(null)
 
-        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
 
         result mustBe Right(expected)
 
@@ -130,7 +131,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(0))
           .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
 
-        verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockRtiConnector, times(0)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
       }
@@ -138,8 +139,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     }
 
     "return a Left RtiPaymentsForYearError object" in {
-      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError: RtiPaymentsForYearError))
+      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR)))
       when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
         .thenReturn(Future.successful(None))
 
@@ -148,9 +149,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       )
         .thenReturn(Future.successful(("", "")))
 
-      val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
+      val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
       result mustBe a[Left[_, _]]
-      verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+      verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
       verify(spyLockService, times(1)).takeLock(any())(any())
       verify(spyLockService, times(1)).releaseLock(any())(any())
     }
@@ -158,8 +159,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     "returns an exception and the lock is released" when {
       "future failed" in {
         val errorMessage = "Error message"
-        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
+        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
 
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(None))
@@ -169,12 +170,12 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(Future.successful(("", "")))
 
-        val result = connector.getPaymentsForYear(nino, TaxYear()).value
+        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value
         whenReady(result.failed) { ex =>
           ex.getMessage mustBe errorMessage
         }
 
-        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
 
