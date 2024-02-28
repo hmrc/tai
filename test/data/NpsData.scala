@@ -19,7 +19,6 @@ package data
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.TaxSummaryDetails
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
 import java.io.File
