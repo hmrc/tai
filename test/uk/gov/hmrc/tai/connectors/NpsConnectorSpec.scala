@@ -22,11 +22,9 @@ import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
-import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsEmployment}
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
-import java.time.LocalDate
 import scala.util.Random
 
 class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
@@ -55,25 +53,16 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
           "CorrelationId",
           matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
 
-  val employment: NpsEmployment = NpsEmployment(
-    intGen,
-    NpsDate(LocalDate.now().minusYears(1)),
-    None,
-    intGen.toString,
-    intGen.toString,
-    Some("Big corp"),
-    1,
-    None,
-    Some(intGen.toString),
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    None,
-    Some(BigDecimal(intGen))
-  )
+  val employment = s"""{
+                     |  "sequenceNumber": $intGen,
+                     |  "startDate": "28/02/2023",
+                     |  "taxDistrictNumber": "${intGen.toString}",
+                     |  "payeNumber": "${intGen.toString}",
+                     |  "employerName": "Big corp",
+                     |  "employmentType": 1,
+                     |  "worksNumber": "${intGen.toString}",
+                     |  "cessationPayThisEmployment": $intGen
+                     |}""".stripMargin
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
