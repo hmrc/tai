@@ -31,10 +31,9 @@ import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
-import uk.gov.hmrc.tai.model.error.EmploymentRetrievalError
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
-import uk.gov.hmrc.tai.repositories.deprecated.{EmploymentRepository, PersonRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -47,7 +46,6 @@ class EmploymentService @Inject()(
                                    npsConnector: NpsConnector,
                                    rtiConnector: RtiConnector,
                                    employmentBuilder: EmploymentBuilder,
-  employmentRepository: EmploymentRepository,
   personRepository: PersonRepository,
   iFormSubmissionService: IFormSubmissionService,
   fileUploadService: FileUploadService,
@@ -81,9 +79,8 @@ class EmploymentService @Inject()(
     for {
       employmentsCollection <- employmentsCollectionEitherT
       accounts <- rtiConnector.getPaymentsForYearAsEitherT(nino, taxYear).transform {
-        case Right(accounts: Seq[AnnualAccount]) if accounts.isEmpty => Right(Seq.empty)
         case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-        case Left(error) => Right(Seq.empty)
+        case Left(_) => Right(Seq.empty)
       }
     } yield {
       employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
