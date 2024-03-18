@@ -74,7 +74,7 @@ trait MongoFormatter {
         JsSuccess {
           val fieldValues = fieldNames.view.mapValues { x =>
             TaxDetail(
-              taxBands = (json \ x \ "taxBands").asOpt[Seq[nps2.TaxBand]].getOrElse(Nil),
+              taxBands = (json \ x \ "taxBands").asOpt[Seq[JsObject]].map(seqObj => seqObj.map(_.as[nps2.TaxBand](formatTaxBand))).getOrElse(Nil),
               totalTax = (json \ x \ "totalTax").asOpt[BigDecimal],
               totalIncome = (json \ x \ "totalIncome").asOpt[BigDecimal],
               totalTaxableIncome = (json \ x \ "totalTaxableIncome").asOpt[BigDecimal]
@@ -90,7 +90,7 @@ trait MongoFormatter {
               fieldNames(f),
               JsObject(
                 Seq(
-                  ("taxBands", Json.toJson(v.taxBands)),
+                  ("taxBands", Json.toJson(v.taxBands.map(band => Json.toJson(band)(formatTaxBand)))),
                   ("totalTax", v.totalTax.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalTaxableIncome", v.totalTaxableIncome.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalIncome", v.totalIncome.map(x => JsNumber(x)).getOrElse(JsNull))
@@ -225,7 +225,7 @@ trait MongoFormatter {
     (__ \ "taxAcccountId").formatNullable[Long] and
       (__ \ "date").formatNullable[LocalDate] and
       (__ \ "totalEstTax").formatNullable[BigDecimal].inmap[BigDecimal](_.getOrElse(0), Some(_)) and
-      (__ \ "totalLiability").format[Map[TaxObjectType, TaxDetail]] and
+      (__ \ "totalLiability").format[Map[TaxObjectType, TaxDetail]](formatliabilityMap) and
       (__ \ "incomeSources").formatNullable[Seq[Income]].inmap[Seq[Income]](_.getOrElse(Nil), Some(_)) and
       (__ \ "iabds").formatNullable[List[Iabd]].inmap[List[Iabd]](_.getOrElse(Nil), Some(_))
   )(TaxAccount.apply, unlift(TaxAccount.unapply))

@@ -60,7 +60,7 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
           )
         )
 
-        val totalLiabilityMap = json.as[Map[TaxObject.Type.Value, TaxDetail]]
+        val totalLiabilityMap = json.as[Map[TaxObject.Type.Value, TaxDetail]](formatliabilityMap)
 
         totalLiabilityMap must not be empty
         val taxDetail = totalLiabilityMap.get(TaxObject.Type.NonSavings)
@@ -72,7 +72,7 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
             totalIncome = Some(333.1),
             taxBands = List(testTaxBand, testTaxBand)))
 
-        Json.toJson(totalLiabilityMap) mustBe json
+        Json.toJson(totalLiabilityMap)(formatliabilityMap) mustBe json
       }
     }
 

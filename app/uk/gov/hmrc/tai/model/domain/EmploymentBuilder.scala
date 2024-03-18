@@ -32,9 +32,11 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
     accounts: Seq[AnnualAccount],
     nino: Nino,
     taxYear: TaxYear)(implicit hc: HeaderCarrier): Employments = {
+    println("In combineAccountsWithEmployments. Accounts: " + accounts)
 
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
-      implicit hc: HeaderCarrier): Option[Employment] =
+      implicit hc: HeaderCarrier): Option[Employment] = {
+      println("SSSSS " + account.sequenceNumber)
       employments.filter(_.sequenceNumber == account.sequenceNumber) match {
         case Seq(single) =>
           logger.info(s"single match found for $nino for $taxYear")
@@ -53,6 +55,7 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
             nino.nino,
             taxYear.twoDigitRange)
       }
+    }
 
     def combinedDuplicates(employments: Seq[Employment]): Seq[Employment] =
       employments.map(_.sequenceNumber).distinct map { distinctKey =>
@@ -69,7 +72,9 @@ class EmploymentBuilder @Inject()(auditor: Auditor) {
       emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, Unavailable, Nil, Nil)))
     }
 
-    Employments(unified ++ nonUnified, None)
+    val ww = Employments(unified ++ nonUnified, None)
+    println("GGGG " + ww)
+    ww
   }
 
   private def auditAssociatedEmployment(

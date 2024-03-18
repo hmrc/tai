@@ -102,6 +102,7 @@ trait EmploymentHodFormatters {
   implicit val employmentCollectionHodReads = new Reads[EmploymentCollection] {
     override def reads(json: JsValue): JsResult[EmploymentCollection] = {
       val a = json.as[Seq[Employment]]
+      println("FFFFF " + a)
       JsSuccess(EmploymentCollection(a, None))
     }
   }

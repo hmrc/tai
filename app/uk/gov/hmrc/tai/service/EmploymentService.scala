@@ -74,8 +74,11 @@ class EmploymentService @Inject()(
 
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] = {
     val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = npsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
-      hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
+      println("UUUUUUU " + hodResponse.body)
+      val ww = hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
         .copy(etag = hodResponse.etag)
+      println("RRRRRR " + ww)
+      ww
     }
 
     for {

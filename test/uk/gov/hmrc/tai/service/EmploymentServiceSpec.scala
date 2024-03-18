@@ -17,18 +17,21 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
+import org.mockito.ArgumentCaptor
 
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
+import play.api.http.Status.{IM_A_TEAPOT, NOT_FOUND}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{HodResponse, RtiConnector}
 import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.error.EmploymentNotFound
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.{EmploymentRepository, PersonRepository}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
@@ -37,6 +40,7 @@ import java.nio.file.{Files, Paths}
 import java.time.format.DateTimeFormatter
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 class EmploymentServiceSpec extends BaseSpec {
 
@@ -59,8 +63,13 @@ class EmploymentServiceSpec extends BaseSpec {
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
-        Employments(Seq.empty, None)
+        Employments(employmentsForYear, None)
       )
+      val employmentsCaptor = ArgumentCaptor.forClass(classOf[Seq[Employment]])
+      val accountCaptor = ArgumentCaptor.forClass(classOf[Seq[AnnualAccount]])
+      val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
+      val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
+
 
       val sut = createSut(
         mockNpsConnector,
@@ -74,7 +83,20 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[Auditor])
       val employments = sut.employmentsAsEitherT(nino, TaxYear())(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      employments mustBe Right(employmentsForYear)
+      verify(mockNpsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
+      verify(mockEmploymentBuilder, times(1))
+        .combineAccountsWithEmployments(employmentsCaptor.capture(), accountCaptor.capture(), ninoCaptor.capture(), taxYearCaptor.capture())(any())
+      val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
+      val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
+      val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
+      val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
+
+      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentHodFormatters.employmentHodReads))
+      argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
+      argsNino mustBe List(nino)
+      argsTaxYear mustBe List(TaxYear())
+
+      employments mustBe Right(Employments(employmentsForYear, None))
     }
 
     "return employment for passed nino, year and id" in {
@@ -110,7 +132,8 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[Auditor])
       val employments = sut.employmentAsEitherT(nino, 5)(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      employments mustBe Left(EmploymentNotFound)
+      employments mustBe a[Left[UpstreamErrorResponse, _]]
+      employments.swap.getOrElse(UpstreamErrorResponse("dummy", IM_A_TEAPOT)).statusCode mustBe NOT_FOUND
     }
   }
 
