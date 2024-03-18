@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Results.InternalServerError
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
@@ -59,9 +60,10 @@ class EmploymentsController @Inject()(
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[EndEmployment] { endEmployment =>
-      employmentService.endEmployment(nino, id, endEmployment) map (envelopeId => {
-        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      })
+      employmentService.endEmployment(nino, id, endEmployment).fold(
+        error => errorToResponse(error),
+        envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+      )
     }
   }
 

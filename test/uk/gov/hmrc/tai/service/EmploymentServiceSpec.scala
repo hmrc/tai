@@ -185,7 +185,7 @@ class EmploymentServiceSpec extends BaseSpec {
           mockPdfService,
           mockAuditable)
 
-        Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()), 5.seconds) mustBe "1"
+        Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value, 5.seconds) mustBe Right("1")
 
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
@@ -240,7 +240,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mockFileUploadService,
         mockPdfService,
         mockAuditable)
-      Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()), 5.seconds)
+      Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value, 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(
         meq("EndEmploymentRequest"),

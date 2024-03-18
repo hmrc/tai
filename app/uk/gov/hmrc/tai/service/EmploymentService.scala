@@ -24,7 +24,7 @@ import play.api.Logger
 import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.RtiConnector
 import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
@@ -74,11 +74,8 @@ class EmploymentService @Inject()(
 
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] = {
     val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = npsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
-      println("UUUUUUU " + hodResponse.body)
-      val ww = hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
+      hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
         .copy(etag = hodResponse.etag)
-      println("RRRRRR " + ww)
-      ww
     }
 
     for {
@@ -89,7 +86,6 @@ class EmploymentService @Inject()(
         case Left(error) => Right(Seq.empty)
       }
     } yield {
-      println("EEEEE " + employmentsCollection)
       employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
     }
   }
@@ -98,7 +94,6 @@ class EmploymentService @Inject()(
     implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employment] = {
     employmentsAsEitherT(nino, TaxYear()).transform {
       case Right(employments) =>
-        println("YYYYY " + employments)
         employments.employmentById(id) match {
         case Some(employment) => Right(employment)
         case None => {
@@ -113,26 +108,24 @@ class EmploymentService @Inject()(
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
-  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
+  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, String] =
     for {
-      person                    <- personRepository.getPerson(nino)
-      existingEmployment <- employmentAsEitherT(nino, id).value.map{x =>
-        println(s"IIII + $x + $nino + $id")
-        x.right.get}
+      person                    <- EitherT[Future, UpstreamErrorResponse, Person](personRepository.getPerson(nino).map(Right(_)))
+      existingEmployment <- employmentAsEitherT(nino, id)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
       endEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf        <- pdfService.generatePdf(endEmploymentHtml)
-      envelopeId <- fileUploadService.createEnvelope()
+      pdf        <- EitherT[Future, UpstreamErrorResponse, Array[Byte]](pdfService.generatePdf(endEmploymentHtml).map(Right(_)))
+      envelopeId <- EitherT[Future, UpstreamErrorResponse, String](fileUploadService.createEnvelope().map(Right(_)))
       endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
         .toString()
         .getBytes
-      _ <- fileUploadService
-            .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(
+      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](fileUploadService
+            .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf).map(Right(_)))
+      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](fileUploadService.uploadFile(
             endEmploymentMetadata,
             envelopeId,
             endEmploymentMetaDataName(envelopeId),
-            MimeContentType.ApplicationXml)
+            MimeContentType.ApplicationXml).map(Right(_)))
     } yield {
       logger.info("Envelope Id for end employment- " + envelopeId)
 

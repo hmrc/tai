@@ -113,9 +113,16 @@ class EmploymentsControllerSpec extends BaseSpec {
         contentAsString(result) mustBe "bad request"
 
       }
-      "the employments service returns an error" in {
+      "the employments service returns a server error" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", INTERNAL_SERVER_ERROR)))
+
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
+        status(result) mustBe BAD_GATEWAY
+      }
+      "the employments service returns other client errors" in {
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", LOCKED)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -178,9 +185,18 @@ class EmploymentsControllerSpec extends BaseSpec {
     }
 
     "return internal server" when {
-      "employment service throws an error" in {
+      "employment service returns a server error" in {
         when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", INTERNAL_SERVER_ERROR)))
+
+        val result = sut.employment(nino, 3)(FakeRequest())
+
+        status(result) mustBe BAD_GATEWAY
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(3))(any(), any())
+      }
+      "employment service returns a client error" in {
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", LOCKED)))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
@@ -198,7 +214,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val envelopeId = "EnvelopeId"
 
         when(mockEmploymentService.endEmployment(any(), any(), any())(any(), any()))
-          .thenReturn(Future.successful(envelopeId))
+          .thenReturn(EitherT.rightT(envelopeId))
 
         val result = sut.endEmployment(nino, 3)(
           FakeRequest("POST", "/", FakeHeaders(), json)
