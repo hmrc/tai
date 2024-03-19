@@ -27,8 +27,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{HodResponse, RtiConnector}
-import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
+import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -45,13 +44,13 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 
 class EmploymentServiceSpec extends BaseSpec {
 
-  val mockNpsConnector = mock[NpsConnector]
+  val mocEmploymentDetailsConnector = mock[DefaultEmploymentDetailsConnector]
   val mockRtiConnector = mock[RtiConnector]
   val mockEmploymentBuilder = mock[EmploymentBuilder]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockNpsConnector, mockRtiConnector, mockEmploymentBuilder)
+    reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder)
   }
 
 
@@ -60,7 +59,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val employmentsForYear = Seq(employment)
 
       val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
-      when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
       when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -76,7 +75,7 @@ class EmploymentServiceSpec extends BaseSpec {
 
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -86,7 +85,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[Auditor])
       val employments = sut.employmentsAsEitherT(nino, TaxYear())(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      verify(mockNpsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
+      verify(mocEmploymentDetailsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(employmentsCaptor.capture(), accountCaptor.capture(), ninoCaptor.capture(), taxYearCaptor.capture())(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
@@ -106,7 +105,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val employmentsForYear = Seq(employment.copy(annualAccounts = Seq.empty))
 
       val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
-      when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
       when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -122,7 +121,7 @@ class EmploymentServiceSpec extends BaseSpec {
 
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -132,7 +131,7 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[Auditor])
       val employments = sut.employmentsAsEitherT(nino, TaxYear())(HeaderCarrier(), FakeRequest()).value.futureValue
 
-      verify(mockNpsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
+      verify(mocEmploymentDetailsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
       verify(mockEmploymentBuilder, times(1))
         .combineAccountsWithEmployments(employmentsCaptor.capture(), accountCaptor.capture(), ninoCaptor.capture(), taxYearCaptor.capture())(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
@@ -155,7 +154,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
       val employmentsForYear = Seq(employment)
 
-      when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
       when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -166,7 +165,7 @@ class EmploymentServiceSpec extends BaseSpec {
       )
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -183,7 +182,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
       val employmentsForYear = Seq(employment)
 
-      when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
       when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -194,7 +193,7 @@ class EmploymentServiceSpec extends BaseSpec {
       )
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -234,7 +233,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
-        when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+        when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
           EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
         )
         when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -245,7 +244,7 @@ class EmploymentServiceSpec extends BaseSpec {
         )
 
         val sut = createSut(
-          mockNpsConnector,
+          mocEmploymentDetailsConnector,
           mockRtiConnector,
           inject[EmploymentBuilder],
           mockPersonRepository,
@@ -268,7 +267,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
       val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
-      when(mockNpsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
       when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
@@ -298,7 +297,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         inject[EmploymentBuilder],
         mockPersonRepository,
@@ -339,7 +338,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(
-          mockNpsConnector,
+          mocEmploymentDetailsConnector,
           mockRtiConnector,
           mockEmploymentBuilder,
           mockPersonRepository,
@@ -382,7 +381,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mockPersonRepository,
@@ -422,7 +421,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(
-          mockNpsConnector,
+          mocEmploymentDetailsConnector,
           mockRtiConnector,
           mockEmploymentBuilder,
           mock[PersonRepository],
@@ -458,7 +457,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -489,7 +488,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSut(
-          mockNpsConnector,
+          mocEmploymentDetailsConnector,
           mockRtiConnector,
           mockEmploymentBuilder,
           mock[PersonRepository],
@@ -526,7 +525,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSut(
-        mockNpsConnector,
+        mocEmploymentDetailsConnector,
         mockRtiConnector,
         mockEmploymentBuilder,
         mock[PersonRepository],
@@ -560,16 +559,16 @@ class EmploymentServiceSpec extends BaseSpec {
     false)
 
   private def createSut(
-                         npsConnector: NpsConnector,
+                         employmentDetailsConnector: DefaultEmploymentDetailsConnector,
                          rtiConnector: RtiConnector,
                          employmentBuilder: EmploymentBuilder,
-    personRepository: PersonRepository,
-    iFormSubmissionService: IFormSubmissionService,
-    fileUploadService: FileUploadService,
-    pdfService: PdfService,
-    auditable: Auditor) =
+                         personRepository: PersonRepository,
+                         iFormSubmissionService: IFormSubmissionService,
+                         fileUploadService: FileUploadService,
+                         pdfService: PdfService,
+                         auditable: Auditor) =
     new EmploymentService(
-      npsConnector,
+      employmentDetailsConnector,
       rtiConnector,
       employmentBuilder,
       personRepository,

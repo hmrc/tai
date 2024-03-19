@@ -18,16 +18,20 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
+import play.api
+import play.api.Application
 import play.api.http.Status._
+import api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
+import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
+import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
+class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
 
   def intGen: Int = Random.nextInt(50)
 
@@ -41,7 +45,18 @@ class NpsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
   val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
   val taxAccountUrl: String = s"$npsBaseUrl/tax-account/$year/calculation"
   val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
-  lazy val sut: NpsConnector = inject[NpsConnector]
+  lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
+
+  override implicit lazy val app: Application = localGuiceApplicationBuilder()
+    .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
+    .overrides(
+      bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions].eagerly(),
+      bind[RtiConnector].to[DefaultRtiConnector],
+      bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
+      bind[IabdConnector].to[DefaultIabdConnector],
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector]
+    )
+    .build()
 
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(

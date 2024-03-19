@@ -26,8 +26,7 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.RtiConnector
-import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
+import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
@@ -43,14 +42,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentService @Inject()(
-                                   npsConnector: NpsConnector,
+                                   employmentDetailsConnector: EmploymentDetailsConnector,
                                    rtiConnector: RtiConnector,
                                    employmentBuilder: EmploymentBuilder,
-  personRepository: PersonRepository,
-  iFormSubmissionService: IFormSubmissionService,
-  fileUploadService: FileUploadService,
-  pdfService: PdfService,
-  auditable: Auditor)(implicit ec: ExecutionContext) {
+                                   personRepository: PersonRepository,
+                                   iFormSubmissionService: IFormSubmissionService,
+                                   fileUploadService: FileUploadService,
+                                   pdfService: PdfService,
+                                   auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -71,7 +70,7 @@ class EmploymentService @Inject()(
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = npsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
+    val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
       hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
         .copy(etag = hodResponse.etag)
     }
