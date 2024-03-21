@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder

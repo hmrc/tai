@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories.cache
 
-import akka.Done
+import org.apache.pekko.Done
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.invocation.InvocationOnMock
 import uk.gov.hmrc.tai.repositories.deprecated.{JourneyCacheRepository, TaiCacheRepository, TaiUpdateIncomeCacheRepository}

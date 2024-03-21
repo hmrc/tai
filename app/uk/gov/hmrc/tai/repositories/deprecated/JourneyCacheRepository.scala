@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.repositories.deprecated
 
-import akka.Done
+import org.apache.pekko.Done
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 

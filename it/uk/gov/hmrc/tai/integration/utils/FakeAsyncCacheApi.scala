@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.integration.utils
 
-import akka.Done
+import org.apache.pekko.Done
 import com.google.inject.Inject
 import net.sf.ehcache.Element
 import play.api.cache.AsyncCacheApi
