@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import org.slf4j._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 
 import scala.util.matching.Regex
@@ -29,9 +30,9 @@ package object rti {
 
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  implicit val freqFormat = JsonExtra.enumerationFormat(PayFrequency)
+  implicit val freqFormat: Format[PayFrequency.Value] = JsonExtra.enumerationFormat(PayFrequency)
 
-  implicit val stringMapFormat = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
+  implicit val stringMapFormat: Format[Map[String, BigDecimal]] = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val formatLocalDate: Format[LocalDate] = Format(
     new Reads[LocalDate] {

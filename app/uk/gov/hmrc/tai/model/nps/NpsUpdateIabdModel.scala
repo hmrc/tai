@@ -29,5 +29,5 @@ case class NpsIabdRoot(
   captureDate: Option[NpsDate] = None)
 
 object NpsIabdRoot {
-  implicit val formats = Json.format[NpsIabdRoot]
+  implicit val formats: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
 }

@@ -22,19 +22,19 @@ import play.api.libs.json._
 case class TransactionId(oid: String)
 
 object TransactionId {
-  implicit val formats = Json.format[TransactionId]
+  implicit val formats: OFormat[TransactionId] = Json.format[TransactionId]
 }
 
 case class IabdEditDataRequest(version: Int, newAmount: Int)
 
 object IabdEditDataRequest {
-  implicit val formats = Json.format[IabdEditDataRequest]
+  implicit val formats: OFormat[IabdEditDataRequest] = Json.format[IabdEditDataRequest]
 }
 
 case class IabdUpdateResponse(transaction: TransactionId, version: Int, iabdType: Int, newAmount: Int)
 
 object IabdUpdateResponse {
-  implicit val format = Json.format[IabdUpdateResponse]
+  implicit val format: OFormat[IabdUpdateResponse] = Json.format[IabdUpdateResponse]
 }
 
 case class EmploymentAmount(
@@ -51,13 +51,13 @@ case class EmploymentAmount(
   isOccupationalPension: Boolean = false)
 
 object EmploymentAmount {
-  implicit val formats = Json.format[EmploymentAmount]
+  implicit val formats: OFormat[EmploymentAmount] = Json.format[EmploymentAmount]
 }
 
 case class IabdUpdateEmploymentsRequest(version: Int, newAmounts: List[EmploymentAmount])
 
 object IabdUpdateEmploymentsRequest {
-  implicit val formats = Json.format[IabdUpdateEmploymentsRequest]
+  implicit val formats: OFormat[IabdUpdateEmploymentsRequest] = Json.format[IabdUpdateEmploymentsRequest]
 }
 
 case class IabdUpdateEmploymentsResponse(
@@ -67,23 +67,23 @@ case class IabdUpdateEmploymentsResponse(
   newAmounts: List[EmploymentAmount])
 
 object IabdUpdateEmploymentsResponse {
-  implicit val format = Json.format[IabdUpdateEmploymentsResponse]
+  implicit val format: OFormat[IabdUpdateEmploymentsResponse] = Json.format[IabdUpdateEmploymentsResponse]
 }
 
 case class PayAnnualisationRequest(amountYearToDate: BigDecimal, employmentStartDate: LocalDate, paymentDate: LocalDate)
 
 object PayAnnualisationRequest {
-  implicit val format = Json.format[PayAnnualisationRequest]
+  implicit val format: OFormat[PayAnnualisationRequest] = Json.format[PayAnnualisationRequest]
 }
 
 case class PayAnnualisationResponse(annualisedAmount: BigDecimal)
 
 object PayAnnualisationResponse {
-  implicit val format = Json.format[PayAnnualisationResponse]
+  implicit val format: OFormat[PayAnnualisationResponse] = Json.format[PayAnnualisationResponse]
 }
 
 case class IabdUpdateExpensesRequest(version: Int, grossAmount: Int)
 
 object IabdUpdateExpensesRequest {
-  implicit val format = Json.format[IabdUpdateExpensesRequest]
+  implicit val format: OFormat[IabdUpdateExpensesRequest] = Json.format[IabdUpdateExpensesRequest]
 }

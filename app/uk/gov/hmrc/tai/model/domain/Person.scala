@@ -55,7 +55,7 @@ object PersonFormatter {
   import play.api.libs.functional.syntax._
   import play.api.libs.json._
 
-  implicit val addressFormat = Json.format[Address]
+  implicit val addressFormat: OFormat[Address] = Json.format[Address]
 
   val personMongoFormat = Json.format[Person]
 

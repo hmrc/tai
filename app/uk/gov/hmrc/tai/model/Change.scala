@@ -37,7 +37,7 @@ object Change {
 
     }
 
-  implicit def changeWrite[A, B](implicit aWrites: Writes[A], bWrites: Writes[B]) = new Writes[Change[A, B]] {
+  implicit def changeWrite[A, B](implicit aWrites: Writes[A], bWrites: Writes[B]): Writes[Change[A, B]] = new Writes[Change[A, B]] {
     def writes(change: Change[A, B]) = {
       val currentYearJs = aWrites.writes(change.currentYear)
       val currentYearPlusOneJs = bWrites.writes(change.currentYearPlusOne)

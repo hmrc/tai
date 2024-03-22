@@ -51,7 +51,7 @@ class IabdUpdateAmountFormats @Inject()() {
 
   implicit def formats: Format[IabdUpdateAmount] = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
 
-  implicit val formatList = new Writes[List[IabdUpdateAmount]] {
+  implicit val formatList: Writes[List[IabdUpdateAmount]] = new Writes[List[IabdUpdateAmount]] {
     def writes(updateAmounts: List[IabdUpdateAmount]): JsValue =
       Json.toJson(updateAmounts)
   }

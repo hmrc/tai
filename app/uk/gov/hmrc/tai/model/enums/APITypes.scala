@@ -58,7 +58,7 @@ object BasisOperation extends Enumeration {
     4 -> CumulativeNotOperated
   )
 
-  implicit val enumFormat = new Format[BasisOperation] {
+  implicit val enumFormat: Format[BasisOperation] = new Format[BasisOperation] {
     def reads(json: JsValue) =
       JsSuccess(
         json
