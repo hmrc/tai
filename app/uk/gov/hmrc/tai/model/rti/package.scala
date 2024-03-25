@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter
 import org.slf4j._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 
 import scala.util.matching.Regex
