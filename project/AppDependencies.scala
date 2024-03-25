@@ -12,7 +12,7 @@ object AppDependencies {
     ws,
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion"            % bootstrapVersion,
     "uk.gov.hmrc"       %% s"domain-$playVersion"                       % "9.0.0",
-    "uk.gov.hmrc"       %% "crypto"                                     % "7.6.0",
+    "uk.gov.hmrc"       %% s"crypto-json-$playVersion"                  % "7.6.0",
     "org.typelevel"     %% "cats-core"                                  % "2.10.0",
     "uk.gov.hmrc"       %% s"mongo-feature-toggles-client-$playVersion" % "1.3.0",
     "org.typelevel"     %% "cats-effect"                                % "3.5.4"
