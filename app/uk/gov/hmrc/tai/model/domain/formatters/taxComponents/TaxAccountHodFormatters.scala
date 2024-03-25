@@ -73,11 +73,10 @@ trait IncomeSourcesHodReads {
     incomeSourceJsonElement: String,
     codingComponentFactory: CodingComponentFactory): Seq[CodingComponent] =
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
-      case JsSuccess(componentJsArray, _) => {
+      case JsSuccess(componentJsArray, _) =>
         componentJsArray.value.toSeq.flatMap { componentJsVal =>
           taxComponentFromNpsComponent(componentJsVal, codingComponentFactory)
         }
-      }
       case _ => Seq.empty[CodingComponent]
     }
 
@@ -103,7 +102,8 @@ trait IncomeSourcesHodReads {
     42 -> ChildBenefit,
     43 -> MarriageAllowanceTransferred,
     44 -> DividendTax,
-    45 -> EstimatedTaxYouOweThisYear
+    45 -> EstimatedTaxYouOweThisYear,
+    50 -> BRDifferenceTaxCharge
   )
 
   private val npsComponentNonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
@@ -144,7 +144,8 @@ trait IncomeSourcesHodReads {
     29 -> DoubleTaxationRelief,
     30 -> ForeignPensionAllowance,
     31 -> EarlyYearsAdjustment,
-    32 -> MarriageAllowanceReceived
+    32 -> MarriageAllowanceReceived,
+    34 -> BRDifferenceTaxReduction
   )
 }
 

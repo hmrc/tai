@@ -57,7 +57,8 @@ class CodingComponentRepositorySpec extends BaseSpec {
         result mustBe Seq(
           CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Estimated Tax You Owe This Year"),
           CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Underpayment form previous year"),
-          CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction")
+          CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction"),
+          CodingComponent(BRDifferenceTaxCharge, None, 10, "BR Difference Tax Charge")
         )
       }
     }
@@ -70,7 +71,8 @@ class CodingComponentRepositorySpec extends BaseSpec {
       val taxCodeId = 1
 
       val expected = List[CodingComponent](
-        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850))
+        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
+        CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000))
       )
 
       val json = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
@@ -113,6 +115,7 @@ class CodingComponentRepositorySpec extends BaseSpec {
 
       val expected = List[CodingComponent](
         CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
+        CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000)),
         CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
       )
 
@@ -158,6 +161,11 @@ class CodingComponentRepositorySpec extends BaseSpec {
             "npsDescription" -> JsString("Outstanding Debt Restriction"),
             "amount"         -> JsNumber(10),
             "type"           -> JsNumber(41)
+          ),
+          Json.obj(
+            "npsDescription" -> JsString("BR Difference Tax Charge"),
+            "amount"         -> JsNumber(10),
+            "type"           -> JsNumber(50)
           ),
           Json.obj(
             "npsDescription" -> JsString("Something we aren't interested in"),
