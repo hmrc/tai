@@ -71,6 +71,7 @@ case object PersonalAllowancePA extends AllowanceComponentType
 case object PersonalAllowanceAgedPAA extends AllowanceComponentType
 case object PersonalAllowanceElderlyPAE extends AllowanceComponentType
 case object MarriageAllowanceReceived extends AllowanceComponentType
+case object BRDifferenceTaxReduction extends AllowanceComponentType
 
 case object MarriedCouplesAllowanceToWifeMAW extends DeductionComponentType
 case object BalancingCharge extends DeductionComponentType
@@ -84,6 +85,7 @@ case object EstimatedTaxYouOweThisYear extends DeductionComponentType
 case object UnderpaymentRestriction extends DeductionComponentType
 case object HigherPersonalAllowanceRestriction extends DeductionComponentType
 case object AdjustmentToRateBand extends DeductionComponentType
+case object BRDifferenceTaxCharge extends DeductionComponentType
 
 case object BenefitInKind extends BenefitComponentType
 case object CarFuelBenefit extends BenefitComponentType
