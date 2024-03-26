@@ -55,14 +55,16 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
           lockId = sessionId,
           owner = owner,
           ttl = Duration(appConfig.mongoLockTTL, SECONDS) // this need to be longer than the timeout from http_verbs
-        ).recover {
-      case NonFatal(ex) =>
-        logger.error(ex.getMessage, ex)
-        // This lock is used to lock the cache while it is populated by the HOD response
-        // if it is failing we still allow the caller to go through so the user gets a better experience
-        // Duplicates calls to HOD will be present in such a case
-        true
-    })
+        )
+        .map(_.fold(false)(_ => true))
+        .recover {
+          case NonFatal(ex) =>
+            logger.error(ex.getMessage, ex)
+            // This lock is used to lock the cache while it is populated by the HOD response
+            // if it is failing we still allow the caller to go through so the user gets a better experience
+            // Duplicates calls to HOD will be present in such a case
+            true
+      })
   }
 
   def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
