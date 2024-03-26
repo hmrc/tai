@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
@@ -40,8 +41,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
   val url = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${taxYear.twoDigitRange}"
 
-  val mockHttp = mock[HttpClient]
-  implicit val request = FakeRequest()
+  val mockHttp: HttpClient = mock[HttpClient]
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   lazy val sut: RtiConnector = inject[DefaultRtiConnector]
   lazy val sutWithMockHttp = new DefaultRtiConnector(

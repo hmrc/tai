@@ -19,18 +19,18 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.enums.APITypes
 
 class HttpHandlerSpec
     extends ConnectorBaseSpec {
 
-  lazy val httpHandler = inject[HttpHandler]
+  lazy val httpHandler: HttpHandler = inject[HttpHandler]
 
-  lazy val testUrl = server.url("testUrl")
+  lazy val testUrl: String = server.url("testUrl")
   private case class ResponseObject(name: String, age: Int)
-  private implicit val responseObjectFormat = Json.format[ResponseObject]
+  private implicit val responseObjectFormat: OFormat[ResponseObject] = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
 
   "getFromAPI" must {

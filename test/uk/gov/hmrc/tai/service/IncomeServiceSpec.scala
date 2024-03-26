@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,7 +44,7 @@ class IncomeServiceSpec extends BaseSpec {
   private val untaxedInterestWithBankAccount =
     UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc")
 
-  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(FakeRequest(), nino)
 
   private def createSUT(
                          employmentService: EmploymentService = mock[EmploymentService],

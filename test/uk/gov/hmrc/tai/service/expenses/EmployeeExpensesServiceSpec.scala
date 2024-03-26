@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.connectors._
@@ -47,7 +48,7 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val taxYear = 2017
 
-  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(FakeRequest(), nino)
 
   "updateEmployeeExpensesData" must {
 

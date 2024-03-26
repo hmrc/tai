@@ -21,6 +21,7 @@ import cats.implicits._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.cache.CacheId
@@ -44,7 +45,7 @@ class EmploymentRepositorySpec extends BaseSpec {
   val currentTaxYear: TaxYear = TaxYear()
   val previousTaxYear = currentTaxYear.prev
   val employmentDataKey = s"EmploymentData-${currentTaxYear.year}"
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   val npsSingleEmployment = Employment(
     "EMPLOYER1",
