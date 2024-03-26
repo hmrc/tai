@@ -20,10 +20,10 @@ import org.mockito.ArgumentMatchers.{any, anyString}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
 import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.crypto.json.JsonEncryptor
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter, Protected}
+import uk.gov.hmrc.crypto.json.JsonEncryption
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
-import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.TaiCacheConnector
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
@@ -142,8 +142,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[String]()
-        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[String, SensitiveT[String]]
+        val encryptedData = encrypter.writes(SensitiveT("DATA"))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-DATA" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
@@ -198,8 +198,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[String]()
-        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[String, SensitiveT[String]]
+        val encryptedData = encrypter.writes(SensitiveT("DATA"))
         val cacheItemWrongKey = setCacheItem("id", Json.obj("WRONG_KEY" -> encryptedData))
         when(taiRepository.findById(anyString())).thenReturn(cacheItemWrongKey)
 
@@ -259,8 +259,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
-        val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
@@ -289,8 +289,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
-        val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
@@ -378,8 +378,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
-        val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
@@ -405,8 +405,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
-        val encryptedData = Json.toJson(Protected(List.empty[SessionData]))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encryptedData = encrypter.writes(SensitiveT(List.empty[SessionData]))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
@@ -434,8 +434,8 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[List[SessionData]]()
-        val encryptedData = Json.toJson(Protected(List(sessionData, sessionData)))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
