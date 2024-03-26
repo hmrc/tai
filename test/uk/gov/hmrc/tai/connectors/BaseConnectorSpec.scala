@@ -22,8 +22,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset => resetMock}
 import play.api.http.Status._
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.http.{HttpClient, _}
-import uk.gov.hmrc.tai.connectors.deprecated.NpsConnector
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.rti.RtiData
@@ -38,7 +37,7 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
     override def originatorId: String = "testOriginatorId"
   }
 
-  lazy val npsConnector: NpsConnector = inject[NpsConnector]
+  lazy val npsConnector: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
 
   lazy val endpoint: String = "/foo"
   lazy val url: String = s"${server.baseUrl()}$endpoint"

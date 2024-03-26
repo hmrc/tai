@@ -16,21 +16,23 @@
 
 package uk.gov.hmrc.tai.service
 
+import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, TaxCodeIncomeComponentType, income}
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
 
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -44,7 +46,7 @@ class IncomeService @Inject()(
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
 
-  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] = {
+  def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Seq[Employment]] = {
     def filterNonMatchingCeasedEmploymentsWithEndDate(
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]): Seq[Employment] =
@@ -54,10 +56,10 @@ class IncomeService @Inject()(
         .filter(_.endDate.isDefined)
 
     for {
-      taxCodeIncomes <- incomeRepository.taxCodeIncomes(nino, year)
+      taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](incomeRepository.taxCodeIncomes(nino, year).map(Right(_)))
       filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
-      employments <- employmentService.employments(nino, year)
-      result = filterNonMatchingCeasedEmploymentsWithEndDate(employments, filteredTaxCodeIncomes)
+      employments <- employmentService.employmentsAsEitherT(nino, year)
+      result = filterNonMatchingCeasedEmploymentsWithEndDate(employments.employments, filteredTaxCodeIncomes)
     } yield result
   }
 
@@ -65,7 +67,7 @@ class IncomeService @Inject()(
     nino: Nino,
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[IncomeSource]] = {
+    status: TaxCodeIncomeStatus)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]] = {
 
     def filterMatchingEmploymentsToIncomeSource(
       employments: Seq[Employment],
@@ -79,11 +81,11 @@ class IncomeService @Inject()(
       }
 
     for {
-      taxCodeIncomes <- incomeRepository.taxCodeIncomes(nino, year)
+      taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](incomeRepository.taxCodeIncomes(nino, year).map(Right(_)))
       filteredTaxCodeIncomes = filterIncomesByType(taxCodeIncomes, incomeType)
       employments <- employments(filteredTaxCodeIncomes, nino, year)
     } yield
-      filterMatchingEmploymentsToIncomeSource(employments, filterIncomesByType(taxCodeIncomes, incomeType), status)
+      filterMatchingEmploymentsToIncomeSource(employments.employments, filterIncomesByType(taxCodeIncomes, incomeType), status)
   }
 
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
@@ -91,16 +93,17 @@ class IncomeService @Inject()(
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = incomeRepository.taxCodeIncomes(nino, year)
-    lazy val eventualEmployments = employmentService.employments(nino, year).recover { case ex =>
-      logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${ex.getMessage}", ex)
-      Seq.empty[Employment]
-    }
+    lazy val eventualEmployments = employmentService.employmentsAsEitherT(nino, year).leftMap{
+      error =>
+        logger.warn(s"EmploymentService.employments - failed to retrieve employments: ${error.getMessage}")
+        Employments(Seq.empty[Employment], None)
+      }.merge
 
     for {
       employments <- eventualEmployments
       taxCodes <- eventualIncomes
     } yield {
-      val map = employments.groupBy(_.sequenceNumber)
+      val map = employments.employments.groupBy(_.sequenceNumber)
       taxCodes.map { taxCode =>
         val employmentStatus = for {
           id <- taxCode.employmentId
@@ -116,11 +119,11 @@ class IncomeService @Inject()(
     incomeRepository.incomes(nino, year)
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(
-    implicit headerCarrier: HeaderCarrier, request: Request[_]): Future[Seq[Employment]] =
+    implicit headerCarrier: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] =
     if (filteredTaxCodeIncomes.isEmpty) {
-      Future.successful(Seq.empty[Employment])
+      EitherT.rightT[Future, UpstreamErrorResponse](Employments(Seq.empty[Employment], None))
     } else {
-      employmentService.employments(nino, year)
+      employmentService.employmentsAsEitherT(nino, year)
     }
 
   def updateTaxCodeIncome(nino: Nino, year: TaxYear, employmentId: Int, amount: Int)(

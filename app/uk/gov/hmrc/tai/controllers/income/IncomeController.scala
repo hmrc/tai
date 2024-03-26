@@ -61,16 +61,18 @@ class IncomeController @Inject()(
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
     status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async { implicit request =>
-    incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).map { result =>
-      Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-    } recoverWith taxAccountErrorHandler()
+    incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).bimap(
+      error => errorToResponse(error),
+      result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
+    ).merge
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
-      incomeService.nonMatchingCeasedEmployments(nino, year).map { result =>
-        Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-      } recoverWith taxAccountErrorHandler()
+      incomeService.nonMatchingCeasedEmployments(nino, year).bimap(
+        error => errorToResponse(error),
+          result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
+        ).merge
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>

@@ -40,7 +40,7 @@ class CacheServiceSpec extends BaseSpec {
 
         val sut = new CacheService(mockMongoConfig, mockCacheConnector)
 
-        sut.invalidateTaiCacheData(nino)(hc)
+        sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
 
         verify(mockCacheConnector, times(1))
           .removeById(any())
@@ -61,7 +61,7 @@ class CacheServiceSpec extends BaseSpec {
 
         val sut = new CacheService(mockMongoConfig, mockCacheConnector)
 
-        sut.invalidateTaiCacheData(nino)(hc)
+        sut.invalidateTaiCacheData(nino)(hc, ec).futureValue
 
         verify(mockCacheConnector, never)
           .createOrUpdate(any(), any(), any())(any())

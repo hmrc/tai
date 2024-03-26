@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import cats.data.EitherT
+
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectEmployment}
-import uk.gov.hmrc.tai.model.error.EmploymentNotFound
+import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, Employments, EndEmployment, IncorrectEmployment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -61,8 +62,8 @@ class EmploymentsControllerSpec extends BaseSpec {
   "employments" must {
     "return Ok" when {
       "called with a valid nino and year" in {
-        when(mockEmploymentService.employments(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Nil))
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe OK
@@ -70,8 +71,8 @@ class EmploymentsControllerSpec extends BaseSpec {
     }
     "return a valid API json response" when {
       "called with a valid nino and year" in {
-        when(mockEmploymentService.employments(any(), any())(any(), any()))
-          .thenReturn(Future.successful(List(emp)))
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT(Employments(Seq(emp), None)))
 
         val jsonResult = Json.obj(
           "data" -> Json.obj("employments" -> Json.arr(Json.obj(
@@ -96,24 +97,31 @@ class EmploymentsControllerSpec extends BaseSpec {
     }
     "return a non success http response" when {
       "the employments are not found" in {
-        when(mockEmploymentService.employments(any(), any())(any(), any()))
-          .thenReturn(Future.failed(new NotFoundException("employment not found")))
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", NOT_FOUND)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
       "the employments service returns a bad request exception" in {
-        when(mockEmploymentService.employments(any(), any())(any(), any()))
-          .thenReturn(Future.failed(new BadRequestException("no employments recorded for this individual")))
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("bad request", BAD_REQUEST)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
-        contentAsString(result) mustBe "no employments recorded for this individual"
+        contentAsString(result) mustBe "bad request"
 
       }
-      "the employments service returns an error" in {
-        when(mockEmploymentService.employments(any(), any())(any(), any()))
-          .thenReturn(Future.failed(new InternalServerException("employment service failed")))
+      "the employments service returns a server error" in {
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", INTERNAL_SERVER_ERROR)))
+
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
+        status(result) mustBe BAD_GATEWAY
+      }
+      "the employments service returns other client errors" in {
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", LOCKED)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe INTERNAL_SERVER_ERROR
@@ -124,8 +132,8 @@ class EmploymentsControllerSpec extends BaseSpec {
   "employment" must {
     "return ok" when {
       "called with valid nino, year and id" in {
-        when(mockEmploymentService.employment(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(emp)))
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT(emp))
 
         val result = sut.employment(nino, 2)(FakeRequest())
 
@@ -149,41 +157,50 @@ class EmploymentsControllerSpec extends BaseSpec {
         status(result) mustBe OK
         contentAsJson(result) mustBe jsonResult
 
-        verify(mockEmploymentService, times(1)).employment(any(), meq(2))(any(), any())
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(2))(any(), any())
       }
     }
 
     "return not found" when {
       "called with valid nino, year and id but id doesn't present" in {
-        when(mockEmploymentService.employment(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Left(EmploymentNotFound)))
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(3))(any(), any())
       }
 
-      "throw not found exception" in {
-        when(mockEmploymentService.employment(any(), any())(any(), any()))
-          .thenReturn(Future.failed(new NotFoundException("")))
+      "returns not found" in {
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(3))(any(), any())
       }
     }
 
     "return internal server" when {
-      "employment service throws an error" in {
-        when(mockEmploymentService.employment(any(), any())(any(), any()))
-          .thenReturn(Future.failed(new InternalServerException("")))
+      "employment service returns a server error" in {
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", INTERNAL_SERVER_ERROR)))
+
+        val result = sut.employment(nino, 3)(FakeRequest())
+
+        status(result) mustBe BAD_GATEWAY
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(3))(any(), any())
+      }
+      "employment service returns a client error" in {
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", LOCKED)))
 
         val result = sut.employment(nino, 3)(FakeRequest())
 
         status(result) mustBe INTERNAL_SERVER_ERROR
-        verify(mockEmploymentService, times(1)).employment(any(), meq(3))(any(), any())
+        verify(mockEmploymentService, times(1)).employmentAsEitherT(any(), meq(3))(any(), any())
       }
     }
   }
@@ -196,7 +213,7 @@ class EmploymentsControllerSpec extends BaseSpec {
         val envelopeId = "EnvelopeId"
 
         when(mockEmploymentService.endEmployment(any(), any(), any())(any(), any()))
-          .thenReturn(Future.successful(envelopeId))
+          .thenReturn(EitherT.rightT(envelopeId))
 
         val result = sut.endEmployment(nino, 3)(
           FakeRequest("POST", "/", FakeHeaders(), json)

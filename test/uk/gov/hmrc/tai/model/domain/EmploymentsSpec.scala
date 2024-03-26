@@ -57,20 +57,20 @@ class EmploymentsSpec extends PlaySpec {
       val employment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
       val expectedEmployments = Seq(employment.copy(annualAccounts = Seq(annualAccountCTY)))
 
-      val unifiedEmployment = Employments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment), None)
       val accountsForYear = unifiedEmployment.accountsForYear(currentTaxYear)
 
-      accountsForYear mustBe Employments(expectedEmployments)
+      accountsForYear mustBe Employments(expectedEmployments, None)
     }
 
     "return an empty sequence of employments if no accounts exist for a tax year" in {
 
       val employment = employment1.copy(annualAccounts = Seq(annualAccountPTY))
 
-      val unifiedEmployment = Employments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment), None)
       val accountsForYear = unifiedEmployment.accountsForYear(currentTaxYear)
 
-      accountsForYear mustBe Employments(Nil)
+      accountsForYear mustBe Employments(Nil, None)
     }
 
     "return true if an employment contains a TemporarilyUnavailable stubbed annual account for a given year" in {
@@ -80,7 +80,7 @@ class EmploymentsSpec extends PlaySpec {
 
       val employment = employment1.copy(annualAccounts = Seq(stubbedAnnualAccount, annualAccountCTY))
 
-      val unifiedEmployment = Employments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment), None)
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
 
       containsTempAccount mustBe true
@@ -90,7 +90,7 @@ class EmploymentsSpec extends PlaySpec {
       val stubbedAnnualAccountCTY = createAnnualAccount(rtiStatus = TemporarilyUnavailable)
       val employment = employment1.copy(annualAccounts = Seq(stubbedAnnualAccountCTY, annualAccountPTY))
 
-      val unifiedEmployment = Employments(Seq(employment))
+      val unifiedEmployment = Employments(Seq(employment), None)
       val containsTempAccount = unifiedEmployment.containsTempAccount(previousTaxYear)
 
       containsTempAccount mustBe false
@@ -100,12 +100,12 @@ class EmploymentsSpec extends PlaySpec {
       val employment2 = employment1.copy(sequenceNumber = 2)
       val employment3 = employment1.copy(sequenceNumber = 3)
 
-      val employments = Employments(Seq(employment1, employment2, employment3))
+      val employments = Employments(Seq(employment1, employment2, employment3), None)
       employments.sequenceNumbers mustBe Seq(1, 2, 3)
     }
 
     "return an empty sequence list if no employments are present" in {
-      val employments = Employments(Seq.empty[Employment])
+      val employments = Employments(Seq.empty[Employment], None)
       employments.sequenceNumbers mustBe Seq.empty[Int]
     }
 
@@ -113,7 +113,7 @@ class EmploymentsSpec extends PlaySpec {
       val employment2 = employment1.copy(sequenceNumber = 2)
       val employment3 = employment1.copy(sequenceNumber = 3)
 
-      val employments = Employments(Seq(employment1, employment2, employment3))
+      val employments = Employments(Seq(employment1, employment2, employment3), None)
       employments.employmentById(2) mustBe Some(employment2)
     }
 
@@ -122,7 +122,7 @@ class EmploymentsSpec extends PlaySpec {
       val employment3 = employment1.copy(sequenceNumber = 3)
 
       val notFoundId = 4
-      val employments = Employments(Seq(employment1, employment2, employment3))
+      val employments = Employments(Seq(employment1, employment2, employment3), None)
       employments.employmentById(notFoundId) mustBe None
     }
 
@@ -177,7 +177,7 @@ class EmploymentsSpec extends PlaySpec {
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
 
-        val unifiedEmployment = Employments(Seq(employment1, employment2))
+        val unifiedEmployment = Employments(Seq(employment1, employment2), None)
         val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment1WithPTYAccount))
 
         mergedEmployments mustBe Seq(expectedMergedEmployment, employment2)
@@ -218,7 +218,7 @@ class EmploymentsSpec extends PlaySpec {
             false,
             false)
 
-        val unifiedEmployment = Employments(Seq(employment1))
+        val unifiedEmployment = Employments(Seq(employment1), None)
         val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
 
         mergedEmployments.size mustBe 2
@@ -284,7 +284,7 @@ class EmploymentsSpec extends PlaySpec {
       val expectedEmployments =
         employment1.copy(annualAccounts = Seq(annualAccountCTYAvailable, annualAccountPTYTempUnavailable))
 
-      val employments = Employments(Seq(employment1, employment2))
+      val employments = Employments(Seq(employment1, employment2), None)
       val mergedEmployments =
         employments.mergeEmploymentsForTaxYear(Seq(employment1WithUpdatedStatus), currentTaxYear)
 

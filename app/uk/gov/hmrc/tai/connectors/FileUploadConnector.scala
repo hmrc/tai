@@ -27,7 +27,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, HttpClient}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
@@ -116,7 +116,7 @@ class FileUploadConnector @Inject()(
     fileName: String,
     contentType: MimeContentType,
     url: String,
-    ahcWSClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    ahcWSClient: WSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(FusUploadFile)
     val multipartFormData = Source(
       FilePart("attachment", fileName, Some(contentType.description), Source(ByteString(byteArray) :: Nil)) :: DataPart(
