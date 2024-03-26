@@ -18,23 +18,18 @@ package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderNames, HttpClient, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderNames, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.tai.config.DesConfig
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.LocalDate
-import scala.concurrent.Future
 
 class RtiConnectorSpec extends ConnectorBaseSpec {
 
@@ -137,7 +132,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withBody(rtiJson.toString()))
           )
 
-          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
+          val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
           result mustBe Right(expectedPayments)
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
@@ -153,7 +148,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                 .withStatus(404)
           ))
 
-          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
+          val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
 
           result mustBe Right(Seq.empty)
 
@@ -183,7 +178,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   .withBody(error._2))
             )
 
-            val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue
+            val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
 
             result mustBe a[Left[UpstreamErrorResponse, _]]
           }
@@ -197,7 +192,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(url)).willReturn(aResponse()
             ))
 
-          val result = sut.getPaymentsForYearAsEitherT(nino, taxYear).value.failed.futureValue
+          val result = sut.getPaymentsForYear(nino, taxYear).value.failed.futureValue
 
           result mustBe a[Exception]
 
@@ -213,7 +208,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
         )
 
-        sut.getPaymentsForYearAsEitherT(nino, taxYear).value.futureValue mustBe
+        sut.getPaymentsForYear(nino, taxYear).value.futureValue mustBe
           a[Left[UpstreamErrorResponse, _]]
 
         server.verify(0, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
@@ -221,7 +216,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
       "the year is CY+1" in {
 
-        sut.getPaymentsForYearAsEitherT(nino, taxYear.next).value.futureValue mustBe
+        sut.getPaymentsForYear(nino, taxYear.next).value.futureValue mustBe
           a[Left[UpstreamErrorResponse, _]]
 
         server.verify(0, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))

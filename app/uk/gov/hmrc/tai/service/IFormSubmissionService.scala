@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.tai.service
 
-import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 
 import java.time.LocalDate
 import play.api.Logger
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.{MimeContentType, Person}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository

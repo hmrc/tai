@@ -62,7 +62,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
@@ -108,7 +108,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.leftT(UpstreamErrorResponse("Server Error", INTERNAL_SERVER_ERROR))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
@@ -157,7 +157,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
@@ -185,7 +185,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
@@ -236,7 +236,7 @@ class EmploymentServiceSpec extends BaseSpec {
         when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
           EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
         )
-        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
           EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
         )
         when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(
@@ -270,7 +270,7 @@ class EmploymentServiceSpec extends BaseSpec {
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any())).thenReturn(
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any())).thenReturn(
         EitherT.rightT(Seq(AnnualAccount(0, TaxYear(), Available, Nil, Nil)))
       )
       when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any())).thenReturn(

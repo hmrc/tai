@@ -31,8 +31,8 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
-import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
+import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
@@ -87,10 +87,10 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(Future.successful(("", "")))
 
-        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
           .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
 
-        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
         result mustBe Right(expected)
 
@@ -100,7 +100,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(1))
           .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
 
-        verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
 
@@ -112,7 +112,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(Some(expected)))
 
-        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
           .thenReturn(null)
 
         when(
@@ -120,7 +120,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(null)
 
-        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
         result mustBe Right(expected)
 
@@ -130,7 +130,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(0))
           .putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
 
-        verify(mockRtiConnector, times(0)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
+        verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
       }
@@ -138,7 +138,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     }
 
     "return a Left RtiPaymentsForYearError object" in {
-      when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+      when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
         .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR)))
       when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
         .thenReturn(Future.successful(None))
@@ -148,9 +148,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       )
         .thenReturn(Future.successful(("", "")))
 
-      val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value.futureValue
+      val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
       result mustBe a[Left[_, _]]
-      verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
+      verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
       verify(spyLockService, times(1)).takeLock(any())(any())
       verify(spyLockService, times(1)).releaseLock(any())(any())
     }
@@ -158,7 +158,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
     "returns an exception and the lock is released" when {
       "future failed" in {
         val errorMessage = "Error message"
-        when(mockRtiConnector.getPaymentsForYearAsEitherT(any(), any())(any(), any()))
+        when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
           .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
 
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
@@ -169,12 +169,12 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         )
           .thenReturn(Future.successful(("", "")))
 
-        val result = connector.getPaymentsForYearAsEitherT(nino, TaxYear()).value
+        val result = connector.getPaymentsForYear(nino, TaxYear()).value
         whenReady(result.failed) { ex =>
           ex.getMessage mustBe errorMessage
         }
 
-        verify(mockRtiConnector, times(1)).getPaymentsForYearAsEitherT(any(), any())(any(), any())
+        verify(mockRtiConnector, times(1)).getPaymentsForYear(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
 

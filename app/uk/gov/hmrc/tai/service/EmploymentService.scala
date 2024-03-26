@@ -70,14 +70,15 @@ class EmploymentService @Inject()(
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val employmentsCollectionEitherT: EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
+    val employmentsCollectionEitherT =
+      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
       hodResponse.body.as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
         .copy(etag = hodResponse.etag)
     }
 
     for {
       employmentsCollection <- employmentsCollectionEitherT
-      accounts <- rtiConnector.getPaymentsForYearAsEitherT(nino, taxYear).transform {
+      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
         case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
         case Left(_) => Right(Seq.empty)
       }

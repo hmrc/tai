@@ -27,15 +27,13 @@ import play.api.libs.json.Format
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http.{BadGatewayException, GatewayTimeoutException, HeaderCarrier, HeaderNames, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
-import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
-import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
@@ -49,7 +47,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 trait RtiConnector extends RawResponseReads {
-  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
                                                        hc: HeaderCarrier,
                                                        request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]]
@@ -126,12 +124,12 @@ class CachingRtiConnector @Inject() (
     })
   }
 
-  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
                                                        hc: HeaderCarrier,
                                                        request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
-      underlying.getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)
+      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
     }
 }
 
@@ -139,7 +137,6 @@ class CachingRtiConnector @Inject() (
 @Singleton
 class DefaultRtiConnector @Inject()(
   httpClient: HttpClient,
-  metrics: Metrics,
   rtiConfig: DesConfig,
   urls: RtiUrls,
   featureFlagService: FeatureFlagService)(implicit ec: ExecutionContext) extends RtiConnector {
@@ -147,80 +144,10 @@ class DefaultRtiConnector @Inject()(
   val logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]] =
-    EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](
-      getPaymentsForYearHandler(nino, taxYear)
-    )
-
-  def getPaymentsForYearAsEitherT(nino: Nino, taxYear: TaxYear)(
     implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
-      getPaymentsForYearHandlerAsEitherT(nino, taxYear)
+      getPaymentsForYearHandler(nino, taxYear)
 
-  private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Either[RtiPaymentsForYearError, Seq[AnnualAccount]]] =
-    featureFlagService.get(RtiCallToggle).flatMap { toggle =>
-      if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
-        logger.info(s"RTIAPI - call for the year: $taxYear}")
-        val NGINX_TIMEOUT = 499
-        val timerContext = metrics.startTimer(APITypes.RTIAPI)
-        val ninoWithoutSuffix = withoutSuffix(nino)
-        val futureResponse =
-          httpClient.GET[HttpResponse](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
-        futureResponse map { res =>
-          timerContext.stop()
-          res.status match {
-            case OK =>
-              metrics.incrementSuccessCounter(APITypes.RTIAPI)
-              val rtiData = res.json
-              val annualAccounts = rtiData.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads)
-              Right(annualAccounts)
-            case NOT_FOUND =>
-              metrics.incrementSuccessCounter(APITypes.RTIAPI)
-              Right(Seq.empty)
-            case BAD_REQUEST =>
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              logger.error(s"RTIAPI - Bad request error received: ${res.body}")
-              Left(BadRequestError)
-            case SERVICE_UNAVAILABLE =>
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              logger.warn(s"RTIAPI - Service unavailable error received")
-              Left(ServiceUnavailableError)
-            case INTERNAL_SERVER_ERROR =>
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              logger.error(s"RTIAPI - Internal Server error received: ${res.body}")
-              Left(ServerError)
-            case BAD_GATEWAY =>
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              Left(BadGatewayError)
-            case GATEWAY_TIMEOUT | NGINX_TIMEOUT =>
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              Left(TimeoutError)
-            case _ =>
-              logger.error(s"RTIAPI - ${res.status} error returned from RTI HODS")
-              metrics.incrementFailedCounter(APITypes.RTIAPI)
-              Left(UnhandledStatusError)
-          }
-        } recover {
-          case _: GatewayTimeoutException =>
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            timerContext.stop()
-            Left(TimeoutError)
-          case _: BadGatewayException =>
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            timerContext.stop()
-            Left(BadGatewayError)
-          case NonFatal(e) =>
-            metrics.incrementFailedCounter(APITypes.RTIAPI)
-            timerContext.stop()
-            logger.error(e.getMessage, e)
-            throw e
-        }
-      } else {
-        logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
-        Future.successful(Left(ServiceUnavailableError))
-      }
-    }
-
-  private def getPaymentsForYearHandlerAsEitherT(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+  private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     featureFlagService.getAsEitherT(RtiCallToggle).flatMap { toggle =>
       if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
         logger.info(s"RTIAPI - call for the year: $taxYear}")
