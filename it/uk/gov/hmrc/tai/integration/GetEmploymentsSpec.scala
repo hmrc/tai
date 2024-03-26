@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class GetEmploymentsSpec extends IntegrationSpec {
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))

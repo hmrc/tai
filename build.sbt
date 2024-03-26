@@ -24,9 +24,11 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.tai.model.domain._"
     ),
     scalacOptions ++= Seq(
-      "-Ywarn-unused",
-      "-Xlint",
+      "-unchecked",
       "-feature",
+      "-Xlint:_",
+      "-Wunused:_",
+      "-Wextra-implicit",
       "-Werror",
       "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
       "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
