@@ -20,18 +20,19 @@ import cats.data.EitherT
 import cats.implicits._
 import org.mockito.ArgumentMatchers.any
 import play.api.Application
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultIabdConnector, DefaultTaxCodeHistoryConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
-import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment, RtiPaymentsForYearError, ServiceUnavailableError}
+import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
@@ -50,10 +51,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[TaiSessionCacheRepository].toInstance(mockSessionCacheRepository),
       bind[LockService].toInstance(spyLockService),
       bind[FeatureFlagService].toInstance(mockFeatureFlagService),
-      bind[IabdConnector].to[CachingIabdConnector],
-      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
-      bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
-      bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector]
+      bind[IabdConnector].to[DefaultIabdConnector],
+      bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector]
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
@@ -74,7 +74,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   val annualAccount: AnnualAccount = AnnualAccount(0, TaxYear(2020), Available, Seq(payment), Seq.empty)
 
 
-  "Calling CachingRtiConnector.getPaymentsForYear" must {
+  "Calling CachingRtiConnector.getPaymentsForYearAsEitherT" must {
     "return a Right Seq[AnnualAccount] object" when {
       "no value is cached" in {
         val expected = Seq(annualAccount)
@@ -88,7 +88,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
           .thenReturn(Future.successful(("", "")))
 
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT.rightT[Future, RtiPaymentsForYearError](expected))
+          .thenReturn(EitherT.rightT[Future, UpstreamErrorResponse](expected))
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
@@ -139,7 +139,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
     "return a Left RtiPaymentsForYearError object" in {
       when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](ServiceUnavailableError: RtiPaymentsForYearError))
+        .thenReturn(EitherT.leftT[Future, Seq[AnnualAccount]](UpstreamErrorResponse("error", INTERNAL_SERVER_ERROR)))
       when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
         .thenReturn(Future.successful(None))
 
@@ -159,7 +159,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       "future failed" in {
         val errorMessage = "Error message"
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, RtiPaymentsForYearError, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
+          .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
 
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(None))

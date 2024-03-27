@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.controllers
 
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, TOO_MANY_REQUESTS}
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
@@ -28,5 +29,15 @@ trait ControllerErrorHandler {
     case ex: BadRequestException => Future.successful(BadRequest(ex.message))
     case ex: NotFoundException   => Future.successful(NotFound(ex.message))
     case ex                      => throw ex
+  }
+
+  def errorToResponse(error: UpstreamErrorResponse): Result = {
+    error.statusCode match {
+      case NOT_FOUND => NotFound(error.getMessage())
+      case BAD_REQUEST => BadRequest(error.getMessage())
+      case TOO_MANY_REQUESTS => TooManyRequests(error.getMessage())
+      case status if status >= 499 => BadGateway(error.getMessage())
+      case _ => InternalServerError(error.getMessage())
+    }
   }
 }

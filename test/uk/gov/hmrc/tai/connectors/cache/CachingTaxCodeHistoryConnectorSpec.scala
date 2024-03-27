@@ -21,7 +21,7 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.connectors.{CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxCodeHistoryConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.connectors.{CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -46,10 +46,9 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[FeatureFlagService].toInstance(mockFeatureFlagService),
       bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
       bind[TaxCodeHistoryConnector].qualifiedWith("default").toInstance(mockDefaultTaxCodeHistoryConnector),
-      bind[RtiConnector].to[CachingRtiConnector],
-      bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
-      bind[IabdConnector].to[CachingIabdConnector],
-      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+      bind[RtiConnector].to[DefaultRtiConnector],
+      bind[IabdConnector].to[DefaultIabdConnector],
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
       bind[LockService].toInstance(spy(new FakeLockService))
     )

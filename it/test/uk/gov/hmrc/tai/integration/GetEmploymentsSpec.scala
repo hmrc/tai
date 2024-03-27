@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class GetEmploymentsSpec extends IntegrationSpec {
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -47,8 +47,8 @@ class GetEmploymentsSpec extends IntegrationSpec {
         (BAD_REQUEST -> BAD_REQUEST),
         (NOT_FOUND -> NOT_FOUND),
         (IM_A_TEAPOT -> INTERNAL_SERVER_ERROR),
-        (INTERNAL_SERVER_ERROR -> INTERNAL_SERVER_ERROR),
-        (SERVICE_UNAVAILABLE -> INTERNAL_SERVER_ERROR)
+        (INTERNAL_SERVER_ERROR -> BAD_GATEWAY),
+        (SERVICE_UNAVAILABLE -> BAD_GATEWAY)
       ).foreach { case (httpStatus, error) =>
         s"return $error when the NPS employments API returns a $httpStatus" in {
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(aResponse().withStatus(httpStatus)))

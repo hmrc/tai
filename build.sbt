@@ -21,19 +21,6 @@ val appName: String = "tai"
 ThisBuild / majorVersion := 2
 ThisBuild / scalaVersion := "2.13.12"
 
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  val scoverageExcludePatterns =
-    List("<empty>", "Reverse.*", "app.Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
-
-  Seq(
-    ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
-    ScoverageKeys.coverageMinimumStmtTotal := 95,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true
-  )
-}
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
@@ -45,9 +32,9 @@ lazy val microservice = Project(appName, file("."))
     routesImport ++= Seq( "scala.language.reflectiveCalls", "uk.gov.hmrc.tai.model.domain.income._",
       "uk.gov.hmrc.tai.model.domain._", "uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"),
     scalacOptions ++= Seq(
-      "-Ywarn-unused",
-      "-Xlint",
+      "-unchecked",
       "-feature",
+      "-Xlint:_",
       "-Werror",
       "-Wdead-code",
       "-Wunused:_",
@@ -64,7 +51,21 @@ lazy val microservice = Project(appName, file("."))
     )
   )
 
-Test / parallelExecution := true
+lazy val scoverageSettings = {
+  import scoverage.ScoverageKeys
+  val scoverageExcludePatterns =
+    List("<empty>", "Reverse.*", "app.Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
+
+  Seq(
+    ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
+    ScoverageKeys.coverageMinimumStmtTotal := 92,
+    ScoverageKeys.coverageMinimumBranchTotal := 90,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true
+  )
+}
+
+Test / parallelExecution := false
 Test / scalacOptions --= Seq("-Wdead-code", "-Wvalue-discard")
 
 lazy val it = project

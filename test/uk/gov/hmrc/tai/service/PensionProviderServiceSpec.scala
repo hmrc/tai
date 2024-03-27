@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.service
 
+import cats.data.EitherT
+
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.test.FakeRequest
@@ -24,7 +26,6 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.repositories.deprecated.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
@@ -47,7 +48,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         val mockAuditable = mock[Auditor]
         doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
+        val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
         val result = sut.addPensionProvider(nino, addPensionProvider).futureValue
 
         result mustBe "1"
@@ -73,7 +74,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       val mockAuditable = mock[Auditor]
       doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
+      val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
       sut.addPensionProvider(nino, pensionProvider).futureValue
 
       verify(mockAuditable, times(1))
@@ -93,7 +94,7 @@ class PensionProviderServiceSpec extends BaseSpec {
           Some(LocalDate.parse("1982-04-03")),
           Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
 
-        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentRepository])
+        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentService])
 
         val result = sut.addPensionProviderForm(pensionProvider)(person).futureValue
         result mustBe PensionProviderIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider)).toString
@@ -114,7 +115,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         val mockAuditable = mock[Auditor]
         doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
-        val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
+        val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
         val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider)(implicitly, FakeRequest()).futureValue
 
         result mustBe "1"
@@ -139,7 +140,7 @@ class PensionProviderServiceSpec extends BaseSpec {
       val mockAuditable = mock[Auditor]
       doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
-      val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentRepository])
+      val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
       sut.incorrectPensionProvider(nino, 1, pensionProvider)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1))
@@ -173,11 +174,11 @@ class PensionProviderServiceSpec extends BaseSpec {
           receivingOccupationalPension = false
         )
 
-        val mockEmploymentRepository = mock[EmploymentRepository]
-        when(mockEmploymentRepository.employment(any(), any())(any(), any()))
-          .thenReturn(Future.successful(Right(employment)))
+        val mockEmploymentService = mock[EmploymentService]
+        when(mockEmploymentService.employmentAsEitherT(any(), any())(any(), any()))
+          .thenReturn(EitherT.rightT(employment))
 
-        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentRepository)
+        val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentService)
 
         val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc, FakeRequest())(person).futureValue
         result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
@@ -189,6 +190,6 @@ class PensionProviderServiceSpec extends BaseSpec {
   private def createSut(
     iFormSubmissionService: IFormSubmissionService,
     auditable: Auditor,
-    employmentRepository: EmploymentRepository) =
-    new PensionProviderService(iFormSubmissionService, employmentRepository, auditable)
+    employmentService: EmploymentService) =
+    new PensionProviderService(iFormSubmissionService, employmentService, auditable)
 }

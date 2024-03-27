@@ -23,11 +23,14 @@ import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 
+import scala.concurrent.{ExecutionContext, Future}
+
+//TODO: Only used in tests. To be moved in test
 class CacheService @Inject()(mongoConfig: MongoConfig, taiCacheRepository: TaiCacheRepository) {
-  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier): Unit =
+  def invalidateTaiCacheData(nino: Nino)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     if (mongoConfig.mongoEnabled) {
-      taiCacheRepository.removeById(CacheId(nino))
+      taiCacheRepository.removeById(CacheId(nino)).map(_ => ())
     } else {
-      ()
+      Future.successful(())
     }
 }

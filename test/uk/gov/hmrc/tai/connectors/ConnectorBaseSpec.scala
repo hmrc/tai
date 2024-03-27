@@ -68,7 +68,6 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
         "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
         "microservice.services.if-hod.port" -> server.port(),
         "microservice.services.if-hod.host" -> "127.0.0.1",
-        "auditing.enabled" -> "false",
         "microservice.services.if-hod.authorizationToken" -> "ifAuthorization",
         "microservice.services.des-hod.authorizationToken" -> "desAuthorization"
       )
@@ -82,8 +81,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
       Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))

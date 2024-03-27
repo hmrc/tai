@@ -41,8 +41,9 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
   private val FileUploadSuccessAudit = "FileUploadSuccess"
   private val FileUploadFailureAudit = "FileUploadFailure"
 
-  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] =
+  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] = {
     fileUploadConnector.createEnvelope
+  }
 
   def envelopeStatus(envelopeId: String): Future[EnvelopeStatus] =
     fileUploadConnector.envelope(envelopeId) map {

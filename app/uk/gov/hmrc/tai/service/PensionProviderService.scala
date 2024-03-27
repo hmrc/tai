@@ -25,7 +25,6 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.repositories.deprecated.EmploymentRepository
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.IFormConstants
 
@@ -34,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class PensionProviderService @Inject()(
   iFormSubmissionService: IFormSubmissionService,
-  employmentRepository: EmploymentRepository,
+  employmentService: EmploymentService,
   auditable: Auditor)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
@@ -98,10 +97,13 @@ class PensionProviderService @Inject()(
     id: Int,
     incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
     {
-      for {
-        Right(existingEmployment) <- employmentRepository.employment(nino, id)
+      (for {
+        existingEmployment <- employmentService.employmentAsEitherT(nino, id)
         templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
-      } yield EmploymentIForm(templateModel).toString
+      } yield EmploymentIForm(templateModel).toString).value.map {
+        case Right(result) => result
+        case Left(error) => throw error
+      }
     }
   }
 }

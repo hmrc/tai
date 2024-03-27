@@ -116,7 +116,7 @@ class FileUploadConnector @Inject()(
     fileName: String,
     contentType: MimeContentType,
     url: String,
-    ahcWSClient: AhcWSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    ahcWSClient: WSClient)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val timerContext = metrics.startTimer(FusUploadFile)
     val multipartFormData = Source(
       FilePart("attachment", fileName, Some(contentType.description), Source(ByteString(byteArray) :: Nil)) :: DataPart(

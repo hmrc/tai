@@ -32,7 +32,6 @@ class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls
   private val logger: Logger = Logger(getClass.getName)
 
   def generatePdf(html: String): Future[Array[Byte]] = {
-
     val timerContext = metrics.startTimer(APITypes.PdfServiceAPI)
 
     val result = wsClient.url(urls.generatePdfUrl).post(Map("html" -> Seq(html)))

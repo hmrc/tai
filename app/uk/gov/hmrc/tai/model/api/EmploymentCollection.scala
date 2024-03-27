@@ -18,4 +18,4 @@ package uk.gov.hmrc.tai.model.api
 
 import uk.gov.hmrc.tai.model.domain.Employment
 
-case class EmploymentCollection(employments: Seq[Employment])
+case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
