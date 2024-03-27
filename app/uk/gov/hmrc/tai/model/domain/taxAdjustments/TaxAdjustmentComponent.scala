@@ -47,7 +47,7 @@ case object GiftAidPayments extends TaxReliefComponent
 case object GiftAidPaymentsRelief extends TaxReliefComponent
 
 object TaxAdjustmentType {
-  implicit val formatTaxAdjustmentType = new Format[TaxAdjustmentType] {
+  implicit val formatTaxAdjustmentType: Format[TaxAdjustmentType] = new Format[TaxAdjustmentType] {
     override def writes(taxAdjustmentType: TaxAdjustmentType): JsValue = JsString(taxAdjustmentType.toString)
 
     override def reads(json: JsValue): JsResult[TaxAdjustmentType] = ???
@@ -55,7 +55,7 @@ object TaxAdjustmentType {
 }
 
 object ReliefsGivingBackTax {
-  implicit val formatReliefsGivingBackTax = new Format[ReliefsGivingBackTax] {
+  implicit val formatReliefsGivingBackTax: Format[ReliefsGivingBackTax] = new Format[ReliefsGivingBackTax] {
     override def writes(taxAdjustmentType: ReliefsGivingBackTax): JsValue = JsString(taxAdjustmentType.toString)
 
     override def reads(json: JsValue): JsResult[ReliefsGivingBackTax] = ???
@@ -63,7 +63,7 @@ object ReliefsGivingBackTax {
 }
 
 object OtherTaxDue {
-  implicit val formatOtherTaxDue = new Format[OtherTaxDue] {
+  implicit val formatOtherTaxDue: Format[OtherTaxDue] = new Format[OtherTaxDue] {
     override def writes(taxAdjustmentType: OtherTaxDue): JsValue = JsString(taxAdjustmentType.toString)
 
     override def reads(json: JsValue): JsResult[OtherTaxDue] = ???
@@ -71,7 +71,7 @@ object OtherTaxDue {
 }
 
 object AlreadyTaxedAtSource {
-  implicit val formatAlreadyTaxedAtSource = new Format[AlreadyTaxedAtSource] {
+  implicit val formatAlreadyTaxedAtSource: Format[AlreadyTaxedAtSource] = new Format[AlreadyTaxedAtSource] {
     override def writes(taxAdjustmentType: AlreadyTaxedAtSource): JsValue = JsString(taxAdjustmentType.toString)
 
     override def reads(json: JsValue): JsResult[AlreadyTaxedAtSource] = ???
@@ -79,7 +79,7 @@ object AlreadyTaxedAtSource {
 }
 
 object TaxReliefComponent {
-  implicit val formatTaxReliefComponent = new Format[TaxReliefComponent] {
+  implicit val formatTaxReliefComponent: Format[TaxReliefComponent] = new Format[TaxReliefComponent] {
     override def reads(json: JsValue): JsResult[TaxReliefComponent] = ???
 
     override def writes(taxReliefComponent: TaxReliefComponent): JsValue = JsString(taxReliefComponent.toString)

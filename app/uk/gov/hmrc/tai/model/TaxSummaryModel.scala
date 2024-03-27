@@ -30,12 +30,12 @@ case class TaxBand(
   upperBand: Option[BigDecimal] = None,
   rate: Option[BigDecimal] = None)
 object TaxBand {
-  implicit val formats = Json.format[TaxBand]
+  implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
 }
 
 case class EditableDetails(isEditable: Boolean = true, payRollingBiks: Boolean = false)
 object EditableDetails {
-  implicit val formats = Json.format[EditableDetails]
+  implicit val formats: OFormat[EditableDetails] = Json.format[EditableDetails]
 }
 
 case class Employments(
@@ -46,7 +46,7 @@ case class Employments(
 )
 
 object Employments {
-  implicit val format = Json.format[Employments]
+  implicit val format: OFormat[Employments] = Json.format[Employments]
 }
 
 case class CYPlusOneChange(
@@ -60,7 +60,7 @@ case class CYPlusOneChange(
   personalSavingsAllowance: Option[Change[BigDecimal, BigDecimal]] = None
 )
 object CYPlusOneChange {
-  implicit val formats = Json.format[CYPlusOneChange]
+  implicit val formats: OFormat[CYPlusOneChange] = Json.format[CYPlusOneChange]
 }
 
 case class IncomeExplanation(
@@ -85,7 +85,7 @@ case class IncomeExplanation(
   editableDetails: EditableDetails = EditableDetails())
 
 object IncomeExplanation {
-  implicit val formats = Json.format[IncomeExplanation]
+  implicit val formats: OFormat[IncomeExplanation] = Json.format[IncomeExplanation]
 }
 
 case class RtiCalc(
@@ -98,13 +98,13 @@ case class RtiCalc(
   totalPayToDate: BigDecimal,
   calculationResult: Option[BigDecimal])
 object RtiCalc {
-  implicit val format = Json.format[RtiCalc]
+  implicit val format: OFormat[RtiCalc] = Json.format[RtiCalc]
 }
 
 case class IncomeData(incomeExplanations: List[IncomeExplanation])
 
 object IncomeData {
-  implicit val format = Json.format[IncomeData]
+  implicit val format: OFormat[IncomeData] = Json.format[IncomeData]
 }
 
 case class TaxCodeComponent(
@@ -114,19 +114,19 @@ case class TaxCodeComponent(
 )
 
 object TaxCodeComponent {
-  implicit val format = Json.format[TaxCodeComponent]
+  implicit val format: OFormat[TaxCodeComponent] = Json.format[TaxCodeComponent]
 }
 
 case class TaxCode(taxCode: Option[String], rate: Option[BigDecimal])
 
 object TaxCode {
-  implicit val format = Json.format[TaxCode]
+  implicit val format: OFormat[TaxCode] = Json.format[TaxCode]
 }
 
 case class TaxCodeDescription(taxCode: String, name: String, taxCodeDescriptors: List[TaxCode])
 
 object TaxCodeDescription {
-  implicit val format = Json.format[TaxCodeDescription]
+  implicit val format: OFormat[TaxCodeDescription] = Json.format[TaxCodeDescription]
 }
 
 case class TaxCodeDetails(
@@ -139,7 +139,7 @@ case class TaxCodeDetails(
   total: BigDecimal = BigDecimal(0))
 
 object TaxCodeDetails {
-  implicit val formats = Json.format[TaxCodeDetails]
+  implicit val formats: OFormat[TaxCodeDetails] = Json.format[TaxCodeDetails]
 }
 
 case class Tax(
@@ -156,7 +156,7 @@ case class Tax(
   actualTaxDueAssumingAllAtBasicRate: Option[BigDecimal] = None)
 
 object Tax {
-  implicit val formats = Json.format[Tax]
+  implicit val formats: OFormat[Tax] = Json.format[Tax]
 }
 
 case class IabdSummary(
@@ -168,13 +168,13 @@ case class IabdSummary(
   employmentName: Option[String] = None)
 
 object IabdSummary {
-  implicit val formats = Json.format[IabdSummary]
+  implicit val formats: OFormat[IabdSummary] = Json.format[IabdSummary]
 }
 
 case class TaxComponent(amount: BigDecimal, componentType: Int, description: String, iabdSummaries: List[IabdSummary])
 
 object TaxComponent {
-  implicit val formats = Json.format[TaxComponent]
+  implicit val formats: OFormat[TaxComponent] = Json.format[TaxComponent]
 }
 
 case class TaxCodeIncomeSummary(
@@ -200,7 +200,7 @@ case class TaxCodeIncomeSummary(
   basisOperation: Option[BasisOperation] = None) {}
 
 object TaxCodeIncomeSummary {
-  implicit val formats = Json.format[TaxCodeIncomeSummary]
+  implicit val formats: OFormat[TaxCodeIncomeSummary] = Json.format[TaxCodeIncomeSummary]
 }
 
 case class TaxCodeIncomeTotal(
@@ -210,7 +210,7 @@ case class TaxCodeIncomeTotal(
   totalTaxableIncome: BigDecimal)
 
 object TaxCodeIncomeTotal {
-  implicit val formats = Json.format[TaxCodeIncomeTotal]
+  implicit val formats: OFormat[TaxCodeIncomeTotal] = Json.format[TaxCodeIncomeTotal]
 }
 
 case class NoneTaxCodeIncomes(
@@ -227,7 +227,7 @@ case class NoneTaxCodeIncomes(
   totalIncome: BigDecimal) {}
 
 object NoneTaxCodeIncomes {
-  implicit val formats = Json.format[NoneTaxCodeIncomes]
+  implicit val formats: OFormat[NoneTaxCodeIncomes] = Json.format[NoneTaxCodeIncomes]
 }
 
 case class TaxCodeIncomes(
@@ -241,13 +241,13 @@ case class TaxCodeIncomes(
   totalTax: BigDecimal) {}
 
 object TaxCodeIncomes {
-  implicit val formats = Json.format[TaxCodeIncomes]
+  implicit val formats: OFormat[TaxCodeIncomes] = Json.format[TaxCodeIncomes]
 }
 
 case class Incomes(taxCodeIncomes: TaxCodeIncomes, noneTaxCodeIncomes: NoneTaxCodeIncomes, total: BigDecimal)
 
 object Incomes {
-  implicit val formats = Json.format[Incomes]
+  implicit val formats: OFormat[Incomes] = Json.format[Incomes]
 }
 
 case class IncreasesTax(
@@ -256,19 +256,19 @@ case class IncreasesTax(
   total: BigDecimal)
 
 object IncreasesTax {
-  implicit val formats = Json.format[IncreasesTax]
+  implicit val formats: OFormat[IncreasesTax] = Json.format[IncreasesTax]
 }
 
 case class ExtensionRelief(sourceAmount: BigDecimal = BigDecimal(0), reliefAmount: BigDecimal = BigDecimal(0))
 
 object ExtensionRelief {
-  implicit val formats = Json.format[ExtensionRelief]
+  implicit val formats: OFormat[ExtensionRelief] = Json.format[ExtensionRelief]
 }
 
 case class ExtensionReliefs(giftAid: Option[ExtensionRelief] = None, personalPension: Option[ExtensionRelief] = None)
 
 object ExtensionReliefs {
-  implicit val formats = Json.format[ExtensionReliefs]
+  implicit val formats: OFormat[ExtensionReliefs] = Json.format[ExtensionReliefs]
 }
 
 case class DecreasesTax(
@@ -286,18 +286,18 @@ case class DecreasesTax(
   personalSavingsAllowance: Option[TaxComponent] = None,
   total: BigDecimal)
 object DecreasesTax {
-  implicit val formats = Json.format[DecreasesTax]
+  implicit val formats: OFormat[DecreasesTax] = Json.format[DecreasesTax]
 }
 
 case class MarriageAllowance(
   marriageAllowance: BigDecimal = BigDecimal(0),
   marriageAllowanceRelief: BigDecimal = BigDecimal(0))
 object MarriageAllowance {
-  implicit val formats = Json.format[MarriageAllowance]
+  implicit val formats: OFormat[MarriageAllowance] = Json.format[MarriageAllowance]
 }
 case class Adjustment(codingAmount: BigDecimal = BigDecimal(0), amountInTermsOfTax: BigDecimal = BigDecimal(0))
 object Adjustment {
-  implicit val formats = Json.format[Adjustment]
+  implicit val formats: OFormat[Adjustment] = Json.format[Adjustment]
 }
 
 case class LiabilityReductions(
@@ -307,7 +307,7 @@ case class LiabilityReductions(
   maintenancePayments: Option[Adjustment] = None,
   doubleTaxationRelief: Option[Adjustment] = None)
 object LiabilityReductions {
-  implicit val formats = Json.format[LiabilityReductions]
+  implicit val formats: OFormat[LiabilityReductions] = Json.format[LiabilityReductions]
 }
 
 case class LiabilityAdditions(
@@ -315,7 +315,7 @@ case class LiabilityAdditions(
   excessWidowsAndOrphans: Option[Adjustment] = None,
   pensionPaymentsAdjustment: Option[Adjustment] = None)
 object LiabilityAdditions {
-  implicit val formats = Json.format[LiabilityAdditions]
+  implicit val formats: OFormat[LiabilityAdditions] = Json.format[LiabilityAdditions]
 }
 
 case class TotalLiability(
@@ -334,19 +334,19 @@ case class TotalLiability(
   liabilityAdditions: Option[LiabilityAdditions] = None)
 
 object TotalLiability {
-  implicit val formats = Json.format[TotalLiability]
+  implicit val formats: OFormat[TotalLiability] = Json.format[TotalLiability]
 }
 
 case class GateKeeperRule(gateKeeperType: Option[Int], id: Option[Int], description: Option[String])
 
 object GateKeeperRule {
-  implicit val formats = Json.format[GateKeeperRule]
+  implicit val formats: OFormat[GateKeeperRule] = Json.format[GateKeeperRule]
 }
 
 case class GateKeeper(gateKeepered: Boolean = false, gateKeeperResults: List[GateKeeperRule])
 
 object GateKeeper {
-  implicit val formats = Json.format[GateKeeper]
+  implicit val formats: OFormat[GateKeeper] = Json.format[GateKeeper]
 
   def withMciRule: GateKeeper =
     GateKeeper(
@@ -365,7 +365,7 @@ case class CeasedEmploymentDetails(
   employmentStatus: Option[Int])
 
 object CeasedEmploymentDetails {
-  implicit val formats = Json.format[CeasedEmploymentDetails]
+  implicit val formats: OFormat[CeasedEmploymentDetails] = Json.format[CeasedEmploymentDetails]
 }
 
 case class TaxSummaryDetails(

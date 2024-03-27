@@ -131,10 +131,10 @@ class DefaultIabdConnector @Inject()(httpHandler: HttpHandler,
   override def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
     val url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType)
-    val amountList = List(IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource)))
+    val iabdUpdateAmount = IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
     val requestHeader = headerForUpdateTaxCodeAmount(hc, version, sessionOrUUID, npsConfig.originatorId)
 
-    httpHandler.postToApi[List[IabdUpdateAmount]](url, amountList, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
+    httpHandler.postToApi[IabdUpdateAmount](url, iabdUpdateAmount, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
       implicitly, IabdUpdateAmountFormats.formatList
     ).map { _ => HodUpdateSuccess }.recover { case _ => HodUpdateFailure }
   }

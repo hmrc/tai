@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.nps
+package uk.gov.hmrc.tai.config
 
-import play.api.libs.json._
+import uk.gov.hmrc.crypto.Sensitive
 
-case class NpsIabdRoot(
-  nino: String,
-  employmentSequenceNumber: Option[Int] = None,
-  `type`: Int,
-  grossAmount: Option[BigDecimal] = None,
-  netAmount: Option[BigDecimal] = None,
-  source: Option[Int] = None,
-  receiptDate: Option[NpsDate] = None,
-  captureDate: Option[NpsDate] = None)
+case class SensitiveT[T](override val decryptedValue: T) extends Sensitive[T]
 
-object NpsIabdRoot {
-  implicit val formats: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
-}

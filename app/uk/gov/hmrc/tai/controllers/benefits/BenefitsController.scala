@@ -45,7 +45,7 @@ class BenefitsController @Inject()(
     } recoverWith taxAccountErrorHandler()
   }
 
-  @nowarn("msg=parameter value empId in method removeCompanyBenefits is never used")
+  @nowarn("msg=parameter empId in method removeCompanyBenefits is never used")
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[RemoveCompanyBenefit] { removeCompanyBenefit =>

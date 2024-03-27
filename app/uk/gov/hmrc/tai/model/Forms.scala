@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model
 
 import java.time.LocalDate
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 
 case class EditIncomeForm(
   name: String,
@@ -42,49 +42,49 @@ object EditIncomeForm {
 case class HowToUpdateForm(howToUpdate: Option[String])
 
 object HowToUpdateForm {
-  implicit val formats = Json.format[HowToUpdateForm]
+  implicit val formats: OFormat[HowToUpdateForm] = Json.format[HowToUpdateForm]
 }
 
 case class HoursWorkedForm(workingHours: Option[String])
 
 object HoursWorkedForm {
-  implicit val formats = Json.format[HoursWorkedForm]
+  implicit val formats: OFormat[HoursWorkedForm] = Json.format[HoursWorkedForm]
 }
 
 case class PayPeriodForm(payPeriod: Option[String], otherInDays: Option[Int] = None)
 
 object PayPeriodForm {
-  implicit val formats = Json.format[PayPeriodForm]
+  implicit val formats: OFormat[PayPeriodForm] = Json.format[PayPeriodForm]
 }
 
 case class PayslipForm(totalSalary: Option[String] = None)
 
 object PayslipForm {
-  implicit val formats = Json.format[PayslipForm]
+  implicit val formats: OFormat[PayslipForm] = Json.format[PayslipForm]
 }
 
 case class TaxablePayslipForm(taxablePay: Option[String] = None)
 
 object TaxablePayslipForm {
-  implicit val formats = Json.format[TaxablePayslipForm]
+  implicit val formats: OFormat[TaxablePayslipForm] = Json.format[TaxablePayslipForm]
 }
 
 case class PayslipDeductionsForm(payslipDeductions: Option[String])
 
 object PayslipDeductionsForm {
-  implicit val formats = Json.format[PayslipDeductionsForm]
+  implicit val formats: OFormat[PayslipDeductionsForm] = Json.format[PayslipDeductionsForm]
 }
 
 case class BonusPaymentsForm(bonusPayments: Option[String], bonusPaymentsMoreThisYear: Option[String])
 
 object BonusPaymentsForm {
-  implicit val formats = Json.format[BonusPaymentsForm]
+  implicit val formats: OFormat[BonusPaymentsForm] = Json.format[BonusPaymentsForm]
 }
 
 case class BonusOvertimeAmountForm(amount: Option[String] = None)
 
 object BonusOvertimeAmountForm {
-  implicit val formats = Json.format[BonusOvertimeAmountForm]
+  implicit val formats: OFormat[BonusOvertimeAmountForm] = Json.format[BonusOvertimeAmountForm]
 }
 
 case class IncomeCalculation(

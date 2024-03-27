@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.rti
 
 import java.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class RtiYTD(
   payYTD: Option[BigDecimal] = None,
@@ -28,5 +28,5 @@ case class RtiYTD(
 )
 
 object RtiYTD {
-  implicit val formats = Json.format[RtiYTD]
+  implicit val formats: OFormat[RtiYTD] = Json.format[RtiYTD]
 }

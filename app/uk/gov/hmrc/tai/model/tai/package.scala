@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json._
 
 package object tai {
-  implicit val formatTaxYear = new Format[TaxYear] {
+  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
     override def reads(j: JsValue): JsResult[TaxYear] = j match {
       case JsNumber(n) => JsSuccess(TaxYear(n.toInt))
       case x           => JsError(s"Expected JsNumber, found $x")

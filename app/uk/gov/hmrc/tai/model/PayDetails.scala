@@ -29,5 +29,5 @@ case class PayDetails(
   startDate: Option[LocalDate] = None)
 
 object PayDetails {
-  implicit val formats = Json.format[PayDetails]
+  implicit val formats: OFormat[PayDetails] = Json.format[PayDetails]
 }

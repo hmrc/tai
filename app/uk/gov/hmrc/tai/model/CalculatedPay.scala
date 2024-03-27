@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model
 
 import java.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class CalculatedPay(
   grossAnnualPay: Option[BigDecimal],
@@ -26,5 +26,5 @@ case class CalculatedPay(
   annualAmount: Option[BigDecimal])
 
 object CalculatedPay {
-  implicit val formats = Json.format[CalculatedPay]
+  implicit val formats: OFormat[CalculatedPay] = Json.format[CalculatedPay]
 }

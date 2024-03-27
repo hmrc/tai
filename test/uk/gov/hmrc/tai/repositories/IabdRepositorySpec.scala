@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.repositories
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
@@ -41,7 +42,7 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val metrics: Metrics = mock[Metrics]
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val iabdConnector: IabdConnector = mock[IabdConnector]
-  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(FakeRequest(), nino)
 
   val iabdDetails1FromApi: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))

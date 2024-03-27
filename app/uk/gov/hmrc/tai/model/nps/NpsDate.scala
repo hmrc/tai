@@ -30,7 +30,7 @@ object NpsDate {
 
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
 
-  implicit val reads = new Reads[NpsDate] {
+  implicit val reads: Reads[NpsDate] = new Reads[NpsDate] {
     override def reads(json: JsValue): JsResult[NpsDate] =
       json match {
         case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
@@ -41,7 +41,7 @@ object NpsDate {
 
   private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  implicit val writes = new Writes[NpsDate] {
+  implicit val writes: Writes[NpsDate] = new Writes[NpsDate] {
     override def writes(date: NpsDate): JsValue =
       JsString(date.toNpsString)
   }

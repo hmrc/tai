@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.tai.util
 
-import akka.Done
+import org.apache.pekko.Done
 import com.google.inject.Inject
-import net.sf.ehcache.Element
 import play.api.cache.AsyncCacheApi
 
 import scala.concurrent.duration.Duration
@@ -26,8 +25,6 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 class FakeAsyncCacheApi @Inject() () extends AsyncCacheApi {
-
-  val cache = scala.collection.mutable.Map[String, Element]()
 
   def set(key: String, value: Any, expiration: Duration): Future[Done] = Future.successful(Done)
 

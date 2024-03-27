@@ -30,5 +30,5 @@ case class TaiRoot(
   deceasedIndicator: Option[Boolean])
 
 object TaiRoot {
-  implicit val formats = Json.format[TaiRoot]
+  implicit val formats: OFormat[TaiRoot] = Json.format[TaiRoot]
 }

@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 
 case class ApiResponse[T](data: T, links: Seq[ApiLink])
 
 object ApiResponse {
-  implicit def apiFormat[T](implicit format: Format[T]) =
+  implicit def apiFormat[T](implicit format: Format[T]): OFormat[ApiResponse[T]] =
     Json.format[ApiResponse[T]]
 }

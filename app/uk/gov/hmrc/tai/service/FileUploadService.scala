@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.service
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.ws.ahc.AhcWSClient

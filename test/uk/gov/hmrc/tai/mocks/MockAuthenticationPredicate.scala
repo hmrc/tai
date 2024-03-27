@@ -24,7 +24,7 @@ import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.connectors.cache.CacheId
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
@@ -38,15 +38,15 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
 
   val cc: ControllerComponents = stubControllerComponents()
 
-  val mockAuthService = mock[AuthorisedFunctions]
+  val mockAuthService: AuthorisedFunctions = mock[AuthorisedFunctions]
 
   lazy val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService, cc)
 
-  val nino = new Generator(Random).nextNino
-  val sessionIdValue = "some session id"
-  implicit val hc = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
-  val cacheId = CacheId(nino)
-  val cacheIdNoSession = CacheId.noSession(nino)
+  val nino: Nino = new Generator(Random).nextNino
+  val sessionIdValue: String = "some session id"
+  implicit val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
+  val cacheId: CacheId = CacheId(nino)
+  val cacheIdNoSession: CacheId = CacheId.noSession(nino)
 
   val testAuthSuccessResponse = new ~(Some(nino.value), None)
 

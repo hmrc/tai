@@ -17,11 +17,11 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 class ApiResponseSpec extends PlaySpec {
 
-  implicit val testFormat = Json.format[TestObject]
+  implicit val testFormat: OFormat[TestObject] = Json.format[TestObject]
 
   "ApiResponse" must {
     "produce a valid json message with a data section" when {
