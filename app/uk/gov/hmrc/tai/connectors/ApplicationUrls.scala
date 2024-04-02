@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.config._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 @Singleton
-class RtiUrls @Inject()(config: DesConfig) {
+class RtiUrls @Inject() (config: DesConfig) {
 
   private def paymentsUrl(nino: String) =
     s"${config.baseURL}/rti/individual/payments/nino/$nino"
@@ -32,12 +32,12 @@ class RtiUrls @Inject()(config: DesConfig) {
 }
 
 @Singleton
-class PdfUrls @Inject()(config: PdfConfig) {
+class PdfUrls @Inject() (config: PdfConfig) {
   def generatePdfUrl = s"${config.baseURL}/pdf-generator-service/generate"
 }
 
 @Singleton
-class FileUploadUrls @Inject()(config: FileUploadConfig) {
+class FileUploadUrls @Inject() (config: FileUploadConfig) {
 
   def envelopesUrl = s"${config.baseURL}/file-upload/envelopes"
   def routingUrl = s"${config.baseURL}/file-routing/requests"
@@ -46,7 +46,7 @@ class FileUploadUrls @Inject()(config: FileUploadConfig) {
 }
 
 @Singleton
-class PayeUrls @Inject()(config: PayeConfig) {
+class PayeUrls @Inject() (config: PayeConfig) {
 
   def carBenefitsForYearUrl(nino: Nino, taxYear: TaxYear) =
     s"${config.baseURL}/paye/${nino.nino}/car-benefits/${taxYear.year}"
@@ -57,13 +57,13 @@ class PayeUrls @Inject()(config: PayeConfig) {
 }
 
 @Singleton
-class CitizenDetailsUrls @Inject()(config: CitizenDetailsConfig) {
+class CitizenDetailsUrls @Inject() (config: CitizenDetailsConfig) {
   def designatoryDetailsUrl(nino: Nino) = s"${config.baseURL}/citizen-details/${nino.nino}/designatory-details"
   def etagUrl(nino: Nino) = s"${config.baseURL}/citizen-details/${nino.nino}/etag"
 }
 
 @Singleton
-class BbsiUrls @Inject()(config: DesConfig) {
+class BbsiUrls @Inject() (config: DesConfig) {
 
   def bbsiUrl(nino: Nino, taxYear: TaxYear): String = {
     def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
@@ -73,7 +73,7 @@ class BbsiUrls @Inject()(config: DesConfig) {
 }
 
 @Singleton
-class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
+class TaxAccountUrls @Inject() (npsConfig: NpsConfig, desConfig: DesConfig) {
 
   private val npsTaxAccountURL = (nino: Nino, taxYear: TaxYear) =>
     s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
@@ -86,7 +86,7 @@ class TaxAccountUrls @Inject()(npsConfig: NpsConfig, desConfig: DesConfig) {
 }
 
 @Singleton
-class IabdUrls @Inject()(npsConfig: NpsConfig) {
+class IabdUrls @Inject() (npsConfig: NpsConfig) {
 
   def npsIabdUrl(nino: Nino, taxYear: TaxYear): String =
     s"${npsConfig.baseURL}/person/${nino.nino}/iabds/${taxYear.year}"
@@ -96,17 +96,15 @@ class IabdUrls @Inject()(npsConfig: NpsConfig) {
 }
 
 @Singleton
-class TaxCodeChangeFromDesUrl @Inject()(config: DesConfig) {
+class TaxCodeChangeFromDesUrl @Inject() (config: DesConfig) {
 
-  def taxCodeChangeFromDesUrl(nino: Nino, year: TaxYear): String = {
+  def taxCodeChangeFromDesUrl(nino: Nino, year: TaxYear): String =
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${year.year}?endTaxYear=${year.year}"
-  }
 }
 
 @Singleton
-class TaxCodeChangeFromIfUrl @Inject()(config: IfConfig) {
+class TaxCodeChangeFromIfUrl @Inject() (config: IfConfig) {
 
-  def taxCodeChangeUrl(nino: Nino, year: TaxYear): String = {
+  def taxCodeChangeUrl(nino: Nino, year: TaxYear): String =
     s"${config.baseURL}/individuals/tax-code-history/list/${nino.nino}/${year.year}?endTaxYear=${year.year}"
-  }
 }

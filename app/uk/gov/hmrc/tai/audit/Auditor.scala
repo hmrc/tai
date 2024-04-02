@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class Auditor @Inject()(audit: AuditConnector)(implicit ec: ExecutionContext) {
+class Auditor @Inject() (audit: AuditConnector)(implicit ec: ExecutionContext) {
 
   def sendDataEvent(transactionName: String, detail: Map[String, String])(implicit hc: HeaderCarrier): Unit =
     audit.sendExplicitAudit(transactionName, detail)

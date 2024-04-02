@@ -56,7 +56,8 @@ class EmploymentSpec extends PlaySpec {
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
-    employmentSequence = Some(32))
+    employmentSequence = Some(32)
+  )
 
   private val testNpsEmployment = NpsEmployment(
     employerName = Some("Company Plc"),

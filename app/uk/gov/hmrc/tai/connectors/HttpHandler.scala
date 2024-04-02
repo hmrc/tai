@@ -37,19 +37,19 @@ object HodResponse {
 }
 
 @Singleton
-class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
 
-  def getFromApiAsEitherT(url: String, headers: Seq[(String, String)])(
-  implicit hc: HeaderCarrier
-  ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
+  def getFromApiAsEitherT(url: String, headers: Seq[(String, String)])(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     EitherT(httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = url, headers = headers))
       .map { response =>
         HodResponse(response.json, response.header("ETag").map(_.toInt))
-    }
-  }
+      }
 
-  def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(
-    implicit hc: HeaderCarrier): Future[JsValue] = {
+  def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] = {
 
     val timerContext = metrics.startTimer(api)
 
@@ -57,26 +57,21 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
       override def read(method: String, url: String, response: HttpResponse): HttpResponse =
         response.status match {
           case Status.OK => response
-          case Status.NOT_FOUND => {
+          case Status.NOT_FOUND =>
             logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
             throw new NotFoundException(response.body)
-          }
-          case Status.INTERNAL_SERVER_ERROR => {
+          case Status.INTERNAL_SERVER_ERROR =>
             logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
             throw new InternalServerException(response.body)
-          }
-          case Status.BAD_REQUEST => {
+          case Status.BAD_REQUEST =>
             logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
             throw new BadRequestException(response.body)
-          }
-          case Status.LOCKED => {
+          case Status.LOCKED =>
             logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
             throw new LockedException(response.body)
-          }
-          case _ => {
+          case _ =>
             logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
             throw new HttpException(response.body, response.status)
-          }
         }
     }
 
@@ -97,9 +92,10 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
 
   }
 
-  def postToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(
-    implicit hc: HeaderCarrier,
-    writes: Writes[I]): Future[HttpResponse] = {
+  def postToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
+    hc: HeaderCarrier,
+    writes: Writes[I]
+  ): Future[HttpResponse] = {
 
     val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
@@ -107,16 +103,15 @@ class HttpHandler @Inject()(metrics: Metrics, httpClient: HttpClient)(implicit e
 
     httpClient.POST[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
       httpResponse status match {
-        case OK | CREATED | ACCEPTED | NO_CONTENT => {
+        case OK | CREATED | ACCEPTED | NO_CONTENT =>
           metrics.incrementSuccessCounter(api)
           httpResponse
-        }
-        case _ => {
+        case _ =>
           logger.warn(
-            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}")
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+          )
           metrics.incrementFailedCounter(api)
           throw new HttpException(httpResponse.body, httpResponse.status)
-        }
       }
     }
   }

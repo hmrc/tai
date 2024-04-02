@@ -265,6 +265,6 @@ object IabdType {
     EmploymentAndSupportAllowance
   )
 
-  def apply(i: Int): IabdType = set.find { _.code == i }.getOrElse { Unknown(i) }
+  def apply(i: Int): IabdType = set.find(_.code == i).getOrElse(Unknown(i))
 
 }

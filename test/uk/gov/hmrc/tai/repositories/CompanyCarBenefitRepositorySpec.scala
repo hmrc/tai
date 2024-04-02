@@ -45,7 +45,8 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
       "return these multiple car benefits" in {
         val carBenefitSeqWithVersion = Seq(
           CompanyCarBenefit(10, 10, Nil, Some(sampleNinoVersion)),
-          CompanyCarBenefit(20, 20, Nil, Some(sampleNinoVersion)))
+          CompanyCarBenefit(20, 20, Nil, Some(sampleNinoVersion))
+        )
 
         val mockCacheConnector = mock[TaiCacheRepository]
         when(mockCacheConnector.find[Seq[CompanyCarBenefit]](any(), any())(any()))
@@ -78,7 +79,8 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
           .createOrUpdate[Seq[CompanyCarBenefit]](
             meq(cacheId),
             meq(carBenefitFromCompanyCarService),
-            meq(sut.CarBenefitKey))(any())
+            meq(sut.CarBenefitKey)
+          )(any())
       }
 
       "return the non-empty list coming from the company car service and save it in the cache" in {
@@ -101,7 +103,8 @@ class CompanyCarBenefitRepositorySpec extends BaseSpec {
 
         verify(mockCacheConnector, times(1))
           .createOrUpdate[Seq[CompanyCarBenefit]](meq(cacheId), meq(carBenefitSeqWithVersion), meq(sut.CarBenefitKey))(
-            any())
+            any()
+          )
       }
     }
   }

@@ -27,60 +27,55 @@ import uk.gov.hmrc.tai.repositories.deprecated.JourneyCacheRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyCacheController @Inject()(
+class JourneyCacheController @Inject() (
   repository: JourneyCacheRepository,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def currentCache(journeyName: String): Action[AnyContent] = authentication.async { implicit request =>
-    {
-      def getCache(cacheId: CacheId): Future[Result] =
-        repository.currentCache(cacheId, journeyName) map {
-          case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
-          case _                             => NoContent
-        } recover {
-          case _ => InternalServerError
-        }
-
-      journeyName match {
-        case "update-income" => getCache(CacheId.noSession(request.nino))
-        case _               => getCache(CacheId(request.nino))
+    def getCache(cacheId: CacheId): Future[Result] =
+      repository.currentCache(cacheId, journeyName) map {
+        case Some(cache) if cache.nonEmpty => Ok(Json.toJson(cache))
+        case _                             => NoContent
+      } recover { case _ =>
+        InternalServerError
       }
+
+    journeyName match {
+      case "update-income" => getCache(CacheId.noSession(request.nino))
+      case _               => getCache(CacheId(request.nino))
     }
   }
 
   def currentCacheValue(journeyName: String, key: String): Action[AnyContent] = authentication.async {
     implicit request =>
-      {
-        def getCache(cacheId: CacheId): Future[Result] =
-          repository.currentCache(cacheId, journeyName, key) map {
-            case Some(value) if value.trim != "" => Ok(Json.toJson(value))
-            case _                               => NoContent
-          } recover {
-            case _ => InternalServerError
-          }
-        journeyName match {
-          case "update-income" => getCache(CacheId.noSession(request.nino))
-          case _               => getCache(CacheId(request.nino))
-        }
-      }
-  }
-
-  def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
-    {
       def getCache(cacheId: CacheId): Future[Result] =
-        withJsonBody[Map[String, String]] { cache =>
-          repository.cached(cacheId, journeyName, cache) map { cache =>
-            Created(Json.toJson(cache))
-          } recover {
-            case _ => InternalServerError
-          }
+        repository.currentCache(cacheId, journeyName, key) map {
+          case Some(value) if value.trim != "" => Ok(Json.toJson(value))
+          case _                               => NoContent
+        } recover { case _ =>
+          InternalServerError
         }
       journeyName match {
         case "update-income" => getCache(CacheId.noSession(request.nino))
         case _               => getCache(CacheId(request.nino))
       }
+  }
+
+  def cached(journeyName: String): Action[JsValue] = authentication.async(parse.json) { implicit request =>
+    def getCache(cacheId: CacheId): Future[Result] =
+      withJsonBody[Map[String, String]] { cache =>
+        repository.cached(cacheId, journeyName, cache) map { cache =>
+          Created(Json.toJson(cache))
+        } recover { case _ =>
+          InternalServerError
+        }
+      }
+    journeyName match {
+      case "update-income" => getCache(CacheId.noSession(request.nino))
+      case _               => getCache(CacheId(request.nino))
     }
   }
 
@@ -89,14 +84,14 @@ class JourneyCacheController @Inject()(
       case "update-income" =>
         repository.flushUpdateIncome(CacheId.noSession(request.nino), journeyName) map { _ =>
           NoContent
-        } recover {
-          case _ => InternalServerError
+        } recover { case _ =>
+          InternalServerError
         }
       case _ =>
         repository.flush(CacheId(request.nino), journeyName) map { _ =>
           NoContent
-        } recover {
-          case _ => InternalServerError
+        } recover { case _ =>
+          InternalServerError
         }
     }
 
@@ -107,14 +102,14 @@ class JourneyCacheController @Inject()(
       case "update-income" =>
         repository.flushUpdateIncomeWithEmpId(CacheId.noSession(request.nino), journeyName, empId) map { _ =>
           NoContent
-        } recover {
-          case _ => InternalServerError
+        } recover { case _ =>
+          InternalServerError
         }
       case _ =>
         repository.flush(CacheId(request.nino), journeyName) map { _ =>
           NoContent
-        } recover {
-          case _ => InternalServerError
+        } recover { case _ =>
+          InternalServerError
         }
     }
   }

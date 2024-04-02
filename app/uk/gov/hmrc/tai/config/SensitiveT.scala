@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.integration.utils
+package uk.gov.hmrc.tai.config
 
-import scala.io.Source.fromFile
+import uk.gov.hmrc.crypto.Sensitive
 
-object FileHelper {
-
-  def loadFile(name: String): String = {
-    val filePath = s"it/uk/gov/hmrc/tai/integration/resources/$name"
-    val source = fromFile(filePath)
-    try source.mkString finally source.close()
-  }
-}
+case class SensitiveT[T](override val decryptedValue: T) extends Sensitive[T]

@@ -25,12 +25,12 @@ import javax.inject.{Inject, Singleton}
 
 // $COVERAGE-OFF$ No proper implementation to test
 @Singleton
-class MicroserviceAuthConnector @Inject()(
+class MicroserviceAuthConnector @Inject() (
   val environment: Environment,
   val conf: Configuration,
   val WSHttp: HttpClient,
-  servicesConfig: ServicesConfig)
-    extends PlayAuthConnector {
+  servicesConfig: ServicesConfig
+) extends PlayAuthConnector {
   lazy val serviceUrl: String = servicesConfig.baseUrl("auth")
   lazy val http: HttpClient = WSHttp
 }

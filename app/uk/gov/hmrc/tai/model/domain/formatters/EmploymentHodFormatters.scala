@@ -31,7 +31,8 @@ trait EmploymentHodFormatters {
 
   private val logger: Logger = Logger(getClass.getName)
 
-  implicit val stringMapFormat = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
+  implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val employmentHodReads: Reads[Employment] = new Reads[Employment] {
 
@@ -81,7 +82,8 @@ trait EmploymentHodFormatters {
           cessationPay,
           payrolledBenefit,
           receivingOccupationalPension
-        ))
+        )
+      )
     }
   }
 
@@ -92,14 +94,13 @@ trait EmploymentHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case default => {
+      case default =>
         logger.warn(s"Invalid Employment Status -> $default")
         throw new RuntimeException("Invalid employment status")
-      }
     }
   }
 
-  implicit val employmentCollectionHodReads = new Reads[EmploymentCollection] {
+  implicit val employmentCollectionHodReads: Reads[EmploymentCollection] = new Reads[EmploymentCollection] {
     override def reads(json: JsValue): JsResult[EmploymentCollection] =
       JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
   }
@@ -109,9 +110,9 @@ trait EmploymentHodFormatters {
 
       val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
 
-      val niFigure = ((json \ "niLettersAndValues")
+      val niFigure = (json \ "niLettersAndValues")
         .asOpt[JsArray]
-        .map(x => x \\ "niFigure"))
+        .map(x => x \\ "niFigure")
         .flatMap(_.headOption)
         .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
@@ -154,11 +155,11 @@ trait EmploymentHodFormatters {
     override def reads(json: JsValue): JsResult[EndOfTaxYearUpdate] = {
 
       val optionalAdjustmentAmountMap =
-        ((json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]]).getOrElse(Map())
+        (json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]].getOrElse(Map())
 
-      val niFigure = ((json \ "niLettersAndValues")
+      val niFigure = (json \ "niLettersAndValues")
         .asOpt[JsArray]
-        .map(x => x \\ "niFigure"))
+        .map(x => x \\ "niFigure")
         .flatMap(_.headOption)
         .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
@@ -180,7 +181,7 @@ trait EmploymentHodFormatters {
 
       val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
         case JsSuccess(arr, _) => arr.value.toSeq
-        case _                    => Nil
+        case _                 => Nil
       }
 
       JsSuccess(employments.map { emp =>
@@ -225,7 +226,7 @@ trait EmploymentHodFormatters {
   def numberChecked(stringVal: String): String =
     stringVal match {
       case numericWithLeadingZeros(_, numeric) => numeric
-      case _                                       => stringVal
+      case _                                   => stringVal
     }
 
 }

@@ -23,14 +23,14 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.matching.Regex
 
-
 case class IabdDetails(
-                        nino: Option[String],
-                        employmentSequenceNumber: Option[Int],
-                        source: Option[Int],
-                        `type`: Option[Int],
-                        receiptDate: Option[LocalDate],
-                        captureDate: Option[LocalDate])
+  nino: Option[String],
+  employmentSequenceNumber: Option[Int],
+  source: Option[Int],
+  `type`: Option[Int],
+  receiptDate: Option[LocalDate],
+  captureDate: Option[LocalDate]
+)
 
 object IabdDetails {
   implicit val formatLocalDate: Format[LocalDate] = Format(

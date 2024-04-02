@@ -25,13 +25,12 @@ class LockedException(message: String) extends Exception(message)
 object IORetryExtension {
   implicit class Retryable[A](io: IO[A]) {
     def simpleRetry(noOfRetries: Int, sleep: FiniteDuration): IO[A] = {
-      def retryLoop(times: Int): IO[A] = {
+      def retryLoop(times: Int): IO[A] =
         io.map(identity).handleErrorWith {
           case _: LockedException if times != 0 =>
             IO.sleep(sleep) >> retryLoop(times - 1)
           case ex => IO.raiseError(ex)
         }
-      }
       retryLoop(noOfRetries)
     }
   }

@@ -29,7 +29,8 @@ import uk.gov.hmrc.play.http.logging.Mdc
 
 case object SessionCacheId extends CacheIdType[HeaderCarrier] {
   override def run: HeaderCarrier => String =
-    _.sessionId.map(_.value)
+    _.sessionId
+      .map(_.value)
       .getOrElse(throw NoSessionException)
 
   case object NoSessionException extends Exception("Could not find sessionId")
@@ -37,13 +38,13 @@ case object SessionCacheId extends CacheIdType[HeaderCarrier] {
 
 @Singleton
 abstract class SessionCacheRepository @Inject() (
-                                         mongoComponent: MongoComponent,
-                                         override val collectionName: String,
-                                         replaceIndexes: Boolean = true,
-                                         ttl: Duration,
-                                         timestampSupport: TimestampSupport
-                                       )(implicit ec: ExecutionContext)
-  extends MongoDatabaseCollection {
+  mongoComponent: MongoComponent,
+  override val collectionName: String,
+  replaceIndexes: Boolean = true,
+  ttl: Duration,
+  timestampSupport: TimestampSupport
+)(implicit ec: ExecutionContext)
+    extends MongoDatabaseCollection {
   /*
     This class exists in hmrc-mongo library but uses the sessionId from the session in the request
     which does not exist in a backend service.
@@ -51,21 +52,21 @@ abstract class SessionCacheRepository @Inject() (
    */
 
   private val cacheRepo: MongoCacheRepository[HeaderCarrier] = new MongoCacheRepository[HeaderCarrier](
-    mongoComponent   = mongoComponent,
-    collectionName   = collectionName,
-    replaceIndexes   = replaceIndexes,
-    ttl              = ttl,
+    mongoComponent = mongoComponent,
+    collectionName = collectionName,
+    replaceIndexes = replaceIndexes,
+    ttl = ttl,
     timestampSupport = timestampSupport,
-    cacheIdType      = SessionCacheId
+    cacheIdType = SessionCacheId
   )
 
   override val indexes: Seq[IndexModel] =
     cacheRepo.indexes
 
   def putSession[T: Writes](
-                             dataKey: DataKey[T],
-                             data: T
-                           )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String)] =
+    dataKey: DataKey[T],
+    data: T
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[(String, String)] =
     Mdc.preservingMdc {
       cacheRepo
         .put[T](hc)(dataKey, data)
@@ -83,7 +84,7 @@ abstract class SessionCacheRepository @Inject() (
     }
 
   def deleteAllFromSession(implicit hc: HeaderCarrier): Future[Unit] =
-  Mdc.preservingMdc {
-    cacheRepo.deleteEntity(hc)
-  }
+    Mdc.preservingMdc {
+      cacheRepo.deleteEntity(hc)
+    }
 }

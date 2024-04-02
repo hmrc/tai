@@ -20,4 +20,5 @@ case class TaxDetail(
   totalTax: Option[BigDecimal] = None,
   totalTaxableIncome: Option[BigDecimal] = None,
   totalIncome: Option[BigDecimal] = None,
-  taxBands: Seq[TaxBand] = Nil)
+  taxBands: Seq[TaxBand] = Nil
+)

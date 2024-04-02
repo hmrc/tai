@@ -33,5 +33,5 @@ object IabdUpdateSource {
   val set: Set[IabdUpdateSource] =
     Set(ManualTelephone, Letter, Email, AgentContact, OtherForm, Internet, InformationLetter)
 
-  def apply(i: Int): IabdUpdateSource = set.find { _.code == i }.getOrElse { Unknown(i) }
+  def apply(i: Int): IabdUpdateSource = set.find(_.code == i).getOrElse(Unknown(i))
 }

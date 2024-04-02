@@ -41,29 +41,32 @@ trait LockService {
 }
 
 @Singleton
-class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext) extends LockService with Logging {
+class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: MongoConfig)(implicit ec: ExecutionContext)
+    extends LockService with Logging {
 
-  def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold{
+  def sessionId(implicit hc: HeaderCarrier): String = hc.sessionId.fold {
     val ex = new RuntimeException("Session id is missing from HeaderCarrier")
     logger.error(ex.getMessage, ex)
     java.util.UUID.randomUUID.toString
   }(_.value)
 
-  def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] = {
-    EitherT.right[L](lockRepo
+  def takeLock[L](owner: String)(implicit hc: HeaderCarrier): EitherT[Future, L, Boolean] =
+    EitherT.right[L](
+      lockRepo
         .takeLock(
           lockId = sessionId,
           owner = owner,
           ttl = Duration(appConfig.mongoLockTTL, SECONDS) // this need to be longer than the timeout from http_verbs
-        ).recover {
-      case NonFatal(ex) =>
-        logger.error(ex.getMessage, ex)
-        // This lock is used to lock the cache while it is populated by the HOD response
-        // if it is failing we still allow the caller to go through so the user gets a better experience
-        // Duplicates calls to HOD will be present in such a case
-        true
-    })
-  }
+        )
+        .map(_.fold(false)(_ => true))
+        .recover { case NonFatal(ex) =>
+          logger.error(ex.getMessage, ex)
+          // This lock is used to lock the cache while it is populated by the HOD response
+          // if it is failing we still allow the caller to go through so the user gets a better experience
+          // Duplicates calls to HOD will be present in such a case
+          true
+        }
+    )
 
   def releaseLock[L](owner: String)(implicit hc: HeaderCarrier): Future[Unit] =
     lockRepo
@@ -72,4 +75,3 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
         owner = owner
       )
 }
-

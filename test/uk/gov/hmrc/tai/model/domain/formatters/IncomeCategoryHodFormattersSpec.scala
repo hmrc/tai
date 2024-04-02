@@ -32,13 +32,14 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
       "all the 6 income categories as null" in {
         val json = Json.obj(
           "totalLiability" -> Json.obj(
-            "nonSavings" -> JsNull,
-            "untaxedInterest" -> JsNull,
-            "bankInterest" -> JsNull,
-            "ukDividends" -> JsNull,
-            "foreignInterest" -> JsNull,
+            "nonSavings"       -> JsNull,
+            "untaxedInterest"  -> JsNull,
+            "bankInterest"     -> JsNull,
+            "ukDividends"      -> JsNull,
+            "foreignInterest"  -> JsNull,
             "foreignDividends" -> JsNull
-          ))
+          )
+        )
 
         json.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
       }
@@ -49,7 +50,7 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalTax" -> 1000.12,
+              "totalTax"           -> 1000.12,
               "totalTaxableIncome" -> 1000.13,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.14
@@ -57,9 +58,9 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
             ),
             "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "totalTax" -> JsNull,
+              "totalTax"           -> JsNull,
               "totalTaxableIncome" -> JsNull,
-              "totalIncome" -> JsNull
+              "totalIncome"        -> JsNull
             ),
             "ukDividends" -> Json.obj(
               "totalIncome" -> Json.obj()
@@ -70,13 +71,14 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalTax" -> 1000.23,
+              "totalTax"           -> 1000.23,
               "totalTaxableIncome" -> 1000.24,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.25
               )
             )
-          ))
+          )
+        )
 
         json.as[Seq[IncomeCategory]](incomeCategorySeqReads) must contain theSameElementsAs
           Seq(
@@ -95,77 +97,77 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalTax" -> 1000.12,
+              "totalTax"           -> 1000.12,
               "totalTaxableIncome" -> 1000.13,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.14
               ),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType" -> "PSR",
-                  "taxCode" -> "BR",
-                  "income" -> 500,
-                  "tax" -> JsNull,
+                  "bandType"  -> "PSR",
+                  "taxCode"   -> "BR",
+                  "income"    -> 500,
+                  "tax"       -> JsNull,
                   "lowerBand" -> JsNull,
                   "upperBand" -> 5000,
-                  "rate" -> 0
+                  "rate"      -> 0
                 ),
                 Json.obj(
-                  "bandType" -> "B",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "tax" -> 100,
+                  "bandType"  -> "B",
+                  "taxCode"   -> "BR",
+                  "income"    -> 1000,
+                  "tax"       -> 100,
                   "lowerBand" -> JsNull,
                   "upperBand" -> 10000,
-                  "rate" -> 10
+                  "rate"      -> 10
                 ),
                 Json.obj(
-                  "bandType" -> "D",
-                  "taxCode" -> "D1",
-                  "income" -> 0,
-                  "tax" -> 0,
+                  "bandType"  -> "D",
+                  "taxCode"   -> "D1",
+                  "income"    -> 0,
+                  "tax"       -> 0,
                   "lowerBand" -> 10000,
                   "upperBand" -> 30000,
-                  "rate" -> 15
+                  "rate"      -> 15
                 )
               )
             ),
             "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "totalTax" -> JsNull,
+              "totalTax"           -> JsNull,
               "totalTaxableIncome" -> JsNull,
-              "totalIncome" -> JsNull,
-              "taxBands" -> JsNull
+              "totalIncome"        -> JsNull,
+              "taxBands"           -> JsNull
             ),
             "ukDividends" -> Json.obj(
               "totalIncome" -> Json.obj(),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType" -> "B",
-                  "taxCode" -> "BR",
-                  "income" -> 10000,
-                  "tax" -> 1000,
+                  "bandType"  -> "B",
+                  "taxCode"   -> "BR",
+                  "income"    -> 10000,
+                  "tax"       -> 1000,
                   "lowerBand" -> 5000,
                   "upperBand" -> 20000,
-                  "rate" -> 10
+                  "rate"      -> 10
                 ),
                 Json.obj(
-                  "bandType" -> "D",
-                  "taxCode" -> "D1",
-                  "income" -> 30000,
-                  "tax" -> 6000,
+                  "bandType"  -> "D",
+                  "taxCode"   -> "D1",
+                  "income"    -> 30000,
+                  "tax"       -> 6000,
                   "lowerBand" -> 20000,
                   "upperBand" -> 50000,
-                  "rate" -> 20
+                  "rate"      -> 20
                 ),
                 Json.obj(
-                  "bandType" -> "D",
-                  "taxCode" -> "D2",
-                  "income" -> 0,
-                  "tax" -> 0,
+                  "bandType"  -> "D",
+                  "taxCode"   -> "D2",
+                  "income"    -> 0,
+                  "tax"       -> 0,
                   "lowerBand" -> 50000,
                   "upperBand" -> JsNull,
-                  "rate" -> 20
+                  "rate"      -> 20
                 )
               )
             ),
@@ -175,13 +177,14 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalTax" -> 1000.23,
+              "totalTax"           -> 1000.23,
               "totalTaxableIncome" -> 1000.24,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.25
               )
             )
-          ))
+          )
+        )
 
         json.as[Seq[IncomeCategory]](incomeCategorySeqReads) must contain theSameElementsAs
           Seq(
@@ -191,8 +194,26 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               1000.13,
               1000.14,
               Seq(
-                TaxBand(bandType = "PSR", code = "BR", income = 500, tax = 0, lowerBand = None, upperBand = Some(5000), rate = 0),
-                TaxBand(bandType = "B", code = "BR", income = 1000, tax = 100, lowerBand = None, upperBand = Some(10000), rate = 10))),
+                TaxBand(
+                  bandType = "PSR",
+                  code = "BR",
+                  income = 500,
+                  tax = 0,
+                  lowerBand = None,
+                  upperBand = Some(5000),
+                  rate = 0
+                ),
+                TaxBand(
+                  bandType = "B",
+                  code = "BR",
+                  income = 1000,
+                  tax = 100,
+                  lowerBand = None,
+                  upperBand = Some(10000),
+                  rate = 10
+                )
+              )
+            ),
             IncomeCategory(UntaxedInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(BankInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(
@@ -208,9 +229,18 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
                   tax = 1000,
                   lowerBand = Some(5000),
                   upperBand = Some(20000),
-                  rate = 10),
-                TaxBand(bandType = "D", code = "D1", income = 30000, tax = 6000, lowerBand = Some(20000), upperBand = Some(50000), rate = 20)
-              ),
+                  rate = 10
+                ),
+                TaxBand(
+                  bandType = "D",
+                  code = "D1",
+                  income = 30000,
+                  tax = 6000,
+                  lowerBand = Some(20000),
+                  upperBand = Some(50000),
+                  rate = 20
+                )
+              )
             ),
             IncomeCategory(ForeignInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
@@ -223,50 +253,50 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
         val json = Json.obj(
           "totalLiability" -> Json.obj(
             "nonSavings" -> Json.obj(
-              "totalTax" -> 1000.12,
+              "totalTax"           -> 1000.12,
               "totalTaxableIncome" -> 1000.13,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.14
               ),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType" -> "B",
-                  "taxCode" -> "BR",
-                  "income" -> 1000,
-                  "tax" -> 100,
+                  "bandType"  -> "B",
+                  "taxCode"   -> "BR",
+                  "income"    -> 1000,
+                  "tax"       -> 100,
                   "lowerBand" -> JsNull,
                   "upperBand" -> 10000,
-                  "rate" -> 10
+                  "rate"      -> 10
                 ),
                 Json.obj(
-                  "bandType" -> "D",
-                  "taxCode" -> "D1",
-                  "income" -> 0,
-                  "tax" -> 0,
+                  "bandType"  -> "D",
+                  "taxCode"   -> "D1",
+                  "income"    -> 0,
+                  "tax"       -> 0,
                   "lowerBand" -> 10000,
                   "upperBand" -> 30000,
-                  "rate" -> 15
+                  "rate"      -> 15
                 )
               )
             ),
             "untaxedInterest" -> Json.obj(),
             "bankInterest" -> Json.obj(
-              "totalTax" -> JsNull,
+              "totalTax"           -> JsNull,
               "totalTaxableIncome" -> JsNull,
-              "totalIncome" -> JsNull,
-              "taxBands" -> JsNull
+              "totalIncome"        -> JsNull,
+              "taxBands"           -> JsNull
             ),
             "ukDividends" -> Json.obj(
               "totalIncome" -> Json.obj(),
               "taxBands" -> Json.arr(
                 Json.obj(
-                  "bandType" -> "B",
-                  "taxCode" -> JsNull,
-                  "income" -> 10000,
-                  "tax" -> 1000,
+                  "bandType"  -> "B",
+                  "taxCode"   -> JsNull,
+                  "income"    -> 10000,
+                  "tax"       -> 1000,
                   "lowerBand" -> 5000,
                   "upperBand" -> 20000,
-                  "rate" -> 10
+                  "rate"      -> 10
                 )
               )
             ),
@@ -276,13 +306,14 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
               )
             ),
             "foreignDividends" -> Json.obj(
-              "totalTax" -> 1000.23,
+              "totalTax"           -> 1000.23,
               "totalTaxableIncome" -> 1000.24,
               "totalIncome" -> Json.obj(
                 "amount" -> 1000.25
               )
             )
-          ))
+          )
+        )
         val error = intercept[Exception] {
           json.as[Seq[IncomeCategory]](incomeCategorySeqReads)
         }
@@ -295,13 +326,14 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
         "all the 6 income categories as null" in {
           val json = Json.obj(
             "totalLiability" -> Json.obj(
-              "nonSavings" -> JsNull,
-              "untaxedInterest" -> JsNull,
-              "bankInterest" -> JsNull,
-              "ukDividends" -> JsNull,
-              "foreignInterest" -> JsNull,
+              "nonSavings"       -> JsNull,
+              "untaxedInterest"  -> JsNull,
+              "bankInterest"     -> JsNull,
+              "ukDividends"      -> JsNull,
+              "foreignInterest"  -> JsNull,
               "foreignDividends" -> JsNull
-            ))
+            )
+          )
 
           json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
         }
@@ -315,15 +347,16 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
                 )
               ),
               "untaxedInterest" -> JsNull,
-              "bankInterest" -> JsNull,
+              "bankInterest"    -> JsNull,
               "ukDividends" -> Json.obj(
                 "allowReliefDeducts" -> Json.obj(
                   "amount" -> 100
                 )
               ),
-              "foreignInterest" -> JsNull,
+              "foreignInterest"  -> JsNull,
               "foreignDividends" -> JsNull
-            ))
+            )
+          )
 
           json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
         }
@@ -347,9 +380,10 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
                   "amount" -> 100
                 )
               ),
-              "foreignInterest" -> JsNull,
+              "foreignInterest"  -> JsNull,
               "foreignDividends" -> JsNull
-            ))
+            )
+          )
 
           json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
         }
@@ -387,7 +421,8 @@ class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFor
                   "amount" -> 100
                 )
               )
-            ))
+            )
+          )
 
           json.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
         }

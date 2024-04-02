@@ -51,7 +51,8 @@ class BenefitsControllerSpec extends BaseSpec {
               "companyCarBenefits" -> Json.arr(),
               "otherBenefits"      -> Json.arr()
             ),
-            "links" -> Json.arr())
+            "links" -> Json.arr()
+          )
 
         contentAsJson(result) mustBe expectedJson
       }
@@ -71,8 +72,11 @@ class BenefitsControllerSpec extends BaseSpec {
                 hasActiveFuelBenefit = false,
                 Some(LocalDate.parse("2014-06-10")),
                 None,
-                None)),
-            Some(123)),
+                None
+              )
+            ),
+            Some(123)
+          ),
           CompanyCarBenefit(0, 800, Seq(), None)
         )
         val otherBenefits = Seq(
@@ -99,7 +103,9 @@ class BenefitsControllerSpec extends BaseSpec {
                       "carSeqNo"             -> 10,
                       "makeModel"            -> "Company car",
                       "hasActiveFuelBenefit" -> false,
-                      "dateMadeAvailable"    -> "2014-06-10")),
+                      "dateMadeAvailable"    -> "2014-06-10"
+                    )
+                  ),
                   "version" -> 123
                 ),
                 Json.obj(
@@ -144,7 +150,8 @@ class BenefitsControllerSpec extends BaseSpec {
         val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)

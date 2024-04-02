@@ -34,7 +34,7 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
     "return the json from cache" when {
       "the key is present in the cache" in {
         val sut = cacheTest
-        val jsonFromCache = Json.obj("aaa"  -> "bbb")
+        val jsonFromCache = Json.obj("aaa" -> "bbb")
         val jsonFromFunction = Json.obj("c" -> "d")
         when(taiCacheRepository.findJson(meq(cacheId), meq(mongoKey)))
           .thenReturn(Future.successful(Some(jsonFromCache)))
@@ -53,7 +53,8 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
           .thenReturn(Future.successful(None))
         when(
           taiCacheRepository
-            .createOrUpdateJson(meq(cacheId), meq(jsonFromFunction), meq(mongoKey)))
+            .createOrUpdateJson(meq(cacheId), meq(jsonFromFunction), meq(mongoKey))
+        )
           .thenReturn(Future.successful(jsonFromFunction))
         val result = sut.cacheFromApi(nino, mongoKey, Future.successful(jsonFromFunction)).futureValue
         result mustBe jsonFromFunction
@@ -85,7 +86,8 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
           .thenReturn(Future.successful(None))
         when(
           taiCacheRepository
-            .createOrUpdate[TaxCodeHistory](meq(cacheId), meq(taxCodeHistory), meq(mongoKey))(any()))
+            .createOrUpdate[TaxCodeHistory](meq(cacheId), meq(taxCodeHistory), meq(mongoKey))(any())
+        )
           .thenReturn(Future.successful(taxCodeHistory))
         val result = sut.cacheFromApiV2[TaxCodeHistory](nino, mongoKey, Future.successful(taxCodeHistory)).futureValue
         result mustBe taxCodeHistory

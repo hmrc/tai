@@ -75,12 +75,14 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
         implicit val formatRtiEyuList: Format[List[RtiEyu]] = JsonExtra.bodgeList[RtiEyu]
         val json = Json.toJson(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9))))
         json.toString() must be(
-          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
+          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]"""
+        )
       }
 
       "read Json and return list" in {
         val json: JsValue = Json.parse(
-          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]""")
+          """[{"optionalAdjustmentAmount":[],"niLettersAndValues":[{"niFigure":[]}],"rcvdDate":"2016-06-09"}]"""
+        )
         val result = JsonExtra.bodgeList[RtiEyu].reads(json)
         result.asOpt must be(Some(List(RtiEyu(None, None, None, LocalDate.of(2016, 6, 9)))))
       }

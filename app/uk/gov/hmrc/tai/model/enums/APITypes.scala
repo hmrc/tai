@@ -58,7 +58,7 @@ object BasisOperation extends Enumeration {
     4 -> CumulativeNotOperated
   )
 
-  implicit val enumFormat = new Format[BasisOperation] {
+  implicit val enumFormat: Format[BasisOperation] = new Format[BasisOperation] {
     def reads(json: JsValue) =
       JsSuccess(
         json
@@ -70,7 +70,8 @@ object BasisOperation extends Enumeration {
             valid = { basis =>
               basisOperations.getOrElse(basis, throw new RuntimeException("Invalid BasisOperation Type"))
             }
-          ))
+          )
+      )
 
     def writes(`enum`: BasisOperation) = JsString(`enum`.toString)
   }

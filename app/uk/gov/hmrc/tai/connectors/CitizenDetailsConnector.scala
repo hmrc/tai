@@ -30,11 +30,9 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CitizenDetailsConnector @Inject()(
-  metrics: Metrics,
-  httpClient: HttpClient,
-  urls: CitizenDetailsUrls)(implicit ec: ExecutionContext)
-    extends BaseConnector(metrics, httpClient) with Logging {
+class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClient: HttpClient, urls: CitizenDetailsUrls)(implicit
+  ec: ExecutionContext
+) extends BaseConnector(metrics, httpClient) with Logging {
 
   override val originatorId: String = ""
 
@@ -48,23 +46,20 @@ class CitizenDetailsConnector @Inject()(
       timerContext.stop()
 
       httpResponse.status match {
-        case Status.OK => {
+        case Status.OK =>
           metrics.incrementSuccessCounter(api)
           val person = httpResponse.json.as[Person](PersonFormatter.personHodRead)
           Future.successful(person)
-        }
-        case Status.LOCKED => {
+        case Status.LOCKED =>
           metrics.incrementSuccessCounter(api)
 
           Future.successful(
             Person.createLockedUser(nino)
           )
-        }
-        case _ => {
+        case _ =>
           logger.warn(s"Calling person details from citizen details failed: " + httpResponse.status + " url " + url)
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))
-        }
       }
     }
   }

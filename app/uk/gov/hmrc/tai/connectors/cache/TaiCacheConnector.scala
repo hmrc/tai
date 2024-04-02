@@ -26,9 +26,9 @@ import uk.gov.hmrc.tai.config.MongoConfig
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton
-class TaiCacheConnector @Inject()(mongo: MongoComponent, mongoConfig: MongoConfig, timestampSupport: TimestampSupport)(
-  implicit ec: ExecutionContext)
-    extends MongoCacheRepository[String](
+class TaiCacheConnector @Inject() (mongo: MongoComponent, mongoConfig: MongoConfig, timestampSupport: TimestampSupport)(
+  implicit ec: ExecutionContext
+) extends MongoCacheRepository[String](
       mongoComponent = mongo,
       collectionName = "TAI",
       replaceIndexes = true,

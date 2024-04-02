@@ -41,10 +41,9 @@ trait CompanyCarBenefitFormatters {
       val fuelBenefit = json \ "fuelBenefit"
 
       val hasActiveFuelBenefit = fuelBenefit match {
-        case JsDefined(fuel) => {
+        case JsDefined(fuel) =>
           val dateWithdrawn = (fuel \ "dateWithdrawn").asOpt[LocalDate]
           dateWithdrawn.isEmpty
-        }
         case _ => false
       }
 
@@ -58,7 +57,9 @@ trait CompanyCarBenefitFormatters {
           hasActiveFuelBenefit,
           dateMadeAvailable,
           dateFuelBenefitMadeAvailable,
-          dateWithdrawn))
+          dateWithdrawn
+        )
+      )
     }
   }
 

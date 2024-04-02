@@ -48,7 +48,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         "grossInterest"          -> 1500.5,
         "source"                 -> "Customer",
         "numberOfAccountHolders" -> 1
-      ))
+      )
+    )
   )
 
   private val multipleBankAccounts = Json.obj(
@@ -98,7 +99,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(OK).withBody(singleBankAccount.toString())))
+            .willReturn(aResponse().withStatus(OK).withBody(singleBankAccount.toString()))
+        )
 
         val result = connector.bankAccounts(nino, taxYear)
 
@@ -113,7 +115,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
               "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
         )
       }
 
@@ -122,7 +125,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(OK).withBody(multipleBankAccounts.toString())))
+            .willReturn(aResponse().withStatus(OK).withBody(multipleBankAccounts.toString()))
+        )
 
         val result = connector.bankAccounts(nino, taxYear)
 
@@ -138,7 +142,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(OK).withBody(json.toString())))
+            .willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+        )
 
         val result = connector.bankAccounts(nino, taxYear)
 
@@ -154,7 +159,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(OK).withBody(json.toString())))
+            .willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+        )
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
@@ -170,7 +176,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(BAD_REQUEST)))
+            .willReturn(aResponse().withStatus(BAD_REQUEST))
+        )
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
@@ -181,7 +188,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
         server.stubFor(
           WireMock
             .get(urlEqualTo(url))
-            .willReturn(aResponse().withStatus(NOT_FOUND)))
+            .willReturn(aResponse().withStatus(NOT_FOUND))
+        )
 
         val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 
@@ -198,7 +206,8 @@ class BbsiConnectorSpec extends ConnectorBaseSpec {
           server.stubFor(
             WireMock
               .get(urlEqualTo(url))
-              .willReturn(aResponse().withStatus(httpResponse)))
+              .willReturn(aResponse().withStatus(httpResponse))
+          )
 
           val result = connector.bankAccounts(nino, taxYear).failed.futureValue
 

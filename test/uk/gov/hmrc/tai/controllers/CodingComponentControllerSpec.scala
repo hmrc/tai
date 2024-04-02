@@ -54,7 +54,8 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
               "employmentId"  -> 12,
               "amount"        -> 12321,
               "description"   -> "Some Description",
-              "iabdCategory"  -> "Benefit"),
+              "iabdCategory"  -> "Benefit"
+            ),
             Json.obj(
               "componentType" -> "PersonalPensionPayments",
               "employmentId"  -> 31,
@@ -114,6 +115,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
 
   private def createSUT(
     codingComponentService: CodingComponentService,
-    predicate: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    predicate: AuthenticationPredicate = loggedInAuthenticationPredicate
+  ) =
     new CodingComponentController(predicate, codingComponentService, cc)
 }

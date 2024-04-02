@@ -38,7 +38,9 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
                 "type"           -> JsNumber(27),
                 "employmentId"   -> JsNumber(1),
                 "npsDescription" -> JsString("New Estimated Pay")
-              )))
+              )
+            )
+          )
         )
 
         val jsonNpsTax =
@@ -172,7 +174,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
 
       "jobSeekers indicator is true" in {
@@ -227,7 +230,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
 
       "employment id is not available" in {
@@ -254,7 +258,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
 
       "taxCode is not available" in {
@@ -281,7 +286,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
 
@@ -310,7 +316,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
 
       "provided with missing payAndTax element" in {
@@ -337,7 +344,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
   }
@@ -386,7 +394,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
                 "basisOperation"   -> JsNumber(2),
                 "employmentStatus" -> JsNumber(1)
               )
-            ))
+            )
+          )
         )
 
         json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads) mustBe
@@ -415,7 +424,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
               Live,
               BigDecimal(0),
               BigDecimal(0),
-              BigDecimal(0))
+              BigDecimal(0)
+            )
           )
       }
     }
@@ -447,7 +457,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Live,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
 
@@ -476,7 +487,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           PotentiallyCeased,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
 
@@ -505,7 +517,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Ceased,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
 
@@ -537,7 +550,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Ceased,
           BigDecimal(10.20),
           BigDecimal(30.40),
-          BigDecimal(10.60))
+          BigDecimal(10.60)
+        )
       }
     }
 
@@ -566,7 +580,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           Ceased,
           BigDecimal(0),
           BigDecimal(0),
-          BigDecimal(0))
+          BigDecimal(0)
+        )
       }
     }
 
@@ -677,7 +692,8 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
           "employmentId"   -> JsNumber(2),
           "npsDescription" -> JsString("New Estimated Pay")
         )
-      ))
+      )
+    )
   )
 
   val jsonNpsTax: JsObject = Json.obj(
@@ -685,5 +701,6 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormat
     "allowReliefDeducts" -> JsNull,
     "totalTaxableIncome" -> JsNumber(1111),
     "totalTax"           -> JsNumber(222),
-    "taxBands"           -> JsNull)
+    "taxBands"           -> JsNull
+  )
 }

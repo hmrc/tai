@@ -45,7 +45,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           codingComponentService = mockCodingComponentService,
-          companyCarBenefitRepository = mockCompanyCarBenefitRepository)
+          companyCarBenefitRepository = mockCompanyCarBenefitRepository
+        )
 
         sut.companyCarBenefits(nino)(hc).futureValue mustBe Seq.empty[CompanyCarBenefit]
       }
@@ -64,7 +65,11 @@ class BenefitsServiceSpec extends BaseSpec {
                 hasActiveFuelBenefit = false,
                 Some(LocalDate.parse("2014-06-10")),
                 None,
-                None))))
+                None
+              )
+            )
+          )
+        )
 
         val taxFreeAmountComponents =
           Seq(
@@ -79,9 +84,7 @@ class BenefitsServiceSpec extends BaseSpec {
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mockCodingComponentService)
+        val sut = createSUT(mockCompanyCarBenefitRepository, mockCodingComponentService)
         sut.companyCarBenefits(nino)(hc).futureValue mustBe result
 
       }
@@ -98,7 +101,11 @@ class BenefitsServiceSpec extends BaseSpec {
                 hasActiveFuelBenefit = true,
                 Some(LocalDate.parse("2014-06-10")),
                 Some(LocalDate.parse("2014-06-10")),
-                None))))
+                None
+              )
+            )
+          )
+        )
 
         val taxFreeAmountComponents =
           Seq(
@@ -113,9 +120,7 @@ class BenefitsServiceSpec extends BaseSpec {
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        val sut = createSUT(
-          mockCompanyCarBenefitRepository,
-          mockCodingComponentService)
+        val sut = createSUT(mockCompanyCarBenefitRepository, mockCodingComponentService)
         sut.companyCarBenefits(nino)(hc).futureValue mustBe result
       }
     }
@@ -147,7 +152,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           codingComponentService = mockCodingComponentService,
-          companyCarBenefitRepository = mockCompanyCarBenefitRepository)
+          companyCarBenefitRepository = mockCompanyCarBenefitRepository
+        )
 
         sut.benefits(nino, TaxYear())(hc).futureValue.otherBenefits mustBe
           createGenericBenefitList(allBenefitTypesExceptCompanyCar)
@@ -184,7 +190,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           codingComponentService = mockCodingComponentService,
-          companyCarBenefitRepository = mockCompanyCarBenefitRepository)
+          companyCarBenefitRepository = mockCompanyCarBenefitRepository
+        )
 
         sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
@@ -196,8 +203,13 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
-          .thenReturn(Future.failed(new UnprocessableEntityException(
-            "An exception occurred during processing of PAYE URI  [/paye/<nino>/car-benefits/<tax-year>]")))
+          .thenReturn(
+            Future.failed(
+              new UnprocessableEntityException(
+                "An exception occurred during processing of PAYE URI  [/paye/<nino>/car-benefits/<tax-year>]"
+              )
+            )
+          )
 
         val mockCodingComponentService = mock[CodingComponentService]
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
@@ -205,7 +217,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           codingComponentService = mockCodingComponentService,
-          companyCarBenefitRepository = mockCompanyCarBenefitRepository)
+          companyCarBenefitRepository = mockCompanyCarBenefitRepository
+        )
 
         sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(CompanyCarBenefit(126, 100, Nil, None))
@@ -235,8 +248,11 @@ class BenefitsServiceSpec extends BaseSpec {
                 hasActiveFuelBenefit = false,
                 Some(LocalDate.parse("2014-06-10")),
                 None,
-                None)),
-            Some(123)),
+                None
+              )
+            ),
+            Some(123)
+          ),
           CompanyCarBenefit(
             13,
             600,
@@ -247,8 +263,11 @@ class BenefitsServiceSpec extends BaseSpec {
                 hasActiveFuelBenefit = true,
                 Some(LocalDate.parse("2015-06-10")),
                 None,
-                None)),
-            None)
+                None
+              )
+            ),
+            None
+          )
         )
 
         val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
@@ -261,7 +280,8 @@ class BenefitsServiceSpec extends BaseSpec {
 
         val sut = createSUT(
           codingComponentService = mockCodingComponentService,
-          companyCarBenefitRepository = mockCompanyCarBenefitRepository)
+          companyCarBenefitRepository = mockCompanyCarBenefitRepository
+        )
 
         sut.benefits(nino, TaxYear())(hc).futureValue.companyCarBenefits mustBe
           Seq(
@@ -275,8 +295,11 @@ class BenefitsServiceSpec extends BaseSpec {
                   hasActiveFuelBenefit = false,
                   Some(LocalDate.parse("2014-06-10")),
                   None,
-                  None)),
-              Some(123)),
+                  None
+                )
+              ),
+              Some(123)
+            ),
             CompanyCarBenefit(
               13,
               300,
@@ -287,8 +310,11 @@ class BenefitsServiceSpec extends BaseSpec {
                   hasActiveFuelBenefit = true,
                   Some(LocalDate.parse("2015-06-10")),
                   None,
-                  None)),
-              None),
+                  None
+                )
+              ),
+              None
+            ),
             CompanyCarBenefit(0, 800, Seq(), None),
             CompanyCarBenefit(15, 900, Seq(), None)
           )
@@ -306,7 +332,8 @@ class BenefitsServiceSpec extends BaseSpec {
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
           mockIFormSubmissionService
-            .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
+            .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any())
+        )
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -342,7 +369,8 @@ class BenefitsServiceSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any()))
+          .uploadIForm(meq(nino), meq(IFormConstants.RemoveCompanyBenefitSubmissionKey), meq("TES1"), any())(any())
+      )
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -409,7 +437,8 @@ class BenefitsServiceSpec extends BaseSpec {
     companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
     codingComponentService: CodingComponentService = mock[CodingComponentService],
     iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
-    auditable: Auditor = mock[Auditor]) =
+    auditable: Auditor = mock[Auditor]
+  ) =
     new BenefitsService(
       companyCarBenefitRepository,
       codingComponentService,

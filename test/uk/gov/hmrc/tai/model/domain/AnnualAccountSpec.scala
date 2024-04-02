@@ -28,7 +28,13 @@ class AnnualAccountSpec extends PlaySpec {
       val realTimeStatus = Available
       val taxYear = TaxYear()
 
-      AnnualAccount(sequenceNumber, taxYear, realTimeStatus) mustBe AnnualAccount(sequenceNumber, taxYear, realTimeStatus, Nil, Nil)
+      AnnualAccount(sequenceNumber, taxYear, realTimeStatus) mustBe AnnualAccount(
+        sequenceNumber,
+        taxYear,
+        realTimeStatus,
+        Nil,
+        Nil
+      )
     }
   }
 
@@ -61,19 +67,11 @@ class AnnualAccountSpec extends PlaySpec {
     }
   }
 
-  val SutWithNoPayments = AnnualAccount(
-    0,
-    taxYear = TaxYear("2017"),
-    realTimeStatus = Available,
-    payments = Nil,
-    endOfTaxYearUpdates = Nil)
+  val SutWithNoPayments =
+    AnnualAccount(0, taxYear = TaxYear("2017"), realTimeStatus = Available, payments = Nil, endOfTaxYearUpdates = Nil)
 
-  val SutWithNoPayroll = AnnualAccount(
-    1,
-    taxYear = TaxYear("2017"),
-    realTimeStatus = Available,
-    payments = Nil,
-    endOfTaxYearUpdates = Nil)
+  val SutWithNoPayroll =
+    AnnualAccount(1, taxYear = TaxYear("2017"), realTimeStatus = Available, payments = Nil, endOfTaxYearUpdates = Nil)
 
   val SutWithOnePayment = AnnualAccount(
     2,
@@ -90,7 +88,8 @@ class AnnualAccountSpec extends PlaySpec {
         nationalInsuranceAmount = 150,
         payFrequency = Monthly,
         duplicate = None
-      )),
+      )
+    ),
     endOfTaxYearUpdates = Nil
   )
 
@@ -117,5 +116,6 @@ class AnnualAccountSpec extends PlaySpec {
         nationalInsuranceAmount = 150,
         payFrequency = FortNightly,
         duplicate = None
-      ))
+      )
+  )
 }

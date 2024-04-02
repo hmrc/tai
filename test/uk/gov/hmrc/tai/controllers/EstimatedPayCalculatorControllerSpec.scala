@@ -49,8 +49,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     }
   }
 
-  private def createSUT(
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
     new EstimatedPayCalculatorController(authentication, cc)
 
   val date = LocalDate.of(2017, 4, 14)

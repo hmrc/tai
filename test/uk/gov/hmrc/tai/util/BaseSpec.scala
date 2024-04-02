@@ -30,7 +30,8 @@ import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 import scala.concurrent.ExecutionContext
 
 trait BaseSpec
-    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures with Injecting {
+    extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures
+    with Injecting {
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""

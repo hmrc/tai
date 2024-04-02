@@ -24,8 +24,8 @@ object JsonExtra {
   def mapFormat[K, V](keyLabel: String, valueLabel: String)(implicit kf: Format[K], vf: Format[V]) =
     new Format[Map[K, V]] {
       def writes(m: Map[K, V]): JsValue =
-        JsArray(m.map {
-          case (t, v) => Json.obj(keyLabel -> kf.writes(t), valueLabel -> vf.writes(v))
+        JsArray(m.map { case (t, v) =>
+          Json.obj(keyLabel -> kf.writes(t), valueLabel -> vf.writes(v))
         }.toSeq)
 
       def reads(jv: JsValue): JsResult[Map[K, V]] = jv match {
@@ -44,19 +44,17 @@ object JsonExtra {
       case JsArray(xs) =>
         JsSuccess(
           xs.map { x =>
-              Try(x.as[T])
-            }
-            .flatMap {
-              case Success(r) => Some(r)
-              case Failure(e) =>
-                log.warn("unable to parse json - omitting element\n" + e.getLocalizedMessage)
-                None
-            }
-            .toList)
-      case e => {
+            Try(x.as[T])
+          }.flatMap {
+            case Success(r) => Some(r)
+            case Failure(e) =>
+              log.warn("unable to parse json - omitting element\n" + e.getLocalizedMessage)
+              None
+          }.toList
+        )
+      case e =>
         log.warn(s"Expected a JsArray, found $e, fudging a Nil", e)
         JsSuccess(Nil)
-      }
     }
     override def writes(rs: List[T]): JsValue =
       JsArray(rs.map { x =>

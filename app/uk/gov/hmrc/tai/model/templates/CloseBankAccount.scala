@@ -27,7 +27,8 @@ case class CloseBankAccount(
   taxYear: TaxYear,
   bankAccount: BankAccount,
   endDate: LocalDate,
-  interestEarnedThisTaxYear: Option[BigDecimal]) {
+  interestEarnedThisTaxYear: Option[BigDecimal]
+) {
 
   private val dateFormat = DateTimeFormatter.ofPattern("d MMMM yyyy")
 

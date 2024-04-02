@@ -31,11 +31,21 @@ object EstimatedPayCalculator {
   def calculate(payDetails: PayDetails): CalculatedPay = {
 
     val net = payDetails.taxablePay.map(amount =>
-      calculatePay(frequency = payDetails.paymentFrequency, pay = amount, days = payDetails.days.getOrElse(0)) + payDetails.bonus
-        .getOrElse(BigDecimal(0)))
+      calculatePay(
+        frequency = payDetails.paymentFrequency,
+        pay = amount,
+        days = payDetails.days.getOrElse(0)
+      ) + payDetails.bonus
+        .getOrElse(BigDecimal(0))
+    )
     val gross = payDetails.pay.map(amount =>
-      calculatePay(frequency = payDetails.paymentFrequency, pay = amount, days = payDetails.days.getOrElse(0)) + payDetails.bonus
-        .getOrElse(BigDecimal(0)))
+      calculatePay(
+        frequency = payDetails.paymentFrequency,
+        pay = amount,
+        days = payDetails.days.getOrElse(0)
+      ) + payDetails.bonus
+        .getOrElse(BigDecimal(0))
+    )
 
     val inYear = payDetails.startDate.fold(false)(TaxYear().withinTaxYear(_))
 
@@ -49,7 +59,8 @@ object EstimatedPayCalculator {
         annualAmount = gross,
         netAnnualPay = if (net.isEmpty) appGross else appNet,
         grossAnnualPay = appGross,
-        startDate = payDetails.startDate)
+        startDate = payDetails.startDate
+      )
     } else {
       CalculatedPay(annualAmount = gross, netAnnualPay = if (net.isEmpty) gross else net, grossAnnualPay = gross)
     }
@@ -63,14 +74,13 @@ object EstimatedPayCalculator {
     val daysInYear = 365
 
     frequency match {
-      case PayFreq.monthly     => { pay * freqMonthly }
-      case PayFreq.weekly      => { pay * freqWeekly }
-      case PayFreq.fortnightly => { pay * freqBiWeekly }
-      case PayFreq.fourWeekly  => { pay * freqFourWeekly }
-      case PayFreq.other => {
+      case PayFreq.monthly     => pay * freqMonthly
+      case PayFreq.weekly      => pay * freqWeekly
+      case PayFreq.fortnightly => pay * freqBiWeekly
+      case PayFreq.fourWeekly  => pay * freqFourWeekly
+      case PayFreq.other =>
         (if (days > 0 && days <= daysInYear) pay * (BigDecimal(daysInYear) / days) else BigDecimal(0))
           .setScale(0, RoundingMode.DOWN)
-      }
       case _ => throw new RuntimeException("Invalid pay frequency")
     }
   }
@@ -85,12 +95,12 @@ object EstimatedPayCalculator {
     if (daysToBePaidFor > 0) {
       if (annualAmount > 0 && daysToBePaidFor < TaiConstants.DAYS_IN_YEAR) {
         (annualAmount / TaiConstants.DAYS_IN_YEAR) * daysToBePaidFor
-      } else {
+      } else
         annualAmount
-      }.setScale(2, RoundingMode.FLOOR)
-    } else {
+          .setScale(2, RoundingMode.FLOOR)
+    } else
       BigDecimal(0)
-    }.setScale(0, RoundingMode.DOWN)
+        .setScale(0, RoundingMode.DOWN)
   }
 
 }

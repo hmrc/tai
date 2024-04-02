@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service.expenses
 
 import org.mockito.ArgumentMatchers.any
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse}
 import uk.gov.hmrc.tai.connectors._
@@ -28,7 +29,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class EmployeeExpensesServiceSpec extends BaseSpec  {
+class EmployeeExpensesServiceSpec extends BaseSpec {
 
   private val mockIabdConnector = mock[IabdConnector]
 
@@ -47,7 +48,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
 
   private val taxYear = 2017
 
-  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
+    AuthenticatedRequest(FakeRequest(), nino)
 
   "updateEmployeeExpensesData" must {
 
@@ -56,7 +58,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
-        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+        service
+          .updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
           .status mustBe 200
       }
@@ -67,7 +70,8 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         when(mockIabdConnector.updateExpensesData(any(), any(), any(), any(), any(), any())(any(), any()))
           .thenReturn(Future.successful(HttpResponse(500, responseBody)))
 
-        service.updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
+        service
+          .updateEmployeeExpensesData(nino, TaxYear(), 1, updateIabdEmployeeExpense, iabd)
           .futureValue
           .status mustBe 500
       }
@@ -82,7 +86,6 @@ class EmployeeExpensesServiceSpec extends BaseSpec  {
         val mockIabdConnector = mock[IabdConnector]
         when(mockIabdConnector.getIabdsForType(any(), any(), any())(any()))
           .thenReturn(Future.successful(validNpsIabd))
-
 
         val service = new EmployeeExpensesService(iabdConnector = mockIabdConnector)
 

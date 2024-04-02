@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import scala.concurrent.Future
 
 @Singleton
-class PersonService @Inject()(personRepository: PersonRepository) {
+class PersonService @Inject() (personRepository: PersonRepository) {
 
   def person(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = personRepository.getPerson(nino)
 }

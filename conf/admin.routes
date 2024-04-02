@@ -1,3 +1,2 @@
 # Admin pages
-GET        /metrics             @com.kenshoo.play.metrics.MetricsController.metrics
 ->         /featureFlags        mongoFeatureTogglesAdmin.Routes

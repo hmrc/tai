@@ -46,9 +46,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => {
-        Future("")
-      })(hc).futureValue
+      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).futureValue
 
       messageId mustBe "1"
 
@@ -56,12 +54,14 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
-        any())(any())
+        any()
+      )(any())
       verify(mockFileUploadService, times(1)).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
-        any())(any())
+        any()
+      )(any())
     }
 
     "abort the iform submission when the iform creation fails" in {
@@ -77,9 +77,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
 
-      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => {
-        Future("")
-      })(hc).failed.futureValue
+      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).failed.futureValue
 
       result mustBe a[RuntimeException]
 
@@ -87,12 +85,14 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-iform.pdf"),
-        any())(any())
+        any()
+      )(any())
       verify(mockFileUploadService, never).uploadFile(
         any(),
         any(),
         contains(s"1-$iformSubmissionKey-${LocalDate.now().format(formatter)}-metadata.xml"),
-        any())(any())
+        any()
+      )(any())
     }
   }
 
@@ -102,12 +102,13 @@ class IFormSubmissionServiceSpec extends BaseSpec {
   private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
   private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-  
+
   private val formatter = DateTimeFormatter.ofPattern("YYYYMMdd")
 
   private def createSUT(
     personRepository: PersonRepository,
     pdfService: PdfService,
-    fileUploadService: FileUploadService) =
+    fileUploadService: FileUploadService
+  ) =
     new IFormSubmissionService(personRepository, pdfService, fileUploadService)
 }

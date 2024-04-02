@@ -85,7 +85,8 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         "Employer 1",
         Some("12345"),
         pensionIndicator = false,
-        primary = true)
+        primary = true
+      )
       val previousRecord = api.TaxCodeSummary(
         2,
         "a",
@@ -95,34 +96,39 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
         "Employer 2",
         Some("67890"),
         pensionIndicator = false,
-        primary = true)
+        primary = true
+      )
       when(taxCodeService.taxCodeChange(meq(testNino))(any()))
         .thenReturn(Future.successful(TaxCodeChange(Seq(currentRecord), Seq(previousRecord))))
 
       val expectedResponse = Json.obj(
         "data" -> Json.obj(
-          "current" -> Json.arr(Json.obj(
-            "taxCodeId"        -> 1,
-            "taxCode"          -> "b",
-            "basisOfOperation" -> Cumulative,
-            "startDate"        -> date.toString,
-            "endDate"          -> date.minusDays(1).toString,
-            "employerName"     -> "Employer 1",
-            "payrollNumber"    -> "12345",
-            "pensionIndicator" -> false,
-            "primary"          -> true
-          )),
-          "previous" -> Json.arr(Json.obj(
-            "taxCodeId"        -> 2,
-            "taxCode"          -> "a",
-            "basisOfOperation" -> Cumulative,
-            "startDate"        -> date.toString,
-            "endDate"          -> date.minusDays(1).toString,
-            "employerName"     -> "Employer 2",
-            "payrollNumber"    -> "67890",
-            "pensionIndicator" -> false,
-            "primary"          -> true
-          ))
+          "current" -> Json.arr(
+            Json.obj(
+              "taxCodeId"        -> 1,
+              "taxCode"          -> "b",
+              "basisOfOperation" -> Cumulative,
+              "startDate"        -> date.toString,
+              "endDate"          -> date.minusDays(1).toString,
+              "employerName"     -> "Employer 1",
+              "payrollNumber"    -> "12345",
+              "pensionIndicator" -> false,
+              "primary"          -> true
+            )
+          ),
+          "previous" -> Json.arr(
+            Json.obj(
+              "taxCodeId"        -> 2,
+              "taxCode"          -> "a",
+              "basisOfOperation" -> Cumulative,
+              "startDate"        -> date.toString,
+              "endDate"          -> date.minusDays(1).toString,
+              "employerName"     -> "Employer 2",
+              "payrollNumber"    -> "67890",
+              "pensionIndicator" -> false,
+              "primary"          -> true
+            )
+          )
         ),
         "links" -> Json.arr()
       )
@@ -205,7 +211,8 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
             "unconfirmedTaxCodes" -> Json.arr("1185L", "BR"),
             "confirmedTaxCodes"   -> Json.arr("1185L")
           ),
-          "links" -> Json.arr())
+          "links" -> Json.arr()
+        )
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
@@ -225,7 +232,8 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
             "unconfirmedTaxCodes" -> Json.arr("1185L", "BR"),
             "confirmedTaxCodes"   -> Json.arr("1185L", "BR")
           ),
-          "links" -> Json.arr())
+          "links" -> Json.arr()
+        )
 
         val result = controller.taxCodeMismatch(nino)(FakeRequest())
 
@@ -292,7 +300,9 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
                   pensionIndicator = false,
                   primary = true
                 )
-              )))
+              )
+            )
+          )
 
         val result = controller.mostRecentTaxCodeRecords(nino, TaxYear())(FakeRequest())
 

@@ -26,8 +26,7 @@ import uk.gov.hmrc.tai.repositories.deprecated.BbsiRepository
 import scala.concurrent.Future
 
 @Singleton
-class BbsiService @Inject()(
-  bbsiRepository: BbsiRepository) {
+class BbsiService @Inject() (bbsiRepository: BbsiRepository) {
 
   def bbsiDetails(nino: Nino, taxYear: TaxYear = TaxYear())(implicit hc: HeaderCarrier): Future[Seq[BankAccount]] =
     bbsiRepository.bbsiDetails(nino, taxYear)

@@ -26,8 +26,10 @@ import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PersonRepository @Inject()(taiCacheRepository: TaiCacheRepository, citizenDetailsConnector: CitizenDetailsConnector)(
-  implicit ec: ExecutionContext) {
+class PersonRepository @Inject() (
+  taiCacheRepository: TaiCacheRepository,
+  citizenDetailsConnector: CitizenDetailsConnector
+)(implicit ec: ExecutionContext) {
 
   private val PersonMongoKey = "PersonData"
 
@@ -36,7 +38,7 @@ class PersonRepository @Inject()(taiCacheRepository: TaiCacheRepository, citizen
     getPersonFromStorage(cacheId).flatMap { person: Option[Person] =>
       person match {
         case Some(person) => Future.successful(person)
-        case _                     => getPersonFromAPI(nino, cacheId)
+        case _            => getPersonFromAPI(nino, cacheId)
       }
     }
   }

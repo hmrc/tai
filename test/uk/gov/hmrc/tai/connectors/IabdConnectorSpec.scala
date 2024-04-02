@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
 import play.api.libs.json.{JsNull, JsObject, Json, Writes}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
@@ -40,13 +41,18 @@ import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
 
-  implicit val authenticatedRequest = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
+    AuthenticatedRequest(FakeRequest(), nino)
   lazy val iabdUrls: IabdUrls = inject[IabdUrls]
   val iabdType: Int = 27
 
-  def sut(): IabdConnector = new DefaultIabdConnector(inject[HttpHandler], inject[NpsConfig],
+  def sut(): IabdConnector = new DefaultIabdConnector(
+    inject[HttpHandler],
+    inject[NpsConfig],
     inject[DesConfig],
-    iabdUrls, inject[IabdUpdateAmountFormats])
+    iabdUrls,
+    inject[IabdUpdateAmountFormats]
+  )
 
   val taxYear: TaxYear = TaxYear()
 
@@ -75,7 +81,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   )
 
   val jsonResponse: JsObject = Json.obj(
-    "taxYear" -> taxYear.year,
+    "taxYear"        -> taxYear.year,
     "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
     "incomeSources" -> Json.arr(
       Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
@@ -87,7 +93,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   implicit lazy val iabdWrites: Writes[IabdUpdateAmount] =
     inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
-  
+
   "iabds" when {
     "toggled to use NPS" must {
       "return IABD json" in {
@@ -105,7 +111,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
               "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
+        )
 
       }
 
@@ -185,7 +193,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           .withHeader("X-TXID", equalTo(sessionId))
           .withHeader(
             "CorrelationId",
-            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+          )
+      )
     }
 
     "return a failure status if the update fails" in {
@@ -249,7 +259,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
               "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
         )
       }
     }
@@ -345,14 +356,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
 
         val response =
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ).futureValue
+          sut()
+            .updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            )
+            .futureValue
 
         response.status mustBe OK
         response.json mustBe json
@@ -368,7 +381,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
             .withHeader(
               "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"))
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
         )
       }
     }
@@ -382,14 +396,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
 
         val response =
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ).futureValue
+          sut()
+            .updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            )
+            .futureValue
 
         response.status mustBe NO_CONTENT
       }
@@ -401,14 +417,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
 
         val response =
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ).futureValue
+          sut()
+            .updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            )
+            .futureValue
 
         response.status mustBe ACCEPTED
       }

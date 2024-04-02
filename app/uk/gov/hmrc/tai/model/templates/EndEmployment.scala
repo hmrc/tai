@@ -42,7 +42,8 @@ case class EmploymentPensionViewModel(
   payrollNumber: String,
   startDate: String,
   endDate: String,
-  whatYouToldUs: String)
+  whatYouToldUs: String
+)
 
 object EmploymentPensionViewModel {
 
@@ -50,8 +51,7 @@ object EmploymentPensionViewModel {
 
   def apply(taxYear: TaxYear, person: Person, employment: AddEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -76,10 +76,10 @@ object EmploymentPensionViewModel {
     taxYear: TaxYear,
     person: Person,
     endEmployment: EndEmployment,
-    existingEmployment: Employment): EmploymentPensionViewModel =
+    existingEmployment: Employment
+  ): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -104,10 +104,10 @@ object EmploymentPensionViewModel {
     taxYear: TaxYear,
     person: Person,
     incorrectEmployment: IncorrectEmployment,
-    existingEmployment: Employment): EmploymentPensionViewModel =
+    existingEmployment: Employment
+  ): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -130,8 +130,7 @@ object EmploymentPensionViewModel {
 
   def apply(taxYear: TaxYear, person: Person, pensionProvider: AddPensionProvider): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -156,10 +155,10 @@ object EmploymentPensionViewModel {
     taxYear: TaxYear,
     person: Person,
     incorrectPensionProvider: IncorrectPensionProvider,
-    existingEmployment: Employment): EmploymentPensionViewModel =
+    existingEmployment: Employment
+  ): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,
@@ -182,8 +181,7 @@ object EmploymentPensionViewModel {
 
   def apply(taxYear: TaxYear, person: Person, incorrectEmployment: IncorrectEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
-      taxYearRange =
-        s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
+      taxYearRange = s"${taxYear.start.format(dateFormat)} to ${taxYear.end.format(dateFormat)}",
       nino = person.nino.nino,
       firstName = person.firstName,
       lastName = person.surname,

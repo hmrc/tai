@@ -32,11 +32,12 @@ import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class BenefitsController @Inject()(
+class BenefitsController @Inject() (
   benefitService: BenefitsService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
@@ -45,13 +46,13 @@ class BenefitsController @Inject()(
     } recoverWith taxAccountErrorHandler()
   }
 
-  @nowarn("msg=parameter value empId in method removeCompanyBenefits is never used")
+  @nowarn("msg=parameter empId in method removeCompanyBenefits is never used")
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[RemoveCompanyBenefit] { removeCompanyBenefit =>
-        benefitService.removeCompanyBenefits(nino, removeCompanyBenefit) map (envelopeId => {
+        benefitService.removeCompanyBenefits(nino, removeCompanyBenefit) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        })
+        )
       }
   }
 }

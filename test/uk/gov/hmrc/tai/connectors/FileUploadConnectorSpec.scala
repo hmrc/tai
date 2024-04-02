@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
@@ -48,7 +48,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
     server.verify(
       requestPattern
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+    )
 
   "createEnvelope" must {
     "return an envelope id" in {
@@ -58,7 +59,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           aResponse()
             .withStatus(CREATED)
             .withBody("")
-            .withHeader("Location", s"${server.baseUrl()}$envelopeWithIdUrl"))
+            .withHeader("Location", s"${server.baseUrl()}$envelopeWithIdUrl")
+        )
       )
 
       sut.createEnvelope.futureValue mustBe envelopeId
@@ -167,7 +169,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).futureValue
+        val result =
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).futureValue
 
         result.status mustBe OK
 
@@ -175,7 +178,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           postRequestedFor(urlEqualTo(fileUrl))
             .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-            .withHeader("CSRF-token", equalTo("nocheck")))
+            .withHeader("CSRF-token", equalTo("nocheck"))
+        )
 
       }
     }
@@ -201,7 +205,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+        val result =
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
 
         result mustBe a[RuntimeException]
 
@@ -230,7 +235,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+        val result =
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
 
         result mustBe a[RuntimeException]
 
@@ -259,7 +265,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+        val result =
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
 
         result mustBe a[RuntimeException]
 
@@ -292,7 +299,10 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
               .build()
           )
 
-          val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+          val result = sut
+            .uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient)
+            .failed
+            .futureValue
 
           result mustBe a[RuntimeException]
 
@@ -319,7 +329,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
             .build()
         )
 
-        val result = sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
+        val result =
+          sut.uploadFile(new Array[Byte](1), fileName, contentType, envelopeId, fileId, ahcWSClient).failed.futureValue
 
         result mustBe a[RuntimeException]
 
@@ -414,7 +425,6 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
           )
         )
 
-
         val result = sut.closeEnvelope(envelopeId).failed.futureValue
 
         result mustBe a[RuntimeException]
@@ -433,8 +443,8 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
         val file1 =
           Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-iform", "status" -> status)
         val file2 =
-          Json.obj("id"          -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "status" -> status)
-        val body = Json.obj("id" -> envelopeId, "status"                                                             -> "CLOSED", "files" -> JsArray(Seq(file1, file2)))
+          Json.obj("id" -> "4142477f-9242-4a98-9c8b-73295cfb170c-EndEmployment-20171009-metadata", "status" -> status)
+        val body = Json.obj("id" -> envelopeId, "status" -> "CLOSED", "files" -> JsArray(Seq(file1, file2)))
 
         server.stubFor(
           get(urlEqualTo(envelopeWithIdUrl)).willReturn(

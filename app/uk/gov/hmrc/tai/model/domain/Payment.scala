@@ -21,7 +21,6 @@ import uk.gov.hmrc.tai.model.domain.formatters.EmploymentMongoFormatters
 
 import java.time.LocalDate
 
-
 case class Payment(
   date: LocalDate,
   amountYearToDate: BigDecimal,

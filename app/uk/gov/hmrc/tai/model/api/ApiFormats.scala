@@ -27,7 +27,7 @@ trait ApiFormats {
 
   implicit val adjustmentFormat: Format[Adjustment] = Json.format[Adjustment]
 
-  implicit val paymentFrequencyFormat = new Format[PaymentFrequency] {
+  implicit val paymentFrequencyFormat: Format[PaymentFrequency] = new Format[PaymentFrequency] {
     override def reads(json: JsValue): JsResult[PaymentFrequency] = json.as[String] match {
       case "Weekly"      => JsSuccess(Weekly)
       case "FortNightly" => JsSuccess(FortNightly)
@@ -64,9 +64,20 @@ trait ApiFormats {
 
   implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
 
-  implicit val companyCarBenefitSeqWrites = new Writes[Seq[CompanyCarBenefit]] {
+  implicit val companyCarBenefitWrites: Writes[CompanyCarBenefit] = new Writes[CompanyCarBenefit] {
+    override def writes(o: CompanyCarBenefit): JsValue = {
+      val cocarBenefitJson = Json.obj(
+        "employmentSeqNo" -> o.employmentSeqNo,
+        "grossAmount"     -> o.grossAmount,
+        "companyCars"     -> Json.toJson(o.companyCars)
+      )
+      o.version.fold(cocarBenefitJson)(v => cocarBenefitJson + ("version" -> Json.toJson(v)))
+    }
+  }
+
+  implicit val companyCarBenefitSeqWrites: Writes[Seq[CompanyCarBenefit]] = new Writes[Seq[CompanyCarBenefit]] {
     override def writes(o: Seq[CompanyCarBenefit]): JsValue = Json.obj(
-      "companyCarBenefits" -> o
+      "companyCarBenefits" -> o.map(Json.toJson(_)(companyCarBenefitWrites))
     )
   }
 

@@ -35,11 +35,10 @@ object QaData {
       .map { x =>
         Json.fromJson[T](x) match {
           case JsSuccess(r, _) => r
-          case JsError(e) => {
+          case JsError(e) =>
             throw new IllegalArgumentException(
               e.map(_.toString).mkString("\n")
             )
-          }
         }
       }
 
@@ -90,7 +89,7 @@ $table
         .get
   }
 
-  val prettyPrintAll: String = {
+  val prettyPrintAll: String =
     Seq("15-16", "16-17")
       .map { y =>
         json(y).keys
@@ -100,5 +99,4 @@ $table
           .mkString("\n")
       }
       .mkString("\n\n")
-  }
 }

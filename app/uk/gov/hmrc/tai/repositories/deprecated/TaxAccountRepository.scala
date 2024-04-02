@@ -28,7 +28,7 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountRepository @Inject()(cache: Caching, taxAccountConnector: TaxAccountConnector) extends MongoConstants {
+class TaxAccountRepository @Inject() (cache: Caching, taxAccountConnector: TaxAccountConnector) extends MongoConstants {
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cache.cacheFromApi(nino, s"$TaxAccountBaseKey${taxYear.year}", taxAccountFromApi(nino: Nino, taxYear: TaxYear))

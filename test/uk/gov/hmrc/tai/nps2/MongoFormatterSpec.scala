@@ -70,7 +70,9 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
             totalTax = Some(123.1),
             totalTaxableIncome = Some(999.1),
             totalIncome = Some(333.1),
-            taxBands = List(testTaxBand, testTaxBand)))
+            taxBands = List(testTaxBand, testTaxBand)
+          )
+        )
 
         Json.toJson(totalLiabilityMap)(formatliabilityMap) mustBe json
       }
@@ -163,7 +165,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
               iabds = List(testIabd),
               cessationPay = Some(2200.22),
               start = LocalDate.of(2017, 12, 12)
-            )),
+            )
+          ),
           basisOperation = Some(BasisOperation.Week1Month1)
         )
         Json.toJson(income) mustEqual json
@@ -201,7 +204,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
                 "source"                   -> 16,
                 "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
-              )),
+              )
+            ),
             "cessationPayThisEmployment" -> 2200.22,
             "startDate"                  -> "12/12/2017"
           ),
@@ -245,7 +249,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
                 "source"                   -> 16,
                 "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
-              )),
+              )
+            ),
             "cessationPayThisEmployment" -> 2200.22,
             "startDate"                  -> "12/12/2017"
           ),
@@ -289,7 +294,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
                 "source"                   -> 16,
                 "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
-              )),
+              )
+            ),
             "cessationPayThisEmployment" -> 2200.22,
             "startDate"                  -> "12/12/2017"
           ),
@@ -335,7 +341,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
                 "source"                   -> 16,
                 "typeDescription"          -> "dummyDescription",
                 "employmentSequenceNumber" -> 32
-              )),
+              )
+            ),
             "cessationPayThisEmployment" -> 2200.22,
             "startDate"                  -> "12/12/2017"
           ),
@@ -359,7 +366,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
               "source"                   -> 16,
               "typeDescription"          -> "dummyDescription",
               "employmentSequenceNumber" -> 32
-            ))
+            )
+          )
         )
 
         val component = json.as[Component]
@@ -386,7 +394,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
               "source"                   -> 16,
               "typeDescription"          -> "dummyDescription",
               "employmentSequenceNumber" -> 32
-            )),
+            )
+          ),
           "cessationPayThisEmployment" -> 2200.22,
           "startDate"                  -> "12/12/2017"
         )
@@ -412,7 +421,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
     tax = 8000,
     lowerBand = Some(5000),
     upperBand = Some(20000),
-    rate = 33)
+    rate = 33
+  )
 
   private val fixedDate = LocalDate.parse("2017-12-12")
 
@@ -421,7 +431,8 @@ class MongoFormatterSpec extends PlaySpec with MongoFormatter {
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
-    employmentSequence = Some(32))
+    employmentSequence = Some(32)
+  )
 
   private val testNpsEmployment = NpsEmployment(
     employerName = Some("Company Plc"),

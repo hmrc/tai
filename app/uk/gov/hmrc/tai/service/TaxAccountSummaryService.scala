@@ -30,15 +30,19 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
-class TaxAccountSummaryService @Inject()(
+class TaxAccountSummaryService @Inject() (
   taxAccountSummaryRepository: TaxAccountSummaryRepository,
   codingComponentService: CodingComponentService,
   incomeService: IncomeService,
-  totalTaxService: TotalTaxService)(
-  implicit ec: ExecutionContext
+  totalTaxService: TotalTaxService
+)(implicit
+  ec: ExecutionContext
 ) extends TaxAccountSummaryHodFormatters {
 
-  def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier, request: Request[_]): Future[TaxAccountSummary] =
+  def taxAccountSummary(nino: Nino, year: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): Future[TaxAccountSummary] =
     for {
       totalEstimatedTax       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
@@ -48,9 +52,9 @@ class TaxAccountSummaryService @Inject()(
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
-      val totalIyaIntoCY = (taxCodeIncomes map (_.inYearAdjustmentIntoCY) sum)
-      val totalIya = (taxCodeIncomes map (_.totalInYearAdjustment) sum)
-      val totalIyatIntoCYPlusOne = (taxCodeIncomes map (_.inYearAdjustmentIntoCYPlusOne) sum)
+      val totalIyaIntoCY = taxCodeIncomes map (_.inYearAdjustmentIntoCY) sum
+      val totalIya = taxCodeIncomes map (_.totalInYearAdjustment) sum
+      val totalIyatIntoCYPlusOne = taxCodeIncomes map (_.inYearAdjustmentIntoCYPlusOne) sum
       val incomeCategoriesSum = totalTax.incomeCategories.map(_.totalTaxableIncome).sum
       val totalEstimatedIncome =
         if (incomeCategoriesSum == 0) totalTax.incomeCategories.map(_.totalIncome).sum
@@ -63,7 +67,8 @@ class TaxAccountSummaryService @Inject()(
         totalIya,
         totalIyatIntoCYPlusOne,
         totalEstimatedIncome,
-        taxFreeAllowance)
+        taxFreeAllowance
+      )
     }
 
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal =
@@ -71,5 +76,6 @@ class TaxAccountSummaryService @Inject()(
       component.componentType match {
         case _: AllowanceComponentType => total + component.amount.abs
         case _                         => total - component.amount.abs
-    })
+      }
+    )
 }

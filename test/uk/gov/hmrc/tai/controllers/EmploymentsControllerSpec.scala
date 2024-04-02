@@ -48,7 +48,8 @@ class EmploymentsControllerSpec extends BaseSpec {
       2,
       Some(100),
       false,
-      true)
+      true
+    )
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
 
@@ -75,19 +76,23 @@ class EmploymentsControllerSpec extends BaseSpec {
           .thenReturn(EitherT.rightT(Employments(Seq(emp), None)))
 
         val jsonResult = Json.obj(
-          "data" -> Json.obj("employments" -> Json.arr(Json.obj(
-            "name"                         -> "company name",
-            "employmentStatus"             -> Live.toString,
-            "payrollNumber"                -> "888",
-            "startDate"                    -> "2017-05-26",
-            "annualAccounts"               -> Json.arr(),
-            "taxDistrictNumber"            -> "",
-            "payeNumber"                   -> "",
-            "sequenceNumber"               -> 2,
-            "cessationPay"                 -> 100,
-            "hasPayrolledBenefit"          -> false,
-            "receivingOccupationalPension" -> true
-          ))),
+          "data" -> Json.obj(
+            "employments" -> Json.arr(
+              Json.obj(
+                "name"                         -> "company name",
+                "employmentStatus"             -> Live.toString,
+                "payrollNumber"                -> "888",
+                "startDate"                    -> "2017-05-26",
+                "annualAccounts"               -> Json.arr(),
+                "taxDistrictNumber"            -> "",
+                "payeNumber"                   -> "",
+                "sequenceNumber"               -> 2,
+                "cessationPay"                 -> 100,
+                "hasPayrolledBenefit"          -> false,
+                "receivingOccupationalPension" -> true
+              )
+            )
+          ),
           "links" -> Json.arr()
         )
 
@@ -217,7 +222,8 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         val result = sut.endEmployment(nino, 3)(
           FakeRequest("POST", "/", FakeHeaders(), json)
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -237,7 +243,8 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         val result = sut.addEmployment(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -257,7 +264,8 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         val result = sut.incorrectEmployment(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment))
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -274,12 +282,14 @@ class EmploymentsControllerSpec extends BaseSpec {
 
         when(
           mockEmploymentService
-            .updatePreviousYearIncome(meq(nino), meq(taxYear), meq(employment))(any()))
+            .updatePreviousYearIncome(meq(nino), meq(taxYear), meq(employment))(any())
+        )
           .thenReturn(Future.successful(envelopeId))
 
         val result = sut.updatePreviousYearIncome(nino, taxYear)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(employment))
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)

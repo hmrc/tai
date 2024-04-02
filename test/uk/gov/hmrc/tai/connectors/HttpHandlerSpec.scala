@@ -19,18 +19,17 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.enums.APITypes
 
-class HttpHandlerSpec
-    extends ConnectorBaseSpec {
+class HttpHandlerSpec extends ConnectorBaseSpec {
 
-  lazy val httpHandler = inject[HttpHandler]
+  lazy val httpHandler: HttpHandler = inject[HttpHandler]
 
-  lazy val testUrl = server.url("testUrl")
+  lazy val testUrl: String = server.url("testUrl")
   private case class ResponseObject(name: String, age: Int)
-  private implicit val responseObjectFormat = Json.format[ResponseObject]
+  private implicit val responseObjectFormat: OFormat[ResponseObject] = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
 
   "getFromAPI" must {
@@ -40,9 +39,12 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(OK)
-              .withBody(Json.toJson(responseBodyObject).toString())))
+            .willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(Json.toJson(responseBodyObject).toString())
+            )
+        )
 
         val response = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
@@ -50,7 +52,8 @@ class HttpHandlerSpec
 
         server.verify(
           getRequestedFor(anyUrl())
-            .withHeader("test", equalTo("testHeader")))
+            .withHeader("test", equalTo("testHeader"))
+        )
       }
     }
 
@@ -61,8 +64,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(BAD_REQUEST)))
+            .willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+            )
+        )
 
         val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -78,8 +84,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(NOT_FOUND)))
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
 
         val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -95,8 +104,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)))
+            .willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
 
         val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -112,8 +124,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(LOCKED)))
+            .willReturn(
+              aResponse()
+                .withStatus(LOCKED)
+            )
+        )
 
         val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -128,8 +143,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .get(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(IM_A_TEAPOT)))
+            .willReturn(
+              aResponse()
+                .withStatus(IM_A_TEAPOT)
+            )
+        )
 
         val result = httpHandler.getFromApi(testUrl, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -147,9 +165,12 @@ class HttpHandlerSpec
       server.stubFor(
         WireMock
           .post(anyUrl())
-          .willReturn(aResponse()
-            .withStatus(OK)
-            .withBody(Json.toJson(userInput).toString())))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(Json.toJson(userInput).toString())
+          )
+      )
 
       val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
@@ -158,7 +179,8 @@ class HttpHandlerSpec
 
       server.verify(
         postRequestedFor(anyUrl())
-          .withHeader("test", equalTo("testHeader")))
+          .withHeader("test", equalTo("testHeader"))
+      )
     }
 
     "return json which is coming from http post call with CREATED response" in {
@@ -166,9 +188,12 @@ class HttpHandlerSpec
       server.stubFor(
         WireMock
           .post(anyUrl())
-          .willReturn(aResponse()
-            .withStatus(CREATED)
-            .withBody(Json.toJson(userInput).toString())))
+          .willReturn(
+            aResponse()
+              .withStatus(CREATED)
+              .withBody(Json.toJson(userInput).toString())
+          )
+      )
 
       val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
@@ -177,7 +202,8 @@ class HttpHandlerSpec
 
       server.verify(
         postRequestedFor(anyUrl())
-          .withHeader("test", equalTo("testHeader")))
+          .withHeader("test", equalTo("testHeader"))
+      )
 
     }
 
@@ -186,9 +212,12 @@ class HttpHandlerSpec
       server.stubFor(
         WireMock
           .post(anyUrl())
-          .willReturn(aResponse()
-            .withStatus(ACCEPTED)
-            .withBody(Json.toJson(userInput).toString())))
+          .willReturn(
+            aResponse()
+              .withStatus(ACCEPTED)
+              .withBody(Json.toJson(userInput).toString())
+          )
+      )
 
       val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
 
@@ -197,7 +226,8 @@ class HttpHandlerSpec
 
       server.verify(
         postRequestedFor(anyUrl())
-          .withHeader("test", equalTo("testHeader")))
+          .withHeader("test", equalTo("testHeader"))
+      )
 
     }
 
@@ -206,8 +236,11 @@ class HttpHandlerSpec
       server.stubFor(
         WireMock
           .post(anyUrl())
-          .willReturn(aResponse()
-            .withStatus(NO_CONTENT)))
+          .willReturn(
+            aResponse()
+              .withStatus(NO_CONTENT)
+          )
+      )
 
       val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).futureValue
 
@@ -219,8 +252,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .post(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(NOT_FOUND)))
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
 
         val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -233,8 +269,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .post(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(GATEWAY_TIMEOUT)))
+            .willReturn(
+              aResponse()
+                .withStatus(GATEWAY_TIMEOUT)
+            )
+        )
 
         val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 
@@ -246,8 +285,11 @@ class HttpHandlerSpec
         server.stubFor(
           WireMock
             .post(anyUrl())
-            .willReturn(aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)))
+            .willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
 
         val result = httpHandler.postToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
 

@@ -24,18 +24,20 @@ import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class InvalidateCaches @Inject()(taiCacheConnector: TaiCacheConnector,
-                                 taiSessionCacheRepository: TaiSessionCacheRepository,
-                                 taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector)(
-  implicit ec: ExecutionContext
+class InvalidateCaches @Inject() (
+  taiCacheConnector: TaiCacheConnector,
+  taiSessionCacheRepository: TaiSessionCacheRepository,
+  taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector
+)(implicit
+  ec: ExecutionContext
 ) {
 
   def invalidateAll[A](f: => Future[A])(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[A] = {
     val cacheId = CacheId(request.nino).value
     for {
-      _ <- taiCacheConnector.deleteEntity(cacheId)
-      _ <- taiUpdateIncomeCacheConnector.deleteEntity(cacheId)
-      _ <- taiSessionCacheRepository.deleteAllFromSession
+      _      <- taiCacheConnector.deleteEntity(cacheId)
+      _      <- taiUpdateIncomeCacheConnector.deleteEntity(cacheId)
+      _      <- taiSessionCacheRepository.deleteAllFromSession
       result <- f
     } yield result
   }

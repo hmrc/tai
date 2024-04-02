@@ -84,7 +84,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       "unmarshall a Json taxBand string into a TaxBand model" in {
         val unmarshalledTestClass = Json
           .parse(
-            """{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}""")
+            """{"bandType":"dummyType","code":"ABCD123","income":33000,"tax":8000,"lowerBand":5000,"upperBand":20000,"rate":33}"""
+          )
           .as[TaxBand]
         unmarshalledTestClass mustBe testTaxBand
       }
@@ -92,7 +93,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       "unmarshall a taxBand provided by nps2 in Json format into a TaxBand model" in {
         val unmarshalledTestClass = Json
           .parse(
-            """{"bandType": "B","taxCode": "BR","isBasicRate": true,"income": 14000,"tax": 2800,"lowerBand": 0,"upperBand": 32000,"rate": 20}""")
+            """{"bandType": "B","taxCode": "BR","isBasicRate": true,"income": 14000,"tax": 2800,"lowerBand": 0,"upperBand": 32000,"rate": 20}"""
+          )
           .as[TaxBand]
 
         unmarshalledTestClass mustBe
@@ -117,7 +119,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       "unmarshall a Json Iabd string into an Iabd model" in {
         val unmarshalledTestClass = Json
           .parse(
-            """{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}""")
+            """{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}"""
+          )
           .as[Iabd]
         unmarshalledTestClass mustBe testIabd
       }
@@ -270,21 +273,24 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
             unmarshalledTestClass must not be empty
             val taxDetail = unmarshalledTestClass.get(TaxObject.Type.NonSavings)
 
-            taxDetail mustEqual Some(TaxDetail(
-              totalTax = Some(3919),
-              totalTaxableIncome = Some(19595),
-              totalIncome = Some(30595),
-              taxBands = List(
-                TaxBand(
-                  bandType = Some("B"),
-                  code = None,
-                  income = 19595,
-                  tax = 3919,
-                  lowerBand = Some(0),
-                  upperBand = Some(32000),
-                  rate = 20)
+            taxDetail mustEqual Some(
+              TaxDetail(
+                totalTax = Some(3919),
+                totalTaxableIncome = Some(19595),
+                totalIncome = Some(30595),
+                taxBands = List(
+                  TaxBand(
+                    bandType = Some("B"),
+                    code = None,
+                    income = 19595,
+                    tax = 3919,
+                    lowerBand = Some(0),
+                    upperBand = Some(32000),
+                    rate = 20
+                  )
+                )
               )
-            ))
+            )
           }
         }
 
@@ -341,7 +347,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
                 taxBands = List(
                   TaxBand(bandType = Some("pa"), income = 11000, tax = 0, rate = 0)
                 )
-              ))
+              )
+            )
           }
         }
 
@@ -403,22 +410,25 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
             unmarshalledTestClass must not be empty
             val taxDetail = unmarshalledTestClass.get(TaxObject.Type.NonSavings)
 
-            taxDetail mustEqual Some(TaxDetail(
-              totalTax = Some(3919),
-              totalTaxableIncome = Some(19595),
-              totalIncome = Some(30595),
-              taxBands = List(
-                TaxBand(bandType = Some("pa"), income = 11000, tax = 0, rate = 0),
-                TaxBand(
-                  bandType = Some("B"),
-                  code = None,
-                  income = 19595,
-                  tax = 3919,
-                  lowerBand = Some(0),
-                  upperBand = Some(32000),
-                  rate = 20)
+            taxDetail mustEqual Some(
+              TaxDetail(
+                totalTax = Some(3919),
+                totalTaxableIncome = Some(19595),
+                totalIncome = Some(30595),
+                taxBands = List(
+                  TaxBand(bandType = Some("pa"), income = 11000, tax = 0, rate = 0),
+                  TaxBand(
+                    bandType = Some("B"),
+                    code = None,
+                    income = 19595,
+                    tax = 3919,
+                    lowerBand = Some(0),
+                    upperBand = Some(32000),
+                    rate = 20
+                  )
+                )
               )
-            ))
+            )
           }
         }
       }
@@ -572,7 +582,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
             |"taxDistrictNumber":"1",
             |"iabds":[{"grossAmount":10,"type":1,"source":16,"typeDescription":"dummyDescription","employmentSequenceNumber":32}],
             |"cessationPayThisEmployment":2200.22,
-            |"startDate":"12/12/2017"}""".stripMargin)
+            |"startDate":"12/12/2017"}""".stripMargin
+        )
       }
 
       "unmarshall a Json NpsEmployment string into an NpsEmployment model" in {
@@ -641,7 +652,8 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
         unmarshalledTestClass mustEqual testTaxAccount.copy(
           incomes = List(testIncome.copy(basisOperation = None)),
-          taxObjects = Map(testLiabilityMapKey -> testLiabilityMapValue.copy(totalIncome = None)))
+          taxObjects = Map(testLiabilityMapKey -> testLiabilityMapValue.copy(totalIncome = None))
+        )
       }
     }
   }
@@ -651,9 +663,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
       error: JsonValidationError                       <- errors.toSeq
       message: String                                  <- error.messages
-    } yield {
-      path.toString() + " -> " + message
-    }
+    } yield path.toString() + " -> " + message
 
   private def stripFormatting(string: String): String =
     string.stripMargin.replaceAll("\\n+", "")
@@ -667,14 +677,16 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     tax = 8000,
     lowerBand = Some(5000),
     upperBand = Some(20000),
-    rate = 33)
+    rate = 33
+  )
 
   private val testIabd = Iabd(
     amount = 10,
     iabdType = GiftAidPayments,
     source = Letter,
     description = "dummyDescription",
-    employmentSequence = Some(32))
+    employmentSequence = Some(32)
+  )
 
   private val iabdList = List(testIabd, testIabd, testIabd)
 
@@ -690,13 +702,15 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
     totalTax = Some(123.1),
     totalTaxableIncome = Some(999.1),
     totalIncome = Some(333.1),
-    taxBands = List(testTaxBand, testTaxBand))
+    taxBands = List(testTaxBand, testTaxBand)
+  )
 
   private val testLiabilityMapValueEmpty = TaxDetail(
     totalTax = None,
     totalTaxableIncome = None,
     totalIncome = Some(333.1),
-    taxBands = List(testTaxBand, testTaxBand))
+    taxBands = List(testTaxBand, testTaxBand)
+  )
 
   private val testLiabilityMapValueEmptyTaxBands =
     TaxDetail(totalTax = Some(123.1), totalTaxableIncome = Some(999.1), totalIncome = Some(333.1), taxBands = Nil)

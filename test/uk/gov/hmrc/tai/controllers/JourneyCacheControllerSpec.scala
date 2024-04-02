@@ -65,7 +65,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
     "accept and persist a valid POST'ed cache" in {
       val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
       val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-        .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test"))
+        .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test")
 
       val mockRepository = mock[JourneyCacheRepository]
       when(mockRepository.cached(any(), any(), any()))
@@ -95,10 +95,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-        .thenReturn(
-          Future.successful(None),
-          Future.successful(Some(Map.empty[String, String]))
-        )
+          .thenReturn(
+            Future.successful(None),
+            Future.successful(Some(Map.empty[String, String]))
+          )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("testjourney")(fakeRequest)
@@ -154,14 +154,15 @@ class JourneyCacheControllerSpec extends BaseSpec {
         val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
         val result3 = sut.cached("testjourney")(
           FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-            .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test")))
+            .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test")
+        )
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("testjourney")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
-    //update-income
+    // update-income
 
     "supply a named journey cache on GET request *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]
@@ -191,7 +192,7 @@ class JourneyCacheControllerSpec extends BaseSpec {
     "accept and persist a valid POST'ed cache *UpdateIncome" in {
       val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
       val fakeRequest = FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-        .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test"))
+        .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test")
 
       val mockRepository = mock[JourneyCacheRepository]
       when(mockRepository.cached(any(), any(), any()))
@@ -232,10 +233,10 @@ class JourneyCacheControllerSpec extends BaseSpec {
       "a cache is not found for the requested journey" in {
         val mockRepository = mock[JourneyCacheRepository]
         when(mockRepository.currentCache(any(), any()))
-        .thenReturn(
-          Future.successful(None),
-          Future.successful(Some(Map.empty[String, String]))
-        )
+          .thenReturn(
+            Future.successful(None),
+            Future.successful(Some(Map.empty[String, String]))
+          )
 
         val sut = createSUT(mockRepository)
         val result = sut.currentCache("update-income")(fakeRequest)
@@ -293,7 +294,8 @@ class JourneyCacheControllerSpec extends BaseSpec {
         val cacheJson = Json.obj("key1" -> "value1", "key2" -> "value2")
         val result3 = sut.cached("update-income")(
           FakeRequest("POST", "/", FakeHeaders(), cacheJson)
-            .withHeaders(("content-type" -> "application/json"), ("X-Session-ID" -> "test")))
+            .withHeaders("content-type" -> "application/json", "X-Session-ID" -> "test")
+        )
         status(result3) mustBe INTERNAL_SERVER_ERROR
 
         val result4 = sut.flush("update-income")(FakeRequest("DELETE", "").withHeaders("X-Session-ID" -> "test"))

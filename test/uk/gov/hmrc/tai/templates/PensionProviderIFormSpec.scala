@@ -94,7 +94,7 @@ class PensionProviderIFormSpec extends PlaySpec {
         ukAddressTableRow.select("td:nth-of-type(1)").text() mustBe "UK address"
         ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe
           s"${addPensionModel.addressLine1} ${addPensionModel.addressLine2} " +
-            s"${addPensionModel.addressLine3} ${addPensionModel.postcode}"
+          s"${addPensionModel.addressLine3} ${addPensionModel.postcode}"
       }
     }
 

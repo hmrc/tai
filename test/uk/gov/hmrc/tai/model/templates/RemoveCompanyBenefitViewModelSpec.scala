@@ -79,7 +79,8 @@ class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
     "firstname",
     "lastname",
     Some(LocalDate.parse("1984-04-03")),
-    Address("addressLine1", "addressLine2", "addressLine3", "postcode", "UK"))
+    Address("addressLine1", "addressLine2", "addressLine3", "postcode", "UK")
+  )
 
   private val removeCompanyBenefitModel = RemoveCompanyBenefitViewModel(
     nino.nino,

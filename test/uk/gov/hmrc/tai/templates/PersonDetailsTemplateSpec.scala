@@ -90,7 +90,8 @@ class PersonDetailsTemplateSpec extends PlaySpec {
     "test",
     "tester",
     Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country"))
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
 
   val personDetailsTemplate: Html = uk.gov.hmrc.tai.templates.html.PersonDetails(personDetails)
   val doc: Document = Jsoup.parse(personDetailsTemplate.toString())

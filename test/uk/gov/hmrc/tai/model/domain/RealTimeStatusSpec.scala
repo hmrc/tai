@@ -42,7 +42,8 @@ class RealTimeStatusSpec extends PlaySpec {
 
         Json.toJson(Available)(RealTimeStatus.realTimeStatusFormat.writes(_)) mustBe JsString("Available")
         Json.toJson(TemporarilyUnavailable)(RealTimeStatus.realTimeStatusFormat.writes(_)) mustBe JsString(
-          "TemporarilyUnavailable")
+          "TemporarilyUnavailable"
+        )
         Json.toJson(Unavailable)(RealTimeStatus.realTimeStatusFormat.writes(_)) mustBe JsString("Unavailable")
       }
     }

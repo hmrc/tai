@@ -88,7 +88,9 @@ class RemoveBankAccountIformSpec extends PlaySpec {
       endSection.select("tr:nth-of-type(5) td:nth-of-type(1)").text() mustBe "Is this a joint account?"
       endSection.select("tr:nth-of-type(5) td:nth-of-type(2)").text() mustBe "No"
       endSection.select("tr:nth-of-type(6) td:nth-of-type(1)").text() mustBe "Date you closed the account"
-      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+      endSection.select("tr:nth-of-type(6) td:nth-of-type(2)").text() mustBe closeBankAccount.endDate.format(
+        DateTimeFormatter.ofPattern("d MMMM yyyy")
+      )
     }
 
     "display ended section with interest supplied and within current tax year" in {
@@ -161,7 +163,8 @@ class RemoveBankAccountIformSpec extends PlaySpec {
     "test",
     "tester",
     Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country"))
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
 
   private val startOfTaxYearCloseDate = TaxYear().start
 

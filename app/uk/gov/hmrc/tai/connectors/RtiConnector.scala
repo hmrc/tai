@@ -48,8 +48,8 @@ import scala.util.control.NonFatal
 
 trait RtiConnector extends RawResponseReads {
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
-                                                       hc: HeaderCarrier,
-                                                       request: Request[_]
+    hc: HeaderCarrier,
+    request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]]
 
   def withoutSuffix(nino: Nino): String = {
@@ -70,102 +70,124 @@ trait RtiConnector extends RawResponseReads {
 
 @Singleton
 class CachingRtiConnector @Inject() (
-                                      @Named("default") underlying: RtiConnector,
-                                      sessionCacheRepository: TaiSessionCacheRepository,
-                                      lockService: LockService,
-                                      appConfig: RtiConfig
-                                                         )(implicit ec: ExecutionContext)
-  extends RtiConnector with EmploymentMongoFormatters with Logging {
+  @Named("default") underlying: RtiConnector,
+  sessionCacheRepository: TaiSessionCacheRepository,
+  lockService: LockService,
+  appConfig: RtiConfig
+)(implicit ec: ExecutionContext)
+    extends RtiConnector with EmploymentMongoFormatters with Logging {
 
-  private def cache[L, A: Format](key: String)
-                                 (f: => EitherT[Future, L, A])
-                                 (implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
+  private def cache[L, A: Format](
+    key: String
+  )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
 
     def fetchAndCache: IO[Either[L, A]] =
       IO.fromFuture(IO((for {
         result <- f
-        _      <- EitherT[Future, L, (String, String)](
-            sessionCacheRepository
-              .putSession[A](DataKey[A](key), result)
-              .map(Right(_))
-          )
+        _ <- EitherT[Future, L, (String, String)](
+               sessionCacheRepository
+                 .putSession[A](DataKey[A](key), result)
+                 .map(Right(_))
+             )
       } yield result).value))
 
-    def readAndUpdate: IO[Either[L, A]] = {
+    def readAndUpdate: IO[Either[L, A]] =
       IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
         case Right(true) =>
-          IO.fromFuture(IO(sessionCacheRepository
-              .getFromSession[A](DataKey[A](key))))
-              .flatMap {
-                case None =>
-                  fetchAndCache
-                case Some(value) =>
-                  IO(Right(value): Either[L, A])
-              }
+          IO.fromFuture(
+            IO(
+              sessionCacheRepository
+                .getFromSession[A](DataKey[A](key))
+            )
+          ).flatMap {
+            case None =>
+              fetchAndCache
+            case Some(value) =>
+              IO(Right(value): Either[L, A])
+          }
         case Right(false) =>
           throw new LockedException(s"Lock for $key could not be acquired")
         case Left(error) => IO(Left(error))
       }
-    }
 
-    EitherT(readAndUpdate.simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis).unsafeToFuture().flatMap { result =>
-      lockService.releaseLock(key).map { _ =>
-        result
-      }.recover {
-        case NonFatal(ex) =>
-          logger.error(ex.getMessage, ex)
-          result
-      }
-    }.recoverWith {
-      case NonFatal(ex) =>
-        lockService.releaseLock(key).map { _ =>
-          throw ex
+    EitherT(
+      readAndUpdate
+        .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis)
+        .unsafeToFuture()
+        .flatMap { result =>
+          lockService
+            .releaseLock(key)
+            .map { _ =>
+              result
+            }
+            .recover { case NonFatal(ex) =>
+              logger.error(ex.getMessage, ex)
+              result
+            }
         }
-    })
+        .recoverWith { case NonFatal(ex) =>
+          lockService.releaseLock(key).map { _ =>
+            throw ex
+          }
+        }
+    )
   }
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
-                                                       hc: HeaderCarrier,
-                                                       request: Request[_]
+    hc: HeaderCarrier,
+    request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
     }
 }
 
-
 @Singleton
-class DefaultRtiConnector @Inject()(
+class DefaultRtiConnector @Inject() (
   httpClient: HttpClient,
   rtiConfig: DesConfig,
   urls: RtiUrls,
-  featureFlagService: FeatureFlagService)(implicit ec: ExecutionContext) extends RtiConnector {
+  featureFlagService: FeatureFlagService
+)(implicit ec: ExecutionContext)
+    extends RtiConnector {
 
   val logger = Logger(this.getClass)
 
-  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(
-    implicit hc: HeaderCarrier, request: Request[_]): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
-      getPaymentsForYearHandler(nino, taxYear)
+  def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+    getPaymentsForYearHandler(nino, taxYear)
 
-  private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+  private def getPaymentsForYearHandler(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     featureFlagService.getAsEitherT(RtiCallToggle).flatMap { toggle =>
       if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
         logger.info(s"RTIAPI - call for the year: $taxYear}")
         val ninoWithoutSuffix = withoutSuffix(nino)
         val futureResponse =
-          httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear), headers = createHeader(rtiConfig))
-        EitherT(futureResponse.map {
-            case Right(httpResponse) =>
-              Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
-            case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
-              Right(Seq.empty)
-            case Left(error) =>
-              logger.error(s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}")
-            Left(error)
-          }.recover {
-          case error: HttpException =>
-            Left(UpstreamErrorResponse(error.message, BAD_GATEWAY))
-        })
+          httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](
+            url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
+            headers = createHeader(rtiConfig)
+          )
+        EitherT(
+          futureResponse
+            .map {
+              case Right(httpResponse) =>
+                Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+              case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
+                Right(Seq.empty)
+              case Left(error) =>
+                logger.error(
+                  s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}"
+                )
+                Left(error)
+            }
+            .recover { case error: HttpException =>
+              Left(UpstreamErrorResponse(error.message, BAD_GATEWAY))
+            }
+        )
       } else {
         logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
         EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))

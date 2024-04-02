@@ -24,11 +24,13 @@ object TaxBandCalculator {
   def recreateTaxBandsNewTaxableIncome(
     newTaxableIncome: Option[BigDecimal] = None,
     oldTaxBands: Option[List[TaxBand]],
-    startingPoint: BigDecimal = BigDecimal(0)): Option[List[TaxBand]] =
+    startingPoint: BigDecimal = BigDecimal(0)
+  ): Option[List[TaxBand]] =
     if (oldTaxBands.isDefined && newTaxableIncome.isDefined) {
       val sortedTaxBandsOption = oldTaxBands.map(_.sortBy(_.rate))
       sortedTaxBandsOption.map(sortedTaxBands =>
-        recreateTaxBands(newTaxableIncome, sortedTaxBands, Nil, startingPoint).flatten)
+        recreateTaxBands(newTaxableIncome, sortedTaxBands, Nil, startingPoint).flatten
+      )
     } else {
       oldTaxBands
     }
@@ -38,7 +40,8 @@ object TaxBandCalculator {
     remainingTaxableIncome: Option[BigDecimal] = None,
     oldTaxBands: List[TaxBand],
     newTaxBands: List[Option[TaxBand]],
-    startingPoint: BigDecimal): List[Option[TaxBand]] =
+    startingPoint: BigDecimal
+  ): List[Option[TaxBand]] =
     if (oldTaxBands.nonEmpty) {
       val oldRemaining = remainingTaxableIncome.getOrElse(BigDecimal(0))
 
@@ -58,7 +61,8 @@ object TaxBandCalculator {
   private[calculators] def recreateTaxBand(
     oldTaxBand: TaxBand,
     remainingTaxableIncome: BigDecimal,
-    startingPoint: BigDecimal): (Option[BigDecimal], Option[BigDecimal]) = {
+    startingPoint: BigDecimal
+  ): (Option[BigDecimal], Option[BigDecimal]) = {
 
     val remaining = getIncomeForThisBand(oldTaxBand, remainingTaxableIncome, startingPoint)
 
@@ -67,7 +71,7 @@ object TaxBandCalculator {
     } else if (oldTaxBand.lowerBand.isEmpty) {
       (oldTaxBand.income, oldTaxBand.tax)
     } else {
-      //We have more remaining income than is allowed in this band, so just use the max amount
+      // We have more remaining income than is allowed in this band, so just use the max amount
       val MaxPercentage: BigDecimal = 100
       val rate: BigDecimal = oldTaxBand.rate.getOrElse(0)
       (Some(remaining), Some((remaining * rate) / MaxPercentage))
@@ -77,7 +81,8 @@ object TaxBandCalculator {
   private[calculators] def getIncomeForThisBand(
     taxBand: TaxBand,
     remainingTaxableIncome: BigDecimal,
-    startingPoint: BigDecimal): BigDecimal = {
+    startingPoint: BigDecimal
+  ): BigDecimal = {
     val lowerBand = taxBand.lowerBand.getOrElse(BigDecimal(0))
     val upperBand = taxBand.upperBand.getOrElse(BigDecimal(0))
 
@@ -88,7 +93,7 @@ object TaxBandCalculator {
         case _                                     => upperBand - lowerBand
       }
 
-    //First adjust the maximum income we will use in this tax band based on the max income
+    // First adjust the maximum income we will use in this tax band based on the max income
     if (upperBand == 0 || maxIncome > remainingTaxableIncome) {
       remainingTaxableIncome
     } else {
