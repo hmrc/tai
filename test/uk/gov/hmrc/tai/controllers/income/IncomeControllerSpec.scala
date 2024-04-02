@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
@@ -265,7 +265,19 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return NotFound when a NotFoundException occurs" in {
+    "return NotFound when a NotFoundException is thrown" in {
+
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
+        .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(new NotFoundException("message"))))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+    }
+
+
+    "return NotFound when a Not Found UpstreamErrorResponse occurs" in {
 
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
@@ -276,10 +288,21 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       status(result) mustBe NOT_FOUND
     }
 
-    "return BadRequest when a BadRequestException occurs" in {
+    "return BadRequest when a Bad Request UpstreamErrorResponse occurs" in {
 
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("Bad request", BAD_REQUEST)))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+    }
+
+    "return BadRequest when a BadRequestException is thrown" in {
+
+      when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
+        .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[IncomeSource]](Future.failed(new BadRequestException("message"))))
 
       val SUT = createSUT(mockIncomeService)
       val result = SUT.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
@@ -325,7 +348,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       contentAsJson(result) mustBe expectedJson
     }
 
-    "return NotFound when a NotFoundException occurs" in {
+    "return NotFound when a Not Found UpstreamErrorResponse occurs" in {
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", NOT_FOUND)))
@@ -336,7 +359,29 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       status(result) mustBe NOT_FOUND
     }
 
-    "return BadRequest when a BadRequestException occurs" in {
+    "return NotFound when a NotFoundException is thrown" in {
+
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
+        .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(new NotFoundException("message"))))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+    }
+
+    "return BadRequest when a BadRequestException is thrown" in {
+
+      when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
+        .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[Employment]](Future.failed(new BadRequestException("message"))))
+
+      val SUT = createSUT(mockIncomeService)
+      val result = SUT.nonMatchingCeasedEmployments(nino, TaxYear().next)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+    }
+
+    "return BadRequest when a bad request UpstreamErrorResponse occurs" in {
 
       when(mockIncomeService.nonMatchingCeasedEmployments(any(), meq(TaxYear().next))(any(), any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("Bad request", BAD_REQUEST)))

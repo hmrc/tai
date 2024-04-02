@@ -64,7 +64,7 @@ class IncomeController @Inject()(
     incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).bimap(
       error => errorToResponse(error),
       result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-    ).merge
+    ).merge recoverWith taxAccountErrorHandler()
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
@@ -72,7 +72,7 @@ class IncomeController @Inject()(
       incomeService.nonMatchingCeasedEmployments(nino, year).bimap(
         error => errorToResponse(error),
           result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-        ).merge
+        ).merge recoverWith taxAccountErrorHandler()
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
