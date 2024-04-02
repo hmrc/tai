@@ -23,6 +23,7 @@ object FileHelper {
   def loadFile(name: String): String = {
     val filePath = s"it/test/uk/gov/hmrc/tai/integration/resources/$name"
     val source = fromFile(filePath)
-    try source.mkString finally source.close()
+    try source.mkString
+    finally source.close()
   }
 }

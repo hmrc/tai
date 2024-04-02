@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, Employments, EndEmployment, IncorrectEmployment}
@@ -101,22 +101,44 @@ class EmploymentsControllerSpec extends BaseSpec {
       }
     }
     "return a non success http response" when {
-      "the employments are not found" in {
+      "the employments service returns a not found UpstreamErrorResponse" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT(UpstreamErrorResponse("Not found", NOT_FOUND)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
       }
-      "the employments service returns a bad request exception" in {
+
+      "the employments service returns a not found exception" in {
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(
+            EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new NotFoundException("message")))
+          )
+
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
+        status(result) mustBe NOT_FOUND
+      }
+
+      "the employments service returns a bad request UpstreamErrorResponse" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT(UpstreamErrorResponse("bad request", BAD_REQUEST)))
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe "bad request"
-
       }
+
+      "the employments service returns a bad request exception" in {
+        when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+          .thenReturn(
+            EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new BadRequestException("bad request")))
+          )
+
+        val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) mustBe "bad request"
+      }
+
       "the employments service returns a server error" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
           .thenReturn(EitherT.leftT(UpstreamErrorResponse("server error", INTERNAL_SERVER_ERROR)))

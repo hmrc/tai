@@ -44,7 +44,7 @@ class EmploymentsController @Inject() (
         error => errorToResponse(error),
         employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
       )
-      .merge
+      .merge recoverWith taxAccountErrorHandler()
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
@@ -54,7 +54,7 @@ class EmploymentsController @Inject() (
         error => errorToResponse(error),
         employment => Ok(Json.toJson(ApiResponse(employment, Nil)))
       )
-      .merge
+      .merge recoverWith taxAccountErrorHandler()
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>

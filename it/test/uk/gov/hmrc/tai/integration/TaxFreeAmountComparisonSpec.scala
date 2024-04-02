@@ -38,7 +38,6 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     }
 
     List(500, 501, 502, 503, 504).foreach { status =>
-
       s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
@@ -48,7 +47,6 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     }
 
     List(400, 401, 403, 409, 412).foreach { status =>
-
       s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
@@ -65,7 +63,6 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     }
 
     List(500, 501, 502, 503, 504).foreach { status =>
-
       s"return $status when we receive $status downstream - npsTaxAccountUrl" in {
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
@@ -75,7 +72,6 @@ class TaxFreeAmountComparisonSpec extends IntegrationSpec {
     }
 
     List(400, 401, 403, 409, 412).foreach { status =>
-
       s"return $status when we receive $status downstream - npsTaxAccountUrl" in {
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))

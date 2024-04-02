@@ -32,7 +32,8 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     basisOfOperation: String = Cumulative,
     employerName: String = "Employer 1",
     dateOfCalculation: LocalDate = LocalDate.now,
-    payrollNumber: Option[String] = Some("123")): TaxCodeRecord =
+    payrollNumber: Option[String] = Some("123")
+  ): TaxCodeRecord =
     createEmployment(
       taxYear,
       taxCodeId,
@@ -42,7 +43,8 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       operatedTaxCode = true,
       dateOfCalculation,
       payrollNumber,
-      Primary)
+      Primary
+    )
 
   def createPrimaryEmploymentJson(
     taxYear: TaxYear = TaxYear(),
@@ -51,7 +53,8 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     basisOfOperation: String = Cumulative,
     employerName: String = "Employer 1",
     dateOfCalculation: LocalDate = LocalDate.now,
-    payrollNumber: String = "123"): JsObject =
+    payrollNumber: String = "123"
+  ): JsObject =
     Json.obj(
       "taxYear"           -> taxYear.year,
       "taxCodeId"         -> taxCodeId,
@@ -74,7 +77,8 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
     operatedTaxCode: Boolean,
     dateOfCalculation: LocalDate,
     payrollNumber: Option[String],
-    employmentType: String): TaxCodeRecord =
+    employmentType: String
+  ): TaxCodeRecord =
     TaxCodeRecord(
       taxYear,
       taxCodeId,
@@ -85,5 +89,6 @@ object TaxCodeRecordFactory extends TaxCodeHistoryConstants {
       dateOfCalculation,
       payrollNumber,
       pensionIndicator = false,
-      employmentType)
+      employmentType
+    )
 }

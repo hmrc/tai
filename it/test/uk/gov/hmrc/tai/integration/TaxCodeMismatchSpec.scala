@@ -51,7 +51,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     "for nps iabds failures" must {
 
       List(500, 501, 502, 503, 504).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           val nino = new Generator(new Random).nextNino
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
@@ -75,7 +74,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
 
       List(400, 401, 403, 409, 412).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           val nino = new Generator(new Random).nextNino
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
@@ -123,7 +121,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     "for nps tax account failures" must {
 
       List(500, 501, 502, 503, 504).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
@@ -132,7 +129,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
 
       List(400, 401, 403, 409, 412).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
@@ -150,7 +146,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     "for tax-code-history failures" must {
 
       List(500, 501, 502, 503, 504).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)
@@ -159,7 +154,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
 
       List(400, 401, 403, 409, 412).foreach { status =>
-
         s"return $status when we receive $status downstream" in {
           server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
           val result = route(fakeApplication(), request)

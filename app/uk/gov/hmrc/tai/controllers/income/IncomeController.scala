@@ -69,7 +69,7 @@ class IncomeController @Inject() (
         error => errorToResponse(error),
         result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
       )
-      .merge
+      .merge recoverWith taxAccountErrorHandler()
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
@@ -80,7 +80,7 @@ class IncomeController @Inject() (
           error => errorToResponse(error),
           result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
         )
-        .merge
+        .merge recoverWith taxAccountErrorHandler()
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>

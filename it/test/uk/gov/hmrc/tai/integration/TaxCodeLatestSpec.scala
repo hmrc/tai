@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 class TaxCodeLatestSpec extends IntegrationSpec {
 
-
   val apiUrl = s"/tai/$nino/tax-account/$year/tax-code/latest"
 
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
@@ -40,21 +39,19 @@ class TaxCodeLatestSpec extends IntegrationSpec {
       val record1 = TaxCodeRecordFactory.createPrimaryEmployment()
       val record1Json = TaxCodeRecordFactory.createPrimaryEmploymentJson()
       val summary = TaxCodeSummary.apply(record1, TaxYear().end)
-      val historyJson = Json.obj("nino"          -> nino.toString,
-        "taxCodeRecord" -> Seq(record1Json))
+      val historyJson = Json.obj("nino" -> nino.toString, "taxCodeRecord" -> Seq(record1Json))
 
       val expectedBody = ApiResponse(Seq(summary), Seq.empty)
       server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(historyJson.toString())))
       val result = route(fakeApplication(), request)
-      result.map{
-        response => contentAsJson(response) mustBe Json.toJson(expectedBody)
-          getStatus(response) mustBe OK
+      result.map { response =>
+        contentAsJson(response) mustBe Json.toJson(expectedBody)
+        getStatus(response) mustBe OK
       }
 
     }
 
     List(500, 501, 502, 503, 504).foreach { status =>
-
       s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
         val result = route(fakeApplication(), request)
@@ -63,7 +60,6 @@ class TaxCodeLatestSpec extends IntegrationSpec {
     }
 
     List(400, 401, 403, 409, 412).foreach { status =>
-
       s"return $status when we receive $status downstream - desTaxCodeHistoryUrl" in {
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(aResponse().withStatus(status)))
         val result = route(fakeApplication(), request)
@@ -78,4 +74,3 @@ class TaxCodeLatestSpec extends IntegrationSpec {
     }
   }
 }
-

@@ -68,7 +68,8 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
       result.map(fResult =>
         whenReady(fResult.failed) { e =>
           e mustBe a[InternalServerException]
-        })
+        }
+      )
     }
 
     "throws an HttpException when iabds from DES returns a SERVICE_UNAVAILABLE" in {
@@ -79,7 +80,8 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
       result.map(fResult =>
         whenReady(fResult.failed) { e =>
           e mustBe a[HttpException]
-        })
+        }
+      )
     }
   }
 }
