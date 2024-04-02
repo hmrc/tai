@@ -56,7 +56,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false),
+            false
+          ),
           Employment(
             "TestEmp2",
             Live,
@@ -69,7 +70,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false)
+            false
+          )
         )
 
         val accounts = List(
@@ -96,7 +98,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some(100),
             false,
             false
-          ))
+          )
+        )
 
         unifiedEmployments must contain(
           Employment(
@@ -112,7 +115,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some(100),
             false,
             false
-          ))
+          )
+        )
 
         unifiedEmployments.size mustBe 2
 
@@ -122,62 +126,64 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       "an AnnualAccount record has more than one Employment record that matches by employer designation, " +
         "but one of them also matches by payrollNumber (employee designation)" in new EmploymentBuilderSetup {
 
-        val employmentsNoPayroll = List(
-          Employment(
-            "TestEmp1",
-            Live,
-            Some("payrollNo88"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            Nil,
-            "taxDistrict1",
-            "payeRefemployer1",
-            1,
-            Some(100),
-            false,
-            false),
-          Employment(
-            "TestEmp2",
-            Live,
-            Some("payrollNo14"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            Nil,
-            "taxDistrict1",
-            "payeRefemployer1",
-            2,
-            Some(100),
-            false,
-            false)
-        )
-
-        val accounts =
-          List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil))
-
-        val unifiedEmployments =
-          testEmploymentBuilder
-            .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
-            .employments
-
-        unifiedEmployments must contain(
-          Employment(
-            "TestEmp1",
-            Live,
-            Some("payrollNo88"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil)),
-            "taxDistrict1",
-            "payeRefemployer1",
-            1,
-            Some(100),
-            false,
-            false
+          val employmentsNoPayroll = List(
+            Employment(
+              "TestEmp1",
+              Live,
+              Some("payrollNo88"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              Nil,
+              "taxDistrict1",
+              "payeRefemployer1",
+              1,
+              Some(100),
+              false,
+              false
+            ),
+            Employment(
+              "TestEmp2",
+              Live,
+              Some("payrollNo14"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              Nil,
+              "taxDistrict1",
+              "payeRefemployer1",
+              2,
+              Some(100),
+              false,
+              false
+            )
           )
-        )
 
-        verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
-      }
+          val accounts =
+            List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil))
+
+          val unifiedEmployments =
+            testEmploymentBuilder
+              .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
+              .employments
+
+          unifiedEmployments must contain(
+            Employment(
+              "TestEmp1",
+              Live,
+              Some("payrollNo88"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil)),
+              "taxDistrict1",
+              "payeRefemployer1",
+              1,
+              Some(100),
+              false,
+              false
+            )
+          )
+
+          verify(mockAuditor, times(0)).sendDataEvent(meq(auditTransactionName), any())(any())
+        }
 
       "multiple AnnualAccount records match the same employment record by employer designation" in new EmploymentBuilderSetup {
         val employmentsNoPayroll = List(
@@ -193,7 +199,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false),
+            false
+          ),
           Employment(
             "TestEmp2",
             Live,
@@ -206,7 +213,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false)
+            false
+          )
         )
 
         val accounts = List(
@@ -278,7 +286,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false),
+            false
+          ),
           Employment(
             "TEST2",
             Live,
@@ -291,12 +300,11 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false)
+            false
+          )
         )
 
-        val accounts = List(
-          AnnualAccount(1, ty, Available, Nil, Nil),
-          AnnualAccount(5, ty, Available, Nil, Nil))
+        val accounts = List(AnnualAccount(1, ty, Available, Nil, Nil), AnnualAccount(5, ty, Available, Nil, Nil))
 
         val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
@@ -348,7 +356,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             1,
             Some(100),
             false,
-            false),
+            false
+          ),
           Employment(
             "TEST2",
             Live,
@@ -361,7 +370,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             2,
             Some(100),
             false,
-            false)
+            false
+          )
         )
 
         val accounts = Nil
@@ -404,78 +414,79 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
       "multiple AnnualAccounts exist for one employment record, another record has no corresponding account records, " +
         "and one of the account records matches none of the employment records" in new EmploymentBuilderSetup {
-        val employments = List(
-          Employment(
-            "TEST",
-            Live,
-            Some("12345"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            Nil,
-            "tdNo",
-            "payeNumber",
-            1,
-            Some(100),
-            false,
-            false),
-          Employment(
-            "TEST2",
-            Live,
-            Some("88888"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            Nil,
-            "tdNo",
-            "payeNumber",
-            2,
-            Some(100),
-            false,
-            false)
-        )
-
-        val accounts = List(
-          AnnualAccount(1, ty, Available, Nil, Nil),
-          AnnualAccount(1, ty, Available, Nil, Nil),
-          AnnualAccount(5, ty, Available, Nil, Nil)
-        )
-
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
-
-        unified mustBe List(
-          Employment(
-            "TEST",
-            Live,
-            Some("12345"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            List(
-              AnnualAccount(1, ty, Available, Nil, Nil),
-              AnnualAccount(1, ty, Available, Nil, Nil)),
-            "tdNo",
-            "payeNumber",
-            1,
-            Some(100),
-            false,
-            false
-          ),
-          Employment(
-            "TEST2",
-            Live,
-            Some("88888"),
-            LocalDate.parse("2017-07-24"),
-            None,
-            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
-            "tdNo",
-            "payeNumber",
-            2,
-            Some(100),
-            false,
-            false
+          val employments = List(
+            Employment(
+              "TEST",
+              Live,
+              Some("12345"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              Nil,
+              "tdNo",
+              "payeNumber",
+              1,
+              Some(100),
+              false,
+              false
+            ),
+            Employment(
+              "TEST2",
+              Live,
+              Some("88888"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              Nil,
+              "tdNo",
+              "payeNumber",
+              2,
+              Some(100),
+              false,
+              false
+            )
           )
-        )
 
-        verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
-      }
+          val accounts = List(
+            AnnualAccount(1, ty, Available, Nil, Nil),
+            AnnualAccount(1, ty, Available, Nil, Nil),
+            AnnualAccount(5, ty, Available, Nil, Nil)
+          )
+
+          val unified =
+            testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+
+          unified mustBe List(
+            Employment(
+              "TEST",
+              Live,
+              Some("12345"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              List(AnnualAccount(1, ty, Available, Nil, Nil), AnnualAccount(1, ty, Available, Nil, Nil)),
+              "tdNo",
+              "payeNumber",
+              1,
+              Some(100),
+              false,
+              false
+            ),
+            Employment(
+              "TEST2",
+              Live,
+              Some("88888"),
+              LocalDate.parse("2017-07-24"),
+              None,
+              List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
+              "tdNo",
+              "payeNumber",
+              2,
+              Some(100),
+              false,
+              false
+            )
+          )
+
+          verify(mockAuditor, times(1)).sendDataEvent(meq(auditTransactionName), any())(any())
+        }
     }
   }
 }

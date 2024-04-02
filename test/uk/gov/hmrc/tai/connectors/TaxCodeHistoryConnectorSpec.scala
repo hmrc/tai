@@ -37,7 +37,6 @@ import scala.concurrent.Future
 
 class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
-
   private val taxYear = TaxYear()
 
   lazy val desConfig: DesConfig = inject[DesConfig]
@@ -54,9 +53,17 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
     s"${path.getPath}?${path.getQuery}"
   }
 
-  def createSut(): TaxCodeHistoryConnector = new DefaultTaxCodeHistoryConnector(inject[HttpHandler], desConfig, ifConfig, desUrls, ifUrls, mockFeatureFlagService)
+  def createSut(): TaxCodeHistoryConnector = new DefaultTaxCodeHistoryConnector(
+    inject[HttpHandler],
+    desConfig,
+    ifConfig,
+    desUrls,
+    ifUrls,
+    mockFeatureFlagService
+  )
 
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
+    AuthenticatedRequest(FakeRequest(), nino)
 
   override def beforeEach(): Unit = {
     server.resetAll()
@@ -69,11 +76,9 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   case class desIFToggle(name: String, toggleState: Boolean)
 
   "taxCodeHistory" when {
-    List( desIFToggle("IF", true),
-          desIFToggle("DES", false)
-    ).foreach { toggle =>
-      lazy val url = if(toggle.toggleState) taxCodeChangeFromIfUrl else taxCodeChangeFromDesUrl
-      lazy val authorizationToken = if(toggle.toggleState) "Bearer ifAuthorization" else "Bearer desAuthorization"
+    List(desIFToggle("IF", true), desIFToggle("DES", false)).foreach { toggle =>
+      lazy val url = if (toggle.toggleState) taxCodeChangeFromIfUrl else taxCodeChangeFromDesUrl
+      lazy val authorizationToken = if (toggle.toggleState) "Bearer ifAuthorization" else "Bearer desAuthorization"
 
       s"toggled to use ${toggle.name}" must {
         "return tax code change json" when {
@@ -98,7 +103,9 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
                 .withHeader(HeaderNames.authorisation, equalTo(authorizationToken))
                 .withHeader(
                   "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+                )
+            )
           }
           "payroll number is not returned" in {
             val taxCodeRecord = Seq(
@@ -131,7 +138,9 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
                 .withHeader(HeaderNames.xRequestId, equalTo(requestId))
                 .withHeader(
                   "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+                )
+            )
           }
         }
 
@@ -205,6 +214,5 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       }
     }
   }
-
 
 }

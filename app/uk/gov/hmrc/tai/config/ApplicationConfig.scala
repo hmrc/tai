@@ -30,17 +30,17 @@ trait HodConfig {
 abstract class BaseConfig
 
 @Singleton
-class PdfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
+class PdfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
 }
 
 @Singleton
-class PayeConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
+class PayeConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("paye")
 }
 
 @Singleton
-class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
+class FileUploadConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("file-upload")
   lazy val frontendBaseURL: String = servicesConfig.baseUrl("file-upload-frontend")
   lazy val callbackUrl: String = servicesConfig.getConfString("file-upload.callbackUrl", "")
@@ -49,12 +49,12 @@ class FileUploadConfig @Inject()(servicesConfig: ServicesConfig) extends BaseCon
 }
 
 @Singleton
-class CitizenDetailsConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig {
+class CitizenDetailsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("citizen-details")
 }
 
 @Singleton
-class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+class DesConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("des-hod")
   lazy val environment: String = servicesConfig.getConfString("des-hod.env", "local")
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
@@ -63,7 +63,7 @@ class DesConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig wit
 }
 
 @Singleton
-class IfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+class IfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("if-hod")
   lazy val environment: String = servicesConfig.getConfString("if-hod.env", "local")
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("if-hod.authorizationToken", "local")
@@ -72,8 +72,7 @@ class IfConfig @Inject()(servicesConfig: ServicesConfig) extends BaseConfig with
 }
 
 @Singleton
-class NpsConfig @Inject()(servicesConfig: ServicesConfig)
-    extends BaseConfig with HodConfig {
+class NpsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
   lazy val path: String = servicesConfig.getConfString("nps-hod.path", "")
 
   override lazy val baseURL: String = s"${servicesConfig.baseUrl("nps-hod")}$path"
@@ -83,23 +82,24 @@ class NpsConfig @Inject()(servicesConfig: ServicesConfig)
 }
 
 @Singleton
-class MongoConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
+class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
   lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
-  lazy val mongoTTLUpdateIncome: Int = runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600*48)
+  lazy val mongoTTLUpdateIncome: Int =
+    runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600 * 48)
 }
 
 @Singleton
-class RtiConfig @Inject()() extends BaseConfig {
+class RtiConfig @Inject() () extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }
 
 @Singleton
-class CacheMetricsConfig @Inject()(val runModeConfiguration: Configuration) extends BaseConfig {
+class CacheMetricsConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
 }

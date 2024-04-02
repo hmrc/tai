@@ -46,11 +46,12 @@ import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EmployeeExpensesController @Inject()(
+class EmployeeExpensesController @Inject() (
   authentication: AuthenticationPredicate,
   employeeExpensesService: EmployeeExpensesService,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def updateWorkingFromHomeExpenses(nino: Nino, year: TaxYear, iabd: Int): Action[JsValue] =

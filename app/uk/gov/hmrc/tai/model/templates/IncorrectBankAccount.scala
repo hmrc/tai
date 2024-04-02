@@ -25,7 +25,8 @@ case class IncorrectBankAccount(
   personDetails: Person,
   taxYear: TaxYear,
   bankAccount: BankAccount,
-  interest: Option[BigDecimal] = None) {
+  interest: Option[BigDecimal] = None
+) {
 
   private val dateFormat = DateTimeFormatter.ofPattern("d MMMM yyyy")
 

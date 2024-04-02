@@ -71,7 +71,8 @@ trait IncomeSourcesHodReads {
   private def codingComponentsFromIncomeSources(
     incomeSourceJson: JsValue,
     incomeSourceJsonElement: String,
-    codingComponentFactory: CodingComponentFactory): Seq[CodingComponent] =
+    codingComponentFactory: CodingComponentFactory
+  ): Seq[CodingComponent] =
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
       case JsSuccess(componentJsArray, _) =>
         componentJsArray.value.toSeq.flatMap { componentJsVal =>
@@ -82,7 +83,8 @@ trait IncomeSourcesHodReads {
 
   private def taxComponentFromNpsComponent(
     npsComponentJson: JsValue,
-    codingComponentFactory: CodingComponentFactory) = {
+    codingComponentFactory: CodingComponentFactory
+  ) = {
     val description = (npsComponentJson \ "npsDescription").as[String]
     val amount = (npsComponentJson \ "amount").as[BigDecimal]
     val typeKey = (npsComponentJson \ "type").as[Int]
@@ -168,7 +170,7 @@ trait TotalLiabilityHodReads extends BaseTaxAccountHodFormatters {
 
   private def codingComponentsFromIabdSummaries(iabds: Seq[NpsIabdSummary]): Seq[CodingComponent] =
     iabds collect {
-      case (iabd) if npsIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
+      case iabd if npsIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
         CodingComponent(npsIabdSummariesLookup(iabd.componentType), iabd.employmentId, iabd.amount, iabd.description)
     }
 
@@ -180,10 +182,10 @@ trait TotalLiabilityHodReads extends BaseTaxAccountHodFormatters {
 
   private def reconciledBenefitsInKind(benefitsInKind: Seq[CodingComponent]): Seq[CodingComponent] = {
     val allEmpIds = benefitsInKind.flatMap(_.employmentId).distinct
-    allEmpIds.flatMap(empId => {
+    allEmpIds.flatMap { empId =>
       val employmentBenefits = benefitsInKind.filter(_.employmentId.contains(empId))
       reconcileBenefitsForEmployment(employmentBenefits)
-    })
+    }
   }
 
   private def reconcileBenefitsForEmployment(benefits: Seq[CodingComponent]): Seq[CodingComponent] = {

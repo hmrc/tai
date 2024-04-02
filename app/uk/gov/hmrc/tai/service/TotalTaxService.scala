@@ -26,9 +26,10 @@ import uk.gov.hmrc.tai.repositories.deprecated.{TaxAccountSummaryRepository, Tot
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TotalTaxService @Inject()(
+class TotalTaxService @Inject() (
   totalTaxRepository: TotalTaxRepository,
-  taxAccountSummaryRepository: TaxAccountSummaryRepository)(implicit ec: ExecutionContext) {
+  taxAccountSummaryRepository: TaxAccountSummaryRepository
+)(implicit ec: ExecutionContext) {
 
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] =
     for {
@@ -39,16 +40,15 @@ class TotalTaxService @Inject()(
       alreadyTaxedAtSource <- taxAccountSummaryRepository.alreadyTaxedAtSourceComponents(nino, year)
       taxOnOtherIncome     <- taxAccountSummaryRepository.taxOnOtherIncome(nino, year)
       taxReliefComponents  <- taxAccountSummaryRepository.taxReliefComponents(nino, year)
-    } yield {
-      TotalTax(
-        totalTaxAmount,
-        incomeCategories,
-        reliefsGivingBackTax,
-        otherTaxDue,
-        alreadyTaxedAtSource,
-        taxOnOtherIncome,
-        taxReliefComponents)
-    }
+    } yield TotalTax(
+      totalTaxAmount,
+      incomeCategories,
+      reliefsGivingBackTax,
+      otherTaxDue,
+      alreadyTaxedAtSource,
+      taxOnOtherIncome,
+      taxReliefComponents
+    )
 
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
     totalTaxRepository.taxFreeAllowance(nino, year)

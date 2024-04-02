@@ -128,7 +128,9 @@ trait NpsFormatter {
                   ("totalTax", v.totalTax.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalTaxableIncome", v.totalTaxableIncome.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalIncome", v.totalIncome.map(x => JsNumber(x)).getOrElse(JsNull))
-                )))
+                )
+              )
+            )
             x
           case (f, _) => (fieldNames(f), JsObject(Nil))
         })
@@ -228,7 +230,8 @@ trait NpsFormatter {
               .getOrElse {
                 JsNull
               }
-          )) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
+          )
+        ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
     }
   )
 

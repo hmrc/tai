@@ -31,10 +31,11 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaiUpdateIncomeCacheRepository @Inject()(
+class TaiUpdateIncomeCacheRepository @Inject() (
   taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector,
   mongoConfig: MongoConfig,
-  configuration: Configuration)(implicit ec: ExecutionContext)
+  configuration: Configuration
+)(implicit ec: ExecutionContext)
     extends MongoFormatter {
 
   implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
@@ -42,8 +43,9 @@ class TaiUpdateIncomeCacheRepository @Inject()(
 
   private val defaultKey = "TAI-DATA"
 
-  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[T] = {
+  def createOrUpdateIncome[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit
+    writes: Writes[T]
+  ): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val encrypter = JsonEncryption.sensitiveEncrypter[T, SensitiveT[T]]
       encrypter.writes(SensitiveT(data))
@@ -53,8 +55,9 @@ class TaiUpdateIncomeCacheRepository @Inject()(
     taiUpdateIncomeCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-  private def findById[T](cacheId: CacheId, key: String = defaultKey)(func: String => Future[Option[CacheItem]])(
-    implicit reads: Reads[T]): Future[Option[T]] =
+  private def findById[T](cacheId: CacheId, key: String = defaultKey)(
+    func: String => Future[Option[CacheItem]]
+  )(implicit reads: Reads[T]): Future[Option[T]] =
     OptionT(func(cacheId.value))
       .map { cache =>
         if (mongoConfig.mongoEncryptionEnabled) {
@@ -65,8 +68,8 @@ class TaiUpdateIncomeCacheRepository @Inject()(
         }
       }
       .value
-      .map(_.flatten) recover {
-      case JsResultException(_) => None
+      .map(_.flatten) recover { case JsResultException(_) =>
+      None
     }
 
   def findUpdateIncome[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =

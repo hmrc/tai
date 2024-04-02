@@ -31,8 +31,9 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BbsiConnector @Inject()(httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(
-  implicit ec: ExecutionContext) {
+class BbsiConnector @Inject() (httpHandler: HttpHandler, urls: BbsiUrls, config: DesConfig)(implicit
+  ec: ExecutionContext
+) {
 
   def createHeader(implicit hc: HeaderCarrier) = Seq(
     "Environment"          -> config.environment,

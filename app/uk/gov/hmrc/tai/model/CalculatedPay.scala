@@ -23,7 +23,8 @@ case class CalculatedPay(
   grossAnnualPay: Option[BigDecimal],
   netAnnualPay: Option[BigDecimal],
   startDate: Option[LocalDate] = None,
-  annualAmount: Option[BigDecimal])
+  annualAmount: Option[BigDecimal]
+)
 
 object CalculatedPay {
   implicit val formats: OFormat[CalculatedPay] = Json.format[CalculatedPay]

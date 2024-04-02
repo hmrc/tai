@@ -29,26 +29,24 @@ import uk.gov.hmrc.tai.model.api.ApiResponse
 
 import scala.concurrent.ExecutionContext
 
-class TaxCodeChangeIabdComparisonController @Inject()(
+class TaxCodeChangeIabdComparisonController @Inject() (
   taxFreeAmountComparisonService: TaxFreeAmountComparisonService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) {
 
   def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
     taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
       Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
     } recover {
-      case ex: NotFoundException => {
+      case ex: NotFoundException =>
         NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
-      case ex: HttpException if (ex.responseCode >= 500) => {
+      case ex: HttpException if ex.responseCode >= 500 =>
         BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
-      case ex: HttpException => {
+      case ex: HttpException =>
         InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
     }
   }
 }

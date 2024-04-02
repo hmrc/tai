@@ -18,16 +18,15 @@ package uk.gov.hmrc.tai.model.rti
 
 import java.time.LocalDate
 
-
 /*
-  *
-  * @param payFrequency should really be at the employment record level
-  * @param paidOn date the payment was made, can be no earlier than
-  *   2014-04-06
-  * @param submittedOn date the FPS submission containing this payment was
-  *   received, can be no earlier than 2014-04-06
-  * @param payId the employers payroll Id for this payment
-  */
+ *
+ * @param payFrequency should really be at the employment record level
+ * @param paidOn date the payment was made, can be no earlier than
+ *   2014-04-06
+ * @param submittedOn date the FPS submission containing this payment was
+ *   received, can be no earlier than 2014-04-06
+ * @param payId the employers payroll Id for this payment
+ */
 case class RtiPayment(
   payFrequency: PayFrequency.Value,
   paidOn: LocalDate,

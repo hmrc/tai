@@ -41,7 +41,6 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
   lazy val sut: RtiConnector = inject[DefaultRtiConnector]
 
-
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
       requestPattern
@@ -52,7 +51,9 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
           "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+        )
+    )
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -82,16 +83,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
               TaxYear(2016),
               Available,
               List(
-                Payment(
-                  LocalDate.of(2016, 4, 30),
-                  5000.00,
-                  1500.00,
-                  600.00,
-                  5000.00,
-                  1500.00,
-                  600.00,
-                  Quarterly,
-                  None),
+                Payment(LocalDate.of(2016, 4, 30), 5000.00, 1500.00, 600.00, 5000.00, 1500.00, 600.00, Quarterly, None),
                 Payment(
                   LocalDate.of(2016, 7, 31),
                   11000.00,
@@ -101,7 +93,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   1750.00,
                   720.00,
                   Quarterly,
-                  None),
+                  None
+                ),
                 Payment(
                   LocalDate.of(2016, 10, 31),
                   15000.00,
@@ -111,7 +104,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   1000.00,
                   480.00,
                   Quarterly,
-                  None),
+                  None
+                ),
                 Payment(
                   LocalDate.of(2017, 2, 28),
                   19000.00,
@@ -121,16 +115,19 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
                   1000.00,
                   480.00,
                   Quarterly,
-                  None)
+                  None
+                )
               ),
               List()
-            ))
+            )
+          )
 
           server.stubFor(
             get(urlEqualTo(url)).willReturn(
               aResponse()
                 .withStatus(OK)
-                .withBody(rtiJson.toString()))
+                .withBody(rtiJson.toString())
+            )
           )
 
           val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
@@ -147,7 +144,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(url)).willReturn(
               aResponse()
                 .withStatus(404)
-          ))
+            )
+          )
 
           val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
 
@@ -176,7 +174,8 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
               get(urlEqualTo(url)).willReturn(
                 aResponse()
                   .withStatus(error._1)
-                  .withBody(error._2))
+                  .withBody(error._2)
+              )
             )
 
             val result = sut.getPaymentsForYear(nino, taxYear).value.futureValue
@@ -189,9 +188,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
       "return an exception " when {
         "an exception is thrown whilst trying to contact RTI" in {
 
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-            ))
+          server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()))
 
           val result = sut.getPaymentsForYear(nino, taxYear).value.failed.futureValue
 

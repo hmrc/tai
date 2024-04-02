@@ -45,27 +45,29 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
                                         |}
     """.stripMargin)
 
-  val jsonPayload = Json.parse(s"""
-                                  |{
-                                  | "etag":"1",
-                                  | "person":{
-                                  |   "firstName":"FName",
-                                  |   "lastName":"LName",
-                                  |   "title":"Mr",
-                                  |   "sex":"M",
-                                  |   "dateOfBirth":"1975-09-15",
-                                  |   "nino":"${nino.nino}",
-                                  |   "deceased":false
-                                  | },
-                                  | "address":{
-                                  |   "line1":"1 Test Line",
-                                  |   "line2":"Test Line 2",
-                                  |   "postcode":"TEST",
-                                  |   "startDate":"2013-11-28",
-                                  |   "country":"GREAT BRITAIN",
-                                  |   "type":"Residential"
-                                  | }
-                                  |}""".stripMargin).toString
+  val jsonPayload = Json
+    .parse(s"""
+              |{
+              | "etag":"1",
+              | "person":{
+              |   "firstName":"FName",
+              |   "lastName":"LName",
+              |   "title":"Mr",
+              |   "sex":"M",
+              |   "dateOfBirth":"1975-09-15",
+              |   "nino":"${nino.nino}",
+              |   "deceased":false
+              | },
+              | "address":{
+              |   "line1":"1 Test Line",
+              |   "line2":"Test Line 2",
+              |   "postcode":"TEST",
+              |   "startDate":"2013-11-28",
+              |   "country":"GREAT BRITAIN",
+              |   "type":"Residential"
+              | }
+              |}""".stripMargin)
+    .toString
 
   "getPerson" must {
     import uk.gov.hmrc.tai.model.domain.Person
@@ -85,7 +87,8 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
         Some(LocalDate.parse("1975-09-15")),
         Address(Some("1 Test Line"), Some("Test Line 2"), None, Some("TEST"), Some("GREAT BRITAIN")),
         false,
-        false)
+        false
+      )
     }
 
     "return a locked Person when designatory details returns a LOCKED status code" in {

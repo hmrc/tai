@@ -152,7 +152,8 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
   }
 
   val reliefsGivingBackTax = Some(
-    TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100))))
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100)))
+  )
   val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
   val alreadyTaxedAtSource = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
   val taxReliefComponents = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
@@ -174,9 +175,11 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
             tax = 500,
             lowerBand = Some(5000),
             upperBand = Some(20000),
-            rate = 10)
+            rate = 10
+          )
         )
-      )),
+      )
+    ),
     reliefsGivingBackTax,
     otherTaxDue,
     alreadyTaxedAtSource,
@@ -186,7 +189,8 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
   private def createSUT(
     totalTaxService: TotalTaxService,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+  ) =
     new TotalTaxController(totalTaxService, authentication, cc)
 
 }

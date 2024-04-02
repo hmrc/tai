@@ -42,7 +42,8 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val metrics: Metrics = mock[Metrics]
   val cacheConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
   val iabdConnector: IabdConnector = mock[IabdConnector]
-  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] = AuthenticatedRequest(FakeRequest(), nino)
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
+    AuthenticatedRequest(FakeRequest(), nino)
 
   val iabdDetails1FromApi: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
@@ -50,18 +51,18 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
   val iabdDetails2FromApi: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), Some(1), Some(15), Some(27), None, Some(LocalDate.of(2017, 4, 10)))
 
-  val iabdDetailsAfterFormat: IabdDetails = IabdDetails(Some(nino.withoutSuffix), Some(1), Some(15), Some(27), None, None)
+  val iabdDetailsAfterFormat: IabdDetails =
+    IabdDetails(Some(nino.withoutSuffix), Some(1), Some(15), Some(27), None, None)
   private val jsonAfterFormat = Json.arr(
     Json.obj(
-      "nino" -> nino.withoutSuffix,
+      "nino"                     -> nino.withoutSuffix,
       "employmentSequenceNumber" -> 1,
-      "source" -> 15,
-      "type" -> 27
+      "source"                   -> 15,
+      "type"                     -> 27
     )
   )
 
   def createTestCache(cache: Caching, iabdConnector: IabdConnector) = new IabdRepository(cache, iabdConnector)
-
 
   "iabds" must {
     "return exception " when {
@@ -101,7 +102,8 @@ class IabdRepositorySpec extends BaseSpec with MongoConstants {
         when(taiCacheRepository.findJson(any(), meq(s"$IabdMongoKey${TaxYear().year}")))
           .thenReturn(Future.successful(None))
         when(taiCacheRepository.createOrUpdateJson(any(), any(), any())).thenReturn(Future.successful(jsonAfterFormat))
-        when(iabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(Seq(iabdDetails1FromApi, iabdDetails2FromApi)))
+        when(iabdConnector.iabds(any(), any())(any()))
+          .thenReturn(Future.successful(Seq(iabdDetails1FromApi, iabdDetails2FromApi)))
 
         val sut = createTestCache(cache, iabdConnector)
 

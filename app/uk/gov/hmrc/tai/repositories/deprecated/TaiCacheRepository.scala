@@ -31,16 +31,17 @@ import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
-                                   mongoConfig: MongoConfig,
-                                   configuration: Configuration)(implicit ec: ExecutionContext)
-  extends MongoFormatter {
+class TaiCacheRepository @Inject() (
+  taiCacheConnector: TaiCacheConnector,
+  mongoConfig: MongoConfig,
+  configuration: Configuration
+)(implicit ec: ExecutionContext)
+    extends MongoFormatter {
 
   implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
     new ApplicationCrypto(configuration.underlying).JsonCrypto
 
   private val defaultKey = "TAI-DATA"
-
 
   def createOrUpdate[T](cacheId: CacheId, data: T, key: String = defaultKey)(implicit writes: Writes[T]): Future[T] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
@@ -63,8 +64,9 @@ class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
     taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => json)
   }
 
-  def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(
-    implicit writes: Writes[T]): Future[Seq[T]] = {
+  def createOrUpdateSeq[T](cacheId: CacheId, data: Seq[T], key: String = defaultKey)(implicit
+    writes: Writes[T]
+  ): Future[Seq[T]] = {
     val jsonData = if (mongoConfig.mongoEncryptionEnabled) {
       val encrypter = JsonEncryption.sensitiveEncrypter[Seq[T], SensitiveT[Seq[T]]]
       encrypter.writes(SensitiveT(data))
@@ -74,28 +76,26 @@ class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
     taiCacheConnector.save(cacheId.value)(key, jsonData).map(_ => data)
   }
 
-  private def findById[T](cacheId: CacheId, key: String = defaultKey)
-                         (func: String => Future[Option[CacheItem]])
-                         (implicit reads: Reads[T]): Future[Option[T]] = {
-
-    OptionT(func(cacheId.value)).map {
-      cache =>
+  private def findById[T](cacheId: CacheId, key: String = defaultKey)(
+    func: String => Future[Option[CacheItem]]
+  )(implicit reads: Reads[T]): Future[Option[T]] =
+    OptionT(func(cacheId.value))
+      .map { cache =>
         if (mongoConfig.mongoEncryptionEnabled) {
           val decrypter = JsonEncryption.sensitiveDecrypter[T, SensitiveT[T]](SensitiveT.apply)
           (cache.data \ key).toOption.map { jsValue =>
             jsValue.as[SensitiveT[T]](decrypter).decryptedValue
           }
-        }
-        else {
+        } else {
           (cache.data \ key).toOption.map { jsValue =>
             jsValue.as[T]
           }
         }
-    }.value.map(_.flatten) recover {
-      case JsResultException(_) => None
+      }
+      .value
+      .map(_.flatten) recover { case JsResultException(_) =>
+      None
     }
-  }
-
 
   def find[T](cacheId: CacheId, key: String = defaultKey)(implicit reads: Reads[T]): Future[Option[T]] =
     findById(cacheId, key)(taiCacheConnector.findById)(reads)
@@ -109,8 +109,8 @@ class TaiCacheRepository @Inject()(taiCacheConnector: TaiCacheConnector,
   def findOptSeq[T: Reads](cacheId: CacheId, key: String = defaultKey): Future[Option[Seq[T]]] = {
     implicit val reads: Reads[SensitiveT[Seq[T]]] = if (mongoConfig.mongoEncryptionEnabled) {
       JsonEncryption.sensitiveDecrypter[Seq[T], SensitiveT[Seq[T]]](SensitiveT.apply)
-    } else {
-      (json: JsValue) => implicitly[Reads[Seq[T]]].reads(json).map(SensitiveT(_))
+    } else { (json: JsValue) =>
+      implicitly[Reads[Seq[T]]].reads(json).map(SensitiveT(_))
     }
     for {
       cache <- OptionT(taiCacheConnector.findById(cacheId.value))

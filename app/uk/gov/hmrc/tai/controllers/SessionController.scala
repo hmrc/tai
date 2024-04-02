@@ -26,11 +26,12 @@ import uk.gov.hmrc.tai.repositories.deprecated.SessionRepository
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class SessionController @Inject()(
+class SessionController @Inject() (
   sessionRepository: SessionRepository,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) {
 
   def invalidateCache: Action[AnyContent] = authentication.async { implicit request =>

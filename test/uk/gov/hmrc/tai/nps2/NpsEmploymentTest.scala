@@ -32,11 +32,10 @@ class NpsEmploymentTest extends PlaySpec with NpsFormatter {
     }
   }
 
-  val tryParse: Seq[(Int, Try[NpsEmployment])] = {
+  val tryParse: Seq[(Int, Try[NpsEmployment])] =
     data.zipWithIndex.map { x =>
       (x._2, Try(x._1.as[NpsEmployment]))
     }
-  }
 
   "NPS Employment JSON Parsing" must {
     "be able to parse all the stub data" in {

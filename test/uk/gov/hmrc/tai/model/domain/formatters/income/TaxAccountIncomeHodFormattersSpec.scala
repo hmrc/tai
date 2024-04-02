@@ -53,7 +53,9 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
             1,
             Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
               81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
-            100))
+            100
+          )
+        )
 
         json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
@@ -103,7 +105,8 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec with TaxAccountIncomeHo
 
   private def taxAccountJsonWithIabds(
     incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+  ): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
       "nino"         -> nino.nino,

@@ -37,7 +37,7 @@ class TaxAccountRepositorySpec extends BaseSpec with MongoConstants {
   val taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
 
   private val taxAccountJsonResponse = Json.obj(
-    "taxYear" -> 2017,
+    "taxYear"        -> 2017,
     "totalLiability" -> Json.obj("untaxedInterest" -> Json.obj("totalTaxableIncome" -> 123)),
     "incomeSources" -> Json.arr(
       Json.obj("employmentId" -> 1, "taxCode" -> "1150L", "name" -> "Employer1", "basisOperation" -> 1),
@@ -48,63 +48,64 @@ class TaxAccountRepositorySpec extends BaseSpec with MongoConstants {
   def createSUT(cache: Caching, taxAccountConnector: TaxAccountConnector) =
     new TaxAccountRepository(cache, taxAccountConnector)
 
-    "taxAccount" must {
-      "return Tax Account as Json in the response" when {
-        "tax account is in cache" in {
-          val taxYear = TaxYear(2017)
-
-          val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-          when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
-            .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
-
-          val sut = createSUT(cache, taxAccountConnector)
-
-          val result = sut.taxAccount(nino, taxYear).futureValue
-
-          result mustBe taxAccountJsonResponse
-        }
-      }
-    }
-
-    "tax account is NOT in cache" in {
-      val taxYear = TaxYear(2017)
-
-      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
-
-      when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
-        .thenReturn(Future.successful(None))
-
-      when(
-        taiCacheRepository
-          .createOrUpdateJson(meq(cacheId), meq(taxAccountJsonResponse), meq(s"$TaxAccountBaseKey${taxYear.year}")))
-        .thenReturn(Future.successful(taxAccountJsonResponse))
-
-      when(taxAccountConnector.taxAccount(meq(nino), meq(taxYear))(any()))
-        .thenReturn(Future.successful(taxAccountJsonResponse))
-
-      val sut = createSUT(cache, taxAccountConnector)
-      val result = sut.taxAccount(nino, taxYear).futureValue
-
-      result mustBe taxAccountJsonResponse
-    }
-
-    "taxAccountForTaxCodeId" must {
-      "return json from the taxAccountHistoryConnector" in {
-        val taxCodeId = 1
+  "taxAccount" must {
+    "return Tax Account as Json in the response" when {
+      "tax account is in cache" in {
+        val taxYear = TaxYear(2017)
 
         val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
 
+        when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+          .thenReturn(Future.successful(Some(taxAccountJsonResponse)))
+
         val sut = createSUT(cache, taxAccountConnector)
 
-        val jsonResponse = Future.successful(Json.obj())
+        val result = sut.taxAccount(nino, taxYear).futureValue
 
-        when(taxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-          .thenReturn(jsonResponse)
-
-        val result = sut.taxAccountForTaxCodeId(nino, taxCodeId)
-
-        result mustEqual jsonResponse
+        result mustBe taxAccountJsonResponse
       }
     }
+  }
+
+  "tax account is NOT in cache" in {
+    val taxYear = TaxYear(2017)
+
+    val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+
+    when(taiCacheRepository.findJson(meq(cacheId), meq(s"$TaxAccountBaseKey${taxYear.year}")))
+      .thenReturn(Future.successful(None))
+
+    when(
+      taiCacheRepository
+        .createOrUpdateJson(meq(cacheId), meq(taxAccountJsonResponse), meq(s"$TaxAccountBaseKey${taxYear.year}"))
+    )
+      .thenReturn(Future.successful(taxAccountJsonResponse))
+
+    when(taxAccountConnector.taxAccount(meq(nino), meq(taxYear))(any()))
+      .thenReturn(Future.successful(taxAccountJsonResponse))
+
+    val sut = createSUT(cache, taxAccountConnector)
+    val result = sut.taxAccount(nino, taxYear).futureValue
+
+    result mustBe taxAccountJsonResponse
+  }
+
+  "taxAccountForTaxCodeId" must {
+    "return json from the taxAccountHistoryConnector" in {
+      val taxCodeId = 1
+
+      val cache = new Caching(taiCacheRepository, metrics, cacheConfig)
+
+      val sut = createSUT(cache, taxAccountConnector)
+
+      val jsonResponse = Future.successful(Json.obj())
+
+      when(taxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
+        .thenReturn(jsonResponse)
+
+      val result = sut.taxAccountForTaxCodeId(nino, taxCodeId)
+
+      result mustEqual jsonResponse
+    }
+  }
 }

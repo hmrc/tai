@@ -68,8 +68,8 @@ trait ApiFormats {
     override def writes(o: CompanyCarBenefit): JsValue = {
       val cocarBenefitJson = Json.obj(
         "employmentSeqNo" -> o.employmentSeqNo,
-        "grossAmount" -> o.grossAmount,
-        "companyCars" -> Json.toJson(o.companyCars)
+        "grossAmount"     -> o.grossAmount,
+        "companyCars"     -> Json.toJson(o.companyCars)
       )
       o.version.fold(cocarBenefitJson)(v => cocarBenefitJson + ("version" -> Json.toJson(v)))
     }

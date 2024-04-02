@@ -20,7 +20,7 @@ import java.time.LocalDate
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 
-class DateTimeHelperSpec extends PlaySpec with MockitoSugar  {
+class DateTimeHelperSpec extends PlaySpec with MockitoSugar {
 
   "convertToLocalDate " must {
 

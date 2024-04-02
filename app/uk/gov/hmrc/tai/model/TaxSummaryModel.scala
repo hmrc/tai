@@ -28,7 +28,8 @@ case class TaxBand(
   tax: Option[BigDecimal] = None,
   lowerBand: Option[BigDecimal] = None,
   upperBand: Option[BigDecimal] = None,
-  rate: Option[BigDecimal] = None)
+  rate: Option[BigDecimal] = None
+)
 object TaxBand {
   implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
 }
@@ -82,7 +83,8 @@ case class IncomeExplanation(
   grossAmount: Option[BigDecimal] = None,
   payFrequency: Option[PayFrequency.Value] = None,
   cessationPay: Option[BigDecimal] = None,
-  editableDetails: EditableDetails = EditableDetails())
+  editableDetails: EditableDetails = EditableDetails()
+)
 
 object IncomeExplanation {
   implicit val formats: OFormat[IncomeExplanation] = Json.format[IncomeExplanation]
@@ -96,7 +98,8 @@ case class RtiCalc(
   employmentStatus: Int,
   employerName: String,
   totalPayToDate: BigDecimal,
-  calculationResult: Option[BigDecimal])
+  calculationResult: Option[BigDecimal]
+)
 object RtiCalc {
   implicit val format: OFormat[RtiCalc] = Json.format[RtiCalc]
 }
@@ -136,7 +139,8 @@ case class TaxCodeDetails(
   deductions: Option[List[TaxCodeComponent]],
   allowances: Option[List[TaxCodeComponent]],
   splitAllowances: Option[Boolean] = None,
-  total: BigDecimal = BigDecimal(0))
+  total: BigDecimal = BigDecimal(0)
+)
 
 object TaxCodeDetails {
   implicit val formats: OFormat[TaxCodeDetails] = Json.format[TaxCodeDetails]
@@ -153,7 +157,8 @@ case class Tax(
   taxBands: Option[List[TaxBand]] = None,
   allowReliefDeducts: Option[BigDecimal] = None,
   actualTaxDueAssumingBasicRateAlreadyPaid: Option[BigDecimal] = None,
-  actualTaxDueAssumingAllAtBasicRate: Option[BigDecimal] = None)
+  actualTaxDueAssumingAllAtBasicRate: Option[BigDecimal] = None
+)
 
 object Tax {
   implicit val formats: OFormat[Tax] = Json.format[Tax]
@@ -165,7 +170,8 @@ case class IabdSummary(
   amount: BigDecimal,
   employmentId: Option[Int] = None,
   estimatedPaySource: Option[Int] = None,
-  employmentName: Option[String] = None)
+  employmentName: Option[String] = None
+)
 
 object IabdSummary {
   implicit val formats: OFormat[IabdSummary] = Json.format[IabdSummary]
@@ -197,7 +203,8 @@ case class TaxCodeIncomeSummary(
   isOccupationalPension: Boolean = false,
   isPrimary: Boolean = true,
   potentialUnderpayment: Option[BigDecimal] = None,
-  basisOperation: Option[BasisOperation] = None) {}
+  basisOperation: Option[BasisOperation] = None
+) {}
 
 object TaxCodeIncomeSummary {
   implicit val formats: OFormat[TaxCodeIncomeSummary] = Json.format[TaxCodeIncomeSummary]
@@ -207,7 +214,8 @@ case class TaxCodeIncomeTotal(
   taxCodeIncomes: List[TaxCodeIncomeSummary],
   totalIncome: BigDecimal,
   totalTax: BigDecimal,
-  totalTaxableIncome: BigDecimal)
+  totalTaxableIncome: BigDecimal
+)
 
 object TaxCodeIncomeTotal {
   implicit val formats: OFormat[TaxCodeIncomeTotal] = Json.format[TaxCodeIncomeTotal]
@@ -224,7 +232,8 @@ case class NoneTaxCodeIncomes(
   dividends: Option[TaxComponent] = None,
   foreignInterest: Option[TaxComponent] = None,
   foreignDividends: Option[TaxComponent] = None,
-  totalIncome: BigDecimal) {}
+  totalIncome: BigDecimal
+) {}
 
 object NoneTaxCodeIncomes {
   implicit val formats: OFormat[NoneTaxCodeIncomes] = Json.format[NoneTaxCodeIncomes]
@@ -238,7 +247,8 @@ case class TaxCodeIncomes(
   hasDuplicateEmploymentNames: Boolean,
   totalIncome: BigDecimal,
   totalTaxableIncome: BigDecimal,
-  totalTax: BigDecimal) {}
+  totalTax: BigDecimal
+) {}
 
 object TaxCodeIncomes {
   implicit val formats: OFormat[TaxCodeIncomes] = Json.format[TaxCodeIncomes]
@@ -253,7 +263,8 @@ object Incomes {
 case class IncreasesTax(
   incomes: Option[Incomes] = None,
   benefitsFromEmployment: Option[TaxComponent] = None,
-  total: BigDecimal)
+  total: BigDecimal
+)
 
 object IncreasesTax {
   implicit val formats: OFormat[IncreasesTax] = Json.format[IncreasesTax]
@@ -284,14 +295,16 @@ case class DecreasesTax(
   paReceivedAmount: Option[BigDecimal] = None,
   paTapered: Boolean = false,
   personalSavingsAllowance: Option[TaxComponent] = None,
-  total: BigDecimal)
+  total: BigDecimal
+)
 object DecreasesTax {
   implicit val formats: OFormat[DecreasesTax] = Json.format[DecreasesTax]
 }
 
 case class MarriageAllowance(
   marriageAllowance: BigDecimal = BigDecimal(0),
-  marriageAllowanceRelief: BigDecimal = BigDecimal(0))
+  marriageAllowanceRelief: BigDecimal = BigDecimal(0)
+)
 object MarriageAllowance {
   implicit val formats: OFormat[MarriageAllowance] = Json.format[MarriageAllowance]
 }
@@ -305,7 +318,8 @@ case class LiabilityReductions(
   enterpriseInvestmentSchemeRelief: Option[Adjustment] = None,
   concessionalRelief: Option[Adjustment] = None,
   maintenancePayments: Option[Adjustment] = None,
-  doubleTaxationRelief: Option[Adjustment] = None)
+  doubleTaxationRelief: Option[Adjustment] = None
+)
 object LiabilityReductions {
   implicit val formats: OFormat[LiabilityReductions] = Json.format[LiabilityReductions]
 }
@@ -313,7 +327,8 @@ object LiabilityReductions {
 case class LiabilityAdditions(
   excessGiftAidTax: Option[Adjustment] = None,
   excessWidowsAndOrphans: Option[Adjustment] = None,
-  pensionPaymentsAdjustment: Option[Adjustment] = None)
+  pensionPaymentsAdjustment: Option[Adjustment] = None
+)
 object LiabilityAdditions {
   implicit val formats: OFormat[LiabilityAdditions] = Json.format[LiabilityAdditions]
 }
@@ -331,7 +346,8 @@ case class TotalLiability(
   taxCreditOnForeignInterest: Option[BigDecimal] = None,
   taxCreditOnForeignIncomeDividends: Option[BigDecimal] = None,
   liabilityReductions: Option[LiabilityReductions] = None,
-  liabilityAdditions: Option[LiabilityAdditions] = None)
+  liabilityAdditions: Option[LiabilityAdditions] = None
+)
 
 object TotalLiability {
   implicit val formats: OFormat[TotalLiability] = Json.format[TotalLiability]
@@ -355,14 +371,18 @@ object GateKeeper {
         GateKeeperRule(
           Some(TaiConstants.mciGateKeeperType),
           Some(TaiConstants.mciGatekeeperId),
-          Some(TaiConstants.mciGatekeeperDescr))))
+          Some(TaiConstants.mciGatekeeperDescr)
+        )
+      )
+    )
 }
 
 case class CeasedEmploymentDetails(
   endDate: Option[LocalDate],
   isPension: Option[Boolean],
   ceasedStatus: Option[String],
-  employmentStatus: Option[Int])
+  employmentStatus: Option[Int]
+)
 
 object CeasedEmploymentDetails {
   implicit val formats: OFormat[CeasedEmploymentDetails] = Json.format[CeasedEmploymentDetails]

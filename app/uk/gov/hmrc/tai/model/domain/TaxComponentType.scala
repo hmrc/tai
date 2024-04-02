@@ -169,9 +169,10 @@ object BenefitComponentType {
 }
 
 object NonTaxCodeIncomeComponentType {
-  implicit val formatNonTaxCodeIncomeComponentType: Format[NonTaxCodeIncomeComponentType] = new Format[NonTaxCodeIncomeComponentType] {
-    override def reads(json: JsValue): JsSuccess[NonTaxCodeIncomeComponentType] = ???
-    override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) =
-      JsString(nonTaxCodeIncomeComponentType.toString)
-  }
+  implicit val formatNonTaxCodeIncomeComponentType: Format[NonTaxCodeIncomeComponentType] =
+    new Format[NonTaxCodeIncomeComponentType] {
+      override def reads(json: JsValue): JsSuccess[NonTaxCodeIncomeComponentType] = ???
+      override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) =
+        JsString(nonTaxCodeIncomeComponentType.toString)
+    }
 }

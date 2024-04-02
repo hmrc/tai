@@ -34,7 +34,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
             "employmentSequenceNumber" -> 1,
             "grossAmount"              -> 3333,
             "carDetails" -> Json.arr(
-              Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car", "dateMadeAvailable" -> "2014-06-10"))
+              Json.obj("carSequenceNumber" -> 24, "makeModel" -> "Company car", "dateMadeAvailable" -> "2014-06-10")
+            )
           )
 
         val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
@@ -46,16 +47,19 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
           Json.obj(
             "employmentSequenceNumber" -> 1,
             "grossAmount"              -> 3333,
-            "carDetails" -> Json.arr(Json.obj(
-              "carSequenceNumber" -> 24,
-              "makeModel"         -> "Company car",
-              "dateMadeAvailable" -> "2014-06-10",
-              "fuelBenefit" -> Json.obj(
-                "benefitAmount"     -> 500,
+            "carDetails" -> Json.arr(
+              Json.obj(
+                "carSequenceNumber" -> 24,
+                "makeModel"         -> "Company car",
                 "dateMadeAvailable" -> "2014-06-10",
-                "dateWithdrawn"     -> "2017-06-02",
-                "actions"           -> Json.obj("foo" -> "bar"))
-            ))
+                "fuelBenefit" -> Json.obj(
+                  "benefitAmount"     -> 500,
+                  "dateMadeAvailable" -> "2014-06-10",
+                  "dateWithdrawn"     -> "2017-06-02",
+                  "actions"           -> Json.obj("foo" -> "bar")
+                )
+              )
+            )
           )
 
         val companyCarSeq = Seq(CompanyCar(24, "Company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
@@ -87,7 +91,9 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
             true,
             Some(LocalDate.parse("2014-06-10")),
             Some(LocalDate.parse("2017-05-02")),
-            None))
+            None
+          )
+        )
         json.as[CompanyCarBenefit](companyCarBenefitReads) mustBe
           CompanyCarBenefit(1, 3333, companyCarSeq)
       }
@@ -138,7 +144,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
             "fuelBenefit" -> Json.obj(
               "dateMadeAvailable" -> "2014-06-10",
               "benefitAmount"     -> 2222,
-              "actions"           -> Json.obj("remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove"))
+              "actions"           -> Json.obj("remove" -> s"/paye/${nino.nino}/benefits/2017/2/car/1/fuel/remove")
+            )
           )
 
         json.as[CompanyCar](companyCarReads) mustBe CompanyCar(
@@ -147,7 +154,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
           true,
           Some(LocalDate.parse("2013-06-10")),
           Some(LocalDate.parse("2014-06-10")),
-          None)
+          None
+        )
       }
       "there is a valid response with car benefit withdrawn date" in {
         val json =
@@ -170,7 +178,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
           false,
           Some(LocalDate.parse("2013-06-10")),
           None,
-          Some(LocalDate.parse("2014-06-16")))
+          Some(LocalDate.parse("2014-06-16"))
+        )
       }
     }
 
@@ -206,7 +215,8 @@ class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFor
         val expectedJson = Json.obj(
           "version" -> 1,
           "removeCarAndFuel" -> Json
-            .obj("car" -> Json.obj("withdrawDate" -> "2017-01-01"), "fuel" -> Json.obj("withdrawDate" -> "2017-02-03")))
+            .obj("car" -> Json.obj("withdrawDate" -> "2017-01-01"), "fuel" -> Json.obj("withdrawDate" -> "2017-02-03"))
+        )
 
         json mustBe expectedJson
       }

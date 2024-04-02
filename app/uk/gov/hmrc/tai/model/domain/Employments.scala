@@ -57,12 +57,15 @@ case class Employments(employments: Seq[Employment], etag: Option[Int]) {
   }
 
   private def merge(
-                     employmentsToMerge: Seq[Employment],
-                     amendEmployment: (Employment, Seq[Employment]) => Employment): Seq[Employment] = {
+    employmentsToMerge: Seq[Employment],
+    amendEmployment: (Employment, Seq[Employment]) => Employment
+  ): Seq[Employment] = {
 
     val modifiedEmployments = employments map (amendEmployment(_, employmentsToMerge))
     val unmodifiedEmployments =
-      employmentsToMerge.filterNot(employment => modifiedEmployments.map(_.sequenceNumber).contains(employment.sequenceNumber))
+      employmentsToMerge.filterNot(employment =>
+        modifiedEmployments.map(_.sequenceNumber).contains(employment.sequenceNumber)
+      )
 
     unmodifiedEmployments ++ modifiedEmployments
   }

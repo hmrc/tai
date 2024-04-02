@@ -19,4 +19,3 @@ package uk.gov.hmrc.tai.config
 import uk.gov.hmrc.crypto.Sensitive
 
 case class SensitiveT[T](override val decryptedValue: T) extends Sensitive[T]
-

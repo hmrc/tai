@@ -26,7 +26,8 @@ case class NpsIabdRoot(
   netAmount: Option[BigDecimal] = None,
   source: Option[Int] = None,
   receiptDate: Option[NpsDate] = None,
-  captureDate: Option[NpsDate] = None)
+  captureDate: Option[NpsDate] = None
+)
 
 object NpsIabdRoot {
   implicit val formats: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]

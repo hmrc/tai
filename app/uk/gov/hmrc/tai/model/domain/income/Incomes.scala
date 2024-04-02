@@ -23,7 +23,8 @@ case class UntaxedInterest(
   incomeComponentType: NonTaxCodeIncomeComponentType,
   employmentId: Option[Int],
   amount: BigDecimal,
-  description: String)
+  description: String
+)
 
 object UntaxedInterest {
   implicit val format: Format[UntaxedInterest] = Json.format[UntaxedInterest]
@@ -33,7 +34,8 @@ case class OtherNonTaxCodeIncome(
   incomeComponentType: NonTaxCodeIncomeComponentType,
   employmentId: Option[Int],
   amount: BigDecimal,
-  description: String)
+  description: String
+)
 
 object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
@@ -41,7 +43,8 @@ object OtherNonTaxCodeIncome {
 
 case class NonTaxCodeIncome(
   untaxedInterest: Option[UntaxedInterest],
-  otherNonTaxCodeIncomes: Seq[OtherNonTaxCodeIncome])
+  otherNonTaxCodeIncomes: Seq[OtherNonTaxCodeIncome]
+)
 
 object NonTaxCodeIncome {
   implicit val format: Format[NonTaxCodeIncome] = Json.format[NonTaxCodeIncome]

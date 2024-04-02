@@ -30,11 +30,12 @@ import java.util.UUID
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountConnector @Inject()(
-                                     npsConfig: NpsConfig,
-                                     desConfig: DesConfig,
-                                     taxAccountUrls: TaxAccountUrls,
-                                     httpHandler: HttpHandler) {
+class TaxAccountConnector @Inject() (
+  npsConfig: NpsConfig,
+  desConfig: DesConfig,
+  taxAccountUrls: TaxAccountUrls,
+  httpHandler: HttpHandler
+) {
 
   private def getUuid = UUID.randomUUID().toString
 

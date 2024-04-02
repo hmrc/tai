@@ -33,7 +33,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
       .configure(additionalConfiguration)
       .configure(
         "mongo.lock.expiryInSeconds" -> 2,
-        "auditing.enabled" -> false
+        "auditing.enabled"           -> false
       )
       .build()
 
@@ -59,7 +59,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
         insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
 
         val result = for {
-          _ <- sut.releaseLock[Boolean]("lockId")
+          _      <- sut.releaseLock[Boolean]("lockId")
           result <- sut.takeLock[Boolean]("lockId").value
         } yield result
         result.futureValue mustBe Right(true)

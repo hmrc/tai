@@ -19,10 +19,10 @@ package uk.gov.hmrc.tai.model
 import play.api.libs.json._
 
 /*
-  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*	
-  *
-  * @param grossAmount
-  */
+ * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER NO GREATER THAN 999999*
+ *
+ * @param grossAmount
+ */
 case class UpdateIabdEmployeeExpense(grossAmount: Int, source: Option[Int]) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
   require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")

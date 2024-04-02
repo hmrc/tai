@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TotalTaxRepository @Inject()(taxAccountRepository: TaxAccountRepository)(implicit ec: ExecutionContext)
+class TotalTaxRepository @Inject() (taxAccountRepository: TaxAccountRepository)(implicit ec: ExecutionContext)
     extends TaxAccountHodFormatters with IncomeCategoryHodFormatters {
 
   def incomeCategories(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IncomeCategory]] =

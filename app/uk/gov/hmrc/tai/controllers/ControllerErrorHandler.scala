@@ -31,13 +31,12 @@ trait ControllerErrorHandler {
     case ex                      => throw ex
   }
 
-  def errorToResponse(error: UpstreamErrorResponse): Result = {
+  def errorToResponse(error: UpstreamErrorResponse): Result =
     error.statusCode match {
-      case NOT_FOUND => NotFound(error.getMessage())
-      case BAD_REQUEST => BadRequest(error.getMessage())
-      case TOO_MANY_REQUESTS => TooManyRequests(error.getMessage())
+      case NOT_FOUND               => NotFound(error.getMessage())
+      case BAD_REQUEST             => BadRequest(error.getMessage())
+      case TOO_MANY_REQUESTS       => TooManyRequests(error.getMessage())
       case status if status >= 499 => BadGateway(error.getMessage())
-      case _ => InternalServerError(error.getMessage())
+      case _                       => InternalServerError(error.getMessage())
     }
-  }
 }

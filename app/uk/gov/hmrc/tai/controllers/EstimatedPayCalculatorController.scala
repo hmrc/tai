@@ -27,11 +27,11 @@ import uk.gov.hmrc.tai.model._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EstimatedPayCalculatorController @Inject()(
+class EstimatedPayCalculatorController @Inject() (
   authentication: AuthenticationPredicate,
   cc: ControllerComponents
-)(
-  implicit ec: ExecutionContext
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) {
 
   def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) { implicit request =>

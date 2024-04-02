@@ -20,12 +20,12 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class AnnualAccount(
-  sequenceNumber : Int,
+  sequenceNumber: Int,
   taxYear: TaxYear,
   realTimeStatus: RealTimeStatus,
   payments: Seq[Payment],
   endOfTaxYearUpdates: Seq[EndOfTaxYearUpdate]
-  ) {
+) {
 
   lazy val totalIncomeYearToDate: BigDecimal =
     if (payments.isEmpty) 0 else payments.max.amountYearToDate
@@ -38,7 +38,7 @@ object AnnualAccount {
 
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
-  def apply(sequenceNumber : Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
+  def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
     AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
 }

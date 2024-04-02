@@ -30,11 +30,12 @@ import uk.gov.hmrc.tai.util.NpsExceptions
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class TaxAccountSummaryController @Inject()(
+class TaxAccountSummaryController @Inject() (
   taxAccountSummaryService: TaxAccountSummaryService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with NpsExceptions with ControllerErrorHandler {
 
   def taxAccountSummaryForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {

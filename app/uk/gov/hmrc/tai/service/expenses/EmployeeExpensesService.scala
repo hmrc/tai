@@ -29,14 +29,15 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.Future
 
 @Singleton
-class EmployeeExpensesService @Inject()(iabdConnector: IabdConnector) {
+class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector) {
 
   def updateEmployeeExpensesData(
     nino: Nino,
     taxYear: TaxYear,
     version: Int,
     expensesData: UpdateIabdEmployeeExpense,
-    iabd: Int)(implicit hc: HeaderCarrier, authenticatedRequest: AuthenticatedRequest[_]): Future[HttpResponse] =
+    iabd: Int
+  )(implicit hc: HeaderCarrier, authenticatedRequest: AuthenticatedRequest[_]): Future[HttpResponse] =
     iabdConnector.updateExpensesData(
       nino = nino,
       year = taxYear.year,

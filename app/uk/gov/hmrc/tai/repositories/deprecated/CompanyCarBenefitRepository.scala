@@ -28,15 +28,17 @@ import uk.gov.hmrc.tai.util.MongoConstants
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CompanyCarBenefitRepository @Inject()(taiCacheRepository: TaiCacheRepository, companyCarConnector: CompanyCarConnector)(
-  implicit ec: ExecutionContext)
+class CompanyCarBenefitRepository @Inject() (
+  taiCacheRepository: TaiCacheRepository,
+  companyCarConnector: CompanyCarConnector
+)(implicit ec: ExecutionContext)
     extends MongoConstants {
 
   def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
     val cacheId = CacheId(nino)
 
     taiCacheRepository.find[Seq[CompanyCarBenefit]](cacheId, CarBenefitKey) flatMap {
-      case None => {
+      case None =>
         val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)
         val version = companyCarConnector.ninoVersion(nino)
 
@@ -48,7 +50,6 @@ class CompanyCarBenefitRepository @Inject()(taiCacheRepository: TaiCacheReposito
         companyCarBenefitsWithVersion.flatMap { result =>
           taiCacheRepository.createOrUpdate(cacheId, result, CarBenefitKey).map(_ => result)
         }
-      }
       case Some(seq) => Future.successful(seq)
     }
   }

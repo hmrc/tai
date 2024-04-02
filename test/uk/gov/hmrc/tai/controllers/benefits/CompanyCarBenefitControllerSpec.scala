@@ -55,8 +55,12 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
                 hasActiveFuelBenefit = false,
                 Some(LocalDate.parse("2014-06-10")),
                 None,
-                None)),
-            sampleVersion))
+                None
+              )
+            ),
+            sampleVersion
+          )
+        )
 
         val mockCompanyCarService = mock[BenefitsService]
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
@@ -68,16 +72,23 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         status(result) mustBe OK
         val expectedJson =
           Json.obj(
-            "data" -> Json.obj("companyCarBenefits" -> Json.arr(Json.obj(
-              "employmentSeqNo" -> 10,
-              "grossAmount"     -> 1000,
-              "companyCars" -> Json.arr(Json.obj(
-                "carSeqNo"             -> 10,
-                "makeModel"            -> "Company car",
-                "hasActiveFuelBenefit" -> false,
-                "dateMadeAvailable"    -> "2014-06-10")),
-              "version" -> 1
-            ))),
+            "data" -> Json.obj(
+              "companyCarBenefits" -> Json.arr(
+                Json.obj(
+                  "employmentSeqNo" -> 10,
+                  "grossAmount"     -> 1000,
+                  "companyCars" -> Json.arr(
+                    Json.obj(
+                      "carSeqNo"             -> 10,
+                      "makeModel"            -> "Company car",
+                      "hasActiveFuelBenefit" -> false,
+                      "dateMadeAvailable"    -> "2014-06-10"
+                    )
+                  ),
+                  "version" -> 1
+                )
+              )
+            ),
             "links" -> Json.arr()
           )
 
@@ -96,9 +107,12 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
                 hasActiveFuelBenefit = true,
                 Some(LocalDate.parse("2014-06-10")),
                 Some(LocalDate.parse("2014-06-10")),
-                None)),
+                None
+              )
+            ),
             sampleVersion
-          ))
+          )
+        )
 
         val mockCompanyCarService = mock[BenefitsService]
         when(mockCompanyCarService.companyCarBenefits(any())(any()))
@@ -110,18 +124,24 @@ class CompanyCarBenefitControllerSpec extends BaseSpec {
         status(result) mustBe OK
 
         val expectedJson = Json.obj(
-          "data" -> Json.obj("companyCarBenefits" -> Json.arr(Json.obj(
-            "employmentSeqNo" -> 10,
-            "grossAmount"     -> 1000,
-            "companyCars" -> Json.arr(Json.obj(
-              "carSeqNo"                           -> 10,
-              "makeModel"                          -> "Company car",
-              "hasActiveFuelBenefit"               -> true,
-              "dateMadeAvailable"                  -> "2014-06-10",
-              "dateActiveFuelBenefitMadeAvailable" -> "2014-06-10"
-            )),
-            "version" -> 1
-          ))),
+          "data" -> Json.obj(
+            "companyCarBenefits" -> Json.arr(
+              Json.obj(
+                "employmentSeqNo" -> 10,
+                "grossAmount"     -> 1000,
+                "companyCars" -> Json.arr(
+                  Json.obj(
+                    "carSeqNo"                           -> 10,
+                    "makeModel"                          -> "Company car",
+                    "hasActiveFuelBenefit"               -> true,
+                    "dateMadeAvailable"                  -> "2014-06-10",
+                    "dateActiveFuelBenefitMadeAvailable" -> "2014-06-10"
+                  )
+                ),
+                "version" -> 1
+              )
+            )
+          ),
           "links" -> Json.arr()
         )
 

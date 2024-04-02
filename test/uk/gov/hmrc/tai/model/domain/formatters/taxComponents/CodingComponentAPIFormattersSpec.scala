@@ -82,7 +82,9 @@ class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIF
           )
       }
       "all the fields are provided and codingComponent is NonTaxCodeIncomeType" in {
-        Json.toJson(CodingComponent(NonCodedIncome, Some(111), 1232, "Some Desc", Some(12500)))(codingComponentWrites) mustBe
+        Json.toJson(CodingComponent(NonCodedIncome, Some(111), 1232, "Some Desc", Some(12500)))(
+          codingComponentWrites
+        ) mustBe
           Json.obj(
             "componentType" -> "NonCodedIncome",
             "employmentId"  -> 111,

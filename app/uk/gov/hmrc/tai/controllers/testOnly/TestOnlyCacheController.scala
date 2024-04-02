@@ -26,17 +26,18 @@ import uk.gov.hmrc.tai.repositories.deprecated.JourneyCacheRepository
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class TestOnlyCacheController @Inject()(
+class TestOnlyCacheController @Inject() (
   repository: JourneyCacheRepository,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def delete(): Action[AnyContent] = authentication.async { implicit request =>
     repository.deleteUpdateIncome(CacheId.noSession(request.nino)) map { _ =>
       NoContent
-    } recover {
-      case _ => InternalServerError
+    } recover { case _ =>
+      InternalServerError
     }
 
   }

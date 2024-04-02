@@ -42,7 +42,8 @@ class PensionProviderServiceSpec extends BaseSpec {
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
           mockIFormSubmissionService
-            .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+            .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any())
+        )
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -68,7 +69,8 @@ class PensionProviderServiceSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .uploadIForm(meq(nino), meq(IFormConstants.AddPensionProviderSubmissionKey), meq("TES1"), any())(any())
+      )
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -92,7 +94,8 @@ class PensionProviderServiceSpec extends BaseSpec {
           "firstname",
           "lastname",
           Some(LocalDate.parse("1982-04-03")),
-          Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+          Address("address line 1", "address line 2", "address line 3", "postcode", "UK")
+        )
 
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentService])
 
@@ -108,15 +111,20 @@ class PensionProviderServiceSpec extends BaseSpec {
         val incorrectPensionProvider = IncorrectPensionProvider("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+        when(
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(
+              any()
+            )
+        )
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
         doNothing.when(mockAuditable).sendDataEvent(any(), any())(any())
 
         val sut = createSut(mockIFormSubmissionService, mockAuditable, mock[EmploymentService])
-        val result = sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider)(implicitly, FakeRequest()).futureValue
+        val result =
+          sut.incorrectPensionProvider(nino, 1, incorrectPensionProvider)(implicitly, FakeRequest()).futureValue
 
         result mustBe "1"
       }
@@ -134,7 +142,8 @@ class PensionProviderServiceSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any()))
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectPensionProviderSubmissionKey), meq("TES1"), any())(any())
+      )
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -157,7 +166,8 @@ class PensionProviderServiceSpec extends BaseSpec {
           "firstname",
           "lastname",
           Some(LocalDate.parse("1982-04-03")),
-          Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+          Address("address line 1", "address line 2", "address line 3", "postcode", "UK")
+        )
         val currentTaxYear = TaxYear()
         val employment = Employment(
           "TEST",
@@ -181,7 +191,9 @@ class PensionProviderServiceSpec extends BaseSpec {
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentService)
 
         val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc, FakeRequest())(person).futureValue
-        result mustBe EmploymentIForm(EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)).toString
+        result mustBe EmploymentIForm(
+          EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)
+        ).toString
 
       }
     }
@@ -190,6 +202,7 @@ class PensionProviderServiceSpec extends BaseSpec {
   private def createSut(
     iFormSubmissionService: IFormSubmissionService,
     auditable: Auditor,
-    employmentService: EmploymentService) =
+    employmentService: EmploymentService
+  ) =
     new PensionProviderService(iFormSubmissionService, employmentService, auditable)
 }

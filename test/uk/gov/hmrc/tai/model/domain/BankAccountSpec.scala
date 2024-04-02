@@ -65,7 +65,8 @@ class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
         Json.obj(
           "id"            -> 0,
           "grossInterest" -> grossInterest2
-        ))
+        )
+      )
 
       val bankAccounts = jsonBankAccounts.as[Seq[BankAccount]]
       bankAccounts.size mustBe 2

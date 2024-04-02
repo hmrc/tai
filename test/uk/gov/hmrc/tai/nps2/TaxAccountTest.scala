@@ -33,21 +33,19 @@ class TaxAccountTest extends PlaySpec with NpsFormatter {
       obj  <- Try(json.as[TaxAccount])
     } yield obj
 
-  val qaData = {
-    new java.io.File("test/data/QAData")
-  }.listFiles.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
+  val qaData =
+    new java.io.File("test/data/QAData").listFiles.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
 
   val otherData = {
-    val files = {
-      new java.io.File("test/data")
-    }.listFiles
-      .collect {
-        case x if x.isDirectory => x.listFiles
-      }
-      .flatten
-      .filter(
-        _.getName.endsWith("NpsTaxAccount.json")
-      )
+    val files =
+      new java.io.File("test/data").listFiles
+        .collect {
+          case x if x.isDirectory => x.listFiles
+        }
+        .flatten
+        .filter(
+          _.getName.endsWith("NpsTaxAccount.json")
+        )
     files.map(f => f.getAbsolutePath -> parseNpsTaxAccount(f)).toMap
   }
 

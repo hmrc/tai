@@ -21,24 +21,24 @@ import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 
 /*
-  * The root object for the NPS tax account, typically this is read in
-  * from the HoD. It is considered less authoritative than the RTI Tax
-  * Account data but is always available.
-  */
+ * The root object for the NPS tax account, typically this is read in
+ * from the HoD. It is considered less authoritative than the RTI Tax
+ * Account data but is always available.
+ */
 case class TaxAccount(
   /*
-    * A unique ID to identify a tax account. You cannot really use this for
-    * anything practical as we don't know if NPS will populate it or not.
-    */
+   * A unique ID to identify a tax account. You cannot really use this for
+   * anything practical as we don't know if NPS will populate it or not.
+   */
   id: Option[Long],
   /*
-    * Date the tax position was confirmed (will be the tax code
-    * date). May be absent, though we don't know what this means.
-    */
+   * Date the tax position was confirmed (will be the tax code
+   * date). May be absent, though we don't know what this means.
+   */
   date: Option[LocalDate],
   /*
-    * Total tax across all income sources
-    */
+   * Total tax across all income sources
+   */
   tax: BigDecimal,
   taxObjects: Map[TaxObject.Type.Value, TaxDetail] = Map.empty,
   incomes: Seq[Income] = Nil,

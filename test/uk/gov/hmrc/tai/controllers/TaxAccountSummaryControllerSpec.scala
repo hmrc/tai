@@ -79,7 +79,8 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222, 1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(
     taxAccountSummaryService: TaxAccountSummaryService,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+  ) =
     new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
 
 }

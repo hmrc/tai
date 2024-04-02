@@ -21,10 +21,10 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /*
-  * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
-  * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
-  * @param grossAmount : 1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
-  */
+ * grossAmount:1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
+ * receiptDate:DD/MM/CCYY  THIS IS OPTIONAL - If populated it Must be in the format dd/mm/ccyy"
+ * @param grossAmount : 1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
+ */
 case class IabdUpdateAmount(
   employmentSequenceNumber: Int,
   grossAmount: Int,
@@ -35,10 +35,10 @@ case class IabdUpdateAmount(
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
 }
 
-class IabdUpdateAmountFormats @Inject()() {
+class IabdUpdateAmountFormats @Inject() () {
 
   def empSeqNoFieldName =
-      "employmentSequenceNumber"
+    "employmentSequenceNumber"
 
   def iabdUpdateAmountWrites: Writes[IabdUpdateAmount] =
     (

@@ -106,7 +106,8 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
     currentTaxCodeChangeRecords: Seq[TaxCodeSummary] =
       Seq(currentTaxCodeChangeRecordPrimary, currentTaxCodeChangeRecordSecondary),
     previousTaxCodeChangeRecords: Seq[TaxCodeSummary] =
-      Seq(previousTaxCodeChangeRecordPrimary, previousTaxCodeChangeRecordSecondary)): TaxCodeChange =
+      Seq(previousTaxCodeChangeRecordPrimary, previousTaxCodeChangeRecordSecondary)
+  ): TaxCodeChange =
     TaxCodeChange(currentTaxCodeChangeRecords, previousTaxCodeChangeRecords)
 
   val currentStartDate = TaxYear().start.plusDays(2)
@@ -125,7 +126,8 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
     "Employer 1",
     Some(payrollNumberPrev),
     pensionIndicator = false,
-    primary = true)
+    primary = true
+  )
 
   val previousTaxCodeChangeRecordSecondary = TaxCodeSummary(
     2,
@@ -136,7 +138,8 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
     "Employer 1",
     Some(payrollNumberPrev),
     pensionIndicator = false,
-    primary = false)
+    primary = false
+  )
 
   val currentTaxCodeChangeRecordPrimary = TaxCodeSummary(
     3,
@@ -147,7 +150,8 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
     "Employer 1",
     Some(payrollNumberCurr),
     pensionIndicator = false,
-    primary = true)
+    primary = true
+  )
 
   val currentTaxCodeChangeRecordSecondary = TaxCodeSummary(
     4,
@@ -158,6 +162,7 @@ class TaxCodeChangeSpec extends PlaySpec with TaxCodeHistoryConstants {
     "Employer 2",
     Some(payrollNumberCurr),
     pensionIndicator = false,
-    primary = false)
+    primary = false
+  )
 
 }

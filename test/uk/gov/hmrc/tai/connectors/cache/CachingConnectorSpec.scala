@@ -26,17 +26,16 @@ import scala.concurrent.Future
 
 class CachingConnectorSpec extends ConnectorBaseSpec {
 
-  lazy val mockSessionCacheRepository: TaiSessionCacheRepository  = mock[TaiSessionCacheRepository]
+  lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
 
   def connector: CachingConnector = new CachingConnector(mockSessionCacheRepository)
 
   private class FakeConnector() {
     def fakeMethod() = Future.successful("underlying method value")
 
-    def fakeEitherT(either: Boolean): EitherT[Future, String, String] = {
-      if(either) EitherT.rightT("underlying method value right")
+    def fakeEitherT(either: Boolean): EitherT[Future, String, String] =
+      if (either) EitherT.rightT("underlying method value right")
       else EitherT.leftT("underlying method value left")
-    }
   }
 
   lazy private val mockConnector = mock[FakeConnector]
@@ -50,8 +49,10 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
     "calling cache" must {
       "call the cache repository and not underlying method if value present" in {
 
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any())).thenReturn(Future.successful(Some("cached value")))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any())).thenReturn(Future.successful(("", "")))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+          .thenReturn(Future.successful(Some("cached value")))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+          .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeMethod()).thenReturn(Future.successful(""))
 
         val result = connector.cache[String]("key")(mockConnector.fakeMethod()).futureValue
@@ -62,8 +63,10 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
         verify(mockConnector, times(0)).fakeMethod()
       }
       "call underlying method and store value in the cache if no value is present already" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any())).thenReturn(Future.successful(None))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any())).thenReturn(Future.successful(("", "")))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+          .thenReturn(Future.successful(None))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+          .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeMethod()).thenReturn(Future.successful("underlying method value"))
 
         val result = connector.cache[String]("key")(mockConnector.fakeMethod()).futureValue
@@ -78,8 +81,10 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
 
     "calling cacheEitherT" must {
       "return a right and not call underlying method" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any())).thenReturn(Future.successful(Some("cached value")))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any())).thenReturn(Future.successful(("", "")))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+          .thenReturn(Future.successful(Some("cached value")))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+          .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeEitherT(any())).thenReturn(EitherT.rightT("underlying method value"))
 
         val result = connector.cacheEitherT[String, String]("key")(mockConnector.fakeEitherT(true)).value.futureValue
@@ -91,8 +96,10 @@ class CachingConnectorSpec extends ConnectorBaseSpec {
         verify(mockConnector, times(0)).fakeEitherT(any())
       }
       "return a right from underlying method and put method value in cache" in {
-        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any())).thenReturn(Future.successful(None))
-        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any())).thenReturn(Future.successful(("", "")))
+        when(mockSessionCacheRepository.getFromSession[String](DataKey(any()))(any(), any()))
+          .thenReturn(Future.successful(None))
+        when(mockSessionCacheRepository.putSession[String](DataKey(any()), any())(any(), any(), any()))
+          .thenReturn(Future.successful(("", "")))
         when(mockConnector.fakeEitherT(any())).thenReturn(EitherT.rightT("underlying method value"))
 
         val result = connector.cacheEitherT[String, String]("key")(mockConnector.fakeEitherT(true)).value.futureValue

@@ -30,27 +30,28 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class PensionProviderController @Inject()(
+class PensionProviderController @Inject() (
   pensionProviderService: PensionProviderService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats {
 
   def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[AddPensionProvider] { pensionProvider =>
-      pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId => {
+      pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId =>
         Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      })
+      )
     }
   }
 
   def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IncorrectPensionProvider] { incorrectPension =>
-        pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId => {
+        pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        })
+        )
       }
   }
 

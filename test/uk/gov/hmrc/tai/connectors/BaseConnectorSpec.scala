@@ -104,7 +104,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(OK)
               .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         sutWithMockedMetrics.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)).futureValue
@@ -126,7 +127,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(OK)
               .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         sutWithMockedMetrics.getFromDes(url, apiType, Seq.empty).futureValue
@@ -144,7 +146,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(OK)
               .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         val (res, resEtag) = sut.getFromNps(url, apiType, npsConnector.basicNpsHeaders(hc)).futureValue
@@ -164,7 +167,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(NOT_FOUND)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[NotFoundException](
@@ -182,7 +186,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[InternalServerException](
@@ -200,7 +205,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(BAD_REQUEST)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[BadRequestException](
@@ -219,7 +225,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(CONFLICT)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[HttpException](
@@ -238,7 +245,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(OK)
               .withBody(body)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         val (resBody, resEtag) = sut.getFromDes(url, apiType, Seq.empty).futureValue
@@ -259,7 +267,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(NOT_FOUND)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[NotFoundException](
@@ -278,7 +287,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(INTERNAL_SERVER_ERROR)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[InternalServerException](
@@ -297,7 +307,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(BAD_REQUEST)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[BadRequestException](
@@ -316,7 +327,8 @@ class BaseConnectorSpec extends ConnectorBaseSpec {
             aResponse()
               .withStatus(IM_A_TEAPOT)
               .withBody(exMessage)
-              .withHeader(eTagKey, s"$eTag"))
+              .withHeader(eTagKey, s"$eTag")
+          )
         )
 
         assertConnectorException[HttpException](

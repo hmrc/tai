@@ -26,7 +26,8 @@ case class PayDetails(
   taxablePay: Option[BigDecimal] = None,
   days: Option[Int] = None,
   bonus: Option[BigDecimal] = None,
-  startDate: Option[LocalDate] = None)
+  startDate: Option[LocalDate] = None
+)
 
 object PayDetails {
   implicit val formats: OFormat[PayDetails] = Json.format[PayDetails]

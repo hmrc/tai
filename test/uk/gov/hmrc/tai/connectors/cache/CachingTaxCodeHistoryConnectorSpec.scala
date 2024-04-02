@@ -38,7 +38,6 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
   lazy val mockDefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
 
-
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
     .overrides(
@@ -80,7 +79,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
         verify(mockDefaultTaxCodeHistoryConnector, times(1)).taxCodeHistory(any(), any())(any())
         verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
-        verify(mockSessionCacheRepository, times(1)).putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(1))
+          .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
       }
     }
     "there is a value present in the cache" must {
@@ -96,7 +96,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         result mustBe TaxCodeHistoryFactory.createTaxCodeHistory(nino)
         verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
         verify(mockDefaultTaxCodeHistoryConnector, times(0)).taxCodeHistory(any(), any())(any())
-        verify(mockSessionCacheRepository, times(0)).putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
+        verify(mockSessionCacheRepository, times(0))
+          .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
       }
     }
   }

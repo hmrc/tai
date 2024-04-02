@@ -30,7 +30,8 @@ case class TaxCodeSummary(
   employerName: String,
   payrollNumber: Option[String],
   pensionIndicator: Boolean,
-  primary: Boolean)
+  primary: Boolean
+)
 
 object TaxCodeSummary {
 

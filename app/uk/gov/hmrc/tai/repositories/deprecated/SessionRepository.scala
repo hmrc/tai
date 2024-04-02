@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.connectors.cache.CacheId
 import scala.concurrent.Future
 
 @Singleton
-class SessionRepository @Inject()(taiCacheRepository: TaiCacheRepository) {
+class SessionRepository @Inject() (taiCacheRepository: TaiCacheRepository) {
   def invalidateCache(cacheId: CacheId): Future[Boolean] =
     taiCacheRepository.removeById(cacheId)
 }

@@ -53,7 +53,9 @@ class IncomeRepositorySpec extends BaseSpec {
             1,
             Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
               81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125),
-            100))
+            100
+          )
+        )
         when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
         val sut = createSut(mockTaxAccountRepository)
@@ -92,7 +94,8 @@ class IncomeRepositorySpec extends BaseSpec {
         )
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc"))
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
       }
 
       "non-tax-code income and bank accounts are present" in {
@@ -105,7 +108,8 @@ class IncomeRepositorySpec extends BaseSpec {
         val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc"))
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
       }
 
       "bypass any bank account retrieval and return no untaxed interest" when {
@@ -133,7 +137,8 @@ class IncomeRepositorySpec extends BaseSpec {
         val result = sut.incomes(nino, TaxYear()).futureValue
 
         result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
-          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc"))
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
       }
     }
   }
@@ -164,7 +169,8 @@ class IncomeRepositorySpec extends BaseSpec {
                 "basisOperation"   -> JsNumber(2),
                 "employmentStatus" -> JsNumber(1)
               )
-            ))
+            )
+          )
         )
 
         val iabdJson = Json.arr()
@@ -205,7 +211,8 @@ class IncomeRepositorySpec extends BaseSpec {
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0),
-            None)
+            None
+          )
         )
       }
 
@@ -233,7 +240,8 @@ class IncomeRepositorySpec extends BaseSpec {
                 "basisOperation"   -> JsNumber(2),
                 "employmentStatus" -> JsNumber(1)
               )
-            ))
+            )
+          )
         )
 
         val iabdJson = Json.arr(
@@ -298,7 +306,8 @@ class IncomeRepositorySpec extends BaseSpec {
             BigDecimal(0),
             BigDecimal(0),
             BigDecimal(0),
-            None)
+            None
+          )
         )
       }
 
@@ -326,7 +335,8 @@ class IncomeRepositorySpec extends BaseSpec {
                 "basisOperation"   -> JsNumber(2),
                 "employmentStatus" -> JsNumber(1)
               )
-            ))
+            )
+          )
         )
 
         val iabdJson = Json.arr(
@@ -421,7 +431,8 @@ class IncomeRepositorySpec extends BaseSpec {
                 "basisOperation"   -> JsNumber(2),
                 "employmentStatus" -> JsNumber(1)
               )
-            ))
+            )
+          )
         )
 
         val iabdJson = Json.arr(
@@ -511,7 +522,8 @@ class IncomeRepositorySpec extends BaseSpec {
 
   private def taxAccountJsonWithIabds(
     incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+  ): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
       "nino"         -> nino.nino,
@@ -529,6 +541,7 @@ class IncomeRepositorySpec extends BaseSpec {
 
   private def createSut(
     taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
-    iabdRepository: IabdRepository = mock[IabdRepository]) =
+    iabdRepository: IabdRepository = mock[IabdRepository]
+  ) =
     new IncomeRepository(taxAccountRepository, iabdRepository)
 }

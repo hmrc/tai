@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
+class PdfConnector @Inject() (metrics: Metrics, wsClient: WSClient, urls: PdfUrls)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -39,15 +39,13 @@ class PdfConnector @Inject()(metrics: Metrics, wsClient: WSClient, urls: PdfUrls
     result.map { response =>
       timerContext.stop()
       response.status match {
-        case Status.OK => {
+        case Status.OK =>
           metrics.incrementSuccessCounter(APITypes.PdfServiceAPI)
           response.bodyAsBytes.toArray
-        }
-        case _ => {
+        case _ =>
           logger.warn(s"PdfConnector - A Server error was received from ${APITypes.PdfServiceAPI}")
           metrics.incrementFailedCounter(APITypes.PdfServiceAPI)
           throw new HttpException(response.body, response.status)
-        }
       }
     }
   }

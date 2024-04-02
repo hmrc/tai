@@ -27,7 +27,8 @@ case class TaiRoot(
   surname: String,
   name: String,
   manualCorrespondenceInd: Boolean,
-  deceasedIndicator: Option[Boolean])
+  deceasedIndicator: Option[Boolean]
+)
 
 object TaiRoot {
   implicit val formats: OFormat[TaiRoot] = Json.format[TaiRoot]

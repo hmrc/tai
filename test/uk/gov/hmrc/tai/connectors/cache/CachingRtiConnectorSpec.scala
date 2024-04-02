@@ -59,7 +59,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
 
   lazy val mockRtiConnector: RtiConnector = mock[RtiConnector]
-  lazy val mockSessionCacheRepository: TaiSessionCacheRepository  = mock[TaiSessionCacheRepository]
+  lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
   lazy val spyLockService: FakeLockService = spy(new FakeLockService)
 
   override implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -72,7 +72,6 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
   val payment: Payment = Payment(LocalDate.now(), 0, 0, 0, 0, 0, 0, FourWeekly, None)
   val annualAccount: AnnualAccount = AnnualAccount(0, TaxYear(2020), Available, Seq(payment), Seq.empty)
-
 
   "Calling CachingRtiConnector.getPaymentsForYearAsEitherT" must {
     "return a Right Seq[AnnualAccount] object" when {
@@ -159,7 +158,9 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       "future failed" in {
         val errorMessage = "Error message"
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage))))
+          .thenReturn(
+            EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]](Future.failed(new Exception(errorMessage)))
+          )
 
         when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
           .thenReturn(Future.successful(None))

@@ -32,7 +32,7 @@ class PersonServiceSpec extends BaseSpec {
       val mockRepo = mock[PersonRepository]
       when(mockRepo.getPerson(meq(nino))(any())).thenReturn(Future.successful(person))
       val SUT = createSUT(mockRepo)
-      SUT.person(nino).futureValue mustBe (person)
+      SUT.person(nino).futureValue mustBe person
     }
 
     "expose any exception thrown by the person repository" in {
@@ -53,7 +53,8 @@ class PersonServiceSpec extends BaseSpec {
     Some(LocalDate.now()),
     Address("l1", "l2", "l3", "pc", "country"),
     false,
-    false)
+    false
+  )
   def createSUT(personRepository: PersonRepository = mock[PersonRepository]) = new PersonService(personRepository)
 
 }

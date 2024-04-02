@@ -64,10 +64,9 @@ object TaxCodeIncomeStatus {
       case "Live"              => JsSuccess(Live)
       case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
       case "Ceased"            => JsSuccess(Ceased)
-      case default => {
+      case default =>
         logger.warn(s"Invalid Employment Status Reads -> $default")
         throw new RuntimeException("Invalid employment status reads")
-      }
     }
 
     override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
@@ -115,7 +114,8 @@ case class TaxCodeIncome(
   inYearAdjustmentIntoCYPlusOne: BigDecimal,
   iabdUpdateSource: Option[IabdUpdateSource] = None,
   updateNotificationDate: Option[LocalDate] = None,
-  updateActionDate: Option[LocalDate] = None) {
+  updateActionDate: Option[LocalDate] = None
+) {
 
   lazy val taxCodeWithEmergencySuffix: String = basisOperation match {
     case Week1Month1BasisOperation => taxCode + TaiConstants.EmergencyTaxCode

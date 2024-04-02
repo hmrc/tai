@@ -39,7 +39,8 @@ case class RemoveCompanyBenefitViewModel(
   isEnd: String,
   companyBenefitName: String,
   amountReceived: String,
-  endDate: String)
+  endDate: String
+)
 
 object RemoveCompanyBenefitViewModel {
   private val dateFormat = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)

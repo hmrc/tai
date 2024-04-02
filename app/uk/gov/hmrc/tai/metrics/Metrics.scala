@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 @Singleton
-class Metrics @Inject()(metrics: MetricRegistry) {
+class Metrics @Inject() (metrics: MetricRegistry) {
 
   private val registry: MetricRegistry = metrics
 

@@ -36,7 +36,8 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
           post(urlEqualTo(url)).willReturn(
             aResponse()
               .withStatus(OK)
-              .withBody(htmlAsString))
+              .withBody(htmlAsString)
+          )
         )
 
         sut.generatePdf(htmlAsString).futureValue mustBe htmlAsString.getBytes
@@ -60,7 +61,8 @@ class PdfConnectorSpec extends ConnectorBaseSpec {
             post(urlEqualTo(url)).willReturn(
               aResponse()
                 .withStatus(httpResponse)
-                .withBody(exMessage))
+                .withBody(exMessage)
+            )
           )
 
           assertConnectorException[HttpException](

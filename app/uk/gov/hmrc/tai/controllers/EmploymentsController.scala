@@ -30,10 +30,11 @@ import uk.gov.hmrc.tai.service.EmploymentService
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EmploymentsController @Inject()(
+class EmploymentsController @Inject() (
   employmentService: EmploymentService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
@@ -41,51 +42,54 @@ class EmploymentsController @Inject()(
       .employmentsAsEitherT(nino, year)
       .bimap(
         error => errorToResponse(error),
-        employments =>
-        Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
-      ).merge
+        employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+      )
+      .merge
   }
 
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.async { implicit request =>
     employmentService
       .employmentAsEitherT(nino, id)
       .bimap(
-      error => errorToResponse(error),
-        employment        => Ok(Json.toJson(ApiResponse(employment, Nil)))
-      ).merge
+        error => errorToResponse(error),
+        employment => Ok(Json.toJson(ApiResponse(employment, Nil)))
+      )
+      .merge
   }
 
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[EndEmployment] { endEmployment =>
-      employmentService.endEmployment(nino, id, endEmployment).fold(
-        error => errorToResponse(error),
-        envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      )
+      employmentService
+        .endEmployment(nino, id, endEmployment)
+        .fold(
+          error => errorToResponse(error),
+          envelopeId => Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        )
     }
   }
 
   def addEmployment(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[AddEmployment] { employment =>
-      employmentService.addEmployment(nino, employment) map (envelopeId => {
+      employmentService.addEmployment(nino, employment) map (envelopeId =>
         Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      })
+      )
     }
   }
 
   def incorrectEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[IncorrectEmployment] { employment =>
-      employmentService.incorrectEmployment(nino, id, employment) map (envelopeId => {
+      employmentService.incorrectEmployment(nino, id, employment) map (envelopeId =>
         Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      })
+      )
     }
   }
 
   def updatePreviousYearIncome(nino: Nino, taxYear: TaxYear): Action[JsValue] = authentication.async(parse.json) {
     implicit request =>
       withJsonBody[IncorrectEmployment] { employment =>
-        employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId => {
+        employmentService.updatePreviousYearIncome(nino, taxYear, employment) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-        })
+        )
       }
   }
 

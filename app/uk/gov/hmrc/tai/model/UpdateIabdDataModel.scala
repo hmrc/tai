@@ -48,7 +48,8 @@ case class EmploymentAmount(
   startDate: Option[LocalDate] = None,
   endDate: Option[LocalDate] = None,
   isLive: Boolean = true,
-  isOccupationalPension: Boolean = false)
+  isOccupationalPension: Boolean = false
+)
 
 object EmploymentAmount {
   implicit val formats: OFormat[EmploymentAmount] = Json.format[EmploymentAmount]
@@ -64,7 +65,8 @@ case class IabdUpdateEmploymentsResponse(
   transaction: TransactionId,
   version: Int,
   iabdType: Int,
-  newAmounts: List[EmploymentAmount])
+  newAmounts: List[EmploymentAmount]
+)
 
 object IabdUpdateEmploymentsResponse {
   implicit val format: OFormat[IabdUpdateEmploymentsResponse] = Json.format[IabdUpdateEmploymentsResponse]

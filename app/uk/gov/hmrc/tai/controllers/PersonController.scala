@@ -28,11 +28,12 @@ import uk.gov.hmrc.tai.service.PersonService
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class PersonController @Inject()(
+class PersonController @Inject() (
   authentication: AuthenticationPredicate,
   personService: PersonService,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats {
 
   def person(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>

@@ -46,7 +46,8 @@ class PensionProviderControllerSpec extends BaseSpec {
           new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
         val result = sut.addPensionProvider(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)
@@ -63,13 +64,15 @@ class PensionProviderControllerSpec extends BaseSpec {
         val mockPensionProviderService = mock[PensionProviderService]
         when(
           mockPensionProviderService
-            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any(), any()))
+            .incorrectPensionProvider(meq(nino), meq(id), meq(pensionProvider))(any(), any())
+        )
           .thenReturn(Future.successful(envelopeId))
 
         val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
         val result = sut.incorrectPensionProvider(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider))
-            .withHeaders(("content-type", "application/json")))
+            .withHeaders(("content-type", "application/json"))
+        )
 
         status(result) mustBe OK
         contentAsJson(result).as[ApiResponse[String]] mustBe ApiResponse(envelopeId, Nil)

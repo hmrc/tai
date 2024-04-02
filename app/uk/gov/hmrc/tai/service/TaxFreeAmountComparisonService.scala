@@ -29,11 +29,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class TaxFreeAmountComparisonService @Inject()(
+class TaxFreeAmountComparisonService @Inject() (
   taxCodeChangeService: TaxCodeChangeServiceImpl,
-  codingComponentService: CodingComponentService)(
-  implicit ec: ExecutionContext
-) extends Logging{
+  codingComponentService: CodingComponentService
+)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def taxFreeAmountComparison(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxFreeAmountComparison] = {
     lazy val currentComponents: Future[Seq[CodingComponent]] = getCurrentComponents(nino)
@@ -42,9 +43,7 @@ class TaxFreeAmountComparisonService @Inject()(
     for {
       current  <- currentComponents
       previous <- previousComponents
-    } yield {
-      TaxFreeAmountComparison(previous, current)
-    }
+    } yield TaxFreeAmountComparison(previous, current)
   }
 
   private def getCurrentComponents(nino: Nino)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
@@ -68,8 +67,9 @@ class TaxFreeAmountComparisonService @Inject()(
   private def previousPrimaryTaxCodeRecord(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[TaxCodeSummary]] =
     taxCodeChangeService.taxCodeChange(nino).map(taxCodeChange => taxCodeChange.primaryPreviousRecord)
 
-  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(
-    implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
+  private def previousCodingComponentForId(nino: Nino, taxCodeId: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[Seq[CodingComponent]] = {
     val previousCodingComponentsFuture = codingComponentService.codingComponentsForTaxCodeId(nino, taxCodeId)
 
     previousCodingComponentsFuture.failed.foreach {

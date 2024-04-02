@@ -111,7 +111,7 @@ class EmploymentIFormSpec extends PlaySpec {
         ukAddressTableRow.select("td:nth-of-type(1)").text() mustBe "UK address"
         ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe
           s"${endEmploymentViewModel.addressLine1} ${endEmploymentViewModel.addressLine2} " +
-            s"${endEmploymentViewModel.addressLine3} ${endEmploymentViewModel.postcode}"
+          s"${endEmploymentViewModel.addressLine3} ${endEmploymentViewModel.postcode}"
       }
     }
 

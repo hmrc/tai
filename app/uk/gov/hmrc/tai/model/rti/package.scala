@@ -31,7 +31,8 @@ package object rti {
 
   implicit val freqFormat: Format[PayFrequency.Value] = JsonExtra.enumerationFormat(PayFrequency)
 
-  implicit val stringMapFormat: Format[Map[String, BigDecimal]] = JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
+  implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val formatLocalDate: Format[LocalDate] = Format(
     new Reads[LocalDate] {
@@ -124,7 +125,8 @@ package object rti {
               ).flatten.map { e =>
                 Json.obj("type" -> e._1, "amount" -> e._2)
               }
-            ))
+            )
+          )
         )
     }
   )
@@ -162,7 +164,7 @@ package object rti {
             Seq(typeName -> amount)
           } else {
             Seq[(String, Option[BigDecimal])]()
-        }
+          }
 
         val optionalAdjustmentAmount: Seq[(String, Option[BigDecimal])] =
           formSeqElement("TaxablePayDelta", eyu.taxablePayDelta) ++
@@ -188,9 +190,11 @@ package object rti {
               "niFigure" -> niFigureAmount.map { element =>
                 Json.obj(
                   "type"   -> element.fold("")(ele => ele._1),
-                  "amount" -> element.fold(BigDecimal(0))(ele => ele._2))
+                  "amount" -> element.fold(BigDecimal(0))(ele => ele._2)
+                )
               }
-            )),
+            )
+          ),
           "rcvdDate" -> eyu.rcvdDate
         )
       }

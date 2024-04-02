@@ -26,7 +26,8 @@ case class TaxBand(
   tax: BigDecimal,
   lowerBand: Option[BigDecimal] = None,
   upperBand: Option[BigDecimal] = None,
-  rate: BigDecimal)
+  rate: BigDecimal
+)
 
 object TaxBand {
   implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
@@ -52,7 +53,8 @@ case class IncomeCategory(
   totalTax: BigDecimal,
   totalTaxableIncome: BigDecimal,
   totalIncome: BigDecimal,
-  taxBands: Seq[TaxBand])
+  taxBands: Seq[TaxBand]
+)
 
 object IncomeCategory {
   implicit val formats: OFormat[IncomeCategory] = Json.format[IncomeCategory]
@@ -65,7 +67,8 @@ case class TotalTax(
   otherTaxDue: Option[TaxAdjustment],
   alreadyTaxedAtSource: Option[TaxAdjustment],
   taxOnOtherIncome: Option[BigDecimal] = None,
-  taxReliefComponent: Option[TaxAdjustment] = None)
+  taxReliefComponent: Option[TaxAdjustment] = None
+)
 
 object TotalTax {
   implicit val formats: OFormat[TotalTax] = Json.format[TotalTax]

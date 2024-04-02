@@ -34,13 +34,15 @@ class FileUploadControllerSpec extends BaseSpec {
         "envelopeId" -> "0b215ey97-11d4-4006-91db-c067e74fc653",
         "fileId"     -> "file-id-1",
         "status"     -> "ERROR",
-        "reason"     -> "VirusDetected")
+        "reason"     -> "VirusDetected"
+      )
 
       val fakeRequest = FakeRequest(
         method = "POST",
         uri = "",
         headers = FakeHeaders(Seq("Content-type" -> "application/json")),
-        body = json)
+        body = json
+      )
 
       val mockFileUploadService = mock[FileUploadService]
       when(mockFileUploadService.fileUploadCallback(meq(json.as[FileUploadCallback]))(any()))

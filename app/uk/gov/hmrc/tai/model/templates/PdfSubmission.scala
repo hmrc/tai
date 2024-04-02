@@ -23,18 +23,19 @@ import java.time.{Instant, LocalDateTime, ZoneId}
 import scala.util.Random
 
 case class PdfSubmission(
-  customerId: String, //Needs to be the nino without suffix as DMS doesn't use suffix
+  customerId: String, // Needs to be the nino without suffix as DMS doesn't use suffix
   formId: String,
   numberOfPages: Int,
   attachmentCount: Int = 0,
-  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)), //TODO extract from config
+  hmrcReceivedAt: LocalDateTime = LocalDateTime.now(ZoneId.of(LondonEuropeTimezone)), // TODO extract from config
   submissionMark: String = "",
   casKey: String = "",
   businessArea: String = "PSA",
   classificationType: String = "PSA-DFS TES",
   source: String = "TAI",
   target: String = "DMS",
-  store: Boolean = true) {
+  store: Boolean = true
+) {
   val xmlCreatedAt: LocalDateTime = LocalDateTime.now()
   val submissionReference: String = {
     val maxSubmissionReferenceLength = 12

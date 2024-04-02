@@ -70,7 +70,8 @@ object BasisOperation extends Enumeration {
             valid = { basis =>
               basisOperations.getOrElse(basis, throw new RuntimeException("Invalid BasisOperation Type"))
             }
-          ))
+          )
+      )
 
     def writes(`enum`: BasisOperation) = JsString(`enum`.toString)
   }

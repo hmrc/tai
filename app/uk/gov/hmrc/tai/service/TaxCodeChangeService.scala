@@ -36,11 +36,12 @@ import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class TaxCodeChangeServiceImpl @Inject()(
+class TaxCodeChangeServiceImpl @Inject() (
   taxCodeHistoryConnector: TaxCodeHistoryConnector,
   auditor: Auditor,
-  incomeService: IncomeService)(
-  implicit ec: ExecutionContext
+  incomeService: IncomeService
+)(implicit
+  ec: ExecutionContext
 ) extends TaxCodeChangeService with TaxCodeHistoryConstants with Logging {
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] =
@@ -49,7 +50,7 @@ class TaxCodeChangeServiceImpl @Inject()(
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
           logger.debug("change is valid for service")
           taxCodeMismatch(nino).map { taxCodeMismatch =>
-            if(taxCodeMismatch.mismatch){
+            if (taxCodeMismatch.mismatch) {
               logger.debug("There is a mismatch therefore not returning a tax code change")
               false
             } else {
@@ -62,10 +63,9 @@ class TaxCodeChangeServiceImpl @Inject()(
           Future.successful(false)
         }
       }
-      .recover {
-        case NonFatal(e) =>
-          logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
-          false
+      .recover { case NonFatal(e) =>
+        logger.warn(s"Could not evaluate tax code history with message ${e.getMessage}", e)
+        false
       }
 
   @nowarn("msg=match may not be exhaustive")
@@ -82,15 +82,12 @@ class TaxCodeChangeServiceImpl @Inject()(
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
 
-        val currentTaxCodeChanges = currentRecords.map(
-          currentRecord => TaxCodeSummary(currentRecord, TaxYear().end)
-        )
+        val currentTaxCodeChanges = currentRecords.map(currentRecord => TaxCodeSummary(currentRecord, TaxYear().end))
 
-        val previousTaxCodeChanges = previousRecords.map(
-          taxCodeRecord =>
-            TaxCodeSummary(
-              taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation)),
-              previousEndDate
+        val previousTaxCodeChanges = previousRecords.map(taxCodeRecord =>
+          TaxCodeSummary(
+            taxCodeRecord.copy(dateOfCalculation = previousStartDate(taxCodeRecord.dateOfCalculation)),
+            previousEndDate
           )
         )
 

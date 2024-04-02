@@ -101,7 +101,8 @@ class FileUploadServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(Some(envelopeSummary)))
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "AVAILABLE", None)).futureValue
+        val result =
+          sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "AVAILABLE", None)).futureValue
 
         result mustBe Open
         verify(mockFileUploadConnector, never)
@@ -112,7 +113,8 @@ class FileUploadServiceSpec extends BaseSpec {
         val mockFileUploadConnector = mock[FileUploadConnector]
 
         val sut = createSUT(mockFileUploadConnector, mock[Auditor])
-        val result = sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "INFECTED", None)).futureValue
+        val result =
+          sut.fileUploadCallback(FileUploadCallback("123", "EndEmploymentiform", "INFECTED", None)).futureValue
 
         result mustBe Open
         verify(mockFileUploadConnector, never)

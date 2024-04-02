@@ -74,7 +74,10 @@ trait MongoFormatter {
         JsSuccess {
           val fieldValues = fieldNames.view.mapValues { x =>
             TaxDetail(
-              taxBands = (json \ x \ "taxBands").asOpt[Seq[JsObject]].map(seqObj => seqObj.map(_.as[nps2.TaxBand](formatTaxBand))).getOrElse(Nil),
+              taxBands = (json \ x \ "taxBands")
+                .asOpt[Seq[JsObject]]
+                .map(seqObj => seqObj.map(_.as[nps2.TaxBand](formatTaxBand)))
+                .getOrElse(Nil),
               totalTax = (json \ x \ "totalTax").asOpt[BigDecimal],
               totalIncome = (json \ x \ "totalIncome").asOpt[BigDecimal],
               totalTaxableIncome = (json \ x \ "totalTaxableIncome").asOpt[BigDecimal]
@@ -94,7 +97,9 @@ trait MongoFormatter {
                   ("totalTax", v.totalTax.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalTaxableIncome", v.totalTaxableIncome.map(x => JsNumber(x)).getOrElse(JsNull)),
                   ("totalIncome", v.totalIncome.map(x => JsNumber(x)).getOrElse(JsNull))
-                )))
+                )
+              )
+            )
             x
           case (f, _) => (fieldNames(f), JsObject(Nil))
         })
@@ -196,7 +201,8 @@ trait MongoFormatter {
               .getOrElse {
                 JsNull
               }
-          )) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
+          )
+        ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
     }
   )
 

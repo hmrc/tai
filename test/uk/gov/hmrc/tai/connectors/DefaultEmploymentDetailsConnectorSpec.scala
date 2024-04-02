@@ -66,18 +66,20 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
           "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+        )
+    )
 
   val employment = s"""{
-                     |  "sequenceNumber": $intGen,
-                     |  "startDate": "28/02/2023",
-                     |  "taxDistrictNumber": "${intGen.toString}",
-                     |  "payeNumber": "${intGen.toString}",
-                     |  "employerName": "Big corp",
-                     |  "employmentType": 1,
-                     |  "worksNumber": "${intGen.toString}",
-                     |  "cessationPayThisEmployment": $intGen
-                     |}""".stripMargin
+                      |  "sequenceNumber": $intGen,
+                      |  "startDate": "28/02/2023",
+                      |  "taxDistrictNumber": "${intGen.toString}",
+                      |  "payeNumber": "${intGen.toString}",
+                      |  "employerName": "Big corp",
+                      |  "employmentType": 1,
+                      |  "worksNumber": "${intGen.toString}",
+                      |  "cessationPayThisEmployment": $intGen
+                      |}""".stripMargin
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
@@ -102,7 +104,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(OK)
                 .withBody(employmentListJson.toString())
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue mustBe
@@ -122,7 +125,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(BAD_REQUEST)
                 .withBody(exMessage)
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -138,7 +142,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(NOT_FOUND)
                 .withBody(exMessage)
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -154,7 +159,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(LOCKED)
                 .withBody(exMessage)
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -170,7 +176,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(INTERNAL_SERVER_ERROR)
                 .withBody(exMessage)
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -186,7 +193,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
               aResponse()
                 .withStatus(BAD_GATEWAY)
                 .withBody(exMessage)
-                .withHeader("ETag", s"$etag"))
+                .withHeader("ETag", s"$etag")
+            )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue

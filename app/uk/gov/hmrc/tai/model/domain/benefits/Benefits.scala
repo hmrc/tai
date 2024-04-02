@@ -26,7 +26,8 @@ case class CompanyCar(
   hasActiveFuelBenefit: Boolean,
   dateMadeAvailable: Option[LocalDate],
   dateActiveFuelBenefitMadeAvailable: Option[LocalDate],
-  dateWithdrawn: Option[LocalDate])
+  dateWithdrawn: Option[LocalDate]
+)
 
 object CompanyCar {
   implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
@@ -36,7 +37,8 @@ case class CompanyCarBenefit(
   employmentSeqNo: Int,
   grossAmount: BigDecimal,
   companyCars: Seq[CompanyCar],
-  version: Option[Int] = None)
+  version: Option[Int] = None
+)
 
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
@@ -65,7 +67,8 @@ case class RemoveCompanyBenefit(
   stopDate: String,
   valueOfBenefit: Option[String],
   contactByPhone: String,
-  phoneNumber: Option[String])
+  phoneNumber: Option[String]
+)
 
 object RemoveCompanyBenefit {
   implicit val formats: OFormat[RemoveCompanyBenefit] = Json.format[RemoveCompanyBenefit]

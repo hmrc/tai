@@ -57,7 +57,8 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
 
   private def setCacheItem(id: String = cacheIdValue, data: JsObject) =
     Future.successful(
-      Option(CacheItem(id, data, createdAt = java.time.Instant.now, modifiedAt = java.time.Instant.now)))
+      Option(CacheItem(id, data, createdAt = java.time.Instant.now, modifiedAt = java.time.Instant.now))
+    )
 
   override protected def beforeEach(): Unit = {
     reset(taiUpdateIncomeRepository)
