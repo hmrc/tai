@@ -130,7 +130,8 @@ class TaiCacheRepositoryItSpec
       "saved and returned json is valid" in {
         val data = sut
           .createOrUpdate[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", "")))(
-            PersonFormatter.personMongoFormat)
+            PersonFormatter.personMongoFormat
+          )
           .futureValue
         val cachedData = sut.find[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
         cachedData mustBe Some(data)
@@ -169,11 +170,13 @@ class TaiCacheRepositoryItSpec
     "return None" when {
 
       "returned json is invalid" in {
-        val badJson = Json.parse("""
-                                   | {
-                                   |  "invalid": "key"
-                                   | }
-                                   |""".stripMargin).toString
+        val badJson = Json
+          .parse("""
+                   | {
+                   |  "invalid": "key"
+                   | }
+                   |""".stripMargin)
+          .toString
         sut.createOrUpdate[String](cacheId, badJson).futureValue
         val cachedData = sut.find[Person](cacheId)(PersonFormatter.personHodRead).futureValue
         cachedData mustBe None
@@ -188,7 +191,7 @@ class TaiCacheRepositoryItSpec
     }
   }
 
-  //update-income
+  // update-income
   "insert and read the data from mongodb *Update-Income" when {
     "session data has been passed *Update-Income" in {
       val data = sutUpdateIncome.createOrUpdateIncome[SessionData](cacheId, sessionData).futureValue
@@ -223,7 +226,8 @@ class TaiCacheRepositoryItSpec
     "saved and returned json is valid *Update-Income" in {
       val data = sutUpdateIncome
         .createOrUpdateIncome[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", "")))(
-          PersonFormatter.personMongoFormat)
+          PersonFormatter.personMongoFormat
+        )
         .futureValue
       val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
       cachedData mustBe Some(data)
@@ -246,11 +250,13 @@ class TaiCacheRepositoryItSpec
 
   "return None" when {
     "returned json is invalid" in {
-      val badJson = Json.parse("""
-                                 | {
-                                 |  "invalid": "key"
-                                 | }
-                                 |""".stripMargin).toString
+      val badJson = Json
+        .parse("""
+                 | {
+                 |  "invalid": "key"
+                 | }
+                 |""".stripMargin)
+        .toString
       sutUpdateIncome.createOrUpdateIncome[String](cacheId, badJson).futureValue
       val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
       cachedData mustBe None

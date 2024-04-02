@@ -34,7 +34,8 @@ import java.util.UUID
 import scala.util.Random
 
 trait IntegrationSpec
-    extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
+    extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting
+    with IntegrationPatience {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -64,7 +65,8 @@ trait IntegrationSpec
 
     server.stubFor(
       post(urlEqualTo("/auth/authorise"))
-        .willReturn(ok(authResponse)))
+        .willReturn(ok(authResponse))
+    )
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()

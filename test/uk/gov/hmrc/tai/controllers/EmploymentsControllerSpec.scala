@@ -111,7 +111,9 @@ class EmploymentsControllerSpec extends BaseSpec {
 
       "the employments service returns a not found exception" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new NotFoundException("message"))))
+          .thenReturn(
+            EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new NotFoundException("message")))
+          )
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe NOT_FOUND
@@ -128,7 +130,9 @@ class EmploymentsControllerSpec extends BaseSpec {
 
       "the employments service returns a bad request exception" in {
         when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
-          .thenReturn(EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new BadRequestException("bad request"))))
+          .thenReturn(
+            EitherT[Future, UpstreamErrorResponse, Employments](Future.failed(new BadRequestException("bad request")))
+          )
 
         val result = sut.employments(nino, TaxYear("2017"))(FakeRequest())
         status(result) mustBe BAD_REQUEST

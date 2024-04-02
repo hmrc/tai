@@ -24,7 +24,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
-class FakeAsyncCacheApi @Inject()() extends AsyncCacheApi {
+class FakeAsyncCacheApi @Inject() () extends AsyncCacheApi {
 
   def set(key: String, value: Any, expiration: Duration): Future[Done] = Future.successful(Done)
 

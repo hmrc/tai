@@ -32,8 +32,7 @@ class PostEmployeeExpensesSpec extends IntegrationSpec {
 
   def request = FakeRequest(POST, apiUrl)
     .withJsonBody(postRequest)
-    .withHeaders(HeaderNames.authorisation -> bearerToken,
-      HeaderNames.xSessionId -> "sessionId")
+    .withHeaders(HeaderNames.authorisation -> bearerToken, HeaderNames.xSessionId -> "sessionId")
 
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
