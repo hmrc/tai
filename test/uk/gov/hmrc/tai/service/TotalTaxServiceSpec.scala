@@ -91,7 +91,8 @@ class TotalTaxServiceSpec extends BaseSpec {
       when(mockTaxAccountSummaryRepository.reliefsGivingBackTaxComponents(any(), any())(any())).thenReturn(
         Future.successful(
           Some(adjustment)
-        ))
+        )
+      )
       when(mockTaxAccountSummaryRepository.otherTaxDueComponents(any(), any())(any()))
         .thenReturn(Future.successful(None))
       when(mockTaxAccountSummaryRepository.alreadyTaxedAtSourceComponents(any(), any())(any()))
@@ -229,7 +230,8 @@ class TotalTaxServiceSpec extends BaseSpec {
           tax = 500,
           lowerBand = Some(5000),
           upperBand = Some(20000),
-          rate = 10)
+          rate = 10
+        )
       )
     ),
     IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
@@ -237,7 +239,8 @@ class TotalTaxServiceSpec extends BaseSpec {
 
   private def createSUT(
     totalTaxRepository: TotalTaxRepository,
-    taxAccountSummaryRepository: TaxAccountSummaryRepository) =
+    taxAccountSummaryRepository: TaxAccountSummaryRepository
+  ) =
     new TotalTaxService(totalTaxRepository, taxAccountSummaryRepository)
 
 }

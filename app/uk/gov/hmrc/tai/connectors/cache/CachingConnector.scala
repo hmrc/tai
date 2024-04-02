@@ -25,55 +25,53 @@ import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CachingConnector @Inject()(sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext){
+class CachingConnector @Inject() (sessionCacheRepository: TaiSessionCacheRepository)(implicit ec: ExecutionContext) {
 
-  def cache[A: Format](key: String)
-                              (f: => Future[A])
-                              (implicit hc: HeaderCarrier): Future[A] = {
+  def cache[A: Format](key: String)(f: => Future[A])(implicit hc: HeaderCarrier): Future[A] = {
 
     def fetchAndCache: Future[A] =
       for {
         result <- f
         _ <- sessionCacheRepository
-          .putSession[A](DataKey[A](key), result)
+               .putSession[A](DataKey[A](key), result)
       } yield result
 
-    def readAndUpdate: Future[A] = {
+    def readAndUpdate: Future[A] =
       sessionCacheRepository
         .getFromSession[A](DataKey[A](key))
         .flatMap {
-          case None => fetchAndCache
+          case None        => fetchAndCache
           case Some(value) => Future.successful(value)
         }
-    }
 
     readAndUpdate
   }
 
-  def cacheEitherT[L, A: Format](key: String)
-                                (f: => EitherT[Future, L, A])
-                                (implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
+  def cacheEitherT[L, A: Format](
+    key: String
+  )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
 
     def fetchAndCache: EitherT[Future, L, A] =
       for {
         result <- f
         _ <- EitherT[Future, L, (String, String)](
-          sessionCacheRepository
-            .putSession[A](DataKey[A](key), result)
-            .map(Right(_))
-        )
+               sessionCacheRepository
+                 .putSession[A](DataKey[A](key), result)
+                 .map(Right(_))
+             )
       } yield result
 
-    def readAndUpdate: EitherT[Future, L, A] = {
-      EitherT(sessionCacheRepository
-        .getFromSession[A](DataKey[A](key))
-        .flatMap {
-          case None =>
-            fetchAndCache.value
-          case Some(value) =>
-            Future.successful(Right(value))
-        })
-    }
+    def readAndUpdate: EitherT[Future, L, A] =
+      EitherT(
+        sessionCacheRepository
+          .getFromSession[A](DataKey[A](key))
+          .flatMap {
+            case None =>
+              fetchAndCache.value
+            case Some(value) =>
+              Future.successful(Right(value))
+          }
+      )
 
     readAndUpdate
   }

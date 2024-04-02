@@ -34,7 +34,8 @@ object TaxCodeIncomeFactory {
       Live,
       0,
       1,
-      2)
+      2
+    )
 
   def createJson: JsObject =
     Json.obj(

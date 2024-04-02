@@ -21,13 +21,13 @@ object PayFrequency extends Enumeration {
   val Fortnightly = Value("W2")
 
   /*
-    * Not the same as [[Monthly]] (Calendar Month)
-    */
+   * Not the same as [[Monthly]] (Calendar Month)
+   */
   val FourWeekly = Value("W4")
 
   /*
-    * A Calendar month, not the same as [[FourWeekly]]
-    */
+   * A Calendar month, not the same as [[FourWeekly]]
+   */
   val Monthly = Value("M1")
   val Quarterly = Value("M3")
   val BiAnnually = Value("M6")

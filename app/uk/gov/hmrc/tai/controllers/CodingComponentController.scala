@@ -33,11 +33,12 @@ import uk.gov.hmrc.tai.util.RequestQueryFilter
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class CodingComponentController @Inject()(
+class CodingComponentController @Inject() (
   authentication: AuthenticationPredicate,
   codingComponentService: CodingComponentService,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with RequestQueryFilter with CodingComponentAPIFormatters {
 
   private val logger: Logger = Logger(getClass.getName)

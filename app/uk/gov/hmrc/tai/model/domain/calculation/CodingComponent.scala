@@ -23,4 +23,5 @@ case class CodingComponent(
   employmentId: Option[Int],
   amount: BigDecimal,
   description: String,
-  inputAmount: Option[BigDecimal] = None)
+  inputAmount: Option[BigDecimal] = None
+)

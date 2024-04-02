@@ -30,7 +30,8 @@ trait IncomeCategoryHodFormatters extends Logging {
       val totalLiability = (json \ "totalLiability").as[JsValue]
       JsSuccess(
         categoryNames map (category =>
-          (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)) sum
+          (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
+        ) sum
       )
     }
   }
@@ -48,14 +49,20 @@ trait IncomeCategoryHodFormatters extends Logging {
     val categoryMap: Map[String, Option[JsObject]] =
       categories.map(category => (category, (json \ "totalLiability" \ category).asOpt[JsObject])).toMap
 
-    categoryMap.collect {
-      case (category, Some(jsObject)) =>
-        val totalTax = (jsObject \ "totalTax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val totalTaxableIncome = (jsObject \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val totalIncome = (jsObject \ "totalIncome" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val taxBands = (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
-        val inComeCategory = categoryTypeFactory(category)
-        IncomeCategory(inComeCategory, totalTax, totalTaxableIncome, totalIncome, taxBands.getOrElse(Seq()).filter(_.income > 0))
+    categoryMap.collect { case (category, Some(jsObject)) =>
+      val totalTax = (jsObject \ "totalTax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+      val totalTaxableIncome = (jsObject \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+      val totalIncome = (jsObject \ "totalIncome" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+      val taxBands =
+        (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
+      val inComeCategory = categoryTypeFactory(category)
+      IncomeCategory(
+        inComeCategory,
+        totalTax,
+        totalTaxableIncome,
+        totalIncome,
+        taxBands.getOrElse(Seq()).filter(_.income > 0)
+      )
     }.toList
   }
 
@@ -69,19 +76,18 @@ trait IncomeCategoryHodFormatters extends Logging {
       val upperBand = (json \ "upperBand").asOpt[BigDecimal]
       val rate = (json \ "rate").as[BigDecimal]
       (income, tax) match {
-        case (Some(income), Some(tax)) => JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
+        case (Some(income), Some(tax)) =>
+          JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
         case (None, None) =>
           logger.info("Empty tax returned, no income or tax")
           JsSuccess(None)
-        case (Some(income), None) => {
+        case (Some(income), None) =>
           logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
           JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
-        }
-        case (None, Some(_)) => {
+        case (None, Some(_)) =>
           val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
           logger.error(x.getMessage, x)
           JsSuccess(None)
-        }
       }
     }
   }

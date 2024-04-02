@@ -31,10 +31,11 @@ import uk.gov.hmrc.tai.util.IFormConstants
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PensionProviderService @Inject()(
+class PensionProviderService @Inject() (
   iFormSubmissionService: IFormSubmissionService,
   employmentService: EmploymentService,
-  auditable: Auditor)(implicit ec: ExecutionContext) {
+  auditable: Auditor
+)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -43,7 +44,8 @@ class PensionProviderService @Inject()(
       nino,
       IFormConstants.AddPensionProviderSubmissionKey,
       "TES1",
-      addPensionProviderForm(pensionProvider)) map { envelopeId =>
+      addPensionProviderForm(pensionProvider)
+    ) map { envelopeId =>
       logger.info("Envelope Id for incorrect employment- " + envelopeId)
 
       auditable.sendDataEvent(
@@ -60,16 +62,15 @@ class PensionProviderService @Inject()(
       envelopeId
     }
 
-  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = {
-    person: Person =>
-      {
-        val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
-        Future.successful(PensionProviderIForm(templateModel).toString)
-      }
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = { person: Person =>
+    val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
+    Future.successful(PensionProviderIForm(templateModel).toString)
   }
 
-  def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(
-    implicit hc: HeaderCarrier, request: Request[_]): Future[String] =
+  def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): Future[String] =
     iFormSubmissionService.uploadIForm(
       nino,
       IFormConstants.IncorrectPensionProviderSubmissionKey,
@@ -95,15 +96,14 @@ class PensionProviderService @Inject()(
   private[service] def incorrectPensionProviderForm(
     nino: Nino,
     id: Int,
-    incorrectPensionProvider: IncorrectPensionProvider)(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
-    {
-      (for {
-        existingEmployment <- employmentService.employmentAsEitherT(nino, id)
-        templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
-      } yield EmploymentIForm(templateModel).toString).value.map {
-        case Right(result) => result
-        case Left(error) => throw error
-      }
+    incorrectPensionProvider: IncorrectPensionProvider
+  )(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
+    (for {
+      existingEmployment <- employmentService.employmentAsEitherT(nino, id)
+      templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
+    } yield EmploymentIForm(templateModel).toString).value.map {
+      case Right(result) => result
+      case Left(error)   => throw error
     }
   }
 }

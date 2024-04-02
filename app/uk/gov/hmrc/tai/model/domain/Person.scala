@@ -27,7 +27,8 @@ case class Person(
   dateOfBirth: Option[LocalDate],
   address: Address,
   isDeceased: Boolean = false,
-  manualCorrespondenceInd: Boolean = false)
+  manualCorrespondenceInd: Boolean = false
+)
 
 object Person {
   def createLockedUser(nino: Nino) =
@@ -39,7 +40,8 @@ case class Address(
   line2: Option[String],
   line3: Option[String],
   postcode: Option[String],
-  country: Option[String])
+  country: Option[String]
+)
 
 object Address {
   val emptyAddress = Address(None, None, None, None, None)
@@ -55,7 +57,7 @@ object PersonFormatter {
   import play.api.libs.functional.syntax._
   import play.api.libs.json._
 
-  implicit val addressFormat = Json.format[Address]
+  implicit val addressFormat: OFormat[Address] = Json.format[Address]
 
   val personMongoFormat = Json.format[Person]
 

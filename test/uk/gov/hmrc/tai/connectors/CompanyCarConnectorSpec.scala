@@ -46,7 +46,8 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
     server.verify(
       requestPattern
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-        .withHeader(HeaderNames.xRequestId, equalTo(requestId)))
+        .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+    )
 
   "carBenefits" must {
     "return company car benefit details from the company car benefit service with no fuel benefit" in {
@@ -55,17 +56,24 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
         CompanyCarBenefit(
           empSeqNumber,
           3333,
-          Seq(CompanyCar(carSeqNumber, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))))
+          Seq(CompanyCar(carSeqNumber, "company car", false, Some(LocalDate.parse("2014-06-10")), None, None))
+        )
+      )
 
       val body: String = Json
-        .arr(Json.obj(
-          "employmentSequenceNumber" -> empSeqNumber,
-          "grossAmount"              -> 3333,
-          "carDetails" -> Json.arr(Json.obj(
-            "carSequenceNumber" -> carSeqNumber,
-            "makeModel"         -> "company car",
-            "dateMadeAvailable" -> "2014-06-10"))
-        ))
+        .arr(
+          Json.obj(
+            "employmentSequenceNumber" -> empSeqNumber,
+            "grossAmount"              -> 3333,
+            "carDetails" -> Json.arr(
+              Json.obj(
+                "carSequenceNumber" -> carSeqNumber,
+                "makeModel"         -> "company car",
+                "dateMadeAvailable" -> "2014-06-10"
+              )
+            )
+          )
+        )
         .toString()
 
       server.stubFor(
@@ -90,7 +98,11 @@ class CompanyCarConnectorSpec extends ConnectorBaseSpec {
               true,
               Some(LocalDate.parse("2014-06-10")),
               Some(LocalDate.parse("2017-05-02")),
-              None))))
+              None
+            )
+          )
+        )
+      )
 
       val rawResponse: String =
         Json

@@ -30,7 +30,8 @@ class IabdUpdateSourceSpec extends PlaySpec {
           AgentContact,
           OtherForm,
           Internet,
-          InformationLetter)
+          InformationLetter
+        )
       }
     }
 

@@ -29,11 +29,12 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class CompanyCarBenefitController @Inject()(
+class CompanyCarBenefitController @Inject() (
   companyCarBenefitService: BenefitsService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>

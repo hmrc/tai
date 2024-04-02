@@ -174,7 +174,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
       tax = Some(BigDecimal(6000)),
       lowerBand = Some(BigDecimal(0)),
       upperBand = Some(BigDecimal(30000)),
-      rate = Some(BigDecimal(20))),
+      rate = Some(BigDecimal(20))
+    ),
     TaxBand(
       income = Some(BigDecimal(30000)),
       tax = Some(BigDecimal(12000)),
@@ -187,6 +188,7 @@ class TaxBandCalculatorSpec extends PlaySpec {
       tax = None,
       lowerBand = Some(BigDecimal(150000)),
       upperBand = None,
-      rate = Some(BigDecimal(45)))
+      rate = Some(BigDecimal(45))
+    )
   )
 }

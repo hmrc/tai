@@ -41,7 +41,9 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           Future.successful(
             Seq(
               codingComponent
-            )))
+            )
+          )
+        )
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
@@ -58,7 +60,9 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           Future.successful(
             Seq(
               codingComponent.copy(componentType = OutstandingDebt)
-            )))
+            )
+          )
+        )
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
@@ -75,7 +79,9 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           Future.successful(
             Seq(
               codingComponent.copy(componentType = EstimatedTaxYouOweThisYear)
-            )))
+            )
+          )
+        )
 
         val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
         val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
@@ -89,12 +95,16 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           when(mockTaxAccountRepository.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(taxAccountSummaryNpsJson))
           val mockCodingComponentRepository = mock[CodingComponentRepository]
-          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(Future.successful(Seq(
-            codingComponent,
-            codingComponent.copy(componentType = OutstandingDebt),
-            codingComponent.copy(componentType = EstimatedTaxYouOweThisYear),
-            codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
-          )))
+          when(mockCodingComponentRepository.codingComponents(any(), any())(any())).thenReturn(
+            Future.successful(
+              Seq(
+                codingComponent,
+                codingComponent.copy(componentType = OutstandingDebt),
+                codingComponent.copy(componentType = EstimatedTaxYouOweThisYear),
+                codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
+              )
+            )
+          )
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
@@ -113,7 +123,9 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             Future.successful(
               Seq(
                 codingComponent.copy(componentType = CommunityInvestmentTaxCredit)
-              )))
+              )
+            )
+          )
 
           val sut = createSUT(mockTaxAccountRepository, mockCodingComponentRepository)
           val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
@@ -153,7 +165,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
               TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
               TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
             )
-          ))
+          )
+        )
       }
     }
 
@@ -190,7 +203,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
             TaxAdjustmentComponent(DoubleTaxationRelief, 400)
           )
-        ))
+        )
+      )
     }
 
     "return empty list " when {
@@ -225,7 +239,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
             TaxAdjustmentComponent(ChildBenefit, 300)
           )
-        ))
+        )
+      )
     }
 
     "return empty list " when {
@@ -260,7 +275,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
             TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
           )
-        ))
+        )
+      )
     }
 
     "return empty list " when {
@@ -313,7 +329,9 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         Future.successful(
           Seq(
             CodingComponent(domain.GiftAidPayments, None, 100, "", Some(100))
-          )))
+          )
+        )
+      )
       val sut = createSUT(mockTaxAccountRepository, codingComponentRepository)
 
       val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
@@ -327,7 +345,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             TaxAdjustmentComponent(GiftAidPaymentsRelief, 200),
             TaxAdjustmentComponent(GiftAidPayments, 100)
           )
-        ))
+        )
+      )
     }
 
     "return tax relief components excluding gift aid payment" in {
@@ -349,7 +368,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
             TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
             TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
           )
-        ))
+        )
+      )
     }
 
     "return empty list" when {
@@ -400,20 +420,22 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
       ),
       "nonSavings" -> Json.obj(
         "totalIncome" -> Json.obj(
-          "iabdSummaries" -> JsArray(Seq(
-            Json.obj(
-              "amount"         -> 100,
-              "type"           -> 19,
-              "npsDescription" -> "Non-Coded Income",
-              "employmentId"   -> JsNull
-            ),
-            Json.obj(
-              "amount"         -> 100,
-              "type"           -> 84,
-              "npsDescription" -> "Job-Seeker Allowance",
-              "employmentId"   -> JsNull
+          "iabdSummaries" -> JsArray(
+            Seq(
+              Json.obj(
+                "amount"         -> 100,
+                "type"           -> 19,
+                "npsDescription" -> "Non-Coded Income",
+                "employmentId"   -> JsNull
+              ),
+              Json.obj(
+                "amount"         -> 100,
+                "type"           -> 84,
+                "npsDescription" -> "Job-Seeker Allowance",
+                "employmentId"   -> JsNull
+              )
             )
-          ))
+          )
         ),
         "taxBands" -> JsArray(
           Seq(
@@ -428,13 +450,16 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
               "taxCode"  -> "BR",
               "income"   -> 1000,
               "rate"     -> 20
-            )))
+            )
+          )
+        )
       )
     )
   )
 
   private def createSUT(
     taxAccountRepository: TaxAccountRepository,
-    codingComponentRepository: CodingComponentRepository) =
+    codingComponentRepository: CodingComponentRepository
+  ) =
     new TaxAccountSummaryRepository(taxAccountRepository, codingComponentRepository)
 }

@@ -25,8 +25,8 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
 @Singleton
-class TaiSessionCacheRepository @Inject()(appConfig: MongoConfig, mongoComponent: MongoComponent)(implicit
-                                                                                                  ec: ExecutionContext
+class TaiSessionCacheRepository @Inject() (appConfig: MongoConfig, mongoComponent: MongoComponent)(implicit
+  ec: ExecutionContext
 ) extends SessionCacheRepository(
       mongoComponent = mongoComponent,
       collectionName = "sessions",

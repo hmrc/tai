@@ -28,8 +28,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BbsiRepository @Inject()(taiCacheRepository: TaiCacheRepository, bbsiConnector: BbsiConnector)(
-  implicit ec: ExecutionContext) {
+class BbsiRepository @Inject() (taiCacheRepository: TaiCacheRepository, bbsiConnector: BbsiConnector)(implicit
+  ec: ExecutionContext
+) {
 
   val BBSIKey = "BankAndBuildingSocietyInterest"
 
@@ -41,7 +42,7 @@ class BbsiRepository @Inject()(taiCacheRepository: TaiCacheRepository, bbsiConne
         for {
           accounts <- bbsiConnector.bankAccounts(nino, taxYear)
           accountsWithId <- taiCacheRepository
-                             .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
+                              .createOrUpdateSeq(cacheId, populateId(accounts), BBSIKey)(BbsiMongoFormatters.bbsiFormat)
         } yield accountsWithId
       case Some(accounts) => Future.successful(accounts)
     }

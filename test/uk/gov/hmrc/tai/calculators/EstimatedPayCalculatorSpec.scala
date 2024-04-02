@@ -77,7 +77,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
           pay = Some(100),
           taxablePay = Some(80),
           days = Some(27),
-          bonus = Some(1000))
+          bonus = Some(1000)
+        )
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -122,7 +123,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
           pay = Some(100),
           taxablePay = Some(80),
           bonus = None,
-          startDate = Some(startDateHalfThroughYear))
+          startDate = Some(startDateHalfThroughYear)
+        )
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -139,7 +141,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
           pay = Some(0),
           taxablePay = Some(0),
           bonus = None,
-          startDate = Some(TaxYear().start))
+          startDate = Some(TaxYear().start)
+        )
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -154,7 +157,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
           pay = Some(0),
           taxablePay = Some(0),
           bonus = None,
-          startDate = Some(startDateInNextTaxYear))
+          startDate = Some(startDateInNextTaxYear)
+        )
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 
@@ -168,7 +172,8 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
           pay = None,
           taxablePay = None,
           bonus = None,
-          startDate = Some(TaxYear().start))
+          startDate = Some(TaxYear().start)
+        )
 
         val calculated = EstimatedPayCalculator.calculate(payDetails = payDetails)
 

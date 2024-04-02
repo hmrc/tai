@@ -73,10 +73,8 @@ class EmploymentSpec extends PlaySpec {
 
       val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
 
-      employmentWithAccount.annualAccountsForYear(taxYear) mustBe Seq(
-        expectedAccount1,
-        expectedAccount2,
-        expectedAccount3)
+      employmentWithAccount
+        .annualAccountsForYear(taxYear) mustBe Seq(expectedAccount1, expectedAccount2, expectedAccount3)
     }
 
   }
@@ -99,7 +97,9 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false))
+      false
+    )
+  )
   val singleEmploymentWithMissingPayrollNumber = List(
     Employment(
       "XXX PPPP",
@@ -113,7 +113,9 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false))
+      false
+    )
+  )
   val singleEmploymentWithEmptyStringPayrollNumber = List(
     Employment(
       "XXX PPPP",
@@ -127,7 +129,9 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false))
+      false
+    )
+  )
   val dualEmployment = List(
     Employment(
       "XXX PPPP",
@@ -141,7 +145,8 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false),
+      false
+    ),
     Employment(
       "XXX PPPP",
       Live,
@@ -154,7 +159,8 @@ class EmploymentSpec extends PlaySpec {
       2,
       Some(100),
       false,
-      false)
+      false
+    )
   )
 
 }

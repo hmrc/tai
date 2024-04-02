@@ -252,9 +252,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(EitherT.rightT(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
-      val sut = createSUT(
-        incomeService = mockIncomeService,
-        authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -335,9 +333,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
         .thenReturn(EitherT.rightT(employments))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(
-        incomeService = mockIncomeService,
-        authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -403,7 +399,9 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
             None,
             Seq(
               OtherNonTaxCodeIncome(Profit, None, 100, "Profit")
-            )))
+            )
+          )
+        )
 
         when(mockIncomeService.incomes(any(), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(income))
@@ -468,7 +466,8 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+  ) =
     new IncomeController(incomeService, authentication, cc)
 
   private def fakeTaxCodeIncomeRequest: FakeRequest[JsValue] = {
@@ -477,8 +476,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       .withHeaders(("content-type", "application/json"))
   }
 
-  private def setup(
-    response: Future[IncomeUpdateResponse]): IncomeController = {
+  private def setup(response: Future[IncomeUpdateResponse]): IncomeController = {
     val mockIncomeService: IncomeService = {
       val mockIncomeService: IncomeService = mock[IncomeService]
       when(mockIncomeService.updateTaxCodeIncome(any(), any(), any(), any())(any(), any())).thenReturn(response)

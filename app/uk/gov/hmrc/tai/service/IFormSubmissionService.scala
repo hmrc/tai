@@ -31,10 +31,11 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IFormSubmissionService @Inject()(
+class IFormSubmissionService @Inject() (
   personRepository: PersonRepository,
   pdfService: PdfService,
-  fileUploadService: FileUploadService)(implicit ec: ExecutionContext) {
+  fileUploadService: FileUploadService
+)(implicit ec: ExecutionContext) {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -50,7 +51,8 @@ class IFormSubmissionService @Inject()(
     nino: Nino,
     iformSubmissionKey: String,
     iformId: String,
-    iformGenerationFunc: (Person) => Future[String])(implicit hc: HeaderCarrier): Future[String] =
+    iformGenerationFunc: (Person) => Future[String]
+  )(implicit hc: HeaderCarrier): Future[String] =
     for {
       person     <- personRepository.getPerson(nino)
       formData   <- iformGenerationFunc(person)
@@ -58,12 +60,13 @@ class IFormSubmissionService @Inject()(
       envelopeId <- fileUploadService.createEnvelope()
       metadata = PdfSubmissionMetadata(PdfSubmission(nino.withoutSuffix, iformId, 2)).toString().getBytes
       _ <- fileUploadService
-            .uploadFile(pdf, envelopeId, iformFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationPdf)
+             .uploadFile(pdf, envelopeId, iformFilename(envelopeId, iformSubmissionKey), MimeContentType.ApplicationPdf)
       _ <- fileUploadService.uploadFile(
-            metadata,
-            envelopeId,
-            metadataFilename(envelopeId, iformSubmissionKey),
-            MimeContentType.ApplicationXml)
+             metadata,
+             envelopeId,
+             metadataFilename(envelopeId, iformSubmissionKey),
+             MimeContentType.ApplicationXml
+           )
     } yield {
       logger.info(s"Envelope Id for $iformSubmissionKey - " + envelopeId)
       envelopeId

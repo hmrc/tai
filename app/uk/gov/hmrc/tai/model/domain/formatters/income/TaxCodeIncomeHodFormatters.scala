@@ -68,7 +68,9 @@ trait TaxCodeIncomeHodFormatters {
           status,
           iyaCy,
           totalIya,
-          iyaCyPlusOne))
+          iyaCyPlusOne
+        )
+      )
     }
   }
 
@@ -101,10 +103,9 @@ trait TaxCodeIncomeHodFormatters {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
       case Some(3) => Ceased
-      case default => {
+      case default =>
         logger.warn(s"Invalid Employment Status -> $default")
         throw new RuntimeException("Invalid employment status")
-      }
     }
   }
 
@@ -121,10 +122,10 @@ trait TaxCodeIncomeHodFormatters {
     val iabdSummaries: Option[Seq[IabdSummary]] =
       (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries").asOpt[Seq[IabdSummary]](Reads.seq(iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
-      _.find(
-        iabd =>
-          newEstimatedPayTypeFilter(iabd) &&
-            employmentFilter(iabd, employmentId))
+      _.find(iabd =>
+        newEstimatedPayTypeFilter(iabd) &&
+          employmentFilter(iabd, employmentId)
+      )
     }
     iabdSummary.map(_.amount) match {
       case Some(amount) => Some(amount)

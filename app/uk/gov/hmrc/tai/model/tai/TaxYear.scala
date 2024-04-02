@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-
-
 import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
 import java.time.{LocalDate, ZoneId}
@@ -64,7 +62,7 @@ object TaxYear {
     object Year {
       val SimpleYear: Regex = "([12][0-9])?([0-9]{2})".r
       def unapply(in: String): Option[Int] = in match {
-        case SimpleYear(cenStr, yearStr) => {
+        case SimpleYear(cenStr, yearStr) =>
           val year = yearStr.toInt
           val century = Option(cenStr).filter(_.nonEmpty) match {
             case None if year > 70 => 1900
@@ -72,7 +70,6 @@ object TaxYear {
             case Some(x)           => x.toInt * 100
           }
           Some(century + year)
-        }
         case _ => None
       }
     }

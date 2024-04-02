@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.benefits
 
 import java.time.LocalDate
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
 
 case class CompanyCar(
@@ -26,38 +26,40 @@ case class CompanyCar(
   hasActiveFuelBenefit: Boolean,
   dateMadeAvailable: Option[LocalDate],
   dateActiveFuelBenefitMadeAvailable: Option[LocalDate],
-  dateWithdrawn: Option[LocalDate])
+  dateWithdrawn: Option[LocalDate]
+)
 
 object CompanyCar {
-  implicit val formats = Json.format[CompanyCar]
+  implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
 }
 
 case class CompanyCarBenefit(
   employmentSeqNo: Int,
   grossAmount: BigDecimal,
   companyCars: Seq[CompanyCar],
-  version: Option[Int] = None)
+  version: Option[Int] = None
+)
 
 object CompanyCarBenefit {
-  implicit val formats = Json.format[CompanyCarBenefit]
+  implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
 }
 
 case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
 
 object GenericBenefit {
-  implicit val formats = Json.format[GenericBenefit]
+  implicit val formats: OFormat[GenericBenefit] = Json.format[GenericBenefit]
 }
 
 case class Benefits(companyCarBenefits: Seq[CompanyCarBenefit], otherBenefits: Seq[GenericBenefit])
 
 object Benefits {
-  implicit val formats = Json.format[Benefits]
+  implicit val formats: OFormat[Benefits] = Json.format[Benefits]
 }
 
 case class WithdrawCarAndFuel(version: Int, carWithdrawDate: LocalDate, fuelWithdrawDate: Option[LocalDate])
 
 object WithdrawCarAndFuel {
-  implicit val formats = Json.format[WithdrawCarAndFuel]
+  implicit val formats: OFormat[WithdrawCarAndFuel] = Json.format[WithdrawCarAndFuel]
 }
 
 case class RemoveCompanyBenefit(
@@ -65,8 +67,9 @@ case class RemoveCompanyBenefit(
   stopDate: String,
   valueOfBenefit: Option[String],
   contactByPhone: String,
-  phoneNumber: Option[String])
+  phoneNumber: Option[String]
+)
 
 object RemoveCompanyBenefit {
-  implicit val formats = Json.format[RemoveCompanyBenefit]
+  implicit val formats: OFormat[RemoveCompanyBenefit] = Json.format[RemoveCompanyBenefit]
 }

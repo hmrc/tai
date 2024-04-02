@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import java.time.LocalDate
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -33,13 +33,15 @@ case class Employment(
   sequenceNumber: Int,
   cessationPay: Option[BigDecimal],
   hasPayrolledBenefit: Boolean,
-  receivingOccupationalPension: Boolean) {
+  receivingOccupationalPension: Boolean
+) {
 
   lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
     annualAccounts.exists(annualAccount =>
-      annualAccount.realTimeStatus == TemporarilyUnavailable && annualAccount.taxYear == year)
+      annualAccount.realTimeStatus == TemporarilyUnavailable && annualAccount.taxYear == year
+    )
 
   def hasAnnualAccountsForYear(year: TaxYear): Boolean = annualAccountsForYear(year).nonEmpty
 
@@ -52,16 +54,17 @@ case class AddEmployment(
   startDate: LocalDate,
   payrollNumber: String,
   telephoneContactAllowed: String,
-  telephoneNumber: Option[String])
+  telephoneNumber: Option[String]
+)
 
 object AddEmployment {
-  implicit val formats = Json.format[AddEmployment]
+  implicit val formats: OFormat[AddEmployment] = Json.format[AddEmployment]
 }
 
 case class EndEmployment(endDate: LocalDate, telephoneContactAllowed: String, telephoneNumber: Option[String])
 
 object EndEmployment {
-  implicit val formats = Json.format[EndEmployment]
+  implicit val formats: OFormat[EndEmployment] = Json.format[EndEmployment]
 }
 
 case class IncorrectEmployment(whatYouToldUs: String, telephoneContactAllowed: String, telephoneNumber: Option[String])

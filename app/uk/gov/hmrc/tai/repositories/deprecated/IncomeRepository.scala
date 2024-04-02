@@ -28,10 +28,9 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IncomeRepository @Inject()(
-  taxAccountRepository: TaxAccountRepository,
-  iabdRepository: IabdRepository)(implicit ec: ExecutionContext)
-    extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
+class IncomeRepository @Inject() (taxAccountRepository: TaxAccountRepository, iabdRepository: IabdRepository)(implicit
+  ec: ExecutionContext
+) extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountRepository.taxAccount(nino, year) flatMap { jsValue =>
@@ -40,13 +39,12 @@ class IncomeRepository @Inject()(
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
       if (untaxedInterestIncome.nonEmpty) {
-          val income = untaxedInterestIncome.head
-          val untaxedInterest = UntaxedInterest(
-            income.incomeComponentType,
-            income.employmentId,
-            income.amount,
-            income.description)
-        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome)))
+        val income = untaxedInterestIncome.head
+        val untaxedInterest =
+          UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
+        Future.successful(
+          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
+        )
       } else {
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
@@ -60,10 +58,8 @@ class IncomeRepository @Inject()(
     for {
       taxCodeIncomes <- taxCodeIncomeFuture
       iabdDetails    <- iabdDetailsFuture
-    } yield {
-      taxCodeIncomes.map { taxCodeIncome =>
-        addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
-      }
+    } yield taxCodeIncomes.map { taxCodeIncome =>
+      addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
     }
   }
 

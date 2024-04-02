@@ -139,8 +139,8 @@ object TaxAccountHistoryFactory {
       "npsDescription" -> "BR Difference Tax Reduction",
       "amount"         -> 10000,
       "type"           -> 34,
-      "iabdSummaries" -> JsNull,
-      "sourceAmount" -> 10000
+      "iabdSummaries"  -> JsNull,
+      "sourceAmount"   -> 10000
     )
 
   private def nonSavingLiabilityJson: JsObject =

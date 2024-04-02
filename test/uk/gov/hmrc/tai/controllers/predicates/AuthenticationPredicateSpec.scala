@@ -56,7 +56,7 @@ class AuthenticationPredicateSpec extends BaseSpec {
     new SessionRecordNotFound
   )
 
-  authErrors.foreach(error => {
+  authErrors.foreach { error =>
     s"return UNAUTHORIZED when auth throws a $error" in {
       val mockAuthService = mock[AuthorisedFunctions]
 
@@ -64,8 +64,10 @@ class AuthenticationPredicateSpec extends BaseSpec {
         .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
           override def retrieve[A](retrieval: Retrieval[A]) =
             new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
-              override def apply[B](
-                body: A => Future[B])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[B] =
+              override def apply[B](body: A => Future[B])(implicit
+                hc: HeaderCarrier,
+                executionContext: ExecutionContext
+              ): Future[B] =
                 Future.failed(error)
             }
         })
@@ -75,7 +77,7 @@ class AuthenticationPredicateSpec extends BaseSpec {
 
       status(result) mustBe Status.UNAUTHORIZED
     }
-  })
+  }
 
   "return OK and contain the user's NINO when called with an Authenticated user" in {
     class SUT(val authentication: AuthenticationPredicate) extends InjectedController {
@@ -95,7 +97,8 @@ class AuthenticationPredicateSpec extends BaseSpec {
     val trustedHelperAuthSuccessResponse =
       new ~(
         Some(nino.value),
-        Some(TrustedHelper("principal name", "attorney name", "return url", principalNino.toString())))
+        Some(TrustedHelper("principal name", "attorney name", "return url", principalNino.toString()))
+      )
 
     setupMockAuthRetrievalSuccess(trustedHelperAuthSuccessResponse)
 

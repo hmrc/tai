@@ -17,11 +17,11 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 class ApiResponseSpec extends PlaySpec {
 
-  implicit val testFormat = Json.format[TestObject]
+  implicit val testFormat: OFormat[TestObject] = Json.format[TestObject]
 
   "ApiResponse" must {
     "produce a valid json message with a data section" when {
@@ -43,7 +43,8 @@ class ApiResponseSpec extends PlaySpec {
 
         resp mustBe Json.obj(
           "data"  -> 3,
-          "links" -> Json.arr(Json.obj("uri" -> "/tai/tax-payer", "rel" -> "self", "method" -> "GET")))
+          "links" -> Json.arr(Json.obj("uri" -> "/tai/tax-payer", "rel" -> "self", "method" -> "GET"))
+        )
       }
 
       "given multiple links" in {
@@ -57,7 +58,8 @@ class ApiResponseSpec extends PlaySpec {
           "data" -> "hello",
           "links" -> Json.arr(
             Json.obj("uri" -> "/tai/tax-payer", "rel"  -> "self", "method"   -> "GET"),
-            Json.obj("uri" -> "/tai/tax-payers", "rel" -> "create", "method" -> "POST"))
+            Json.obj("uri" -> "/tai/tax-payers", "rel" -> "create", "method" -> "POST")
+          )
         )
       }
     }

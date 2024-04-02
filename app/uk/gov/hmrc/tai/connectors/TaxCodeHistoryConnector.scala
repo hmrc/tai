@@ -31,11 +31,11 @@ import java.util.UUID
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
-class CachingTaxCodeHistoryConnector @Inject()(@Named("default")
-                                               underlying: TaxCodeHistoryConnector,
-                                               cachingConnector: CachingConnector
-                                              )
-extends TaxCodeHistoryConnector {
+class CachingTaxCodeHistoryConnector @Inject() (
+  @Named("default")
+  underlying: TaxCodeHistoryConnector,
+  cachingConnector: CachingConnector
+) extends TaxCodeHistoryConnector {
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
@@ -44,43 +44,44 @@ extends TaxCodeHistoryConnector {
 
 }
 
-class DefaultTaxCodeHistoryConnector @Inject()(httpHandler: HttpHandler,
-                                               desConfig: DesConfig,
-                                               ifConfig: IfConfig,
-                                               desUrls: TaxCodeChangeFromDesUrl,
-                                               ifUrls: TaxCodeChangeFromIfUrl,
-                                               featureFlagService: FeatureFlagService)
-                                              (implicit ec: ExecutionContext)
-  extends TaxCodeHistoryConnector {
+class DefaultTaxCodeHistoryConnector @Inject() (
+  httpHandler: HttpHandler,
+  desConfig: DesConfig,
+  ifConfig: IfConfig,
+  desUrls: TaxCodeChangeFromDesUrl,
+  ifUrls: TaxCodeChangeFromIfUrl,
+  featureFlagService: FeatureFlagService
+)(implicit ec: ExecutionContext)
+    extends TaxCodeHistoryConnector {
 
-  private def createHeader(ifToggle: Boolean)(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-    if(ifToggle)
+  private def createHeader(ifToggle: Boolean)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    if (ifToggle)
       Seq(
-        "Environment" -> ifConfig.environment,
-        "Authorization" -> ifConfig.authorization,
+        "Environment"          -> ifConfig.environment,
+        "Authorization"        -> ifConfig.authorization,
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
         HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId" -> UUID.randomUUID().toString,
-        "OriginatorId" -> ifConfig.originatorId
+        "CorrelationId"        -> UUID.randomUUID().toString,
+        "OriginatorId"         -> ifConfig.originatorId
       )
     else
       Seq(
-        "Environment" -> desConfig.environment,
-        "Authorization" -> desConfig.authorization,
+        "Environment"          -> desConfig.environment,
+        "Authorization"        -> desConfig.authorization,
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
         HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId" -> UUID.randomUUID().toString,
-        "OriginatorId" -> desConfig.originatorId
+        "CorrelationId"        -> UUID.randomUUID().toString,
+        "OriginatorId"         -> desConfig.originatorId
       )
-  }
 
-  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
-    featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap{ toggle =>
-      val url = if(toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
-                else desUrls.taxCodeChangeFromDesUrl(nino, year)
-       httpHandler.getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled)).map(json =>
-         json.as[TaxCodeHistory])
-      }
+  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
+    featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
+      val url =
+        if (toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
+        else desUrls.taxCodeChangeFromDesUrl(nino, year)
+      httpHandler
+        .getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled))
+        .map(json => json.as[TaxCodeHistory])
     }
 }
 

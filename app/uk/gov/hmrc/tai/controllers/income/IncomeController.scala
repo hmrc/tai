@@ -34,11 +34,12 @@ import uk.gov.hmrc.tai.service.IncomeService
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class IncomeController @Inject()(
+class IncomeController @Inject() (
   incomeService: IncomeService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
   def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
@@ -60,19 +61,26 @@ class IncomeController @Inject()(
     nino: Nino,
     year: TaxYear,
     incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus): Action[AnyContent] = authentication.async { implicit request =>
-    incomeService.matchedTaxCodeIncomesForYear(nino, year, incomeType, status).bimap(
-      error => errorToResponse(error),
-      result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
-    ).merge recoverWith taxAccountErrorHandler()
+    status: TaxCodeIncomeStatus
+  ): Action[AnyContent] = authentication.async { implicit request =>
+    incomeService
+      .matchedTaxCodeIncomesForYear(nino, year, incomeType, status)
+      .bimap(
+        error => errorToResponse(error),
+        result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Nil)))
+      )
+      .merge recoverWith taxAccountErrorHandler()
   }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
     implicit request =>
-      incomeService.nonMatchingCeasedEmployments(nino, year).bimap(
-        error => errorToResponse(error),
+      incomeService
+        .nonMatchingCeasedEmployments(nino, year)
+        .bimap(
+          error => errorToResponse(error),
           result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-        ).merge recoverWith taxAccountErrorHandler()
+        )
+        .merge recoverWith taxAccountErrorHandler()
   }
 
   def income(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async { implicit request =>
@@ -89,8 +97,8 @@ class IncomeController @Inject()(
           case InvalidAmount(message)      => BadRequest(message)
           case IncomeUpdateFailed(message) => InternalServerError(message)
         }
-      }.recover {
-        case _ => InternalServerError
+      }.recover { case _ =>
+        InternalServerError
       }
     }
 }

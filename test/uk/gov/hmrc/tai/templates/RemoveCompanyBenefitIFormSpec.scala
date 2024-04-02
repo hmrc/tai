@@ -92,7 +92,7 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
         ukAddressTableRow.select("td:nth-of-type(1)").text() mustBe "UK address"
         ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe
           s"${removeCompanyBenefitModel.addressLine1} ${removeCompanyBenefitModel.addressLine2} " +
-            s"${removeCompanyBenefitModel.addressLine3} ${removeCompanyBenefitModel.postcode}"
+          s"${removeCompanyBenefitModel.addressLine3} ${removeCompanyBenefitModel.postcode}"
       }
     }
     "display the 'What do you want to tell us?' section of the remove company benefit iform" when {

@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.connectors.PdfConnector
 import scala.concurrent.Future
 
 @Singleton
-class PdfService @Inject()(pdfConnector: PdfConnector) {
+class PdfService @Inject() (pdfConnector: PdfConnector) {
 
   def generatePdf(html: String): Future[Array[Byte]] = pdfConnector.generatePdf(html)
 

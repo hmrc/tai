@@ -117,7 +117,8 @@ class IncorrectBankAccountIformSpec extends PlaySpec {
     "test",
     "tester",
     Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country"))
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
   private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
   private val incorrectBankAccount = IncorrectBankAccount(personDetails, TaxYear(), bankAccount)
   private def incorrectBankAccountTemplate(viewModel: IncorrectBankAccount = incorrectBankAccount) =

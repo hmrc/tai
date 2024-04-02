@@ -57,7 +57,7 @@ class PersonControllerSpec extends BaseSpec {
                 "postcode" -> "pc",
                 "country"  -> "country"
               ),
-              "isDeceased"     -> false,
+              "isDeceased"              -> false,
               "manualCorrespondenceInd" -> false
             ),
           "links" -> Json.arr()
@@ -79,7 +79,7 @@ class PersonControllerSpec extends BaseSpec {
 
       result mustBe a[NotFoundException]
 
-      result.getMessage mustBe ("an example not found exception")
+      result.getMessage mustBe "an example not found exception"
     }
   }
 
@@ -90,10 +90,12 @@ class PersonControllerSpec extends BaseSpec {
     Some(LocalDate.of(1982, 5, 26)),
     Address("l1", "l2", "l3", "pc", "country"),
     false,
-    false)
+    false
+  )
 
   private def createSUT(
     authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
-    personService: PersonService = mock[PersonService]) =
+    personService: PersonService = mock[PersonService]
+  ) =
     new PersonController(authenticationPredicate, personService, cc)
 }

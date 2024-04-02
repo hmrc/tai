@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.service
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.ws.ahc.AhcWSClient
@@ -30,8 +30,9 @@ import uk.gov.hmrc.tai.model.domain.MimeContentType
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, auditor: Auditor)(
-  implicit ec: ExecutionContext) {
+class FileUploadService @Inject() (fileUploadConnector: FileUploadConnector, auditor: Auditor)(implicit
+  ec: ExecutionContext
+) {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -41,9 +42,8 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
   private val FileUploadSuccessAudit = "FileUploadSuccess"
   private val FileUploadFailureAudit = "FileUploadFailure"
 
-  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] = {
+  def createEnvelope()(implicit hc: HeaderCarrier): Future[String] =
     fileUploadConnector.createEnvelope
-  }
 
   def envelopeStatus(envelopeId: String): Future[EnvelopeStatus] =
     fileUploadConnector.envelope(envelopeId) map {
@@ -51,7 +51,9 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
         if (envelopeSummary.status != FileUploadOpenStatus) {
           logger.warn(s"Multiple Callback received for envelope-id $envelopeId (${envelopeSummary.status})")
           Open
-        } else if (envelopeSummary.files.size == 2 && envelopeSummary.files.forall(_.status == FileUploadSuccessStatus)) {
+        } else if (
+          envelopeSummary.files.size == 2 && envelopeSummary.files.forall(_.status == FileUploadSuccessStatus)
+        ) {
           Closed
         } else {
           Open
@@ -59,8 +61,9 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
       case None => Open
     }
 
-  def uploadFile(data: Array[Byte], envelopeId: String, fileName: String, contentType: MimeContentType)(
-    implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def uploadFile(data: Array[Byte], envelopeId: String, fileName: String, contentType: MimeContentType)(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
     implicit val system: ActorSystem = ActorSystem()
     implicit val materializer: Materializer = Materializer(system)
 
@@ -100,7 +103,7 @@ class FileUploadService @Inject()(fileUploadConnector: FileUploadConnector, audi
 
         Closed
       case Open => Open
-      case _ => throw new RuntimeException("Invalid EnvelopeStatus")
+      case _    => throw new RuntimeException("Invalid EnvelopeStatus")
     }
 
   private def removeExtension(fileName: String): String = fileName.split("\\.").head

@@ -24,10 +24,10 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import java.time.temporal.ChronoUnit
 
 /*
-  * A ScalaCheck generator for RtiData records, some day this may be used to
-  * perform property-based testing or for implementation of a smart-stub
-  * (infinite amount of deterministicly random records for testing)
-  */
+ * A ScalaCheck generator for RtiData records, some day this may be used to
+ * perform property-based testing or for implementation of a smart-stub
+ * (infinite amount of deterministicly random records for testing)
+ */
 object RtiGenerator {
 
   def moneyAmount(a: Enumeration): Gen[(a.Value, BigDecimal)] =
@@ -54,18 +54,17 @@ object RtiGenerator {
     taxedYTD      <- choose(1, 1000)
     payId         <- option(alphaNumStr(6, 12))
     typeId        <- option(oneOf(true, false))
-  } yield
-    RtiPayment(
-      freq,
-      paymentDate,
-      receivedDate,
-      taxablePay,
-      taxablePayYTD,
-      taxed,
-      taxedYTD,
-      payId,
-      typeId.getOrElse(false)
-    )
+  } yield RtiPayment(
+    freq,
+    paymentDate,
+    receivedDate,
+    taxablePay,
+    taxablePayYTD,
+    taxed,
+    taxedYTD,
+    payId,
+    typeId.getOrElse(false)
+  )
 
   def alphaNumStr(min: Int, max: Int) =
     choose(min, max)
@@ -81,35 +80,31 @@ object RtiGenerator {
     payments               <- choose(0, 10).flatMap(listOfN(_, year))
     currentPayId           <- option(alphaNumStr(6, 18))
     sequenceNumber         <- choose(1, 100)
-  } yield
-    RtiEmployment(
-      officeRefNo,
-      payeRef,
-      accountOfficeReference,
-      payments,
-      Nil,
-      currentPayId,
-      sequenceNumber
-    )
+  } yield RtiEmployment(
+    officeRefNo,
+    payeRef,
+    accountOfficeReference,
+    payments,
+    Nil,
+    currentPayId,
+    sequenceNumber
+  )
 
   val nino: Gen[String] = for {
     prefix <- alphaStr.map(_.take(2))
     body   <- choose(1, 1000000)
     suffix <- alphaChar
-  } yield {
-    f"$prefix$body%06d$suffix".toUpperCase
-  }
+  } yield f"$prefix$body%06d$suffix".toUpperCase
 
   val rtiData: Gen[RtiData] = for {
     nino           <- nino
     relatedTaxYear <- choose(2012, 2016).map(TaxYear(_))
     requestId      <- choose(1, 100000000000000L)
     emps           <- choose(0, 10).flatMap(listOfN(_, employment))
-  } yield
-    RtiData(
-      nino,
-      relatedTaxYear,
-      requestId.toString,
-      emps
-    )
+  } yield RtiData(
+    nino,
+    relatedTaxYear,
+    requestId.toString,
+    emps
+  )
 }

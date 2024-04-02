@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.admin
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagName
 
 case object RtiCallToggle extends FeatureFlagName {
-  override val name: String                = "rti-call-toggle"
+  override val name: String = "rti-call-toggle"
   override val description: Option[String] = Some(
     "Enable/disable toggle for RTI in the RtiConnector, controlling access to the API: '/rti/individual/payments/nino/:nino'"
   )

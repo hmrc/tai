@@ -31,10 +31,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
         when(mockMetricRegistry.timer(any()))
           .thenReturn(new Timer())
 
-        val mockMetrics = mock[com.kenshoo.play.metrics.Metrics]
-        when(mockMetrics.defaultRegistry)
-          .thenReturn(mockMetricRegistry)
-        val sut = new Metrics(mockMetrics)
+        val sut = new Metrics(mockMetricRegistry)
 
         val timer: Timer.Context = sut.startTimer(APITypes.BbsiAPI)
         timer.stop()
@@ -52,11 +49,7 @@ class MetricsSpec extends PlaySpec with MockitoSugar {
       when(mockMetricRegistry.counter(meq("company-car-success-counter")))
         .thenReturn(mockCounter)
 
-      val mockMetrics = mock[com.kenshoo.play.metrics.Metrics]
-      when(mockMetrics.defaultRegistry)
-        .thenReturn(mockMetricRegistry)
-
-      val sut = new Metrics(mockMetrics)
+      val sut = new Metrics(mockMetricRegistry)
 
       sut.incrementSuccessCounter(APITypes.CompanyCarAPI)
 

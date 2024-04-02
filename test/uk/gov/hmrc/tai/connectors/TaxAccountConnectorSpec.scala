@@ -76,7 +76,9 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
           "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+        )
+    )
 
   def verifyOutgoingNpsUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
@@ -86,7 +88,9 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
           "CorrelationId",
-          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")))
+          matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+        )
+    )
 
   "Tax Account Connector" when {
 
@@ -124,11 +128,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(NOT_FOUND)
-              .withBody("not found")))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+                .withBody("not found")
+            )
+          )
 
-          val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: NotFoundException =
+            the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe NOT_FOUND
         }
@@ -144,10 +152,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(BAD_REQUEST)))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+            )
+          )
 
-          val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: BadRequestException =
+            the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe BAD_REQUEST
         }
@@ -163,8 +175,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(IM_A_TEAPOT)))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(IM_A_TEAPOT)
+            )
+          )
 
           val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
@@ -182,10 +197,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+            )
+          )
 
-          val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: InternalServerException =
+            the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe INTERNAL_SERVER_ERROR
         }
@@ -201,8 +220,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(SERVICE_UNAVAILABLE)))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(SERVICE_UNAVAILABLE)
+            )
+          )
 
           val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
@@ -220,10 +242,14 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           }
 
           server.stubFor(
-            get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(LOCKED)))
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withStatus(LOCKED)
+            )
+          )
 
-          val result: LockedException = the[LockedException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+          val result: LockedException =
+            the[LockedException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
           result.responseCode mustBe LOCKED
         }
@@ -257,10 +283,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               s"${path.getPath}"
             }
 
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(NOT_FOUND)))
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse()
+                  .withStatus(NOT_FOUND)
+              )
+            )
 
-            val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: NotFoundException =
+              the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe NOT_FOUND
 
@@ -275,10 +306,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               s"${path.getPath}"
             }
 
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(BAD_REQUEST)))
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+              )
+            )
 
-            val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: BadRequestException =
+              the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe BAD_REQUEST
 
@@ -293,10 +329,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               s"${path.getPath}"
             }
 
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(IM_A_TEAPOT)))
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse()
+                  .withStatus(IM_A_TEAPOT)
+              )
+            )
 
-            val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: HttpException =
+              the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe IM_A_TEAPOT
 
@@ -311,10 +352,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               s"${path.getPath}"
             }
 
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(INTERNAL_SERVER_ERROR)))
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse()
+                  .withStatus(INTERNAL_SERVER_ERROR)
+              )
+            )
 
-            val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: InternalServerException =
+              the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe INTERNAL_SERVER_ERROR
           }
@@ -328,10 +374,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
               s"${path.getPath}"
             }
 
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-              .withStatus(SERVICE_UNAVAILABLE)))
+            server.stubFor(
+              get(urlEqualTo(url)).willReturn(
+                aResponse()
+                  .withStatus(SERVICE_UNAVAILABLE)
+              )
+            )
 
-            val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+            val result: HttpException =
+              the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
             result.responseCode mustBe SERVICE_UNAVAILABLE
           }
@@ -483,10 +534,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(NOT_FOUND)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(NOT_FOUND)
+                )
+              )
 
-              val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: NotFoundException =
+                the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe NOT_FOUND
 
@@ -499,10 +555,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(BAD_REQUEST)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(BAD_REQUEST)
+                )
+              )
 
-              val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: BadRequestException =
+                the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe BAD_REQUEST
 
@@ -515,10 +576,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(IM_A_TEAPOT)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(IM_A_TEAPOT)
+                )
+              )
 
-              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException =
+                the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe IM_A_TEAPOT
 
@@ -531,10 +597,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(INTERNAL_SERVER_ERROR)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(INTERNAL_SERVER_ERROR)
+                )
+              )
 
-              val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: InternalServerException =
+                the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe INTERNAL_SERVER_ERROR
             }
@@ -546,10 +617,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(SERVICE_UNAVAILABLE)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(SERVICE_UNAVAILABLE)
+                )
+              )
 
-              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException =
+                the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe SERVICE_UNAVAILABLE
             }
@@ -583,10 +659,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(NOT_FOUND)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(NOT_FOUND)
+                )
+              )
 
-              val result: NotFoundException = the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: NotFoundException =
+                the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe NOT_FOUND
 
@@ -601,10 +682,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(BAD_REQUEST)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(BAD_REQUEST)
+                )
+              )
 
-              val result: BadRequestException = the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: BadRequestException =
+                the[BadRequestException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe BAD_REQUEST
 
@@ -619,10 +705,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(IM_A_TEAPOT)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(IM_A_TEAPOT)
+                )
+              )
 
-              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException =
+                the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe IM_A_TEAPOT
 
@@ -637,10 +728,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(INTERNAL_SERVER_ERROR)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(INTERNAL_SERVER_ERROR)
+                )
+              )
 
-              val result: InternalServerException = the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: InternalServerException =
+                the[InternalServerException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe INTERNAL_SERVER_ERROR
             }
@@ -654,10 +750,15 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
                 s"${path.getPath}"
               }
 
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse()
-                .withStatus(SERVICE_UNAVAILABLE)))
+              server.stubFor(
+                get(urlEqualTo(url)).willReturn(
+                  aResponse()
+                    .withStatus(SERVICE_UNAVAILABLE)
+                )
+              )
 
-              val result: HttpException = the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+              val result: HttpException =
+                the[HttpException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
 
               result.responseCode mustBe SERVICE_UNAVAILABLE
             }

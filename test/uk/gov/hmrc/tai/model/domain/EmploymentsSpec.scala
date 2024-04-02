@@ -48,8 +48,9 @@ class EmploymentsSpec extends PlaySpec {
   def createAnnualAccount(
     rtiStatus: RealTimeStatus = Available,
     sequenceNumber: Int = 1,
-    taxYear: TaxYear = currentTaxYear): AnnualAccount =
-    AnnualAccount(sequenceNumber , taxYear, rtiStatus, Nil, Nil)
+    taxYear: TaxYear = currentTaxYear
+  ): AnnualAccount =
+    AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
   "Employments" must {
     "return a sequence of employments with only accounts for a given year" in {
@@ -142,7 +143,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false)
+            false
+          )
 
         val employment1WithPTYAccount =
           Employment(
@@ -157,7 +159,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false)
+            false
+          )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
         val employment2 =
@@ -173,7 +176,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false)
+            false
+          )
 
         val expectedMergedEmployment = employment1.copy(annualAccounts = Seq(annualAccountCTY, annualAccountPTY))
 
@@ -200,7 +204,8 @@ class EmploymentsSpec extends PlaySpec {
             1,
             None,
             false,
-            false)
+            false
+          )
 
         val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
         val employment2 =
@@ -216,7 +221,8 @@ class EmploymentsSpec extends PlaySpec {
             2,
             None,
             false,
-            false)
+            false
+          )
 
         val unifiedEmployment = Employments(Seq(employment1), None)
         val mergedEmployments = unifiedEmployment.mergeEmployments(Seq(employment2))
@@ -248,7 +254,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false)
+          false
+        )
 
       val employment1WithUpdatedStatus =
         Employment(
@@ -263,7 +270,8 @@ class EmploymentsSpec extends PlaySpec {
           1,
           None,
           false,
-          false)
+          false
+        )
 
       val annualAccount2CTY = createAnnualAccount(sequenceNumber = 2, taxYear = currentTaxYear)
       val employment2 =
@@ -279,7 +287,8 @@ class EmploymentsSpec extends PlaySpec {
           2,
           None,
           false,
-          false)
+          false
+        )
 
       val expectedEmployments =
         employment1.copy(annualAccounts = Seq(annualAccountCTYAvailable, annualAccountPTYTempUnavailable))

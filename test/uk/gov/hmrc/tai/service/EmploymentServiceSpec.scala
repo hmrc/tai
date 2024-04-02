@@ -53,12 +53,13 @@ class EmploymentServiceSpec extends BaseSpec {
     reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder)
   }
 
-
   "EmploymentService.employments" should {
     "return employments for passed nino and year" in {
       val employmentsForYear = Seq(employment)
 
-      val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+      val jsonEmployment = Json.parse(
+        """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+      )
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
@@ -73,7 +74,6 @@ class EmploymentServiceSpec extends BaseSpec {
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
-
       val sut = createSut(
         mocEmploymentDetailsConnector,
         mockRtiConnector,
@@ -82,12 +82,18 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
-        mock[Auditor])
+        mock[Auditor]
+      )
       val employments = sut.employmentsAsEitherT(nino, TaxYear())(HeaderCarrier(), FakeRequest()).value.futureValue
 
       verify(mocEmploymentDetailsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
       verify(mockEmploymentBuilder, times(1))
-        .combineAccountsWithEmployments(employmentsCaptor.capture(), accountCaptor.capture(), ninoCaptor.capture(), taxYearCaptor.capture())(any())
+        .combineAccountsWithEmployments(
+          employmentsCaptor.capture(),
+          accountCaptor.capture(),
+          ninoCaptor.capture(),
+          taxYearCaptor.capture()
+        )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
       val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
@@ -104,7 +110,9 @@ class EmploymentServiceSpec extends BaseSpec {
     "ignore RTI when RTI is down" in {
       val employmentsForYear = Seq(employment.copy(annualAccounts = Seq.empty))
 
-      val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+      val jsonEmployment = Json.parse(
+        """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+      )
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
@@ -119,7 +127,6 @@ class EmploymentServiceSpec extends BaseSpec {
       val ninoCaptor = ArgumentCaptor.forClass(classOf[Nino])
       val taxYearCaptor = ArgumentCaptor.forClass(classOf[TaxYear])
 
-
       val sut = createSut(
         mocEmploymentDetailsConnector,
         mockRtiConnector,
@@ -128,12 +135,18 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
-        mock[Auditor])
+        mock[Auditor]
+      )
       val employments = sut.employmentsAsEitherT(nino, TaxYear())(HeaderCarrier(), FakeRequest()).value.futureValue
 
       verify(mocEmploymentDetailsConnector, times(1)).getEmploymentDetailsAsEitherT(any(), any())(any())
       verify(mockEmploymentBuilder, times(1))
-        .combineAccountsWithEmployments(employmentsCaptor.capture(), accountCaptor.capture(), ninoCaptor.capture(), taxYearCaptor.capture())(any())
+        .combineAccountsWithEmployments(
+          employmentsCaptor.capture(),
+          accountCaptor.capture(),
+          ninoCaptor.capture(),
+          taxYearCaptor.capture()
+        )(any())
       val argsEmployments: Seq[Employment] = employmentsCaptor.getAllValues.asScala.toSeq.flatten
       val argsAccounts: Seq[AnnualAccount] = accountCaptor.getAllValues.asScala.toSeq.flatten
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
@@ -151,7 +164,9 @@ class EmploymentServiceSpec extends BaseSpec {
 
   "EmploymentService.employment" should {
     "return employment for passed nino, year and id" in {
-      val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+      val jsonEmployment = Json.parse(
+        """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+      )
       val employmentsForYear = Seq(employment)
 
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
@@ -172,14 +187,17 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
-        mock[Auditor])
+        mock[Auditor]
+      )
       val employments = sut.employmentAsEitherT(nino, 2)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       employments mustBe Right(employment)
     }
 
     "return the correct Error Type when the employment doesn't exist" in {
-      val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+      val jsonEmployment = Json.parse(
+        """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+      )
       val employmentsForYear = Seq(employment)
 
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
@@ -200,7 +218,8 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mock[FileUploadService],
         mock[PdfService],
-        mock[Auditor])
+        mock[Auditor]
+      )
       val employments = sut.employmentAsEitherT(nino, 5)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       employments mustBe a[Left[UpstreamErrorResponse, _]]
@@ -232,7 +251,9 @@ class EmploymentServiceSpec extends BaseSpec {
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
-        val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+        val jsonEmployment = Json.parse(
+          """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+        )
         when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
           EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
         )
@@ -251,22 +272,29 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[IFormSubmissionService],
           mockFileUploadService,
           mockPdfService,
-          mockAuditable)
+          mockAuditable
+        )
 
-        Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value, 5.seconds) mustBe Right("1")
+        Await.result(
+          sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value,
+          5.seconds
+        ) mustBe Right("1")
 
         verify(mockFileUploadService, times(1)).uploadFile(
           any(),
           any(),
           contains(s"1-EndEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
-          any())(any())
+          any()
+        )(any())
       }
     }
 
     "Send end journey audit event for envelope id" in {
       val endEmployment = EndEmployment(LocalDate.of(2017, 6, 20), "1234", Some("123456789"))
 
-      val jsonEmployment = Json.parse("""{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}""")
+      val jsonEmployment = Json.parse(
+        """{"employerName": "employerName", "name":"TEST","employmentStatus": 1,"payrollNumber":"12345","startDate":"30/01/2024","taxDistrictNumber":"","payeNumber":"","sequenceNumber":2,"cessationPay":100,"hasPayrolledBenefit":false,"receivingOccupationalPension":false}"""
+      )
       when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any)).thenReturn(
         EitherT.rightT(HodResponse(Json.arr(jsonEmployment), None))
       )
@@ -304,12 +332,14 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mockFileUploadService,
         mockPdfService,
-        mockAuditable)
+        mockAuditable
+      )
       Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value, 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(
         meq("EndEmploymentRequest"),
-        meq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20")))(any())
+        meq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20"))
+      )(any())
     }
   }
 
@@ -345,7 +375,8 @@ class EmploymentServiceSpec extends BaseSpec {
           mock[IFormSubmissionService],
           mockFileUploadService,
           mockPdfService,
-          mockAuditable)
+          mockAuditable
+        )
         val result = sut.addEmployment(nino, addEmployment).futureValue
 
         result mustBe "1"
@@ -354,7 +385,8 @@ class EmploymentServiceSpec extends BaseSpec {
           any(),
           any(),
           contains(s"1-AddEmployment-${LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMdd"))}-iform.pdf"),
-          any())(any())
+          any()
+        )(any())
       }
     }
 
@@ -388,7 +420,8 @@ class EmploymentServiceSpec extends BaseSpec {
         mock[IFormSubmissionService],
         mockFileUploadService,
         mockPdfService,
-        mockAuditable)
+        mockAuditable
+      )
       sut.addEmployment(nino, addEmployment).futureValue
 
       verify(mockAuditable, times(1)).sendDataEvent(
@@ -399,7 +432,9 @@ class EmploymentServiceSpec extends BaseSpec {
             "envelope Id"  -> "111",
             "start-date"   -> "2017-08-01",
             "payrollNo"    -> "1234",
-            "employerName" -> "testName"))
+            "employerName" -> "testName"
+          )
+        )
       )(any())
     }
   }
@@ -412,7 +447,8 @@ class EmploymentServiceSpec extends BaseSpec {
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
           mockIFormSubmissionService
-            .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any()))
+            .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any())
+        )
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -428,7 +464,8 @@ class EmploymentServiceSpec extends BaseSpec {
           mockIFormSubmissionService,
           mock[FileUploadService],
           mock[PdfService],
-          mockAuditable)
+          mockAuditable
+        )
         val result = sut.incorrectEmployment(nino, 1, employment)(implicitly, FakeRequest()).futureValue
 
         result mustBe "1"
@@ -448,7 +485,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any()))
+          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any())
+      )
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -464,7 +502,8 @@ class EmploymentServiceSpec extends BaseSpec {
         mockIFormSubmissionService,
         mock[FileUploadService],
         mock[PdfService],
-        mockAuditable)
+        mockAuditable
+      )
       sut.incorrectEmployment(nino, 1, employment)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1))
@@ -478,8 +517,12 @@ class EmploymentServiceSpec extends BaseSpec {
         val employment = IncorrectEmployment("whatYouToldUs", "No", None)
 
         val mockIFormSubmissionService = mock[IFormSubmissionService]
-        when(mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any()))
+        when(
+          mockIFormSubmissionService
+            .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(
+              any()
+            )
+        )
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
@@ -495,7 +538,8 @@ class EmploymentServiceSpec extends BaseSpec {
           mockIFormSubmissionService,
           mock[FileUploadService],
           mock[PdfService],
-          mockAuditable)
+          mockAuditable
+        )
         val result = sut.updatePreviousYearIncome(nino, TaxYear(2016), employment).futureValue
 
         result mustBe "1"
@@ -516,7 +560,8 @@ class EmploymentServiceSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any()))
+          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any())
+      )
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
@@ -532,7 +577,8 @@ class EmploymentServiceSpec extends BaseSpec {
         mockIFormSubmissionService,
         mock[FileUploadService],
         mock[PdfService],
-        mockAuditable)
+        mockAuditable
+      )
       sut.updatePreviousYearIncome(nino, TaxYear(2016), employment).futureValue
 
       verify(mockAuditable, times(1))
@@ -556,17 +602,19 @@ class EmploymentServiceSpec extends BaseSpec {
     2,
     Some(100),
     false,
-    false)
+    false
+  )
 
   private def createSut(
-                         employmentDetailsConnector: DefaultEmploymentDetailsConnector,
-                         rtiConnector: RtiConnector,
-                         employmentBuilder: EmploymentBuilder,
-                         personRepository: PersonRepository,
-                         iFormSubmissionService: IFormSubmissionService,
-                         fileUploadService: FileUploadService,
-                         pdfService: PdfService,
-                         auditable: Auditor) =
+    employmentDetailsConnector: DefaultEmploymentDetailsConnector,
+    rtiConnector: RtiConnector,
+    employmentBuilder: EmploymentBuilder,
+    personRepository: PersonRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    fileUploadService: FileUploadService,
+    pdfService: PdfService,
+    auditable: Auditor
+  ) =
     new EmploymentService(
       employmentDetailsConnector,
       rtiConnector,
@@ -575,5 +623,6 @@ class EmploymentServiceSpec extends BaseSpec {
       iFormSubmissionService,
       fileUploadService,
       pdfService,
-      auditable)
+      auditable
+    )
 }

@@ -27,11 +27,15 @@ import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class Caching @Inject()(taiCacheRepository: TaiCacheRepository, metrics: Metrics, cacheMetricsConfig: CacheMetricsConfig)(
-  implicit ec: ExecutionContext) {
+class Caching @Inject() (
+  taiCacheRepository: TaiCacheRepository,
+  metrics: Metrics,
+  cacheMetricsConfig: CacheMetricsConfig
+)(implicit ec: ExecutionContext) {
 
-  def cacheFromApi(nino: Nino, mongoKey: String, jsonFromApi: => Future[JsValue])(
-    implicit hc: HeaderCarrier): Future[JsValue] = {
+  def cacheFromApi(nino: Nino, mongoKey: String, jsonFromApi: => Future[JsValue])(implicit
+    hc: HeaderCarrier
+  ): Future[JsValue] = {
     val cacheId = CacheId(nino)
 
     taiCacheRepository.findJson(cacheId, mongoKey).flatMap {
@@ -48,10 +52,11 @@ class Caching @Inject()(taiCacheRepository: TaiCacheRepository, metrics: Metrics
     }
   }
 
-  def cacheFromApiV2[A](nino: Nino, mongoKey: String, jsonFromApi: => Future[A])(
-    implicit hc: HeaderCarrier,
+  def cacheFromApiV2[A](nino: Nino, mongoKey: String, jsonFromApi: => Future[A])(implicit
+    hc: HeaderCarrier,
     writes: Writes[A],
-    reads: Reads[A]): Future[A] = {
+    reads: Reads[A]
+  ): Future[A] = {
     val cacheId = CacheId(nino)
 
     taiCacheRepository.find[A](cacheId, mongoKey).flatMap {

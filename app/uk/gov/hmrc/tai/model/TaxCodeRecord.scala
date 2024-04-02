@@ -31,12 +31,11 @@ case class TaxCodeRecord(
   dateOfCalculation: LocalDate,
   payrollNumber: Option[String],
   pensionIndicator: Boolean,
-  private val employmentType: String)
-    extends TaxCodeHistoryConstants {
+  private val employmentType: String
+) extends TaxCodeHistoryConstants {
 
-  val isPrimary: Boolean = {
+  val isPrimary: Boolean =
     employmentType == Primary
-  }
 }
 
 object TaxCodeRecord {
@@ -44,6 +43,7 @@ object TaxCodeRecord {
 
   def mostRecent(taxCodeRecords: Seq[TaxCodeRecord]): TaxCodeRecord =
     taxCodeRecords.reduceLeft((record1, record2) =>
-      if (record1.dateOfCalculation.isAfter(record2.dateOfCalculation)) record1 else record2)
+      if (record1.dateOfCalculation.isAfter(record2.dateOfCalculation)) record1 else record2
+    )
 
 }

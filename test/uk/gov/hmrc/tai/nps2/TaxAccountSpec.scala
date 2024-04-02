@@ -54,11 +54,13 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
 
       val dividends = taxAccountObject.taxObjects.values.toList.last
       dividends.taxBands.filter(_.bandType.contains("pa")) mustBe List(
-        TaxBand(bandType = Some("pa"), income = 1500, tax = 0, rate = 0))
+        TaxBand(bandType = Some("pa"), income = 1500, tax = 0, rate = 0)
+      )
 
       val nonSavings = taxAccountObject.taxObjects.values.toList.head
       nonSavings.taxBands.filter(_.bandType.contains("pa")) mustBe List(
-        TaxBand(bandType = Some("pa"), income = 10000, tax = 0, rate = 0))
+        TaxBand(bandType = Some("pa"), income = 10000, tax = 0, rate = 0)
+      )
     }
   }
 
@@ -73,7 +75,8 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
           worksNumber = Some("ABCD"),
           districtNumber = 1,
           cessationPay = Some(0),
-          start = LocalDate.now())
+          start = LocalDate.now()
+        )
 
         val taxAccount = sut.withEmployments(Seq(employment))
         taxAccount.incomes.head.worksNumber mustBe Some("ABCD")
@@ -91,7 +94,8 @@ class TaxAccountSpec extends PlaySpec with NpsFormatter {
           worksNumber = Some("ABCD"),
           districtNumber = 1,
           cessationPay = Some(0),
-          start = LocalDate.now())
+          start = LocalDate.now()
+        )
 
         val taxAccount = sut.withEmployments(Seq(employment))
         taxAccount.incomes.head.worksNumber mustBe None

@@ -53,14 +53,12 @@ object Income {
         case (Some(Live.code), None)              => Live
         case (Some(Ceased.code), Some(date))      => Ceased(date)
         case (Some(PotentiallyCeased.code), None) => PotentiallyCeased
-        case (x, Some(date)) => {
+        case (x, Some(date)) =>
           log.warn(s"Suspect Income status: CODE:$x, ending $date, setting to ceased")
           Ceased(date)
-        }
-        case (x, None) => {
+        case (x, None) =>
           log.warn(s"Suspect Income status: CODE:$x, no ending date, setting to live")
           Live
-        }
       }
   }
 

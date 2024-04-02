@@ -121,7 +121,7 @@ object TaiConstants {
     Some(NonCashBenefit.code)
   )
 
-  //val 92 -Earlier Year's Adjustment
+  // val 92 -Earlier Year's Adjustment
 
   val IABD_TYPE_BLIND_PERSON =
     List(Some(IabdType.BlindPersonsAllowance.code), Some(BpaReceivedFromSpouseOrCivilPartner.code))
@@ -130,13 +130,15 @@ object TaiConstants {
     Some(HotelAndMealExpenses.code),
     Some(OtherExpenses.code),
     Some(VehicleExpenses.code),
-    Some(MileageAllowanceRelief.code))
+    Some(MileageAllowanceRelief.code)
+  )
   val IABD_TYPE_GIFT_RELATED =
     List(Some(GiftAidAdjustment.code), Some(GiftsSharesCharity.code), Some(ConcessionRelief.code))
   val IABD_TYPE_EXPENSES = List(
     Some(IabdType.FlatRateJobExpenses.code),
     Some(IabdType.ProfessionalSubscriptions.code),
-    Some(EarlyYearsAdjustment.code))
+    Some(EarlyYearsAdjustment.code)
+  )
   val IABD_TYPE_MISCELLANEOUS = List(
     Some(MaintenancePayments.code),
     Some(LoanInterestAmount.code),
@@ -150,12 +152,13 @@ object TaiConstants {
   val IABD_TYPE_PENSION_CONTRIBUTIONS = List(
     Some(PersonalPensionPayments.code),
     Some(RetirementAnnuityPayments.code),
-    Some(IabdType.ForeignPensionAllowance.code))
+    Some(IabdType.ForeignPensionAllowance.code)
+  )
   val IABD_TYPE_DIVIDENDS = List(Some(UkDividend.code), Some(UnitTrust.code), Some(StockDividend.code))
   val IABD_TYPE_BANK_INTEREST = List(Some(BankOrBuildingSocietyInterest.code), Some(PurchasedLifeAnnuities.code))
   val IABD_TYPE_UNTAXED_INTEREST = List(Some(UntaxedInterest.code), Some(SavingsBond.code), Some(NationalSavings.code))
 
-  //Iabd types do not overwrite est pay - Manual Telephone 15, Letter 16, Email 17, Agent Contact 18, Other Form 24, Internet 39, Information letter 40
+  // Iabd types do not overwrite est pay - Manual Telephone 15, Letter 16, Email 17, Agent Contact 18, Other Form 24, Internet 39, Information letter 40
   val IABD_TYPES_DO_NOT_OVERWRITE = List(
     Some(IabdUpdateSource.ManualTelephone.code),
     Some(IabdUpdateSource.Letter.code),

@@ -18,7 +18,8 @@ package uk.gov.hmrc.tai.model.nps2
 
 case class Component( // The aggregated amount of this component
   amount: BigDecimal,
-  //"The amount that has been coded out for an allowance or deduction." Not
+  // "The amount that has been coded out for an allowance or deduction." Not
   // sure what this means (perhaps the net amount?).
   sourceAmount: Option[BigDecimal] = None,
-  iabds: Seq[Iabd] = Seq.empty)
+  iabds: Seq[Iabd] = Seq.empty
+)

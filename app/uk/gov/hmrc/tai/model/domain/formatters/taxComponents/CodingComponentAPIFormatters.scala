@@ -37,7 +37,8 @@ trait CodingComponentAPIFormatters {
   )(unapplyCodingComponentForApiJson _)
 
   private def unapplyCodingComponentForApiJson(
-    t: CodingComponent): (TaxComponentType, Option[Int], BigDecimal, String, String, Option[BigDecimal]) = {
+    t: CodingComponent
+  ): (TaxComponentType, Option[Int], BigDecimal, String, String, Option[BigDecimal]) = {
     val iabdCategory = t.componentType match {
       case _: AllowanceComponentType        => "Allowance"
       case _: BenefitComponentType          => "Benefit"

@@ -100,7 +100,8 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
             Live,
             BigDecimal(0),
             BigDecimal(0),
-            BigDecimal(0)),
+            BigDecimal(0)
+          ),
           TaxCodeIncome(
             EmploymentIncome,
             Some(1),
@@ -451,6 +452,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
     taxAccountSummaryRepository: TaxAccountSummaryRepository,
     codingComponentService: CodingComponentService,
     incomeService: IncomeService,
-    totalTaxService: TotalTaxService = mock[TotalTaxService]) =
+    totalTaxService: TotalTaxService = mock[TotalTaxService]
+  ) =
     new TaxAccountSummaryService(taxAccountSummaryRepository, codingComponentService, incomeService, totalTaxService)
 }

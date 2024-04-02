@@ -33,17 +33,23 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
           "incomeSources" -> JsArray(
-            Seq(Json.obj(
-              "employmentId"   -> 1,
-              "employmentType" -> 1,
-              "taxCode"        -> "1150L",
-              "deductions" -> JsArray(
-                Seq(Json.obj(
-                  "npsDescription" -> "Something we aren't interested in",
-                  "amount"         -> 10,
-                  "type"           -> 888
-                )))
-            )))
+            Seq(
+              Json.obj(
+                "employmentId"   -> 1,
+                "employmentType" -> 1,
+                "taxCode"        -> "1150L",
+                "deductions" -> JsArray(
+                  Seq(
+                    Json.obj(
+                      "npsDescription" -> "Something we aren't interested in",
+                      "amount"         -> 10,
+                      "type"           -> 888
+                    )
+                  )
+                )
+              )
+            )
+          )
         )
 
         noNpsComponentOfInterestNpsJson.as[Seq[CodingComponent]](incomeSourceReads) mustBe empty
@@ -56,19 +62,24 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
           "incomeSources" -> JsArray(
-            Seq(Json.obj(
-              "employmentId"   -> 1,
-              "employmentType" -> 1,
-              "taxCode"        -> "1150L",
-              "allowances" -> JsArray(
-                Seq(
-                  Json.obj(
-                    "npsDescription" -> "personal allowance",
-                    "amount"         -> 10,
-                    "type"           -> 11,
-                    "sourceAmount"   -> 100
-                  )))
-            )))
+            Seq(
+              Json.obj(
+                "employmentId"   -> 1,
+                "employmentType" -> 1,
+                "taxCode"        -> "1150L",
+                "allowances" -> JsArray(
+                  Seq(
+                    Json.obj(
+                      "npsDescription" -> "personal allowance",
+                      "amount"         -> 10,
+                      "type"           -> 11,
+                      "sourceAmount"   -> 100
+                    )
+                  )
+                )
+              )
+            )
+          )
         )
 
         personalAllowanceStandardNpsJson.as[Seq[CodingComponent]](incomeSourceReads) mustBe
@@ -83,19 +94,24 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           "taxAccountId" -> "id",
           "nino"         -> nino.nino,
           "incomeSources" -> JsArray(
-            Seq(Json.obj(
-              "employmentId"   -> 1,
-              "employmentType" -> 1,
-              "taxCode"        -> "1150L",
-              "deductions" -> JsArray(
-                Seq(
-                  Json.obj(
-                    "npsDescription" -> "Underpayment form previous year",
-                    "amount"         -> 10,
-                    "type"           -> 35,
-                    "sourceAmount"   -> JsNull
-                  )))
-            )))
+            Seq(
+              Json.obj(
+                "employmentId"   -> 1,
+                "employmentType" -> 1,
+                "taxCode"        -> "1150L",
+                "deductions" -> JsArray(
+                  Seq(
+                    Json.obj(
+                      "npsDescription" -> "Underpayment form previous year",
+                      "amount"         -> 10,
+                      "type"           -> 35,
+                      "sourceAmount"   -> JsNull
+                    )
+                  )
+                )
+              )
+            )
+          )
         )
 
         underPaymentFromPreviousYearNpsJson.as[Seq[CodingComponent]](incomeSourceReads) mustBe
@@ -134,7 +150,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           allowances = npsComponents(
             Seq(5, 6, 7, 8, 10, 11, 12, 13, 17, 18, 20, 21, 28, 29, 30, 31, 32),
             amount = 100
-          ))
+          )
+        )
 
         json.as[Seq[CodingComponent]](incomeSourceReads) mustBe Seq(
           CodingComponent(PersonalPensionPayments, None, 100, "nps-desc"),
@@ -162,7 +179,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
     "return all deductions" when {
       "multiple deductions are present" in {
         val json = npsIncomeSourceJson(
-          deductions = npsComponents(Seq(6, 15, 28, 30, 35, 37, 40, 41, 42, 43, 44, 45), amount = 100))
+          deductions = npsComponents(Seq(6, 15, 28, 30, 35, 37, 40, 41, 42, 43, 44, 45), amount = 100)
+        )
 
         json.as[Seq[CodingComponent]](incomeSourceReads) mustBe Seq(
           CodingComponent(MarriedCouplesAllowanceToWifeMAW, None, 100, "nps-desc"),
@@ -185,7 +203,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       "there are non-tax-code incomes present" in {
         val json = npsIncomeSourceJson(
           deductions =
-            npsComponents(Seq(1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 32, 38), amount = 100))
+            npsComponents(Seq(1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 32, 38), amount = 100)
+        )
 
         json.as[Seq[CodingComponent]](incomeSourceReads) mustBe Seq(
           CodingComponent(StatePension, None, 100, "nps-desc"),
@@ -247,7 +266,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
               "npsDescription"     -> "Something with no type declared",
               "employmentId"       -> 13,
               "estimatesPaySource" -> 1
-            )))
+            )
+          )
+        )
         json.as[Seq[CodingComponent]](totalLiabilityReads) mustBe Seq.empty[CodingComponent]
       }
     }
@@ -262,7 +283,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         val benefitComponents = json.as[Seq[CodingComponent]](totalLiabilityReads)
 
         benefitComponents.size mustBe 28
-        benefitComponents.map(_.componentType) must contain allElementsOf Seq(EmployerProvidedServices,
+        benefitComponents.map(_.componentType) must contain allElementsOf Seq(
+          EmployerProvidedServices,
           CarFuelBenefit,
           MedicalInsurance,
           CarBenefit,
@@ -289,7 +311,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
           TravelAndSubsistence,
           VouchersAndCreditCards,
-          NonCashBenefit)
+          NonCashBenefit
+        )
 
         val jsBenInKindIabdSeq = Seq(npsIabdSummary(28))
         val benInKindJson = taxAccountJsonWithIabds(jsBenInKindIabdSeq)
@@ -310,7 +333,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
             "npsDescription"     -> "An example car benefit",
             "employmentId"       -> 13,
             "estimatesPaySource" -> 1
-          ))).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
+          )
+        )
+      ).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
         Seq(CodingComponent(CarBenefit, Some(13), 120.22, "An example car benefit"))
 
       taxAccountJsonWithIabds(
@@ -318,7 +343,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           Json.obj(
             "type"               -> 30,
             "estimatesPaySource" -> 1
-          ))).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
+          )
+        )
+      ).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
         Seq(CodingComponent(MedicalInsurance, None, 0, ""))
     }
 
@@ -331,7 +358,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
           CodingComponent(Assets, Some(1), 1, "desc"),
-          CodingComponent(AssetTransfer, Some(1), 1, "desc"))
+          CodingComponent(AssetTransfer, Some(1), 1, "desc")
+        )
       }
       "a benefits in kind total amount is not present within iabd summaries" in {
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(38, 39, 40), 1))
@@ -340,7 +368,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
           CodingComponent(Assets, Some(1), 1, "desc"),
-          CodingComponent(AssetTransfer, Some(1), 1, "desc"))
+          CodingComponent(AssetTransfer, Some(1), 1, "desc")
+        )
       }
       "a benefits in kind total amount is present, but it has an amount value of zero" in {
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 0))
@@ -349,7 +378,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
           CodingComponent(Assets, Some(1), 1, "desc"),
-          CodingComponent(AssetTransfer, Some(1), 1, "desc"))
+          CodingComponent(AssetTransfer, Some(1), 1, "desc")
+        )
       }
     }
 
@@ -373,7 +403,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       result mustBe Seq(
         CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
         CodingComponent(MedicalInsurance, Some(1), 1, "desc"),
-        CodingComponent(BenefitInKind, Some(1), 5, "desc"))
+        CodingComponent(BenefitInKind, Some(1), 5, "desc")
+      )
     }
 
     "extract the correct benefits in kind across multiple employments" when {
@@ -445,13 +476,15 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         "estimatesPaySource" -> 1
       )
       val json = taxAccountJsonWithIabds(
-        npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3) :+ benInKindIabdWithoutEmpId)
+        npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3) :+ benInKindIabdWithoutEmpId
+      )
       val result = json.as[Seq[CodingComponent]](totalLiabilityReads)
 
       result mustBe Seq(
         CodingComponent(Accommodation, Some(1), 1, "desc"),
         CodingComponent(Assets, Some(1), 1, "desc"),
-        CodingComponent(AssetTransfer, Some(1), 1, "desc"))
+        CodingComponent(AssetTransfer, Some(1), 1, "desc")
+      )
     }
 
     "return all benefits from employment, regardless of presence of an employmentId" in {
@@ -472,7 +505,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       )
 
       val json = taxAccountJsonWithIabds(
-        bensFromEmploymentWithoutEmpId ++ npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3))
+        bensFromEmploymentWithoutEmpId ++ npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
+      )
       val result = json.as[Seq[CodingComponent]](totalLiabilityReads)
 
       result mustBe Seq(
@@ -490,7 +524,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(51, 52), 1) ++ npsIabdSummaries(2, Seq(46, 50), 2)
       val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
 
-      val expectedCodingComponents = Seq(CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
+      val expectedCodingComponents = Seq(
+        CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
         CodingComponent(MedicalInsurance, Some(1), 1, "desc"),
         CodingComponent(Mileage, Some(1), 1, "desc"),
         CodingComponent(EmployerProvidedProfessionalSubscription, Some(1), 1, "desc"),
@@ -498,7 +533,8 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         CodingComponent(NonQualifyingRelocationExpenses, Some(2), 2, "desc"),
         CodingComponent(PersonalIncidentalExpenses, Some(2), 2, "desc"),
         CodingComponent(NurseryPlaces, Some(2), 2, "desc"),
-        CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "desc"))
+        CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "desc")
+      )
 
       json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allElementsOf expectedCodingComponents
     }
@@ -541,7 +577,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
             "npsDescription"     -> "An example job expenses allowance",
             "employmentId"       -> 13,
             "estimatesPaySource" -> 1
-          ))).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
+          )
+        )
+      ).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
         Seq(CodingComponent(JobExpenses, Some(13), 120.22, "An example job expenses allowance"))
 
       taxAccountJsonWithIabds(
@@ -549,7 +587,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           Json.obj(
             "type"               -> 58,
             "estimatesPaySource" -> 1
-          ))).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
+          )
+        )
+      ).as[Seq[CodingComponent]](totalLiabilityReads) mustBe
         Seq(CodingComponent(HotelAndMealExpenses, None, 0, ""))
     }
 
@@ -559,9 +599,11 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
       val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
 
       val expectedCodingComponents =
-        Seq(CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "desc"),
+        Seq(
+          CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "desc"),
           CodingComponent(GiftsSharesCharity, Some(1), 1, "desc"),
-          CodingComponent(RetirementAnnuityPayments, Some(1), 1, "desc"))
+          CodingComponent(RetirementAnnuityPayments, Some(1), 1, "desc")
+        )
 
       json.as[Seq[CodingComponent]](totalLiabilityReads) must contain allElementsOf expectedCodingComponents
     }
@@ -575,17 +617,23 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
         "taxAccountId" -> "id",
         "nino"         -> nino.nino,
         "incomeSources" -> JsArray(
-          Seq(Json.obj(
-            "employmentId"   -> 1,
-            "employmentType" -> 1,
-            "taxCode"        -> "1150L",
-            "allowances" -> JsArray(
-              Seq(Json.obj(
-                "npsDescription" -> "personal allowance",
-                "amount"         -> 10,
-                "type"           -> 11
-              )))
-          ))),
+          Seq(
+            Json.obj(
+              "employmentId"   -> 1,
+              "employmentType" -> 1,
+              "taxCode"        -> "1150L",
+              "allowances" -> JsArray(
+                Seq(
+                  Json.obj(
+                    "npsDescription" -> "personal allowance",
+                    "amount"         -> 10,
+                    "type"           -> 11
+                  )
+                )
+              )
+            )
+          )
+        ),
         "totalLiability" -> Json.obj(
           "nonSavings" -> Json.obj(
             "totalIncome" -> Json.obj(
@@ -613,98 +661,111 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
     "taxAccountId" -> "id",
     "nino"         -> nino.nino,
     "incomeSources" -> JsArray(
-      Seq(Json.obj(
-        "employmentId"   -> 1,
-        "employmentType" -> 1,
-        "taxCode"        -> "1150L",
-        "deductions" -> JsArray(Seq(
-          Json.obj(
-            "npsDescription" -> "Estimated Tax You Owe This Year",
-            "amount"         -> 10,
-            "type"           -> 45
-          ),
-          Json.obj(
-            "npsDescription" -> "Underpayment form previous year",
-            "amount"         -> 10,
-            "type"           -> 35
-          ),
-          Json.obj(
-            "npsDescription" -> "Outstanding Debt Restriction",
-            "amount"         -> 10,
-            "type"           -> 41
-          ),
-          Json.obj(
-            "npsDescription" -> "Something we aren't interested in",
-            "amount"         -> 10,
-            "type"           -> 888
+      Seq(
+        Json.obj(
+          "employmentId"   -> 1,
+          "employmentType" -> 1,
+          "taxCode"        -> "1150L",
+          "deductions" -> JsArray(
+            Seq(
+              Json.obj(
+                "npsDescription" -> "Estimated Tax You Owe This Year",
+                "amount"         -> 10,
+                "type"           -> 45
+              ),
+              Json.obj(
+                "npsDescription" -> "Underpayment form previous year",
+                "amount"         -> 10,
+                "type"           -> 35
+              ),
+              Json.obj(
+                "npsDescription" -> "Outstanding Debt Restriction",
+                "amount"         -> 10,
+                "type"           -> 41
+              ),
+              Json.obj(
+                "npsDescription" -> "Something we aren't interested in",
+                "amount"         -> 10,
+                "type"           -> 888
+              )
+            )
           )
-        ))
-      )))
+        )
+      )
+    )
   )
 
   private val combinedNpsAllowanceJson = Json.obj(
     "taxAccountId" -> "id",
     "nino"         -> nino.nino,
     "incomeSources" -> JsArray(
-      Seq(Json.obj(
-        "employmentId"   -> 1,
-        "employmentType" -> 1,
-        "taxCode"        -> "1150L",
-        "deductions" -> JsArray(Seq(
-          Json.obj(
-            "npsDescription" -> "Estimated Tax You Owe This Year",
-            "amount"         -> 10,
-            "type"           -> 45
+      Seq(
+        Json.obj(
+          "employmentId"   -> 1,
+          "employmentType" -> 1,
+          "taxCode"        -> "1150L",
+          "deductions" -> JsArray(
+            Seq(
+              Json.obj(
+                "npsDescription" -> "Estimated Tax You Owe This Year",
+                "amount"         -> 10,
+                "type"           -> 45
+              ),
+              Json.obj(
+                "npsDescription" -> "Underpayment form previous year",
+                "amount"         -> 10,
+                "type"           -> 35
+              ),
+              Json.obj(
+                "npsDescription" -> "Outstanding Debt Restriction",
+                "amount"         -> 10,
+                "type"           -> 41
+              ),
+              Json.obj(
+                "npsDescription" -> "Something we aren't interested in",
+                "amount"         -> 10,
+                "type"           -> 888
+              )
+            )
           ),
-          Json.obj(
-            "npsDescription" -> "Underpayment form previous year",
-            "amount"         -> 10,
-            "type"           -> 35
-          ),
-          Json.obj(
-            "npsDescription" -> "Outstanding Debt Restriction",
-            "amount"         -> 10,
-            "type"           -> 41
-          ),
-          Json.obj(
-            "npsDescription" -> "Something we aren't interested in",
-            "amount"         -> 10,
-            "type"           -> 888
+          "allowances" -> JsArray(
+            Seq(
+              Json.obj(
+                "npsDescription" -> "personal allowance",
+                "amount"         -> 10,
+                "type"           -> 11
+              ),
+              Json.obj(
+                "npsDescription" -> "personal allowance",
+                "amount"         -> 10,
+                "type"           -> 12
+              ),
+              Json.obj(
+                "npsDescription" -> "personal allowance",
+                "amount"         -> 10,
+                "type"           -> 13
+              ),
+              Json.obj(
+                "npsDescription" -> JsString("Job expenses"),
+                "amount"         -> JsNumber(10),
+                "type"           -> JsNumber(1)
+              ),
+              Json.obj(
+                "npsDescription" -> JsString("Something we aren't interested in"),
+                "amount"         -> JsNumber(10),
+                "type"           -> JsNumber(888)
+              )
+            )
           )
-        )),
-        "allowances" -> JsArray(Seq(
-          Json.obj(
-            "npsDescription" -> "personal allowance",
-            "amount"         -> 10,
-            "type"           -> 11
-          ),
-          Json.obj(
-            "npsDescription" -> "personal allowance",
-            "amount"         -> 10,
-            "type"           -> 12
-          ),
-          Json.obj(
-            "npsDescription" -> "personal allowance",
-            "amount"         -> 10,
-            "type"           -> 13
-          ),
-          Json.obj(
-            "npsDescription" -> JsString("Job expenses"),
-            "amount"         -> JsNumber(10),
-            "type"           -> JsNumber(1)
-          ),
-          Json.obj(
-            "npsDescription" -> JsString("Something we aren't interested in"),
-            "amount"         -> JsNumber(10),
-            "type"           -> JsNumber(888)
-          )
-        ))
-      )))
+        )
+      )
+    )
   )
 
   private def npsIncomeSourceJson(
     allowances: Seq[JsObject] = Seq.empty[JsObject],
-    deductions: Seq[JsObject] = Seq.empty[JsObject]) = Json.obj(
+    deductions: Seq[JsObject] = Seq.empty[JsObject]
+  ) = Json.obj(
     "taxAccountId" -> "id",
     "nino"         -> nino.nino,
     "incomeSources" -> JsArray(
@@ -715,7 +776,9 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
           "taxCode"        -> "1150L",
           "deductions"     -> JsArray(deductions),
           "allowances"     -> JsArray(allowances)
-        )))
+        )
+      )
+    )
   )
 
   private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
@@ -744,19 +807,18 @@ class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters 
   private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
     for {
       _ <- 1 to noOfIabds
-    } yield {
-      Json.obj(
-        "amount"      -> 1,
-        "type"               -> iabdType,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> 1,
-        "estimatesPaySource" -> 1
-      )
-    }
+    } yield Json.obj(
+      "amount"             -> 1,
+      "type"               -> iabdType,
+      "npsDescription"     -> "desc",
+      "employmentId"       -> 1,
+      "estimatesPaySource" -> 1
+    )
 
   private def taxAccountJsonWithIabds(
     incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]): JsObject =
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+  ): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
       "nino"         -> nino.nino,

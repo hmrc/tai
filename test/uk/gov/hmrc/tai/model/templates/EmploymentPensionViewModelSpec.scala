@@ -71,7 +71,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         endEmployment = endEmployment,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.isAdd mustBe No
       sut.isEnd mustBe Yes
       sut.isUpdate mustBe No
@@ -83,7 +84,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         endEmployment = endEmployment,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
@@ -94,7 +96,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         endEmployment = endEmployment,
-        existingEmployment = existingEmployment.copy(payrollNumber = None))
+        existingEmployment = existingEmployment.copy(payrollNumber = None)
+      )
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "No"
     }
@@ -107,7 +110,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         incorrectEmployment = incorrectEmployment,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.isAdd mustBe No
       sut.isEnd mustBe No
       sut.isUpdate mustBe Yes
@@ -119,7 +123,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         incorrectEmployment = incorrectEmployment,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
@@ -144,7 +149,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         val sut = EmploymentPensionViewModel(
           taxYear = TaxYear(2017),
           person = noDobPerson,
-          pensionProvider = addPensionProvider)
+          pensionProvider = addPensionProvider
+        )
         sut mustBe addPensionModel.copy(dateOfBirth = "")
       }
     }
@@ -175,8 +181,7 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
       val sut = EmploymentPensionViewModel(taxYear = year, person = person, incorrectEmployment = incorrectEmployment)
 
       sut mustBe EmploymentPensionViewModel(
-        taxYearRange =
-          s"${year.start.format(formatter)} to ${year.end.format(formatter)}",
+        taxYearRange = s"${year.start.format(formatter)} to ${year.end.format(formatter)}",
         nino = person.nino.nino,
         firstName = person.firstName,
         lastName = person.surname,
@@ -206,7 +211,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         incorrectPensionProvider = incorrectPensionProvider,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.isAdd mustBe No
       sut.isEnd mustBe No
       sut.isUpdate mustBe Yes
@@ -218,7 +224,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
         taxYear = TaxYear(2017),
         person = person,
         incorrectPensionProvider = incorrectPensionProvider,
-        existingEmployment = existingEmployment)
+        existingEmployment = existingEmployment
+      )
       sut.employmentPensionName mustBe "fake employer"
       sut.payrollNumber mustBe "12345"
     }
@@ -230,7 +237,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     "firstname",
     "lastname",
     Some(LocalDate.parse("1982-04-03")),
-    Address("address line 1", "address line 2", "address line 3", "postcode", "UK"))
+    Address("address line 1", "address line 2", "address line 3", "postcode", "UK")
+  )
   private val addEmploymentModel = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
     nino.nino,
@@ -287,7 +295,8 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
     1,
     Some(100),
     false,
-    false)
+    false
+  )
 
   private val formatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 }

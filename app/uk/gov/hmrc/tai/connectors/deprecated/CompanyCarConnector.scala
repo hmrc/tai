@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CompanyCarConnector @Inject()(httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext)
+class CompanyCarConnector @Inject() (httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext)
     extends CompanyCarBenefitFormatters {
 
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =

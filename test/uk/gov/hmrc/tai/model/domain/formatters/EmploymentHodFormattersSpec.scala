@@ -250,10 +250,13 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
     Seq(
       Adjustment(TaxAdjustment, -20.99),
       Adjustment(IncomeAdjustment, -21.99),
-      Adjustment(NationalInsuranceAdjustment, 44.2)))
+      Adjustment(NationalInsuranceAdjustment, 44.2)
+    )
+  )
   val sampleEndOfTaxYearUpdateTwoAdjusts = EndOfTaxYearUpdate(
     LocalDate.of(2016, 6, 4),
-    Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2)))
+    Seq(Adjustment(TaxAdjustment, -20.99), Adjustment(NationalInsuranceAdjustment, 44.2))
+  )
 
   val sampleSingleEmployment = List(
     Employment(
@@ -268,7 +271,9 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       2,
       Some(100),
       false,
-      false))
+      false
+    )
+  )
   val sampleDualEmployment = List(
     Employment(
       "EMPLOYER1",
@@ -282,7 +287,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       2,
       None,
       true,
-      false),
+      false
+    ),
     Employment(
       "EMPLOYER2",
       Live,
@@ -295,7 +301,8 @@ class EmploymentHodFormattersSpec extends PlaySpec with EmploymentHodFormatters 
       2,
       Some(100),
       false,
-      false)
+      false
+    )
   )
 
   private def getJson(fileName: String): JsValue = {

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class RtiStatus(
   status: Int,
@@ -24,5 +24,5 @@ case class RtiStatus(
 )
 
 object RtiStatus {
-  implicit val Format = Json.format[RtiStatus]
+  implicit val Format: OFormat[RtiStatus] = Json.format[RtiStatus]
 }

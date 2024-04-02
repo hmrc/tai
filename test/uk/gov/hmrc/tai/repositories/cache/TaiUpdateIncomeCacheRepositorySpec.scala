@@ -20,10 +20,10 @@ import org.mockito.ArgumentMatchers.{any, anyString}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.crypto.json.JsonEncryptor
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter, Protected}
+import uk.gov.hmrc.crypto.json.JsonEncryption
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
-import uk.gov.hmrc.tai.config.MongoConfig
+import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.TaiUpdateIncomeCacheConnector
 import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
@@ -57,7 +57,8 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
 
   private def setCacheItem(id: String = cacheIdValue, data: JsObject) =
     Future.successful(
-      Option(CacheItem(id, data, createdAt = java.time.Instant.now, modifiedAt = java.time.Instant.now)))
+      Option(CacheItem(id, data, createdAt = java.time.Instant.now, modifiedAt = java.time.Instant.now))
+    )
 
   override protected def beforeEach(): Unit = {
     reset(taiUpdateIncomeRepository)
@@ -125,10 +126,9 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUTUpdateIncome(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[String]()
-        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
-        val cacheItem =
-          setCacheItem("id", Json.obj("TAI-DATA" -> encryptedData))
+        val encrypter = JsonEncryption.sensitiveEncrypter[String, SensitiveT[String]]
+        val encryptedData = encrypter.writes(SensitiveT("DATA"))
+        val cacheItem = setCacheItem("id", Json.obj("TAI-DATA" -> encryptedData))
         when(taiUpdateIncomeRepository.findById(anyString())).thenReturn(cacheItem)
 
         val data = sut.findUpdateIncome[String](cacheId).futureValue
@@ -180,8 +180,8 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter wi
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUTUpdateIncome(mockMongoConfig)
-        val jsonEncryptor = new JsonEncryptor[String]()
-        val encryptedData = Json.toJson(Protected("DATA"))(jsonEncryptor)
+        val encrypter = JsonEncryption.sensitiveEncrypter[String, SensitiveT[String]]
+        val encryptedData = encrypter.writes(SensitiveT("DATA"))
         val cacheItemWrongKey =
           setCacheItem("id", Json.obj("WRONG_KEY" -> encryptedData))
         when(taiUpdateIncomeRepository.findById(any())).thenReturn(cacheItemWrongKey)

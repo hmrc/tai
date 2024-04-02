@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request) with Logging
 
 @Singleton
-class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunctions, cc: ControllerComponents)(
+class AuthenticationPredicate @Inject() (val authorisedFunctions: AuthorisedFunctions, cc: ControllerComponents)(
   implicit ec: ExecutionContext
 ) extends BackendController(cc) with Logging {
 
@@ -43,10 +43,9 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
-        .recover {
-          case e: AuthorisationException =>
-            logger.warn("Failed to authorise: " + e.reason)
-            Unauthorized(e.getMessage)
+        .recover { case e: AuthorisationException =>
+          logger.warn("Failed to authorise: " + e.reason)
+          Unauthorized(e.getMessage)
         }
     }
 
@@ -59,10 +58,9 @@ class AuthenticationPredicate @Inject()(val authorisedFunctions: AuthorisedFunct
           case Some(nino) ~ _          => action(AuthenticatedRequest(request, Nino(nino)))
           case _                       => throw new RuntimeException("Can't find valid credentials for user")
         }
-        .recover {
-          case e: AuthorisationException =>
-            logger.warn("Failed to authorise: " + e.reason)
-            Unauthorized(e.getMessage)
+        .recover { case e: AuthorisationException =>
+          logger.warn("Failed to authorise: " + e.reason)
+          Unauthorized(e.getMessage)
         }
     }
 }

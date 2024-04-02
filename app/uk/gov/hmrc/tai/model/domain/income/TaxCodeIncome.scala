@@ -34,7 +34,7 @@ object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
     else
       OtherBasisOperation
 
-  implicit val formatBasisOperationType = new Format[BasisOperation] {
+  implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)
 
     override def writes(basisOperation: BasisOperation) = JsString(basisOperation.toString)
@@ -64,10 +64,9 @@ object TaxCodeIncomeStatus {
       case "Live"              => JsSuccess(Live)
       case "PotentiallyCeased" => JsSuccess(PotentiallyCeased)
       case "Ceased"            => JsSuccess(Ceased)
-      case default => {
+      case default =>
         logger.warn(s"Invalid Employment Status Reads -> $default")
         throw new RuntimeException("Invalid employment status reads")
-      }
     }
 
     override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
@@ -93,7 +92,7 @@ object IabdUpdateSource extends IabdUpdateSource {
     39 -> Internet,
     40 -> InformationLetter
   )
-  implicit val formatIabdUpdateSource = new Format[IabdUpdateSource] {
+  implicit val formatIabdUpdateSource: Format[IabdUpdateSource] = new Format[IabdUpdateSource] {
     override def reads(json: JsValue): JsSuccess[IabdUpdateSource] = throw new RuntimeException("Not Implemented")
 
     override def writes(iabdUpdateSource: IabdUpdateSource) = JsString(iabdUpdateSource.toString)
@@ -115,7 +114,8 @@ case class TaxCodeIncome(
   inYearAdjustmentIntoCYPlusOne: BigDecimal,
   iabdUpdateSource: Option[IabdUpdateSource] = None,
   updateNotificationDate: Option[LocalDate] = None,
-  updateActionDate: Option[LocalDate] = None) {
+  updateActionDate: Option[LocalDate] = None
+) {
 
   lazy val taxCodeWithEmergencySuffix: String = basisOperation match {
     case Week1Month1BasisOperation => taxCode + TaiConstants.EmergencyTaxCode
@@ -125,7 +125,7 @@ case class TaxCodeIncome(
 
 object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
 
-  implicit val writes = new Writes[TaxCodeIncome] {
+  implicit val writes: Writes[TaxCodeIncome] = new Writes[TaxCodeIncome] {
     override def writes(o: TaxCodeIncome): JsValue =
       JsObject(
         List(

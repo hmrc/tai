@@ -97,7 +97,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any())
+        )
           .thenReturn(Future.failed(new BadRequestException("Error")))
 
         val service = createTestService(taxCodeChangeService, codingComponentService)
@@ -129,7 +130,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
         when(
           codingComponentService
-            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any()))
+            .codingComponentsForTaxCodeId(meq(nino), meq(PRIMARY_PREVIOUS_TAX_CODE_ID))(any())
+        )
           .thenReturn(Future.successful(previousCodingComponents))
 
         val expected = TaxFreeAmountComparison(previousCodingComponents, Seq.empty)
@@ -174,7 +176,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
         "Employer 2",
         Some(payrollNumberPrev),
         pensionIndicator = false,
-        primary = false)
+        primary = false
+      )
     )
 
     val currentTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
@@ -187,7 +190,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
         "Employer 1",
         Some(payrollNumberCurr),
         pensionIndicator = false,
-        primary = true),
+        primary = true
+      ),
       TaxCodeSummary(
         4,
         "185L",
@@ -197,7 +201,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
         "Employer 2",
         Some(payrollNumberCurr),
         pensionIndicator = false,
-        primary = false)
+        primary = false
+      )
     )
 
     TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
@@ -205,7 +210,8 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
 
   private def createTestService(
     taxCodeChangeService: TaxCodeChangeServiceImpl,
-    codingComponentService: CodingComponentService): TaxFreeAmountComparisonService =
+    codingComponentService: CodingComponentService
+  ): TaxFreeAmountComparisonService =
     new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
 
 }

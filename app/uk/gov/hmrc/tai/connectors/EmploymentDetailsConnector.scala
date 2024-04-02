@@ -28,27 +28,30 @@ import java.util.UUID
 import scala.concurrent.Future
 
 @Singleton
-class CachingEmploymentDetailsConnector @Inject()(@Named("default") underlying: EmploymentDetailsConnector,
-                                                  config: NpsConfig,
-                                                  cachingConnector: CachingConnector)
-  extends EmploymentDetailsConnector {
+class CachingEmploymentDetailsConnector @Inject() (
+  @Named("default") underlying: EmploymentDetailsConnector,
+  config: NpsConfig,
+  cachingConnector: CachingConnector
+) extends EmploymentDetailsConnector {
 
   override val originatorId: String = config.originatorId
   override val baseUrl: String = config.baseURL
-  override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
+  override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
     }
-  }
 }
 
-class DefaultEmploymentDetailsConnector @Inject()(httpHandler: HttpHandler,
-                                                  config: NpsConfig)
-  extends EmploymentDetailsConnector {
+class DefaultEmploymentDetailsConnector @Inject() (httpHandler: HttpHandler, config: NpsConfig)
+    extends EmploymentDetailsConnector {
 
   override val originatorId: String = config.originatorId
   override val baseUrl: String = config.baseURL
-  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
+  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
     httpHandler.getFromApiAsEitherT(urlToRead, basicNpsHeaders(hc))
   }
@@ -65,8 +68,10 @@ trait EmploymentDetailsConnector {
       "Gov-Uk-Originator-Id" -> originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId" -> UUID.randomUUID().toString
+      "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit hc: HeaderCarrier): EitherT[Future, UpstreamErrorResponse, HodResponse]
+  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse]
 }

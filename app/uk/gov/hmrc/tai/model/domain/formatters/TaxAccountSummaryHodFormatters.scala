@@ -27,8 +27,8 @@ trait TaxAccountSummaryHodFormatters
 
   val taxAccountSummaryReads = new Reads[BigDecimal] {
     override def reads(json: JsValue): JsResult[BigDecimal] = {
-      val taxOnOtherIncome = json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(
-        0)
+      val taxOnOtherIncome =
+        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)
       val totalLiabilityTax = (json \ "totalLiability" \ "totalLiability").asOpt[BigDecimal].getOrElse(BigDecimal(0))
 
       JsSuccess(totalLiabilityTax - taxOnOtherIncome)
@@ -63,7 +63,8 @@ trait TaxOnOtherIncomeFormatters extends BaseTaxAccountHodFormatters {
       def calculateTaxOnOtherIncome(
         incomeAndRateBands: Seq[RateBand],
         nonCodedIncome: BigDecimal,
-        total: BigDecimal = 0): BigDecimal =
+        total: BigDecimal = 0
+      ): BigDecimal =
         incomeAndRateBands match {
           case Nil => total
           case xs if nonCodedIncome > xs.head.income =>
@@ -119,7 +120,9 @@ trait ReliefsGivingBackTaxFormatters extends CommonFormatters {
               concession,
               maintenancePayments,
               marriedCouplesAllowance,
-              doubleTaxation))
+              doubleTaxation
+            )
+          )
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
   }
@@ -141,7 +144,9 @@ trait OtherTaxDueFormatters extends CommonFormatters {
               excessGiftAidTax,
               excessWidowsAndOrphans,
               pensionPaymentsAdjustment,
-              childBenefit))
+              childBenefit
+            )
+          )
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
   }
@@ -164,7 +169,9 @@ trait AlreadyTaxedAtSourceFormatters extends CommonFormatters {
               taxOnBankInterest,
               taxOnUkDividends,
               taxOnForeignInterest,
-              taxOnForeignDividends))
+              taxOnForeignDividends
+            )
+          )
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
   }
@@ -186,7 +193,9 @@ trait TaxReliefFormatters extends CommonFormatters {
               personalPensionPayment,
               personalPensionPaymentRelief,
               giftAidPaymentsRelief,
-              giftAidPayments))
+              giftAidPayments
+            )
+          )
         case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
       }
   }
@@ -199,9 +208,10 @@ sealed trait CommonFormatters {
   def readTaxAdjustmentComponent(
     json: JsValue,
     taxAdjustmentTypeInJson: String,
-    taxAdjustmentType: TaxAdjustmentType): Option[TaxAdjustmentComponent] =
-    (json \ taxAdjustmentTypeInJson).asOpt[BigDecimal].collect {
-      case amount => TaxAdjustmentComponent(taxAdjustmentType, amount)
+    taxAdjustmentType: TaxAdjustmentType
+  ): Option[TaxAdjustmentComponent] =
+    (json \ taxAdjustmentTypeInJson).asOpt[BigDecimal].collect { case amount =>
+      TaxAdjustmentComponent(taxAdjustmentType, amount)
     }
 }
 

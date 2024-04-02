@@ -88,6 +88,7 @@ class BbsiControllerSpec extends BaseSpec {
 
   private def createSUT(
     bbsiService: BbsiService,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+  ) =
     new BbsiController(bbsiService, authentication, cc)
 }

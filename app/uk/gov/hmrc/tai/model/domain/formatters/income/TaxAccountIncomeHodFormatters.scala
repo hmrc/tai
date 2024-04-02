@@ -32,12 +32,13 @@ trait TaxAccountIncomeHodFormatters extends BaseTaxAccountHodFormatters {
 
   private def nonTaxCodeIncomes(iabds: Seq[NpsIabdSummary]): Seq[OtherNonTaxCodeIncome] =
     iabds collect {
-      case (iabd) if nonTaxCodeIncomesMap.isDefinedAt(iabd.componentType) =>
+      case iabd if nonTaxCodeIncomesMap.isDefinedAt(iabd.componentType) =>
         OtherNonTaxCodeIncome(
           nonTaxCodeIncomesMap(iabd.componentType),
           iabd.employmentId,
           iabd.amount,
-          iabd.description)
+          iabd.description
+        )
     }
 
   private val nonTaxCodeIncomesMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(

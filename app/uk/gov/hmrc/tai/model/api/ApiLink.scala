@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class ApiLink(uri: String, rel: String, method: String = "GET")
 object ApiLink {
-  implicit val apiLinkFormat = Json.format[ApiLink]
+  implicit val apiLinkFormat: OFormat[ApiLink] = Json.format[ApiLink]
 }

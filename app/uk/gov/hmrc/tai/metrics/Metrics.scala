@@ -23,9 +23,9 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
 @Singleton
-class Metrics @Inject()(metrics: com.kenshoo.play.metrics.Metrics) {
+class Metrics @Inject() (metrics: MetricRegistry) {
 
-  private val registry: MetricRegistry = metrics.defaultRegistry
+  private val registry: MetricRegistry = metrics
 
   val SuccessCounterSuffix = "-success-counter"
   val FailureCounterSuffix = "-failed-counter"

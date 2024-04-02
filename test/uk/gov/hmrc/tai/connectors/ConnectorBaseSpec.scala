@@ -41,7 +41,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Random
 
-trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
+trait ConnectorBaseSpec
+    extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
 
   val nino: Nino = new Generator(new Random).nextNino
 
@@ -54,22 +55,22 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
   protected def localGuiceApplicationBuilder(): GuiceApplicationBuilder =
     GuiceApplicationBuilder()
       .configure(
-        "microservice.services.des-hod.port" -> server.port(),
-        "microservice.services.des-hod.host" -> "127.0.0.1",
-        "microservice.services.nps-hod.port" -> server.port(),
-        "microservice.services.nps-hod.host" -> "127.0.0.1",
-        "microservice.services.citizen-details.port" -> server.port(),
-        "microservice.services.paye.port" -> server.port(),
-        "microservice.services.file-upload.port" -> server.port(),
-        "microservice.services.file-upload-frontend.port" -> server.port(),
-        "microservice.services.pdf-generator-service.port" -> server.port(),
-        "microservice.services.nps-hod.originatorId" -> npsOriginatorId,
-        "microservice.services.des-hod.originatorId" -> desOriginatorId,
+        "microservice.services.des-hod.port"                -> server.port(),
+        "microservice.services.des-hod.host"                -> "127.0.0.1",
+        "microservice.services.nps-hod.port"                -> server.port(),
+        "microservice.services.nps-hod.host"                -> "127.0.0.1",
+        "microservice.services.citizen-details.port"        -> server.port(),
+        "microservice.services.paye.port"                   -> server.port(),
+        "microservice.services.file-upload.port"            -> server.port(),
+        "microservice.services.file-upload-frontend.port"   -> server.port(),
+        "microservice.services.pdf-generator-service.port"  -> server.port(),
+        "microservice.services.nps-hod.originatorId"        -> npsOriginatorId,
+        "microservice.services.des-hod.originatorId"        -> desOriginatorId,
         "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
-        "microservice.services.if-hod.port" -> server.port(),
-        "microservice.services.if-hod.host" -> "127.0.0.1",
-        "microservice.services.if-hod.authorizationToken" -> "ifAuthorization",
-        "microservice.services.des-hod.authorizationToken" -> "desAuthorization"
+        "microservice.services.if-hod.port"                 -> server.port(),
+        "microservice.services.if-hod.host"                 -> "127.0.0.1",
+        "microservice.services.if-hod.authorizationToken"   -> "ifAuthorization",
+        "microservice.services.des-hod.authorizationToken"  -> "desAuthorization"
       )
       .overrides(
         bind[FeatureFlagService].toInstance(mockFeatureFlagService),
@@ -96,8 +97,8 @@ trait ConnectorBaseSpec extends PlaySpec with MockitoSugar with WireMockHelper w
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
-  def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(
-    implicit classTag: ClassTag[A],
+  def assertConnectorException[A <: HttpException](call: Future[_], code: Int, message: String)(implicit
+    classTag: ClassTag[A],
     pos: Position
   ): Assertion = {
     val ex = intercept[A](Await.result(call, 5.seconds))

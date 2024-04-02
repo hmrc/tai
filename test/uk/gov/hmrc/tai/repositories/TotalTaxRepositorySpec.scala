@@ -48,7 +48,8 @@ class TotalTaxRepositorySpec extends BaseSpec {
               tax = 500,
               lowerBand = Some(5000),
               upperBand = Some(20000),
-              rate = 10)
+              rate = 10
+            )
           )
         ),
         IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
@@ -78,7 +79,7 @@ class TotalTaxRepositorySpec extends BaseSpec {
         "taxBands" -> Json.arr(
           Json.obj(
             "bandType"  -> "B",
-            "taxCode"      -> "BR",
+            "taxCode"   -> "BR",
             "income"    -> 10000,
             "tax"       -> 500,
             "lowerBand" -> 5000,
@@ -94,7 +95,8 @@ class TotalTaxRepositorySpec extends BaseSpec {
           "amount" -> 1000.25
         )
       )
-    ))
+    )
+  )
 
   private def createSUT(taxAccountRepository: TaxAccountRepository) =
     new TotalTaxRepository(taxAccountRepository)

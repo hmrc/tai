@@ -30,11 +30,12 @@ import uk.gov.hmrc.tai.service.BbsiService
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class BbsiController @Inject()(
+class BbsiController @Inject() (
   bbsiService: BbsiService,
   authentication: AuthenticationPredicate,
-  cc: ControllerComponents)(
-  implicit ec: ExecutionContext
+  cc: ControllerComponents
+)(implicit
+  ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler with Logging {
 
   def bbsiDetails(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>

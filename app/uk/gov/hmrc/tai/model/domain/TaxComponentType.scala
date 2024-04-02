@@ -155,23 +155,24 @@ case object JobSeekerAllowanceIncome extends TaxCodeIncomeComponentType
 case object OtherIncome extends TaxCodeIncomeComponentType
 
 object TaxComponentType {
-  implicit val formatTaxComponentType = new Format[TaxComponentType] {
+  implicit val formatTaxComponentType: Format[TaxComponentType] = new Format[TaxComponentType] {
     override def reads(json: JsValue): JsSuccess[TaxComponentType] = ???
     override def writes(taxComponentType: TaxComponentType) = JsString(taxComponentType.toString)
   }
 }
 
 object BenefitComponentType {
-  implicit val formatBenefitTaxComponentType = new Format[BenefitComponentType] {
+  implicit val formatBenefitTaxComponentType: Format[BenefitComponentType] = new Format[BenefitComponentType] {
     override def reads(json: JsValue): JsSuccess[BenefitComponentType] = ???
     override def writes(benefitComponentType: BenefitComponentType) = JsString(benefitComponentType.toString)
   }
 }
 
 object NonTaxCodeIncomeComponentType {
-  implicit val formatNonTaxCodeIncomeComponentType = new Format[NonTaxCodeIncomeComponentType] {
-    override def reads(json: JsValue): JsSuccess[NonTaxCodeIncomeComponentType] = ???
-    override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) =
-      JsString(nonTaxCodeIncomeComponentType.toString)
-  }
+  implicit val formatNonTaxCodeIncomeComponentType: Format[NonTaxCodeIncomeComponentType] =
+    new Format[NonTaxCodeIncomeComponentType] {
+      override def reads(json: JsValue): JsSuccess[NonTaxCodeIncomeComponentType] = ???
+      override def writes(nonTaxCodeIncomeComponentType: NonTaxCodeIncomeComponentType) =
+        JsString(nonTaxCodeIncomeComponentType.toString)
+    }
 }

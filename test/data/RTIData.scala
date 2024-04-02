@@ -16,7 +16,6 @@
 
 package data
 
-
 import java.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Generator
@@ -48,13 +47,14 @@ object RTIData {
   def updatePmtDateToThisYear(oldData: RtiData) = oldData.copy(
     employments = oldData.employments.map { employment =>
       employment.copy(payments = employment.payments.map { inYear =>
-        //We can finally try to change the value for the payment data
+        // We can finally try to change the value for the payment data
         inYear.copy(
           paidOn = LocalDate.of(
             TaxYear().year,
             inYear.paidOn.getMonthValue,
             inYear.paidOn.getDayOfWeek.getValue
-          ))
+          )
+        )
       })
     }
   )
