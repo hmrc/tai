@@ -20,6 +20,7 @@ val appName: String = "tai"
 
 ThisBuild / majorVersion := 2
 ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalafmtOnCompile := true
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
