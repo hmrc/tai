@@ -19,16 +19,19 @@ package uk.gov.hmrc.tai.controllers
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, TOO_MANY_REQUESTS}
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HttpException, NotFoundException, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
 trait ControllerErrorHandler {
 
   def taxAccountErrorHandler(): PartialFunction[Throwable, Future[Result]] = {
-    case ex: BadRequestException => Future.successful(BadRequest(ex.message))
-    case ex: NotFoundException   => Future.successful(NotFound(ex.message))
-    case ex                      => throw ex
+    case ex: BadRequestException                                     => Future.successful(BadRequest(ex.message))
+    case ex: NotFoundException                                       => Future.successful(NotFound(ex.message))
+    case ex: GatewayTimeoutException                                 => Future.successful(BadGateway(ex.getMessage))
+    case ex: BadGatewayException                                     => Future.successful(BadGateway(ex.getMessage))
+    case ex: HttpException if ex.message.contains("502 Bad Gateway") => Future.successful(BadGateway(ex.getMessage))
+    case ex                                                          => throw ex
   }
 
   def errorToResponse(error: UpstreamErrorResponse): Result =

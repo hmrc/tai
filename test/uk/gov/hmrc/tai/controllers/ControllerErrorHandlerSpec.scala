@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import play.api.test.Helpers.{status, _}
-import uk.gov.hmrc.http.{BadRequestException, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
@@ -45,6 +45,37 @@ class ControllerErrorHandlerSpec extends BaseSpec with NpsExceptions {
         val pf = sut.taxAccountErrorHandler()
         val result = the[InternalServerException] thrownBy
           pf(new InternalServerException("any other error")).futureValue
+        result.getMessage mustBe "any other error"
+      }
+    }
+
+    "return Bad Gateway" when {
+      "tax account returns GatewayTimeoutException exception" in {
+        val sut = createSUT
+        val pf = sut.taxAccountErrorHandler()
+        val result = pf(new GatewayTimeoutException("any other error"))
+        status(result) mustBe BAD_GATEWAY
+      }
+
+      "tax account returns BadGatewayException" in {
+        val sut = createSUT
+        val pf = sut.taxAccountErrorHandler()
+        val result = pf(new BadGatewayException("any other error"))
+        status(result) mustBe BAD_GATEWAY
+      }
+
+      "tax account returns HttpException exception with message 502 Bad Gateway" in {
+        val sut = createSUT
+        val pf = sut.taxAccountErrorHandler()
+        val result = pf(new HttpException("error containing 502 Bad Gateway", 500))
+        status(result) mustBe BAD_GATEWAY
+      }
+
+      "tax account returns HttpException exception without message 502 Bad Gateway" in {
+        val sut = createSUT
+        val pf = sut.taxAccountErrorHandler()
+        val result = the[HttpException] thrownBy
+          pf(new HttpException("any other error", 500)).futureValue
         result.getMessage mustBe "any other error"
       }
     }
