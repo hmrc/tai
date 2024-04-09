@@ -54,7 +54,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
       bind[RtiConnector].to[DefaultRtiConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[IabdConnector].to[DefaultIabdConnector],
-      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector]
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
+      bind[TaxAccountConnector].to[DefaultTaxAccountConnector]
     )
     .build()
 

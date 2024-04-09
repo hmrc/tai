@@ -21,7 +21,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.config.ApplicationStartUp
-import uk.gov.hmrc.tai.connectors.{CachingEmploymentDetailsConnector, CachingIabdConnector, CachingRtiConnector, CachingTaxCodeHistoryConnector, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.connectors.{CachingEmploymentDetailsConnector, CachingIabdConnector, CachingRtiConnector, CachingTaxAccountConnector, CachingTaxCodeHistoryConnector, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
 class LocalGuiceModule extends Module {
@@ -36,6 +36,8 @@ class LocalGuiceModule extends Module {
     bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
     bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector],
     bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
-    bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector]
+    bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector],
+    bind[TaxAccountConnector].to[CachingTaxAccountConnector],
+    bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
   )
 }

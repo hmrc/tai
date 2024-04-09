@@ -22,7 +22,6 @@ import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.deprecated.TaxAccountConnector
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
@@ -49,11 +48,11 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
     def taxAccountUrls: TaxAccountUrls =
       new TaxAccountUrls(npsConfig, desConfig)
 
-    def sut: TaxAccountConnector = new TaxAccountConnector(
+    def sut: TaxAccountConnector = new DefaultTaxAccountConnector(
+      inject[HttpHandler],
       npsConfig,
       desConfig,
-      taxAccountUrls,
-      inject[HttpHandler]
+      taxAccountUrls
     )
 
     val taxYear: TaxYear = TaxYear()
