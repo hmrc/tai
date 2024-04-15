@@ -77,10 +77,12 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .loadFile("nino1/tax-code-history.json")
           .replace("<cyDate1>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyDate2>", TaxYear().start.plusMonths(2).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val taxAccount = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
           .loadFile("nino1/iabds.json")
@@ -101,11 +103,13 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .loadFile("nino1/tax-code-history.json")
           .replace("<cyDate1>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyDate2>", TaxYear().start.plusMonths(2).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
           .replace("Cumulative", Week1Month1)
 
         val taxAccount = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
           .replace(""""basisOperation": 2,""", """"basisOperation": 1,""")
 
         val iabds = FileHelper
@@ -130,6 +134,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
             .loadFile("nino1/tax-code-history.json")
             .replace("<cyDate1>", TaxYear().start.plusMonths(1).toString)
             .replace("<cyDate2>", TaxYear().start.plusMonths(2).toString)
+            .replace("<cyYear>", TaxYear().start.getYear.toString)
         )
 
         val newTaxCodeHistory = Json
@@ -142,6 +147,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
         val taxAccount = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
           .loadFile("nino1/iabds.json")
@@ -168,6 +174,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
         val taxAccount = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
           .loadFile("nino1/iabds.json")
@@ -188,10 +195,12 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .loadFile("nino1/tax-code-history.json")
           .replace("<cyDate1>", TaxYear().start.plusMonths(1).toString)
           .replace("<cyDate2>", TaxYear().start.plusMonths(2).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val taxAccount = FileHelper
           .loadFile("nino1/tax-account.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).toString)
+          .replace("<cyYear>", TaxYear().start.getYear.toString)
           .replace("1257L", "1000L")
 
         val iabds = FileHelper
