@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.repositories
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.connectors.cache.Caching
-import uk.gov.hmrc.tai.connectors.deprecated.TaxAccountConnector
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.{TaiCacheRepository, TaxAccountRepository}

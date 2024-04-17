@@ -2,7 +2,7 @@
   "nino": "NINO1",
   "taxCodeRecord": [
     {
-      "taxYear": 2023,
+      "taxYear": <cyYear>,
       "taxCodeId": 56,
       "taxCode": "1257L",
       "dateOfCalculation": "<cyDate1>",
@@ -23,7 +23,7 @@
       "codeType": "Annual Coding P9X"
     },
     {
-      "taxYear": 2023,
+      "taxYear": <cyYear>,
       "taxCodeId": 56,
       "taxCode": "1257L",
       "dateOfCalculation": "<cyDate2>",

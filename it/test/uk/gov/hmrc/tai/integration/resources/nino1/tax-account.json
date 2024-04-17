@@ -1,9 +1,9 @@
 {
   "taxAccountId": 57,
-  "date": "<cyDate>>",
+  "date": "<cyDate>",
   "nino": "NINO1",
   "noCYEmployment": false,
-  "taxYear": 2023,
+  "taxYear": <cyYear>,
   "previousTaxAccountId": 56,
   "previousYearTaxAccountId": 55,
   "nextTaxAccountId": null,

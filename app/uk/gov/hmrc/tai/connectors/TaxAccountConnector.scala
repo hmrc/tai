@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.connectors.deprecated
+package uk.gov.hmrc.tai.connectors
 
+import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json._
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
+import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
-import uk.gov.hmrc.tai.connectors.{HttpHandler, TaxAccountUrls}
+import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaiConstants
@@ -30,13 +31,27 @@ import java.util.UUID
 import scala.concurrent.Future
 
 @Singleton
-class TaxAccountConnector @Inject() (
+class CachingTaxAccountConnector @Inject() (
+  @Named("default") underlying: TaxAccountConnector,
+  cachingConnector: CachingConnector
+) extends TaxAccountConnector {
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+    cachingConnector.cache(s"tax-account-$nino-${taxYear.year}") {
+      underlying.taxAccount(nino: Nino, taxYear: TaxYear)
+    }
+
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
+    cachingConnector.cache(s"tax-account-history-$nino-$iocdSeqNo") {
+      underlying.taxAccountHistory(nino: Nino, iocdSeqNo: Int)
+    }
+}
+
+class DefaultTaxAccountConnector @Inject() (
+  httpHandler: HttpHandler,
   npsConfig: NpsConfig,
   desConfig: DesConfig,
-  taxAccountUrls: TaxAccountUrls,
-  httpHandler: HttpHandler
-) {
-
+  taxAccountUrls: TaxAccountUrls
+) extends TaxAccountConnector {
   private def getUuid = UUID.randomUUID().toString
 
   private def hcWithHodHeaders(implicit hc: HeaderCarrier) =
@@ -46,15 +61,6 @@ class TaxAccountConnector @Inject() (
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
       "CorrelationId"        -> getUuid
     )
-
-  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI, hcWithHodHeaders)
-
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
-
-    val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
-    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, hcWithDesHeaders)
-  }
 
   private def hcWithDesHeaders(implicit hc: HeaderCarrier) =
     Seq(
@@ -66,4 +72,18 @@ class TaxAccountConnector @Inject() (
       "Content-Type"         -> TaiConstants.contentType,
       "CorrelationId"        -> getUuid
     )
+
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
+    httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI, hcWithHodHeaders)
+
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    val url = taxAccountUrls.taxAccountHistoricSnapshotUrl(nino, iocdSeqNo)
+    httpHandler.getFromApi(url, APITypes.DesTaxAccountAPI, hcWithDesHeaders)
+  }
+}
+
+trait TaxAccountConnector {
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue]
+
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue]
 }
