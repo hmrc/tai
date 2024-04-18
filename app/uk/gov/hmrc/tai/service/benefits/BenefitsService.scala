@@ -26,7 +26,6 @@ import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
-import uk.gov.hmrc.tai.repositories.deprecated.CompanyCarBenefitRepository
 import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
 import uk.gov.hmrc.tai.util.IFormConstants
@@ -36,7 +35,7 @@ import scala.util.control.NonFatal
 
 @Singleton
 class BenefitsService @Inject() (
-  companyCarBenefitRepository: CompanyCarBenefitRepository,
+  companyCarBenefitService: CompanyCarBenefitService,
   taxComponentService: CodingComponentService,
   iFormSubmissionService: IFormSubmissionService,
   auditable: Auditor
@@ -113,12 +112,12 @@ class BenefitsService @Inject() (
   private def reconcileCompanyCarsInBenefits(benefits: Benefits, nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
   ): Future[Benefits] =
-    companyCarBenefitRepository.carBenefit(nino, taxYear).map { c: Seq[CompanyCarBenefit] =>
+    companyCarBenefitService.carBenefit(nino, taxYear).map { c: Seq[CompanyCarBenefit] =>
       val reconciledBenefits = reconcileCarBenefits(benefits.companyCarBenefits, c)
       benefits.copy(companyCarBenefits = reconciledBenefits)
     } recover { case NonFatal(e) =>
       logger.warn(
-        s"The PAYE company car service returned an expection in response to the request for nino ${nino.nino} " +
+        s"The PAYE company car service returned an exception in response to the request for nino ${nino.nino} " +
           s"and ${taxYear.toString}. Returning car benefit details WITHOUT company car information.",
         e
       )
