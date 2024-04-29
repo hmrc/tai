@@ -21,10 +21,9 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import uk.gov.hmrc.http.UnprocessableEntityException
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.benefits.{GenericBenefit, _}
+import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.CompanyCarBenefitRepository
 import uk.gov.hmrc.tai.service._
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
@@ -35,7 +34,7 @@ class BenefitsServiceSpec extends BaseSpec {
     "return Nil" when {
       "the repository returned Nil" in {
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
@@ -76,7 +75,7 @@ class BenefitsServiceSpec extends BaseSpec {
             CodingComponent(CarBenefit, Some(12), 200, "some other description")
           )
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(result))
 
@@ -112,7 +111,7 @@ class BenefitsServiceSpec extends BaseSpec {
             CodingComponent(CarBenefit, Some(12), 200, "some other description")
           )
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(result))
 
@@ -146,7 +145,7 @@ class BenefitsServiceSpec extends BaseSpec {
         when(mockCodingComponentService.codingComponents(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
@@ -180,7 +179,7 @@ class BenefitsServiceSpec extends BaseSpec {
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(Seq.empty[CompanyCarBenefit]))
 
@@ -201,7 +200,7 @@ class BenefitsServiceSpec extends BaseSpec {
         val taxFreeAmountComponents = taxFreeAmountComponentsWithoutBenefits ++
           createBenefitList(allBenefitTypesExceptCompanyCar :+ CarBenefit)
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(
             Future.failed(
@@ -270,7 +269,7 @@ class BenefitsServiceSpec extends BaseSpec {
           )
         )
 
-        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitRepository]
+        val mockCompanyCarBenefitRepository = mock[CompanyCarBenefitService]
         when(mockCompanyCarBenefitRepository.carBenefit(any(), any())(any()))
           .thenReturn(Future.successful(carBenefitsFromRepo))
 
@@ -342,7 +341,7 @@ class BenefitsServiceSpec extends BaseSpec {
           .sendDataEvent(any(), any())(any())
 
         val sut = createSUT(
-          mock[CompanyCarBenefitRepository],
+          mock[CompanyCarBenefitService],
           mock[CodingComponentService],
           mockIFormSubmissionService,
           mockAuditable
@@ -379,7 +378,7 @@ class BenefitsServiceSpec extends BaseSpec {
         .sendDataEvent(any(), any())(any())
 
       val sut = createSUT(
-        mock[CompanyCarBenefitRepository],
+        mock[CompanyCarBenefitService],
         mock[CodingComponentService],
         mockIFormSubmissionService,
         mockAuditable
@@ -434,7 +433,7 @@ class BenefitsServiceSpec extends BaseSpec {
   )
 
   private def createSUT(
-    companyCarBenefitRepository: CompanyCarBenefitRepository = mock[CompanyCarBenefitRepository],
+    companyCarBenefitRepository: CompanyCarBenefitService = mock[CompanyCarBenefitService],
     codingComponentService: CodingComponentService = mock[CodingComponentService],
     iFormSubmissionService: IFormSubmissionService = mock[IFormSubmissionService],
     auditable: Auditor = mock[Auditor]
