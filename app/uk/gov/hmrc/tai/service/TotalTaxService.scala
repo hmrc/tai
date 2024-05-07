@@ -19,21 +19,25 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.model.domain.calculation.TotalTax
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
+import uk.gov.hmrc.tai.model.domain.formatters.IncomeCategoryHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.{TaxAccountSummaryRepository, TotalTaxRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TotalTaxService @Inject() (
-  totalTaxRepository: TotalTaxRepository,
-  taxAccountSummaryRepository: TaxAccountSummaryRepository
-)(implicit ec: ExecutionContext) {
+  taxAccountSummaryRepository: TaxAccountSummaryRepository,
+  taxAccountConnector: TaxAccountConnector
+)(implicit ec: ExecutionContext)
+    extends IncomeCategoryHodFormatters {
 
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] =
     for {
-      incomeCategories     <- totalTaxRepository.incomeCategories(nino, year)
+      incomeCategories <-
+        taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
       totalTaxAmount       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
       reliefsGivingBackTax <- taxAccountSummaryRepository.reliefsGivingBackTaxComponents(nino, year)
       otherTaxDue          <- taxAccountSummaryRepository.otherTaxDueComponents(nino, year)
@@ -51,5 +55,7 @@ class TotalTaxService @Inject() (
     )
 
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
-    totalTaxRepository.taxFreeAllowance(nino, year)
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .map(_.as[BigDecimal](taxFreeAllowanceReads))
 }
