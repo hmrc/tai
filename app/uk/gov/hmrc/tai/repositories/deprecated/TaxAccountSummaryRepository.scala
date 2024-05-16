@@ -31,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxAccountSummaryRepository @Inject() (
-  taxAccountRepository: TaxAccountRepository,
   taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext)
     extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
@@ -147,7 +146,7 @@ class TaxAccountSummaryRepository @Inject() (
   }
 
   def taxAdjustmentComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[TaxAdjustment]] = {
-    val taxAdjustmentComponents = taxAccountRepository
+    val taxAdjustmentComponents = taxAccountConnector
       .taxAccount(nino, year) map (_.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads))
 
     for {
@@ -158,5 +157,5 @@ class TaxAccountSummaryRepository @Inject() (
   }
 
   def taxOnOtherIncome(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[BigDecimal]] =
-    taxAccountRepository.taxAccount(nino, year) map (_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+    taxAccountConnector.taxAccount(nino, year) map (_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
 }
