@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.repositories.deprecated
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -30,7 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxAccountSummaryRepository @Inject() (
-  taxAccountRepository: TaxAccountRepository
+  taxAccountRepository: TaxAccountRepository,
+  taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext)
     extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
 
@@ -38,7 +40,7 @@ class TaxAccountSummaryRepository @Inject() (
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
-    taxAccountRepository
+    taxAccountConnector
       .taxAccount(nino, year)
       .flatMap { taxAccount =>
         val totalTax = taxAccount.as[BigDecimal](taxAccountSummaryReads)
@@ -127,7 +129,7 @@ class TaxAccountSummaryRepository @Inject() (
       case None => Seq.empty[TaxAdjustmentComponent]
     }
 
-    lazy val codingComponentFuture = taxAccountRepository
+    lazy val codingComponentFuture = taxAccountConnector
       .taxAccount(nino, year)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
 
