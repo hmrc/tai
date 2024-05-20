@@ -18,11 +18,11 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json._
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
-import uk.gov.hmrc.tai.model.domain.{BRDifferenceTaxReduction, CarBenefit, EstimatedTaxYouOweThisYear, OutstandingDebt, PersonalAllowancePA, UnderPaymentFromPreviousYear}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -30,16 +30,16 @@ import scala.concurrent.Future
 class CodingComponentServiceSpec extends BaseSpec {
 
   private val emptyJson = Json.arr()
-  private val mockTaxAccountRepository = mock[TaxAccountRepository]
+  private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   private val taxCodeId = 1
 
   "codingComponents" must {
     "return empty list of coding components" when {
-      "tax account repository returns json with no NpsComponents of interest" in {
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
+      "connector returns json with no NpsComponents of interest" in {
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountRepository)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe Nil
@@ -47,8 +47,8 @@ class CodingComponentServiceSpec extends BaseSpec {
     }
 
     "return a list of coding components" when {
-      "tax account repository returns json with more than one tax components" in {
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
+      "connector returns json with more than one tax components" in {
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(npsJsonResponse))
 
         val codingComponentList: Seq[CodingComponent] = Seq(
@@ -57,7 +57,7 @@ class CodingComponentServiceSpec extends BaseSpec {
           CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction")
         )
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountRepository)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
@@ -66,17 +66,27 @@ class CodingComponentServiceSpec extends BaseSpec {
   }
 
   "codingComponentsForTaxCodeId" must {
-    "returns a Success[Seq[CodingComponent]] for valid json of income sources" in {
+    "return empty list of coding components for json with no NpsComponents of interest" in {
+      when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
+        .thenReturn(Future.successful(emptyJson))
+
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+
+      val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
+      result mustBe Nil
+    }
+
+    "return a Success[Seq[CodingComponent]] for valid json of income sources" in {
       val expected = List[CodingComponent](
         CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
         CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000))
       )
 
       val basicIncomeSourcesJson = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
+      when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(basicIncomeSourcesJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountRepository)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -88,10 +98,10 @@ class CodingComponentServiceSpec extends BaseSpec {
       )
 
       val basicTotalLiabilityJson = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
+      when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(basicTotalLiabilityJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountRepository)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -105,10 +115,10 @@ class CodingComponentServiceSpec extends BaseSpec {
       )
 
       val combinedJson = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
-      when(mockTaxAccountRepository.taxAccountForTaxCodeId(meq(nino), meq(taxCodeId))(any()))
+      when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(combinedJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountRepository)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
