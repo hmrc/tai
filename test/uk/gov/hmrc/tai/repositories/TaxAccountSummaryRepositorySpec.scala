@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
 
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   private def createSUT() = new TaxAccountSummaryRepository(mockTaxAccountConnector)
+
+  private def createJsonWithDeductions(deductions: JsArray) = {
+    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
+    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
+  }
 
   private val taxAccountSummaryNpsJson = Json.obj(
     "totalLiability" -> Json.obj(
@@ -100,21 +105,15 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
   "TaxAccountSummary" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
-        val jsonWithUnderPayments = taxAccountSummaryNpsJson ++ Json.obj(
-          "incomeSources" -> Json.arr(
-            Json.obj(
-              "deductions" -> Json.arr(
-                Json.obj(
-                  "npsDescription" -> "Underpayment from previous year",
-                  "amount"         -> 100,
-                  "type"           -> 35,
-                  "sourceAmount"   -> 100
-                )
-              )
-            )
+        val underpaymentDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Underpayment from previous year",
+            "amount"         -> 100,
+            "type"           -> 35,
+            "sourceAmount"   -> 100
           )
         )
-
+        val jsonWithUnderPayments = createJsonWithDeductions(underpaymentDeduction)
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithUnderPayments))
 
@@ -125,16 +124,15 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
       }
 
       "outstanding debt present" in {
-        val jsonWithOutstandingDebt = taxAccountSummaryNpsJson ++ Json.obj(
-          "incomeSources" -> Json.arr(
-            Json.obj(
-              "deductions" -> Json.arr(
-                Json.obj("npsDescription" -> "Outstanding Debt", "amount" -> 100, "type" -> 41, "sourceAmount" -> 100)
-              )
-            )
+        val outstandingDebtDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Outstanding Debt",
+            "amount"         -> 100,
+            "type"           -> 41,
+            "sourceAmount"   -> 100
           )
         )
-
+        val jsonWithOutstandingDebt = createJsonWithDeductions(outstandingDebtDeduction)
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithOutstandingDebt))
 
@@ -145,21 +143,15 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
       }
 
       "EstimatedTaxYouOweThisYear present" in {
-        val jsonWithEstimatedTaxOwed = taxAccountSummaryNpsJson ++ Json.obj(
-          "incomeSources" -> Json.arr(
-            Json.obj(
-              "deductions" -> Json.arr(
-                Json.obj(
-                  "npsDescription" -> "Estimated Tax You Owe This Year",
-                  "amount"         -> 100,
-                  "type"           -> 45,
-                  "sourceAmount"   -> 100
-                )
-              )
-            )
+        val estimatedTaxOwedDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Estimated Tax You Owe This Year",
+            "amount"         -> 100,
+            "type"           -> 45,
+            "sourceAmount"   -> 100
           )
         )
-
+        val jsonWithEstimatedTaxOwed = createJsonWithDeductions(estimatedTaxOwedDeduction)
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
 
@@ -171,39 +163,33 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
 
       "all components" which {
         "can affect the totalTax are present" in {
-          val jsonWithAllAffectingComponents = taxAccountSummaryNpsJson ++ Json.obj(
-            "incomeSources" -> Json.arr(
-              Json.obj(
-                "deductions" -> Json.arr(
-                  Json.obj(
-                    "npsDescription" -> "Underpayment from previous year",
-                    "amount"         -> 100,
-                    "type"           -> 35,
-                    "sourceAmount"   -> 100
-                  ),
-                  Json.obj(
-                    "npsDescription" -> "Outstanding Debt",
-                    "amount"         -> 100,
-                    "type"           -> 41,
-                    "sourceAmount"   -> 100
-                  ),
-                  Json.obj(
-                    "npsDescription" -> "Estimated Tax You Owe This Year",
-                    "amount"         -> 100,
-                    "type"           -> 45,
-                    "sourceAmount"   -> 100
-                  ),
-                  Json.obj(
-                    "npsDescription" -> "Something we aren't interested in",
-                    "amount"         -> 100,
-                    "type"           -> 911,
-                    "sourceAmount"   -> 100
-                  )
-                )
-              )
+          val allAffectingDeductions = Json.arr(
+            Json.obj(
+              "npsDescription" -> "Underpayment from previous year",
+              "amount"         -> 100,
+              "type"           -> 35,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Outstanding Debt",
+              "amount"         -> 100,
+              "type"           -> 41,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Estimated Tax You Owe This Year",
+              "amount"         -> 100,
+              "type"           -> 45,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Something we aren't interested in",
+              "amount"         -> 100,
+              "type"           -> 911,
+              "sourceAmount"   -> 100
             )
           )
-
+          val jsonWithAllAffectingComponents = createJsonWithDeductions(allAffectingDeductions)
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithAllAffectingComponents))
 
@@ -216,21 +202,15 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
 
       "no components" which {
         "can affect the totalTax are present" in {
-          val jsonWithNoEffectingComponent = taxAccountSummaryNpsJson ++ Json.obj(
-            "incomeSources" -> Json.arr(
-              Json.obj(
-                "deductions" -> Json.arr(
-                  Json.obj(
-                    "npsDescription" -> "Community Investment Tax Credit",
-                    "amount"         -> 100,
-                    "type"           -> 16,
-                    "sourceAmount"   -> 100
-                  )
-                )
-              )
+          val noAffectingDeductions = Json.arr(
+            Json.obj(
+              "npsDescription" -> "Community Investment Tax Credit",
+              "amount"         -> 100,
+              "type"           -> 16,
+              "sourceAmount"   -> 100
             )
           )
-
+          val jsonWithNoEffectingComponent = createJsonWithDeductions(noAffectingDeductions)
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithNoEffectingComponent))
 
