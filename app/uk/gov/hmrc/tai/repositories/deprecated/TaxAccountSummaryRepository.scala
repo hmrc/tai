@@ -19,8 +19,11 @@ package uk.gov.hmrc.tai.repositories.deprecated
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -28,21 +31,23 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxAccountSummaryRepository @Inject() (
-  taxAccountRepository: TaxAccountRepository,
-  codingComponentRepository: CodingComponentRepository
+  taxAccountConnector: TaxAccountConnector
 )(implicit ec: ExecutionContext)
-    extends TaxAccountSummaryHodFormatters {
+    extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
-    for {
-      totalTax <- taxAccountRepository.taxAccount(nino, year) map (_.as[BigDecimal](taxAccountSummaryReads))
-      componentsCanAffectTotal <- codingComponentRepository
-                                    .codingComponents(nino, year)
-                                    .map(_.filter(c => componentTypesCanAffectTotalEst.contains(c.componentType)))
-    } yield totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .flatMap { taxAccount =>
+        val totalTax = taxAccount.as[BigDecimal](taxAccountSummaryReads)
+        val componentsCanAffectTotal = taxAccount
+          .as[Seq[CodingComponent]](codingComponentReads)
+          .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
+        Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
+      }
   }
 
   def reliefsGivingBackTaxComponents(nino: Nino, year: TaxYear)(implicit
@@ -123,9 +128,13 @@ class TaxAccountSummaryRepository @Inject() (
       case None => Seq.empty[TaxAdjustmentComponent]
     }
 
+    lazy val codingComponentFuture = taxAccountConnector
+      .taxAccount(nino, year)
+      .map(_.as[Seq[CodingComponent]](codingComponentReads))
+
     for {
       taxReliefComponents <- taxReliefsComponentsFuture
-      codingComponents    <- codingComponentRepository.codingComponents(nino, year)
+      codingComponents    <- codingComponentFuture
     } yield {
       val giftAidPayments = codingComponents.find(_.componentType == GiftAidPayments).flatMap(_.inputAmount)
       val components = giftAidPayments.collect { case amount =>
@@ -137,7 +146,7 @@ class TaxAccountSummaryRepository @Inject() (
   }
 
   def taxAdjustmentComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[TaxAdjustment]] = {
-    val taxAdjustmentComponents = taxAccountRepository
+    val taxAdjustmentComponents = taxAccountConnector
       .taxAccount(nino, year) map (_.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads))
 
     for {
@@ -148,5 +157,5 @@ class TaxAccountSummaryRepository @Inject() (
   }
 
   def taxOnOtherIncome(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Option[BigDecimal]] =
-    taxAccountRepository.taxAccount(nino, year) map (_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+    taxAccountConnector.taxAccount(nino, year) map (_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
 }
