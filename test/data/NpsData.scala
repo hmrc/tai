@@ -18,7 +18,6 @@ package data
 
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.TaxSummaryDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 
 import java.io.File
@@ -26,8 +25,6 @@ import scala.io.BufferedSource
 import scala.util.Random
 
 object NpsData extends NpsFormatter {
-
-  private lazy val taxSummaryDetailsJson = "TaxSummaryDetails/TaxSummary.json"
 
   private lazy val NpsTaxAccountJson = "TaxDetail/TaxAccount.json"
 
@@ -47,16 +44,6 @@ object NpsData extends NpsFormatter {
     jsVal
   }
 
-  private def getTaxSummaryDetails(fileName: String): TaxSummaryDetails = {
-    val jsonFilePath = basePath + fileName
-    val file: File = new File(jsonFilePath)
-    val source: BufferedSource = scala.io.Source.fromFile(file)
-    val jsVal = Json.parse(source.mkString("").replaceAll("\\$NINO", nino.nino))
-    val result = Json.fromJson[TaxSummaryDetails](jsVal)
-    result.get
-  }
-
-  def getTaxSummary = getTaxSummaryDetails(taxSummaryDetailsJson)
   def getNpsTaxAccountJson = getJson(NpsTaxAccountJson)
   def getFETaxAccountJson = getJson(FETaxAccountJson)
   def getNpsTaxAccountMultipleAllowancesJson = getJson(NpsTaxAccountMultipleAllowancesJson)

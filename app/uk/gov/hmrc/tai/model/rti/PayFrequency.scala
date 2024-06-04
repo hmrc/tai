@@ -16,6 +16,9 @@
 
 package uk.gov.hmrc.tai.model.rti
 
+import play.api.libs.json.Format
+import uk.gov.hmrc.tai.model.tai.JsonExtra
+
 object PayFrequency extends Enumeration {
   val Weekly = Value("W1")
   val Fortnightly = Value("W2")
@@ -34,4 +37,6 @@ object PayFrequency extends Enumeration {
   val Annually = Value("MA")
   val OneOff = Value("IO")
   val Irregular = Value("IR")
+
+  implicit val freqFormat: Format[PayFrequency.Value] = JsonExtra.enumerationFormat(PayFrequency)
 }

@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model.rti
 
+import play.api.libs.functional.syntax.{toFunctionalBuilderOps, toInvariantFunctorOps, unlift}
+import play.api.libs.json.{Format, __}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 /*
@@ -31,3 +33,18 @@ case class RtiData(
   requestId: String,
   employments: List[RtiEmployment] = Nil
 )
+
+object RtiData {
+  implicit val formatRtiData: Format[RtiData] =
+    ((__ \ "request" \ "nino").format[String] and
+      (__ \ "request" \ "relatedTaxYear")
+        .format[String]
+        .inmap[TaxYear](
+          o => TaxYear(o),
+          s => s.twoDigitRange
+        ) and
+      (__ \ "request" \ "requestId").format[String] and
+      (__ \ "individual" \ "employments" \ "employment")
+        .format[List[RtiEmployment]])(RtiData.apply, unlift(RtiData.unapply))
+
+}

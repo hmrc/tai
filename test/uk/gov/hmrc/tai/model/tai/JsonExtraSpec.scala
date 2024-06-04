@@ -31,7 +31,7 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
     "Use map format to write to Json value" when {
       "given valid input return JsValue" in {
         val inputMap: Map[TaxYear, TaxYear] = Map(TaxYear(2016) -> TaxYear(2017))
-        val result = JsonExtra.mapFormat("foo", "bar").writes(inputMap)
+        val result = JsonExtra.mapFormat("foo", "bar")(TaxYear.formatTaxYear, TaxYear.formatTaxYear).writes(inputMap)
         result.toString() must be("""[{"foo":2016,"bar":2017}]""")
       }
     }
@@ -39,13 +39,13 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
     "Use JsValue to read input into map" when {
       "given valid input return correct object" in {
         val inputJsValue: JsValue = Json.parse("""[{"foo":2016, "bar":2017}]""")
-        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        val result = JsonExtra.mapFormat("foo", "bar")(TaxYear.formatTaxYear, TaxYear.formatTaxYear).reads(inputJsValue)
         result must be(JsSuccess(Map(TaxYear(2016) -> TaxYear(2017))))
       }
 
       "given invalid input return JsError" in {
         val inputJsValue: JsValue = Json.parse("""{}""")
-        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        val result = JsonExtra.mapFormat("foo", "bar")(TaxYear.formatTaxYear, TaxYear.formatTaxYear).reads(inputJsValue)
         result must be(JsError(s"Expected JsArray(...), found {}"))
       }
     }

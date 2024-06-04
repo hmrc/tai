@@ -18,8 +18,9 @@ package uk.gov.hmrc.tai.model.rti
 
 import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsResultException, Json, JsonValidationError}
+import play.api.libs.json.{Format, JsResultException, Json, JsonValidationError}
 import uk.gov.hmrc.tai.model.rti.QaData._
+import uk.gov.hmrc.tai.model.tai.JsonExtra
 
 import scala.util.{Success, Try}
 
@@ -220,11 +221,14 @@ class RtiPackageSpec extends PlaySpec {
       )
 
       "monetary amount map is parsed from the JSON" in {
+        val stringMapFormat: Format[Map[String, BigDecimal]] =
+          JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
+
         val parsedJson = Json
           .parse(
             """[{"type": "TaxablePayYTD","amount": 2135.41}]"""
           )
-          .as[Map[String, BigDecimal]]
+          .as[Map[String, BigDecimal]](stringMapFormat)
         parsedJson("TaxablePayYTD") must be(BigDecimal("2135.41"))
       }
 

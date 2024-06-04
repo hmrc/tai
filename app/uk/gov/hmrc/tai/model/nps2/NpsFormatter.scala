@@ -22,7 +22,7 @@ import play.api.libs.functional.syntax.{unlift, _}
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.nps2.Income.IncomeType
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, JsonExtra}
-import uk.gov.hmrc.tai.model.{TaxSummaryDetails, nps2}
+import uk.gov.hmrc.tai.model.nps2
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 
 trait NpsFormatter {
@@ -266,7 +266,5 @@ trait NpsFormatter {
   )(TaxAccount.apply, unlift(TaxAccount.unapply))
 
   implicit val annualAccountFormats: Format[AnnualAccount] = Json.format[AnnualAccount]
-
-  implicit val taxSummaryDetailsFormat: Format[TaxSummaryDetails] = Json.format[TaxSummaryDetails]
 
 }

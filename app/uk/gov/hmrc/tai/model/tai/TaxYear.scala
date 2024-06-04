@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.tai
 
+import play.api.libs.json.{Format, JsError, JsNumber, JsResult, JsSuccess, JsValue}
 import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
 import java.time.{LocalDate, ZoneId}
@@ -49,6 +50,15 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
 }
 
 object TaxYear {
+  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
+    override def reads(j: JsValue): JsResult[TaxYear] = j match {
+      case JsNumber(n) => JsSuccess(TaxYear(n.toInt))
+      case x           => JsError(s"Expected JsNumber, found $x")
+    }
+
+    override def writes(v: TaxYear): JsValue = JsNumber(v.year)
+  }
+
   def apply(from: LocalDate = LocalDate.now(ZoneId.of(LondonEuropeTimezone))): TaxYear = {
     val naiveYear = TaxYear(from.getYear)
     if (from isBefore naiveYear.start) {
