@@ -76,7 +76,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
     "returns false" when {
       "a lock is present" in {
         val timestamp = Instant.now()
-        insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+        insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
         val result = sut.takeLock("lockId")
         result.value.futureValue mustBe Right(false)
       }
@@ -86,7 +86,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
   "releaseLock" should {
     "released the lock" in {
       val timestamp = Instant.now()
-      insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+      insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
 
       sut.releaseLock[Boolean]("lockId").futureValue
 
