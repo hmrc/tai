@@ -16,13 +16,6 @@
         </encoder>
     </appender>
 
-    <appender name="ACCESS_LOG_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/access.log</file>
-        <encoder>
-            <pattern>%message%n</pattern>
-        </encoder>
-    </appender>
-
     <appender name="CONNECTOR_LOG_FILE" class="ch.qos.logback.core.FileAppender">
         <file>logs/connector.log</file>
         <encoder>
@@ -30,11 +23,7 @@
         </encoder>
     </appender>
 
-
-    <logger name="accesslog" additivity="false">
-        <appender-ref ref="ACCESS_LOG_FILE" />
-    </logger>
-
+    
     <root level="INFO">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
