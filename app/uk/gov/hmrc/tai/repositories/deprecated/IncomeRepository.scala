@@ -17,9 +17,10 @@
 package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.tai.connectors.{IabdConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.formatters.{IabdDetails, IabdHodFormatters}
 import uk.gov.hmrc.tai.model.domain.income._
@@ -29,7 +30,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabdRepository: IabdRepository)(implicit
+class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabdConnector: IabdConnector)(implicit
   ec: ExecutionContext
 ) extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
 
@@ -55,7 +56,17 @@ class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabd
     lazy val taxCodeIncomeFuture = taxAccountConnector
       .taxAccount(nino, year)
       .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
-    lazy val iabdDetailsFuture = iabdRepository.iabds(nino, year) map (_.as[Seq[IabdDetails]])
+    lazy val iabdDetailsFuture = iabdConnector
+      .iabds(nino, year)
+      .map { json =>
+        val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")
+        if (responseNotFound) {
+          throw new NotFoundException(s"No iadbs found for year $year")
+        } else {
+          json.as[JsValue](iabdEstimatedPayReads)
+        }
+      }
+      .map(_.as[Seq[IabdDetails]])
 
     for {
       taxCodeIncomes <- taxCodeIncomeFuture
