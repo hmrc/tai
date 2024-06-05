@@ -50,6 +50,7 @@ trait BaseSpec
   val sessionIdValue: String = "some session id"
   implicit lazy val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
   val nino: Nino = new Generator(Random).nextNino
+  val otherNino: Nino = new Generator(Random).nextNino
   val cacheId: CacheId = CacheId(nino)
   val cacheIdNoSession: CacheId = CacheId.noSession(nino)
 

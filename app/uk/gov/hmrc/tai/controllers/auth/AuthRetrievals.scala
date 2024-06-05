@@ -31,9 +31,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class AuthenticatedRequest[A](request: Request[A], nino: Nino) extends WrappedRequest[A](request)
 
-class AuthActionImpl @Inject() (val authConnector: AuthConnector, cc: ControllerComponents)(implicit
+class AuthRetrievalsImpl @Inject() (val authConnector: AuthConnector, cc: ControllerComponents)(implicit
   ec: ExecutionContext
-) extends AuthAction with AuthorisedFunctions with Logging {
+) extends AuthRetrievals with AuthorisedFunctions with Logging {
 
   override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
@@ -56,5 +56,5 @@ class AuthActionImpl @Inject() (val authConnector: AuthConnector, cc: Controller
   override protected def executionContext: ExecutionContext = cc.executionContext
 }
 
-@ImplementedBy(classOf[AuthActionImpl])
-trait AuthAction extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, AuthenticatedRequest]
+@ImplementedBy(classOf[AuthRetrievalsImpl])
+trait AuthRetrievals extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, AuthenticatedRequest]
