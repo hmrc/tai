@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@
 package uk.gov.hmrc.tai.repositories.deprecated
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.{IabdConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.formatters.{IabdDetails, IabdHodFormatters}
@@ -56,17 +55,14 @@ class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabd
     lazy val taxCodeIncomeFuture = taxAccountConnector
       .taxAccount(nino, year)
       .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
+
+    // TODO: Create a new IabdService and move the below filtering logic. Call the service instead of connector.
+    //  Change the connector IabdConnector JsValue to HttpResponse - see tax summaries SelfAssessmentODSConnector
+
     lazy val iabdDetailsFuture = iabdConnector
       .iabds(nino, year)
-      .map { json =>
-        val responseNotFound = (json \ "error").asOpt[String].contains("NOT_FOUND")
-        if (responseNotFound) {
-          throw new NotFoundException(s"No iadbs found for year $year")
-        } else {
-          json.as[JsValue](iabdEstimatedPayReads)
-        }
-      }
       .map(_.as[Seq[IabdDetails]])
+      .map(_.filter(_.`type`.contains(NewEstimatedPay)))
 
     for {
       taxCodeIncomes <- taxCodeIncomeFuture
