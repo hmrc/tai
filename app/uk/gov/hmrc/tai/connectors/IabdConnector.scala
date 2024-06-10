@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json.{JsArray, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
@@ -41,16 +41,12 @@ class CachingIabdConnector @Inject() (
   @Named("default") underlying: IabdConnector,
   cachingConnector: CachingConnector,
   invalidateCaches: InvalidateCaches
-)(implicit ec: ExecutionContext)
-    extends IabdConnector {
+) extends IabdConnector {
 
   override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector.cache(s"iabds-$nino-${taxYear.year}") {
       underlying
         .iabds(nino: Nino, taxYear: TaxYear)
-        .recover { case _: NotFoundException =>
-          Json.toJson(Json.obj("error" -> "NOT_FOUND"))
-        }
     }
 
   override def updateTaxCodeAmount(
