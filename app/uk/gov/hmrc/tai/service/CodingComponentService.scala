@@ -19,20 +19,24 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.CodingComponentRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CodingComponentService @Inject() (codingComponentRepository: CodingComponentRepository) {
+class CodingComponentService @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext)
+    extends TaxAccountHodFormatters {
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
-    codingComponentRepository.codingComponents(nino, year)
+    taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
-    codingComponentRepository.codingComponentsForTaxCodeId(nino, taxCodeId)
+    taxAccountConnector
+      .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
+      .map(_.as[Seq[CodingComponent]](codingComponentReads))
 }

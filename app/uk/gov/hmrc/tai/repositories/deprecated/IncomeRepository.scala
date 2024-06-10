@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.repositories.deprecated
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.formatters.{IabdDetails, IabdHodFormatters}
 import uk.gov.hmrc.tai.model.domain.income._
@@ -28,12 +29,12 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IncomeRepository @Inject() (taxAccountRepository: TaxAccountRepository, iabdRepository: IabdRepository)(implicit
+class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabdRepository: IabdRepository)(implicit
   ec: ExecutionContext
 ) extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters with IabdHodFormatters {
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
-    taxAccountRepository.taxAccount(nino, year) flatMap { jsValue =>
+    taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
       val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
@@ -51,8 +52,9 @@ class IncomeRepository @Inject() (taxAccountRepository: TaxAccountRepository, ia
     }
 
   def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    lazy val taxCodeIncomeFuture = taxAccountRepository
-      .taxAccount(nino, year) map (_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
+    lazy val taxCodeIncomeFuture = taxAccountConnector
+      .taxAccount(nino, year)
+      .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
     lazy val iabdDetailsFuture = iabdRepository.iabds(nino, year) map (_.as[Seq[IabdDetails]])
 
     for {

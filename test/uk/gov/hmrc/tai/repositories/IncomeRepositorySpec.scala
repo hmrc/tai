@@ -19,24 +19,88 @@ package uk.gov.hmrc.tai.repositories
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json._
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository, TaxAccountRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
 class IncomeRepositorySpec extends BaseSpec {
 
+  private val mockTaxAccountConnector = mock[TaxAccountConnector]
+
+  private def createSut(
+    taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector],
+    iabdRepository: IabdRepository = mock[IabdRepository]
+  ) =
+    new IncomeRepository(taxAccountConnector, iabdRepository)
+
+  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
+    types.map { tp =>
+      Json.obj(
+        "amount"             -> amount,
+        "type"               -> tp,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> empId,
+        "estimatesPaySource" -> 1
+      )
+    }
+
+  private def taxAccountJsonWithIabds(
+    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+  ): JsObject =
+    Json.obj(
+      "taxAccountId" -> "id",
+      "nino"         -> nino.nino,
+      "totalLiability" -> Json.obj(
+        "nonSavings" -> Json.obj(
+          "totalIncome" -> Json.obj(
+            "iabdSummaries" -> JsArray(incomeIabdSummaries)
+          ),
+          "allowReliefDeducts" -> Json.obj(
+            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
+          )
+        )
+      )
+    )
+
+  private val taxAccountJson: JsObject = Json.obj(
+    "taxYear" -> JsNumber(2017),
+    "totalLiability" -> Json.obj(
+      "untaxedInterest" -> Json.obj(
+        "totalTaxableIncome" -> JsNumber(123)
+      )
+    ),
+    "incomeSources" -> JsArray(
+      Seq(
+        Json.obj(
+          "employmentId"     -> JsNumber(1),
+          "taxCode"          -> JsString("1150L"),
+          "name"             -> JsString("Employer1"),
+          "basisOperation"   -> JsNumber(1),
+          "employmentStatus" -> JsNumber(1)
+        ),
+        Json.obj(
+          "employmentId"     -> JsNumber(2),
+          "taxCode"          -> JsString("1100L"),
+          "name"             -> JsString("Employer2"),
+          "basisOperation"   -> JsNumber(2),
+          "employmentStatus" -> JsNumber(1)
+        )
+      )
+    )
+  )
+
   "Income" must {
     "return empty sequence of non-tax code income" when {
       "there is no non-tax-code income present" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
 
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
-
-        val sut = createSut(mockTaxAccountRepository)
+        val sut = createSut(mockTaxAccountConnector)
 
         val result = sut.incomes(nino, TaxYear()).futureValue
 
@@ -46,8 +110,6 @@ class IncomeRepositorySpec extends BaseSpec {
 
     "return non-tax-code incomes" when {
       "there is non-tax-code income present and bank-accounts are not present" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-
         val json = taxAccountJsonWithIabds(
           npsIabdSummaries(
             1,
@@ -56,9 +118,9 @@ class IncomeRepositorySpec extends BaseSpec {
             100
           )
         )
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
-        val sut = createSut(mockTaxAccountRepository)
+        val sut = createSut(mockTaxAccountConnector)
 
         val result = sut.incomes(nino, TaxYear()).futureValue
 
@@ -99,11 +161,10 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "non-tax-code income and bank accounts are present" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(82), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
-        val sut = createSut(mockTaxAccountRepository)
+        val sut = createSut(mockTaxAccountConnector)
 
         val result = sut.incomes(nino, TaxYear()).futureValue
 
@@ -114,12 +175,10 @@ class IncomeRepositorySpec extends BaseSpec {
 
       "bypass any bank account retrieval and return no untaxed interest" when {
         "no UntaxedInterestIncome is present" in {
-          val mockTaxAccountRepository = mock[TaxAccountRepository]
-
           val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(70), 100))
-          when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
-          val sut = createSut(mockTaxAccountRepository)
+          val sut = createSut(mockTaxAccountConnector)
 
           val result = sut.incomes(nino, TaxYear()).futureValue
 
@@ -128,11 +187,10 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "bbsi api throws exception" in {
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
         val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(82), 100))
-        when(mockTaxAccountRepository.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
 
-        val sut = createSut(mockTaxAccountRepository)
+        val sut = createSut(mockTaxAccountConnector)
 
         val result = sut.incomes(nino, TaxYear()).futureValue
 
@@ -146,42 +204,13 @@ class IncomeRepositorySpec extends BaseSpec {
   "taxCodeIncomeSource" must {
     "return a sequence of taxCodeIncomes" when {
       "provided with valid nino" in {
-        val json = Json.obj(
-          "taxYear" -> JsNumber(2017),
-          "totalLiability" -> Json.obj(
-            "untaxedInterest" -> Json.obj(
-              "totalTaxableIncome" -> JsNumber(123)
-            )
-          ),
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"     -> JsNumber(1),
-                "taxCode"          -> JsString("1150L"),
-                "name"             -> JsString("Employer1"),
-                "basisOperation"   -> JsNumber(1),
-                "employmentStatus" -> JsNumber(1)
-              ),
-              Json.obj(
-                "employmentId"     -> JsNumber(2),
-                "taxCode"          -> JsString("1100L"),
-                "name"             -> JsString("Employer2"),
-                "basisOperation"   -> JsNumber(2),
-                "employmentStatus" -> JsNumber(1)
-              )
-            )
-          )
-        )
-
         val iabdJson = Json.arr()
-
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(taxAccountJson))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
-        val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
+        val sut = createSut(mockTaxAccountConnector, iabdRepository = mockIabdRepository)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -217,33 +246,6 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for different employment" in {
-        val json = Json.obj(
-          "taxYear" -> JsNumber(2017),
-          "totalLiability" -> Json.obj(
-            "untaxedInterest" -> Json.obj(
-              "totalTaxableIncome" -> JsNumber(123)
-            )
-          ),
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"     -> JsNumber(1),
-                "taxCode"          -> JsString("1150L"),
-                "name"             -> JsString("Employer1"),
-                "basisOperation"   -> JsNumber(1),
-                "employmentStatus" -> JsNumber(1)
-              ),
-              Json.obj(
-                "employmentId"     -> JsNumber(2),
-                "taxCode"          -> JsString("1100L"),
-                "name"             -> JsString("Employer2"),
-                "basisOperation"   -> JsNumber(2),
-                "employmentStatus" -> JsNumber(1)
-              )
-            )
-          )
-        )
-
         val iabdJson = Json.arr(
           Json.obj(
             "nino"            -> nino.withoutSuffix,
@@ -270,13 +272,12 @@ class IncomeRepositorySpec extends BaseSpec {
           )
         )
 
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(taxAccountJson))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
-        val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
+        val sut = createSut(mockTaxAccountConnector, iabdRepository = mockIabdRepository)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -312,33 +313,6 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for same employment" in {
-        val json = Json.obj(
-          "taxYear" -> JsNumber(2017),
-          "totalLiability" -> Json.obj(
-            "untaxedInterest" -> Json.obj(
-              "totalTaxableIncome" -> JsNumber(123)
-            )
-          ),
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"     -> JsNumber(1),
-                "taxCode"          -> JsString("1150L"),
-                "name"             -> JsString("Employer1"),
-                "basisOperation"   -> JsNumber(1),
-                "employmentStatus" -> JsNumber(1)
-              ),
-              Json.obj(
-                "employmentId"     -> JsNumber(2),
-                "taxCode"          -> JsString("1100L"),
-                "name"             -> JsString("Employer2"),
-                "basisOperation"   -> JsNumber(2),
-                "employmentStatus" -> JsNumber(1)
-              )
-            )
-          )
-        )
-
         val iabdJson = Json.arr(
           Json.obj(
             "nino"                     -> nino.withoutSuffix,
@@ -366,13 +340,12 @@ class IncomeRepositorySpec extends BaseSpec {
           )
         )
 
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(taxAccountJson))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
-        val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
+        val sut = createSut(mockTaxAccountConnector, iabdRepository = mockIabdRepository)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -408,33 +381,6 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for same employment but code not present" in {
-        val json = Json.obj(
-          "taxYear" -> JsNumber(2017),
-          "totalLiability" -> Json.obj(
-            "untaxedInterest" -> Json.obj(
-              "totalTaxableIncome" -> JsNumber(123)
-            )
-          ),
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"     -> JsNumber(1),
-                "taxCode"          -> JsString("1150L"),
-                "name"             -> JsString("Employer1"),
-                "basisOperation"   -> JsNumber(1),
-                "employmentStatus" -> JsNumber(1)
-              ),
-              Json.obj(
-                "employmentId"     -> JsNumber(2),
-                "taxCode"          -> JsString("1100L"),
-                "name"             -> JsString("Employer2"),
-                "basisOperation"   -> JsNumber(2),
-                "employmentStatus" -> JsNumber(1)
-              )
-            )
-          )
-        )
-
         val iabdJson = Json.arr(
           Json.obj(
             "nino"                     -> nino.withoutSuffix,
@@ -462,13 +408,12 @@ class IncomeRepositorySpec extends BaseSpec {
           )
         )
 
-        val mockTaxAccountRepository = mock[TaxAccountRepository]
-        when(mockTaxAccountRepository.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+          .thenReturn(Future.successful(taxAccountJson))
         val mockIabdRepository = mock[IabdRepository]
         when(mockIabdRepository.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
 
-        val sut = createSut(mockTaxAccountRepository, iabdRepository = mockIabdRepository)
+        val sut = createSut(mockTaxAccountConnector, iabdRepository = mockIabdRepository)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -508,40 +453,4 @@ class IncomeRepositorySpec extends BaseSpec {
       }
     }
   }
-
-  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
-    types.map { tp =>
-      Json.obj(
-        "amount"             -> amount,
-        "type"               -> tp,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> empId,
-        "estimatesPaySource" -> 1
-      )
-    }
-
-  private def taxAccountJsonWithIabds(
-    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
-  ): JsObject =
-    Json.obj(
-      "taxAccountId" -> "id",
-      "nino"         -> nino.nino,
-      "totalLiability" -> Json.obj(
-        "nonSavings" -> Json.obj(
-          "totalIncome" -> Json.obj(
-            "iabdSummaries" -> JsArray(incomeIabdSummaries)
-          ),
-          "allowReliefDeducts" -> Json.obj(
-            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
-          )
-        )
-      )
-    )
-
-  private def createSut(
-    taxAccountRepository: TaxAccountRepository = mock[TaxAccountRepository],
-    iabdRepository: IabdRepository = mock[IabdRepository]
-  ) =
-    new IncomeRepository(taxAccountRepository, iabdRepository)
 }
