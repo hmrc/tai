@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, IabdConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.IncomeRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate
@@ -53,10 +53,10 @@ class IncomeServiceSpec extends BaseSpec {
     employmentService: EmploymentService = mock[EmploymentService],
     citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
     incomeRepository: IncomeRepository = mock[IncomeRepository],
-    iabdRepository: IabdRepository = mock[IabdRepository],
+    iabdConnector: IabdConnector = mock[IabdConnector],
     auditor: Auditor = mock[Auditor]
   ) =
-    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, iabdRepository, auditor)
+    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, iabdConnector, auditor)
 
   "untaxedInterest" must {
     "return total amount only for passed nino and year" when {
@@ -927,9 +927,9 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-          val mockIabdRepository = mock[IabdRepository]
+          val mockIabdConnector = mock[IabdConnector]
           when(
-            mockIabdRepository
+            mockIabdConnector
               .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -944,7 +944,7 @@ class IncomeServiceSpec extends BaseSpec {
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
-            iabdRepository = mockIabdRepository,
+            iabdConnector = mockIabdConnector,
             auditor = mockAuditor
           )
 
@@ -993,9 +993,9 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(Seq.empty))
 
-          val mockIabdRepository = mock[IabdRepository]
+          val mockIabdConnector = mock[IabdConnector]
           when(
-            mockIabdRepository
+            mockIabdConnector
               .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
           ).thenReturn(Future.successful(HodUpdateSuccess))
 
@@ -1008,7 +1008,7 @@ class IncomeServiceSpec extends BaseSpec {
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
-            iabdRepository = mockIabdRepository,
+            iabdConnector = mockIabdConnector,
             auditor = mockAuditor
           )
 
@@ -1075,9 +1075,9 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-          val mockIabdRepository = mock[IabdRepository]
+          val mockIabdConnector = mock[IabdConnector]
           when(
-            mockIabdRepository
+            mockIabdConnector
               .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -1092,7 +1092,7 @@ class IncomeServiceSpec extends BaseSpec {
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
-            iabdRepository = mockIabdRepository,
+            iabdConnector = mockIabdConnector,
             auditor = mockAuditor
           )
 
@@ -1157,9 +1157,9 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-          val mockIabdRepository = mock[IabdRepository]
+          val mockIabdConnector = mock[IabdConnector]
           when(
-            mockIabdRepository
+            mockIabdConnector
               .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
           ).thenReturn(
             Future.successful(HodUpdateFailure)
@@ -1171,7 +1171,7 @@ class IncomeServiceSpec extends BaseSpec {
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             incomeRepository = mockIncomeRepository,
-            iabdRepository = mockIabdRepository,
+            iabdConnector = mockIabdConnector,
             citizenDetailsConnector = citizenDetailsConnector
           )
 
@@ -1230,9 +1230,9 @@ class IncomeServiceSpec extends BaseSpec {
           val mockIncomeRepository = mock[IncomeRepository]
           when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-          val mockIabdRepository = mock[IabdRepository]
+          val mockIabdConnector = mock[IabdConnector]
           when(
-            mockIabdRepository
+            mockIabdConnector
               .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
           ).thenReturn(
             Future.successful(HodUpdateSuccess)
@@ -1245,14 +1245,14 @@ class IncomeServiceSpec extends BaseSpec {
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
             incomeRepository = mockIncomeRepository,
-            iabdRepository = mockIabdRepository,
+            iabdConnector = mockIabdConnector,
             auditor = mockAuditor
           )
 
           val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
-          verify(mockIabdRepository, times(1))
+          verify(mockIabdConnector, times(1))
             .updateTaxCodeAmount(meq(nino), meq(taxYear), any(), meq(1), any(), meq(1234))(any(), any())
 
           val auditMap = Map(
@@ -1311,9 +1311,9 @@ class IncomeServiceSpec extends BaseSpec {
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockIabdRepository = mock[IabdRepository]
+      val mockIabdConnector = mock[IabdConnector]
       when(
-        mockIabdRepository
+        mockIabdConnector
           .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
@@ -1329,7 +1329,7 @@ class IncomeServiceSpec extends BaseSpec {
         employmentService = mockEmploymentSvc,
         citizenDetailsConnector = citizenDetailsConnector,
         incomeRepository = mockIncomeRepository,
-        iabdRepository = mockIabdRepository,
+        iabdConnector = mockIabdConnector,
         auditor = mockAuditor
       )
 
@@ -1380,9 +1380,9 @@ class IncomeServiceSpec extends BaseSpec {
       val mockIncomeRepository = mock[IncomeRepository]
       when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
 
-      val mockIabdRepository = mock[IabdRepository]
+      val mockIabdConnector = mock[IabdConnector]
       when(
-        mockIabdRepository
+        mockIabdConnector
           .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
       ).thenReturn(
         Future.successful(HodUpdateSuccess)
@@ -1398,7 +1398,7 @@ class IncomeServiceSpec extends BaseSpec {
         employmentService = mockEmploymentSvc,
         citizenDetailsConnector = citizenDetailsConnector,
         incomeRepository = mockIncomeRepository,
-        iabdRepository = mockIabdRepository,
+        iabdConnector = mockIabdConnector,
         auditor = mockAuditor
       )
 
