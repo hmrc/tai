@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ package uk.gov.hmrc.tai.repositories
 import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json._
-import uk.gov.hmrc.http.NotFoundException
-import uk.gov.hmrc.tai.connectors.{IabdConnector, TaxAccountConnector}
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.IncomeRepository
+import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -32,13 +33,13 @@ import scala.concurrent.Future
 class IncomeRepositorySpec extends BaseSpec {
 
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
-  private val mockIabdConnector = mock[IabdConnector]
+  private val mockIabdService = mock[IabdService]
 
   private def createSut(
     taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector],
-    iabdConnector: IabdConnector = mock[IabdConnector]
+    iabdService: IabdService = mock[IabdService]
   ) =
-    new IncomeRepository(taxAccountConnector, iabdConnector)
+    new IncomeRepository(taxAccountConnector, iabdService)
 
   private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
     types.map { tp =>
@@ -206,12 +207,12 @@ class IncomeRepositorySpec extends BaseSpec {
   "taxCodeIncomeSource" must {
     "return a sequence of taxCodeIncomes" when {
       "provided with valid nino" in {
-        val iabdJson = Json.arr()
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
+        when(mockIabdService.retrieveIabdDetails(any(), any())(any()))
+          .thenReturn(Future.successful(Seq.empty[IabdDetails]))
 
-        val sut = createSut(mockTaxAccountConnector, mockIabdConnector)
+        val sut = createSut(mockTaxAccountConnector, mockIabdService)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -247,37 +248,22 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for different employment" in {
-        val iabdJson = Json.arr(
-          Json.obj(
-            "nino"            -> nino.withoutSuffix,
-            "taxYear"         -> 2017,
-            "type"            -> 10,
-            "source"          -> 15,
-            "grossAmount"     -> JsNull,
-            "receiptDate"     -> JsNull,
-            "captureDate"     -> JsNull,
-            "typeDescription" -> "Total gift aid Payments",
-            "netAmount"       -> 100
-          ),
-          Json.obj(
-            "nino"                     -> nino.withoutSuffix,
-            "employmentSequenceNumber" -> 10,
-            "taxYear"                  -> 2017,
-            "type"                     -> 27,
-            "source"                   -> 15,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> JsNull,
-            "captureDate"              -> JsNull,
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
+        val iabdDetailsSeq = Seq(
+          IabdDetails(
+            Some(nino.withoutSuffix),
+            Some(10),
+            Some(15),
+            Some(27),
+            None,
+            None
           )
         )
 
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
+        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
-        val sut = createSut(mockTaxAccountConnector, mockIabdConnector)
+        val sut = createSut(mockTaxAccountConnector, mockIabdService)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -313,39 +299,23 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for same employment" in {
-        val iabdJson = Json.arr(
-          Json.obj(
-            "nino"                     -> nino.withoutSuffix,
-            "employmentSequenceNumber" -> 1,
-            "taxYear"                  -> 2017,
-            "type"                     -> 10,
-            "source"                   -> 15,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> JsNull,
-            "captureDate"              -> JsNull,
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
-          ),
-          Json.obj(
-            "nino"                     -> nino.withoutSuffix,
-            "employmentSequenceNumber" -> 2,
-            "taxYear"                  -> 2017,
-            "type"                     -> 27,
-            "source"                   -> 18,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> JsNull,
-            "captureDate"              -> JsNull,
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
+        val iabdDetailsSeq = Seq(
+          IabdDetails(
+            Some(nino.withoutSuffix),
+            Some(2),
+            Some(18),
+            Some(27),
+            None,
+            None
           )
         )
 
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
 
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
+        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
-        val sut = createSut(mockTaxAccountConnector, mockIabdConnector)
+        val sut = createSut(mockTaxAccountConnector, mockIabdService)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -380,39 +350,23 @@ class IncomeRepositorySpec extends BaseSpec {
       }
 
       "iabd returns data for same employment but code not present" in {
-        val iabdJson = Json.arr(
-          Json.obj(
-            "nino"                     -> nino.withoutSuffix,
-            "employmentSequenceNumber" -> 1,
-            "taxYear"                  -> 2017,
-            "type"                     -> 10,
-            "source"                   -> 15,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> JsNull,
-            "captureDate"              -> "10/04/2017",
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
-          ),
-          Json.obj(
-            "nino"                     -> nino.withoutSuffix,
-            "employmentSequenceNumber" -> 2,
-            "taxYear"                  -> 2017,
-            "type"                     -> 27,
-            "source"                   -> 418,
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> "10/04/2017",
-            "captureDate"              -> "10/04/2017",
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
+        val iabdDetailsSeq = Seq(
+          IabdDetails(
+            Some(nino.withoutSuffix),
+            Some(2),
+            Some(418),
+            Some(27),
+            Some(LocalDate.parse("2017-04-10")),
+            Some(LocalDate.parse("2017-04-10"))
           )
         )
 
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
 
-        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(iabdJson))
+        when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
 
-        val sut = createSut(mockTaxAccountConnector, mockIabdConnector)
+        val sut = createSut(mockTaxAccountConnector, mockIabdService)
         val result = sut.taxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(
@@ -446,23 +400,6 @@ class IncomeRepositorySpec extends BaseSpec {
             Some(LocalDate.parse("2017-04-10"))
           )
         )
-      }
-    }
-
-    "throw exception " when {
-      "NOT_FOUND is received from iabds" in {
-        when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(Json.arr()))
-
-        when(mockIabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
-          .thenThrow(new NotFoundException("No iabd details found"))
-
-        val sut = createSut(mockTaxAccountConnector, mockIabdConnector)
-        val result = sut.taxCodeIncomes(nino, TaxYear())
-
-        whenReady(result.failed) { ex =>
-          ex mustBe a[NotFoundException]
-        }
       }
     }
   }
