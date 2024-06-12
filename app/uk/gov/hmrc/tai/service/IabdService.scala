@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -36,5 +36,10 @@ class IabdService @Inject() (
     iabdConnector
       .iabds(nino, year)
       .map(_.as[Seq[IabdDetails]])
-      .map(_.filter(_.`type`.contains(NewEstimatedPay)))
+      .map { iabdDetailsSeq =>
+        if (iabdDetailsSeq.isEmpty) {
+          throw new NotFoundException(s"No iadbs found for year $year")
+        }
+        iabdDetailsSeq.filter(_.`type`.contains(NewEstimatedPay))
+      }
 }

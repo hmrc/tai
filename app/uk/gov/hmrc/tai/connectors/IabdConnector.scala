@@ -20,7 +20,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsArray, JsValue}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
@@ -135,7 +135,9 @@ class DefaultIabdConnector @Inject() (
       Future.successful(JsArray(Seq.empty))
     } else {
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds)
+      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds).recover { case _: NotFoundException =>
+        JsArray(Seq.empty)
+      }
     }
 
   override def updateTaxCodeAmount(

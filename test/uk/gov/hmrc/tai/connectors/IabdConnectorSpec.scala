@@ -136,6 +136,13 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
           sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
         }
+
+        "NOT_FOUND is returned by the API" in {
+
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut().iabds(nino, taxYear).futureValue mustBe JsArray.empty
+        }
       }
 
       "return an error" when {
@@ -144,13 +151,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
           sut().iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
-        }
-
-        "a 404 occurs" in {
-
-          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-
-          sut().iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
         }
 
         List(

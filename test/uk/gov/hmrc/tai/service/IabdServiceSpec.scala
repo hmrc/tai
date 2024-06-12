@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json.{JsNull, Json}
+import play.api.libs.json.{JsArray, JsNull, Json}
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
@@ -80,10 +80,10 @@ class IabdServiceSpec extends BaseSpec {
       }
     }
 
-    "throw exception " when {
-      "NOT_FOUND is received from iabds" in {
+    "throw NotFoundException " when {
+      "empty sequence of IabdDetails is received from connector" in {
         when(mockIabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.failed(new NotFoundException("iabds not found")))
+          .thenReturn(Future.successful(JsArray(Seq.empty)))
 
         val sut = createSut(mockIabdConnector)
         val result = sut.retrieveIabdDetails(nino, TaxYear())
