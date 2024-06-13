@@ -80,10 +80,21 @@ class IabdServiceSpec extends BaseSpec {
       }
     }
 
+    "return an empty sequence of IabdDetails" when {
+      "provided with next tax year" in {
+        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(JsArray.empty))
+
+        val sut = createSut(mockIabdConnector)
+        val result = sut.retrieveIabdDetails(nino, TaxYear().next).futureValue
+
+        result mustBe Seq.empty[IabdDetails]
+      }
+    }
+
     "throw NotFoundException " when {
-      "empty sequence of IabdDetails is received from connector" in {
+      "error json is received from connector" in {
         when(mockIabdConnector.iabds(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(JsArray(Seq.empty)))
+          .thenReturn(Future.successful(Json.toJson(Json.obj("error" -> "NOT_FOUND"))))
 
         val sut = createSut(mockIabdConnector)
         val result = sut.retrieveIabdDetails(nino, TaxYear())

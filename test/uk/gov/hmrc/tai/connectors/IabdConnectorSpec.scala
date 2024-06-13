@@ -136,12 +136,14 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
           sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
         }
+      }
 
-        "NOT_FOUND is returned by the API" in {
+      "return error json" when {
+        "NOT_FOUND is returned by the Nps API" in {
 
           server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
-          sut().iabds(nino, taxYear).futureValue mustBe JsArray.empty
+          sut().iabds(nino, taxYear).futureValue mustBe Json.obj("error" -> "NOT_FOUND")
         }
       }
 

@@ -35,11 +35,12 @@ class IabdService @Inject() (
   def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
     iabdConnector
       .iabds(nino, year)
-      .map(_.as[Seq[IabdDetails]])
-      .map { iabdDetailsSeq =>
-        if (iabdDetailsSeq.isEmpty) {
+      .map { responseJson =>
+        val responseNotFound = (responseJson \ "error").asOpt[String].contains("NOT_FOUND")
+        if (responseNotFound) {
           throw new NotFoundException(s"No iadbs found for year $year")
         }
-        iabdDetailsSeq.filter(_.`type`.contains(NewEstimatedPay))
+        responseJson.as[Seq[IabdDetails]]
       }
+      .map(_.filter(_.`type`.contains(NewEstimatedPay)))
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsArray, JsValue}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
@@ -136,7 +136,7 @@ class DefaultIabdConnector @Inject() (
     } else {
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
       httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds).recover { case _: NotFoundException =>
-        JsArray(Seq.empty)
+        Json.toJson(Json.obj("error" -> "NOT_FOUND"))
       }
     }
 
