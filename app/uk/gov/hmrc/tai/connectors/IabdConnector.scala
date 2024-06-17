@@ -18,12 +18,12 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
@@ -43,9 +43,10 @@ class CachingIabdConnector @Inject() (
   invalidateCaches: InvalidateCaches
 ) extends IabdConnector {
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
+  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector.cache(s"iabds-$nino-${taxYear.year}") {
-      underlying.iabds(nino: Nino, taxYear: TaxYear)
+      underlying
+        .iabds(nino: Nino, taxYear: TaxYear)
     }
 
   override def updateTaxCodeAmount(
@@ -129,12 +130,14 @@ class DefaultIabdConnector @Inject() (
       "CorrelationId"        -> UUID.randomUUID().toString
     )
 
-  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
+  override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     if (taxYear > TaxYear()) {
-      Future.successful(Seq.empty)
+      Future.successful(JsArray(Seq.empty))
     } else {
       val urlNps = iabdUrls.npsIabdUrl(nino, taxYear)
-      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds).map(_.as[Seq[IabdDetails]])
+      httpHandler.getFromApi(urlNps, APITypes.NpsIabdAllAPI, headersForIabds).recover { case _: NotFoundException =>
+        Json.toJson(Json.obj("error" -> "NOT_FOUND"))
+      }
     }
 
   override def updateTaxCodeAmount(
@@ -205,7 +208,7 @@ class DefaultIabdConnector @Inject() (
 
 trait IabdConnector {
 
-  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]]
+  def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue]
 
   def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, iabdType: Int, amount: Int)(
     implicit
