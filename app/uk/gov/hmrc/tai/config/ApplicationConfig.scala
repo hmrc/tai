@@ -60,6 +60,7 @@ class DesConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("des-hod.da-pta.originatorId", "")
   lazy val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
+  lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("des-hod.timeoutInMilliseconds", 500)
 }
 
 @Singleton

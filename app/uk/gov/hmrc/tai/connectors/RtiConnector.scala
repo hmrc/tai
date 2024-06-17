@@ -17,17 +17,18 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import cats.effect.unsafe.implicits.global
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
-import play.api.{Logger, Logging}
 import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
+import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
@@ -144,7 +145,7 @@ class CachingRtiConnector @Inject() (
 
 @Singleton
 class DefaultRtiConnector @Inject() (
-  httpClient: HttpClient,
+  httpClientV2: HttpClientV2,
   rtiConfig: DesConfig,
   urls: RtiUrls,
   featureFlagService: FeatureFlagService
@@ -166,11 +167,14 @@ class DefaultRtiConnector @Inject() (
       if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
         logger.info(s"RTIAPI - call for the year: $taxYear}")
         val ninoWithoutSuffix = withoutSuffix(nino)
-        val futureResponse =
-          httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](
-            url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
-            headers = createHeader(rtiConfig)
+
+        val futureResponse: Future[Either[UpstreamErrorResponse, HttpResponse]] = httpClientV2
+          .get(url"${urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear)}")(
+            hc.withExtraHeaders(createHeader(rtiConfig): _*)
           )
+          .transform(_.withRequestTimeout(rtiConfig.timeoutInMilliseconds.milliseconds))
+          .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+
         EitherT(
           futureResponse
             .map {
