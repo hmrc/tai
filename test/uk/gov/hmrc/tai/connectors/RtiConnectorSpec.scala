@@ -167,7 +167,9 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
           val result: Either[UpstreamErrorResponse, Seq[AnnualAccount]] =
             sut.getPaymentsForYear(nino, taxYear).value.futureValue
           result mustBe a[Left[UpstreamErrorResponse, _]]
+          result.leftSide.swap.map(_.statusCode) mustBe Right(BAD_GATEWAY)
         }
+        
       }
 
       "return an empty list" when {

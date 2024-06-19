@@ -92,7 +92,7 @@ class CachingRtiConnector @Inject() (
              )
       } yield result).value))
 
-    def readAndUpdate: IO[Either[L, A]] =
+    def readAndUpdate: IO[Either[L, A]] = {
       IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
         case Right(true) =>
           IO.fromFuture(
@@ -110,6 +110,7 @@ class CachingRtiConnector @Inject() (
           throw new LockedException(s"Lock for $key could not be acquired")
         case Left(error) => IO(Left(error))
       }
+    }
 
     EitherT(
       readAndUpdate
@@ -151,8 +152,7 @@ class DefaultRtiConnector @Inject() (
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends RtiConnector {
-
-  val logger = Logger(this.getClass)
+  val logger: Logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
