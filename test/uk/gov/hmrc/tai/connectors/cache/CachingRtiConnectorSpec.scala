@@ -75,7 +75,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   val annualAccount: AnnualAccount = AnnualAccount(0, TaxYear(2020), Available, Seq(payment), Seq.empty)
 
   // TODO: TEST FOR TIMEOUT OF LOCK???
-  
+
   "Calling CachingRtiConnector.getPaymentsForYearAsEitherT" must {
     "return a Right Seq[AnnualAccount] object" when {
       "no value is cached" in {

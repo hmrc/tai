@@ -20,11 +20,13 @@ import org.mongodb.scala.model.Filters
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
-import uk.gov.hmrc.tai.util.BaseSpec
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lock] {
 
@@ -32,8 +34,8 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
     new GuiceApplicationBuilder()
       .configure(additionalConfiguration)
       .configure(
-        "mongo.lock.expiryInSeconds" -> 2,
-        "auditing.enabled"           -> false
+        "mongo.lock.expiryInMicroseconds" -> 2000,
+        "auditing.enabled"                -> false
       )
       .build()
 
@@ -76,7 +78,12 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
     "returns false" when {
       "a lock is present" in {
         val timestamp = Instant.now()
-        insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+        Await.result(
+          deleteAll().flatMap { _ =>
+            insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+          },
+          Duration.Inf
+        )
         val result = sut.takeLock("lockId")
         result.value.futureValue mustBe Right(false)
       }
