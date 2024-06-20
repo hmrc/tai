@@ -43,7 +43,7 @@ class PensionProviderControllerSpec extends BaseSpec {
           .thenReturn(Future.successful(envelopeId))
 
         val sut =
-          new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
+          new PensionProviderController(mockPensionProviderService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.addPensionProvider(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json"))
@@ -68,7 +68,7 @@ class PensionProviderControllerSpec extends BaseSpec {
         )
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
+        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.incorrectPensionProvider(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider))
             .withHeaders(("content-type", "application/json"))
