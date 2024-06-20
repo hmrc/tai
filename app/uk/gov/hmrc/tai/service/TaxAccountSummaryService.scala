@@ -20,31 +20,32 @@ import com.google.inject.{Inject, Singleton}
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
 class TaxAccountSummaryService @Inject() (
-  taxAccountSummaryRepository: TaxAccountSummaryRepository,
+  taxAccountConnector: TaxAccountConnector,
   codingComponentService: CodingComponentService,
   incomeService: IncomeService,
   totalTaxService: TotalTaxService
 )(implicit
   ec: ExecutionContext
-) extends TaxAccountSummaryHodFormatters {
+) extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): Future[TaxAccountSummary] =
     for {
-      totalEstimatedTax       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
+      totalEstimatedTax       <- totalTaxAmount(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
       taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
       totalTax                <- totalTaxService.totalTax(nino, year)
@@ -70,6 +71,21 @@ class TaxAccountSummaryService @Inject() (
         taxFreeAllowance
       )
     }
+
+  def totalTaxAmount(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
+      Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
+
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .flatMap { taxAccount =>
+        val totalTax = taxAccount.as[BigDecimal](taxAccountSummaryReads)
+        val componentsCanAffectTotal = taxAccount
+          .as[Seq[CodingComponent]](codingComponentReads)
+          .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
+        Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
+      }
+  }
 
   private[service] def taxFreeAmountCalculation(codingComponents: Seq[CodingComponent]): BigDecimal =
     codingComponents.foldLeft(BigDecimal(0))((total: BigDecimal, component: CodingComponent) =>
