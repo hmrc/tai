@@ -25,13 +25,15 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.TaiUpdateIncomeCacheConnector
+import uk.gov.hmrc.tai.model.nps2.MongoFormatter
+import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.repositories.deprecated.TaiUpdateIncomeCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with IntegrationPatience {
+class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
@@ -45,7 +47,8 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with IntegrationPatien
   private val cacheItemWithoutData =
     Future.successful(CacheItem("id", JsObject.empty, Instant.now, Instant.now))
 
-  private val sessionData = "SessionData"
+  private val sessionData =
+    SessionData(nino = nino.nino, taxSummaryDetailsCY = TaxSummaryDetails(nino = nino.nino, version = 0))
 
   private val taiUpdateIncomeRepository = mock[TaiUpdateIncomeCacheConnector]
 
@@ -199,9 +202,23 @@ class TaiUpdateIncomeCacheRepositorySpec extends BaseSpec with IntegrationPatien
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> sessionData))
         when(taiUpdateIncomeRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findUpdateIncome[String](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findUpdateIncome[SessionData](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(sessionData)
+
+        verify(taiUpdateIncomeRepository, times(1)).findById(cacheIdValue)
+      }
+
+      "id is present in the cache but with wrong type conversion *UpdateIncome" in {
+        val mockMongoConfig = mock[MongoConfig]
+        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+        val sut = createSUTUpdateIncome(mockMongoConfig)
+        val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-DATA" -> sessionData))
+        when(taiUpdateIncomeRepository.findById(any())).thenReturn(cacheItem)
+
+        val data = sut.findUpdateIncome[String](cacheId, "TAI-DATA").futureValue
+
+        data mustBe None
 
         verify(taiUpdateIncomeRepository, times(1)).findById(cacheIdValue)
       }

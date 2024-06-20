@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class JourneyCacheControllerSpec extends BaseSpec {
 
   private def createSUT(repository: JourneyCacheRepository) =
-    new JourneyCacheController(repository, loggedInAuthenticationAuthJourney, cc)
+    new JourneyCacheController(repository, loggedInAuthenticationPredicate, cc)
 
   val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 

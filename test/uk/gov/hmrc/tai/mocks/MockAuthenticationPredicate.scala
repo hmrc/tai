@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.mocks
 import org.mockito.ArgumentMatchers.any
 import org.scalatest._
 import org.mockito.MockitoSugar
-import play.api.mvc.{ActionBuilder, AnyContent, ControllerComponents, Request, Result}
+import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
@@ -27,9 +27,9 @@ import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.controllers.auth.{AuthJourney, AuthenticatedRequest}
-import uk.gov.hmrc.tai.util.ActionBuilderFixture
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -40,14 +40,7 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
 
   val mockAuthService: AuthorisedFunctions = mock[AuthorisedFunctions]
 
-  private val actionBuilderFixture = new ActionBuilderFixture {
-    override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
-      block(AuthenticatedRequest(request, Nino("AA000003A")))
-  }
-
-  lazy val loggedInAuthenticationAuthJourney: AuthJourney = new AuthJourney {
-    val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
-  }
+  lazy val loggedInAuthenticationPredicate = new AuthenticationPredicate(mockAuthService, cc)
 
   val nino: Nino = new Generator(Random).nextNino
   val sessionIdValue: String = "some session id"

@@ -39,7 +39,7 @@ class TaxCodeChangeControllerSpec extends BaseSpec with TaxCodeHistoryConstants 
 
   val taxCodeService: TaxCodeChangeServiceImpl = mock[TaxCodeChangeServiceImpl]
 
-  private def controller = new TaxCodeChangeController(loggedInAuthenticationAuthJourney, taxCodeService, cc)
+  private def controller = new TaxCodeChangeController(loggedInAuthenticationPredicate, taxCodeService, cc)
 
   private def ninoGenerator = new Generator(new Random).nextNino
 

@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.model.api.ApiResponse
@@ -31,23 +31,22 @@ import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeIabdComparisonController @Inject() (
   taxFreeAmountComparisonService: TaxFreeAmountComparisonService,
-  authentication: AuthJourney,
+  authentication: AuthenticationPredicate,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
-    implicit request =>
-      taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
-        Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
-      } recover {
-        case ex: NotFoundException =>
-          NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException if ex.responseCode >= 500 =>
-          BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
-        case ex: HttpException =>
-          InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
-      }
+  def taxCodeChangeIabdComparison(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    taxFreeAmountComparisonService.taxFreeAmountComparison(nino).map { comparison: TaxFreeAmountComparison =>
+      Ok(Json.toJson(ApiResponse(Json.toJson(comparison), Seq.empty)))
+    } recover {
+      case ex: NotFoundException =>
+        NotFound(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: HttpException if ex.responseCode >= 500 =>
+        BadGateway(Json.toJson(Map("reason" -> ex.getMessage)))
+      case ex: HttpException =>
+        InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
+    }
   }
 }
