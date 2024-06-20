@@ -25,7 +25,7 @@ import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import javax.inject.Singleton
-import scala.concurrent.duration.{Duration, MICROSECONDS}
+import scala.concurrent.duration.{Duration, MILLISECONDS}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -56,7 +56,7 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
           lockId = sessionId,
           owner = owner,
           ttl =
-            Duration(appConfig.mongoLockTTL, MICROSECONDS) // this need to be longer than the timeout from http_verbs
+            Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
         )
         .map(_.fold(false)(_ => true))
         .recover { case NonFatal(ex) =>
