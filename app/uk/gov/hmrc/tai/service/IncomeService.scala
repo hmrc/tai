@@ -23,14 +23,14 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, IabdConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.{IabdRepository, IncomeRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.IncomeRepository
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +40,7 @@ class IncomeService @Inject() (
   employmentService: EmploymentService,
   citizenDetailsConnector: CitizenDetailsConnector,
   incomeRepository: IncomeRepository,
-  iabdRepository: IabdRepository,
+  iabdConnector: IabdConnector,
   auditor: Auditor
 )(implicit ec: ExecutionContext)
     extends Logging {
@@ -200,7 +200,7 @@ class IncomeService @Inject() (
   ): Future[IncomeUpdateResponse] =
     for {
       updateAmountResult <-
-        iabdRepository.updateTaxCodeAmount(nino, year, version, employmentId, NewEstimatedPay.code, amount)
+        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
     } yield updateAmountResult match {
       case HodUpdateSuccess => IncomeUpdateSuccess
       case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
