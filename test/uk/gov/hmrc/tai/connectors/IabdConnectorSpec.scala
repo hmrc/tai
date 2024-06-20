@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.{JsNull, JsObject, Json, Writes}
+import play.api.libs.json.{JsArray, JsNull, JsObject, Json, Writes}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
@@ -102,7 +102,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
         )
 
-        sut().iabds(nino, taxYear).futureValue mustBe List(iabdDetails)
+        val actualJson = sut().iabds(nino, taxYear).futureValue
+        actualJson mustBe json
 
         server.verify(
           getRequestedFor(urlEqualTo(npsUrl))
@@ -124,7 +125,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next).futureValue mustBe List()
+          sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
         }
 
         "looking for cy+2 year" in {
@@ -133,7 +134,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
-          sut().iabds(nino, taxYear.next.next).futureValue mustBe List()
+          sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
+        }
+      }
+
+      "return error json" when {
+        "NOT_FOUND is returned by the Nps API" in {
+
+          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut().iabds(nino, taxYear).futureValue mustBe Json.obj("error" -> "NOT_FOUND")
         }
       }
 
@@ -143,13 +153,6 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
           sut().iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
-        }
-
-        "a 404 occurs" in {
-
-          server.stubFor(get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-
-          sut().iabds(nino, taxYear).failed.futureValue mustBe a[NotFoundException]
         }
 
         List(
