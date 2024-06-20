@@ -25,15 +25,13 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.TaiCacheConnector
-import uk.gov.hmrc.tai.model.nps2.MongoFormatter
-import uk.gov.hmrc.tai.model.{SessionData, TaxSummaryDetails}
 import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with IntegrationPatience {
+class TaiCacheRepositorySpec extends BaseSpec with IntegrationPatience {
 
   implicit lazy val configuration: Configuration = inject[Configuration]
 
@@ -47,8 +45,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
   private val cacheItemWithoutData =
     Future.successful(CacheItem("id", JsObject.empty, Instant.now, Instant.now))
 
-  private val sessionData =
-    SessionData(nino = nino.nino, taxSummaryDetailsCY = TaxSummaryDetails(nino = nino.nino, version = 0))
+  private val sessionData = "SessionData"
 
   private val taiRepository = mock[TaiCacheConnector]
 
@@ -220,23 +217,9 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> sessionData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.find[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.find[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(sessionData)
-
-        verify(taiRepository, times(1)).findById(cacheIdValue)
-      }
-
-      "id is present in the cache but with wrong type conversion" in {
-        val mockMongoConfig = mock[MongoConfig]
-        when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
-        val sut = createSUT(mockMongoConfig)
-        val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-DATA" -> sessionData))
-        when(taiRepository.findById(any())).thenReturn(cacheItem)
-
-        val data = sut.find[String](cacheId, "TAI-DATA").futureValue
-
-        data mustBe None
 
         verify(taiRepository, times(1)).findById(cacheIdValue)
       }
@@ -251,7 +234,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> List(sessionData, sessionData)))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findSeq[String](cacheId, "TAI-SESSION").futureValue
         data mustBe List(sessionData, sessionData)
         verify(taiRepository, times(1)).findById(cacheIdValue)
       }
@@ -260,12 +243,12 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[String], SensitiveT[List[String]]]
         val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findSeq[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe List(sessionData, sessionData)
 
@@ -290,7 +273,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[String], SensitiveT[List[String]]]
         val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
@@ -369,7 +352,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> List(sessionData, sessionData)))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(List(sessionData, sessionData))
 
@@ -379,12 +362,12 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[String], SensitiveT[List[String]]]
         val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(List(sessionData, sessionData))
       }
@@ -397,7 +380,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> List.empty[String]))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(Nil)
       }
@@ -406,12 +389,12 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
-        val encryptedData = encrypter.writes(SensitiveT(List.empty[SessionData]))
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[String], SensitiveT[List[String]]]
+        val encryptedData = encrypter.writes(SensitiveT(List.empty[String]))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-SESSION").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-SESSION").futureValue
 
         data mustBe Some(Nil)
       }
@@ -426,7 +409,7 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> List(sessionData, sessionData)))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-DATA").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe None
       }
@@ -435,12 +418,12 @@ class TaiCacheRepositorySpec extends BaseSpec with MongoFormatter with Integrati
         val mockMongoConfig = mock[MongoConfig]
         when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
         val sut = createSUT(mockMongoConfig)
-        val encrypter = JsonEncryption.sensitiveEncrypter[List[SessionData], SensitiveT[List[SessionData]]]
+        val encrypter = JsonEncryption.sensitiveEncrypter[List[String], SensitiveT[List[String]]]
         val encryptedData = encrypter.writes(SensitiveT(List(sessionData, sessionData)))
         val cacheItem = setCacheItem(cacheIdValue, Json.obj("TAI-SESSION" -> encryptedData))
         when(taiRepository.findById(any())).thenReturn(cacheItem)
 
-        val data = sut.findOptSeq[SessionData](cacheId, "TAI-DATA").futureValue
+        val data = sut.findOptSeq[String](cacheId, "TAI-DATA").futureValue
 
         data mustBe None
       }
