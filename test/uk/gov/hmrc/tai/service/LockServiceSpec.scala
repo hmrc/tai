@@ -26,8 +26,8 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lock] {
 
   implicit override lazy val app: Application =
@@ -82,7 +82,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
           deleteAll().flatMap { _ =>
             insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
           },
-          Duration.Inf
+          5 seconds
         )
         val result = sut.takeLock("lockId")
         result.value.futureValue mustBe Right(false)
