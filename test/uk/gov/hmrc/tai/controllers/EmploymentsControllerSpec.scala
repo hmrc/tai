@@ -53,7 +53,7 @@ class EmploymentsControllerSpec extends BaseSpec {
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]
 
-  val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationAuthJourney, cc)
+  val sut = new EmploymentsController(mockEmploymentService, loggedInAuthenticationPredicate, cc)
 
   override protected def beforeEach(): Unit = {
     reset(mockEmploymentService)

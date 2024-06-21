@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.repositories.deprecated.SessionRepository
 
 import scala.concurrent.ExecutionContext
@@ -28,13 +28,13 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class SessionController @Inject() (
   sessionRepository: SessionRepository,
-  authentication: AuthJourney,
+  authentication: AuthenticationPredicate,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def invalidateCache: Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
+  def invalidateCache: Action[AnyContent] = authentication.async { implicit request =>
     for (success <- sessionRepository.invalidateCache(CacheId(request.nino)))
       yield if (success) Accepted else InternalServerError
   }

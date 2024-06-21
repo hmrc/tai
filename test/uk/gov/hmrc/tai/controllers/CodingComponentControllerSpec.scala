@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UnauthorizedException}
-import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -115,7 +115,7 @@ class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter wit
 
   private def createSUT(
     codingComponentService: CodingComponentService,
-    predicate: AuthJourney = loggedInAuthenticationAuthJourney
+    predicate: AuthenticationPredicate = loggedInAuthenticationPredicate
   ) =
     new CodingComponentController(predicate, codingComponentService, cc)
 }

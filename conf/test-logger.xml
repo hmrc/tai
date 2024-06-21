@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>  [%-12.12logger] %date{yyyy-MM-dd HH:mm:ss} - [%message] %replace(exception=[%xException]){'^exception=\[\]$',''}%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="uk.gov" level="INFO"/>
+
+    <logger name="application" level="WARN"/>
+
+    <logger name="play" level="INFO" />
+
+    <root level="WARN">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

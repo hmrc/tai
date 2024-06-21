@@ -96,6 +96,6 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
   private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
 
   val testController =
-    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationAuthJourney, cc)
+    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate, cc)
 
 }

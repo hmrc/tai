@@ -24,7 +24,7 @@ import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
-import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -252,7 +252,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(EitherT.rightT(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
-      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationAuthJourney)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -336,7 +336,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
         .thenReturn(EitherT.rightT(employments))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationAuthJourney)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -473,7 +473,7 @@ class IncomeControllerSpec extends BaseSpec with ApiFormats {
 
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],
-    authentication: AuthJourney = loggedInAuthenticationAuthJourney
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
   ) =
     new IncomeController(incomeService, authentication, cc)
 

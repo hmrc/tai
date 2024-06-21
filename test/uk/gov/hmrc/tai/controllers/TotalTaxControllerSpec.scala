@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{BadRequestException, LockedException}
-import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -189,7 +189,7 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
   private def createSUT(
     totalTaxService: TotalTaxService,
-    authentication: AuthJourney = loggedInAuthenticationAuthJourney
+    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
   ) =
     new TotalTaxController(totalTaxService, authentication, cc)
 
