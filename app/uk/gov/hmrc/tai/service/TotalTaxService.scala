@@ -37,15 +37,15 @@ class TotalTaxService @Inject() (
     extends IncomeCategoryHodFormatters with TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
 
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] = {
-    val taxAccountFuture = taxAccountConnector.taxAccount(nino, year)
+    val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
     for {
-      incomeCategories     <- taxAccountFuture.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
-      totalTaxAmount       <- taxAccountSummary(taxAccountFuture)
-      reliefsGivingBackTax <- reliefsGivingBackTaxComponents(taxAccountFuture)
-      otherTaxDue          <- otherTaxDueComponents(taxAccountFuture)
-      alreadyTaxedAtSource <- alreadyTaxedAtSourceComponents(taxAccountFuture)
-      taxOnOtherIncome     <- taxAccountFuture.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
-      taxReliefComponents  <- taxReliefComponents(taxAccountFuture)
+      incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
+      totalTaxAmount       <- taxAccountSummary(taxAccountDetails)
+      reliefsGivingBackTax <- reliefsGivingBackTaxComponents(taxAccountDetails)
+      otherTaxDue          <- otherTaxDueComponents(taxAccountDetails)
+      alreadyTaxedAtSource <- alreadyTaxedAtSourceComponents(taxAccountDetails)
+      taxOnOtherIncome     <- taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+      taxReliefComponents  <- taxReliefComponents(taxAccountDetails)
     } yield TotalTax(
       totalTaxAmount,
       incomeCategories,
@@ -57,11 +57,11 @@ class TotalTaxService @Inject() (
     )
   }
 
-  def taxAccountSummary(taxAccountFuture: Future[JsValue]): Future[BigDecimal] = {
+  def taxAccountSummary(taxAccountDetails: Future[JsValue]): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
-    taxAccountFuture.flatMap { taxAccount =>
+    taxAccountDetails.flatMap { taxAccount =>
       val totalTax = taxAccount.as[BigDecimal](taxAccountSummaryReads)
       val componentsCanAffectTotal = taxAccount
         .as[Seq[CodingComponent]](codingComponentReads)
@@ -70,8 +70,8 @@ class TotalTaxService @Inject() (
     }
   }
 
-  def reliefsGivingBackTaxComponents(taxAccountFuture: Future[JsValue]): Future[Option[TaxAdjustment]] = {
-    val reliefsGivingBackTaxComponents = taxAdjustmentComponents(taxAccountFuture).map {
+  def reliefsGivingBackTaxComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+    val reliefsGivingBackTaxComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
@@ -92,8 +92,8 @@ class TotalTaxService @Inject() (
       }
   }
 
-  def otherTaxDueComponents(taxAccountFuture: Future[JsValue]): Future[Option[TaxAdjustment]] = {
-    val otherTaxDueComponents = taxAdjustmentComponents(taxAccountFuture).map {
+  def otherTaxDueComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+    val otherTaxDueComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
@@ -114,8 +114,8 @@ class TotalTaxService @Inject() (
       }
   }
 
-  def alreadyTaxedAtSourceComponents(taxAccountFuture: Future[JsValue]): Future[Option[TaxAdjustment]] = {
-    val alreadyTaxedSourcesComponents = taxAdjustmentComponents(taxAccountFuture).map {
+  def alreadyTaxedAtSourceComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+    val alreadyTaxedSourcesComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
@@ -138,8 +138,8 @@ class TotalTaxService @Inject() (
       }
   }
 
-  def taxReliefComponents(taxAccountFuture: Future[JsValue]): Future[Option[TaxAdjustment]] = {
-    lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountFuture).map {
+  def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+    lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
@@ -150,7 +150,7 @@ class TotalTaxService @Inject() (
       case None => Seq.empty[TaxAdjustmentComponent]
     }
 
-    lazy val codingComponentFuture = taxAccountFuture.map(
+    lazy val codingComponentFuture = taxAccountDetails.map(
       _.as[Seq[CodingComponent]](codingComponentReads)
     )
 
@@ -167,9 +167,9 @@ class TotalTaxService @Inject() (
     }
   }
 
-  def taxAdjustmentComponents(taxAccountFuture: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+  def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
 
-    val taxAdjustmentComponents = taxAccountFuture.map(
+    val taxAdjustmentComponents = taxAccountDetails.map(
       _.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads)
     )
 
