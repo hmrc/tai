@@ -23,15 +23,21 @@ import uk.gov.hmrc.benefits.controllers.auth.PertaxAuthAction
 @ImplementedBy(classOf[AuthJourneyImpl])
 trait AuthJourney {
   val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent]
+
+  val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent]
 }
 
 class AuthJourneyImpl @Inject() (
   authAction: AuthRetrievals,
   pertaxAuthAction: PertaxAuthAction,
+  pertaxAuthActionForEmployeeExpenses: PertaxAuthActionForEmployeeExpenses,
   defaultActionBuilder: DefaultActionBuilder
 ) extends AuthJourney {
 
   val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] =
     defaultActionBuilder andThen pertaxAuthAction andThen authAction
+
+  val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] =
+    defaultActionBuilder andThen pertaxAuthActionForEmployeeExpenses andThen authAction
 
 }

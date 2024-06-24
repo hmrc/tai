@@ -30,6 +30,8 @@ object FakeAuthJourney extends AuthJourney {
   }
 
   override val authWithUserDetails: ActionBuilderFixture = actionBuilderFixture
+
+  override val authForEmployeeExpenses: ActionBuilderFixture = actionBuilderFixture
 }
 
 trait ActionBuilderFixture extends ActionBuilder[AuthenticatedRequest, AnyContent] {

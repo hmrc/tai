@@ -46,7 +46,7 @@ class EmployeeExpensesController @Inject() (
     callUpdateEmployeeExpensesData(nino, year, iabd, EmployeeExpensesController.internet)
 
   private def callUpdateEmployeeExpensesData(nino: Nino, year: TaxYear, iabd: Int, source: Int): Action[JsValue] =
-    authentication.authWithUserDetails.async(parse.json) { implicit request =>
+    authentication.authForEmployeeExpenses.async(parse.json) { implicit request =>
       withJsonBody[IabdUpdateExpensesRequest] { iabdUpdateExpensesRequest =>
         employeeExpensesService
           .updateEmployeeExpensesData(
@@ -66,7 +66,7 @@ class EmployeeExpensesController @Inject() (
     }
 
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] =
-    authentication.authWithUserDetails.async { implicit request =>
+    authentication.authForEmployeeExpenses.async { implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
         Ok(Json.toJson(iabdData))
       } recoverWith taxAccountErrorHandler()

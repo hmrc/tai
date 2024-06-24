@@ -47,6 +47,8 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
 
   lazy val loggedInAuthenticationAuthJourney: AuthJourney = new AuthJourney {
     val authWithUserDetails: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
+
+    val authForEmployeeExpenses: ActionBuilder[AuthenticatedRequest, AnyContent] = actionBuilderFixture
   }
 
   val nino: Nino = new Generator(Random).nextNino
