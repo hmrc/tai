@@ -21,23 +21,24 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EstimatedPayCalculatorController @Inject() (
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.async(parse.json) { implicit request =>
-    withJsonBody[PayDetails] { payDetails =>
-      Future(Ok(Json.toJson(getCalculatedEstimatedPay(payDetails))))
-    }
+  def calculateFullYearEstimatedPay(): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
+    implicit request =>
+      withJsonBody[PayDetails] { payDetails =>
+        Future(Ok(Json.toJson(getCalculatedEstimatedPay(payDetails))))
+      }
   }
 
   private def getCalculatedEstimatedPay(payDetails: PayDetails) =

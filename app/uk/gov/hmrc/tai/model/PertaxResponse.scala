@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.tai.model
 
-case class SessionData(
-  nino: String,
-  taiRoot: Option[TaiRoot] = None,
-  taxSummaryDetailsCY: TaxSummaryDetails,
-  editIncomeForm: Option[EditIncomeForm] = None,
-  incomeCalculation: Option[IncomeCalculation] = None
+import play.api.libs.json.{Json, OFormat}
+
+case class PertaxResponse(
+  code: String,
+  message: String
 )
+
+object PertaxResponse {
+  implicit val formats: OFormat[PertaxResponse] = Json.format[PertaxResponse]
+}
