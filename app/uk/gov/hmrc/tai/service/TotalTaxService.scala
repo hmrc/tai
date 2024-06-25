@@ -43,7 +43,7 @@ class TotalTaxService @Inject() (
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
       alreadyTaxedAtSource <- taxAccountHelper.alreadyTaxedAtSourceComponents(taxAccountDetails)
-      taxOnOtherIncome     <- taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+      taxOnOtherIncome     <- taxAccountHelper.taxOnOtherIncome(taxAccountDetails)
       taxReliefComponents  <- taxAccountHelper.taxReliefComponents(taxAccountDetails)
     } yield TotalTax(
       totalTaxAmount,

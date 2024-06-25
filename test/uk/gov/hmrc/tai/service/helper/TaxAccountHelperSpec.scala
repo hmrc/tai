@@ -179,6 +179,24 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
+  "TaxOnOtherIncome" must {
+    "return tax on other income rate" in {
+      val sut = createSUT()
+      val result = sut.taxOnOtherIncome(taxAccountDetails).futureValue
+
+      result mustBe Some(40)
+    }
+
+    "return none " when {
+      "tax on other income is not present" in {
+        val sut = createSUT()
+        val result = sut.taxOnOtherIncome(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
   "Tax Reliefs Component" must {
     "return tax relief components including gift aid payment" in {
       val jsonWithGiftAidPayment = taxAccountSummaryNpsJson ++ Json.obj(

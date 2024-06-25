@@ -98,6 +98,9 @@ class TaxAccountHelper @Inject() ()(implicit ec: ExecutionContext)
       }
   }
 
+  def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
+    taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
+
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
