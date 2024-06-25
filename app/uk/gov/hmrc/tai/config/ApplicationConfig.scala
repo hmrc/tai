@@ -60,6 +60,7 @@ class DesConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("des-hod.da-pta.originatorId", "")
   lazy val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
+  lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("des-hod.timeoutInMilliseconds", 1000)
 }
 
 @Singleton
@@ -87,7 +88,7 @@ class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends Ba
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
-  lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
+  lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInMilliseconds").getOrElse(1200)
   lazy val mongoTTLUpdateIncome: Int =
     runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600 * 48)
 }
