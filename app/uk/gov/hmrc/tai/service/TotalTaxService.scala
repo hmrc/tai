@@ -39,7 +39,7 @@ class TotalTaxService @Inject() (
     val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
     for {
       incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
-      totalTaxAmount       <- taxAccountSummaryService.totalTaxAmount(nino, year)
+      totalTaxAmount       <- taxAccountSummaryService.totalEstimatedTax(nino, year)
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
       alreadyTaxedAtSource <- taxAccountHelper.alreadyTaxedAtSourceComponents(taxAccountDetails)

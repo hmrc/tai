@@ -45,7 +45,7 @@ class TaxAccountSummaryService @Inject() (
     request: Request[_]
   ): Future[TaxAccountSummary] =
     for {
-      totalEstimatedTax       <- totalTaxAmount(nino, year)
+      totalEstimatedTax       <- totalEstimatedTax(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
       taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
       totalTax                <- totalTaxService.totalTax(nino, year)
@@ -72,7 +72,7 @@ class TaxAccountSummaryService @Inject() (
       )
     }
 
-  def totalTaxAmount(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+  def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
 
