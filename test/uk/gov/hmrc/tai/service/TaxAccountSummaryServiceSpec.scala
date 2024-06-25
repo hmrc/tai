@@ -144,7 +144,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
     }
   }
 
-  "TotalTaxAmount" must {
+  "TotalEstimatedTax" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
         val underpaymentDeduction = Json.arr(
@@ -159,7 +159,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithUnderPayments))
 
-        val result = createSUT().totalTaxAmount(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -176,7 +176,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithOutstandingDebt))
 
-        val result = createSUT().totalTaxAmount(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -193,7 +193,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
 
-        val result = createSUT().totalTaxAmount(nino, TaxYear()).futureValue
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -229,7 +229,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithAllAffectingComponents))
 
-          val result = createSUT().totalTaxAmount(nino, TaxYear()).futureValue
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
           result mustBe BigDecimal(1371)
         }
       }
@@ -248,7 +248,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithNoEffectingComponent))
 
-          val result = createSUT().totalTaxAmount(nino, TaxYear()).futureValue
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
           result mustBe BigDecimal(1071)
         }
       }
