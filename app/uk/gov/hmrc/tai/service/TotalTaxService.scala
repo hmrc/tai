@@ -30,8 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class TotalTaxService @Inject() (
   taxAccountConnector: TaxAccountConnector,
-  taxAccountHelper: TaxAccountHelper,
-  taxAccountSummaryService: TaxAccountSummaryService
+  taxAccountHelper: TaxAccountHelper
 )(implicit ec: ExecutionContext)
     extends IncomeCategoryHodFormatters with TaxAccountSummaryHodFormatters {
 
@@ -39,7 +38,7 @@ class TotalTaxService @Inject() (
     val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
     for {
       incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
-      totalTaxAmount       <- taxAccountSummaryService.totalEstimatedTax(nino, year)
+      totalTaxAmount       <- taxAccountHelper.totalEstimatedTax(nino, year)
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
       alreadyTaxedAtSource <- taxAccountHelper.alreadyTaxedAtSourceComponents(taxAccountDetails)

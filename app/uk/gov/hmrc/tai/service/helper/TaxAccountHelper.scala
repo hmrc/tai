@@ -18,17 +18,36 @@ package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
 import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaxAccountHelper @Inject() ()(implicit ec: ExecutionContext)
+class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext)
     extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
+
+  def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
+      Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
+
+    taxAccountConnector
+      .taxAccount(nino, year)
+      .flatMap { taxAccount =>
+        val totalTax = taxAccount.as[BigDecimal](taxAccountSummaryReads)
+        val componentsCanAffectTotal = taxAccount
+          .as[Seq[CodingComponent]](codingComponentReads)
+          .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
+        Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
+      }
+  }
 
   def reliefsGivingBackTaxComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val reliefsGivingBackTaxComponents = taxAdjustmentComponents(taxAccountDetails).map {

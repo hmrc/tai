@@ -17,13 +17,12 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json.{JsArray, JsNull, Json}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation._
 import uk.gov.hmrc.tai.model.domain.income.{Live, OtherBasisOperation, TaxCodeIncome}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
@@ -37,63 +36,16 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
   private val totalTaxDetails = TotalTax(0, Seq.empty[IncomeCategory], None, None, None)
 
-  private val mockTaxAccountConnector = mock[TaxAccountConnector]
   private val mockCodingComponentService = mock[CodingComponentService]
   private val mockIncomeService = mock[IncomeService]
   private val mockTotalTaxService = mock[TotalTaxService]
+  private val mockTaxAccountHelper = mock[TaxAccountHelper]
 
   private def createSUT() = new TaxAccountSummaryService(
-    mockTaxAccountConnector,
     mockCodingComponentService,
     mockIncomeService,
-    mockTotalTaxService
-  )
-
-  private def createJsonWithDeductions(deductions: JsArray) = {
-    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
-    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
-  }
-
-  private val taxAccountSummaryNpsJson = Json.obj(
-    "totalLiability" -> Json.obj(
-      "totalLiability" -> 1111,
-      "nonSavings" -> Json.obj(
-        "totalIncome" -> Json.obj(
-          "iabdSummaries" -> JsArray(
-            Seq(
-              Json.obj(
-                "amount"         -> 100,
-                "type"           -> 19,
-                "npsDescription" -> "Non-Coded Income",
-                "employmentId"   -> JsNull
-              ),
-              Json.obj(
-                "amount"         -> 100,
-                "type"           -> 84,
-                "npsDescription" -> "Job-Seeker Allowance",
-                "employmentId"   -> JsNull
-              )
-            )
-          )
-        ),
-        "taxBands" -> JsArray(
-          Seq(
-            Json.obj(
-              "bandType" -> "B",
-              "income"   -> 1000,
-              "taxCode"  -> "BR",
-              "rate"     -> 40
-            ),
-            Json.obj(
-              "bandType" -> "D0",
-              "taxCode"  -> "BR",
-              "income"   -> 1000,
-              "rate"     -> 20
-            )
-          )
-        )
-      )
-    )
+    mockTotalTaxService,
+    mockTaxAccountHelper
   )
 
   "taxFreeAmountCalculation" must {
@@ -144,117 +96,6 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
     }
   }
 
-  "TotalEstimatedTax" must {
-    "return totalEstimatedTax from the TaxAccountSummary connector" when {
-      "underpayment from previous year present" in {
-        val underpaymentDeduction = Json.arr(
-          Json.obj(
-            "npsDescription" -> "Underpayment from previous year",
-            "amount"         -> 100,
-            "type"           -> 35,
-            "sourceAmount"   -> 100
-          )
-        )
-        val jsonWithUnderPayments = createJsonWithDeductions(underpaymentDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithUnderPayments))
-
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
-        result mustBe BigDecimal(1171)
-      }
-
-      "outstanding debt present" in {
-        val outstandingDebtDeduction = Json.arr(
-          Json.obj(
-            "npsDescription" -> "Outstanding Debt",
-            "amount"         -> 100,
-            "type"           -> 41,
-            "sourceAmount"   -> 100
-          )
-        )
-        val jsonWithOutstandingDebt = createJsonWithDeductions(outstandingDebtDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithOutstandingDebt))
-
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
-        result mustBe BigDecimal(1171)
-      }
-
-      "EstimatedTaxYouOweThisYear present" in {
-        val estimatedTaxOwedDeduction = Json.arr(
-          Json.obj(
-            "npsDescription" -> "Estimated Tax You Owe This Year",
-            "amount"         -> 100,
-            "type"           -> 45,
-            "sourceAmount"   -> 100
-          )
-        )
-        val jsonWithEstimatedTaxOwed = createJsonWithDeductions(estimatedTaxOwedDeduction)
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
-
-        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
-        result mustBe BigDecimal(1171)
-      }
-
-      "all components" which {
-        "can affect the totalTax are present" in {
-          val allAffectingDeductions = Json.arr(
-            Json.obj(
-              "npsDescription" -> "Underpayment from previous year",
-              "amount"         -> 100,
-              "type"           -> 35,
-              "sourceAmount"   -> 100
-            ),
-            Json.obj(
-              "npsDescription" -> "Outstanding Debt",
-              "amount"         -> 100,
-              "type"           -> 41,
-              "sourceAmount"   -> 100
-            ),
-            Json.obj(
-              "npsDescription" -> "Estimated Tax You Owe This Year",
-              "amount"         -> 100,
-              "type"           -> 45,
-              "sourceAmount"   -> 100
-            ),
-            Json.obj(
-              "npsDescription" -> "Something we aren't interested in",
-              "amount"         -> 100,
-              "type"           -> 911,
-              "sourceAmount"   -> 100
-            )
-          )
-          val jsonWithAllAffectingComponents = createJsonWithDeductions(allAffectingDeductions)
-          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-            .thenReturn(Future.successful(jsonWithAllAffectingComponents))
-
-          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
-          result mustBe BigDecimal(1371)
-        }
-      }
-
-      "no components" which {
-        "can affect the totalTax are present" in {
-          val noAffectingDeductions = Json.arr(
-            Json.obj(
-              "npsDescription" -> "Community Investment Tax Credit",
-              "amount"         -> 100,
-              "type"           -> 16,
-              "sourceAmount"   -> 100
-            )
-          )
-          val jsonWithNoEffectingComponent = createJsonWithDeductions(noAffectingDeductions)
-          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-            .thenReturn(Future.successful(jsonWithNoEffectingComponent))
-
-          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
-          result mustBe BigDecimal(1071)
-        }
-      }
-    }
-  }
-
   "TaxAccountSummary" must {
     "return zero value in year adjustment figures" when {
       "no in year adjustment values are present on individual TaxCodeIncomeSource's" in {
@@ -293,12 +134,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        val taxAccountJson = Json.obj(
-          "totalLiability" -> Json.obj("totalLiability" -> 1111)
-        )
-
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
-
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -356,10 +192,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
 
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
-
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 1111))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
-
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -408,9 +241,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(taxCodeIncomes))
 
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 1111))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
-
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
         when(mockTotalTaxService.totalTax(any(), any())(any())).thenReturn(Future.successful(totalTaxDetails))
         when(mockTotalTaxService.taxFreeAllowance(any(), any())(any())).thenReturn(Future.successful(BigDecimal(100)))
 
@@ -463,8 +294,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
           )
         )
 
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 1111))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
 
         when(mockCodingComponentService.codingComponents(meq(nino), any())(any()))
           .thenReturn(Future.successful(taxFreeAmountComponents))
@@ -492,8 +322,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 1111))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, 0, 1000, 0, Seq.empty[TaxBand]),
@@ -525,8 +354,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 1111))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(1111))
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, 0, 1000, 0, Seq.empty[TaxBand])
@@ -552,8 +380,7 @@ class TaxAccountSummaryServiceSpec extends BaseSpec {
         when(mockIncomeService.taxCodeIncomes(meq(nino), any())(any(), any()))
           .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
-        val taxAccountJson = Json.obj("totalLiability" -> Json.obj("totalLiability" -> 0))
-        when(mockTaxAccountConnector.taxAccount(meq(nino), any())(any())).thenReturn(Future.successful(taxAccountJson))
+        when(mockTaxAccountHelper.totalEstimatedTax(meq(nino), any())(any())).thenReturn(Future.successful(0))
 
         val incomeCategories = Seq(
           IncomeCategory(NonSavingsIncomeCategory, 0, 0, 8000, Seq.empty[TaxBand])

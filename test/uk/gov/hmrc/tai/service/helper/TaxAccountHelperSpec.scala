@@ -16,14 +16,19 @@
 
 package uk.gov.hmrc.tai.service.helper
 
+import org.mockito.ArgumentMatchers.any
 import play.api.libs.json.{JsArray, JsNull, Json}
+import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
 class TaxAccountHelperSpec extends BaseSpec {
-  private def createSUT() = new TaxAccountHelper()
+
+  private val mockTaxAccountConnector = mock[TaxAccountConnector]
+  private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector)
 
   private val taxAccountSummaryNpsJson = Json.obj(
     "totalLiability" -> Json.obj(
@@ -93,6 +98,121 @@ class TaxAccountHelperSpec extends BaseSpec {
 
   private val taxAccountDetails = Future.successful(taxAccountSummaryNpsJson)
   private val emptyTaxAccountDetails = Future.successful(Json.obj())
+  private def createJsonWithDeductions(deductions: JsArray) = {
+    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
+    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
+  }
+
+  "TotalEstimatedTax" must {
+    "return totalEstimatedTax from the TaxAccountSummary connector" when {
+      "underpayment from previous year present" in {
+        val underpaymentDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Underpayment from previous year",
+            "amount"         -> 100,
+            "type"           -> 35,
+            "sourceAmount"   -> 100
+          )
+        )
+        val jsonWithUnderPayments = createJsonWithDeductions(underpaymentDeduction)
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(jsonWithUnderPayments))
+
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        result mustBe BigDecimal(1171)
+      }
+
+      "outstanding debt present" in {
+        val outstandingDebtDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Outstanding Debt",
+            "amount"         -> 100,
+            "type"           -> 41,
+            "sourceAmount"   -> 100
+          )
+        )
+        val jsonWithOutstandingDebt = createJsonWithDeductions(outstandingDebtDeduction)
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(jsonWithOutstandingDebt))
+
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        result mustBe BigDecimal(1171)
+      }
+
+      "EstimatedTaxYouOweThisYear present" in {
+        val estimatedTaxOwedDeduction = Json.arr(
+          Json.obj(
+            "npsDescription" -> "Estimated Tax You Owe This Year",
+            "amount"         -> 100,
+            "type"           -> 45,
+            "sourceAmount"   -> 100
+          )
+        )
+        val jsonWithEstimatedTaxOwed = createJsonWithDeductions(estimatedTaxOwedDeduction)
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
+
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+        result mustBe BigDecimal(1171)
+      }
+
+      "all components" which {
+        "can affect the totalTax are present" in {
+          val allAffectingDeductions = Json.arr(
+            Json.obj(
+              "npsDescription" -> "Underpayment from previous year",
+              "amount"         -> 100,
+              "type"           -> 35,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Outstanding Debt",
+              "amount"         -> 100,
+              "type"           -> 41,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Estimated Tax You Owe This Year",
+              "amount"         -> 100,
+              "type"           -> 45,
+              "sourceAmount"   -> 100
+            ),
+            Json.obj(
+              "npsDescription" -> "Something we aren't interested in",
+              "amount"         -> 100,
+              "type"           -> 911,
+              "sourceAmount"   -> 100
+            )
+          )
+          val jsonWithAllAffectingComponents = createJsonWithDeductions(allAffectingDeductions)
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+            .thenReturn(Future.successful(jsonWithAllAffectingComponents))
+
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+          result mustBe BigDecimal(1371)
+        }
+      }
+
+      "no components" which {
+        "can affect the totalTax are present" in {
+          val noAffectingDeductions = Json.arr(
+            Json.obj(
+              "npsDescription" -> "Community Investment Tax Credit",
+              "amount"         -> 100,
+              "type"           -> 16,
+              "sourceAmount"   -> 100
+            )
+          )
+          val jsonWithNoEffectingComponent = createJsonWithDeductions(noAffectingDeductions)
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+            .thenReturn(Future.successful(jsonWithNoEffectingComponent))
+
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
+          result mustBe BigDecimal(1071)
+        }
+      }
+    }
+  }
 
   "Reliefs Giving Back Tax Components" must {
     "return only reliefs giving back tax components" in {
