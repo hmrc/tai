@@ -17,17 +17,16 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
-import com.google.inject.Inject
-import uk.gov.hmrc.mongo.lock.MongoLockRepository
-
-import scala.concurrent.duration.{Duration, SECONDS}
-import scala.concurrent.{ExecutionContext, Future}
 import cats.implicits._
+import com.google.inject.Inject
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import javax.inject.Singleton
+import scala.concurrent.duration.{Duration, MILLISECONDS}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 case object OopsCannotAcquireLock extends Exception
@@ -56,7 +55,8 @@ class LockServiceImpl @Inject() (lockRepo: MongoLockRepository, appConfig: Mongo
         .takeLock(
           lockId = sessionId,
           owner = owner,
-          ttl = Duration(appConfig.mongoLockTTL, SECONDS) // this need to be longer than the timeout from http_verbs
+          ttl =
+            Duration(appConfig.mongoLockTTL, MILLISECONDS) // this need to be longer than the timeout from http_verbs
         )
         .map(_.fold(false)(_ => true))
         .recover { case NonFatal(ex) =>
