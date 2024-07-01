@@ -18,9 +18,11 @@ package uk.gov.hmrc.tai.model.domain.formatters
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsResultException, Json}
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
 import uk.gov.hmrc.tai.model.domain.calculation._
+import uk.gov.hmrc.tai.service.TotalTaxService.taxFreeAllowanceReads
 
-class IncomeCategoryHodFormattersSpec extends PlaySpec with IncomeCategoryHodFormatters {
+class IncomeCategoryHodFormattersSpec extends PlaySpec {
 
   "incomeCategoriesReads" must {
     "return empty list" when {
