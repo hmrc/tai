@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.formatters
 
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.totalLiabilityIabds
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 
 import scala.annotation.tailrec
@@ -51,7 +52,7 @@ trait TaxAccountSummaryHodFormatters
   }
 }
 
-trait TaxOnOtherIncomeFormatters extends BaseTaxAccountHodFormatters {
+trait TaxOnOtherIncomeFormatters {
   private val NonCodedIncome = 19
 
   val taxOnOtherIncomeReads = new Reads[Option[TaxOnOtherIncome]] {

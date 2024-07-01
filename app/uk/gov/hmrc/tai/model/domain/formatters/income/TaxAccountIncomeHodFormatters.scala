@@ -17,11 +17,11 @@
 package uk.gov.hmrc.tai.model.domain.formatters.income
 
 import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.{BaseTaxAccountHodFormatters, NpsIabdSummary}
 import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
 
-trait TaxAccountIncomeHodFormatters extends BaseTaxAccountHodFormatters {
+trait TaxAccountIncomeHodFormatters {
 
   val nonTaxCodeIncomeReads = new Reads[Seq[OtherNonTaxCodeIncome]] {
     override def reads(json: JsValue): JsResult[Seq[OtherNonTaxCodeIncome]] = {
