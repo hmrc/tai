@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.tai.model.domain.benefits
 
+import play.api.libs.functional.syntax.unlift
+
 import java.time.LocalDate
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsDefined, JsPath, JsResult, JsSuccess, JsValue, Json, OFormat, Reads, Writes}
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
+import play.api.libs.functional.syntax._
 
 case class CompanyCar(
   carSeqNo: Int,
@@ -42,6 +45,54 @@ case class CompanyCarBenefit(
 
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
+
+
+  def companyCarBenefitReads = new Reads[CompanyCarBenefit] {
+    override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
+      val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
+      val grossAmount = (json \ "grossAmount").as[BigDecimal]
+      val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReads))
+      JsSuccess(CompanyCarBenefit(empSeqNo, grossAmount, carDetails))
+    }
+  }
+
+  def companyCarReads = new Reads[CompanyCar] {
+    override def reads(json: JsValue): JsResult[CompanyCar] = {
+      val makeModel = (json \ "makeModel").as[String]
+      val carSeqNo = (json \ "carSequenceNumber").as[Int]
+      val dateMadeAvailable = (json \ "dateMadeAvailable").asOpt[LocalDate]
+      val dateWithdrawn = (json \ "dateWithdrawn").asOpt[LocalDate]
+      val fuelBenefit = json \ "fuelBenefit"
+
+      val hasActiveFuelBenefit = fuelBenefit match {
+        case JsDefined(fuel) =>
+          val dateWithdrawn = (fuel \ "dateWithdrawn").asOpt[LocalDate]
+          dateWithdrawn.isEmpty
+        case _ => false
+      }
+
+      val dateFuelBenefitMadeAvailable =
+        if (hasActiveFuelBenefit) (fuelBenefit \ "dateMadeAvailable").asOpt[LocalDate] else None
+
+      JsSuccess(
+        CompanyCar(
+          carSeqNo,
+          makeModel,
+          hasActiveFuelBenefit,
+          dateMadeAvailable,
+          dateFuelBenefitMadeAvailable,
+          dateWithdrawn
+        )
+      )
+    }
+  }
+
+  val companyCarRemoveWrites: Writes[WithdrawCarAndFuel] = (
+    (JsPath \ "version").write[Int] and
+      (JsPath \ "removeCarAndFuel" \ "car" \ "withdrawDate").write[LocalDate] and
+      (JsPath \ "removeCarAndFuel" \ "fuel" \ "withdrawDate").writeNullable[LocalDate]
+    ) (unlift(WithdrawCarAndFuel.unapply))
+
 }
 
 case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
