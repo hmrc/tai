@@ -46,7 +46,6 @@ case class CompanyCarBenefit(
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
 
-
   def companyCarBenefitReads = new Reads[CompanyCarBenefit] {
     override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
       val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
@@ -91,7 +90,7 @@ object CompanyCarBenefit {
     (JsPath \ "version").write[Int] and
       (JsPath \ "removeCarAndFuel" \ "car" \ "withdrawDate").write[LocalDate] and
       (JsPath \ "removeCarAndFuel" \ "fuel" \ "withdrawDate").writeNullable[LocalDate]
-    ) (unlift(WithdrawCarAndFuel.unapply))
+  )(unlift(WithdrawCarAndFuel.unapply))
 
 }
 
