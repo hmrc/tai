@@ -21,7 +21,6 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
@@ -37,7 +36,7 @@ class TaxAccountSummaryService @Inject() (
   totalTaxService: TotalTaxService
 )(implicit
   ec: ExecutionContext
-) extends TaxAccountSummaryHodFormatters {
+) {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,

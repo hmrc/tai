@@ -17,9 +17,9 @@
 package uk.gov.hmrc.tai.model.domain.formatters.taxComponents
 
 import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.formatters.{BaseTaxAccountHodFormatters, NpsIabdSummary}
 
 trait TaxAccountHodFormatters extends TotalLiabilityHodReads with IncomeSourcesHodReads {
 
@@ -151,7 +151,7 @@ trait IncomeSourcesHodReads {
   )
 }
 
-trait TotalLiabilityHodReads extends BaseTaxAccountHodFormatters {
+trait TotalLiabilityHodReads {
 
   private[taxComponents] val totalLiabilityReads = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {

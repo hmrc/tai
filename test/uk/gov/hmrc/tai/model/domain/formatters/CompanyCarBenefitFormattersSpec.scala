@@ -20,11 +20,12 @@ import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.{companyCarBenefitReads, companyCarReads, companyCarRemoveWrites}
 import uk.gov.hmrc.tai.model.domain.benefits.{CompanyCar, CompanyCarBenefit, WithdrawCarAndFuel}
 
 import scala.util.Random
 
-class CompanyCarBenefitFormattersSpec extends PlaySpec with CompanyCarBenefitFormatters {
+class CompanyCarBenefitFormattersSpec extends PlaySpec {
 
   "companyCarBenefitReads" must {
     "be able to read correct companyCarBenefit json" when {
