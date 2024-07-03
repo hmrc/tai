@@ -20,10 +20,11 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
+import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.nonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.taxCodeIncomeSourcesReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 
@@ -32,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabdService: IabdService)(implicit
   ec: ExecutionContext
-) extends TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters {
+) {
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
