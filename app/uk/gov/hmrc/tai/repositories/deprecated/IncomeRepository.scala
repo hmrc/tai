@@ -20,9 +20,8 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
+import uk.gov.hmrc.tai.model.domain.{IabdDetails, UntaxedInterestIncome}
 import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.nonTaxCodeIncomeReads
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.taxCodeIncomeSourcesReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
