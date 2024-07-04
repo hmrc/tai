@@ -21,10 +21,11 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.{codingComponentReads, incomeSourceReads, totalLiabilityReads}
 
 import scala.util.Random
 
-class TaxAccountHodFormattersSpec extends PlaySpec with TaxAccountHodFormatters {
+class TaxAccountHodFormattersSpec extends PlaySpec {
 
   "incomeSourceReads" must {
     "return empty list" when {
