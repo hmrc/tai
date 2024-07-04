@@ -31,7 +31,7 @@ package object rti {
 
   implicit val freqFormat: Format[PayFrequency.Value] = JsonExtra.enumerationFormat(PayFrequency)
 
-  implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+  val stringMapFormat: Format[Map[String, BigDecimal]] =
     JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val formatLocalDate: Format[LocalDate] = Format(

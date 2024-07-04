@@ -16,6 +16,16 @@
 
 package uk.gov.hmrc.tai.model.api
 
+import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.model.domain.Employment
+import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters.employmentHodReads
 
 case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
+
+object EmploymentCollection {
+  val employmentCollectionHodReads: Reads[EmploymentCollection] = new Reads[EmploymentCollection] {
+    override def reads(json: JsValue): JsResult[EmploymentCollection] = {
+      JsSuccess(EmploymentCollection(json.as[Seq[JsValue]].map(_.as[Employment](employmentHodReads)), None))
+    }
+  }
+}

@@ -31,10 +31,10 @@ trait EmploymentHodFormatters {
 
   private val logger: Logger = Logger(getClass.getName)
 
-  implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+  val stringMapFormat: Format[Map[String, BigDecimal]] =
     JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
-  implicit val employmentHodReads: Reads[Employment] = new Reads[Employment] {
+  val employmentHodReads: Reads[Employment] = new Reads[Employment] {
 
     val formatEmploymentLocalDate: Format[LocalDate] = Format(
       new Reads[LocalDate] {
@@ -100,10 +100,7 @@ trait EmploymentHodFormatters {
     }
   }
 
-  implicit val employmentCollectionHodReads: Reads[EmploymentCollection] = new Reads[EmploymentCollection] {
-    override def reads(json: JsValue): JsResult[EmploymentCollection] =
-      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-  }
+
 
   val paymentHodReads: Reads[Payment] = new Reads[Payment] {
     override def reads(json: JsValue): JsResult[Payment] = {

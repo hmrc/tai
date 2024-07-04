@@ -48,12 +48,12 @@ object JsonExtra {
           }.flatMap {
             case Success(r) => Some(r)
             case Failure(e) =>
-              log.warn("unable to parse json - omitting element\n" + e.getLocalizedMessage)
+              log.error("unable to parse json - omitting element\n" + e.getLocalizedMessage, e)
               None
           }.toList
         )
       case e =>
-        log.warn(s"Expected a JsArray, found $e, fudging a Nil", e)
+        log.error(s"Expected a JsArray, found $e, fudging a Nil", e)
         JsSuccess(Nil)
     }
     override def writes(rs: List[T]): JsValue =

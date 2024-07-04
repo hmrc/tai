@@ -81,7 +81,15 @@ class CachingRtiConnector @Inject() (
     key: String
   )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
 
-    def fetchAndCache: IO[Either[L, A]] =
+    def fetchAndCache: IO[Either[L, A]] = {
+      val dd: EitherT[Future, L, (String, String)] = f.biflatMap(error => ???
+      , result => EitherT[Future, L, (String, String)](
+          sessionCacheRepository
+            .putSession[A](DataKey[A](key), result)
+            .map(Right(_))
+        )
+      )
+
       IO.fromFuture(IO((for {
         result <- f
         _ <- EitherT[Future, L, (String, String)](
@@ -90,6 +98,7 @@ class CachingRtiConnector @Inject() (
                  .map(Right(_))
              )
       } yield result).value))
+    }
 
     def readAndUpdate: IO[Either[L, A]] =
       IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
