@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, Reads}
 
 case class IabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal)
 
 object IabdSummary {
-implicit val iabdSummaryReads: Reads[IabdSummary] = (
+  implicit val iabdSummaryReads: Reads[IabdSummary] = (
     (JsPath \ "type").read[Int] and
       (JsPath \ "employmentId").readNullable[Int] and
       (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
