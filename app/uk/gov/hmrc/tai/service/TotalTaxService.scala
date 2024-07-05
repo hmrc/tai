@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 import uk.gov.hmrc.tai.service.TotalTaxService.taxFreeAllowanceReads
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 
