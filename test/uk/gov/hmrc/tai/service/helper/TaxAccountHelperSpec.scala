@@ -14,27 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories
+package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.any
 import play.api.libs.json.{JsArray, JsNull, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class TaxAccountSummaryRepositorySpec extends BaseSpec {
+class TaxAccountHelperSpec extends BaseSpec {
 
-  private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
-  private def createSUT() = new TaxAccountSummaryRepository(mockTaxAccountConnector)
-
-  private def createJsonWithDeductions(deductions: JsArray) = {
-    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
-    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
-  }
+  private val mockTaxAccountConnector = mock[TaxAccountConnector]
+  private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector)
 
   private val taxAccountSummaryNpsJson = Json.obj(
     "totalLiability" -> Json.obj(
@@ -102,7 +96,14 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
     )
   )
 
-  "TaxAccountSummary" must {
+  private val taxAccountDetails = Future.successful(taxAccountSummaryNpsJson)
+  private val emptyTaxAccountDetails = Future.successful(Json.obj())
+  private def createJsonWithDeductions(deductions: JsArray) = {
+    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
+    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
+  }
+
+  "TotalEstimatedTax" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
         val underpaymentDeduction = Json.arr(
@@ -117,9 +118,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithUnderPayments))
 
-        val sut = createSUT()
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
-
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -136,9 +135,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithOutstandingDebt))
 
-        val sut = createSUT()
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
-
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -155,9 +152,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
           .thenReturn(Future.successful(jsonWithEstimatedTaxOwed))
 
-        val sut = createSUT()
-        val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
-
+        val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
         result mustBe BigDecimal(1171)
       }
 
@@ -193,9 +188,7 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithAllAffectingComponents))
 
-          val sut = createSUT()
-          val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
-
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
           result mustBe BigDecimal(1371)
         }
       }
@@ -214,21 +207,181 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
           when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
             .thenReturn(Future.successful(jsonWithNoEffectingComponent))
 
-          val sut = createSUT()
-          val result = sut.taxAccountSummary(nino, TaxYear()).futureValue
-
+          val result = createSUT().totalEstimatedTax(nino, TaxYear()).futureValue
           result mustBe BigDecimal(1071)
         }
       }
     }
+  }
 
+  "Reliefs Giving Back Tax Components" must {
+    "return only reliefs giving back tax components" in {
+      val sut = createSUT()
+      val result = sut.reliefsGivingBackTaxComponents(taxAccountDetails).futureValue
+
+      result mustBe Some(
+        TaxAdjustment(
+          1100.5,
+          Seq(
+            TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
+            TaxAdjustmentComponent(ConcessionalRelief, 100.5),
+            TaxAdjustmentComponent(MaintenancePayments, 200),
+            TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
+            TaxAdjustmentComponent(DoubleTaxationRelief, 400)
+          )
+        )
+      )
+    }
+
+    "return empty list " when {
+      "reliefs giving back tax components are not present" in {
+        val sut = createSUT()
+        val result = sut.reliefsGivingBackTaxComponents(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
+  "Other Tax Due Components" must {
+    "return only other tax due components" in {
+      val sut = createSUT()
+      val result = sut.otherTaxDueComponents(taxAccountDetails).futureValue
+
+      result mustBe Some(
+        TaxAdjustment(
+          700,
+          Seq(
+            TaxAdjustmentComponent(ExcessGiftAidTax, 100),
+            TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
+            TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
+            TaxAdjustmentComponent(ChildBenefit, 300)
+          )
+        )
+      )
+    }
+
+    "return empty list " when {
+      "other tax components are not present" in {
+        val sut = createSUT()
+        val result = sut.otherTaxDueComponents(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
+  "Already Taxed At Sources Components" must {
+    "return only already taxed at source components" in {
+      val sut = createSUT()
+      val result = sut.alreadyTaxedAtSourceComponents(taxAccountDetails).futureValue
+
+      result mustBe Some(
+        TaxAdjustment(
+          700,
+          Seq(
+            TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
+            TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
+            TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
+            TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
+          )
+        )
+      )
+    }
+
+    "return empty list " when {
+      "already tax at source components are not present" in {
+        val sut = createSUT()
+        val result = sut.alreadyTaxedAtSourceComponents(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
+  "TaxOnOtherIncome" must {
+    "return tax on other income rate" in {
+      val sut = createSUT()
+      val result = sut.taxOnOtherIncome(taxAccountDetails).futureValue
+
+      result mustBe Some(40)
+    }
+
+    "return none " when {
+      "tax on other income is not present" in {
+        val sut = createSUT()
+        val result = sut.taxOnOtherIncome(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
+  "Tax Reliefs Component" must {
+    "return tax relief components including gift aid payment" in {
+      val jsonWithGiftAidPayment = taxAccountSummaryNpsJson ++ Json.obj(
+        "incomeSources" -> Json.arr(
+          Json.obj(
+            "allowances" -> Json.arr(
+              Json.obj(
+                "npsDescription" -> "Gift aid payment",
+                "amount"         -> 100,
+                "type"           -> 6,
+                "sourceAmount"   -> 100
+              )
+            )
+          )
+        )
+      )
+
+      val taxAccountWithGiftAidPayment = Future.successful(jsonWithGiftAidPayment)
+      val sut = createSUT()
+      val result = sut.taxReliefComponents(taxAccountWithGiftAidPayment).futureValue
+
+      result mustBe Some(
+        TaxAdjustment(
+          1000,
+          Seq(
+            TaxAdjustmentComponent(PersonalPensionPayment, 600),
+            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200),
+            TaxAdjustmentComponent(GiftAidPayments, 100)
+          )
+        )
+      )
+    }
+
+    "return tax relief components excluding gift aid payment" in {
+      val sut = createSUT()
+      val result = sut.taxReliefComponents(taxAccountDetails).futureValue
+
+      result mustBe Some(
+        TaxAdjustment(
+          900,
+          Seq(
+            TaxAdjustmentComponent(PersonalPensionPayment, 600),
+            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+          )
+        )
+      )
+    }
+
+    "return empty list" when {
+      "there is no data" in {
+        val sut = createSUT()
+        val result = sut.taxReliefComponents(emptyTaxAccountDetails).futureValue
+
+        result mustBe None
+      }
+    }
+  }
+
+  "Tax Adjustment Components" must {
     "return tax adjustment components" when {
       "components are present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
         val sut = createSUT()
-        val result = sut.taxAdjustmentComponents(nino, TaxYear()).futureValue
+        val result = sut.taxAdjustmentComponents(taxAccountDetails).futureValue
 
         result mustBe Some(
           TaxAdjustment(
@@ -258,206 +411,8 @@ class TaxAccountSummaryRepositorySpec extends BaseSpec {
 
     "return empty tax adjustment components" when {
       "no tax adjustment component is present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
         val sut = createSUT()
-        val result = sut.taxAdjustmentComponents(nino, TaxYear()).futureValue
-
-        result mustBe None
-      }
-    }
-  }
-
-  "Reliefs Giving Back Tax Components" must {
-    "return only reliefs giving back tax components" in {
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
-      val sut = createSUT()
-      val result = sut.reliefsGivingBackTaxComponents(nino, TaxYear()).futureValue
-
-      result mustBe Some(
-        TaxAdjustment(
-          1100.5,
-          Seq(
-            TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
-            TaxAdjustmentComponent(ConcessionalRelief, 100.5),
-            TaxAdjustmentComponent(MaintenancePayments, 200),
-            TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
-            TaxAdjustmentComponent(DoubleTaxationRelief, 400)
-          )
-        )
-      )
-    }
-
-    "return empty list " when {
-      "reliefs giving back tax components are not present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
-        val sut = createSUT()
-        val result = sut.reliefsGivingBackTaxComponents(nino, TaxYear()).futureValue
-
-        result mustBe None
-      }
-    }
-  }
-
-  "Other Tax Due Components" must {
-    "return only other tax due components" in {
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
-      val sut = createSUT()
-      val result = sut.otherTaxDueComponents(nino, TaxYear()).futureValue
-
-      result mustBe Some(
-        TaxAdjustment(
-          700,
-          Seq(
-            TaxAdjustmentComponent(ExcessGiftAidTax, 100),
-            TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
-            TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
-            TaxAdjustmentComponent(ChildBenefit, 300)
-          )
-        )
-      )
-    }
-
-    "return empty list " when {
-      "other tax components are not present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
-        val sut = createSUT()
-        val result = sut.otherTaxDueComponents(nino, TaxYear()).futureValue
-
-        result mustBe None
-      }
-    }
-  }
-
-  "Already Taxed At Sources Components" must {
-    "return only already taxed at source components" in {
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
-      val sut = createSUT()
-      val result = sut.alreadyTaxedAtSourceComponents(nino, TaxYear()).futureValue
-
-      result mustBe Some(
-        TaxAdjustment(
-          700,
-          Seq(
-            TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
-            TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
-            TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
-            TaxAdjustmentComponent(TaxCreditOnForeignIncomeDividends, 300)
-          )
-        )
-      )
-    }
-
-    "return empty list " when {
-      "already tax at source components are not present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
-        val sut = createSUT()
-        val result = sut.alreadyTaxedAtSourceComponents(nino, TaxYear()).futureValue
-
-        result mustBe None
-      }
-    }
-  }
-
-  "Tax on other income Component" must {
-    "return only tax on other income components" in {
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
-      val sut = createSUT()
-      val result = sut.taxOnOtherIncome(nino, TaxYear()).futureValue
-
-      result mustBe Some(40)
-    }
-
-    "return empty list " when {
-      "tax on other income is not present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
-        val sut = createSUT()
-        val result = sut.taxOnOtherIncome(nino, TaxYear()).futureValue
-
-        result mustBe None
-      }
-    }
-  }
-
-  "Tax Reliefs Component" must {
-    "return tax relief components including gift aid payment" in {
-      val jsonWithGiftAidPayment = taxAccountSummaryNpsJson ++ Json.obj(
-        "incomeSources" -> Json.arr(
-          Json.obj(
-            "allowances" -> Json.arr(
-              Json.obj(
-                "npsDescription" -> "Gift aid payment",
-                "amount"         -> 100,
-                "type"           -> 6,
-                "sourceAmount"   -> 100
-              )
-            )
-          )
-        )
-      )
-
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(jsonWithGiftAidPayment))
-
-      val sut = createSUT()
-      val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
-
-      result mustBe Some(
-        TaxAdjustment(
-          1000,
-          Seq(
-            TaxAdjustmentComponent(PersonalPensionPayment, 600),
-            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
-            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200),
-            TaxAdjustmentComponent(GiftAidPayments, 100)
-          )
-        )
-      )
-    }
-
-    "return tax relief components excluding gift aid payment" in {
-      when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-        .thenReturn(Future.successful(taxAccountSummaryNpsJson))
-
-      val sut = createSUT()
-      val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
-
-      result mustBe Some(
-        TaxAdjustment(
-          900,
-          Seq(
-            TaxAdjustmentComponent(PersonalPensionPayment, 600),
-            TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
-            TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
-          )
-        )
-      )
-    }
-
-    "return empty list" when {
-      "there is no data" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
-          .thenReturn(Future.successful(Json.obj()))
-
-        val sut = createSUT()
-        val result = sut.taxReliefComponents(nino, TaxYear()).futureValue
+        val result = sut.taxAdjustmentComponents(emptyTaxAccountDetails).futureValue
 
         result mustBe None
       }
