@@ -21,12 +21,9 @@ import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
 case class IabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal)
 
 object IabdSummary {
-  val iabdSummaryReads = new Reads[IabdSummary] {
-    override def reads(json: JsValue): JsResult[IabdSummary] = {
-      val componentType = (json \ "type").as[Int]
-      val employmentId = (json \ "employmentId").asOpt[Int]
-      val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(IabdSummary(componentType, employmentId, amount))
-    }
-  }
+implicit val iabdSummaryReads: Reads[IabdSummary] = (
+    (JsPath \ "type").read[Int] and
+      (JsPath \ "employmentId").readNullable[Int] and
+      (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
+  )(IabdSummary.apply _)
 }
