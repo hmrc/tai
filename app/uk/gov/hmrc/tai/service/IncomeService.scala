@@ -51,6 +51,48 @@ class IncomeService @Inject() (
   private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
     taxCodeIncomes.filter(income => income.componentType == incomeType)
 
+  private def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
+    lazy val taxCodeIncomeFuture = taxAccountConnector
+      .taxAccount(nino, year)
+      .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
+    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
+
+    for {
+      taxCodeIncomes <- taxCodeIncomeFuture
+      iabdDetails    <- iabdDetailsFuture
+    } yield taxCodeIncomes.map { taxCodeIncome =>
+      addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
+    }
+  }
+
+  private def addIabdDetailsToTaxCodeIncome(iabdDetails: Seq[IabdDetails], taxCodeIncome: TaxCodeIncome) = {
+    val iabdDetail = iabdDetails.find(_.employmentSequenceNumber == taxCodeIncome.employmentId)
+    taxCodeIncome.copy(
+      iabdUpdateSource = iabdDetail.flatMap(_.source).flatMap(code => IabdUpdateSource.fromCode(code)),
+      updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
+      updateActionDate = iabdDetail.flatMap(_.captureDate)
+    )
+  }
+
+  private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[Option[String]] =
+    fetchTaxCodeIncomes(nino, year) map { taxCodeIncomes =>
+      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
+    }
+
+  private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
+    hc: HeaderCarrier,
+    request: AuthenticatedRequest[_]
+  ): Future[IncomeUpdateResponse] =
+    for {
+      updateAmountResult <-
+        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
+    } yield updateAmountResult match {
+      case HodUpdateSuccess => IncomeUpdateSuccess
+      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
+    }
+
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
@@ -204,46 +246,4 @@ class IncomeService @Inject() (
         IncomeUpdateFailed("Could not parse etag")
       }
   }
-
-  def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    lazy val taxCodeIncomeFuture = taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
-    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
-
-    for {
-      taxCodeIncomes <- taxCodeIncomeFuture
-      iabdDetails    <- iabdDetailsFuture
-    } yield taxCodeIncomes.map { taxCodeIncome =>
-      addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
-    }
-  }
-
-  private def addIabdDetailsToTaxCodeIncome(iabdDetails: Seq[IabdDetails], taxCodeIncome: TaxCodeIncome) = {
-    val iabdDetail = iabdDetails.find(_.employmentSequenceNumber == taxCodeIncome.employmentId)
-    taxCodeIncome.copy(
-      iabdUpdateSource = iabdDetail.flatMap(_.source).flatMap(code => IabdUpdateSource.fromCode(code)),
-      updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
-      updateActionDate = iabdDetail.flatMap(_.captureDate)
-    )
-  }
-
-  private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
-    hc: HeaderCarrier
-  ): Future[Option[String]] =
-    fetchTaxCodeIncomes(nino, year) map { taxCodeIncomes =>
-      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
-    }
-
-  private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
-  ): Future[IncomeUpdateResponse] =
-    for {
-      updateAmountResult <-
-        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
-    } yield updateAmountResult match {
-      case HodUpdateSuccess => IncomeUpdateSuccess
-      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
-    }
 }
