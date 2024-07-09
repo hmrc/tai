@@ -19,10 +19,11 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsValue, Json}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.model.domain.IabdDetails.iabdEstimatedPayReads
 
 import scala.util.Random
 
-class IabdHodFormattersSpec extends PlaySpec with IabdHodFormatters {
+class IabdHodFormattersSpec extends PlaySpec {
 
   "Iabd Formatter" must {
 

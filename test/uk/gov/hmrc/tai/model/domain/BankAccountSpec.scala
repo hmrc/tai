@@ -18,9 +18,8 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.tai.model.domain.formatters.BbsiMongoFormatters
 
-class BankAccountSpec extends PlaySpec with BbsiMongoFormatters {
+class BankAccountSpec extends PlaySpec {
 
   "BankAccount" must {
     "not contain bank accounts" when {

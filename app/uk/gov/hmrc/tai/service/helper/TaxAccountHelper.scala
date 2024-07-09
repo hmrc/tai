@@ -21,18 +21,18 @@ import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryReads, taxOnOtherIncomeRead}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.TaxAccountHodFormatters
-import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentReads
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentReads
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext)
-    extends TaxAccountSummaryHodFormatters with TaxAccountHodFormatters {
+class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext) {
 
   def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =

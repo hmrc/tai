@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters
+package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json._
+import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, JsonValidationError, Reads, Writes}
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 
 import java.time.LocalDate
@@ -32,7 +32,7 @@ case class IabdDetails(
   captureDate: Option[LocalDate]
 )
 
-object IabdDetails {
+object IabdDetails extends IabdTypeConstants {
   implicit val formatLocalDate: Format[LocalDate] = Format(
     new Reads[LocalDate] {
       val dateRegex: Regex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
@@ -51,11 +51,6 @@ object IabdDetails {
     }
   )
 
-  implicit val format: Format[IabdDetails] = Json.format[IabdDetails]
-}
-
-trait IabdHodFormatters extends IabdTypeConstants {
-
   val iabdEstimatedPayReads: Reads[JsValue] = new Reads[JsValue] {
     override def reads(json: JsValue): JsResult[JsValue] = {
       val iabdDetails = json.as[Seq[IabdDetails]]
@@ -63,4 +58,5 @@ trait IabdHodFormatters extends IabdTypeConstants {
     }
   }
 
+  implicit val format: Format[IabdDetails] = Json.format[IabdDetails]
 }
