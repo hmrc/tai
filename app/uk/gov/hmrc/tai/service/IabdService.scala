@@ -20,17 +20,18 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
+import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.IabdTypeConstants
+import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IabdService @Inject() (
   iabdConnector: IabdConnector
-)(implicit ec: ExecutionContext)
-    extends IabdTypeConstants {
+)(implicit ec: ExecutionContext) {
 
   def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
     iabdConnector
@@ -42,5 +43,17 @@ class IabdService @Inject() (
         }
         responseJson.as[Seq[IabdDetails]]
       }
-      .map(_.filter(_.`type`.contains(NewEstimatedPay)))
+      .map(_.filter(_.`type`.contains(NewEstimatedPay.code)))
+
+  def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
+    hc: HeaderCarrier,
+    request: AuthenticatedRequest[_]
+  ): Future[IncomeUpdateResponse] =
+    for {
+      updateAmountResult <-
+        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
+    } yield updateAmountResult match {
+      case HodUpdateSuccess => IncomeUpdateSuccess
+      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
+    }
 }

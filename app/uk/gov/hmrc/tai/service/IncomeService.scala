@@ -23,7 +23,7 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, IabdConnector, TaxAccountConnector}
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
-import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.collection.immutable.Seq
@@ -42,7 +41,6 @@ class IncomeService @Inject() (
   employmentService: EmploymentService,
   citizenDetailsConnector: CitizenDetailsConnector,
   taxAccountConnector: TaxAccountConnector,
-  iabdConnector: IabdConnector,
   iabdService: IabdService,
   auditor: Auditor
 )(implicit ec: ExecutionContext)
@@ -76,22 +74,12 @@ class IncomeService @Inject() (
 
   private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier
-  ): Future[Option[String]] =
-    fetchTaxCodeIncomes(nino, year) map { taxCodeIncomes =>
+  ): Future[Option[String]] = {
+    val taxCodeIncomes = fetchTaxCodeIncomes(nino, year)
+    taxCodeIncomes.map { taxCodeIncomes =>
       taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
     }
-
-  private def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
-    hc: HeaderCarrier,
-    request: AuthenticatedRequest[_]
-  ): Future[IncomeUpdateResponse] =
-    for {
-      updateAmountResult <-
-        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
-    } yield updateAmountResult match {
-      case HodUpdateSuccess => IncomeUpdateSuccess
-      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
-    }
+  }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -231,8 +219,9 @@ class IncomeService @Inject() (
       .flatMap {
         case Some(version) =>
           for {
-            incomeAmount         <- incomeAmountForEmploymentId(nino, year, employmentId)
-            incomeUpdateResponse <- updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
+            incomeAmount <- incomeAmountForEmploymentId(nino, year, employmentId)
+            incomeUpdateResponse <-
+              iabdService.updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
           } yield {
             if (incomeUpdateResponse == IncomeUpdateSuccess) {
               auditEventForIncomeUpdate(incomeAmount.getOrElse("Unknown"))
