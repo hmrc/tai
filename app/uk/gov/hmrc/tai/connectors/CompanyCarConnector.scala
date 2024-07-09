@@ -21,15 +21,14 @@ import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
-import uk.gov.hmrc.tai.model.domain.formatters.CompanyCarBenefitFormatters
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitReads
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CompanyCarConnector @Inject() (httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext)
-    extends CompanyCarBenefitFormatters {
+class CompanyCarConnector @Inject() (httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext) {
 
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI, Seq.empty) map { json =>

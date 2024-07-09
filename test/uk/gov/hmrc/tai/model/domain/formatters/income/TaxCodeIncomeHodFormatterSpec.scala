@@ -19,9 +19,10 @@ package uk.gov.hmrc.tai.model.domain.formatters.income
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.{employmentFilter, newEstimatedPayTypeFilter, taxCodeIncomeSourceReads, taxCodeIncomeSourcesReads}
 import uk.gov.hmrc.tai.model.domain.income._
 
-class TaxCodeIncomeHodFormatterSpec extends PlaySpec with TaxCodeIncomeHodFormatters {
+class TaxCodeIncomeHodFormatterSpec extends PlaySpec {
 
   "taxCodeIncomeSourceReads should use totalTaxableIncome to read amount" must {
     "return a value for the total taxable income from NPS tax response" when {

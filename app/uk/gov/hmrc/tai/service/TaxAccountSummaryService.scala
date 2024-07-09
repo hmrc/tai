@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,30 +21,29 @@ import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.formatters.TaxAccountSummaryHodFormatters
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.TaxAccountSummaryRepository
+import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
 class TaxAccountSummaryService @Inject() (
-  taxAccountSummaryRepository: TaxAccountSummaryRepository,
   codingComponentService: CodingComponentService,
   incomeService: IncomeService,
-  totalTaxService: TotalTaxService
+  totalTaxService: TotalTaxService,
+  taxAccountHelper: TaxAccountHelper
 )(implicit
   ec: ExecutionContext
-) extends TaxAccountSummaryHodFormatters {
+) {
 
   def taxAccountSummary(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): Future[TaxAccountSummary] =
     for {
-      totalEstimatedTax       <- taxAccountSummaryRepository.taxAccountSummary(nino, year)
+      totalEstimatedTax       <- taxAccountHelper.totalEstimatedTax(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
       taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
       totalTax                <- totalTaxService.totalTax(nino, year)

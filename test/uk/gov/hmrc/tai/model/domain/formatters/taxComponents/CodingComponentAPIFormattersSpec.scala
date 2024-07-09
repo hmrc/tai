@@ -18,10 +18,12 @@ package uk.gov.hmrc.tai.model.domain.formatters.taxComponents
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
-class CodingComponentAPIFormattersSpec extends PlaySpec with CodingComponentAPIFormatters {
+class CodingComponentAPIFormattersSpec extends PlaySpec {
 
   "codingComponentTypeWrites" must {
     "write tax component type correctly to json" when {

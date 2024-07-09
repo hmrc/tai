@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.CodingComponentAPIFormatters
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.RequestQueryFilter
@@ -39,7 +39,7 @@ class CodingComponentController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with RequestQueryFilter with CodingComponentAPIFormatters {
+) extends BackendController(cc) with ApiFormats with RequestQueryFilter {
 
   private val logger: Logger = Logger(getClass.getName)
 
