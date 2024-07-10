@@ -45,15 +45,15 @@ class IabdService @Inject() (
       }
       .map(_.filter(_.`type`.contains(NewEstimatedPay.code)))
 
-  def updateTaxCodeAmount(nino: Nino, year: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
+  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
     hc: HeaderCarrier,
     request: AuthenticatedRequest[_]
   ): Future[IncomeUpdateResponse] =
     for {
       updateAmountResult <-
-        iabdConnector.updateTaxCodeAmount(nino, year, employmentId, version, NewEstimatedPay.code, amount)
+        iabdConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, NewEstimatedPay.code, amount)
     } yield updateAmountResult match {
       case HodUpdateSuccess => IncomeUpdateSuccess
-      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${year.year} update")
+      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
     }
 }
