@@ -27,11 +27,11 @@ import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,44 +42,10 @@ class IncomeService @Inject() (
   citizenDetailsConnector: CitizenDetailsConnector,
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService,
+  taxCodeIncomeHelper: TaxCodeIncomeHelper,
   auditor: Auditor
 )(implicit ec: ExecutionContext)
     extends Logging with TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters {
-
-  private def filterIncomesByType(taxCodeIncomes: Seq[TaxCodeIncome], incomeType: TaxCodeIncomeComponentType) =
-    taxCodeIncomes.filter(income => income.componentType == incomeType)
-
-  private def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    lazy val taxCodeIncomeFuture = taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
-    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
-
-    for {
-      taxCodeIncomes <- taxCodeIncomeFuture
-      iabdDetails    <- iabdDetailsFuture
-    } yield taxCodeIncomes.map { taxCodeIncome =>
-      addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
-    }
-  }
-
-  private def addIabdDetailsToTaxCodeIncome(iabdDetails: Seq[IabdDetails], taxCodeIncome: TaxCodeIncome) = {
-    val iabdDetail = iabdDetails.find(_.employmentSequenceNumber == taxCodeIncome.employmentId)
-    taxCodeIncome.copy(
-      iabdUpdateSource = iabdDetail.flatMap(_.source).flatMap(code => IabdUpdateSource.fromCode(code)),
-      updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
-      updateActionDate = iabdDetail.flatMap(_.captureDate)
-    )
-  }
-
-  private def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
-    hc: HeaderCarrier
-  ): Future[Option[String]] = {
-    val taxCodeIncomes = fetchTaxCodeIncomes(nino, year)
-    taxCodeIncomes.map { taxCodeIncomes =>
-      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
-    }
-  }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -96,7 +62,7 @@ class IncomeService @Inject() (
 
     for {
       taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](
-                          fetchTaxCodeIncomes(nino, year).map(Right(_))
+                          taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year).map(Right(_))
                         )
       filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == EmploymentIncome)
       employments <- employmentService.employmentsAsEitherT(nino, year)
@@ -125,13 +91,13 @@ class IncomeService @Inject() (
 
     for {
       taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](
-                          fetchTaxCodeIncomes(nino, year).map(Right(_))
+                          taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year).map(Right(_))
                         )
-      filteredTaxCodeIncomes = filterIncomesByType(taxCodeIncomes, incomeType)
+      filteredTaxCodeIncomes = taxCodeIncomeHelper.filterIncomesByType(taxCodeIncomes, incomeType)
       employments <- employments(filteredTaxCodeIncomes, nino, year)
     } yield filterMatchingEmploymentsToIncomeSource(
       employments.employments,
-      filterIncomesByType(taxCodeIncomes, incomeType),
+      taxCodeIncomeHelper.filterIncomesByType(taxCodeIncomes, incomeType),
       status
     )
   }
@@ -143,7 +109,7 @@ class IncomeService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): Future[Seq[TaxCodeIncome]] = {
-    lazy val eventualIncomes = fetchTaxCodeIncomes(nino, year)
+    lazy val eventualIncomes = taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year)
     lazy val eventualEmployments = employmentService
       .employmentsAsEitherT(nino, year)
       .leftMap { error =>
@@ -219,7 +185,7 @@ class IncomeService @Inject() (
       .flatMap {
         case Some(version) =>
           for {
-            incomeAmount <- incomeAmountForEmploymentId(nino, year, employmentId)
+            incomeAmount <- taxCodeIncomeHelper.incomeAmountForEmploymentId(nino, year, employmentId)
             incomeUpdateResponse <-
               iabdService.updateTaxCodeAmount(nino, year, employmentId, version.etag.toInt, amount)
           } yield {
