@@ -24,7 +24,6 @@ import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
 import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 
@@ -36,12 +35,6 @@ class TaxCodeIncomeHelper @Inject() (
   iabdService: IabdService
 )(implicit ec: ExecutionContext)
     extends Logging with TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters {
-
-  def filterIncomesByType(
-    taxCodeIncomes: Seq[TaxCodeIncome],
-    incomeType: TaxCodeIncomeComponentType
-  ): Seq[TaxCodeIncome] =
-    taxCodeIncomes.filter(income => income.componentType == incomeType)
 
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val taxCodeIncomeFuture = taxAccountConnector

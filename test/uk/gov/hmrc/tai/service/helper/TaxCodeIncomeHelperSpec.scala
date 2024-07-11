@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.service.helper
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, JobSeekerAllowanceIncome, PensionIncome}
+import uk.gov.hmrc.tai.model.domain.EmploymentIncome
 import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income.{AgentContact, Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -283,92 +283,6 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
             None,
             Some(LocalDate.parse("2017-04-10")),
             Some(LocalDate.parse("2017-04-10"))
-          )
-        )
-      }
-    }
-  }
-
-  "filterIncomesByType" must {
-    "return an empty sequence of taxCodeIncomes" when {
-      "no incomes match the specified type" in {
-        val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
-          TaxCodeIncome(
-            PensionIncome,
-            Some(1),
-            BigDecimal(1100),
-            PensionIncome.toString,
-            "1150L",
-            "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
-          ),
-          TaxCodeIncome(
-            EmploymentIncome,
-            Some(2),
-            BigDecimal(0),
-            EmploymentIncome.toString,
-            "1100L",
-            "Employer2",
-            OtherBasisOperation,
-            Live,
-            BigDecimal(321.12),
-            BigDecimal(0),
-            BigDecimal(0)
-          )
-        )
-        val result = createSut().filterIncomesByType(taxCodeIncomes, JobSeekerAllowanceIncome)
-        result mustBe Seq.empty[TaxCodeIncome]
-      }
-    }
-
-    "return only incomes of the specified type" when {
-      "incomes match the specified type" in {
-        val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
-          TaxCodeIncome(
-            PensionIncome,
-            Some(1),
-            BigDecimal(1100),
-            PensionIncome.toString,
-            "1150L",
-            "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
-          ),
-          TaxCodeIncome(
-            EmploymentIncome,
-            Some(2),
-            BigDecimal(0),
-            EmploymentIncome.toString,
-            "1100L",
-            "Employer2",
-            OtherBasisOperation,
-            Live,
-            BigDecimal(321.12),
-            BigDecimal(0),
-            BigDecimal(0)
-          )
-        )
-        val result = createSut().filterIncomesByType(taxCodeIncomes, EmploymentIncome)
-        result mustBe Seq(
-          TaxCodeIncome(
-            EmploymentIncome,
-            Some(2),
-            BigDecimal(0),
-            EmploymentIncome.toString,
-            "1100L",
-            "Employer2",
-            OtherBasisOperation,
-            Live,
-            BigDecimal(321.12),
-            BigDecimal(0),
-            BigDecimal(0)
           )
         )
       }

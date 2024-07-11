@@ -93,11 +93,11 @@ class IncomeService @Inject() (
       taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](
                           taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year).map(Right(_))
                         )
-      filteredTaxCodeIncomes = taxCodeIncomeHelper.filterIncomesByType(taxCodeIncomes, incomeType)
+      filteredTaxCodeIncomes = taxCodeIncomes.filter(income => income.componentType == incomeType)
       employments <- employments(filteredTaxCodeIncomes, nino, year)
     } yield filterMatchingEmploymentsToIncomeSource(
       employments.employments,
-      taxCodeIncomeHelper.filterIncomesByType(taxCodeIncomes, incomeType),
+      filteredTaxCodeIncomes,
       status
     )
   }
