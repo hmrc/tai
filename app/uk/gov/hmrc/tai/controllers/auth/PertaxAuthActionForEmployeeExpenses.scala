@@ -55,8 +55,9 @@ class PertaxAuthActionForEmployeeExpenses @Inject() (
         },
         {
           case PertaxResponse("ACCESS_GRANTED", _) => None
-          case PertaxResponse("NO_HMRC_PT_ENROLMENT", _) =>
-            None // The calling services do not check for this requirement
+          case PertaxResponse("NO_HMRC_PT_ENROLMENT", _) | PertaxResponse("MCI_RECORD", _) |
+              PertaxResponse("DECEASED_RECORD", _) | PertaxResponse("DESIGNATORY_DETAILS_NOT_FOUND", _) =>
+            None // The calling services do not check for these requirements
           case PertaxResponse(code, message) =>
             Some(Unauthorized(s"Unauthorised with error code: `$code` and message:`$message`"))
         }
