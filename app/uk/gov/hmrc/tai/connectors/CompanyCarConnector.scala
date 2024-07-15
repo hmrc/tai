@@ -21,7 +21,7 @@ import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
-import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitReads
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitReadsFromHod
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -32,7 +32,7 @@ class CompanyCarConnector @Inject() (httpHandler: HttpHandler, urls: PayeUrls)(i
 
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI, Seq.empty) map { json =>
-      json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReads))
+      json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReadsFromHod))
     }
 
   def ninoVersion(nino: Nino)(implicit hc: HeaderCarrier): Future[Int] =

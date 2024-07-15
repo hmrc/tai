@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain.benefits
 
-import play.api.libs.functional.syntax.unlift
-
 import java.time.LocalDate
-import play.api.libs.json.{JsDefined, JsPath, JsResult, JsSuccess, JsValue, Json, OFormat, Reads, Writes}
+import play.api.libs.json.{JsDefined, JsResult, JsSuccess, JsValue, Json, OFormat, Reads}
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
-import play.api.libs.functional.syntax._
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCar.companyCarReadsFromHod
 
 case class CompanyCar(
   carSeqNo: Int,
@@ -34,28 +32,8 @@ case class CompanyCar(
 
 object CompanyCar {
   implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
-}
 
-case class CompanyCarBenefit(
-  employmentSeqNo: Int,
-  grossAmount: BigDecimal,
-  companyCars: Seq[CompanyCar],
-  version: Option[Int] = None
-)
-
-object CompanyCarBenefit {
-  implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
-
-  def companyCarBenefitReads = new Reads[CompanyCarBenefit] {
-    override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
-      val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
-      val grossAmount = (json \ "grossAmount").as[BigDecimal]
-      val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReads))
-      JsSuccess(CompanyCarBenefit(empSeqNo, grossAmount, carDetails))
-    }
-  }
-
-  def companyCarReads = new Reads[CompanyCar] {
+  def companyCarReadsFromHod: Reads[CompanyCar] = new Reads[CompanyCar] {
     override def reads(json: JsValue): JsResult[CompanyCar] = {
       val makeModel = (json \ "makeModel").as[String]
       val carSeqNo = (json \ "carSequenceNumber").as[Int]
@@ -86,12 +64,26 @@ object CompanyCarBenefit {
     }
   }
 
-  val companyCarRemoveWrites: Writes[WithdrawCarAndFuel] = (
-    (JsPath \ "version").write[Int] and
-      (JsPath \ "removeCarAndFuel" \ "car" \ "withdrawDate").write[LocalDate] and
-      (JsPath \ "removeCarAndFuel" \ "fuel" \ "withdrawDate").writeNullable[LocalDate]
-  )(unlift(WithdrawCarAndFuel.unapply))
+}
 
+case class CompanyCarBenefit(
+  employmentSeqNo: Int,
+  grossAmount: BigDecimal,
+  companyCars: Seq[CompanyCar],
+  version: Option[Int] = None
+)
+
+object CompanyCarBenefit {
+  implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
+
+  def companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = new Reads[CompanyCarBenefit] {
+    override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
+      val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
+      val grossAmount = (json \ "grossAmount").as[BigDecimal]
+      val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReadsFromHod))
+      JsSuccess(CompanyCarBenefit(empSeqNo, grossAmount, carDetails))
+    }
+  }
 }
 
 case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
@@ -104,12 +96,6 @@ case class Benefits(companyCarBenefits: Seq[CompanyCarBenefit], otherBenefits: S
 
 object Benefits {
   implicit val formats: OFormat[Benefits] = Json.format[Benefits]
-}
-
-case class WithdrawCarAndFuel(version: Int, carWithdrawDate: LocalDate, fuelWithdrawDate: Option[LocalDate])
-
-object WithdrawCarAndFuel {
-  implicit val formats: OFormat[WithdrawCarAndFuel] = Json.format[WithdrawCarAndFuel]
 }
 
 case class RemoveCompanyBenefit(
