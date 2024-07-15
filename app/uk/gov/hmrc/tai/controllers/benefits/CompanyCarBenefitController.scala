@@ -24,24 +24,25 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class CompanyCarBenefitController @Inject() (
   companyCarBenefitService: BenefitsService,
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
 
-  def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    companyCarBenefitService.companyCarBenefits(nino).map {
-      case Nil => NotFound
-      case c   => Ok(Json.toJson(ApiResponse(c, Nil)))
-    } recoverWith taxAccountErrorHandler()
+  def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
+    implicit request =>
+      companyCarBenefitService.companyCarBenefits(nino).map {
+        case Nil => NotFound
+        case c   => Ok(Json.toJson(ApiResponse(c, Nil)))
+      } recoverWith taxAccountErrorHandler()
   }
 
 }

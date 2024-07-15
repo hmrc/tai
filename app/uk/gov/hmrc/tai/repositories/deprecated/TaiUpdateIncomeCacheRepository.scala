@@ -26,7 +26,6 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.mongo.cache.CacheItem
 import uk.gov.hmrc.tai.config.{MongoConfig, SensitiveT}
 import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiUpdateIncomeCacheConnector}
-import uk.gov.hmrc.tai.model.nps2.MongoFormatter
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,8 +34,7 @@ class TaiUpdateIncomeCacheRepository @Inject() (
   taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector,
   mongoConfig: MongoConfig,
   configuration: Configuration
-)(implicit ec: ExecutionContext)
-    extends MongoFormatter {
+)(implicit ec: ExecutionContext) {
 
   implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
     new ApplicationCrypto(configuration.underlying).JsonCrypto
