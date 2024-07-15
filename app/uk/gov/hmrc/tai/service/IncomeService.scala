@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.formatters.income.{TaxAccountIncomeHodFormatters, TaxCodeIncomeHodFormatters}
+import uk.gov.hmrc.tai.model.domain.formatters.income.TaxAccountIncomeHodFormatters
 import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
@@ -45,7 +45,7 @@ class IncomeService @Inject() (
   taxCodeIncomeHelper: TaxCodeIncomeHelper,
   auditor: Auditor
 )(implicit ec: ExecutionContext)
-    extends Logging with TaxAccountIncomeHodFormatters with TaxCodeIncomeHodFormatters {
+    extends Logging with TaxAccountIncomeHodFormatters {
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
