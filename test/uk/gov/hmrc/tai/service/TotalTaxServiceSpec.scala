@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
-import uk.gov.hmrc.tai.model.domain.formatters.IncomeCategoryHodFormatters
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -32,7 +32,7 @@ class TotalTaxServiceSpec extends BaseSpec {
   val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   val mockTaxAccountHelper: TaxAccountHelper = mock[TaxAccountHelper]
   val mockTaxAccountSummaryService: TaxAccountSummaryService = mock[TaxAccountSummaryService]
-  class Dummy extends IncomeCategoryHodFormatters
+  class Dummy
   val incomeCategoryHodFormatters = new Dummy
 
   override protected def beforeEach(): Unit = {
@@ -99,7 +99,7 @@ class TotalTaxServiceSpec extends BaseSpec {
       val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.incomeCategories must contain theSameElementsAs incomeCategories.as[Seq[IncomeCategory]](
-        incomeCategoryHodFormatters.incomeCategorySeqReads
+        incomeCategorySeqReads
       )
       result.reliefsGivingBackTax mustBe None
       result.otherTaxDue mustBe None

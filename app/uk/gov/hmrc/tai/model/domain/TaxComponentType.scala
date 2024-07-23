@@ -159,6 +159,10 @@ object TaxComponentType {
     override def reads(json: JsValue): JsSuccess[TaxComponentType] = ???
     override def writes(taxComponentType: TaxComponentType) = JsString(taxComponentType.toString)
   }
+
+  val codingComponentTypeWrites = new Writes[TaxComponentType] {
+    override def writes(taxComponentType: TaxComponentType) = JsString(taxComponentType.toString)
+  }
 }
 
 object BenefitComponentType {

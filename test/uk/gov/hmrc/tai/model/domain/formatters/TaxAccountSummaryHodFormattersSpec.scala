@@ -19,9 +19,12 @@ package uk.gov.hmrc.tai.model.domain.formatters
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
+import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome
+import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryReads, taxOnOtherIncomeRead, taxOnOtherIncomeReads}
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.{alreadyTaxedAtSourceReads, otherTaxDueReads, reliefsGivingBackTaxReads, taxAdjustmentComponentReads, taxReliefFormattersReads}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 
-class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar with TaxAccountSummaryHodFormatters {
+class TaxAccountSummaryHodFormattersSpec extends PlaySpec with MockitoSugar {
 
   "taxAccountSummaryReads" must {
     "return the totalEstTax from the hods response" when {

@@ -18,12 +18,12 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.json.{JsPath, Writes}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.CodingComponentAPIFormatters
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
 final case class TaxFreeAmountComparison(previous: Seq[CodingComponent], next: Seq[CodingComponent])
 
-object TaxFreeAmountComparison extends CodingComponentAPIFormatters {
+object TaxFreeAmountComparison {
 
   implicit val writes: Writes[TaxFreeAmountComparison] = (
     (JsPath \ "previous").write(Writes.seq[CodingComponent](codingComponentWrites)) and
