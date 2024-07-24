@@ -14,45 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.repositories.deprecated
+package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain.{IabdDetails, UntaxedInterestIncome}
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.nonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.taxCodeIncomeSourcesReads
+import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabdService: IabdService)(implicit
-  ec: ExecutionContext
-) {
+class TaxCodeIncomeHelper @Inject() (
+  taxAccountConnector: TaxAccountConnector,
+  iabdService: IabdService
+)(implicit ec: ExecutionContext) {
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
-    taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
-      val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads)
-      val (untaxedInterestIncome, otherNonTaxCodeIncome) =
-        nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
-
-      if (untaxedInterestIncome.nonEmpty) {
-        val income = untaxedInterestIncome.head
-        val untaxedInterest =
-          UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
-        Future.successful(
-          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
-        )
-      } else {
-        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
-      }
-    }
-
-  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
+  def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val taxCodeIncomeFuture = taxAccountConnector
       .taxAccount(nino, year)
       .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads))
@@ -73,5 +55,14 @@ class IncomeRepository @Inject() (taxAccountConnector: TaxAccountConnector, iabd
       updateNotificationDate = iabdDetail.flatMap(_.receiptDate),
       updateActionDate = iabdDetail.flatMap(_.captureDate)
     )
+  }
+
+  def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[Option[String]] = {
+    val taxCodeIncomes = fetchTaxCodeIncomes(nino, year)
+    taxCodeIncomes.map { taxCodeIncomes =>
+      taxCodeIncomes.find(_.employmentId.contains(employmentId)).map(_.amount.toString())
+    }
   }
 }

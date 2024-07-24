@@ -19,19 +19,20 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.http.Status.NOT_FOUND
+import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, IabdConnector}
+import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.repositories.deprecated.IncomeRepository
+import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate
@@ -42,53 +43,82 @@ class IncomeServiceSpec extends BaseSpec {
 
   private val etag = ETag("1")
 
-  private val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc")
-  private val untaxedInterestWithBankAccount =
-    UntaxedInterest(UntaxedInterestIncome, Some(1), 123, "desc")
-
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
     AuthenticatedRequest(FakeRequest(), nino)
+
+  private def taxAccountJsonWithIabds(
+    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+  ): JsObject =
+    Json.obj(
+      "taxAccountId" -> "id",
+      "nino"         -> nino.nino,
+      "totalLiability" -> Json.obj(
+        "nonSavings" -> Json.obj(
+          "totalIncome" -> Json.obj(
+            "iabdSummaries" -> JsArray(incomeIabdSummaries)
+          ),
+          "allowReliefDeducts" -> Json.obj(
+            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
+          )
+        )
+      )
+    )
+
+  private def npsIabdSummaries(types: Seq[Int]): Seq[JsObject] =
+    types.map { tp =>
+      Json.obj(
+        "amount"             -> 100,
+        "type"               -> tp,
+        "npsDescription"     -> "desc",
+        "employmentId"       -> 1,
+        "estimatesPaySource" -> 1
+      )
+    }
 
   private def createSUT(
     employmentService: EmploymentService = mock[EmploymentService],
     citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
-    incomeRepository: IncomeRepository = mock[IncomeRepository],
-    iabdConnector: IabdConnector = mock[IabdConnector],
+    taxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector],
+    iabdService: IabdService = mock[IabdService],
+    taxCodeIncomeHelper: TaxCodeIncomeHelper = mock[TaxCodeIncomeHelper],
     auditor: Auditor = mock[Auditor]
   ) =
-    new IncomeService(employmentService, citizenDetailsConnector, incomeRepository, iabdConnector, auditor)
+    new IncomeService(
+      employmentService,
+      citizenDetailsConnector,
+      taxAccountConnector,
+      iabdService,
+      taxCodeIncomeHelper,
+      auditor
+    )
 
   "untaxedInterest" must {
-    "return total amount only for passed nino and year" when {
-      "no bank details exist" in {
-        val mockIncomeRepository = mock[IncomeRepository]
-        val incomes =
-          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), Seq.empty[OtherNonTaxCodeIncome]))
-        when(mockIncomeRepository.incomes(any(), any())(any())).thenReturn(Future.successful(incomes))
+    val mockTaxAccountConnector = mock[TaxAccountConnector]
 
-        val SUT = createSUT(employmentService = mock[EmploymentService], incomeRepository = mockIncomeRepository)
+    "return untaxed interest" when {
+      "it is present" in {
+        val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+
+        val SUT = createSUT(taxAccountConnector = mockTaxAccountConnector)
         val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
 
         result mustBe Some(untaxedInterest)
       }
     }
 
-    "return total amount and bank accounts" when {
-      "bank accounts exist" in {
-        val mockIncomeRepository = mock[IncomeRepository]
-        val incomes = Incomes(
-          Seq.empty[TaxCodeIncome],
-          NonTaxCodeIncome(Some(untaxedInterestWithBankAccount), Seq.empty[OtherNonTaxCodeIncome])
-        )
-        when(mockIncomeRepository.incomes(any(), any())(any())).thenReturn(Future.successful(incomes))
+    "return None" when {
+      "untaxed interest is not present" in {
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
 
-        val SUT = createSUT(incomeRepository = mockIncomeRepository)
+        val SUT = createSUT(taxAccountConnector = mockTaxAccountConnector)
         val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
 
-        result mustBe Some(untaxedInterestWithBankAccount)
+        result mustBe None
       }
     }
-
   }
 
   "taxCodeIncome" must {
@@ -152,14 +182,14 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockEmploymentService = mock[EmploymentService]
-      val mockIncomeRepository = mock[IncomeRepository]
-      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq(employment, employment2), None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes.map(_.copy(status = Ceased))
@@ -196,14 +226,14 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockEmploymentService = mock[EmploymentService]
-      val mockIncomeRepository = mock[IncomeRepository]
-      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes
@@ -240,14 +270,14 @@ class IncomeServiceSpec extends BaseSpec {
       )
 
       val mockEmploymentService = mock[EmploymentService]
-      val mockIncomeRepository = mock[IncomeRepository]
-      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any()))
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes
@@ -255,7 +285,7 @@ class IncomeServiceSpec extends BaseSpec {
   }
 
   "matchedTaxCodeIncomesForYear" must {
-    val mockIncomeRepository = mock[IncomeRepository]
+    val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
     val mockEmploymentService = mock[EmploymentService]
 
     val taxCodeIncome = TaxCodeIncome(
@@ -332,7 +362,7 @@ class IncomeServiceSpec extends BaseSpec {
     val employmentWithDifferentSeqNumber = Seq(employment.copy(sequenceNumber = 99))
 
     "return a list of live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             taxCodeIncomes
@@ -342,7 +372,7 @@ class IncomeServiceSpec extends BaseSpec {
       when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments :+ employment.copy(employmentStatus = Ceased), None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier(), FakeRequest())
@@ -355,7 +385,7 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return a list of ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
@@ -371,7 +401,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
         )
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Ceased)(HeaderCarrier(), FakeRequest())
@@ -384,7 +414,7 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return a list of potentially ceased and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
@@ -400,7 +430,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
         )
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(
@@ -416,7 +446,7 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return a list of not live and matched Employments & TaxCodeIncomes as IncomeSource for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             taxCodeIncomes
@@ -437,7 +467,7 @@ class IncomeServiceSpec extends BaseSpec {
           )
         )
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, NotLive)(HeaderCarrier(), FakeRequest())
@@ -454,13 +484,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return empty JSON when no records match" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq(taxCodeIncome.copy(employmentId = None))))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, PotentiallyCeased)(
@@ -475,13 +505,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return list of live and matched pension TaxCodeIncomes for a given year" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = Await
         .result(
           sut
@@ -528,13 +558,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return empty json when there are no matching live employments" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employmentWithDifferentSeqNumber, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result =
         sut
           .matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(HeaderCarrier(), FakeRequest())
@@ -545,13 +575,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return empty json when there are no matching live pensions" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employmentWithDifferentSeqNumber, None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = Await
         .result(
           sut
@@ -564,13 +594,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return empty json when there are no TaxCodeIncome records for a given nino" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq(employment), None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = Await
         .result(
           sut
@@ -583,13 +613,13 @@ class IncomeServiceSpec extends BaseSpec {
     }
 
     "return empty json when there are no employment records for a given nino" in {
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(Seq.empty[Employment], None)))
 
-      val sut = createSUT(employmentService = mockEmploymentService, incomeRepository = mockIncomeRepository)
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
       val result = Await
         .result(
           sut
@@ -603,7 +633,7 @@ class IncomeServiceSpec extends BaseSpec {
   }
 
   "nonMatchingCeasedEmployments" must {
-    val mockIncomeRepository = mock[IncomeRepository]
+    val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
     val mockEmploymentService = mock[EmploymentService]
 
     val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
@@ -674,14 +704,14 @@ class IncomeServiceSpec extends BaseSpec {
           )
         )
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       val expectedResult =
@@ -699,14 +729,14 @@ class IncomeServiceSpec extends BaseSpec {
     "return empty json when no employments have an end date" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(taxCodeIncomes))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       result mustBe Right(Seq.empty)
@@ -715,7 +745,7 @@ class IncomeServiceSpec extends BaseSpec {
     "return empty json when TaxCodeIncomes do not have an Id" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             Seq(
@@ -740,7 +770,7 @@ class IncomeServiceSpec extends BaseSpec {
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       result mustBe Right(Seq.empty)
@@ -749,14 +779,14 @@ class IncomeServiceSpec extends BaseSpec {
     "return empty Json when there are no TaxCodeIncome records for a given nino" in {
       val employments = Seq(employment, employment.copy(sequenceNumber = 1))
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(Future.successful(Seq.empty[TaxCodeIncome]))
 
       when(mockEmploymentService.employmentsAsEitherT(meq(nino), meq(TaxYear().next))(any[HeaderCarrier], any()))
         .thenReturn(EitherT.rightT(Employments(employments, None)))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       result mustBe Right(Seq.empty)
@@ -764,7 +794,7 @@ class IncomeServiceSpec extends BaseSpec {
 
     "return empty json when there are no employment records for a given nino" in {
 
-      when(mockIncomeRepository.taxCodeIncomes(any(), meq(TaxYear().next))(any()))
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), meq(TaxYear().next))(any()))
         .thenReturn(
           Future.successful(
             Seq(
@@ -789,25 +819,118 @@ class IncomeServiceSpec extends BaseSpec {
         .thenReturn(EitherT.rightT(Employments(Seq.empty[Employment], None)))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeRepository = mockIncomeRepository, employmentService = mockEmploymentService)
+      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(HeaderCarrier(), FakeRequest()).value.futureValue
 
       result mustBe Right(Seq.empty)
     }
   }
 
-  "Income" must {
-    "return tax-code and non-tax code incomes" in {
-      val mockIncomeRepository = mock[IncomeRepository]
-      val incomes = Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, Seq.empty[OtherNonTaxCodeIncome]))
-      when(mockIncomeRepository.incomes(any(), any())(any())).thenReturn(Future.successful(incomes))
+  "incomes" must {
+    val mockTaxAccountConnector = mock[TaxAccountConnector]
 
-      val sut = createSUT(incomeRepository = mockIncomeRepository)
+    "return empty sequence of tax-code and non-tax code income" when {
+      "there is no non-tax-code income present" in {
 
-      val result = sut.incomes(nino, TaxYear()).futureValue
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
 
-      result mustBe incomes
+        val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 
+        val result = sut.incomes(nino, TaxYear()).futureValue
+
+        result.taxCodeIncomes mustBe Seq.empty[TaxCodeIncome]
+        result.nonTaxCodeIncomes mustBe NonTaxCodeIncome(None, Seq.empty[OtherNonTaxCodeIncome])
+      }
+    }
+
+    "return non-tax-code incomes" when {
+      "there is non-tax-code income present and bank-accounts are not present" in {
+        val json = taxAccountJsonWithIabds(
+          npsIabdSummaries(
+            Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
+              81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125)
+          )
+        )
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+
+        val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+
+        val result = sut.incomes(nino, TaxYear()).futureValue
+
+        result.nonTaxCodeIncomes.otherNonTaxCodeIncomes mustBe Seq(
+          OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherIncomeNotEarned, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PartTimeEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Tips, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OtherEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(CasualEarnings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignDividendIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignPropertyIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignInterestAndOtherSavings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForeignPensionsAndOtherIncome, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(StatePension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(OccupationalPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PublicServicesPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(ForcesPension, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PersonalPensionAnnuity, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(Profit, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(BankOrBuildingSocietyInterest, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(UkDividend, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(UnitTrust, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(StockDividend, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(NationalSavings, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(SavingsBond, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(PurchasedLifeAnnuities, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(IncapacityBenefit, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(JobSeekersAllowance, Some(1), 100, "desc"),
+          OtherNonTaxCodeIncome(EmploymentAndSupportAllowance, Some(1), 100, "desc")
+        )
+
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
+      }
+
+      "non-tax-code income and bank accounts are present" in {
+        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+
+        val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+
+        val result = sut.incomes(nino, TaxYear()).futureValue
+
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
+      }
+
+      "bypass any bank account retrieval and return no untaxed interest" when {
+        "no UntaxedInterestIncome is present" in {
+          val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(70)))
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+
+          val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+
+          val result = sut.incomes(nino, TaxYear()).futureValue
+
+          result.nonTaxCodeIncomes.untaxedInterest mustBe None
+        }
+      }
+
+      "bbsi api throws exception" in {
+        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+
+        val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
+
+        val result = sut.incomes(nino, TaxYear()).futureValue
+
+        result.nonTaxCodeIncomes.untaxedInterest mustBe Some(
+          UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
+        )
+      }
     }
   }
 
@@ -880,25 +1003,10 @@ class IncomeServiceSpec extends BaseSpec {
 
   "updateTaxCodeIncome" must {
     "for current year" must {
-      "return an income success" when {
+      "return an income update success" when {
         "a valid update amount is provided" in {
           val taxYear = TaxYear()
-
-          val taxCodeIncomes = Seq(
-            TaxCodeIncome(
-              EmploymentIncome,
-              Some(1),
-              BigDecimal(123.45),
-              "",
-              "",
-              "",
-              Week1Month1BasisOperation,
-              Live,
-              BigDecimal(0),
-              BigDecimal(0),
-              BigDecimal(0)
-            )
-          )
+          val incomeAmount = Some("123.45")
 
           val mockEmploymentSvc = mock[EmploymentService]
           when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
@@ -924,16 +1032,15 @@ class IncomeServiceSpec extends BaseSpec {
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(incomeAmount))
 
-          val mockIabdConnector = mock[IabdConnector]
-          when(
-            mockIabdConnector
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
-          ).thenReturn(
-            Future.successful(HodUpdateSuccess)
-          )
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateSuccess)
+            )
 
           val mockAuditor = mock[Auditor]
           doNothing
@@ -943,8 +1050,8 @@ class IncomeServiceSpec extends BaseSpec {
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
-            incomeRepository = mockIncomeRepository,
-            iabdConnector = mockIabdConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
             auditor = mockAuditor
           )
 
@@ -990,14 +1097,15 @@ class IncomeServiceSpec extends BaseSpec {
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(Seq.empty))
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(None))
 
-          val mockIabdConnector = mock[IabdConnector]
-          when(
-            mockIabdConnector
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
-          ).thenReturn(Future.successful(HodUpdateSuccess))
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateSuccess)
+            )
 
           val mockAuditor = mock[Auditor]
           doNothing
@@ -1007,8 +1115,8 @@ class IncomeServiceSpec extends BaseSpec {
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
-            incomeRepository = mockIncomeRepository,
-            iabdConnector = mockIabdConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
             auditor = mockAuditor
           )
 
@@ -1031,22 +1139,7 @@ class IncomeServiceSpec extends BaseSpec {
         "the current amount is not provided due to an income mismatch" in {
 
           val taxYear = TaxYear()
-
-          val taxCodeIncomes = Seq(
-            TaxCodeIncome(
-              EmploymentIncome,
-              Some(2),
-              BigDecimal(123.45),
-              "",
-              "",
-              "",
-              Week1Month1BasisOperation,
-              Live,
-              BigDecimal(0),
-              BigDecimal(0),
-              BigDecimal(0)
-            )
-          )
+          val incomeAmount = None
 
           val mockEmploymentSvc = mock[EmploymentService]
           when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
@@ -1072,16 +1165,15 @@ class IncomeServiceSpec extends BaseSpec {
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(incomeAmount))
 
-          val mockIabdConnector = mock[IabdConnector]
-          when(
-            mockIabdConnector
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
-          ).thenReturn(
-            Future.successful(HodUpdateSuccess)
-          )
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateSuccess)
+            )
 
           val mockAuditor = mock[Auditor]
           doNothing
@@ -1091,8 +1183,8 @@ class IncomeServiceSpec extends BaseSpec {
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
-            incomeRepository = mockIncomeRepository,
-            iabdConnector = mockIabdConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
             auditor = mockAuditor
           )
 
@@ -1116,22 +1208,7 @@ class IncomeServiceSpec extends BaseSpec {
       "return an error indicating a CY update failure" when {
         "the hod update fails for a CY update" in {
           val taxYear = TaxYear()
-
-          val taxCodeIncomes = Seq(
-            TaxCodeIncome(
-              EmploymentIncome,
-              Some(1),
-              BigDecimal(123.45),
-              "",
-              "",
-              "",
-              Week1Month1BasisOperation,
-              Live,
-              BigDecimal(0),
-              BigDecimal(0),
-              BigDecimal(0)
-            )
-          )
+          val incomeAmount = Some("123.45")
 
           val mockEmploymentSvc = mock[EmploymentService]
           when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
@@ -1154,24 +1231,23 @@ class IncomeServiceSpec extends BaseSpec {
               )
             )
 
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(incomeAmount))
 
-          val mockIabdConnector = mock[IabdConnector]
-          when(
-            mockIabdConnector
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any(), any())(any(), any())
-          ).thenReturn(
-            Future.successful(HodUpdateFailure)
-          )
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update"))
+            )
 
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
-            incomeRepository = mockIncomeRepository,
-            iabdConnector = mockIabdConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
             citizenDetailsConnector = citizenDetailsConnector
           )
 
@@ -1186,22 +1262,7 @@ class IncomeServiceSpec extends BaseSpec {
       "return an income success" when {
         "an update amount is provided" in {
           val taxYear = TaxYear().next
-
-          val taxCodeIncomes = Seq(
-            TaxCodeIncome(
-              EmploymentIncome,
-              Some(1),
-              BigDecimal(123.45),
-              "",
-              "",
-              "",
-              Week1Month1BasisOperation,
-              Live,
-              BigDecimal(0),
-              BigDecimal(0),
-              BigDecimal(0)
-            )
-          )
+          val incomeAmount = Some("123.45")
 
           val mockEmploymentSvc = mock[EmploymentService]
           when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
@@ -1227,16 +1288,15 @@ class IncomeServiceSpec extends BaseSpec {
           val citizenDetailsConnector = mock[CitizenDetailsConnector]
           when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(etag)))
 
-          val mockIncomeRepository = mock[IncomeRepository]
-          when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
+          val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+          when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+            .thenReturn(Future.successful(incomeAmount))
 
-          val mockIabdConnector = mock[IabdConnector]
-          when(
-            mockIabdConnector
-              .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
-          ).thenReturn(
-            Future.successful(HodUpdateSuccess)
-          )
+          val mockIabdService = mock[IabdService]
+          when(mockIabdService.updateTaxCodeAmount(any(), meq[TaxYear](taxYear), any(), any(), any())(any(), any()))
+            .thenReturn(
+              Future.successful(IncomeUpdateSuccess)
+            )
 
           val mockAuditor = mock[Auditor]
           doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
@@ -1244,16 +1304,14 @@ class IncomeServiceSpec extends BaseSpec {
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
             citizenDetailsConnector = citizenDetailsConnector,
-            incomeRepository = mockIncomeRepository,
-            iabdConnector = mockIabdConnector,
+            taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
+            iabdService = mockIabdService,
             auditor = mockAuditor
           )
 
           val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly).futureValue
 
           result mustBe IncomeUpdateSuccess
-          verify(mockIabdConnector, times(1))
-            .updateTaxCodeAmount(meq(nino), meq(taxYear), any(), meq(1), any(), meq(1234))(any(), any())
 
           val auditMap = Map(
             "nino"          -> nino.value,
@@ -1271,22 +1329,6 @@ class IncomeServiceSpec extends BaseSpec {
     "return a IncomeUpdateFailed if there is no etag" in {
       val taxYear = TaxYear()
 
-      val taxCodeIncomes = Seq(
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(1),
-          BigDecimal(123.45),
-          "",
-          "",
-          "",
-          Week1Month1BasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        )
-      )
-
       val mockEmploymentSvc = mock[EmploymentService]
       when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
         .thenReturn(
@@ -1307,29 +1349,15 @@ class IncomeServiceSpec extends BaseSpec {
             )
           )
         )
-
-      val mockIncomeRepository = mock[IncomeRepository]
-      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
-
-      val mockIabdConnector = mock[IabdConnector]
-      when(
-        mockIabdConnector
-          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
-      ).thenReturn(
-        Future.successful(HodUpdateSuccess)
-      )
+      val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(mockCitizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
 
       val mockAuditor = mock[Auditor]
       doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
-      val citizenDetailsConnector = mock[CitizenDetailsConnector]
-      when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
-
       val SUT = createSUT(
         employmentService = mockEmploymentSvc,
-        citizenDetailsConnector = citizenDetailsConnector,
-        incomeRepository = mockIncomeRepository,
-        iabdConnector = mockIabdConnector,
+        citizenDetailsConnector = mockCitizenDetailsConnector,
         auditor = mockAuditor
       )
 
@@ -1337,24 +1365,9 @@ class IncomeServiceSpec extends BaseSpec {
       result.futureValue mustBe IncomeUpdateFailed("Could not find an ETag")
     }
 
-    "return a IncomeUpdateFailed if there etag is not an int" in {
+    "return a IncomeUpdateFailed if the etag is not an int" in {
       val taxYear = TaxYear()
-
-      val taxCodeIncomes = Seq(
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(1),
-          BigDecimal(123.45),
-          "",
-          "",
-          "",
-          Week1Month1BasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        )
-      )
+      val incomeAmount = Some("123.45")
 
       val mockEmploymentSvc = mock[EmploymentService]
       when(mockEmploymentSvc.employmentAsEitherT(any(), any())(any(), any()))
@@ -1377,28 +1390,20 @@ class IncomeServiceSpec extends BaseSpec {
           )
         )
 
-      val mockIncomeRepository = mock[IncomeRepository]
-      when(mockIncomeRepository.taxCodeIncomes(any(), any())(any())).thenReturn(Future.successful(taxCodeIncomes))
-
-      val mockIabdConnector = mock[IabdConnector]
-      when(
-        mockIabdConnector
-          .updateTaxCodeAmount(any(), meq[TaxYear](taxYear), meq(1), any(), any(), any())(any(), any())
-      ).thenReturn(
-        Future.successful(HodUpdateSuccess)
-      )
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.incomeAmountForEmploymentId(any(), any(), any())(any()))
+        .thenReturn(Future.successful(incomeAmount))
 
       val mockAuditor = mock[Auditor]
       doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
 
-      val citizenDetailsConnector = mock[CitizenDetailsConnector]
-      when(citizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))
+      val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
+      when(mockCitizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))
 
       val SUT = createSUT(
         employmentService = mockEmploymentSvc,
-        citizenDetailsConnector = citizenDetailsConnector,
-        incomeRepository = mockIncomeRepository,
-        iabdConnector = mockIabdConnector,
+        citizenDetailsConnector = mockCitizenDetailsConnector,
+        taxCodeIncomeHelper = mockTaxCodeIncomeHelper,
         auditor = mockAuditor
       )
 
