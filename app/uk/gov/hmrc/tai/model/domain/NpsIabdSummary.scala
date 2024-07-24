@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters
+package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json._
+import play.api.libs.json.{JsArray, JsResult, JsSuccess, JsValue, Reads}
 
-trait BaseTaxAccountHodFormatters {
+case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)
+
+object NpsIabdSummary {
   val iabdsFromTotalLiabilityReads = new Reads[Seq[NpsIabdSummary]] {
     override def reads(json: JsValue): JsResult[Seq[NpsIabdSummary]] = {
       val categories =
@@ -44,5 +46,3 @@ trait BaseTaxAccountHodFormatters {
     }
   }
 }
-
-case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)

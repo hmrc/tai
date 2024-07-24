@@ -17,8 +17,9 @@
 package uk.gov.hmrc.tai.model.domain.benefits
 
 import java.time.LocalDate
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsDefined, JsResult, JsSuccess, JsValue, Json, OFormat, Reads}
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCar.companyCarReadsFromHod
 
 case class CompanyCar(
   carSeqNo: Int,
@@ -31,6 +32,38 @@ case class CompanyCar(
 
 object CompanyCar {
   implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
+
+  def companyCarReadsFromHod: Reads[CompanyCar] = new Reads[CompanyCar] {
+    override def reads(json: JsValue): JsResult[CompanyCar] = {
+      val makeModel = (json \ "makeModel").as[String]
+      val carSeqNo = (json \ "carSequenceNumber").as[Int]
+      val dateMadeAvailable = (json \ "dateMadeAvailable").asOpt[LocalDate]
+      val dateWithdrawn = (json \ "dateWithdrawn").asOpt[LocalDate]
+      val fuelBenefit = json \ "fuelBenefit"
+
+      val hasActiveFuelBenefit = fuelBenefit match {
+        case JsDefined(fuel) =>
+          val dateWithdrawn = (fuel \ "dateWithdrawn").asOpt[LocalDate]
+          dateWithdrawn.isEmpty
+        case _ => false
+      }
+
+      val dateFuelBenefitMadeAvailable =
+        if (hasActiveFuelBenefit) (fuelBenefit \ "dateMadeAvailable").asOpt[LocalDate] else None
+
+      JsSuccess(
+        CompanyCar(
+          carSeqNo,
+          makeModel,
+          hasActiveFuelBenefit,
+          dateMadeAvailable,
+          dateFuelBenefitMadeAvailable,
+          dateWithdrawn
+        )
+      )
+    }
+  }
+
 }
 
 case class CompanyCarBenefit(
@@ -42,6 +75,15 @@ case class CompanyCarBenefit(
 
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
+
+  def companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = new Reads[CompanyCarBenefit] {
+    override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
+      val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
+      val grossAmount = (json \ "grossAmount").as[BigDecimal]
+      val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReadsFromHod))
+      JsSuccess(CompanyCarBenefit(empSeqNo, grossAmount, carDetails))
+    }
+  }
 }
 
 case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
@@ -54,12 +96,6 @@ case class Benefits(companyCarBenefits: Seq[CompanyCarBenefit], otherBenefits: S
 
 object Benefits {
   implicit val formats: OFormat[Benefits] = Json.format[Benefits]
-}
-
-case class WithdrawCarAndFuel(version: Int, carWithdrawDate: LocalDate, fuelWithdrawDate: Option[LocalDate])
-
-object WithdrawCarAndFuel {
-  implicit val formats: OFormat[WithdrawCarAndFuel] = Json.format[WithdrawCarAndFuel]
 }
 
 case class RemoveCompanyBenefit(

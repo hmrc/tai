@@ -17,12 +17,11 @@
 package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logging
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
-import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
+import uk.gov.hmrc.tai.model.domain.IabdDetails
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.taxCodeIncomeSourcesReads
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
@@ -33,8 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class TaxCodeIncomeHelper @Inject() (
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService
-)(implicit ec: ExecutionContext)
-    extends Logging with TaxCodeIncomeHodFormatters {
+)(implicit ec: ExecutionContext) {
 
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val taxCodeIncomeFuture = taxAccountConnector

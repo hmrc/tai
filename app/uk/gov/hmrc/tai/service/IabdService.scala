@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
+import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay

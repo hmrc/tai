@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters
+package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.tai.model.domain.BankAccount
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, Reads}
 
-trait BbsiMongoFormatters {
-  implicit val bbsiFormat: Format[BankAccount] = Json.format[BankAccount]
+case class IabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal)
+
+object IabdSummary {
+  implicit val iabdSummaryReads: Reads[IabdSummary] = (
+    (JsPath \ "type").read[Int] and
+      (JsPath \ "employmentId").readNullable[Int] and
+      (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
+  )(IabdSummary.apply _)
 }
-
-object BbsiMongoFormatters extends BbsiMongoFormatters
