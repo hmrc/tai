@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model
 
-import com.google.inject.Inject
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -35,24 +34,23 @@ case class IabdUpdateAmount(
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
 }
 
-class IabdUpdateAmountFormats @Inject() () {
+object IabdUpdateAmount {
 
   def empSeqNoFieldName =
     "employmentSequenceNumber"
 
-  def iabdUpdateAmountWrites: Writes[IabdUpdateAmount] =
-    (
-      (JsPath \ empSeqNoFieldName).write[Int] and
-        (JsPath \ "grossAmount").write[Int] and
-        (JsPath \ "netAmount").writeNullable[Int] and
-        (JsPath \ "receiptDate").writeNullable[String] and
-        (JsPath \ "source").writeNullable[Int]
-    )(unlift(IabdUpdateAmount.unapply))
-
-  implicit def formats: Format[IabdUpdateAmount] = Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
-
-  implicit val formatList: Writes[IabdUpdateAmount] = new Writes[IabdUpdateAmount] {
-    def writes(updateAmount: IabdUpdateAmount): JsValue =
-      Json.arr(Json.toJson(updateAmount))
+  implicit def formats: Format[IabdUpdateAmount] = {
+    val iabdUpdateAmountWrites: Writes[IabdUpdateAmount] =
+      (
+        (JsPath \ empSeqNoFieldName).write[Int] and
+          (JsPath \ "grossAmount").write[Int] and
+          (JsPath \ "netAmount").writeNullable[Int] and
+          (JsPath \ "receiptDate").writeNullable[String] and
+          (JsPath \ "source").writeNullable[Int]
+      )(unlift(IabdUpdateAmount.unapply))
+    Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
   }
+
+  implicit val formatList: Writes[IabdUpdateAmount] = (updateAmount: IabdUpdateAmount) =>
+    Json.arr(Json.toJson(updateAmount))
 }

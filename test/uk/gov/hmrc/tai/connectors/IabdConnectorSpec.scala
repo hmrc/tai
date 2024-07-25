@@ -18,19 +18,19 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.{JsArray, JsNull, JsObject, Json, Writes}
+import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.net.URL
@@ -50,8 +50,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     inject[HttpHandler],
     inject[NpsConfig],
     inject[DesConfig],
-    iabdUrls,
-    inject[IabdUpdateAmountFormats]
+    iabdUrls
   )
 
   val taxYear: TaxYear = TaxYear()
@@ -91,8 +90,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
   val updateAmount = List(IabdUpdateAmount(1, 20000))
 
-  implicit lazy val iabdWrites: Writes[IabdUpdateAmount] =
-    inject[IabdUpdateAmountFormats].iabdUpdateAmountWrites
+  implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
 
   "iabds" when {
     "toggled to use NPS" must {
