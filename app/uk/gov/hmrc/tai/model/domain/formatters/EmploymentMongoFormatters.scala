@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import play.api.libs.json.{Format, _}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.EmploymentUpdate
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.tai.TaxYear
 
 trait EmploymentMongoFormatters {
   implicit val formatAdjustment: Format[Adjustment] = Json.format[Adjustment]
@@ -44,17 +43,6 @@ trait EmploymentMongoFormatters {
   }
 
   implicit val formatPayment: Format[Payment] = Json.format[Payment]
-
-  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
-    override def reads(json: JsValue): JsSuccess[TaxYear] =
-      if (json.validate[Int].isSuccess) {
-        JsSuccess(TaxYear(json.as[Int]))
-      } else {
-        throw new IllegalArgumentException("Invalid tax year")
-      }
-
-    override def writes(taxYear: TaxYear): JsNumber = JsNumber(taxYear.year)
-  }
 
   implicit val formatAnnualAccount: Format[AnnualAccount] = Json.format[AnnualAccount]
 

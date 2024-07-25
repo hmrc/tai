@@ -17,14 +17,16 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
+import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitSeqWrites
 
 import scala.concurrent.ExecutionContext
 
@@ -35,9 +37,10 @@ class CompanyCarBenefitController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
+) extends BackendController(cc) with ControllerErrorHandler {
 
   def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+    implicit val ccBenefitSeqWrites: Writes[Seq[CompanyCarBenefit]] = companyCarBenefitSeqWrites
     companyCarBenefitService.companyCarBenefits(nino).map {
       case Nil => NotFound
       case c   => Ok(Json.toJson(ApiResponse(c, Nil)))

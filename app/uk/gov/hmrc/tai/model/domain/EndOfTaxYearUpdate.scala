@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
 import java.time.LocalDate
 
@@ -26,5 +26,5 @@ case class EndOfTaxYearUpdate(date: LocalDate, adjustments: Seq[Adjustment]) ext
 }
 
 object EndOfTaxYearUpdate {
-  implicit val format: OFormat[EndOfTaxYearUpdate] = Json.format[EndOfTaxYearUpdate]
+  implicit val format: Format[EndOfTaxYearUpdate] = Json.format[EndOfTaxYearUpdate]
 }

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.domain.Nino
 
 import java.time.LocalDate
@@ -33,6 +34,7 @@ case class Person(
 object Person {
   def createLockedUser(nino: Nino) =
     Person(nino, "", "", None, Address.emptyAddress, false, true)
+  implicit val personFormat: Format[Person] = Json.format[Person]
 }
 
 case class Address(
@@ -44,12 +46,14 @@ case class Address(
 )
 
 object Address {
-  val emptyAddress = Address(None, None, None, None, None)
+  val emptyAddress: Address = Address(None, None, None, None, None)
 
   def apply(line1: String, line2: String, line3: String, postcode: String, country: String): Address = {
     import cats.syntax.option._
     Address(line1.some, line2.some, line3.some, postcode.some, country.some)
   }
+
+  implicit val addressFormat: Format[Address] = Json.format[Address]
 }
 
 object PersonFormatter {

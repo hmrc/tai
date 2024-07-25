@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsNumber, Json}
+import play.api.libs.json.{JsNumber, JsResultException, Json, JsonValidationError}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.LocalDate
 
 class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatters {
 
@@ -91,9 +92,8 @@ class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatt
       }
 
       "tax year is not valid" in {
-        val ex = the[IllegalArgumentException] thrownBy Json.obj("year" -> "2017").as[TaxYear]
-
-        ex.getMessage mustBe "Invalid tax year"
+        val ex = the[JsResultException] thrownBy Json.obj("year" -> "2017").as[TaxYear]
+        ex.errors.flatMap(_._2) mustBe Seq(JsonValidationError("Expected JsNumber, found {\"year\":\"2017\"}"))
       }
     }
 

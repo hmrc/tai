@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.tai
 
+import play.api.libs.json._
 import uk.gov.hmrc.tai.util.TaiConstants.LondonEuropeTimezone
 
 import java.time.{LocalDate, ZoneId}
@@ -80,5 +81,24 @@ object TaxYear {
         TaxYear(fYear)
       case x => throw new IllegalArgumentException(s"Cannot parse $x")
     }
+  }
+
+//  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
+//    override def reads(json: JsValue): JsSuccess[TaxYear] =
+//      if (json.validate[Int].isSuccess) {
+//        JsSuccess(TaxYear(json.as[Int]))
+//      } else {
+//        throw new IllegalArgumentException("Invalid tax year")
+//      }
+//
+//    override def writes(taxYear: TaxYear): JsNumber = JsNumber(taxYear.year)
+//  }
+
+  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
+    override def reads(j: JsValue): JsResult[TaxYear] = j match {
+      case JsNumber(n) => JsSuccess(TaxYear(n.toInt))
+      case x           => JsError(s"Expected JsNumber, found $x")
+    }
+    override def writes(v: TaxYear): JsValue = JsNumber(v.year)
   }
 }

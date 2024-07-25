@@ -16,6 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.tai.model.domain.Employment
 
 case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
+
+object IncomeSource {
+  implicit val incomeSourceFormat: Format[IncomeSource] = Json.format[IncomeSource]
+}

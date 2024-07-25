@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.LocalDate
 
 case class Employment(
   name: String,
@@ -47,6 +48,10 @@ case class Employment(
 
   def annualAccountsForYear(year: TaxYear): Seq[AnnualAccount] = annualAccounts.filter(_.taxYear == year)
 
+}
+
+object Employment {
+  implicit val employmentFormat: Format[Employment] = Json.format[Employment]
 }
 
 case class AddEmployment(

@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain.benefits
 
-import java.time.LocalDate
-import play.api.libs.json.{JsDefined, JsResult, JsSuccess, JsValue, Json, OFormat, Reads}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCar.companyCarReadsFromHod
+
+import java.time.LocalDate
 
 case class CompanyCar(
   carSeqNo: Int,
@@ -75,6 +76,21 @@ case class CompanyCarBenefit(
 
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
+
+  val companyCarBenefitSeqWrites: Writes[Seq[CompanyCarBenefit]] = {
+    val companyCarBenefitWrites: Writes[CompanyCarBenefit] = (o: CompanyCarBenefit) => {
+      val cocarBenefitJson = Json.obj(
+        "employmentSeqNo" -> o.employmentSeqNo,
+        "grossAmount"     -> o.grossAmount,
+        "companyCars"     -> Json.toJson(o.companyCars)
+      )
+      o.version.fold(cocarBenefitJson)(v => cocarBenefitJson + ("version" -> Json.toJson(v)))
+    }
+    (o: Seq[CompanyCarBenefit]) =>
+      Json.obj(
+        "companyCarBenefits" -> o.map(Json.toJson(_)(companyCarBenefitWrites))
+      )
+  }
 
   def companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = new Reads[CompanyCarBenefit] {
     override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {

@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
-import java.time.LocalDate
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.model.rti.PayFrequency
 import uk.gov.hmrc.tai.model.tai.AnnualAccount
-import uk.gov.hmrc.tai.util.TaiConstants
+
+import java.time.LocalDate
 
 case class TaxBand(
   income: Option[BigDecimal] = None,
@@ -363,18 +363,6 @@ case class GateKeeper(gateKeepered: Boolean = false, gateKeeperResults: List[Gat
 
 object GateKeeper {
   implicit val formats: OFormat[GateKeeper] = Json.format[GateKeeper]
-
-  def withMciRule: GateKeeper =
-    GateKeeper(
-      gateKeepered = true,
-      List(
-        GateKeeperRule(
-          Some(TaiConstants.mciGateKeeperType),
-          Some(TaiConstants.mciGatekeeperId),
-          Some(TaiConstants.mciGatekeeperDescr)
-        )
-      )
-    )
 }
 
 case class CeasedEmploymentDetails(

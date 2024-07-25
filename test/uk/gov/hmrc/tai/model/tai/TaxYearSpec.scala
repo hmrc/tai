@@ -16,12 +16,30 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{JsError, JsNumber, JsString, JsSuccess}
+import uk.gov.hmrc.tai.model.tai.TaxYear.formatTaxYear
+
+import java.time.LocalDate
 
 class TaxYearSpec extends PlaySpec {
-
   "TaxYear" must {
+
+    "deserialise a Tax Year" when {
+      "given the correct Json type" in {
+        formatTaxYear.reads(JsNumber(2017)) mustBe JsSuccess(TaxYear(2017))
+      }
+    }
+
+    "return as JsError" when {
+      "given the wrong Json type" in {
+        formatTaxYear.reads(JsString("2017")) mustBe JsError("Expected JsNumber, found \"2017\"")
+      }
+    }
+
+    "serialise a TaxYear instance" in {
+      formatTaxYear.writes(TaxYear(2017)) mustBe JsNumber(2017)
+    }
 
     "choose the correct year value" when {
 
