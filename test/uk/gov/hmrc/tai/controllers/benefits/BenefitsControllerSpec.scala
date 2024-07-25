@@ -54,10 +54,15 @@ class BenefitsControllerSpec extends BaseSpec {
             "links" -> Json.arr()
           )
         /*
-]     {"data":{"companyCarBenefits":{"companyCarBenefits":[]},"otherBenefits":[]},"links":[]} was not equal to
-      {"data":{"companyCarBenefits":[],"otherBenefits":[]},"links":[]} (BenefitsControllerSpec.scala:57)
 
+benefitscontrollerspec SHOULD BE (i.e. is in main):-
+
+ACT:{"data":{"companyCarBenefits":[],"otherBenefits":[]},"links":[]}
+
+EXP:{"data":{"companyCarBenefits":[],"otherBenefits":[]},"links":[]}
          */
+        println("\nACT:" + contentAsJson(result))
+        println("\nEXP:" + expectedJson)
         contentAsJson(result) mustBe expectedJson
       }
     }

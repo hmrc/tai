@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 
 class PaymentFrequencySpec extends PlaySpec {
 
-  val paymentFrequencyFormat = EmploymentHodFormatters.paymentFrequencyFormat
+  private val paymentFrequencyFormat = EmploymentHodFormatters.paymentFrequencyFormat
 
   "Payment Frequency" must {
     "create a valid object" when {
@@ -55,6 +55,45 @@ class PaymentFrequencySpec extends PlaySpec {
         Json.toJson(Annually)(paymentFrequencyFormat.writes(_)) mustBe JsString("Annually")
         Json.toJson(OneOff)(paymentFrequencyFormat.writes(_)) mustBe JsString("OneOff")
         Json.toJson(Irregular)(paymentFrequencyFormat.writes(_)) mustBe JsString("Irregular")
+      }
+    }
+  }
+
+  "paymentFrequencyFormat" when {
+
+    val jsonValues = List(
+      ("Weekly", Weekly),
+      ("FortNightly", FortNightly),
+      ("FourWeekly", FourWeekly),
+      ("Monthly", Monthly),
+      ("Quarterly", Quarterly),
+      ("BiAnnually", BiAnnually),
+      ("Annually", Annually),
+      ("OneOff", OneOff),
+      ("Irregular", Irregular)
+    )
+
+    "reading values" must {
+      "read valid string values" in {
+        jsonValues.foreach { kv =>
+          JsString(kv._1).as[PaymentFrequency] mustBe kv._2
+        }
+      }
+
+      "throw an IllegalArgumentException" when {
+        "an invalid string is read" in {
+          the[IllegalArgumentException] thrownBy {
+            JsString("Foo").as[PaymentFrequency]
+          } must have message "Invalid payment frequency"
+        }
+      }
+    }
+
+    "writing values" must {
+      "write PaymentFrequencies to a JsString" in {
+        jsonValues.foreach { kv =>
+          Json.toJson(kv._2)(paymentFrequencyFormat.writes(_)) mustBe JsString(kv._1)
+        }
       }
     }
   }

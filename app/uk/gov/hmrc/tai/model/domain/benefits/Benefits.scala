@@ -77,6 +77,7 @@ case class CompanyCarBenefit(
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
 
+  // TODO 9180: What's the precise difference between this and the one above? Only that it has "companyCarBenefits" extra node? Can do this better?
   val companyCarBenefitSeqWrites: Writes[Seq[CompanyCarBenefit]] = {
     val companyCarBenefitWrites: Writes[CompanyCarBenefit] = (o: CompanyCarBenefit) => {
       val cocarBenefitJson = Json.obj(

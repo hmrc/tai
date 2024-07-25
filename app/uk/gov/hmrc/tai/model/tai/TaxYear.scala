@@ -83,17 +83,6 @@ object TaxYear {
     }
   }
 
-//  implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
-//    override def reads(json: JsValue): JsSuccess[TaxYear] =
-//      if (json.validate[Int].isSuccess) {
-//        JsSuccess(TaxYear(json.as[Int]))
-//      } else {
-//        throw new IllegalArgumentException("Invalid tax year")
-//      }
-//
-//    override def writes(taxYear: TaxYear): JsNumber = JsNumber(taxYear.year)
-//  }
-
   implicit val formatTaxYear: Format[TaxYear] = new Format[TaxYear] {
     override def reads(j: JsValue): JsResult[TaxYear] = j match {
       case JsNumber(n) => JsSuccess(TaxYear(n.toInt))
