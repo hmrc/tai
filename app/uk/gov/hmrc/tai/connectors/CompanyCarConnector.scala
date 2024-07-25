@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CompanyCarConnector @Inject() (httpHandler: HttpHandler, urls: PayeUrls)(implicit ec: ExecutionContext) {
-
+// Connecting to paye (company car)
   def carBenefits(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] =
     httpHandler.getFromApi(urls.carBenefitsForYearUrl(nino, taxYear), APITypes.CompanyCarAPI, Seq.empty) map { json =>
       json.as[Seq[CompanyCarBenefit]](Reads.seq(companyCarBenefitReadsFromHod))
