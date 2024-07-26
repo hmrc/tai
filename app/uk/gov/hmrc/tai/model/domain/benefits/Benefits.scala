@@ -77,22 +77,6 @@ case class CompanyCarBenefit(
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
 
-  // TODO 9180: What's the precise difference between this and the one above? Only that it has "companyCarBenefits" extra node? Can do this better?
-  val companyCarBenefitSeqWrites: Writes[Seq[CompanyCarBenefit]] = {
-    val companyCarBenefitWrites: Writes[CompanyCarBenefit] = (o: CompanyCarBenefit) => {
-      val cocarBenefitJson = Json.obj(
-        "employmentSeqNo" -> o.employmentSeqNo,
-        "grossAmount"     -> o.grossAmount,
-        "companyCars"     -> Json.toJson(o.companyCars)
-      )
-      o.version.fold(cocarBenefitJson)(v => cocarBenefitJson + ("version" -> Json.toJson(v)))
-    }
-    (o: Seq[CompanyCarBenefit]) =>
-      Json.obj(
-        "companyCarBenefits" -> o.map(Json.toJson(_)(companyCarBenefitWrites))
-      )
-  }
-
   def companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = new Reads[CompanyCarBenefit] {
     override def reads(json: JsValue): JsResult[CompanyCarBenefit] = {
       val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
