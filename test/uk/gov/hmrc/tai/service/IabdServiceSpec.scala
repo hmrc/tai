@@ -18,8 +18,12 @@ package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsArray, JsNull, Json}
+import play.api.mvc.AnyContentAsEmpty
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.IabdConnector
+import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -30,6 +34,8 @@ import scala.concurrent.Future
 class IabdServiceSpec extends BaseSpec {
 
   private val mockIabdConnector = mock[IabdConnector]
+  implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
+    AuthenticatedRequest(FakeRequest(), nino)
   private def createSut(iabdConnector: IabdConnector = mock[IabdConnector]) =
     new IabdService(iabdConnector)
 
@@ -103,6 +109,28 @@ class IabdServiceSpec extends BaseSpec {
           ex mustBe a[NotFoundException]
         }
       }
+    }
+  }
+
+  "updateTaxCodeAmount" must {
+    "return IncomeUpdateSuccess when the update is successful" in {
+      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
+        .thenReturn(Future.successful(HodUpdateSuccess))
+
+      val sut = createSut(mockIabdConnector)
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), employmentId = 1, version = 1, amount = 5000).futureValue
+
+      result mustBe IncomeUpdateSuccess
+    }
+
+    "return IncomeUpdateFailed when the update fails" in {
+      when(mockIabdConnector.updateTaxCodeAmount(any(), any(), any(), any(), any(), any())(any(), any()))
+        .thenReturn(Future.successful(HodUpdateFailure))
+
+      val sut = createSut(mockIabdConnector)
+      val result = sut.updateTaxCodeAmount(nino, TaxYear(), employmentId = 1, version = 1, amount = 5000).futureValue
+
+      result mustBe IncomeUpdateFailed(s"Hod update failed for ${TaxYear().year} update")
     }
   }
 }
