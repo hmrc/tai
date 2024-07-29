@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.{JsObject, JsResult, JsSuccess, JsValue, Reads, Writes}
+import play.api.libs.json._
 
 case class Change[A, B](currentYear: A, currentYearPlusOne: B)
 object Change {
