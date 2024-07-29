@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 
 import java.util.UUID
 import scala.concurrent.Future
-// Connecting to nps
+
 @Singleton
 class CachingEmploymentDetailsConnector @Inject() (
   @Named("default") underlying: EmploymentDetailsConnector,

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// Connecting to DES
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
