@@ -75,7 +75,7 @@ case class CompanyCarBenefit(
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
 
-  def companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = (json: JsValue) => {
+  val companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = (json: JsValue) => {
     val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
     val grossAmount = (json \ "grossAmount").as[BigDecimal]
     val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReadsFromHod))

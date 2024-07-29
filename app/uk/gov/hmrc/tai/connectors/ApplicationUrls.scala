@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.tai.connectors
-// Connects to NPS/ DES
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.config._
