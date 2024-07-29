@@ -50,7 +50,4 @@ object IabdUpdateAmount {
           (JsPath \ "source").writeNullable[Int]
       )(unlift(IabdUpdateAmount.unapply))
     )
-
-  val formatListWrites: Writes[IabdUpdateAmount] = (updateAmount: IabdUpdateAmount) =>
-    Json.arr(Json.toJson(updateAmount))
 }
