@@ -30,21 +30,15 @@ object NpsDate {
 
   private val npsDateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
 
-  implicit val reads: Reads[NpsDate] = new Reads[NpsDate] {
-    override def reads(json: JsValue): JsResult[NpsDate] =
-      json match {
-        case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
-        case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
-        case invalid => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
-      }
+  implicit val reads: Reads[NpsDate] = {
+    case JsString(npsDateRegex(d, m, y)) => JsSuccess(NpsDate(LocalDate.of(y.toInt, m.toInt, d.toInt)))
+    case JsNull                          => JsError(JsonValidationError("Cannot convert null to NpsDate"))
+    case invalid => JsError(JsonValidationError(s"The date was not of the expected format [dd/MM/yyyy]: $invalid"))
   }
 
   private val npsDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  implicit val writes: Writes[NpsDate] = new Writes[NpsDate] {
-    override def writes(date: NpsDate): JsValue =
-      JsString(date.toNpsString)
-  }
+  implicit val writes: Writes[NpsDate] = (date: NpsDate) => JsString(date.toNpsString)
 
 }
 

@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain.income.{Ceased, Live, PotentiallyCeased, TaxCodeIncomeStatus}
-import uk.gov.hmrc.tai.model.domain.{EndOfTaxYearUpdate, _}
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.util.matching.Regex
 
 trait EmploymentHodFormatters {
@@ -100,36 +100,32 @@ trait EmploymentHodFormatters {
     }
   }
 
-  implicit val employmentCollectionHodReads: Reads[EmploymentCollection] = new Reads[EmploymentCollection] {
-    override def reads(json: JsValue): JsResult[EmploymentCollection] =
-      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-  }
+  implicit val employmentCollectionHodReads: Reads[EmploymentCollection] = (json: JsValue) =>
+    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
 
-  val paymentHodReads: Reads[Payment] = new Reads[Payment] {
-    override def reads(json: JsValue): JsResult[Payment] = {
+  val paymentHodReads: Reads[Payment] = (json: JsValue) => {
 
-      val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
+    val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
 
-      val niFigure = (json \ "niLettersAndValues")
-        .asOpt[JsArray]
-        .map(x => x \\ "niFigure")
-        .flatMap(_.headOption)
-        .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
+    val niFigure = (json \ "niLettersAndValues")
+      .asOpt[JsArray]
+      .map(x => x \\ "niFigure")
+      .flatMap(_.headOption)
+      .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
-      val payment = Payment(
-        date = (json \ "pmtDate").as[LocalDate],
-        amountYearToDate = mandatoryMoneyAmount("TaxablePayYTD"),
-        taxAmountYearToDate = mandatoryMoneyAmount("TotalTaxYTD"),
-        nationalInsuranceAmountYearToDate = niFigure.flatMap(_.get("EmpeeContribnsYTD")).getOrElse(0),
-        amount = mandatoryMoneyAmount("TaxablePay"),
-        taxAmount = mandatoryMoneyAmount("TaxDeductedOrRefunded"),
-        nationalInsuranceAmount = niFigure.flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
-        payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormat),
-        duplicate = (json \ "duplicate").asOpt[Boolean]
-      )
+    val payment = Payment(
+      date = (json \ "pmtDate").as[LocalDate],
+      amountYearToDate = mandatoryMoneyAmount("TaxablePayYTD"),
+      taxAmountYearToDate = mandatoryMoneyAmount("TotalTaxYTD"),
+      nationalInsuranceAmountYearToDate = niFigure.flatMap(_.get("EmpeeContribnsYTD")).getOrElse(0),
+      amount = mandatoryMoneyAmount("TaxablePay"),
+      taxAmount = mandatoryMoneyAmount("TaxDeductedOrRefunded"),
+      nationalInsuranceAmount = niFigure.flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
+      payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormat),
+      duplicate = (json \ "duplicate").asOpt[Boolean]
+    )
 
-      JsSuccess(payment)
-    }
+    JsSuccess(payment)
   }
 
   val paymentFrequencyFormat = new Format[PaymentFrequency] {

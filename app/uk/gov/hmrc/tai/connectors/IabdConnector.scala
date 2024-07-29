@@ -155,7 +155,7 @@ class DefaultIabdConnector @Inject() (
     httpHandler
       .postToApi[IabdUpdateAmount](url, iabdUpdateAmount, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
         implicitly,
-        IabdUpdateAmount.formatList
+        IabdUpdateAmount.formatListWrites
       )
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }

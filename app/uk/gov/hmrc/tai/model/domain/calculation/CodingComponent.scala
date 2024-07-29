@@ -40,15 +40,13 @@ object CodingComponent {
       (JsPath \ "inputAmount").writeNullable[BigDecimal]
   )(unapplyCodingComponentForApiJson _)
 
-  val codingComponentReads = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
+  val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
-      val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
-      val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
-      val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
+    val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
+    val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
+    val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
 
-      JsSuccess(taxComponents)
-    }
+    JsSuccess(taxComponents)
   }
 
   type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]

@@ -39,8 +39,9 @@ object IabdUpdateAmount {
   def empSeqNoFieldName =
     "employmentSequenceNumber"
 
-  implicit def formats: Format[IabdUpdateAmount] = {
-    val iabdUpdateAmountWrites: Writes[IabdUpdateAmount] =
+  implicit def formats: Format[IabdUpdateAmount] =
+    Format(
+      Json.reads[IabdUpdateAmount],
       (
         (JsPath \ empSeqNoFieldName).write[Int] and
           (JsPath \ "grossAmount").write[Int] and
@@ -48,9 +49,8 @@ object IabdUpdateAmount {
           (JsPath \ "receiptDate").writeNullable[String] and
           (JsPath \ "source").writeNullable[Int]
       )(unlift(IabdUpdateAmount.unapply))
-    Format(Json.reads[IabdUpdateAmount], iabdUpdateAmountWrites)
-  }
+    )
 
-  implicit val formatList: Writes[IabdUpdateAmount] = (updateAmount: IabdUpdateAmount) =>
+  val formatListWrites: Writes[IabdUpdateAmount] = (updateAmount: IabdUpdateAmount) =>
     Json.arr(Json.toJson(updateAmount))
 }

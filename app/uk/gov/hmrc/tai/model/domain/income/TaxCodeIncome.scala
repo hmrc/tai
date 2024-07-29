@@ -162,8 +162,8 @@ object TaxCodeIncome {
     }
   }
 
-  val taxCodeIncomeSourceReads = new Reads[TaxCodeIncome] {
-    override def reads(json: JsValue) = {
+  val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = new Reads[TaxCodeIncome] {
+    override def reads(json: JsValue): JsSuccess[TaxCodeIncome] = {
       val incomeSourceType = taxCodeIncomeType(json)
       val employmentId = (json \ "employmentId").asOpt[Int]
       val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))

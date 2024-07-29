@@ -63,7 +63,7 @@ object PersonFormatter {
 
   implicit val addressFormat: OFormat[Address] = Json.format[Address]
 
-  val personMongoFormat = Json.format[Person]
+  val personMongoFormat: OFormat[Person] = Json.format[Person]
 
   implicit val personHodRead: Reads[Person] = (
     (JsPath \ "person" \ "nino").read[Nino] and
