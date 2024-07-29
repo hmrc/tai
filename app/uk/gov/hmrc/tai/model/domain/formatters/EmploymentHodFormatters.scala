@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain.formatters
 
-import play.api.Logger
+import play.api.libs.json.Reads.localDateReads
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
-import uk.gov.hmrc.tai.model.domain.income.{Ceased, Live, PotentiallyCeased, TaxCodeIncomeStatus}
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
 
@@ -29,36 +29,17 @@ import scala.util.matching.Regex
 
 trait EmploymentHodFormatters {
 
-  private val logger: Logger = Logger(getClass.getName)
-
   implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
     JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 
   implicit val employmentHodReads: Reads[Employment] = new Reads[Employment] {
-
-    val formatEmploymentLocalDate: Format[LocalDate] = Format(
-      new Reads[LocalDate] {
-        val dateRegex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
-
-        override def reads(json: JsValue): JsResult[LocalDate] = json match {
-          case JsString(dateRegex(d, m, y)) =>
-            JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
-          case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
-        }
-      },
-      new Writes[LocalDate] {
-        val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-        override def writes(date: LocalDate): JsValue =
-          JsString(date.format(dateFormat))
-      }
-    )
+    private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
 
     override def reads(json: JsValue): JsResult[Employment] = {
       val name = (json \ "employerName").as[String]
       val payrollNumber = (json \ "worksNumber").asOpt[String]
-      val startDate = (json \ "startDate").as[LocalDate](formatEmploymentLocalDate)
-      val endDate = (json \ "endDate").asOpt[LocalDate](formatEmploymentLocalDate)
+      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+      val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
       val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
       val payeNumber = (json \ "payeNumber").as[String]
       val sequenceNumber = (json \ "sequenceNumber").as[Int]
@@ -67,7 +48,7 @@ trait EmploymentHodFormatters {
         .asOpt[Boolean]
         .getOrElse(false)
       val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
-      val status = employmentStatus(json)
+      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
       JsSuccess(
         Employment(
           name,
@@ -87,48 +68,35 @@ trait EmploymentHodFormatters {
     }
   }
 
-  private def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
-    val employmentStatus = (json \ "employmentStatus").asOpt[Int]
-
-    employmentStatus match {
-      case Some(1) => Live
-      case Some(2) => PotentiallyCeased
-      case Some(3) => Ceased
-      case default =>
-        logger.warn(s"Invalid Employment Status -> $default")
-        throw new RuntimeException("Invalid employment status")
-    }
-  }
-
   implicit val employmentCollectionHodReads: Reads[EmploymentCollection] = (json: JsValue) =>
     JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+
+  private def niFigure(json: JsValue): Option[Map[String, BigDecimal]] = (json \ "niLettersAndValues")
+    .asOpt[JsArray]
+    .map(x => x \\ "niFigure")
+    .flatMap(_.headOption)
+    .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
 
   val paymentHodReads: Reads[Payment] = (json: JsValue) => {
 
     val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
 
-    val niFigure = (json \ "niLettersAndValues")
-      .asOpt[JsArray]
-      .map(x => x \\ "niFigure")
-      .flatMap(_.headOption)
-      .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
-
     val payment = Payment(
       date = (json \ "pmtDate").as[LocalDate],
       amountYearToDate = mandatoryMoneyAmount("TaxablePayYTD"),
       taxAmountYearToDate = mandatoryMoneyAmount("TotalTaxYTD"),
-      nationalInsuranceAmountYearToDate = niFigure.flatMap(_.get("EmpeeContribnsYTD")).getOrElse(0),
+      nationalInsuranceAmountYearToDate = niFigure(json).flatMap(_.get("EmpeeContribnsYTD")).getOrElse(0),
       amount = mandatoryMoneyAmount("TaxablePay"),
       taxAmount = mandatoryMoneyAmount("TaxDeductedOrRefunded"),
-      nationalInsuranceAmount = niFigure.flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
-      payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormat),
+      nationalInsuranceAmount = niFigure(json).flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
+      payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormatFromHod),
       duplicate = (json \ "duplicate").asOpt[Boolean]
     )
 
     JsSuccess(payment)
   }
 
-  val paymentFrequencyFormat = new Format[PaymentFrequency] {
+  val paymentFrequencyFormatFromHod: Format[PaymentFrequency] = new Format[PaymentFrequency] {
     override def reads(json: JsValue): JsResult[PaymentFrequency] = json.as[String] match {
       case Weekly.value      => JsSuccess(Weekly)
       case FortNightly.value => JsSuccess(FortNightly)
@@ -146,32 +114,26 @@ trait EmploymentHodFormatters {
 
   }
 
-  val endOfTaxYearUpdateHodReads = new Reads[EndOfTaxYearUpdate] {
+  private[domain] val endOfTaxYearUpdateHodReads: Reads[EndOfTaxYearUpdate] = new Reads[EndOfTaxYearUpdate] {
 
     override def reads(json: JsValue): JsResult[EndOfTaxYearUpdate] = {
 
       val optionalAdjustmentAmountMap =
         (json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]].getOrElse(Map())
 
-      val niFigure = (json \ "niLettersAndValues")
-        .asOpt[JsArray]
-        .map(x => x \\ "niFigure")
-        .flatMap(_.headOption)
-        .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
-
       val rcvdDate = (json \ "rcvdDate").as[LocalDate]
 
       val adjusts = Seq(
         optionalAdjustmentAmountMap.get("TotalTaxDelta").map(Adjustment(TaxAdjustment, _)),
         optionalAdjustmentAmountMap.get("TaxablePayDelta").map(Adjustment(IncomeAdjustment, _)),
-        niFigure.flatMap(_.get("EmpeeContribnsDelta")).map(Adjustment(NationalInsuranceAdjustment, _))
+        niFigure(json).flatMap(_.get("EmpeeContribnsDelta")).map(Adjustment(NationalInsuranceAdjustment, _))
       ).flatten.filter(_.amount != 0)
 
       JsSuccess(EndOfTaxYearUpdate(rcvdDate, adjusts))
     }
   }
 
-  val annualAccountHodReads = new Reads[Seq[AnnualAccount]] {
+  val annualAccountHodReads: Reads[Seq[AnnualAccount]] = new Reads[Seq[AnnualAccount]] {
 
     override def reads(json: JsValue): JsResult[Seq[AnnualAccount]] = {
 
@@ -213,12 +175,12 @@ trait EmploymentHodFormatters {
     }
   }
 
-  val taxYearHodReads: Reads[TaxYear] = new Reads[TaxYear] {
+  private[domain] val taxYearHodReads: Reads[TaxYear] = new Reads[TaxYear] {
     override def reads(json: JsValue): JsSuccess[TaxYear] =
       JsSuccess(TaxYear(json.as[String]))
   }
 
-  val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
+  private val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
   def numberChecked(stringVal: String): String =
     stringVal match {
       case numericWithLeadingZeros(_, numeric) => numeric

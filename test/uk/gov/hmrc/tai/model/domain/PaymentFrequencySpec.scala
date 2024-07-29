@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 
 class PaymentFrequencySpec extends PlaySpec {
 
-  private val paymentFrequencyFormat = EmploymentHodFormatters.paymentFrequencyFormat
+  private val paymentFrequencyFormat = EmploymentHodFormatters.paymentFrequencyFormatFromHod
 
   "Payment Frequency" must {
     "create a valid object" when {
@@ -76,14 +76,14 @@ class PaymentFrequencySpec extends PlaySpec {
     "reading values" must {
       "read valid string values" in {
         jsonValues.foreach { kv =>
-          JsString(kv._1).as[PaymentFrequency] mustBe kv._2
+          JsString(kv._1).as[PaymentFrequency](PaymentFrequency.paymentFrequencyFormat) mustBe kv._2
         }
       }
 
       "throw an IllegalArgumentException" when {
         "an invalid string is read" in {
           the[IllegalArgumentException] thrownBy {
-            JsString("Foo").as[PaymentFrequency]
+            JsString("Foo").as[PaymentFrequency](PaymentFrequency.paymentFrequencyFormat)
           } must have message "Invalid payment frequency"
         }
       }

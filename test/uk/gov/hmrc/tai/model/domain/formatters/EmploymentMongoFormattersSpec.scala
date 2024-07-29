@@ -24,7 +24,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.LocalDate
 
-class EmploymentMongoFormattersSpec extends PlaySpec with EmploymentMongoFormatters {
+class EmploymentMongoFormattersSpec extends PlaySpec {
 
   "EmploymentMongoFormatter" must {
 

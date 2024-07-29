@@ -37,7 +37,7 @@ object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
   implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)
 
-    override def writes(basisOperation: BasisOperation) = JsString(basisOperation.toString)
+    override def writes(basisOperation: BasisOperation): JsValue = JsString(basisOperation.toString)
   }
 }
 
@@ -69,7 +69,20 @@ object TaxCodeIncomeStatus {
         throw new RuntimeException("Invalid employment status reads")
     }
 
-    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
+    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus): JsValue = JsString(taxCodeIncomeStatus.toString)
+  }
+
+  def employmentStatusFromNps(json: JsValue): TaxCodeIncomeStatus = {
+    val employmentStatus = (json \ "employmentStatus").asOpt[Int]
+
+    employmentStatus match {
+      case Some(1) => Live
+      case Some(2) => PotentiallyCeased
+      case Some(3) => Ceased
+      case default =>
+        logger.warn(s"Invalid Employment Status -> $default")
+        throw new RuntimeException("Invalid employment status")
+    }
   }
 }
 
@@ -95,7 +108,7 @@ object IabdUpdateSource extends IabdUpdateSource {
   implicit val formatIabdUpdateSource: Format[IabdUpdateSource] = new Format[IabdUpdateSource] {
     override def reads(json: JsValue): JsSuccess[IabdUpdateSource] = throw new RuntimeException("Not Implemented")
 
-    override def writes(iabdUpdateSource: IabdUpdateSource) = JsString(iabdUpdateSource.toString)
+    override def writes(iabdUpdateSource: IabdUpdateSource): JsValue = JsString(iabdUpdateSource.toString)
   }
   def fromCode(code: Int): Option[IabdUpdateSource] = iabdUpdateSourceMap.get(code)
 }
@@ -170,7 +183,7 @@ object TaxCodeIncome {
       val name = (json \ "name").asOpt[String].getOrElse("")
       val basisOperation =
         (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
-      val status = employmentStatus(json)
+      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
       val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
@@ -212,19 +225,6 @@ object TaxCodeIncome {
       OtherIncome
     else
       EmploymentIncome
-  }
-
-  private def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
-    val employmentStatus = (json \ "employmentStatus").asOpt[Int]
-
-    employmentStatus match {
-      case Some(1) => Live
-      case Some(2) => PotentiallyCeased
-      case Some(3) => Ceased
-      case default =>
-        logger.warn(s"Invalid Employment Status -> $default")
-        throw new RuntimeException("Invalid employment status")
-    }
   }
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {

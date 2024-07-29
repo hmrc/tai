@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tai.model
 
+import play.api.libs.json.Reads.localDateReads
+
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import play.api.libs.json._
