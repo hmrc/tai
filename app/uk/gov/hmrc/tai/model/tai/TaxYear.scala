@@ -90,4 +90,9 @@ object TaxYear {
     }
     override def writes(v: TaxYear): JsValue = JsNumber(v.year)
   }
+
+  val taxYearHodReads: Reads[TaxYear] = (json: JsValue) => JsSuccess(TaxYear(json.as[String]))
+
+  private implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 }

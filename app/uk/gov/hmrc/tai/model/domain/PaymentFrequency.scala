@@ -38,6 +38,24 @@ object PaymentFrequency {
     }
     override def writes(paymentFrequency: PaymentFrequency): JsValue = JsString(paymentFrequency.toString)
   }
+
+  val paymentFrequencyFormatFromHod: Format[PaymentFrequency] = new Format[PaymentFrequency] {
+    override def reads(json: JsValue): JsResult[PaymentFrequency] = json.as[String] match {
+      case Weekly.value      => JsSuccess(Weekly)
+      case FortNightly.value => JsSuccess(FortNightly)
+      case FourWeekly.value  => JsSuccess(FourWeekly)
+      case Monthly.value     => JsSuccess(Monthly)
+      case Quarterly.value   => JsSuccess(Quarterly)
+      case BiAnnually.value  => JsSuccess(BiAnnually)
+      case Annually.value    => JsSuccess(Annually)
+      case OneOff.value      => JsSuccess(OneOff)
+      case Irregular.value   => JsSuccess(Irregular)
+      case _                 => throw new IllegalArgumentException("Invalid payment frequency")
+    }
+
+    override def writes(paymentFrequency: PaymentFrequency): JsValue = JsString(paymentFrequency.toString)
+
+  }
 }
 
 case object Weekly extends PaymentFrequency {

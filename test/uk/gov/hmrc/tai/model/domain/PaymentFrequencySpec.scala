@@ -18,11 +18,11 @@ package uk.gov.hmrc.tai.model.domain
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
+import uk.gov.hmrc.tai.model.domain.PaymentFrequency.paymentFrequencyFormatFromHod
 
 class PaymentFrequencySpec extends PlaySpec {
 
-  private val paymentFrequencyFormat = EmploymentHodFormatters.paymentFrequencyFormatFromHod
+  private val paymentFrequencyFormat = paymentFrequencyFormatFromHod
 
   "Payment Frequency" must {
     "create a valid object" when {

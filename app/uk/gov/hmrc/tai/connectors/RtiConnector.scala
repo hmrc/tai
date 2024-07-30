@@ -33,6 +33,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -178,7 +179,7 @@ class DefaultRtiConnector @Inject() (
           futureResponse
             .map {
               case Right(httpResponse) =>
-                Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+                Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
               case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
                 Right(Seq.empty)
               case Left(error) =>

@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, JsArray, JsSuccess, JsValue, Json, Reads}
+import uk.gov.hmrc.tai.model.domain.PaymentFrequency.paymentFrequencyFormatFromHod
+import uk.gov.hmrc.tai.model.tai.JsonExtra
 
 import java.time.LocalDate
 
@@ -41,4 +43,32 @@ object Payment {
 
   private implicit val LocalDateOrder: Ordering[LocalDate] = (x: LocalDate, y: LocalDate) => x.compareTo(y)
   implicit val dateOrdering: Ordering[Payment] = Ordering.by(_.date)
+
+  def niFigure(json: JsValue): Option[Map[String, BigDecimal]] = (json \ "niLettersAndValues")
+    .asOpt[JsArray]
+    .map(x => x \\ "niFigure")
+    .flatMap(_.headOption)
+    .map(_.asOpt[Map[String, BigDecimal]].getOrElse(Map()))
+
+  val paymentHodReads: Reads[Payment] = (json: JsValue) => {
+
+    val mandatoryMoneyAmount = (json \ "mandatoryMonetaryAmount").as[Map[String, BigDecimal]]
+
+    val payment = Payment(
+      date = (json \ "pmtDate").as[LocalDate],
+      amountYearToDate = mandatoryMoneyAmount("TaxablePayYTD"),
+      taxAmountYearToDate = mandatoryMoneyAmount("TotalTaxYTD"),
+      nationalInsuranceAmountYearToDate = niFigure(json).flatMap(_.get("EmpeeContribnsYTD")).getOrElse(0),
+      amount = mandatoryMoneyAmount("TaxablePay"),
+      taxAmount = mandatoryMoneyAmount("TaxDeductedOrRefunded"),
+      nationalInsuranceAmount = niFigure(json).flatMap(_.get("EmpeeContribnsInPd")).getOrElse(0),
+      payFrequency = (json \ "payFreq").as[PaymentFrequency](paymentFrequencyFormatFromHod),
+      duplicate = (json \ "duplicate").asOpt[Boolean]
+    )
+
+    JsSuccess(payment)
+  }
+
+  private implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 }
