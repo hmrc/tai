@@ -43,6 +43,17 @@ class TaxYearSpec extends PlaySpec {
   }
 
   "TaxYear" must {
+    "un-marshall Tax year Json" when {
+      "given a TaxYear object" in {
+        Json.toJson(TaxYear(2017)) mustBe JsNumber(2017)
+      }
+    }
+
+    "marshall valid TaxYear object" when {
+      "given a valid json value" in {
+        JsNumber(2017).as[TaxYear] mustBe TaxYear(2017)
+      }
+    }
 
     "deserialise a Tax Year" when {
       "given the correct Json type" in {
