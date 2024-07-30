@@ -17,12 +17,24 @@
 package uk.gov.hmrc.tai.model.tai
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsError, JsNumber, JsString, JsSuccess, Json}
-import uk.gov.hmrc.tai.model.tai.TaxYear.formatTaxYear
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.tai.TaxYear.{formatTaxYear, taxYearHodReads}
 
 import java.time.LocalDate
 
 class TaxYearSpec extends PlaySpec {
+
+  "taxYearHodReads" must {
+    "Format a valid tax year string from rti" in {
+      val rtiTaxYearJsVal = JsString("16-17")
+      rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016)
+    }
+
+    "Thrwo an error when encountering an invalid tax year string" in {
+      val rtiTaxYearJsVal = JsString("16-")
+      an[IllegalArgumentException] mustBe thrownBy(rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016))
+    }
+  }
 
   "formatTaxYear writes" must {
     "write valid json form a TaxYear instance" in {
