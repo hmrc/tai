@@ -77,7 +77,7 @@ class AnnualAccountSpec extends PlaySpec {
         duplicate = None
       )
   )
-  
+
   private def getJson(fileName: String): JsValue = {
     val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
     val file: File = new File(jsonFilePath)

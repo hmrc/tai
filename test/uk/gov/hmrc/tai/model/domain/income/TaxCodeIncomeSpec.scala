@@ -14,16 +14,48 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters.income
+package uk.gov.hmrc.tai.model.domain.income
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.{employmentFilter, newEstimatedPayTypeFilter, taxCodeIncomeSourceReads, taxCodeIncomeSourcesReads}
-import uk.gov.hmrc.tai.model.domain.income._
 
-class TaxCodeIncomeHodFormatterSpec extends PlaySpec {
+class TaxCodeIncomeSpec extends PlaySpec {
+  private val totalIncome: JsObject = Json.obj(
+    "npsDescription" -> JsNull,
+    "amount"         -> JsNumber(1234),
+    "iabdSummaries" -> JsArray(
+      Seq(
+        Json.obj(
+          "amount"         -> JsNumber(1111),
+          "type"           -> JsNumber(27),
+          "employmentId"   -> JsNumber(1),
+          "npsDescription" -> JsString("New Estimated Pay")
+        ),
+        Json.obj(
+          "amount"         -> JsNumber(1111),
+          "type"           -> JsNumber(29),
+          "employmentId"   -> JsNumber(1),
+          "npsDescription" -> JsString("New Estimated Pay")
+        ),
+        Json.obj(
+          "amount"         -> JsNumber(1111),
+          "type"           -> JsNumber(27),
+          "employmentId"   -> JsNumber(2),
+          "npsDescription" -> JsString("New Estimated Pay")
+        )
+      )
+    )
+  )
 
+  private val jsonNpsTax: JsObject = Json.obj(
+    "totalIncome"        -> totalIncome,
+    "allowReliefDeducts" -> JsNull,
+    "totalTaxableIncome" -> JsNumber(1111),
+    "totalTax"           -> JsNumber(222),
+    "taxBands"           -> JsNull
+  )
   "taxCodeIncomeSourceReads should use totalTaxableIncome to read amount" must {
     "return a value for the total taxable income from NPS tax response" when {
 
@@ -669,39 +701,4 @@ class TaxCodeIncomeHodFormatterSpec extends PlaySpec {
       }
     }
   }
-
-  val totalIncome: JsObject = Json.obj(
-    "npsDescription" -> JsNull,
-    "amount"         -> JsNumber(1234),
-    "iabdSummaries" -> JsArray(
-      Seq(
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(27),
-          "employmentId"   -> JsNumber(1),
-          "npsDescription" -> JsString("New Estimated Pay")
-        ),
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(29),
-          "employmentId"   -> JsNumber(1),
-          "npsDescription" -> JsString("New Estimated Pay")
-        ),
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(27),
-          "employmentId"   -> JsNumber(2),
-          "npsDescription" -> JsString("New Estimated Pay")
-        )
-      )
-    )
-  )
-
-  val jsonNpsTax: JsObject = Json.obj(
-    "totalIncome"        -> totalIncome,
-    "allowReliefDeducts" -> JsNull,
-    "totalTaxableIncome" -> JsNumber(1111),
-    "totalTax"           -> JsNumber(222),
-    "taxBands"           -> JsNull
-  )
 }

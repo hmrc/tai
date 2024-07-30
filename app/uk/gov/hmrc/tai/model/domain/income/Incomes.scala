@@ -42,11 +42,9 @@ case class OtherNonTaxCodeIncome(
 object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
-  val nonTaxCodeIncomeReads = new Reads[Seq[OtherNonTaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[OtherNonTaxCodeIncome]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
-      JsSuccess(nonTaxCodeIncomes(extractedIabds))
-    }
+  val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+    JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 
   private def nonTaxCodeIncomes(iabds: Seq[NpsIabdSummary]): Seq[OtherNonTaxCodeIncome] =

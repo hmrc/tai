@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters.income
+package uk.gov.hmrc.tai.model.domain.income
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.nonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeReads
 
 import scala.util.Random
 
-class TaxAccountIncomeHodFormattersSpec extends PlaySpec {
-
-  "nonTaxCodeIncomeReads" must {
+class OtherNonTaxCodeIncomeSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
+  "otherNonTaxCodeIncomeReads" must {
     "return empty sequence" when {
       "there is no total liability present in tax account" in {
         val json = Json.obj(
           "taxAccountId" -> "id",
           "nino"         -> nino.nino
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe empty
       }
 
       "total liability is null in tax account" in {
@@ -43,7 +42,7 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec {
           "nino"           -> nino.nino,
           "totalLiability" -> JsNull
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe empty
       }
     }
 
@@ -58,7 +57,7 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[OtherNonTaxCodeIncome]](nonTaxCodeIncomeReads) mustBe Seq(
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),
@@ -122,6 +121,5 @@ class TaxAccountIncomeHodFormattersSpec extends PlaySpec {
         )
       )
     )
-  private val nino: Nino = new Generator(new Random).nextNino
 
 }
