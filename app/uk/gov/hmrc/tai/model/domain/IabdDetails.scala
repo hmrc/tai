@@ -52,10 +52,5 @@ object IabdDetails extends IabdTypeConstants {
     }
   )
 
-  val iabdEstimatedPayReads: Reads[JsValue] = (json: JsValue) => {
-    val iabdDetails = json.as[Seq[IabdDetails]]
-    JsSuccess(Json.toJson(iabdDetails.filter(_.`type`.contains(NewEstimatedPay))))
-  }
-
   implicit val format: Format[IabdDetails] = Json.format[IabdDetails]
 }
