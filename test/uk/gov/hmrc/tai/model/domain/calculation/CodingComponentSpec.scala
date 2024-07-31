@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters.taxComponents
+package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.{codingComponentReads, incomeSourceReads, totalLiabilityReads}
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.{codingComponentReads, codingComponentWrites, incomeSourceReads, totalLiabilityReads}
 
 import scala.util.Random
 
-class TaxAccountHodFormattersSpec extends PlaySpec {
-
+class CodingComponentSpec extends PlaySpec {
+  import CodingComponentSpec._
   "incomeSourceReads" must {
     "return empty list" when {
       "no NpsComponents of interest are present in the list of income deductions, within the supplied nps tax account json" in {
@@ -544,7 +544,7 @@ class TaxAccountHodFormattersSpec extends PlaySpec {
 
       "processing nps iabd summaries that correspond to known allowance types" in {
         val exhaustiveNpsAllowanceTypes = Seq(14, 15, 16, 17, 18, 55, 56, 57, 58, 59, 60, 61, 90, 102)
-        val json = taxAccountJsonWithIabds(exhaustiveNpsAllowanceTypes.map(npsIabdSummary(_)))
+        val json = taxAccountJsonWithIabds(exhaustiveNpsAllowanceTypes.map(npsIabdSummary))
         val allowanceComponents = json.as[Seq[CodingComponent]](totalLiabilityReads)
 
         allowanceComponents.size mustBe 14
@@ -656,8 +656,85 @@ class TaxAccountHodFormattersSpec extends PlaySpec {
         )
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
 
+  "codingComponentWrites" must {
+    "write tax component correctly to json" when {
+      "only mandatory fields are provided and codingComponent is Allowance" in {
+        Json.toJson(CodingComponent(GiftAidPayments, None, 1232, "Some Desc"))(codingComponentWrites) mustBe
+          Json.obj(
+            "componentType" -> "GiftAidPayments",
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Allowance"
+          )
+      }
+      "all the fields are provided and codingComponent is Allowance" in {
+        Json.toJson(
+          CodingComponent(GiftAidPayments, Some(111), 1232, "Some Desc", Some(12500))
+        )(codingComponentWrites) mustBe
+          Json.obj(
+            "componentType" -> "GiftAidPayments",
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Allowance",
+            "inputAmount"   -> 12500
+          )
+      }
+      "all the fields are provided and codingComponent is Benefit" in {
+        Json.toJson(
+          CodingComponent(AssetTransfer, Some(111), 1232, "Some Desc", Some(BigDecimal("13200.01")))
+        )(codingComponentWrites) mustBe
+          Json.obj(
+            "componentType" -> "AssetTransfer",
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Benefit",
+            "inputAmount"   -> BigDecimal("13200.01")
+          )
+      }
+      "all the fields are provided and codingComponent is Deduction" in {
+        Json.toJson(
+          CodingComponent(BalancingCharge, Some(111), 1232, "Some Desc", Some(12500))
+        )(codingComponentWrites) mustBe
+          Json.obj(
+            "componentType" -> "BalancingCharge",
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "Deduction",
+            "inputAmount"   -> 12500
+          )
+      }
+      "all the fields are provided and codingComponent is NonTaxCodeIncomeType" in {
+        Json.toJson(CodingComponent(NonCodedIncome, Some(111), 1232, "Some Desc", Some(12500)))(
+          codingComponentWrites
+        ) mustBe
+          Json.obj(
+            "componentType" -> "NonCodedIncome",
+            "employmentId"  -> 111,
+            "amount"        -> 1232,
+            "description"   -> "Some Desc",
+            "iabdCategory"  -> "NonTaxCodeIncome",
+            "inputAmount"   -> 12500
+          )
+      }
+    }
+    "throw a runtime exception" when {
+      "the component type is not as expected" in {
+        val ex = the[RuntimeException] thrownBy
+          Json.toJson(CodingComponent(EmploymentIncome, Some(111), 1232, "Some Desc"))(codingComponentWrites)
+
+        ex.getMessage mustBe "Unrecognised coding Component type"
+      }
+    }
+  }
+
+}
+
+object CodingComponentSpec {
+  private val nino: Nino = new Generator(new Random).nextNino
   private val combinedNpsDeductionJson = Json.obj(
     "taxAccountId" -> "id",
     "nino"         -> nino.nino,
@@ -834,5 +911,4 @@ class TaxAccountHodFormattersSpec extends PlaySpec {
         )
       )
     )
-
 }

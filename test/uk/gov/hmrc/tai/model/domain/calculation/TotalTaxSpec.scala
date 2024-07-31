@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain.formatters
+package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsResultException, Json}
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
-import uk.gov.hmrc.tai.model.domain.calculation._
-import uk.gov.hmrc.tai.service.TotalTaxService.taxFreeAllowanceReads
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqReads, taxFreeAllowanceReads}
 
-class IncomeCategoryHodFormattersSpec extends PlaySpec {
+class TotalTaxSpec extends PlaySpec {
 
   "incomeCategoriesReads" must {
     "return empty list" when {
