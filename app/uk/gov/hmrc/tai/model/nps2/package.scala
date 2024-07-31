@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model
 
+import play.api.libs.json.Reads.localDateReads
 import play.api.libs.json._
 
 import java.time.LocalDate
@@ -37,15 +38,7 @@ package object nps2 {
   }
 
   implicit val formatLocalDate: Format[LocalDate] = Format(
-    new Reads[LocalDate] {
-      val dateRegex: Regex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
-
-      override def reads(json: JsValue): JsResult[LocalDate] = json match {
-        case JsString(dateRegex(d, m, y)) =>
-          JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
-      }
-    },
+    localDateReads("dd/MM/yyyy"),
     new Writes[LocalDate] {
       val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
