@@ -33,7 +33,6 @@ case class IabdDetails(
 )
 
 object IabdDetails extends IabdTypeConstants {
-  // TODO: 9180 This formatter is the same as nps2/package formatLocalDate - remove duplication
   implicit val formatLocalDate: Format[LocalDate] = Format(
     new Reads[LocalDate] {
       val dateRegex: Regex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r

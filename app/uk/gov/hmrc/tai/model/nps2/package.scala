@@ -16,26 +16,24 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.Reads.localDateReads
+import play.api.libs.json._
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import play.api.libs.json._
-
 import scala.util.matching.Regex
 
 package object nps2 {
 
-  def enumerationFormat(a: Enumeration) = new Format[a.Value] {
-    def reads(json: JsValue) = JsSuccess(a.withName(json.as[String]))
+  def enumerationFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
+    def reads(json: JsValue): JsResult[a.Value] = JsSuccess(a.withName(json.as[String]))
 
-    def writes(v: a.Value) = JsString(v.toString)
+    def writes(v: a.Value): JsValue = JsString(v.toString)
   }
 
-  def enumerationNumFormat(a: Enumeration) = new Format[a.Value] {
-    def reads(json: JsValue) = JsSuccess(a(json.as[Int]))
+  def enumerationNumFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
+    def reads(json: JsValue): JsResult[a.Value] = JsSuccess(a(json.as[Int]))
 
-    def writes(v: a.Value) = JsNumber(v.id)
+    def writes(v: a.Value): JsValue = JsNumber(v.id)
   }
 
   implicit val formatLocalDate: Format[LocalDate] = Format(
