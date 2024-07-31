@@ -160,7 +160,7 @@ object TaxComponentType {
     override def writes(taxComponentType: TaxComponentType): JsString = JsString(taxComponentType.toString)
   }
 
-  val codingComponentTypeWrites: Writes[TaxComponentType] = (taxComponentType: TaxComponentType) =>
+  val taxComponentTypeWrites: Writes[TaxComponentType] = (taxComponentType: TaxComponentType) =>
     JsString(taxComponentType.toString)
 }
 

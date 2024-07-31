@@ -19,13 +19,13 @@ package uk.gov.hmrc.tai.model.domain
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 
 class TaxComponentTypeSpec extends PlaySpec with MockitoSugar {
   "codingComponentTypeWrites" must {
     "write tax component type correctly to json" when {
       "tax component type is having valid type" in {
-        Json.toJson(GiftAidPayments)(codingComponentTypeWrites.writes(_)) mustBe JsString("GiftAidPayments")
+        Json.toJson(GiftAidPayments)(taxComponentTypeWrites.writes(_)) mustBe JsString("GiftAidPayments")
       }
     }
   }

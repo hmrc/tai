@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.calculation
 import play.api.libs.json.{JsArray, JsPath, JsResult, JsSuccess, JsValue, Reads, Writes}
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
-import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 
 case class CodingComponent(
@@ -32,7 +32,7 @@ case class CodingComponent(
 
 object CodingComponent {
   val codingComponentWrites: Writes[CodingComponent] = (
-    (JsPath \ "componentType").write[TaxComponentType](codingComponentTypeWrites) and
+    (JsPath \ "componentType").write[TaxComponentType](taxComponentTypeWrites) and
       (JsPath \ "employmentId").writeNullable[Int] and
       (JsPath \ "amount").write[BigDecimal] and
       (JsPath \ "description").write[String] and

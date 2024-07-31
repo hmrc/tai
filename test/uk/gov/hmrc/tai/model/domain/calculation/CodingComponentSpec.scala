@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.calculation
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.{codingComponentReads, codingComponentWrites, incomeSourceReads, totalLiabilityReads}
 
