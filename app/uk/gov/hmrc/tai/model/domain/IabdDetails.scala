@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.Reads.localDateReads
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, JsonValidationError, Reads, Writes}
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import scala.util.matching.Regex
 
 case class IabdDetails(
   nino: Option[String],
@@ -34,16 +32,8 @@ case class IabdDetails(
 )
 
 object IabdDetails extends IabdTypeConstants {
-
-  implicit val formatLocalDate: Format[LocalDate] = Format(
-    localDateReads("dd/MM/yyyy"),
-    new Writes[LocalDate] {
-      val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-      override def writes(date: LocalDate): JsValue =
-        JsString(date.format(dateFormat))
-    }
-  )
-
-  implicit val format: Format[IabdDetails] = Json.format[IabdDetails]
+  implicit val format: Format[IabdDetails] = {
+    implicit val dateFormatter: Format[LocalDate] = formatLocalDateDDMMYYYY
+    Json.format[IabdDetails]
+  }
 }

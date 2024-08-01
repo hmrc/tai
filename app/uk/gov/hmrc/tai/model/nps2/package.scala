@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.json.Reads.localDateReads
 import play.api.libs.json._
+import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import scala.util.matching.Regex
 
 package object nps2 {
 
@@ -37,13 +35,5 @@ package object nps2 {
     def writes(v: a.Value): JsValue = JsNumber(v.id)
   }
 
-  implicit val formatLocalDate: Format[LocalDate] = Format(
-    localDateReads("dd/MM/yyyy"),
-    new Writes[LocalDate] {
-      val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-      override def writes(date: LocalDate): JsValue =
-        JsString(date.format(dateFormat))
-    }
-  )
+  implicit val formatLocalDate: Format[LocalDate] = formatLocalDateDDMMYYYY
 }

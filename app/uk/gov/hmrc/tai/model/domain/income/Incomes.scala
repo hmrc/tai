@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json.{Format, JsResult, JsSuccess, JsValue, Json, Reads}
-import uk.gov.hmrc.tai.model.domain.{NonTaxCodeIncomeComponentType, NpsIabdSummary}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 

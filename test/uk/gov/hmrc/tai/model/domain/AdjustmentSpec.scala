@@ -17,13 +17,8 @@
 package uk.gov.hmrc.tai.model.domain
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsResultException, JsValue, Json, JsonValidationError}
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
+import play.api.libs.json.{JsResultException, Json, JsonValidationError}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-
-import java.io.File
-import java.time.LocalDate
-import scala.io.BufferedSource
 
 class AdjustmentSpec extends PlaySpec {
 

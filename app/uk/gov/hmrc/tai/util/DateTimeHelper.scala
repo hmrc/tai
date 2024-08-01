@@ -16,6 +16,9 @@
 
 package uk.gov.hmrc.tai.util
 
+import play.api.libs.json.Reads.localDateReads
+import play.api.libs.json.{Format, JsString, JsValue, Writes}
+
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 
@@ -28,4 +31,14 @@ object DateTimeHelper {
   }
 
   implicit val dateTimeOrdering: Ordering[LocalDate] = Ordering.fromLessThan(_ isAfter _)
+
+  val formatLocalDateDDMMYYYY: Format[LocalDate] = Format(
+    localDateReads("dd/MM/yyyy"),
+    new Writes[LocalDate] {
+      private val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+      override def writes(date: LocalDate): JsValue =
+        JsString(date.format(dateFormat))
+    }
+  )
 }
