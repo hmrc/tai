@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Format, JsArray, JsSuccess, JsValue, Json, Reads}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.EndOfTaxYearUpdate.endOfTaxYearUpdateHodReads
 import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
-import uk.gov.hmrc.tai.model.tai.{JsonExtra, TaxYear}
+import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.tai.TaxYear.taxYearHodReads
 
 case class AnnualAccount(
@@ -79,8 +79,4 @@ object AnnualAccount {
       AnnualAccount(sequenceNumber, taxYear, Available, payments, eyus)
     })
   }
-
-  private implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
-    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
-
 }

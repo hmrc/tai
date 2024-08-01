@@ -132,78 +132,74 @@ trait MongoFormatter {
       throwExceptionForUnknownIncomeType
 
   implicit val formatIncome: Format[Income] = Format(
-    new Reads[Income] {
-      def reads(json: JsValue) = {
-        def getVal(name: String): Boolean = (json \ name).asOpt[Boolean].getOrElse(false)
+    (json: JsValue) => {
+      def getVal(name: String): Boolean = (json \ name).asOpt[Boolean].getOrElse(false)
 
-        val iType =
-          processIncomeTypes((getVal("jsaIndicator"), getVal("pensionIndicator"), getVal("otherIncomeSourceIndicator")))
+      val iType =
+        processIncomeTypes((getVal("jsaIndicator"), getVal("pensionIndicator"), getVal("otherIncomeSourceIndicator")))
 
-        JsSuccess {
-          Income(
-            (json \ "employmentId").asOpt[Int],
-            (json \ "employmentType").as[Int] == 1,
-            iType,
-            (json \ "employmentStatus").asOpt[Int] match {
-              case Some(1) => Income.Live
-              case Some(2) => Income.PotentiallyCeased
-              case Some(3) => Income.Ceased
-              case _       => throw new RuntimeException("Employment status is not correct")
-            },
-            (json \ "employmentTaxDistrictNumber").asOpt[Int],
-            (json \ "employmentPayeRef").asOpt[String].getOrElse(""),
-            (json \ "name").asOpt[String].getOrElse(""),
-            (json \ "worksNumber").asOpt[String],
-            (json \ "taxCode").asOpt[String].getOrElse(""),
-            (json \ "potentialUnderpayment").asOpt[BigDecimal].getOrElse(0),
-            (json \ "employmentRecord").asOpt[nps2.NpsEmployment],
-            (json \ "basisOperation").asOpt[BasisOperation]
-          )
-        }
+      JsSuccess {
+        Income(
+          (json \ "employmentId").asOpt[Int],
+          (json \ "employmentType").as[Int] == 1,
+          iType,
+          (json \ "employmentStatus").asOpt[Int] match {
+            case Some(1) => Income.Live
+            case Some(2) => Income.PotentiallyCeased
+            case Some(3) => Income.Ceased
+            case _       => throw new RuntimeException("Employment status is not correct")
+          },
+          (json \ "employmentTaxDistrictNumber").asOpt[Int],
+          (json \ "employmentPayeRef").asOpt[String].getOrElse(""),
+          (json \ "name").asOpt[String].getOrElse(""),
+          (json \ "worksNumber").asOpt[String],
+          (json \ "taxCode").asOpt[String].getOrElse(""),
+          (json \ "potentialUnderpayment").asOpt[BigDecimal].getOrElse(0),
+          (json \ "employmentRecord").asOpt[nps2.NpsEmployment],
+          (json \ "basisOperation").asOpt[BasisOperation]
+        )
       }
     },
-    new Writes[Income] {
-      def writes(v: Income) =
-        JsObject(
-          Seq(
-            "employmentId" -> v.employmentId
-              .map { x =>
-                JsNumber(x)
-              }
-              .getOrElse {
-                JsNull
-              },
-            "employmentType"              -> JsNumber(if (v.isPrimary) 1 else 2),
-            "employmentStatus"            -> JsNumber(v.status.code),
-            "employmentTaxDistrictNumber" -> v.taxDistrict.map(x => JsNumber(x)).getOrElse(JsNull),
-            "employmentPayeRef"           -> JsString(v.payeRef),
-            "pensionIndicator"            -> JsBoolean(v.incomeType == IncomeType.Pension),
-            "jsaIndicator"                -> JsBoolean(v.incomeType == IncomeType.JobSeekersAllowance),
-            "otherIncomeSourceIndicator"  -> JsBoolean(v.incomeType == IncomeType.OtherIncome),
-            "name"                        -> JsString(v.name),
-            "endDate" -> (v.status match {
-              case Income.Ceased => Json.toJson(Income.Ceased.code)
-              case _             => JsNull
-            }),
-            "worksNumber" -> v.worksNumber
-              .map {
-                JsString
-              }
-              .getOrElse {
-                JsNull
-              },
-            "taxCode"               -> JsString(v.taxCode),
-            "potentialUnderpayment" -> JsNumber(v.potentialUnderpayment),
-            "employmentRecord" -> v.employmentRecord
-              .map { x =>
-                Json.toJson(x)
-              }
-              .getOrElse {
-                JsNull
-              }
-          )
-        ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
-    }
+    (v: Income) =>
+      JsObject(
+        Seq(
+          "employmentId" -> v.employmentId
+            .map { x =>
+              JsNumber(x)
+            }
+            .getOrElse {
+              JsNull
+            },
+          "employmentType"              -> JsNumber(if (v.isPrimary) 1 else 2),
+          "employmentStatus"            -> JsNumber(v.status.code),
+          "employmentTaxDistrictNumber" -> v.taxDistrict.map(x => JsNumber(x)).getOrElse(JsNull),
+          "employmentPayeRef"           -> JsString(v.payeRef),
+          "pensionIndicator"            -> JsBoolean(v.incomeType == IncomeType.Pension),
+          "jsaIndicator"                -> JsBoolean(v.incomeType == IncomeType.JobSeekersAllowance),
+          "otherIncomeSourceIndicator"  -> JsBoolean(v.incomeType == IncomeType.OtherIncome),
+          "name"                        -> JsString(v.name),
+          "endDate" -> (v.status match {
+            case Income.Ceased => Json.toJson(Income.Ceased.code)
+            case _             => JsNull
+          }),
+          "worksNumber" -> v.worksNumber
+            .map {
+              JsString
+            }
+            .getOrElse {
+              JsNull
+            },
+          "taxCode"               -> JsString(v.taxCode),
+          "potentialUnderpayment" -> JsNumber(v.potentialUnderpayment),
+          "employmentRecord" -> v.employmentRecord
+            .map { x =>
+              Json.toJson(x)
+            }
+            .getOrElse {
+              JsNull
+            }
+        )
+      ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
   )
 
   implicit val formatNpsEmployment: Format[nps2.NpsEmployment] = (

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.totalLiabilityIabds
 import uk.gov.hmrc.tai.model.domain.RateBand.incomeAndRateBands
 

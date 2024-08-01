@@ -92,7 +92,4 @@ object TaxYear {
   }
 
   val taxYearHodReads: Reads[TaxYear] = (json: JsValue) => JsSuccess(TaxYear(json.as[String]))
-
-  private implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
-    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 }

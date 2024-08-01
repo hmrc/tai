@@ -37,8 +37,7 @@ import uk.gov.hmrc.tai.util.IFormConstants
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmploymentService @Inject() (

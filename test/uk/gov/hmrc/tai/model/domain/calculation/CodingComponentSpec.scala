@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain.calculation
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.{codingComponentReads, codingComponentWrites, incomeSourceReads, totalLiabilityReads}
 
@@ -882,7 +881,7 @@ object CodingComponentSpec {
   private def npsIabdSummary(iadbType: Int): JsObject =
     npsIabdSummaries(1, iadbType).head
 
-  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
+  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int): Seq[JsObject] =
     for {
       _ <- 1 to noOfIabds
     } yield Json.obj(
