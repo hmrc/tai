@@ -18,8 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import org.mockito.ArgumentCaptor
-
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.libs.json.Json
@@ -28,16 +26,16 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
+import uk.gov.hmrc.tai.model.domain.Employment.employmentHodReads
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import scala.collection.immutable.Seq
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.ListHasAsScala
@@ -99,7 +97,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentHodFormatters.employmentHodReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodReads))
       argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
@@ -152,7 +150,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentHodFormatters.employmentHodReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodReads))
       argsAccounts mustBe List.empty
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())

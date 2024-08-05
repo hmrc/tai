@@ -33,8 +33,8 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
@@ -76,7 +76,7 @@ class CachingRtiConnector @Inject() (
   lockService: LockService,
   appConfig: RtiConfig
 )(implicit ec: ExecutionContext)
-    extends RtiConnector with EmploymentMongoFormatters with Logging {
+    extends RtiConnector with Logging {
 
   private def cache[L, A: Format](
     key: String
@@ -178,7 +178,7 @@ class DefaultRtiConnector @Inject() (
           futureResponse
             .map {
               case Right(httpResponse) =>
-                Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+                Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
               case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
                 Right(Seq.empty)
               case Left(error) =>

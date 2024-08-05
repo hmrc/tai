@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.EndOfTaxYearUpdate.endOfTaxYearUpdateHodReads
+import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.model.tai.TaxYear.taxYearHodReads
 
 case class AnnualAccount(
   sequenceNumber: Int,
@@ -29,16 +32,51 @@ case class AnnualAccount(
 
   lazy val totalIncomeYearToDate: BigDecimal =
     if (payments.isEmpty) 0 else payments.max.amountYearToDate
-
-  lazy val latestPayment: Option[Payment] = if (payments.isEmpty) None else Some(payments.max)
 }
 
 object AnnualAccount {
-  implicit val format: OFormat[AnnualAccount] = Json.format[AnnualAccount]
-
+  implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =
     AnnualAccount(sequenceNumber, taxYear, rtiStatus, Nil, Nil)
 
+  val annualAccountHodReads: Reads[Seq[AnnualAccount]] = (json: JsValue) => {
+
+    val employments: Seq[JsValue] = (json \ "individual" \ "employments" \ "employment").validate[JsArray] match {
+      case JsSuccess(arr, _) => arr.value.toSeq
+      case _                 => Nil
+    }
+
+    JsSuccess(employments.map { emp =>
+      val sequenceNumber = (emp \ "sequenceNumber").as[Int]
+      val payments =
+        (emp \ "payments" \ "inYear").validate[JsArray] match {
+          case JsSuccess(arr, _) =>
+            arr.value
+              .map { payment =>
+                payment.as[Payment](paymentHodReads)
+              }
+              .toList
+              .sorted
+          case _ => Nil
+        }
+
+      val eyus =
+        (emp \ "payments" \ "eyu").validate[JsArray] match {
+          case JsSuccess(arr, _) =>
+            arr.value
+              .map { payment =>
+                payment.as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
+              }
+              .toList
+              .sorted
+          case _ => Nil
+        }
+
+      val taxYear = (json \ "individual" \ "relatedTaxYear").as[TaxYear](taxYearHodReads)
+
+      AnnualAccount(sequenceNumber, taxYear, Available, payments, eyus)
+    })
+  }
 }

@@ -16,41 +16,24 @@
 
 package uk.gov.hmrc.tai.model
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import play.api.libs.json._
+import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 
-import scala.util.matching.Regex
+import java.time.LocalDate
 
 package object nps2 {
 
-  def enumerationFormat(a: Enumeration) = new Format[a.Value] {
-    def reads(json: JsValue) = JsSuccess(a.withName(json.as[String]))
+  def enumerationFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
+    def reads(json: JsValue): JsResult[a.Value] = JsSuccess(a.withName(json.as[String]))
 
-    def writes(v: a.Value) = JsString(v.toString)
+    def writes(v: a.Value): JsValue = JsString(v.toString)
   }
 
-  def enumerationNumFormat(a: Enumeration) = new Format[a.Value] {
-    def reads(json: JsValue) = JsSuccess(a(json.as[Int]))
+  def enumerationNumFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
+    def reads(json: JsValue): JsResult[a.Value] = JsSuccess(a(json.as[Int]))
 
-    def writes(v: a.Value) = JsNumber(v.id)
+    def writes(v: a.Value): JsValue = JsNumber(v.id)
   }
 
-  implicit val formatLocalDate: Format[LocalDate] = Format(
-    new Reads[LocalDate] {
-      val dateRegex: Regex = """^(\d\d)/(\d\d)/(\d\d\d\d)$""".r
-
-      override def reads(json: JsValue): JsResult[LocalDate] = json match {
-        case JsString(dateRegex(d, m, y)) =>
-          JsSuccess(LocalDate.of(y.toInt, m.toInt, d.toInt))
-        case invalid => JsError(JsonValidationError(s"Invalid date format [dd/MM/yyyy]: $invalid"))
-      }
-    },
-    new Writes[LocalDate] {
-      val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-
-      override def writes(date: LocalDate): JsValue =
-        JsString(date.format(dateFormat))
-    }
-  )
+  implicit val formatLocalDate: Format[LocalDate] = formatLocalDateDDMMYYYY
 }

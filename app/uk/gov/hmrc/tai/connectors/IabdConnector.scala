@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, IabdUpdateAmountFormats, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
@@ -85,8 +85,7 @@ class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
   npsConfig: NpsConfig,
   desConfig: DesConfig,
-  iabdUrls: IabdUrls,
-  IabdUpdateAmountFormats: IabdUpdateAmountFormats
+  iabdUrls: IabdUrls
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -156,7 +155,7 @@ class DefaultIabdConnector @Inject() (
     httpHandler
       .postToApi[IabdUpdateAmount](url, iabdUpdateAmount, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
         implicitly,
-        IabdUpdateAmountFormats.formatList
+        (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
       )
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }

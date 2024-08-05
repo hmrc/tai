@@ -18,8 +18,6 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
-
-import java.time.LocalDate
 import play.api.Logger
 import play.api.http.Status.NOT_FOUND
 import play.api.mvc.Request
@@ -28,8 +26,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
+import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.EmploymentHodFormatters
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
@@ -37,6 +35,7 @@ import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
 
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -74,10 +73,11 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] = {
+
     val employmentsCollectionEitherT =
       employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
         hodResponse.body
-          .as[EmploymentCollection](EmploymentHodFormatters.employmentCollectionHodReads)
+          .as[EmploymentCollection](employmentCollectionHodReads)
           .copy(etag = hodResponse.etag)
       }
 
@@ -249,4 +249,5 @@ class EmploymentService @Inject() (
 
       envelopeId
     }
+
 }

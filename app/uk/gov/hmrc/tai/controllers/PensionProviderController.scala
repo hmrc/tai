@@ -22,7 +22,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
 import uk.gov.hmrc.tai.service.PensionProviderService
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
@@ -36,7 +36,7 @@ class PensionProviderController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats {
+) extends BackendController(cc) {
 
   def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
     withJsonBody[AddPensionProvider] { pensionProvider =>

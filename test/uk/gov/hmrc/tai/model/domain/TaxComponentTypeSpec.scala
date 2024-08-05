@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.tai
+package uk.gov.hmrc.tai.model.domain
 
+import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsError, JsNumber, JsString, JsSuccess}
+import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 
-class TaiPackageSpec extends PlaySpec {
-  "TaiPackage" should {
-    "deserialise a Tax Year" when {
-      "given the correct Json type" in {
-        formatTaxYear.reads(JsNumber(2017)) mustBe JsSuccess(TaxYear(2017))
+class TaxComponentTypeSpec extends PlaySpec with MockitoSugar {
+  "codingComponentTypeWrites" must {
+    "write tax component type correctly to json" when {
+      "tax component type is having valid type" in {
+        Json.toJson(GiftAidPayments)(taxComponentTypeWrites.writes(_)) mustBe JsString("GiftAidPayments")
       }
-    }
-
-    "return as JsError" when {
-      "given the wrong Json type" in {
-        formatTaxYear.reads(JsString("2017")) mustBe JsError("Expected JsNumber, found \"2017\"")
-      }
-    }
-
-    "serialise a TaxYear instance" in {
-      formatTaxYear.writes(TaxYear(2017)) mustBe JsNumber(2017)
     }
   }
 }

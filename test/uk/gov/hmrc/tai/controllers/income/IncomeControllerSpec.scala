@@ -25,7 +25,6 @@ import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
@@ -36,7 +35,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class IncomeControllerSpec extends BaseSpec with ApiFormats {
+class IncomeControllerSpec extends BaseSpec {
 
   val employmentId = 1
   val expectedJsonEmpty: JsObject = Json.obj(

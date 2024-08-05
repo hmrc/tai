@@ -17,17 +17,14 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsResult, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqReads, taxFreeAllowanceReads}
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.TotalTaxService.taxFreeAllowanceReads
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 
-import scala.language.postfixOps
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -61,19 +58,4 @@ class TotalTaxService @Inject() (
     taxAccountConnector
       .taxAccount(nino, year)
       .map(_.as[BigDecimal](taxFreeAllowanceReads))
-}
-
-object TotalTaxService {
-  val taxFreeAllowanceReads = new Reads[BigDecimal] {
-    override def reads(json: JsValue): JsResult[BigDecimal] = {
-      val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-      val totalLiability = (json \ "totalLiability").as[JsValue]
-      JsSuccess(
-        categoryNames map (category =>
-          (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
-        ) sum
-      )
-    }
-  }
-
 }

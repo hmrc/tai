@@ -70,7 +70,7 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
 
         val errorStrings = extractErrorsPerPath(exception)
         errorStrings.size mustBe 1
-        errorStrings must contain(" -> Invalid date format [dd/MM/yyyy]: \"033/05/2017\"")
+        errorStrings must contain(" -> error.expected.date.isoformat")
       }
     }
 

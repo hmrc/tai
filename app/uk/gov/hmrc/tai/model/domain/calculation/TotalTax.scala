@@ -20,7 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustment
 import play.api.Logging
 import uk.gov.hmrc.tai.model.domain.calculation.TaxBand.taxBandReads
-
+import scala.language.postfixOps
 case class TaxBand(
   bandType: String,
   code: String,
@@ -34,29 +34,27 @@ case class TaxBand(
 object TaxBand extends Logging {
   implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
 
-  val taxBandReads = new Reads[Option[TaxBand]] {
-    override def reads(json: JsValue): JsResult[Option[TaxBand]] = {
-      val bandType = (json \ "bandType").as[String]
-      val code = (json \ "taxCode").as[String]
-      val income = (json \ "income").asOpt[BigDecimal]
-      val tax = (json \ "tax").asOpt[BigDecimal]
-      val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
-      val upperBand = (json \ "upperBand").asOpt[BigDecimal]
-      val rate = (json \ "rate").as[BigDecimal]
-      (income, tax) match {
-        case (Some(income), Some(tax)) =>
-          JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
-        case (None, None) =>
-          logger.info("Empty tax returned, no income or tax")
-          JsSuccess(None)
-        case (Some(income), None) =>
-          logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
-          JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
-        case (None, Some(_)) =>
-          val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
-          logger.error(x.getMessage, x)
-          JsSuccess(None)
-      }
+  val taxBandReads: Reads[Option[TaxBand]] = (json: JsValue) => {
+    val bandType = (json \ "bandType").as[String]
+    val code = (json \ "taxCode").as[String]
+    val income = (json \ "income").asOpt[BigDecimal]
+    val tax = (json \ "tax").asOpt[BigDecimal]
+    val lowerBand = (json \ "lowerBand").asOpt[BigDecimal]
+    val upperBand = (json \ "upperBand").asOpt[BigDecimal]
+    val rate = (json \ "rate").as[BigDecimal]
+    (income, tax) match {
+      case (Some(income), Some(tax)) =>
+        JsSuccess(Some(TaxBand(bandType, code, income, tax, lowerBand, upperBand, rate)))
+      case (None, None) =>
+        logger.info("Empty tax returned, no income or tax")
+        JsSuccess(None)
+      case (Some(income), None) =>
+        logger.error(s"Income value was present but tax was not in tax band: $bandType, code: $code")
+        JsSuccess(Some(TaxBand(bandType, code, income, 0, lowerBand, upperBand, rate)))
+      case (None, Some(_)) =>
+        val x = new RuntimeException(s"Tax value was present at income was not in tax band: $bandType, code: $code")
+        logger.error(x.getMessage, x)
+        JsSuccess(None)
     }
   }
 }
@@ -87,16 +85,24 @@ case class IncomeCategory(
 object IncomeCategory {
   implicit val formats: OFormat[IncomeCategory] = Json.format[IncomeCategory]
 
-  val incomeCategorySeqReads = new Reads[Seq[IncomeCategory]] {
-    override def reads(json: JsValue): JsResult[Seq[IncomeCategory]] = {
-      val categoryNames =
-        Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-      val incomeCategoryList = incomeCategories(json, categoryNames)
-      JsSuccess(incomeCategoryList)
-    }
+  val incomeCategorySeqReads: Reads[Seq[IncomeCategory]] = (json: JsValue) => {
+    val categoryNames =
+      Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val incomeCategoryList = incomeCategories(json, categoryNames)
+    JsSuccess(incomeCategoryList)
   }
 
-  private def categoryTypeFactory(category: String) =
+  val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
+    val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
+    val totalLiability = (json \ "totalLiability").as[JsValue]
+    JsSuccess(
+      categoryNames map (category =>
+        (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
+      ) sum
+    )
+  }
+
+  private def categoryTypeFactory(category: String): IncomeCategoryType =
     category match {
       case "nonSavings"       => NonSavingsIncomeCategory
       case "untaxedInterest"  => UntaxedInterestIncomeCategory

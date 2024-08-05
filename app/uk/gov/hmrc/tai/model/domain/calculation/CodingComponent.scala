@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.calculation
 import play.api.libs.json.{JsArray, JsPath, JsResult, JsSuccess, JsValue, Reads, Writes}
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
-import uk.gov.hmrc.tai.model.domain.TaxComponentType.codingComponentTypeWrites
+import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 
 case class CodingComponent(
@@ -32,7 +32,7 @@ case class CodingComponent(
 
 object CodingComponent {
   val codingComponentWrites: Writes[CodingComponent] = (
-    (JsPath \ "componentType").write[TaxComponentType](codingComponentTypeWrites) and
+    (JsPath \ "componentType").write[TaxComponentType](taxComponentTypeWrites) and
       (JsPath \ "employmentId").writeNullable[Int] and
       (JsPath \ "amount").write[BigDecimal] and
       (JsPath \ "description").write[String] and
@@ -40,40 +40,36 @@ object CodingComponent {
       (JsPath \ "inputAmount").writeNullable[BigDecimal]
   )(unapplyCodingComponentForApiJson _)
 
-  val codingComponentReads = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
+  val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
-      val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
-      val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
-      val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
+    val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
+    val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
+    val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
 
-      JsSuccess(taxComponents)
-    }
+    JsSuccess(taxComponents)
   }
 
-  type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]
+  private type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]
 
-  val incomeSourceReads = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val codingComponents: Seq[CodingComponent] = (json \ "incomeSources").validate[JsArray] match {
-        case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson).toSeq
-        case _                            => Seq.empty[CodingComponent]
-      }
-      JsSuccess(codingComponents)
+  val incomeSourceReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
+    val codingComponents: Seq[CodingComponent] = (json \ "incomeSources").validate[JsArray] match {
+      case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson).toSeq
+      case _                            => Seq.empty[CodingComponent]
     }
+    JsSuccess(codingComponents)
   }
 
   private def codingComponentsFromJson(incomeJsVal: JsValue): Seq[CodingComponent] = {
 
-    def allowanceFactory =
+    def allowanceFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
         npsComponentAllowanceMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
-    def deductionFactory =
+    def deductionFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
         npsComponentDeductionMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
-    def nonTaxCodeIncomeFactory =
+    def nonTaxCodeIncomeFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
         npsComponentNonTaxCodeIncomeMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
@@ -164,7 +160,7 @@ object CodingComponent {
     34 -> BRDifferenceTaxReduction
   )
 
-  val totalLiabilityReads = new Reads[Seq[CodingComponent]] {
+  val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
       val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
       val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)

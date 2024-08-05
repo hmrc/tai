@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.controllers.benefits
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
@@ -29,6 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -53,7 +53,6 @@ class BenefitsControllerSpec extends BaseSpec {
             ),
             "links" -> Json.arr()
           )
-
         contentAsJson(result) mustBe expectedJson
       }
     }

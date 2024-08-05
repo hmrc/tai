@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json.{Format, JsResult, JsSuccess, JsValue, Json, Reads}
-import uk.gov.hmrc.tai.model.domain.{NonTaxCodeIncomeComponentType, NpsIabdSummary}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 
@@ -42,11 +41,9 @@ case class OtherNonTaxCodeIncome(
 object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
-  val nonTaxCodeIncomeReads = new Reads[Seq[OtherNonTaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[OtherNonTaxCodeIncome]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
-      JsSuccess(nonTaxCodeIncomes(extractedIabds))
-    }
+  val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+    JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 
   private def nonTaxCodeIncomes(iabds: Seq[NpsIabdSummary]): Seq[OtherNonTaxCodeIncome] =

@@ -16,6 +16,16 @@
 
 package uk.gov.hmrc.tai.model.api
 
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.Employment
 
 case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
+
+object EmploymentCollection {
+  implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
+
+  val employmentCollectionHodReads: Reads[EmploymentCollection] = {
+    implicit val employmentHodReads: Reads[Employment] = Employment.employmentHodReads
+    (json: JsValue) => JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+  }
+}

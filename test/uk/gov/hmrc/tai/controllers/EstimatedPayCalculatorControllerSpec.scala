@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers
 
 import java.time.LocalDate
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
@@ -65,7 +65,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
   private val testCalculation = EstimatedPayCalculator.calculate(payDetails)
 
-  private def createRequest[T](payload: T)(implicit w: Writes[T]) = FakeRequest(
+  private def createRequest[T](payload: T)(implicit w: Writes[T]): FakeRequest[JsValue] = FakeRequest(
     "POST",
     "/",
     FakeHeaders(Seq("Content-type" -> "application/json")),
