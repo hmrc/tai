@@ -52,10 +52,20 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read json, calling decrypt" in {
+    "read json, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
       val result = JsString(encryptedValueAsString).as[SensitiveJsObject]
+
+      result mustBe sensitiveJsObject
+
+      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read json, calling decrypt unsuccessfully (i.e. not encrypted) and use unencrypted value" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
+
+      val result = unencryptedJsObject.as[SensitiveJsObject]
 
       result mustBe sensitiveJsObject
 

@@ -60,11 +60,26 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read json, calling decrypt" in {
+    "read json, calling decrypt when decrypt successful" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedBodyJson)))
 
       val result: HodResponse = jsonWithEncryptedValue.as[HodResponse](encryptedFormat)
-      
+
+      result mustBe hodResponse
+
+      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read json, calling decrypt when decrypt fails because not encrypted" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
+
+      val jsonWithUnencryptedValue = Json.obj(
+        "body" -> unencryptedBodyJson,
+        "etag" -> 3
+      )
+
+      val result: HodResponse = jsonWithUnencryptedValue.as[HodResponse](encryptedFormat)
+
       result mustBe hodResponse
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
