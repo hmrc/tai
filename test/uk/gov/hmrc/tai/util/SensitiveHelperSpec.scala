@@ -14,58 +14,50 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.crypto
+package uk.gov.hmrc.tai.util
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
+import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
+import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsObject, _}
 
-class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
+class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
-  private val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
-  private val encryptedStringValue: String = "encrypted"
-  private val encryptedValue: Crypted = Crypted(encryptedStringValue)
-
-  private def encryptedFormat: OFormat[HodResponse] = HodResponse.encryptedFormat(mockEncrypterDecrypter)
-
-  private val unencryptedBodyJson: JsObject = Json.obj(
+  private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
+  private val encryptedValueAsString: String = "encrypted"
+  private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
+  private val unencryptedJsObject: JsObject = Json.obj(
     "testa" -> "valuea",
     "testb" -> "valueb"
   )
-
-  private val jsonWithEncryptedValue = Json.obj(
-    "body" -> encryptedStringValue,
-    "etag" -> 3
-  )
-
-  private val hodResponse: HodResponse = HodResponse(body = unencryptedBodyJson, etag = Some(3))
+  private val sensitiveJsObject: SensitiveJsObject = SensitiveJsObject(unencryptedJsObject)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
 
-  "encryptedFormat" must {
+  "formatSensitiveJsObject" must {
     "write json, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(hodResponse)(encryptedFormat)
+      val result: JsValue = Json.toJson(sensitiveJsObject)
 
-      result mustBe jsonWithEncryptedValue
+      result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
     "read json, calling decrypt" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedBodyJson)))
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
-      val result: HodResponse = jsonWithEncryptedValue.as[HodResponse](encryptedFormat)
-      
-      result mustBe hodResponse
+      val result = JsString(encryptedValueAsString).as[SensitiveJsObject]
+
+      result mustBe sensitiveJsObject
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }

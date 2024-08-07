@@ -18,29 +18,27 @@ package uk.gov.hmrc.tai.model.crypto
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.Sensitive.SensitiveString
-import uk.gov.hmrc.crypto.json.JsonEncryption
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
+import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsObject
 
 case class HodResponse(body: JsValue, etag: Option[Int])
 
 object HodResponse {
   implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
-  def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
-    implicit val sensitiveFormat: Format[SensitiveString] =
-      JsonEncryption.sensitiveEncrypterDecrypter(SensitiveString.apply)
 
+  def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
     val encryptedReads: Reads[HodResponse] =
       (
-        (__ \ "body").read[SensitiveString] and
+        (__ \ "body").read[SensitiveJsObject] and
           (__ \ "etag").readNullable[Int]
-      )((body, etag) => HodResponse(Json.toJson(body.decryptedValue), etag))
+      )((body, etag) => HodResponse(body.decryptedValue, etag))
 
     val encryptedWrites: OWrites[HodResponse] =
       (
-        (__ \ "body").write[SensitiveString] and
+        (__ \ "body").write[SensitiveJsObject] and
           (__ \ "etag").writeNullable[Int]
-      )(ua => (SensitiveString(Json.stringify(ua.body)), ua.etag))
-    OFormat(encryptedReads orElse formats, encryptedWrites)
+      )(ua => (SensitiveJsObject(ua.body.as[JsObject]), ua.etag))
+
+    OFormat(encryptedReads /*orElse formats*/, encryptedWrites)
   }
 }
