@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsObject
-
+// body is normally an array
 case class HodResponse(body: JsValue, etag: Option[Int])
 
 object HodResponse {

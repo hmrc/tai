@@ -19,8 +19,6 @@ package uk.gov.hmrc.tai.util
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
-import scala.util.{Failure, Success, Try}
-
 object SensitiveHelper {
   case class SensitiveJsObject(override val decryptedValue: JsObject) extends Sensitive[JsObject]
 
@@ -30,17 +28,12 @@ object SensitiveHelper {
   }
 
   implicit def readsSensitiveJsObject(implicit crypto: Decrypter): Reads[SensitiveJsObject] = {
-    case JsObject(_) =>
+    case js @ JsObject(_) => JsSuccess(SensitiveJsObject(js))
     case JsString(s) =>
+      val plainText = crypto.decrypt(Crypted(s))
+      JsSuccess(SensitiveJsObject(Json.parse(plainText.value).as[JsObject]))
+    case jsValue => JsError(s"Unable to create a JsObject from $jsValue")
   }
-  
-//  implicit def readsSensitiveJsObject(implicit crypto: Decrypter): Reads[SensitiveJsObject] = { jsValue: JsValue =>
-//    Try(crypto.decrypt(Crypted(jsValue.as[JsString].value))) match {
-//      case Success(plainText)            => JsSuccess(SensitiveJsObject(Json.parse(plainText.value).as[JsObject]))
-//      case Failure(_: SecurityException) => JsSuccess(SensitiveJsObject(jsValue.as[JsObject]))
-//      case Failure(exception)            => throw exception
-//    }
-//  }
 
   implicit def formatSensitiveJsObject(implicit crypto: Encrypter with Decrypter): Format[SensitiveJsObject] =
     Format(readsSensitiveJsObject, writesSensitiveJsObject)
