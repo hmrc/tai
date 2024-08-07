@@ -23,7 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsObject, _}
+import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsValue, _}
 
 class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
@@ -34,36 +34,68 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "testa" -> "valuea",
     "testb" -> "valueb"
   )
-  private val sensitiveJsObject: SensitiveJsObject = SensitiveJsObject(unencryptedJsObject)
+  private val unencryptedJsString: JsString = JsString("test")
+  private val sensitiveJsObject: SensitiveJsValue = SensitiveJsValue(unencryptedJsObject)
+  private val sensitiveJsString: SensitiveJsValue = SensitiveJsValue(unencryptedJsString)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
 
-  "formatSensitiveJsObject for SensitiveJsObject" must {
-    "write json, calling encrypt" in {
+  "formatSensitiveJsValue" must {
+    "write JsObject, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(sensitiveJsObject)
+      val result: JsValue = Json.toJson(sensitiveJsObject)(formatSensitiveJsValue[JsObject])
 
       result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read json, calling decrypt successfully when json is a JsString" in {
+    "write JsString, calling encrypt" in {
+      when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
+
+      val result: JsValue = Json.toJson(sensitiveJsString)(formatSensitiveJsValue[JsString])
+
+      result mustBe JsString(encryptedValueAsString)
+
+      verify(mockEncrypterDecrypter, times(1)).encrypt(any())
+    }
+
+    "read JsString as a JsObject, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
-      val result = JsString(encryptedValueAsString).as[SensitiveJsObject]
+      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](readsSensitiveJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }
 
-    "read json, not calling decrypt at all when json is a JsObject" in {
-      val result = unencryptedJsObject.as[SensitiveJsObject]
+    "read JsString as a JsString, calling decrypt successfully" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(JsString("test"))))
+
+      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](readsSensitiveJsValue[JsString])
+
+      result mustBe SensitiveJsValue(JsString("test"))
+
+      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read JsString as a JsString, calling decrypt unsuccessfully (i.e. not encrypted) and use unencrypted jsString" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
+
+      val result = JsString("abc").as[SensitiveJsValue](readsSensitiveJsValue[JsString])
+
+      result mustBe SensitiveJsValue(JsString("abc"))
+
+      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read JsObject, not calling decrypt at all" in {
+      val result = unencryptedJsObject.as[SensitiveJsValue](readsSensitiveJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 
@@ -71,33 +103,4 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     }
   }
 
-  "formatSensitiveJsObject for SensitiveJsArray" must {
-    "write json, calling encrypt" in {
-      when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
-
-      val result: JsValue = Json.toJson(sensitiveJsObject)
-
-      result mustBe JsString(encryptedValueAsString)
-
-      verify(mockEncrypterDecrypter, times(1)).encrypt(any())
-    }
-
-    "read json, calling decrypt successfully when json is a JsString" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
-
-      val result = JsString(encryptedValueAsString).as[SensitiveJsObject]
-
-      result mustBe sensitiveJsObject
-
-      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
-    }
-
-    "read json, not calling decrypt at all when json is a JsObject" in {
-      val result = unencryptedJsObject.as[SensitiveJsObject]
-
-      result mustBe sensitiveJsObject
-
-      verify(mockEncrypterDecrypter, times(0)).decrypt(any())
-    }
-  }
 }

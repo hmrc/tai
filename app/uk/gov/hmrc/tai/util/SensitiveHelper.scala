@@ -19,22 +19,28 @@ package uk.gov.hmrc.tai.util
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
+import scala.util.{Failure, Success, Try}
+
 object SensitiveHelper {
-  case class SensitiveJsObject(override val decryptedValue: JsObject) extends Sensitive[JsObject]
+  case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
 
-  implicit def writesSensitiveJsObject(implicit crypto: Encrypter): Writes[SensitiveJsObject] = {
-    sjo: SensitiveJsObject =>
-      JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
+  implicit def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
+    JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
   }
 
-  implicit def readsSensitiveJsObject(implicit crypto: Decrypter): Reads[SensitiveJsObject] = {
-    case js @ JsObject(_) => JsSuccess(SensitiveJsObject(js))
+  implicit def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
     case JsString(s) =>
-      val plainText = crypto.decrypt(Crypted(s))
-      JsSuccess(SensitiveJsObject(Json.parse(plainText.value).as[JsObject]))
-    case jsValue => JsError(s"Unable to create a JsObject from $jsValue")
+      Try(crypto.decrypt(Crypted(s))) match {
+        case Success(plainText) =>
+          JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+        case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
+        case Failure(exception)            => throw exception
+      }
+    case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
-  implicit def formatSensitiveJsObject(implicit crypto: Encrypter with Decrypter): Format[SensitiveJsObject] =
-    Format(readsSensitiveJsObject, writesSensitiveJsObject)
+  implicit def formatSensitiveJsValue[A <: JsValue: Format](implicit
+    crypto: Encrypter with Decrypter
+  ): Format[SensitiveJsValue] =
+    Format(readsSensitiveJsValue, writesSensitiveJsValue)
 }
