@@ -25,7 +25,8 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
+import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnector}
+import uk.gov.hmrc.tai.model.crypto.HodResponse
 import uk.gov.hmrc.tai.model.domain.Employment.employmentHodReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live

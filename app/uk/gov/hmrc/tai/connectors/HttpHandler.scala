@@ -21,20 +21,15 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
-import play.api.libs.json.{JsValue, Json, OFormat, Writes}
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.crypto.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-
-case class HodResponse(body: JsValue, etag: Option[Int])
-
-object HodResponse {
-  implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
-}
 
 @Singleton
 class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {

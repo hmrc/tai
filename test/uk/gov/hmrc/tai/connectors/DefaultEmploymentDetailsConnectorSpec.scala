@@ -18,14 +18,14 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import play.api
 import play.api.Application
 import play.api.http.Status._
-import api.inject.bind
+import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.model.crypto.HodResponse
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
