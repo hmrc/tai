@@ -124,7 +124,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
-        result mustBe Right(Seq(annualAccount))
+        result mustBe Right(expected)
 
         verify(mockSessionCacheRepository, times(1))
           .getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any())
