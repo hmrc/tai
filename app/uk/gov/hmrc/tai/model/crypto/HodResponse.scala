@@ -24,9 +24,9 @@ import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsValue, readsSensitiveJsV
 case class HodResponse(body: JsArray, etag: Option[Int])
 
 object HodResponse {
-  implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
+  private implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
 
-  def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
+  implicit def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
     val encryptedReads: Reads[HodResponse] =
       (
         (__ \ "body").read[SensitiveJsValue](readsSensitiveJsValue[JsArray]) and

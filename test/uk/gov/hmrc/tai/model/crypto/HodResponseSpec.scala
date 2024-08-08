@@ -21,7 +21,7 @@ import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsObject, JsValue, Json, OFormat}
+import play.api.libs.json.{JsArray, JsValue, Json, OFormat}
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 
 class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
