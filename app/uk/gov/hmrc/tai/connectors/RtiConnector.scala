@@ -22,9 +22,10 @@ import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status._
-import play.api.libs.json.Format
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -39,7 +40,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
-import uk.gov.hmrc.tai.util.LockedException
+import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
+import uk.gov.hmrc.tai.util.{LockedException, SensitiveHelper}
 
 import java.util.UUID
 import javax.inject.Named
@@ -74,7 +76,8 @@ class CachingRtiConnector @Inject() (
   @Named("default") underlying: RtiConnector,
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
-  appConfig: RtiConfig
+  appConfig: RtiConfig,
+  crypto: ApplicationCrypto
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
 
@@ -137,10 +140,15 @@ class CachingRtiConnector @Inject() (
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
-      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }
+      underlying
+        .getPaymentsForYear(nino: Nino, taxYear: TaxYear)
+        .map(seqAnnualAccount => SensitiveJsValue(Json.toJson(seqAnnualAccount)))
+    }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      .map(_.decryptedValue.as[Seq[AnnualAccount]])
+  }
 }
 
 @Singleton

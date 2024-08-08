@@ -19,26 +19,36 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaiConstants
+import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
+import uk.gov.hmrc.tai.util.{SensitiveHelper, TaiConstants}
 
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CachingTaxAccountConnector @Inject() (
   @Named("default") underlying: TaxAccountConnector,
-  cachingConnector: CachingConnector
-) extends TaxAccountConnector {
-  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cachingConnector.cache(s"tax-account-$nino-${taxYear.year}") {
-      underlying.taxAccount(nino: Nino, taxYear: TaxYear)
-    }
+  cachingConnector: CachingConnector,
+  crypto: ApplicationCrypto
+)(implicit ec: ExecutionContext)
+    extends TaxAccountConnector {
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+    cachingConnector
+      .cache(s"tax-account-$nino-${taxYear.year}") {
+        underlying
+          .taxAccount(nino: Nino, taxYear: TaxYear)
+          .map(SensitiveJsValue)
+      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
+  }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector.cache(s"tax-account-history-$nino-$iocdSeqNo") {
