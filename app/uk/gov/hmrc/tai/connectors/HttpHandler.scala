@@ -25,7 +25,7 @@ import play.api.libs.json.{JsArray, JsValue, Writes}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.metrics.Metrics
-import uk.gov.hmrc.tai.model.crypto.HodResponse
+import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.{ExecutionContext, Future}

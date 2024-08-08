@@ -25,7 +25,7 @@ import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.model.crypto.HodResponse
+import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 

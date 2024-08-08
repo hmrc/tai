@@ -23,6 +23,7 @@ import play.api.Application
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
@@ -31,11 +32,12 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -109,20 +111,20 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       "a value is cached" in {
         val expected = Seq(annualAccount)
 
-        when(mockSessionCacheRepository.getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any()))
-          .thenReturn(Future.successful(Some(expected)))
+        when(mockSessionCacheRepository.getFromSession[SensitiveJsValue](DataKey(any[String]()))(any(), any()))
+          .thenReturn(Future.successful(Some(SensitiveJsValue(Json.toJson(expected)))))
 
         when(mockRtiConnector.getPaymentsForYear(any(), any())(any(), any()))
           .thenReturn(null)
 
         when(
-          mockSessionCacheRepository.putSession[Seq[AnnualAccount]](DataKey(any[String]()), any())(any(), any(), any())
+          mockSessionCacheRepository.putSession[SensitiveJsValue](DataKey(any[String]()), any())(any(), any(), any())
         )
           .thenReturn(null)
 
         val result = connector.getPaymentsForYear(nino, TaxYear()).value.futureValue
 
-        result mustBe Right(expected)
+        result mustBe Right(Seq(annualAccount))
 
         verify(mockSessionCacheRepository, times(1))
           .getFromSession[Seq[AnnualAccount]](DataKey(any[String]()))(any(), any())

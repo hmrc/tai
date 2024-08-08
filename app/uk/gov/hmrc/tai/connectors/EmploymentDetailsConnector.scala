@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.crypto.HodResponse
+import uk.gov.hmrc.tai.model.HodResponse
 
 import java.util.UUID
 import scala.concurrent.Future
