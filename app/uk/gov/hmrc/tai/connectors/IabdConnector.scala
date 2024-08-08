@@ -70,20 +70,18 @@ class CachingIabdConnector @Inject() (
       underlying.updateTaxCodeAmount(nino, taxYear, employmentId, version, iabdType, amount)
     }
 
-  // EMPLOYEE EXPENSES
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
-  ): Future[List[NpsIabdRoot]] =
-//    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-//    cachingConnector.cache(s"iabds-$nino-$year-$iabdType")  {
-//        underlying.getIabdsForType(nino, year, iabdType)
-//          .map(SensitiveJsValue)
-//      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
-//      .map(_.decryptedValue)
-
-    cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
-      underlying.getIabdsForType(nino, year, iabdType)
-    }
+  ): Future[List[NpsIabdRoot]] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+    cachingConnector
+      .cache(s"iabds-$nino-$year-$iabdType") {
+        underlying
+          .getIabdsForType(nino, year, iabdType)
+          .map(listNpsIabdRoot => SensitiveJsValue(Json.toJson(listNpsIabdRoot)))
+      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      .map(_.decryptedValue.as[List[NpsIabdRoot]])
+  }
 
   override def updateExpensesData(
     nino: Nino,
