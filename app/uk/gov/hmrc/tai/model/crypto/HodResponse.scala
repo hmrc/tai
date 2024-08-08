@@ -20,8 +20,8 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsValue, readsSensitiveJsValue}
-// body is normally an array
-case class HodResponse(body: JsValue, etag: Option[Int])
+
+case class HodResponse(body: JsArray, etag: Option[Int])
 
 object HodResponse {
   implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
@@ -29,16 +29,16 @@ object HodResponse {
   def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
     val encryptedReads: Reads[HodResponse] =
       (
-        (__ \ "body").read[SensitiveJsValue](readsSensitiveJsValue[JsObject]) and
+        (__ \ "body").read[SensitiveJsValue](readsSensitiveJsValue[JsArray]) and
           (__ \ "etag").readNullable[Int]
-      )((body, etag) => HodResponse(body.decryptedValue, etag))
+      )((body, etag) => HodResponse(body.decryptedValue.as[JsArray], etag))
 
     val encryptedWrites: OWrites[HodResponse] =
       (
         (__ \ "body").write[SensitiveJsValue] and
           (__ \ "etag").writeNullable[Int]
-      )(ua => (SensitiveJsValue(ua.body.as[JsObject]), ua.etag))
+      )(ua => (SensitiveJsValue(ua.body), ua.etag))
 
-    OFormat(encryptedReads /*orElse formats*/, encryptedWrites)
+    OFormat(encryptedReads, encryptedWrites)
   }
 }

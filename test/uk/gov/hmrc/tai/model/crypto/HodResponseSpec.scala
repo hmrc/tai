@@ -21,7 +21,7 @@ import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
+import play.api.libs.json.{JsArray, JsObject, JsValue, Json, OFormat}
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 
 class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
@@ -32,9 +32,9 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
 
   private def encryptedFormat: OFormat[HodResponse] = HodResponse.encryptedFormat(mockEncrypterDecrypter)
 
-  private val unencryptedBodyJson: JsObject = Json.obj(
-    "testa" -> "valuea",
-    "testb" -> "valueb"
+  private val unencryptedBodyJson: JsArray = Json.arr(
+    Json.obj("testa" -> "valuea"),
+    Json.obj("testb" -> "valueb")
   )
 
   private val jsonWithEncryptedValue = Json.obj(
