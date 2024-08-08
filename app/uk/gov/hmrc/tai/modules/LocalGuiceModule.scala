@@ -19,8 +19,9 @@ package uk.gov.hmrc.tai.modules
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.config.ApplicationStartUp
+import uk.gov.hmrc.tai.config.{ApplicationStartUp, CryptoProvider}
 import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
@@ -38,6 +39,7 @@ class LocalGuiceModule extends Module {
     bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
     bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector],
     bind[TaxAccountConnector].to[CachingTaxAccountConnector],
-    bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
+    bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector],
+    bind[Encrypter with Decrypter].toProvider[CryptoProvider]
   )
 }

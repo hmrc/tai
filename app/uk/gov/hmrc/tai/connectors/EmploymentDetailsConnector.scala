@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
@@ -35,7 +34,7 @@ class CachingEmploymentDetailsConnector @Inject() (
   @Named("default") underlying: EmploymentDetailsConnector,
   config: NpsConfig,
   cachingConnector: CachingConnector,
-  val conf: Configuration
+  crypto: ApplicationCrypto
 ) extends EmploymentDetailsConnector {
 
   override val originatorId: String = config.originatorId
@@ -43,10 +42,7 @@ class CachingEmploymentDetailsConnector @Inject() (
   override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
-
-    implicit lazy val symmetricCryptoFactory: Encrypter with Decrypter =
-      new ApplicationCrypto(conf.underlying).JsonCrypto
-
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
     }
