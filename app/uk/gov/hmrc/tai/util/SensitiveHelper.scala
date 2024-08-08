@@ -39,11 +39,16 @@ object SensitiveHelper {
     case JsString(s) =>
       Try(log(crypto.decrypt(Crypted(s)), s"decrypting $s")) match {
         case Success(plainText) =>
+          println("\nSUCCESSFULLY DECRYPTED")
           JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
-        case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
-        case Failure(exception)            => throw exception
+        case Failure(_: SecurityException) =>
+          println("\nNOT DECRYPTED")
+          JsSuccess(SensitiveJsValue(JsString(s).as[A]))
+        case Failure(exception) => throw exception
       }
-    case js: JsValue => JsSuccess(SensitiveJsValue(js))
+    case js: JsValue =>
+      println("\nNot a JsString")
+      JsSuccess(SensitiveJsValue(js))
   }
 
   implicit def formatSensitiveJsValue[A <: JsValue: Format](implicit
