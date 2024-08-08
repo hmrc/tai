@@ -25,30 +25,17 @@ object SensitiveHelper {
   case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
 
   implicit def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
-    JsString(
-      log(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value, s"encrypting ${sjo.decryptedValue}")
-    )
-  }
-
-  private def log[A](a: A, s: String): A = {
-    println(s"\n***LOGGING:$s")
-    a
+    JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
   }
 
   implicit def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
     case JsString(s) =>
-      Try(log(crypto.decrypt(Crypted(s)), s"decrypting $s")) match {
-        case Success(plainText) =>
-          println("\nSUCCESSFULLY DECRYPTED")
-          JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
-        case Failure(_: SecurityException) =>
-          println("\nNOT DECRYPTED")
-          JsSuccess(SensitiveJsValue(JsString(s).as[A]))
-        case Failure(exception) => throw exception
+      Try(crypto.decrypt(Crypted(s))) match {
+        case Success(plainText)            => JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+        case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
+        case Failure(exception)            => throw exception
       }
-    case js: JsValue =>
-      println("\nNot a JsString")
-      JsSuccess(SensitiveJsValue(js))
+    case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
   implicit def formatSensitiveJsValue[A <: JsValue: Format](implicit
