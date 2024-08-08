@@ -23,7 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsValue, _}
+import uk.gov.hmrc.tai.util.SensitiveHelper._
 
 class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
@@ -67,7 +67,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsObject, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
-      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](readsSensitiveJsValue[JsObject])
+      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](formatSensitiveJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 
@@ -77,7 +77,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsString, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(JsString("test"))))
 
-      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](readsSensitiveJsValue[JsString])
+      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](formatSensitiveJsValue[JsString])
 
       result mustBe SensitiveJsValue(JsString("test"))
 
@@ -87,7 +87,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsString, calling decrypt unsuccessfully (i.e. not encrypted) and use unencrypted jsString" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
 
-      val result = JsString("abc").as[SensitiveJsValue](readsSensitiveJsValue[JsString])
+      val result = JsString("abc").as[SensitiveJsValue](formatSensitiveJsValue[JsString])
 
       result mustBe SensitiveJsValue(JsString("abc"))
 
@@ -95,7 +95,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     }
 
     "read JsObject, not calling decrypt at all" in {
-      val result = unencryptedJsObject.as[SensitiveJsValue](readsSensitiveJsValue[JsObject])
+      val result = unencryptedJsObject.as[SensitiveJsValue](formatSensitiveJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 

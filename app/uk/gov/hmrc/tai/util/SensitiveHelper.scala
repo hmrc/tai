@@ -24,11 +24,11 @@ import scala.util.{Failure, Success, Try}
 object SensitiveHelper {
   case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
 
-  implicit def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
+  private def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
     JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
   }
 
-  implicit def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
+  private def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
     case JsString(s) =>
       Try(crypto.decrypt(Crypted(s))) match {
         case Success(plainText)            => JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
@@ -38,7 +38,7 @@ object SensitiveHelper {
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
-  implicit def formatSensitiveJsValue[A <: JsValue: Format](implicit
+  def formatSensitiveJsValue[A <: JsValue: Format](implicit
     crypto: Encrypter with Decrypter
   ): Format[SensitiveJsValue] =
     Format(readsSensitiveJsValue, writesSensitiveJsValue)
