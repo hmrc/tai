@@ -17,8 +17,11 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.concurrent.IntegrationPatience
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -29,7 +32,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 
 class CachingSpec extends BaseSpec with IntegrationPatience {
-
+  private implicit val crypto: Encrypter with Decrypter = inject[ApplicationCrypto].JsonCrypto
   "cache" must {
     "return the json from cache" when {
       "the key is present in the cache" in {

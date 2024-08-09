@@ -22,6 +22,7 @@ import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
+import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
@@ -59,7 +60,8 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
     ifConfig,
     desUrls,
     ifUrls,
-    mockFeatureFlagService
+    mockFeatureFlagService,
+    inject[ApplicationCrypto]
   )
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =

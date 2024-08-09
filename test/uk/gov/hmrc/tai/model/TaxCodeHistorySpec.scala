@@ -32,35 +32,64 @@
 
 package uk.gov.hmrc.tai.model
 
+import org.mockito.ArgumentMatchers.any
+import org.mockito.MockitoSugar.{reset, times, verify, when}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
+import play.api.libs.json._
+import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
+import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
+class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHistoryConstants {
+  private trait EncrypterDecrypter extends Encrypter with Decrypter
+  private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
+  private val encryptedValueAsString: String = "encrypted"
+  private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
+  private val nino: Nino = new Generator(new Random).nextNino
+  private val validJson = Json.obj(
+    "nino"          -> nino,
+    "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
+  )
+  private val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
 
-  "TaxCodeHistory reads" must {
-    "return a TaxCodeHistory given valid Json" in {
-      val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
-      val validJson = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockEncrypterDecrypter)
+  }
 
-      validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
+  "formatSensitiveTaxCodeHistory" must {
+    "write encrypted JsString, calling encrypt" in {
+      when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
+
+      val result: JsValue = Json.toJson(taxCodeHistory)
+
+      result mustBe JsString(encryptedValueAsString)
+
+      verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "return a TaxCodeHistory when there are no tax code records" in {
+    "read encrypted JsString, calling decrypt successfully" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
 
-      val validJson = Json.obj(
-        "nino"          -> nino,
-        "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
-      )
+      val result = JsString(encryptedValueAsString).as[TaxCodeHistory]
 
-      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
+      result mustBe taxCodeHistory
 
-      validJson.as[TaxCodeHistory] mustEqual taxCodeHistory
+      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read unencrypted JsObject, not calling decrypt at all" in {
+      val result = validJson.as[TaxCodeHistory]
+
+      result mustBe TaxCodeHistory(nino.nino, Seq.empty)
+
+      verify(mockEncrypterDecrypter, times(0)).decrypt(any())
 
     }
   }
@@ -83,5 +112,4 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
     }
   }
 
-  private val nino: Nino = new Generator(new Random).nextNino
 }

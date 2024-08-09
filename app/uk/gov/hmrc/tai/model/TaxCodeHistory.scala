@@ -19,8 +19,10 @@ package uk.gov.hmrc.tai.model
 import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
-import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.json._
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.SensitiveHelper.formatSensitiveJsValue
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 
@@ -40,11 +42,29 @@ case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 }
 
 object TaxCodeHistory {
+  private def reads(implicit crypto: Encrypter with Decrypter): Reads[TaxCodeHistory] = {
+    val reads: Reads[TaxCodeHistory] = (
+      (JsPath \ "nino").read[String] and
+        (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
+    )(TaxCodeHistory.apply _)
 
-  implicit val reads: Reads[TaxCodeHistory] = (
-    (JsPath \ "nino").read[String] and
-      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
-  )(TaxCodeHistory.apply _)
+    formatSensitiveJsValue[JsObject].map { x =>
+      reads.reads(x.decryptedValue) match {
+        case JsSuccess(value, _) => value
+        case JsError(e)          => throw JsResultException(e)
+      }
+    }
+  }
 
-  implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
+  private def writes(implicit crypto: Encrypter): Writes[TaxCodeHistory] = { tch: TaxCodeHistory =>
+    val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
+    val jsObject = writes.writes(tch).as[JsObject]
+    JsString(crypto.encrypt(PlainText(Json.stringify(jsObject))).value)
+  }
+
+  implicit def format(implicit
+    crypto: Encrypter with Decrypter
+  ): Format[TaxCodeHistory] =
+    Format(reads, writes)
+
 }

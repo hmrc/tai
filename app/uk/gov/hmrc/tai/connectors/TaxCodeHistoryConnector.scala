@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
-import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
@@ -28,8 +27,6 @@ import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.SensitiveHelper
-import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
 
 import java.util.UUID
 import javax.inject.Named
@@ -40,19 +37,15 @@ class CachingTaxCodeHistoryConnector @Inject() (
   underlying: TaxCodeHistoryConnector,
   cachingConnector: CachingConnector,
   crypto: ApplicationCrypto
-)(implicit ec: ExecutionContext)
-    extends TaxCodeHistoryConnector {
+) extends TaxCodeHistoryConnector {
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-    cachingConnector
-      .cache(s"tax-code-history-$nino-${year.year}") {
-        underlying
-          .taxCodeHistory(nino, year)
-          .map(tch => SensitiveJsValue(Json.toJson(tch)))
-      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
-      .map(_.decryptedValue.as[TaxCodeHistory])
+    cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
+      underlying.taxCodeHistory(nino, year)
+    }
   }
+
 }
 
 class DefaultTaxCodeHistoryConnector @Inject() (
@@ -61,7 +54,8 @@ class DefaultTaxCodeHistoryConnector @Inject() (
   ifConfig: IfConfig,
   desUrls: TaxCodeChangeFromDesUrl,
   ifUrls: TaxCodeChangeFromIfUrl,
-  featureFlagService: FeatureFlagService
+  featureFlagService: FeatureFlagService,
+  crypto: ApplicationCrypto
 )(implicit ec: ExecutionContext)
     extends TaxCodeHistoryConnector {
 
@@ -85,7 +79,8 @@ class DefaultTaxCodeHistoryConnector @Inject() (
         "OriginatorId"         -> desConfig.originatorId
       )
 
-  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
+  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
       val url =
         if (toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
@@ -94,6 +89,7 @@ class DefaultTaxCodeHistoryConnector @Inject() (
         .getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled))
         .map(json => json.as[TaxCodeHistory])
     }
+  }
 }
 
 trait TaxCodeHistoryConnector {
