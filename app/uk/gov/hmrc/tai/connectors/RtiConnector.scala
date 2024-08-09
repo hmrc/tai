@@ -22,7 +22,7 @@ import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
 import play.api.http.Status._
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json.Format
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
@@ -34,14 +34,13 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, formatWithEncryption}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
-import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
-import uk.gov.hmrc.tai.util.{LockedException, SensitiveHelper}
+import uk.gov.hmrc.tai.util.LockedException
 
 import java.util.UUID
 import javax.inject.Named
@@ -143,11 +142,8 @@ class CachingRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
-      underlying
-        .getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-        .map(seqAnnualAccount => SensitiveJsValue(Json.toJson(seqAnnualAccount)))
-    }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
-      .map(_.decryptedValue.as[Seq[AnnualAccount]])
+      underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
+    }(formatWithEncryption, implicitly)
   }
 }
 
@@ -156,7 +152,8 @@ class DefaultRtiConnector @Inject() (
   httpClientV2: HttpClientV2,
   rtiConfig: DesConfig,
   urls: RtiUrls,
-  featureFlagService: FeatureFlagService
+  featureFlagService: FeatureFlagService,
+  crypto: ApplicationCrypto
 )(implicit ec: ExecutionContext)
     extends RtiConnector {
   val logger: Logger = Logger(this.getClass)

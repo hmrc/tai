@@ -17,10 +17,12 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json._
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.model.domain.EndOfTaxYearUpdate.endOfTaxYearUpdateHodReads
 import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.tai.TaxYear.taxYearHodReads
+import uk.gov.hmrc.tai.util.SensitiveHelper.{sensitiveReads, sensitiveWrites}
 
 case class AnnualAccount(
   sequenceNumber: Int,
@@ -36,6 +38,13 @@ case class AnnualAccount(
 
 object AnnualAccount {
   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
+
+  def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[Seq[AnnualAccount]] =
+    Format(
+      Reads.seq(sensitiveReads[AnnualAccount](format)),
+      Writes.seq(sensitiveWrites[AnnualAccount](format))
+    )
+
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =

@@ -50,10 +50,16 @@ class CachingTaxAccountConnector @Inject() (
       .map(_.decryptedValue)
   }
 
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cachingConnector.cache(s"tax-account-history-$nino-$iocdSeqNo") {
-      underlying.taxAccountHistory(nino: Nino, iocdSeqNo: Int)
-    }
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+    cachingConnector
+      .cache(s"tax-account-history-$nino-$iocdSeqNo") {
+        underlying
+          .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
+          .map(SensitiveJsValue)
+      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
+  }
 }
 
 class DefaultTaxAccountConnector @Inject() (

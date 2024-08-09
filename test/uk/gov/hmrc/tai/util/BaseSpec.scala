@@ -21,10 +21,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
-import play.api.inject.bind
-import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainBytes, PlainContent, PlainText}
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
@@ -33,15 +32,7 @@ import scala.concurrent.ExecutionContext
 trait BaseSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures
     with Injecting {
-//  implicit val fakeEncrypterDecrypter: Encrypter with Decrypter = new Encrypter with Decrypter {
-//    override def encrypt(plain: PlainContent): Crypted = Crypted(plain.toString)
-//
-//    override def decrypt(reversiblyEncrypted: Crypted): PlainText = PlainText(reversiblyEncrypted.value)
-//
-//    override def decryptAsBytes(reversiblyEncrypted: Crypted): PlainBytes = PlainBytes(
-//      reversiblyEncrypted.value.getBytes
-//    )
-//  }
+
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""
 

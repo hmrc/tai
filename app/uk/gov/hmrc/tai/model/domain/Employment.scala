@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.Reads.localDateReads
-import play.api.libs.json.{Format, JsResult, JsSuccess, JsValue, Json, OFormat, Reads}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -38,8 +38,6 @@ case class Employment(
   hasPayrolledBenefit: Boolean,
   receivingOccupationalPension: Boolean
 ) {
-
-  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
     annualAccounts.exists(annualAccount =>
