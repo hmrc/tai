@@ -21,7 +21,6 @@ import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
@@ -51,8 +50,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     inject[HttpHandler],
     inject[NpsConfig],
     inject[DesConfig],
-    iabdUrls,
-    inject[ApplicationCrypto]
+    iabdUrls
   )
 
   val taxYear: TaxYear = TaxYear()

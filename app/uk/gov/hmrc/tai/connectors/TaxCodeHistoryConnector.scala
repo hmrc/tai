@@ -55,8 +55,7 @@ class DefaultTaxCodeHistoryConnector @Inject() (
   ifConfig: IfConfig,
   desUrls: TaxCodeChangeFromDesUrl,
   ifUrls: TaxCodeChangeFromIfUrl,
-  featureFlagService: FeatureFlagService,
-  crypto: ApplicationCrypto
+  featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends TaxCodeHistoryConnector {
 
@@ -80,8 +79,7 @@ class DefaultTaxCodeHistoryConnector @Inject() (
         "OriginatorId"         -> desConfig.originatorId
       )
 
-  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
       val url =
         if (toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
@@ -90,7 +88,6 @@ class DefaultTaxCodeHistoryConnector @Inject() (
         .getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled))
         .map(json => json.as[TaxCodeHistory])
     }
-  }
 }
 
 trait TaxCodeHistoryConnector {

@@ -97,8 +97,7 @@ class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
   npsConfig: NpsConfig,
   desConfig: DesConfig,
-  iabdUrls: IabdUrls,
-  crypto: ApplicationCrypto
+  iabdUrls: IabdUrls
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -177,7 +176,6 @@ class DefaultIabdConnector @Inject() (
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
   ): Future[List[NpsIabdRoot]] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
     httpHandler
       .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)

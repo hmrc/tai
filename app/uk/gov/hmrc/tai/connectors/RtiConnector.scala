@@ -152,8 +152,7 @@ class DefaultRtiConnector @Inject() (
   httpClientV2: HttpClientV2,
   rtiConfig: DesConfig,
   urls: RtiUrls,
-  featureFlagService: FeatureFlagService,
-  crypto: ApplicationCrypto
+  featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends RtiConnector {
   val logger: Logger = Logger(this.getClass)

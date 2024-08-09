@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
-import uk.gov.hmrc.crypto.ApplicationCrypto
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
@@ -60,8 +59,7 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
     ifConfig,
     desUrls,
     ifUrls,
-    mockFeatureFlagService,
-    inject[ApplicationCrypto]
+    mockFeatureFlagService
   )
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =

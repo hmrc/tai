@@ -31,7 +31,14 @@ object SensitiveHelper {
   private def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
     case JsString(s) =>
       Try(crypto.decrypt(Crypted(s))) match {
-        case Success(plainText)            => JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+        case Success(plainText) => JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+
+        /*
+          Both of the below cases cater for two scenarios where the value is not encrypted:-
+            either an unencrypted JsString or any other JsValue.
+          This is to avoid breaking users' session in case data written before encryption introduced.
+         */
+
         case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
         case Failure(exception)            => throw exception
       }
