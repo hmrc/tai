@@ -74,13 +74,9 @@ class CachingIabdConnector @Inject() (
     hc: HeaderCarrier
   ): Future[List[NpsIabdRoot]] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-    cachingConnector
-      .cache(s"iabds-$nino-$year-$iabdType") {
-        underlying
-          .getIabdsForType(nino, year, iabdType)
-          .map(listNpsIabdRoot => SensitiveJsValue(Json.toJson(listNpsIabdRoot)))
-      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
-      .map(_.decryptedValue.as[List[NpsIabdRoot]])
+    cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
+      underlying.getIabdsForType(nino, year, iabdType)
+    }
   }
 
   override def updateExpensesData(
@@ -100,7 +96,8 @@ class DefaultIabdConnector @Inject() (
   httpHandler: HttpHandler,
   npsConfig: NpsConfig,
   desConfig: DesConfig,
-  iabdUrls: IabdUrls
+  iabdUrls: IabdUrls,
+  crypto: ApplicationCrypto
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -179,7 +176,7 @@ class DefaultIabdConnector @Inject() (
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
   ): Future[List[NpsIabdRoot]] = {
-
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
     httpHandler
       .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)

@@ -21,6 +21,7 @@ import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
@@ -50,7 +51,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     inject[HttpHandler],
     inject[NpsConfig],
     inject[DesConfig],
-    iabdUrls
+    iabdUrls,
+    inject[ApplicationCrypto]
   )
 
   val taxYear: TaxYear = TaxYear()
@@ -241,9 +243,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   "getIabdsForType" must {
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
-
         val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
-        val jsonData = Json.toJson(iabdList).toString()
+
+        val jsonData = Json.toJson(iabdList)(Writes.list(NpsIabdRoot.formatsWithNoEncryption)).toString()
 
         server.stubFor(
           get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))

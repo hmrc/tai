@@ -28,6 +28,7 @@ import play.api.cache.AsyncCacheApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
+import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainBytes, PlainContent, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
@@ -43,6 +44,24 @@ import scala.util.Random
 
 trait ConnectorBaseSpec
     extends PlaySpec with MockitoSugar with WireMockHelper with ScalaFutures with Injecting with IntegrationPatience {
+
+//  implicit val fakeEncrypterDecrypter: Encrypter with Decrypter = new Encrypter with Decrypter {
+//    override def encrypt(plain: PlainContent): Crypted = plain match {
+//      case PlainText(t) =>
+//        println("\nEncrypt " + t)
+//        Crypted(t)
+//      case PlainBytes(t) => Crypted(t.mkString("Array(", ", ", ")"))
+//    }
+//
+//    override def decrypt(reversiblyEncrypted: Crypted): PlainText = {
+//      println("\nRever:" + reversiblyEncrypted)
+//      PlainText(reversiblyEncrypted.value)
+//    }
+//
+//    override def decryptAsBytes(reversiblyEncrypted: Crypted): PlainBytes = PlainBytes(
+//      reversiblyEncrypted.value.getBytes
+//    )
+//  }
 
   val nino: Nino = new Generator(new Random).nextNino
 
