@@ -83,7 +83,7 @@ class EmployeeExpensesController @Inject() (
   def getEmployeeExpensesData(nino: Nino, year: Int, iabd: Int): Action[AnyContent] = authentication.async {
     implicit request =>
       employeeExpensesService.getEmployeeExpenses(nino, year, iabd).map { iabdData =>
-        Ok(Json.toJson(iabdData)(Writes.list(NpsIabdRoot.formatsWithNoEncryption)))
+        Ok(Json.toJson(iabdData)(Writes.list(NpsIabdRoot.format)))
       } recoverWith taxAccountErrorHandler()
   }
 }

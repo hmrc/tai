@@ -50,7 +50,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
     )
   )
 
-  private val validJson = Json.toJson(validNpsIabd)(Writes.list(NpsIabdRoot.formatsWithNoEncryption))
+  private val validJson = Json.toJson(validNpsIabd)(Writes.list(NpsIabdRoot.format))
 
   "updateEmployeeExpensesData" must {
 

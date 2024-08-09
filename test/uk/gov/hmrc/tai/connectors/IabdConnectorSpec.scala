@@ -245,7 +245,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       "supplied with a valid nino, year and IABD type" in {
         val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
 
-        val jsonData = Json.toJson(iabdList)(Writes.list(NpsIabdRoot.formatsWithNoEncryption)).toString()
+        val jsonData = Json.toJson(iabdList)(Writes.list(NpsIabdRoot.format)).toString()
 
         server.stubFor(
           get(urlEqualTo(iabdsForTypeUrl)).willReturn(aResponse().withStatus(OK).withBody(jsonData))

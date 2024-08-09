@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.util
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
@@ -45,15 +44,15 @@ object SensitiveHelper {
     Format(readsSensitiveJsValue, writesSensitiveJsValue)
 
   def sensitiveReads[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
-    formatSensitiveJsValue[JsObject].map { x =>
-      reads.reads(x.decryptedValue) match {
+    formatSensitiveJsValue[JsObject].map { sensitiveJsValue =>
+      reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
         case JsError(e)          => throw JsResultException(e)
       }
     }
 
-  def sensitiveWrites[A](writes: Writes[A])(implicit crypto: Encrypter): Writes[A] = { tch: A =>
-    val jsObject = writes.writes(tch).as[JsObject]
+  def sensitiveWrites[A](writes: Writes[A])(implicit crypto: Encrypter): Writes[A] = { o: A =>
+    val jsObject = writes.writes(o).as[JsObject]
     JsString(crypto.encrypt(PlainText(Json.stringify(jsObject))).value)
   }
 

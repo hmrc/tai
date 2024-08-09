@@ -32,10 +32,10 @@ case class NpsIabdRoot(
 )
 
 object NpsIabdRoot {
-  val formatsWithNoEncryption: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
-  implicit def format(implicit crypto: Encrypter with Decrypter): Format[NpsIabdRoot] =
+  val format: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
+  implicit def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[NpsIabdRoot] =
     Format(
-      sensitiveReads[NpsIabdRoot](formatsWithNoEncryption),
-      sensitiveWrites[NpsIabdRoot](formatsWithNoEncryption)
+      sensitiveReads[NpsIabdRoot](format),
+      sensitiveWrites[NpsIabdRoot](format)
     )
 }
