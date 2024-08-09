@@ -42,16 +42,18 @@ case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 }
 
 object TaxCodeHistory {
-  implicit def format(implicit crypto: Encrypter with Decrypter): Format[TaxCodeHistory] = {
-    val reads: Reads[TaxCodeHistory] = (
-      (JsPath \ "nino").read[String] and
-        (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
-    )(TaxCodeHistory.apply _)
-    val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
+
+  implicit val reads: Reads[TaxCodeHistory] = (
+    (JsPath \ "nino").read[String] and
+      (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
+  )(TaxCodeHistory.apply _)
+
+  implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
+
+  def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[TaxCodeHistory] =
     Format(
       sensitiveReads[TaxCodeHistory](reads),
       sensitiveWrites[TaxCodeHistory](writes)
     )
-  }
 
 }

@@ -41,6 +41,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
+import uk.gov.hmrc.tai.model.TaxCodeHistory.formatWithEncryption
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
@@ -63,21 +64,21 @@ class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHi
     reset(mockEncrypterDecrypter)
   }
 
-  "formatSensitiveTaxCodeHistory" must {
-    "write encrypted JsString, calling encrypt" in {
+  "formatWithEncryption" must {
+    "write encrypted, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(taxCodeHistory)
+      val result: JsValue = Json.toJson(taxCodeHistory)(formatWithEncryption)
 
       result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read encrypted JsString, calling decrypt successfully" in {
+    "read encrypted, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
 
-      val result = JsString(encryptedValueAsString).as[TaxCodeHistory]
+      val result = JsString(encryptedValueAsString).as[TaxCodeHistory](formatWithEncryption)
 
       result mustBe taxCodeHistory
 
@@ -85,7 +86,7 @@ class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHi
     }
 
     "read unencrypted JsObject, not calling decrypt at all" in {
-      val result = validJson.as[TaxCodeHistory]
+      val result = validJson.as[TaxCodeHistory](formatWithEncryption)
 
       result mustBe TaxCodeHistory(nino.nino, Seq.empty)
 

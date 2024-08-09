@@ -24,6 +24,7 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.TaxCodeHistory.formatWithEncryption
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -43,7 +44,7 @@ class CachingTaxCodeHistoryConnector @Inject() (
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)
-    }
+    }(formatWithEncryption, implicitly)
   }
 
 }
