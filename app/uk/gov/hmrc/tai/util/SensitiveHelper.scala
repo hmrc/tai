@@ -31,7 +31,8 @@ object SensitiveHelper {
   private def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
     case JsString(s) =>
       Try(crypto.decrypt(Crypted(s))) match {
-        case Success(plainText) => JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+        case Success(plainText) =>
+          JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
 
         /*
           Both of the below cases cater for two scenarios where the value is not encrypted:-
@@ -50,17 +51,40 @@ object SensitiveHelper {
   ): Format[SensitiveJsValue] =
     Format(readsSensitiveJsValue, writesSensitiveJsValue)
 
-  def sensitiveReads[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
-    formatSensitiveJsValue[JsObject].map { sensitiveJsValue =>
+  private def sensitiveReadsJsObject[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
+    readsSensitiveJsValue[JsObject].map { sensitiveJsValue =>
       reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
         case JsError(e)          => throw JsResultException(e)
       }
     }
 
-  def sensitiveWrites[A](writes: Writes[A])(implicit crypto: Encrypter): Writes[A] = { o: A =>
-    val jsObject = writes.writes(o).as[JsObject]
-    JsString(crypto.encrypt(PlainText(Json.stringify(jsObject))).value)
+  private def sensitiveReadsJsArray[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
+    readsSensitiveJsValue[JsArray].map { sensitiveJsValue =>
+      reads.reads(sensitiveJsValue.decryptedValue) match {
+        case JsSuccess(value, _) => value
+        case JsError(e)          => throw JsResultException(e)
+      }
+    }
+
+  private def sensitiveWritesJsValue[A](writes: Writes[A])(implicit crypto: Encrypter): Writes[A] = { o: A =>
+    val jsValue: JsValue = writes.writes(o)
+    JsString(crypto.encrypt(PlainText(Json.stringify(jsValue))).value)
   }
 
+  def sensitiveFormatJsObject[A](reads: Reads[A], writes: Writes[A])(implicit
+    crypto: Encrypter with Decrypter
+  ): Format[A] =
+    Format[A](
+      sensitiveReadsJsObject[A](reads),
+      sensitiveWritesJsValue[A](writes)
+    )
+
+  def sensitiveFormatJsArray[A](reads: Reads[A], writes: Writes[A])(implicit
+    crypto: Encrypter with Decrypter
+  ): Format[A] =
+    Format[A](
+      sensitiveReadsJsArray[A](reads),
+      sensitiveWritesJsValue[A](writes)
+    )
 }

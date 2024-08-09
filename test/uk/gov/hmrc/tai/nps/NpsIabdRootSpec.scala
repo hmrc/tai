@@ -87,15 +87,15 @@ class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
 
       val result: JsValue = Json.toJson(List(npsIabdRoot))(formatWithEncryption)
 
-      result.as[JsArray] mustBe Json.arr(JsString(encryptedValueAsString))
+      result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
     "read encrypted array, calling decrypt" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(Json.arr(validJson))))
 
-      val result = Json.arr(JsString(encryptedValueAsString)).as[List[NpsIabdRoot]](formatWithEncryption)
+      val result = JsString(encryptedValueAsString).as[List[NpsIabdRoot]](formatWithEncryption)
 
       result mustBe List(npsIabdRoot)
 

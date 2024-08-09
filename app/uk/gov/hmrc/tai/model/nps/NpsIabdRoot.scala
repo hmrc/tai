@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.nps
 
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
-import uk.gov.hmrc.tai.util.SensitiveHelper.{sensitiveReads, sensitiveWrites}
+import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsArray
 
 case class NpsIabdRoot(
   nino: String,
@@ -35,8 +35,5 @@ object NpsIabdRoot {
   implicit val format: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
 
   def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[List[NpsIabdRoot]] =
-    Format(
-      Reads.list(sensitiveReads[NpsIabdRoot](format)),
-      Writes.list(sensitiveWrites[NpsIabdRoot](format))
-    )
+    sensitiveFormatJsArray[List[NpsIabdRoot]](Reads.list(format), Writes.list(format))
 }

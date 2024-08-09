@@ -21,7 +21,7 @@ import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsString, JsValue, Json}
+import play.api.libs.json.{JsString, JsValue, Json}
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, formatWithEncryption}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -287,18 +287,17 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
       val result: JsValue = Json.toJson(Seq(annualAccount))(formatWithEncryption)
-
-      result.as[JsArray] mustBe Json.arr(JsString(encryptedValueAsString))
+      result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
     "read encrypted array, calling decrypt" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(Json.arr(validJson))))
 
-      val result = Json.arr(JsString(encryptedValueAsString)).as[Seq[AnnualAccount]](formatWithEncryption)
+      val result = JsString(encryptedValueAsString).as[Seq[AnnualAccount]](formatWithEncryption)
 
-      result mustBe List(annualAccount)
+      result mustBe Seq(annualAccount)
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }

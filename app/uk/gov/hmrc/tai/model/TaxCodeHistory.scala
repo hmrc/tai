@@ -22,7 +22,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.SensitiveHelper.{sensitiveReads, sensitiveWrites}
+import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsObject
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 
@@ -51,9 +51,5 @@ object TaxCodeHistory {
   implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
 
   def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[TaxCodeHistory] =
-    Format(
-      sensitiveReads[TaxCodeHistory](reads),
-      sensitiveWrites[TaxCodeHistory](writes)
-    )
-
+    sensitiveFormatJsObject[TaxCodeHistory](reads, writes)
 }

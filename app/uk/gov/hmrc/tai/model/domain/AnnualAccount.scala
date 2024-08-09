@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain.EndOfTaxYearUpdate.endOfTaxYearUpdateHodRead
 import uk.gov.hmrc.tai.model.domain.Payment.paymentHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.tai.TaxYear.taxYearHodReads
-import uk.gov.hmrc.tai.util.SensitiveHelper.{sensitiveReads, sensitiveWrites}
+import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsArray
 
 case class AnnualAccount(
   sequenceNumber: Int,
@@ -40,10 +40,7 @@ object AnnualAccount {
   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
 
   def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[Seq[AnnualAccount]] =
-    Format(
-      Reads.seq(sensitiveReads[AnnualAccount](format)),
-      Writes.seq(sensitiveWrites[AnnualAccount](format))
-    )
+    sensitiveFormatJsArray[Seq[AnnualAccount]](Reads.seq(format), Writes.seq(format))
 
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
