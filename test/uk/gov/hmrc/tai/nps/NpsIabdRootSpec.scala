@@ -40,6 +40,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.formatWithEncryption
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsIabdRoot}
 
 import java.time.LocalDate
@@ -81,30 +82,30 @@ class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
   }
 
   "formatSensitiveNpsIabdRoot" must {
-    "write encrypted JsString, calling encrypt" in {
+    "write encrypted array, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(npsIabdRoot)
+      val result: JsValue = Json.toJson(List(npsIabdRoot))(formatWithEncryption)
 
-      result mustBe JsString(encryptedValueAsString)
+      result.as[JsArray] mustBe Json.arr(JsString(encryptedValueAsString))
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read encrypted JsString, calling decrypt successfully" in {
+    "read encrypted array, calling decrypt" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
 
-      val result = JsString(encryptedValueAsString).as[NpsIabdRoot]
+      val result = Json.arr(JsString(encryptedValueAsString)).as[List[NpsIabdRoot]](formatWithEncryption)
 
-      result mustBe npsIabdRoot
+      result mustBe List(npsIabdRoot)
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }
 
     "read unencrypted JsObject, not calling decrypt at all" in {
-      val result = validJson.as[NpsIabdRoot]
+      val result = Json.arr(validJson).as[List[NpsIabdRoot]](formatWithEncryption)
 
-      result mustBe npsIabdRoot
+      result mustBe List(npsIabdRoot)
 
       verify(mockEncrypterDecrypter, times(0)).decrypt(any())
 

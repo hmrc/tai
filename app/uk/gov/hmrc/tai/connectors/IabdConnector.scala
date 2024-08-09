@@ -29,6 +29,7 @@ import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateRespons
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.formatWithEncryption
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
@@ -76,7 +77,7 @@ class CachingIabdConnector @Inject() (
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
-    }
+    }(formatWithEncryption, implicitly)
   }
 
   override def updateExpensesData(
