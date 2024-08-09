@@ -37,7 +37,7 @@ case class AnnualAccount(
 }
 
 object AnnualAccount {
-   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
+  implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
 
   def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[Seq[AnnualAccount]] =
     Format(

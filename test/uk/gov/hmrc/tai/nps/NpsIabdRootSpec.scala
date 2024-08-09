@@ -81,7 +81,7 @@ class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
     reset(mockEncrypterDecrypter)
   }
 
-  "formatSensitiveNpsIabdRoot" must {
+  "formatWithEncryption" must {
     "write encrypted array, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
