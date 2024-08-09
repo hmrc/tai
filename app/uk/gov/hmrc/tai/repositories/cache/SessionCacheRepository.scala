@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.tai.repositories.cache
 
-import javax.inject.{Inject, Singleton}
 import org.mongodb.scala.model.IndexModel
 import play.api.libs.json.{Reads, Writes}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.cache.{CacheIdType, DataKey, MongoCacheRepository}
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.mongo.{MongoComponent, MongoDatabaseCollection, TimestampSupport}
 import uk.gov.hmrc.play.http.logging.Mdc
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 
 case object SessionCacheId extends CacheIdType[HeaderCarrier] {
   override def run: HeaderCarrier => String =

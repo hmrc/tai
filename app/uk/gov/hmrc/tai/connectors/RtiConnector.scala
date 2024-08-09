@@ -25,6 +25,7 @@ import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -33,7 +34,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, formatWithEncryption}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
@@ -74,7 +75,8 @@ class CachingRtiConnector @Inject() (
   @Named("default") underlying: RtiConnector,
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
-  appConfig: RtiConfig
+  appConfig: RtiConfig,
+  crypto: ApplicationCrypto
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
 
@@ -137,10 +139,12 @@ class CachingRtiConnector @Inject() (
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
+    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }
+    }(formatWithEncryption, implicitly)
+  }
 }
 
 @Singleton

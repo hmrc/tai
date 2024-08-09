@@ -21,20 +21,15 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
-import play.api.libs.json.{JsValue, Json, OFormat, Writes}
+import play.api.libs.json.{JsArray, JsValue, Writes}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.metrics.Metrics
+import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-
-case class HodResponse(body: JsValue, etag: Option[Int])
-
-object HodResponse {
-  implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
-}
 
 @Singleton
 class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
@@ -44,7 +39,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     EitherT(httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = url, headers = headers))
       .map { response =>
-        HodResponse(response.json, response.header("ETag").map(_.toInt))
+        HodResponse(response.json.as[JsArray], response.header("ETag").map(_.toInt))
       }
 
   def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(implicit
@@ -53,7 +48,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
 
     val timerContext = metrics.startTimer(api)
 
-    implicit val responseHandler = new HttpReads[HttpResponse] {
+    implicit val responseHandler: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
       override def read(method: String, url: String, response: HttpResponse): HttpResponse =
         response.status match {
           case Status.OK => response

@@ -30,7 +30,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.nps
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{reset, times, verify, when}
@@ -40,24 +40,41 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
-import uk.gov.hmrc.tai.model.TaxCodeHistory.formatWithEncryption
-import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.formatWithEncryption
+import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsIabdRoot}
 
+import java.time.LocalDate
 import scala.util.Random
 
-class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHistoryConstants {
+class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
   private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
   private val encryptedValueAsString: String = "encrypted"
   private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
   private val nino: Nino = new Generator(new Random).nextNino
-  private val validJson = Json.obj(
-    "nino"          -> nino,
-    "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
+
+  private val validJson =
+    Json.obj(
+      "nino"                     -> nino,
+      "employmentSequenceNumber" -> 1,
+      "type"                     -> 2,
+      "grossAmount"              -> BigDecimal(11.33),
+      "netAmount"                -> BigDecimal(22.33),
+      "source"                   -> 5,
+      "receiptDate"              -> "26/11/2015",
+      "captureDate"              -> "27/11/2015"
+    )
+
+  private val npsIabdRoot = NpsIabdRoot(
+    nino = nino.nino,
+    employmentSequenceNumber = Some(1),
+    `type` = 2,
+    grossAmount = Some(BigDecimal(11.33)),
+    netAmount = Some(BigDecimal(22.33)),
+    source = Some(5),
+    receiptDate = Some(NpsDate(LocalDate.of(2015, 11, 26))),
+    captureDate = Some(NpsDate(LocalDate.of(2015, 11, 27)))
   )
-  private val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -65,52 +82,33 @@ class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHi
   }
 
   "formatWithEncryption" must {
-    "write encrypted, calling encrypt" in {
+    "write encrypted array, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(taxCodeHistory)(formatWithEncryption)
+      val result: JsValue = Json.toJson(List(npsIabdRoot))(formatWithEncryption)
 
       result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read encrypted, calling decrypt successfully" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
+    "read encrypted array, calling decrypt" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(Json.arr(validJson))))
 
-      val result = JsString(encryptedValueAsString).as[TaxCodeHistory](formatWithEncryption)
+      val result = JsString(encryptedValueAsString).as[List[NpsIabdRoot]](formatWithEncryption)
 
-      result mustBe taxCodeHistory
+      result mustBe List(npsIabdRoot)
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }
 
     "read unencrypted JsObject, not calling decrypt at all" in {
-      val result = validJson.as[TaxCodeHistory](formatWithEncryption)
+      val result = Json.arr(validJson).as[List[NpsIabdRoot]](formatWithEncryption)
 
-      result mustBe TaxCodeHistory(nino.nino, Seq.empty)
+      result mustBe List(npsIabdRoot)
 
       verify(mockEncrypterDecrypter, times(0)).decrypt(any())
 
     }
   }
-
-  "TaxCodeHistory applicableTaxCodeRecords" must {
-    "filter out operated tax code records" in {
-      val nonOperatedRecord = TaxCodeRecordFactory.createNonOperatedEmployment()
-      val primaryEmployment = TaxCodeRecordFactory.createPrimaryEmployment()
-      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(nonOperatedRecord, primaryEmployment))
-
-      taxCodeHistory.applicableTaxCodeRecords mustBe Seq(primaryEmployment)
-    }
-
-    "filter out tax code that are not in current year" in {
-      val primaryEmployment = TaxCodeRecordFactory.createPrimaryEmployment()
-      val nextYearTaxCodeRecord = TaxCodeRecordFactory.createPrimaryEmployment(taxYear = TaxYear().next)
-      val taxCodeHistory = TaxCodeHistory(nino.nino, Seq(primaryEmployment, nextYearTaxCodeRecord))
-
-      taxCodeHistory.applicableTaxCodeRecords mustBe Seq(primaryEmployment)
-    }
-  }
-
 }

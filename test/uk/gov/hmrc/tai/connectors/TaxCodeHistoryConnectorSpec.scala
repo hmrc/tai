@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
