@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers.expenses
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
@@ -50,7 +50,7 @@ class EmployeeExpensesControllerSpec extends BaseSpec {
     )
   )
 
-  private val validJson = Json.toJson(validNpsIabd)(Writes.list(NpsIabdRoot.format))
+  private val validJson = Json.toJson(validNpsIabd)
 
   "updateEmployeeExpensesData" must {
 

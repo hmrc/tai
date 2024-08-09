@@ -29,6 +29,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 
 class CachingSpec extends BaseSpec with IntegrationPatience {
+
   "cache" must {
     "return the json from cache" when {
       "the key is present in the cache" in {
