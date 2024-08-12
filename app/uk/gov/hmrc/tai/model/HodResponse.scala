@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsObject
 case class HodResponse(body: JsArray, etag: Option[Int])
 
 object HodResponse {
-  implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
+  private val formats: OFormat[HodResponse] = Json.format[HodResponse]
 
   def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[HodResponse] =
     sensitiveFormatJsObject[HodResponse](formats, formats)
