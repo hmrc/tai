@@ -25,7 +25,6 @@ import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -76,7 +75,6 @@ class CachingRtiConnector @Inject() (
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
   appConfig: RtiConfig,
-  crypto: ApplicationCrypto,
   encryptionService: EncryptionService
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
@@ -141,8 +139,6 @@ class CachingRtiConnector @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-
     val formatWithEncryption: Format[Seq[AnnualAccount]] = encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)

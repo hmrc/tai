@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
 import play.api.libs.json.Format
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -39,13 +38,10 @@ class CachingTaxCodeHistoryConnector @Inject() (
   @Named("default")
   underlying: TaxCodeHistoryConnector,
   cachingConnector: CachingConnector,
-  crypto: ApplicationCrypto,
   encryptionService: EncryptionService
 ) extends TaxCodeHistoryConnector {
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-
     def formatWithEncryption: Format[TaxCodeHistory] = encryptionService.sensitiveFormatJsObject[TaxCodeHistory]
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)

@@ -22,16 +22,16 @@ import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
 import scala.util.{Failure, Success, Try}
 
-class EncryptionService @Inject() () {
+class EncryptionService @Inject() (encrypterDecrypter: Encrypter with Decrypter) {
   import EncryptionService._
 
-  private def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
-    JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
+  private def writesSensitiveJsValue: Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
+    JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
   }
 
-  private def readsSensitiveJsValue[A <: JsValue: Format](implicit crypto: Decrypter): Reads[SensitiveJsValue] = {
+  private def readsSensitiveJsValue[A <: JsValue: Format]: Reads[SensitiveJsValue] = {
     case JsString(s) =>
-      Try(crypto.decrypt(Crypted(s))) match {
+      Try(encrypterDecrypter.decrypt(Crypted(s))) match {
         case Success(plainText) =>
           JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
 
@@ -47,12 +47,10 @@ class EncryptionService @Inject() () {
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
-  def sensitiveFormatJsValue[A <: JsValue: Format](implicit
-    crypto: Encrypter with Decrypter
-  ): Format[SensitiveJsValue] =
+  def sensitiveFormatJsValue[A <: JsValue: Format]: Format[SensitiveJsValue] =
     Format(readsSensitiveJsValue, writesSensitiveJsValue)
 
-  private def sensitiveReadsJsObject[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
+  private def sensitiveReadsJsObject[A](reads: Reads[A]): Reads[A] =
     readsSensitiveJsValue[JsObject].map { sensitiveJsValue =>
       reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
@@ -60,7 +58,7 @@ class EncryptionService @Inject() () {
       }
     }
 
-  private def sensitiveReadsJsArray[A](reads: Reads[A])(implicit crypto: Encrypter with Decrypter): Reads[A] =
+  private def sensitiveReadsJsArray[A](reads: Reads[A]): Reads[A] =
     readsSensitiveJsValue[JsArray].map { sensitiveJsValue =>
       reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
@@ -68,15 +66,14 @@ class EncryptionService @Inject() () {
       }
     }
 
-  private def sensitiveWritesJsValue[A](writes: Writes[A])(implicit crypto: Encrypter): Writes[A] = { o: A =>
+  private def sensitiveWritesJsValue[A](writes: Writes[A]): Writes[A] = { o: A =>
     val jsValue: JsValue = writes.writes(o)
-    JsString(crypto.encrypt(PlainText(Json.stringify(jsValue))).value)
+    JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
   }
 
   def sensitiveFormatJsObject[A](implicit
     reads: Reads[A],
-    writes: Writes[A],
-    crypto: Encrypter with Decrypter
+    writes: Writes[A]
   ): Format[A] =
     Format[A](
       sensitiveReadsJsObject[A](reads),
@@ -85,8 +82,7 @@ class EncryptionService @Inject() () {
 
   def sensitiveFormatJsArray[A](implicit
     reads: Reads[A],
-    writes: Writes[A],
-    crypto: Encrypter with Decrypter
+    writes: Writes[A]
   ): Format[A] =
     Format[A](
       sensitiveReadsJsArray[A](reads),

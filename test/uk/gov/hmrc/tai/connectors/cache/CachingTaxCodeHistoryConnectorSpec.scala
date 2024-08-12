@@ -18,22 +18,25 @@ package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.any
 import play.api.Application
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{Format, JsObject, Reads, Writes}
+import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.connectors.{CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import play.api.inject.bind
-import uk.gov.hmrc.auth.core.AuthorisedFunctions
-import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
 
 import scala.concurrent.Future
 
 class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
+
+  private val mockEncryptionService = mock[EncryptionService]
 
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
   lazy val mockDefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
@@ -50,7 +53,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
-      bind[LockService].toInstance(spy(new FakeLockService))
+      bind[LockService].toInstance(spy(new FakeLockService)),
+      bind[EncryptionService].toInstance(mockEncryptionService)
     )
     .build()
 
@@ -58,9 +62,11 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
   val cachingTaxCodeHistoryConnector = app.injector.instanceOf[CachingTaxCodeHistoryConnector]
 
-  override def beforeEach() = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockSessionCacheRepository, mockDefaultTaxCodeHistoryConnector)
+    reset(mockSessionCacheRepository, mockDefaultTaxCodeHistoryConnector, mockEncryptionService)
+    when(mockEncryptionService.sensitiveFormatJsObject[JsObject])
+      .thenAnswer((reads: Reads[JsObject], writes: Writes[JsObject]) => Format(reads, writes))
   }
 
   "taxCodeHistory" when {
@@ -82,6 +88,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
         verify(mockSessionCacheRepository, times(1))
           .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
+        verify(mockEncryptionService, times(1)).sensitiveFormatJsObject(any(), any())
       }
     }
     "there is a value present in the cache" must {

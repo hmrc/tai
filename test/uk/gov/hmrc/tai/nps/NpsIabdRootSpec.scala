@@ -81,9 +81,8 @@ class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
-  private val encryptionService = new EncryptionService()
-  def formatWithEncryption: Format[List[NpsIabdRoot]] =
-    encryptionService.sensitiveFormatJsArray[List[NpsIabdRoot]]
+  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
+  def formatWithEncryption: Format[List[NpsIabdRoot]] = encryptionService.sensitiveFormatJsArray[List[NpsIabdRoot]]
 
   "formatWithEncryption" must {
     "write encrypted array, calling encrypt" in {

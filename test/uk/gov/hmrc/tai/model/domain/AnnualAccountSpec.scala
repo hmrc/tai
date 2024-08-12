@@ -149,9 +149,8 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
         Seq(EndOfTaxYearUpdate(LocalDate.of(2017, 5, 26), Seq(Adjustment(NationalInsuranceAdjustment, BigDecimal(10)))))
     )
 
-  private val encryptionService = new EncryptionService()
-  def formatWithEncryption: Format[Seq[AnnualAccount]] =
-    encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
+  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
+  def formatWithEncryption: Format[Seq[AnnualAccount]] = encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
 
   override def beforeEach(): Unit = {
     super.beforeEach()

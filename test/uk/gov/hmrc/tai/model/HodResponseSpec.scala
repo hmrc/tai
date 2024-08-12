@@ -44,7 +44,7 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
 
   private val hodResponse = HodResponse(body = unencryptedBodyJson, etag = Some(3))
 
-  private val encryptionService = new EncryptionService()
+  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -52,8 +52,7 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
   }
 
   private val formatWithEncryption: Format[HodResponse] =
-    encryptionService
-      .sensitiveFormatJsObject[HodResponse](HodResponse.format, HodResponse.format, mockEncrypterDecrypter)
+    encryptionService.sensitiveFormatJsObject[HodResponse](HodResponse.format, HodResponse.format)
 
   "formatWithEncryption" must {
     "write encrypted, calling encrypt" in {

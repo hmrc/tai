@@ -45,8 +45,6 @@ class CachingEmploymentDetailsConnector @Inject() (
   override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
-
     val formatWithEncryption: Format[HodResponse] = encryptionService.sensitiveFormatJsObject[HodResponse]
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)

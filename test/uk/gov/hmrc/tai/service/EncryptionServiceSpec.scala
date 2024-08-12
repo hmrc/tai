@@ -38,7 +38,7 @@ class EncryptionServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private val sensitiveJsObject: SensitiveJsValue = SensitiveJsValue(unencryptedJsObject)
   private val sensitiveJsString: SensitiveJsValue = SensitiveJsValue(unencryptedJsString)
 
-  private val encryptionService = new EncryptionService()
+  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

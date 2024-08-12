@@ -60,7 +60,7 @@ class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHi
   )
   private val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
 
-  private val encryptionService = new EncryptionService()
+  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
   private def formatWithEncryption: Format[TaxCodeHistory] = encryptionService.sensitiveFormatJsObject[TaxCodeHistory]
 
   override def beforeEach(): Unit = {

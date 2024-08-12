@@ -23,6 +23,7 @@ import play.api.Application
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{Format, Reads, Writes}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
@@ -31,17 +32,17 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
-
+  private val mockEncryptionService = mock[EncryptionService]
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
     .overrides(
@@ -54,7 +55,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[IabdConnector].to[DefaultIabdConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
-      bind[TaxAccountConnector].to[DefaultTaxAccountConnector]
+      bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
+      bind[EncryptionService].toInstance(mockEncryptionService)
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
@@ -65,7 +67,11 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
   override implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  override def beforeEach(): Unit = reset(mockRtiConnector, mockSessionCacheRepository, spyLockService)
+  override def beforeEach(): Unit = {
+    reset(mockRtiConnector, mockSessionCacheRepository, spyLockService, mockEncryptionService)
+    when(mockEncryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]])
+      .thenAnswer((reads: Reads[Seq[AnnualAccount]], writes: Writes[Seq[AnnualAccount]]) => Format(reads, writes))
+  }
 
   def connector: CachingRtiConnector = app.injector.instanceOf[CachingRtiConnector]
 
@@ -133,8 +139,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
+        verify(mockEncryptionService, times(1)).sensitiveFormatJsArray[Seq[AnnualAccount]](any(), any())
       }
-
     }
 
     "return a Left RtiPaymentsForYearError object" in {
