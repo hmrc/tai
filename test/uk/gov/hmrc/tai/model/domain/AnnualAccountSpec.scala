@@ -21,10 +21,11 @@ import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, formatWithEncryption}
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.EncryptionService
 
 import java.io.File
 import java.time.LocalDate
@@ -147,6 +148,10 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
       endOfTaxYearUpdates =
         Seq(EndOfTaxYearUpdate(LocalDate.of(2017, 5, 26), Seq(Adjustment(NationalInsuranceAdjustment, BigDecimal(10)))))
     )
+
+  private val encryptionService = new EncryptionService()
+  def formatWithEncryption: Format[Seq[AnnualAccount]] =
+    encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
 
   override def beforeEach(): Unit = {
     super.beforeEach()

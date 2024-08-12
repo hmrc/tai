@@ -40,8 +40,9 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.formatWithEncryption
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.nps.{NpsDate, NpsIabdRoot}
+import uk.gov.hmrc.tai.service.EncryptionService
 
 import java.time.LocalDate
 import scala.util.Random
@@ -80,6 +81,9 @@ class NpsIabdRootSpec extends PlaySpec with BeforeAndAfterEach {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
+  private val encryptionService = new EncryptionService()
+  def formatWithEncryption: Format[List[NpsIabdRoot]] =
+    encryptionService.sensitiveFormatJsArray[List[NpsIabdRoot]]
 
   "formatWithEncryption" must {
     "write encrypted array, calling encrypt" in {

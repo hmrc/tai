@@ -23,7 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.model.HodResponse.formatWithEncryption
+import uk.gov.hmrc.tai.service.EncryptionService
 
 class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
 
@@ -44,10 +44,16 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
 
   private val hodResponse = HodResponse(body = unencryptedBodyJson, etag = Some(3))
 
+  private val encryptionService = new EncryptionService()
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
+
+  private val formatWithEncryption: Format[HodResponse] =
+    encryptionService
+      .sensitiveFormatJsObject[HodResponse](HodResponse.format, HodResponse.format, mockEncrypterDecrypter)
 
   "formatWithEncryption" must {
     "write encrypted, calling encrypt" in {

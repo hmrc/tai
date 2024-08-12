@@ -21,13 +21,14 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.SensitiveHelper.SensitiveJsValue
-import uk.gov.hmrc.tai.util.{SensitiveHelper, TaiConstants}
+import uk.gov.hmrc.tai.service.EncryptionService
+import uk.gov.hmrc.tai.service.EncryptionService.SensitiveJsValue
+import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +37,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingTaxAccountConnector @Inject() (
   @Named("default") underlying: TaxAccountConnector,
   cachingConnector: CachingConnector,
-  crypto: ApplicationCrypto
+  crypto: ApplicationCrypto,
+  encryptionService: EncryptionService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
@@ -46,7 +48,7 @@ class CachingTaxAccountConnector @Inject() (
         underlying
           .taxAccount(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue)
-      }(SensitiveHelper.sensitiveFormatJsValue[JsValue], implicitly)
+      }(encryptionService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
   }
 
@@ -57,7 +59,7 @@ class CachingTaxAccountConnector @Inject() (
         underlying
           .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
           .map(SensitiveJsValue)
-      }(SensitiveHelper.sensitiveFormatJsValue[JsValue], implicitly)
+      }(encryptionService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
   }
 }

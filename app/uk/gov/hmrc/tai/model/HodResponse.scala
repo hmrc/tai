@@ -17,14 +17,9 @@
 package uk.gov.hmrc.tai.model
 
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
-import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsObject
 
 case class HodResponse(body: JsArray, etag: Option[Int])
 
 object HodResponse {
-  private val format: OFormat[HodResponse] = Json.format[HodResponse]
-
-  def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[HodResponse] =
-    sensitiveFormatJsObject[HodResponse](format, format)
+  implicit val format: OFormat[HodResponse] = Json.format[HodResponse]
 }

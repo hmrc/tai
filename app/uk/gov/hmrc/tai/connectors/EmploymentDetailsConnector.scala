@@ -19,13 +19,14 @@ package uk.gov.hmrc.tai.connectors
 import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.HodResponse
-import uk.gov.hmrc.tai.model.HodResponse.formatWithEncryption
+import uk.gov.hmrc.tai.service.EncryptionService
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -35,7 +36,8 @@ class CachingEmploymentDetailsConnector @Inject() (
   @Named("default") underlying: EmploymentDetailsConnector,
   config: NpsConfig,
   cachingConnector: CachingConnector,
-  crypto: ApplicationCrypto
+  crypto: ApplicationCrypto,
+  encryptionService: EncryptionService
 ) extends EmploymentDetailsConnector {
 
   override val originatorId: String = config.originatorId
@@ -44,6 +46,8 @@ class CachingEmploymentDetailsConnector @Inject() (
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+
+    val formatWithEncryption: Format[HodResponse] = encryptionService.sensitiveFormatJsObject[HodResponse]
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
     }(formatWithEncryption, implicitly)

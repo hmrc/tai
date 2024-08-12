@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.util
+package uk.gov.hmrc.tai.service
 
+import com.google.inject.Inject
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
 import scala.util.{Failure, Success, Try}
 
-object SensitiveHelper {
-  case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
+class EncryptionService @Inject() () {
+  import EncryptionService._
 
   private def writesSensitiveJsValue(implicit crypto: Encrypter): Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
     JsString(crypto.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
@@ -72,7 +73,9 @@ object SensitiveHelper {
     JsString(crypto.encrypt(PlainText(Json.stringify(jsValue))).value)
   }
 
-  def sensitiveFormatJsObject[A](reads: Reads[A], writes: Writes[A])(implicit
+  def sensitiveFormatJsObject[A](implicit
+    reads: Reads[A],
+    writes: Writes[A],
     crypto: Encrypter with Decrypter
   ): Format[A] =
     Format[A](
@@ -80,11 +83,17 @@ object SensitiveHelper {
       sensitiveWritesJsValue[A](writes)
     )
 
-  def sensitiveFormatJsArray[A](reads: Reads[A], writes: Writes[A])(implicit
+  def sensitiveFormatJsArray[A](implicit
+    reads: Reads[A],
+    writes: Writes[A],
     crypto: Encrypter with Decrypter
   ): Format[A] =
     Format[A](
       sensitiveReadsJsArray[A](reads),
       sensitiveWritesJsValue[A](writes)
     )
+}
+
+object EncryptionService {
+  case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
 }

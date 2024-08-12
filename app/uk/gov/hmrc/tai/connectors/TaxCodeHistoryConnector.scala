@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.Inject
+import play.api.libs.json.Format
 import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
@@ -24,10 +25,11 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.TaxCodeHistory.formatWithEncryption
+import uk.gov.hmrc.tai.model.TaxCodeHistory.{reads, writes}
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.EncryptionService
 
 import java.util.UUID
 import javax.inject.Named
@@ -37,11 +39,14 @@ class CachingTaxCodeHistoryConnector @Inject() (
   @Named("default")
   underlying: TaxCodeHistoryConnector,
   cachingConnector: CachingConnector,
-  crypto: ApplicationCrypto
+  crypto: ApplicationCrypto,
+  encryptionService: EncryptionService
 ) extends TaxCodeHistoryConnector {
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+
+    def formatWithEncryption: Format[TaxCodeHistory] = encryptionService.sensitiveFormatJsObject[TaxCodeHistory]
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)
     }(formatWithEncryption, implicitly)

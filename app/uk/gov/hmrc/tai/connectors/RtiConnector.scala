@@ -34,11 +34,11 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, formatWithEncryption}
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
 import uk.gov.hmrc.tai.util.LockedException
 
@@ -76,7 +76,8 @@ class CachingRtiConnector @Inject() (
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
   appConfig: RtiConfig,
-  crypto: ApplicationCrypto
+  crypto: ApplicationCrypto,
+  encryptionService: EncryptionService
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
 
@@ -141,6 +142,8 @@ class CachingRtiConnector @Inject() (
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+
+    val formatWithEncryption: Format[Seq[AnnualAccount]] = encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
     }(formatWithEncryption, implicitly)

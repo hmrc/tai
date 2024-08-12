@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.util
+package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar.{reset, times, verify, when}
@@ -23,9 +23,9 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.util.SensitiveHelper._
+import uk.gov.hmrc.tai.service.EncryptionService._
 
-class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
+class EncryptionServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
   private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
   private val encryptedValueAsString: String = "encrypted"
@@ -38,6 +38,8 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
   private val sensitiveJsObject: SensitiveJsValue = SensitiveJsValue(unencryptedJsObject)
   private val sensitiveJsString: SensitiveJsValue = SensitiveJsValue(unencryptedJsString)
 
+  private val encryptionService = new EncryptionService()
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
@@ -47,7 +49,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "write JsObject, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(sensitiveJsObject)(sensitiveFormatJsValue[JsObject])
+      val result: JsValue = Json.toJson(sensitiveJsObject)(encryptionService.sensitiveFormatJsValue[JsObject])
 
       result mustBe JsString(encryptedValueAsString)
 
@@ -57,7 +59,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "write JsString, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(sensitiveJsString)(sensitiveFormatJsValue[JsString])
+      val result: JsValue = Json.toJson(sensitiveJsString)(encryptionService.sensitiveFormatJsValue[JsString])
 
       result mustBe JsString(encryptedValueAsString)
 
@@ -67,7 +69,8 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsObject, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
-      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](sensitiveFormatJsValue[JsObject])
+      val result =
+        JsString(encryptedValueAsString).as[SensitiveJsValue](encryptionService.sensitiveFormatJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 
@@ -77,7 +80,8 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsString, calling decrypt successfully" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(JsString("test"))))
 
-      val result = JsString(encryptedValueAsString).as[SensitiveJsValue](sensitiveFormatJsValue[JsString])
+      val result =
+        JsString(encryptedValueAsString).as[SensitiveJsValue](encryptionService.sensitiveFormatJsValue[JsString])
 
       result mustBe SensitiveJsValue(JsString("test"))
 
@@ -87,7 +91,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     "read JsString as a JsString, calling decrypt unsuccessfully (i.e. not encrypted) and use unencrypted jsString" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
 
-      val result = JsString("abc").as[SensitiveJsValue](sensitiveFormatJsValue[JsString])
+      val result = JsString("abc").as[SensitiveJsValue](encryptionService.sensitiveFormatJsValue[JsString])
 
       result mustBe SensitiveJsValue(JsString("abc"))
 
@@ -95,7 +99,7 @@ class SensitiveHelperSpec extends PlaySpec with BeforeAndAfterEach {
     }
 
     "read JsObject, not calling decrypt at all" in {
-      val result = unencryptedJsObject.as[SensitiveJsValue](sensitiveFormatJsValue[JsObject])
+      val result = unencryptedJsObject.as[SensitiveJsValue](encryptionService.sensitiveFormatJsValue[JsObject])
 
       result mustBe sensitiveJsObject
 

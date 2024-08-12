@@ -41,8 +41,9 @@ import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.factory.TaxCodeRecordFactory
-import uk.gov.hmrc.tai.model.TaxCodeHistory.formatWithEncryption
+import uk.gov.hmrc.tai.model.TaxCodeHistory.{reads, writes}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.EncryptionService
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import scala.util.Random
@@ -58,6 +59,9 @@ class TaxCodeHistorySpec extends PlaySpec with BeforeAndAfterEach with TaxCodeHi
     "taxCodeRecord" -> Seq.empty[TaxCodeRecord]
   )
   private val taxCodeHistory = TaxCodeHistory(nino.nino, Seq.empty)
+
+  private val encryptionService = new EncryptionService()
+  private def formatWithEncryption: Format[TaxCodeHistory] = encryptionService.sensitiveFormatJsObject[TaxCodeHistory]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
