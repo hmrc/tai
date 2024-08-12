@@ -81,7 +81,7 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
     if (mongoConfig.mongoEncryptionEnabled) {
       JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
     } else {
-      jsValue // TODO: ????
+      jsValue
     }
   }
 

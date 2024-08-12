@@ -241,8 +241,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   "getIabdsForType" must {
     "get IABD's from DES api" when {
       "supplied with a valid nino, year and IABD type" in {
-        val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
 
+        val iabdList = List(NpsIabdRoot(nino = nino.nino, `type` = iabdType))
         val jsonData = Json.toJson(iabdList).toString()
 
         server.stubFor(

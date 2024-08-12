@@ -36,7 +36,6 @@ case class AnnualAccount(
 
 object AnnualAccount {
   implicit val format: Format[AnnualAccount] = Json.format[AnnualAccount]
-
   implicit val annualAccountOrdering: Ordering[AnnualAccount] = Ordering.by(_.taxYear.year)
 
   def apply(sequenceNumber: Int, taxYear: TaxYear, rtiStatus: RealTimeStatus): AnnualAccount =

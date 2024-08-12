@@ -16,12 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.mockito.MockitoSugar.reset
-import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
-import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -29,7 +25,7 @@ import java.io.File
 import java.time.LocalDate
 import scala.io.BufferedSource
 
-class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
+class AnnualAccountSpec extends PlaySpec {
   private val sutWithNoPayments =
     AnnualAccount(0, taxYear = TaxYear("2017"), realTimeStatus = Available, payments = Nil, endOfTaxYearUpdates = Nil)
 
@@ -88,14 +84,6 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString(""))
     jsVal
-  }
-
-  private trait EncrypterDecrypter extends Encrypter with Decrypter
-  private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockEncrypterDecrypter)
   }
 
   "annualAccountHodReads" must {
@@ -226,5 +214,4 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
       }
     }
   }
-
 }
