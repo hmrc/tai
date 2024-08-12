@@ -78,7 +78,11 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
 
   private def sensitiveWritesJsValue[A](writes: Writes[A]): Writes[A] = { o: A =>
     val jsValue: JsValue = writes.writes(o)
-    JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
+    if (mongoConfig.mongoEncryptionEnabled) {
+      JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
+    } else {
+      jsValue // TODO: ????
+    }
   }
 
   def sensitiveFormatJsObject[A](implicit
