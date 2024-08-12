@@ -65,7 +65,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockSessionCacheRepository, mockDefaultTaxCodeHistoryConnector, mockEncryptionService)
-    when(mockEncryptionService.sensitiveFormatJsObject[JsObject])
+    when(mockEncryptionService.sensitiveFormatFromReadsWrites[JsObject])
       .thenAnswer((reads: Reads[JsObject], writes: Writes[JsObject]) => Format(reads, writes))
   }
 
@@ -88,7 +88,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
         verify(mockSessionCacheRepository, times(1)).getFromSession[TaxCodeHistory](DataKey(any()))(any(), any())
         verify(mockSessionCacheRepository, times(1))
           .putSession[TaxCodeHistory](DataKey(any()), any())(any(), any(), any())
-        verify(mockEncryptionService, times(1)).sensitiveFormatJsObject(any(), any())
+        verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWrites(any(), any())
       }
     }
     "there is a value present in the cache" must {

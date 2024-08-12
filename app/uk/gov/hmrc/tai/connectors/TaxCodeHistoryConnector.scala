@@ -43,7 +43,7 @@ class CachingTaxCodeHistoryConnector @Inject() (
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)
-    }(sensitiveFormatService.sensitiveFormatJsObject[TaxCodeHistory], implicitly)
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory], implicitly)
 
 }
 

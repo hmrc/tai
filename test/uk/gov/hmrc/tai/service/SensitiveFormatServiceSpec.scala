@@ -116,7 +116,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
   }
 
-  "formatSensitiveJsValue" must {
+  "sensitiveFormatJsValue" must {
     "write JsObject, calling encrypt when mongo encryption enabled" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
@@ -201,11 +201,13 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     }
   }
 
-  "sensitiveFormatJsArray" must {
+  "sensitiveFormatFromReadsWritesJsArray" must {
     "write encrypted array, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
       val result: JsValue =
-        Json.toJson(Seq(annualAccount))(sensitiveFormatService.sensitiveFormatJsArray[Seq[AnnualAccount]])
+        Json.toJson(Seq(annualAccount))(
+          sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]]
+        )
       result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
@@ -216,7 +218,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
         .thenReturn(PlainText(Json.stringify(Json.arr(validJsonAnnualAccount))))
 
       val result = JsString(encryptedValueAsString).as[Seq[AnnualAccount]](
-        sensitiveFormatService.sensitiveFormatJsArray[Seq[AnnualAccount]]
+        sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]]
       )
 
       result mustBe Seq(annualAccount)
@@ -227,7 +229,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     "read unencrypted JsObject, not calling decrypt at all" in {
       val result = Json
         .arr(validJsonAnnualAccount)
-        .as[Seq[AnnualAccount]](sensitiveFormatService.sensitiveFormatJsArray[Seq[AnnualAccount]])
+        .as[Seq[AnnualAccount]](sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
 
       result mustBe List(annualAccount)
 
@@ -236,11 +238,12 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     }
   }
 
-  "sensitiveFormatJsObject" must {
+  "sensitiveFormatFromReadsWrites" must {
     "write encrypted, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(taxCodeHistory)(sensitiveFormatService.sensitiveFormatJsObject[TaxCodeHistory])
+      val result: JsValue =
+        Json.toJson(taxCodeHistory)(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory])
 
       result mustBe JsString(encryptedValueAsString)
 
@@ -251,7 +254,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
 
       val result = JsString(encryptedValueAsString).as[TaxCodeHistory](
-        sensitiveFormatService.sensitiveFormatJsObject[TaxCodeHistory]
+        sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory]
       )
 
       result mustBe taxCodeHistory
@@ -260,7 +263,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     }
 
     "read unencrypted JsObject, not calling decrypt at all" in {
-      val result = validJson.as[TaxCodeHistory](sensitiveFormatService.sensitiveFormatJsObject[TaxCodeHistory])
+      val result = validJson.as[TaxCodeHistory](sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory])
 
       result mustBe TaxCodeHistory(nino.nino, Seq.empty)
 

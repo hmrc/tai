@@ -69,7 +69,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
 
   override def beforeEach(): Unit = {
     reset(mockRtiConnector, mockSessionCacheRepository, spyLockService, mockEncryptionService)
-    when(mockEncryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]])
+    when(mockEncryptionService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
       .thenAnswer((reads: Reads[Seq[AnnualAccount]], writes: Writes[Seq[AnnualAccount]]) => Format(reads, writes))
   }
 
@@ -139,7 +139,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
         verify(mockRtiConnector, times(0)).getPaymentsForYear(any(), any())(any(), any())
         verify(spyLockService, times(1)).takeLock(any())(any())
         verify(spyLockService, times(1)).releaseLock(any())(any())
-        verify(mockEncryptionService, times(1)).sensitiveFormatJsArray[Seq[AnnualAccount]](any(), any())
+        verify(mockEncryptionService, times(1)).sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]](any(), any())
       }
     }
 

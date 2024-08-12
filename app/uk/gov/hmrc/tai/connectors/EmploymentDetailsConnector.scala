@@ -44,7 +44,7 @@ class CachingEmploymentDetailsConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
-    }(sensitiveFormatService.sensitiveFormatJsObject[HodResponse], implicitly)
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[HodResponse], implicitly)
 }
 
 class DefaultEmploymentDetailsConnector @Inject() (httpHandler: HttpHandler, config: NpsConfig)

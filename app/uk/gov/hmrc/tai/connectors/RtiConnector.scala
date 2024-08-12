@@ -141,7 +141,7 @@ class CachingRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }(sensitiveFormatService.sensitiveFormatJsArray[Seq[AnnualAccount]], implicitly)
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]], implicitly)
 }
 
 @Singleton

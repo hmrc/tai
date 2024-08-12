@@ -74,7 +74,7 @@ class CachingIabdConnector @Inject() (
   ): Future[List[NpsIabdRoot]] =
     cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
-    }(sensitiveFormatService.sensitiveFormatJsArray[List[NpsIabdRoot]], implicitly)
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[List[NpsIabdRoot]], implicitly)
 
   override def updateExpensesData(
     nino: Nino,

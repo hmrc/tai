@@ -26,15 +26,14 @@ import scala.util.{Failure, Success, Try}
 class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decrypter, mongoConfig: MongoConfig) {
   import SensitiveFormatService._
 
-  private def writesSensitiveJsValue: Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
+  private def writeJsValueWithEncryption(jsValue: JsValue): JsValue =
     if (mongoConfig.mongoEncryptionEnabled) {
-      JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
+      JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
     } else {
-      sjo.decryptedValue
+      jsValue
     }
-  }
 
-  private def readsSensitiveJsValue[A <: JsValue: Format]: Reads[SensitiveJsValue] = {
+  private def sensitiveReadsJsValue[A <: JsValue: Format]: Reads[SensitiveJsValue] = {
     case jsString @ JsString(s) =>
       if (mongoConfig.mongoEncryptionEnabled) {
         Try(encrypterDecrypter.decrypt(Crypted(s))) match {
@@ -57,11 +56,8 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
-  def sensitiveFormatJsValue[A <: JsValue: Format]: Format[SensitiveJsValue] =
-    Format(readsSensitiveJsValue, writesSensitiveJsValue)
-
   private def sensitiveReadsJsObject[A](reads: Reads[A]): Reads[A] =
-    readsSensitiveJsValue[JsObject].map { sensitiveJsValue =>
+    sensitiveReadsJsValue[JsObject].map { sensitiveJsValue =>
       reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
         case JsError(e)          => throw JsResultException(e)
@@ -69,7 +65,7 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
     }
 
   private def sensitiveReadsJsArray[A](reads: Reads[A]): Reads[A] =
-    readsSensitiveJsValue[JsArray].map { sensitiveJsValue =>
+    sensitiveReadsJsValue[JsArray].map { sensitiveJsValue =>
       reads.reads(sensitiveJsValue.decryptedValue) match {
         case JsSuccess(value, _) => value
         case JsError(e)          => throw JsResultException(e)
@@ -77,15 +73,13 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
     }
 
   private def sensitiveWritesJsValue[A](writes: Writes[A]): Writes[A] = { o: A =>
-    val jsValue: JsValue = writes.writes(o)
-    if (mongoConfig.mongoEncryptionEnabled) {
-      JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(jsValue))).value)
-    } else {
-      jsValue
-    }
+    writeJsValueWithEncryption(writes.writes(o))
   }
 
-  def sensitiveFormatJsObject[A](implicit
+  def sensitiveFormatJsValue[A <: JsValue: Format]: Format[SensitiveJsValue] =
+    Format(sensitiveReadsJsValue, sjo => writeJsValueWithEncryption(sjo.decryptedValue))
+
+  def sensitiveFormatFromReadsWrites[A](implicit
     reads: Reads[A],
     writes: Writes[A]
   ): Format[A] =
@@ -94,7 +88,7 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
       sensitiveWritesJsValue[A](writes)
     )
 
-  def sensitiveFormatJsArray[A](implicit
+  def sensitiveFormatFromReadsWritesJsArray[A](implicit
     reads: Reads[A],
     writes: Writes[A]
   ): Format[A] =
