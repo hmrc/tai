@@ -46,7 +46,8 @@ object SensitiveHelper {
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
-  def formatSensitiveJsValue[A <: JsValue: Format](implicit
+  // TODO: Can we change this to have same signature as below formats? I.e. Format[A]?? I think so - the SensitiveFormat case class is not needed by calling connectors
+  def sensitiveFormatJsValue[A <: JsValue: Format](implicit
     crypto: Encrypter with Decrypter
   ): Format[SensitiveJsValue] =
     Format(readsSensitiveJsValue, writesSensitiveJsValue)

@@ -1,5 +1,21 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,68 +37,67 @@ import org.mockito.MockitoSugar.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsArray, JsValue, Json, OFormat}
+import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
+import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.model.HodResponse.formatWithEncryption
+
+import scala.util.Random
 
 class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
-  private trait EncrypterDecrypter extends Encrypter with Decrypter
-  private val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
-  private val encryptedStringValue: String = "encrypted"
-  private val encryptedValue: Crypted = Crypted(encryptedStringValue)
 
-  private def encryptedFormat: OFormat[HodResponse] = HodResponse.encryptedFormat(mockEncrypterDecrypter)
+  private trait EncrypterDecrypter extends Encrypter with Decrypter
+  private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
+  private val encryptedValueAsString: String = "encrypted"
+  private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
+  private val nino: Nino = new Generator(new Random).nextNino
 
   private val unencryptedBodyJson: JsArray = Json.arr(
     Json.obj("testa" -> "valuea"),
     Json.obj("testb" -> "valueb")
   )
 
-  private val jsonWithEncryptedValue = Json.obj(
-    "body" -> encryptedStringValue,
+  private val validJson = Json.obj(
+    "body" -> unencryptedBodyJson,
     "etag" -> 3
   )
 
-  private val hodResponse: HodResponse = HodResponse(body = unencryptedBodyJson, etag = Some(3))
+  private val hodResponse = HodResponse(body = unencryptedBodyJson, etag = Some(3))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
   }
 
-  "encryptedFormat" must {
-    "write json, calling encrypt" in {
+  "formatWithEncryption" must {
+    "write encrypted, calling encrypt" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
-      val result: JsValue = Json.toJson(hodResponse)(encryptedFormat)
+      val result: JsValue = Json.toJson(hodResponse)(formatWithEncryption)
 
-      result mustBe jsonWithEncryptedValue
+      result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read JsObject with encrypted JsString, calling decrypt when decrypts successfully" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedBodyJson)))
+    "read encrypted, calling decrypt successfully" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(validJson)))
 
-      val result: HodResponse = jsonWithEncryptedValue.as[HodResponse](encryptedFormat)
+      val result = JsString(encryptedValueAsString).as[HodResponse](formatWithEncryption)
 
       result mustBe hodResponse
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
     }
 
-    "read JsObject with unencrypted JsObject, NOT calling decrypt" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenThrow(new SecurityException("Unable to decrypt value"))
-
-      val jsonWithUnencryptedValue = Json.obj(
-        "body" -> unencryptedBodyJson,
-        "etag" -> 3
-      )
-
-      val result: HodResponse = jsonWithUnencryptedValue.as[HodResponse](encryptedFormat)
+    "read unencrypted JsObject, not calling decrypt at all" in {
+      val result = validJson.as[HodResponse](formatWithEncryption)
 
       result mustBe hodResponse
 
       verify(mockEncrypterDecrypter, times(0)).decrypt(any())
+
     }
   }
+
 }

@@ -16,27 +16,15 @@
 
 package uk.gov.hmrc.tai.model
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
-import uk.gov.hmrc.tai.util.SensitiveHelper.{SensitiveJsValue, formatSensitiveJsValue}
+import uk.gov.hmrc.tai.util.SensitiveHelper.sensitiveFormatJsObject
 
 case class HodResponse(body: JsArray, etag: Option[Int])
 
 object HodResponse {
-  implicit def encryptedFormat(implicit crypto: Encrypter with Decrypter): OFormat[HodResponse] = {
-    val encryptedReads: Reads[HodResponse] =
-      (
-        (__ \ "body").read[SensitiveJsValue](formatSensitiveJsValue[JsArray]) and
-          (__ \ "etag").readNullable[Int]
-      )((body, etag) => HodResponse(body.decryptedValue.as[JsArray], etag))
+  implicit val formats: OFormat[HodResponse] = Json.format[HodResponse]
 
-    val encryptedWrites: OWrites[HodResponse] =
-      (
-        (__ \ "body").write[SensitiveJsValue](formatSensitiveJsValue[JsArray]) and
-          (__ \ "etag").writeNullable[Int]
-      )(ua => (SensitiveJsValue(ua.body), ua.etag))
-
-    OFormat(encryptedReads, encryptedWrites)
-  }
+  def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[HodResponse] =
+    sensitiveFormatJsObject[HodResponse](formats, formats)
 }

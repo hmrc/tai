@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.tai.config.NpsConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.HodResponse
+import uk.gov.hmrc.tai.model.HodResponse.formatWithEncryption
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -45,7 +46,7 @@ class CachingEmploymentDetailsConnector @Inject() (
     implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
-    }
+    }(formatWithEncryption, implicitly)
   }
 }
 

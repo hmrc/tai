@@ -46,7 +46,7 @@ class CachingTaxAccountConnector @Inject() (
         underlying
           .taxAccount(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue)
-      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      }(SensitiveHelper.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
   }
 
@@ -57,7 +57,7 @@ class CachingTaxAccountConnector @Inject() (
         underlying
           .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
           .map(SensitiveJsValue)
-      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      }(SensitiveHelper.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
   }
 }

@@ -55,7 +55,7 @@ class CachingIabdConnector @Inject() (
         underlying
           .iabds(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue)
-      }(SensitiveHelper.formatSensitiveJsValue[JsValue], implicitly)
+      }(SensitiveHelper.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
   }
 
