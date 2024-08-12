@@ -1,20 +1,4 @@
 /*
- * Copyright 2023 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,10 +23,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.HodResponse.formatWithEncryption
-
-import scala.util.Random
 
 class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
 
@@ -50,7 +31,6 @@ class HodResponseSpec extends PlaySpec with BeforeAndAfterEach {
   private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
   private val encryptedValueAsString: String = "encrypted"
   private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
-  private val nino: Nino = new Generator(new Random).nextNino
 
   private val unencryptedBodyJson: JsArray = Json.arr(
     Json.obj("testa" -> "valuea"),
