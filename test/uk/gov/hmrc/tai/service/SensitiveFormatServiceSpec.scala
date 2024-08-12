@@ -24,6 +24,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
@@ -45,7 +46,9 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private val sensitiveJsObject: SensitiveJsValue = SensitiveJsValue(unencryptedJsObject)
   private val sensitiveJsString: SensitiveJsValue = SensitiveJsValue(unencryptedJsString)
 
-  private val sensitiveFormatService = new SensitiveFormatService(mockEncrypterDecrypter)
+  private val mockMongoConfig = mock[MongoConfig]
+
+  private val sensitiveFormatService = new SensitiveFormatService(mockEncrypterDecrypter, mockMongoConfig)
 
   private val validJsonAnnualAccount =
     Json.obj(
@@ -109,10 +112,12 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockEncrypterDecrypter)
+    reset(mockMongoConfig)
+    when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
   }
 
   "formatSensitiveJsValue" must {
-    "write JsObject, calling encrypt" in {
+    "write JsObject, calling encrypt when mongo encryption enabled" in {
       when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
 
       val result: JsValue = Json.toJson(sensitiveJsObject)(sensitiveFormatService.sensitiveFormatJsValue[JsObject])
@@ -120,6 +125,17 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
       result mustBe JsString(encryptedValueAsString)
 
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
+    }
+
+    "write JsObject, not calling encrypt when mongo encryption disabled" in {
+      when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
+      when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+
+      val result: JsValue = Json.toJson(sensitiveJsObject)(sensitiveFormatService.sensitiveFormatJsValue[JsObject])
+
+      result mustBe unencryptedJsObject
+
+      verify(mockEncrypterDecrypter, times(0)).encrypt(any())
     }
 
     "write JsString, calling encrypt" in {
@@ -132,7 +148,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
       verify(mockEncrypterDecrypter, times(1)).encrypt(any())
     }
 
-    "read JsString as a JsObject, calling decrypt successfully" in {
+    "read JsString as a JsObject, calling decrypt" in {
       when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
 
       val result =
@@ -141,6 +157,18 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
       result mustBe sensitiveJsObject
 
       verify(mockEncrypterDecrypter, times(1)).decrypt(any())
+    }
+
+    "read JsString as a JsObject, not calling decrypt when mongo encryption disabled" in {
+      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(unencryptedJsObject)))
+      when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(false)
+
+      val result =
+        unencryptedJsObject.as[SensitiveJsValue](sensitiveFormatService.sensitiveFormatJsValue[JsObject])
+
+      result mustBe sensitiveJsObject
+
+      verify(mockEncrypterDecrypter, times(0)).decrypt(any())
     }
 
     "read JsString as a JsString, calling decrypt successfully" in {
@@ -237,7 +265,6 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
       result mustBe TaxCodeHistory(nino.nino, Seq.empty)
 
       verify(mockEncrypterDecrypter, times(0)).decrypt(any())
-
     }
   }
 

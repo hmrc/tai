@@ -19,31 +19,41 @@ package uk.gov.hmrc.tai.service
 import com.google.inject.Inject
 import play.api.libs.json._
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
+import uk.gov.hmrc.tai.config.MongoConfig
 
 import scala.util.{Failure, Success, Try}
 
-class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decrypter) {
+class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decrypter, mongoConfig: MongoConfig) {
   import SensitiveFormatService._
 
   private def writesSensitiveJsValue: Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
-    JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
+    if (mongoConfig.mongoEncryptionEnabled) {
+      JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
+    } else {
+      sjo.decryptedValue
+    }
   }
 
   private def readsSensitiveJsValue[A <: JsValue: Format]: Reads[SensitiveJsValue] = {
-    case JsString(s) =>
-      Try(encrypterDecrypter.decrypt(Crypted(s))) match {
-        case Success(plainText) =>
-          JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+    case jsString @ JsString(s) =>
+      if (mongoConfig.mongoEncryptionEnabled) {
+        Try(encrypterDecrypter.decrypt(Crypted(s))) match {
+          case Success(plainText) =>
+            JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
 
-        /*
-          Both of the below cases cater for two scenarios where the value is not encrypted:-
-            either an unencrypted JsString or any other JsValue.
-          This is to avoid breaking users' session in case data written before encryption introduced.
-         */
+          /*
+            Both of the below cases cater for two scenarios where the value is not encrypted:-
+              either an unencrypted JsString or any other JsValue.
+            This is to avoid breaking users' session in case data written before encryption introduced.
+           */
 
-        case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
-        case Failure(exception)            => throw exception
+          case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
+          case Failure(exception)            => throw exception
+        }
+      } else {
+        JsSuccess(SensitiveJsValue(jsString))
       }
+
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
