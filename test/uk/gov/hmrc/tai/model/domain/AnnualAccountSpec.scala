@@ -92,7 +92,6 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
 
   private trait EncrypterDecrypter extends Encrypter with Decrypter
   private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
-  private val encryptedValueAsString: String = "encrypted"
 
   override def beforeEach(): Unit = {
     super.beforeEach()

@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
@@ -37,7 +36,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingTaxAccountConnector @Inject() (
   @Named("default") underlying: TaxAccountConnector,
   cachingConnector: CachingConnector,
-  crypto: ApplicationCrypto,
   sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
