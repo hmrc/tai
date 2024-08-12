@@ -46,7 +46,4 @@ object TaxCodeHistory {
   )(TaxCodeHistory.apply _)
 
   implicit val writes: Writes[TaxCodeHistory] = Json.writes[TaxCodeHistory]
-
-//  def formatWithEncryption(implicit crypto: Encrypter with Decrypter): Format[TaxCodeHistory] =
-//    sensitiveFormatJsObject[TaxCodeHistory](reads, writes)
 }

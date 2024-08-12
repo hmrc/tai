@@ -26,8 +26,8 @@ import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.EncryptionService
-import uk.gov.hmrc.tai.service.EncryptionService.SensitiveJsValue
+import uk.gov.hmrc.tai.service.SensitiveFormatService
+import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.util.UUID
@@ -38,30 +38,26 @@ class CachingTaxAccountConnector @Inject() (
   @Named("default") underlying: TaxAccountConnector,
   cachingConnector: CachingConnector,
   crypto: ApplicationCrypto,
-  encryptionService: EncryptionService
+  sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
-  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+  def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
       .cache(s"tax-account-$nino-${taxYear.year}") {
         underlying
           .taxAccount(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue)
-      }(encryptionService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
-  }
 
-  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
-    implicit val encrypterDecrypter: Encrypter with Decrypter = crypto.JsonCrypto
+  def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
     cachingConnector
       .cache(s"tax-account-history-$nino-$iocdSeqNo") {
         underlying
           .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
           .map(SensitiveJsValue)
-      }(encryptionService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
-  }
 }
 
 class DefaultTaxAccountConnector @Inject() (

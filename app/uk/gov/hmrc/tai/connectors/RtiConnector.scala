@@ -37,7 +37,7 @@ import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
+import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
 import uk.gov.hmrc.tai.util.LockedException
 
@@ -75,7 +75,7 @@ class CachingRtiConnector @Inject() (
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
   appConfig: RtiConfig,
-  encryptionService: EncryptionService
+  sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
 
@@ -138,12 +138,10 @@ class CachingRtiConnector @Inject() (
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] = {
-    val formatWithEncryption: Format[Seq[AnnualAccount]] = encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
+  ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }(formatWithEncryption, implicitly)
-  }
+    }(sensitiveFormatService.sensitiveFormatJsArray[Seq[AnnualAccount]], implicitly)
 }
 
 @Singleton

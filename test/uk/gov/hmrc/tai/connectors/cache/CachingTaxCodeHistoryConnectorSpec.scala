@@ -30,13 +30,13 @@ import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
+import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 
 import scala.concurrent.Future
 
 class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
-  private val mockEncryptionService = mock[EncryptionService]
+  private val mockEncryptionService = mock[SensitiveFormatService]
 
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
   lazy val mockDefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
@@ -54,7 +54,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
       bind[LockService].toInstance(spy(new FakeLockService)),
-      bind[EncryptionService].toInstance(mockEncryptionService)
+      bind[SensitiveFormatService].toInstance(mockEncryptionService)
     )
     .build()
 

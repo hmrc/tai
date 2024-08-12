@@ -36,13 +36,13 @@ import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.{EncryptionService, LockService}
+import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
 class CachingRtiConnectorSpec extends ConnectorBaseSpec {
-  private val mockEncryptionService = mock[EncryptionService]
+  private val mockEncryptionService = mock[SensitiveFormatService]
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
     .overrides(
@@ -56,7 +56,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
-      bind[EncryptionService].toInstance(mockEncryptionService)
+      bind[SensitiveFormatService].toInstance(mockEncryptionService)
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]

@@ -31,8 +31,8 @@ import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
-import uk.gov.hmrc.tai.service.EncryptionService
-import uk.gov.hmrc.tai.service.EncryptionService.SensitiveJsValue
+import uk.gov.hmrc.tai.service.SensitiveFormatService
+import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
@@ -44,7 +44,7 @@ class CachingIabdConnector @Inject() (
   @Named("default") underlying: IabdConnector,
   cachingConnector: CachingConnector,
   invalidateCaches: InvalidateCaches,
-  encryptionService: EncryptionService
+  sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
     extends IabdConnector {
 
@@ -54,7 +54,7 @@ class CachingIabdConnector @Inject() (
         underlying
           .iabds(nino: Nino, taxYear: TaxYear)
           .map(SensitiveJsValue)
-      }(encryptionService.sensitiveFormatJsValue[JsValue], implicitly)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
 
   override def updateTaxCodeAmount(
@@ -71,12 +71,10 @@ class CachingIabdConnector @Inject() (
 
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
-  ): Future[List[NpsIabdRoot]] = {
-    val formatWithEncryption: Format[List[NpsIabdRoot]] = encryptionService.sensitiveFormatJsArray[List[NpsIabdRoot]]
+  ): Future[List[NpsIabdRoot]] =
     cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
-    }(formatWithEncryption, implicitly)
-  }
+    }(sensitiveFormatService.sensitiveFormatJsArray[List[NpsIabdRoot]], implicitly)
 
   override def updateExpensesData(
     nino: Nino,

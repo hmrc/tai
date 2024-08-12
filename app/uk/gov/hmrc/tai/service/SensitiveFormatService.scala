@@ -22,8 +22,8 @@ import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 
 import scala.util.{Failure, Success, Try}
 
-class EncryptionService @Inject() (encrypterDecrypter: Encrypter with Decrypter) {
-  import EncryptionService._
+class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decrypter) {
+  import SensitiveFormatService._
 
   private def writesSensitiveJsValue: Writes[SensitiveJsValue] = { sjo: SensitiveJsValue =>
     JsString(encrypterDecrypter.encrypt(PlainText(Json.stringify(sjo.decryptedValue))).value)
@@ -90,6 +90,6 @@ class EncryptionService @Inject() (encrypterDecrypter: Encrypter with Decrypter)
     )
 }
 
-object EncryptionService {
+object SensitiveFormatService {
   case class SensitiveJsValue(override val decryptedValue: JsValue) extends Sensitive[JsValue]
 }

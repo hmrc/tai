@@ -16,16 +16,14 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.{reset, times, verify, when}
+import org.mockito.MockitoSugar.reset
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
-import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
+import uk.gov.hmrc.crypto.{Decrypter, Encrypter}
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.annualAccountHodReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.EncryptionService
 
 import java.io.File
 import java.time.LocalDate
@@ -95,62 +93,6 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
   private trait EncrypterDecrypter extends Encrypter with Decrypter
   private implicit val mockEncrypterDecrypter: EncrypterDecrypter = mock[EncrypterDecrypter]
   private val encryptedValueAsString: String = "encrypted"
-  private val encryptedValue: Crypted = Crypted(encryptedValueAsString)
-
-  private val validJson =
-    Json.obj(
-      "sequenceNumber" -> 0,
-      "taxYear"        -> 2020,
-      "realTimeStatus" -> "Available",
-      "payments" -> Json.arr(
-        Json.obj(
-          "date"                              -> "2017-05-26",
-          "amountYearToDate"                  -> 10,
-          "taxAmountYearToDate"               -> 10,
-          "nationalInsuranceAmountYearToDate" -> 10,
-          "amount"                            -> 10,
-          "taxAmount"                         -> 10,
-          "nationalInsuranceAmount"           -> 10,
-          "payFrequency"                      -> "Monthly",
-          "duplicate"                         -> true
-        )
-      ),
-      "endOfTaxYearUpdates" -> Json.arr(
-        Json.obj(
-          "date" -> "2017-05-26",
-          "adjustments" -> Json.arr(
-            Json.obj(
-              "type"   -> "NationalInsuranceAdjustment",
-              "amount" -> 10
-            )
-          )
-        )
-      )
-    )
-  private val annualAccount =
-    AnnualAccount(
-      sequenceNumber = 0,
-      taxYear = TaxYear(2020),
-      realTimeStatus = Available,
-      payments = Seq(
-        Payment(
-          date = LocalDate.of(2017, 5, 26),
-          amountYearToDate = 10,
-          taxAmountYearToDate = 10,
-          nationalInsuranceAmountYearToDate = 10,
-          amount = 10,
-          taxAmount = 10,
-          nationalInsuranceAmount = 10,
-          payFrequency = Monthly,
-          duplicate = Some(true)
-        )
-      ),
-      endOfTaxYearUpdates =
-        Seq(EndOfTaxYearUpdate(LocalDate.of(2017, 5, 26), Seq(Adjustment(NationalInsuranceAdjustment, BigDecimal(10)))))
-    )
-
-  private val encryptionService = new EncryptionService(mockEncrypterDecrypter)
-  def formatWithEncryption: Format[Seq[AnnualAccount]] = encryptionService.sensitiveFormatJsArray[Seq[AnnualAccount]]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -283,36 +225,6 @@ class AnnualAccountSpec extends PlaySpec with BeforeAndAfterEach {
         val desig = sutWithNoPayroll.sequenceNumber
         desig mustBe 1
       }
-    }
-  }
-
-  "formatWithEncryption" must {
-    "write encrypted array, calling encrypt" in {
-      when(mockEncrypterDecrypter.encrypt(any())).thenReturn(encryptedValue)
-
-      val result: JsValue = Json.toJson(Seq(annualAccount))(formatWithEncryption)
-      result mustBe JsString(encryptedValueAsString)
-
-      verify(mockEncrypterDecrypter, times(1)).encrypt(any())
-    }
-
-    "read encrypted array, calling decrypt" in {
-      when(mockEncrypterDecrypter.decrypt(any())).thenReturn(PlainText(Json.stringify(Json.arr(validJson))))
-
-      val result = JsString(encryptedValueAsString).as[Seq[AnnualAccount]](formatWithEncryption)
-
-      result mustBe Seq(annualAccount)
-
-      verify(mockEncrypterDecrypter, times(1)).decrypt(any())
-    }
-
-    "read unencrypted JsObject, not calling decrypt at all" in {
-      val result = Json.arr(validJson).as[Seq[AnnualAccount]](formatWithEncryption)
-
-      result mustBe List(annualAccount)
-
-      verify(mockEncrypterDecrypter, times(0)).decrypt(any())
-
     }
   }
 
