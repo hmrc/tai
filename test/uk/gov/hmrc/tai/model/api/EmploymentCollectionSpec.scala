@@ -88,25 +88,31 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
   "employmentCollectionHodReads (for HIP payloads)" must {
     "un-marshall employment json" when {
       "reading single employment from Hod" in {
-        val employment = getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads)
+        val employment =
+          getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
 
         employment.employments mustBe sampleSingleEmployment
       }
       "reading multiple employments from Hod" in {
-        val employment = getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReads)
+        val employment =
+          getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
 
         employment.employments mustBe sampleDualEmployment
       }
     }
 
     "Remove any leading zeroes from a numeric 'taxDistrictNumber' field" in {
-      val employment = getJson("hipLeadingZeroTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
+      val employment = getJson("hipLeadingZeroTaxDistrictNumber").as[EmploymentCollection](
+        employmentCollectionHodReads(hipToggle = true)
+      )
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
     }
 
     "Correctly handle a non numeric 'taxDistrictNumber' field" in {
-      val employment = getJson("hipNonNumericTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
+      val employment = getJson("hipNonNumericTaxDistrictNumber").as[EmploymentCollection](
+        employmentCollectionHodReads(hipToggle = true)
+      )
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
     }

@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import play.api.inject.bind
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EmploymentService, EmploymentServiceNpsImpl, LockService}
 
 import scala.concurrent.Future
 
@@ -50,7 +50,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
       bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions],
-      bind[LockService].toInstance(spy(new FakeLockService))
+      bind[LockService].toInstance(spy(new FakeLockService)),
+      bind[EmploymentService].to[EmploymentServiceNpsImpl]
     )
     .build()
 

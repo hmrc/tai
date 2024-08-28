@@ -22,15 +22,21 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.config.ApplicationStartUp
 import uk.gov.hmrc.tai.connectors._
-import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
+import uk.gov.hmrc.tai.service._
 
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     val hipEnabled: Boolean = configuration.getOptional[Boolean]("hip.enabled").getOrElse(false)
-    val hipBinding = if (hipEnabled) {
-      bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector]
+    val hipBindings = if (hipEnabled) {
+      Seq(
+        bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector],
+        bind[EmploymentService].to[EmploymentServiceImpl]
+      )
     } else {
-      bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnectorNps]
+      Seq(
+        bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnectorNps],
+        bind[EmploymentService].to[EmploymentServiceNpsImpl]
+      )
     }
 
     Seq(
@@ -46,6 +52,6 @@ class LocalGuiceModule extends Module {
       bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[CachingTaxAccountConnector],
       bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
-    ) :+ hipBinding
+    ) ++ hipBindings
   }
 }

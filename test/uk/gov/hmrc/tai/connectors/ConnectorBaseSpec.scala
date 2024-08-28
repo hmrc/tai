@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EmploymentService, EmploymentServiceNpsImpl, LockService}
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
 import scala.concurrent.duration.DurationInt
@@ -77,7 +77,8 @@ trait ConnectorBaseSpec
       )
       .overrides(
         bind[FeatureFlagService].toInstance(mockFeatureFlagService),
-        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi),
+        bind[EmploymentService].to[EmploymentServiceNpsImpl]
       )
 
   implicit lazy val app: Application = localGuiceApplicationBuilder().build()

@@ -100,15 +100,20 @@ object EmploymentCollection {
     }
   }
 
-  val employmentCollectionHodReads: Reads[EmploymentCollection] = {
-    val readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
-      implicit val rds: Reads[Employment] = employmentHodNpsReads
-      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-    }
-    val readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
-      implicit val rds: Reads[Employment] = employmentHodReads
-      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
-    }
-    readsNps orElse readsHip
+  private val readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
+    implicit val rds: Reads[Employment] = employmentHodNpsReads
+    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
   }
+
+  private val readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
+    implicit val rds: Reads[Employment] = employmentHodReads
+    JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+  }
+
+  def employmentCollectionHodReads(hipToggle: Boolean): Reads[EmploymentCollection] =
+    if (hipToggle) {
+      readsHip orElse readsNps
+    } else {
+      readsNps
+    }
 }

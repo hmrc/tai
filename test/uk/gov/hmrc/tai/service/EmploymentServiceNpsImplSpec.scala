@@ -40,7 +40,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.ListHasAsScala
 
-class EmploymentServiceSpec extends BaseSpec {
+class EmploymentServiceNpsImplSpec extends BaseSpec {
 
   private val mocEmploymentDetailsConnector = mock[DefaultEmploymentDetailsConnector]
   private val mockRtiConnector = mock[RtiConnector]
@@ -613,7 +613,7 @@ class EmploymentServiceSpec extends BaseSpec {
     pdfService: PdfService,
     auditable: Auditor
   ) =
-    new EmploymentService(
+    new EmploymentServiceNpsImpl(
       employmentDetailsConnector,
       rtiConnector,
       employmentBuilder,

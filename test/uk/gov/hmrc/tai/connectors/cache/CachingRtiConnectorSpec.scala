@@ -35,7 +35,7 @@ import uk.gov.hmrc.tai.connectors.{CachingRtiConnector, ConnectorBaseSpec, Defau
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{EmploymentService, EmploymentServiceNpsImpl, LockService}
 
 import java.time.LocalDate
 import scala.concurrent.Future
@@ -54,7 +54,8 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
       bind[IabdConnector].to[DefaultIabdConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
-      bind[TaxAccountConnector].to[DefaultTaxAccountConnector]
+      bind[TaxAccountConnector].to[DefaultTaxAccountConnector],
+      bind[EmploymentService].to[EmploymentServiceNpsImpl]
     )
     .build()
   lazy val repository: MongoLockRepository = app.injector.instanceOf[MongoLockRepository]
