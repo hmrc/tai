@@ -18,10 +18,9 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import play.api
 import play.api.Application
 import play.api.http.Status._
-import api.inject.bind
+import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
+class DefaultEmploymentDetailsConnectorNpsSpec extends ConnectorBaseSpec with NpsFormatter {
 
   def intGen: Int = Random.nextInt(50)
 
@@ -39,13 +38,13 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   val etag: Int = intGen
   val iabdType: Int = intGen
   val empSeqNum: Int = intGen
-  val hipBaseUrl: String = s"/v1/api/employment/employee/${nino.nino}"
-  val employmentsUrl: String = s"$hipBaseUrl/tax-year/$year/employment-details"
-  val iabdsUrl: String = s"$hipBaseUrl/iabds/$year"
+  val npsBaseUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}"
+  val employmentsUrl: String = s"$npsBaseUrl/employment/$year"
+  val iabdsUrl: String = s"$npsBaseUrl/iabds/$year"
   val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
-  val taxAccountUrl: String = s"$hipBaseUrl/tax-account/$year/calculation"
+  val taxAccountUrl: String = s"$npsBaseUrl/tax-account/$year/calculation"
   val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
-  lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
+  lazy val sut: DefaultEmploymentDetailsConnectorNps = inject[DefaultEmploymentDetailsConnectorNps]
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
@@ -54,7 +53,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
       bind[RtiConnector].to[DefaultRtiConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[IabdConnector].to[DefaultIabdConnector],
-      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnectorNps],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector]
     )
     .build()
@@ -62,7 +61,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
       requestPattern
-        .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
+        .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
@@ -84,12 +83,12 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
-  "NpsConnector" when {
+  "DefaultEmploymentDetailsConnectorNps" when {
     "npsPathUrl is called" must {
       "fetch the path url" when {
         "given a nino and path" in {
           val arg = "path"
-          sut.npsPathUrl(nino, arg) contains s"$hipBaseUrl/$arg"
+          sut.npsPathUrl(nino, arg) contains s"$npsBaseUrl/$arg"
         }
       }
     }

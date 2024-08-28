@@ -53,7 +53,7 @@ class DefaultEmploymentDetailsConnector @Inject() (httpHandler: HttpHandler, con
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
     val urlToRead = hipPathUrl(nino, s"tax-year/$year/employment-details")
-    httpHandler.getFromApiAsEitherT(urlToRead, basicNpsHeaders(hc))
+    httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(hc))
   }
 }
 
@@ -66,7 +66,7 @@ class DefaultEmploymentDetailsConnectorNps @Inject() (httpHandler: HttpHandler, 
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
     val urlToRead = npsPathUrl(nino, s"employment/$year")
-    httpHandler.getFromApiAsEitherT(urlToRead, basicNpsHeaders(hc))
+    httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(hc))
   }
 }
 
@@ -77,7 +77,7 @@ trait EmploymentDetailsConnector {
   def npsPathUrl(nino: Nino, path: String) = s"$baseUrl/person/$nino/$path"
   def hipPathUrl(nino: Nino, path: String) = s"$baseUrl/employment/employee/$nino/$path"
 
-  def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
+  def basicHeaders(hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
       "Gov-Uk-Originator-Id" -> originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
