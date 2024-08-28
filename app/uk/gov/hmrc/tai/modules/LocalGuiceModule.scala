@@ -21,23 +21,31 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.config.ApplicationStartUp
-import uk.gov.hmrc.tai.connectors.{CachingEmploymentDetailsConnector, CachingIabdConnector, CachingRtiConnector, CachingTaxAccountConnector, CachingTaxCodeHistoryConnector, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
+import uk.gov.hmrc.tai.connectors._
 import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
 class LocalGuiceModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = Seq(
-    bind[ApplicationStartUp].toSelf.eagerly(),
-    bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions].eagerly(),
-    bind[LockService].to[LockServiceImpl],
-    bind[RtiConnector].to[CachingRtiConnector],
-    bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
-    bind[IabdConnector].to[CachingIabdConnector],
-    bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
-    bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
-    bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector],
-    bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
-    bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector],
-    bind[TaxAccountConnector].to[CachingTaxAccountConnector],
-    bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
-  )
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    val hipEnabled: Boolean = configuration.getOptional[Boolean]("hip.enabled").getOrElse(false)
+    val hipBinding = if (hipEnabled) {
+      bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector]
+    } else {
+      bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnectorNps]
+    }
+
+    Seq(
+      bind[ApplicationStartUp].toSelf.eagerly(),
+      bind[AuthorisedFunctions].to[MicroserviceAuthorisedFunctions].eagerly(),
+      bind[LockService].to[LockServiceImpl],
+      bind[RtiConnector].to[CachingRtiConnector],
+      bind[RtiConnector].qualifiedWith("default").to[DefaultRtiConnector],
+      bind[IabdConnector].to[CachingIabdConnector],
+      bind[IabdConnector].qualifiedWith("default").to[DefaultIabdConnector],
+      bind[TaxCodeHistoryConnector].to[CachingTaxCodeHistoryConnector],
+      bind[TaxCodeHistoryConnector].qualifiedWith("default").to[DefaultTaxCodeHistoryConnector],
+      bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
+      bind[TaxAccountConnector].to[CachingTaxAccountConnector],
+      bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
+    ) :+ hipBinding
+  }
 }

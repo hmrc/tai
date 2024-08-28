@@ -73,7 +73,6 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] = {
-
     val employmentsCollectionEitherT =
       employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
         hodResponse.body

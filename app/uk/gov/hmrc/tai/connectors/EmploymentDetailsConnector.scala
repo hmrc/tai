@@ -21,7 +21,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
-import uk.gov.hmrc.tai.config.NpsConfig
+import uk.gov.hmrc.tai.config.{HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 
 import java.util.UUID
@@ -44,7 +44,20 @@ class CachingEmploymentDetailsConnector @Inject() (
     }
 }
 
-class DefaultEmploymentDetailsConnector @Inject() (httpHandler: HttpHandler, config: NpsConfig)
+class DefaultEmploymentDetailsConnector @Inject() (httpHandler: HttpHandler, config: HipConfig)
+    extends EmploymentDetailsConnector {
+
+  override val originatorId: String = config.originatorId
+  override val baseUrl: String = config.baseURL
+  def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, HodResponse] = {
+    val urlToRead = hipPathUrl(nino, s"tax-year/$year/employment-details")
+    httpHandler.getFromApiAsEitherT(urlToRead, basicNpsHeaders(hc))
+  }
+}
+
+class DefaultEmploymentDetailsConnectorNps @Inject() (httpHandler: HttpHandler, config: NpsConfig)
     extends EmploymentDetailsConnector {
 
   override val originatorId: String = config.originatorId
@@ -62,6 +75,7 @@ trait EmploymentDetailsConnector {
   val originatorId: String
   val baseUrl: String
   def npsPathUrl(nino: Nino, path: String) = s"$baseUrl/person/$nino/$path"
+  def hipPathUrl(nino: Nino, path: String) = s"$baseUrl/employment/employee/$nino/$path"
 
   def basicNpsHeaders(hc: HeaderCarrier): Seq[(String, String)] =
     Seq(

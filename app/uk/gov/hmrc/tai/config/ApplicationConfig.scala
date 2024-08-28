@@ -30,6 +30,11 @@ trait HodConfig {
 abstract class BaseConfig
 
 @Singleton
+class HipFeatureConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
+  def hipEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("hip.enabled").getOrElse(false)
+}
+
+@Singleton
 class PdfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
 }
@@ -80,6 +85,16 @@ class NpsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
   override lazy val environment = ""
   override lazy val authorization = ""
   override lazy val originatorId: String = servicesConfig.getConfString("nps-hod.originatorId", "local")
+}
+
+@Singleton
+class HipConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+  lazy val path: String = servicesConfig.getConfString("hip-hod.path", "")
+
+  override lazy val baseURL: String = s"${servicesConfig.baseUrl("hip-hod")}$path"
+  override lazy val environment = ""
+  override lazy val authorization = ""
+  override lazy val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
 }
 
 @Singleton
