@@ -27,10 +27,10 @@ import java.io.File
 import java.time.LocalDate
 import scala.io.BufferedSource
 
-class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
+class EmploymentCollectionNpsSpec extends PlaySpec with TaxCodeHistoryConstants {
 
   private def getJson(fileName: String): JsValue = {
-    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
+    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTestingNps/" + fileName + ".json"
     val file: File = new File(jsonFilePath)
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString(""))
@@ -85,28 +85,28 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
     )
   )
 
-  "employmentCollectionHodReads (for HIP payloads)" must {
+  "employmentCollectionHodReads" must {
     "un-marshall employment json" when {
       "reading single employment from Hod" in {
-        val employment = getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads)
+        val employment = getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads)
 
         employment.employments mustBe sampleSingleEmployment
       }
       "reading multiple employments from Hod" in {
-        val employment = getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReads)
+        val employment = getJson("npsDualEmployment").as[EmploymentCollection](employmentCollectionHodReads)
 
         employment.employments mustBe sampleDualEmployment
       }
     }
 
     "Remove any leading zeroes from a numeric 'taxDistrictNumber' field" in {
-      val employment = getJson("hipLeadingZeroTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
+      val employment = getJson("npsLeadingZeroTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
     }
 
     "Correctly handle a non numeric 'taxDistrictNumber' field" in {
-      val employment = getJson("hipNonNumericTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
+      val employment = getJson("npsNonNumericTaxDistrictNumber").as[EmploymentCollection](employmentCollectionHodReads)
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
     }

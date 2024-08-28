@@ -43,7 +43,7 @@ class EndOfTaxYearUpdateSpec extends PlaySpec {
   )
 
   private def getJson(fileName: String): JsValue = {
-    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTesting/" + fileName + ".json"
+    val jsonFilePath = "test/resources/data/EmploymentHodFormattersTestingNps/" + fileName + ".json"
     val file: File = new File(jsonFilePath)
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val jsVal = Json.parse(source.mkString(""))

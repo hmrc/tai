@@ -26,7 +26,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
-import uk.gov.hmrc.tai.model.domain.Employment.employmentHodReads
+import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -42,9 +42,9 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 
 class EmploymentServiceSpec extends BaseSpec {
 
-  val mocEmploymentDetailsConnector = mock[DefaultEmploymentDetailsConnector]
-  val mockRtiConnector = mock[RtiConnector]
-  val mockEmploymentBuilder = mock[EmploymentBuilder]
+  private val mocEmploymentDetailsConnector = mock[DefaultEmploymentDetailsConnector]
+  private val mockRtiConnector = mock[RtiConnector]
+  private val mockEmploymentBuilder = mock[EmploymentBuilder]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -97,7 +97,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentCollection.employmentHodNpsReads))
       argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
@@ -150,7 +150,7 @@ class EmploymentServiceSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentCollection.employmentHodNpsReads))
       argsAccounts mustBe List.empty
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())

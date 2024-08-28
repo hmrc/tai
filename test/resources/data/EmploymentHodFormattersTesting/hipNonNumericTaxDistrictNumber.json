@@ -1,0 +1,24 @@
+{
+  "nationalInsuranceNumber": "$NINO",
+  "taxYear": 2023,
+  "individualsEmploymentDetails": [
+    {
+      "employmentSequenceNumber": 2,
+      "payeSchemeType": 0,
+      "payeSequenceNumber": 1,
+      "employerNumber": 6,
+      "employmentStatus": "Live",
+      "jobTitle": "Made up data",
+      "worksNumber": "0000",
+      "otherIncomeSource": false,
+      "payrolledNextYear": false,
+      "payrolledCurrentYear": false,
+      "jobSeekersAllowance": false,
+      "activeOccupationalPension": false,
+      "employerManualCorrespondence": false,
+      "p161Identifier": false,
+      "startDateSource": "ITYS",
+      "startDate": "2016-04-06"
+    }
+  ]
+}

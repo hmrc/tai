@@ -16,16 +16,92 @@
 
 package uk.gov.hmrc.tai.model.api
 
+import play.api.libs.json.Reads.localDateReads
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.Employment
+import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
+
+import java.time.LocalDate
 
 case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
 
 object EmploymentCollection {
   implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
+  val employmentHodNpsReads: Reads[Employment] = new Reads[Employment] {
+    private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
+
+    override def reads(json: JsValue): JsResult[Employment] = {
+      val name = (json \ "employerName").as[String]
+      val payrollNumber = (json \ "worksNumber").asOpt[String]
+      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+      val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
+      val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
+      val payeNumber = (json \ "payeNumber").as[String]
+      val sequenceNumber = (json \ "sequenceNumber").as[Int]
+      val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
+      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1")
+        .asOpt[Boolean]
+        .getOrElse(false)
+      val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
+      JsSuccess(
+        Employment(
+          name,
+          status,
+          payrollNumber,
+          startDate,
+          endDate,
+          Nil,
+          taxDistrictNumber,
+          payeNumber,
+          sequenceNumber,
+          cessationPay,
+          payrolledBenefit,
+          receivingOccupationalPension
+        )
+      )
+    }
+  }
+
+//  private val employmentHodReads: Reads[Employment] = new Reads[Employment] {
+//    private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
+//
+//    override def reads(json: JsValue): JsResult[Employment] = {
+//      val name = (json \ "employerName").as[String]
+//      val payrollNumber = (json \ "worksNumber").asOpt[String]
+//      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+//      val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
+//      val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
+//      val payeNumber = (json \ "payeNumber").as[String]
+//      val sequenceNumber = (json \ "sequenceNumber").as[Int]
+//      val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
+//      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1")
+//        .asOpt[Boolean]
+//        .getOrElse(false)
+//      val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+//      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
+//      JsSuccess(
+//        Employment(
+//          name,
+//          status,
+//          payrollNumber,
+//          startDate,
+//          endDate,
+//          Nil,
+//          taxDistrictNumber,
+//          payeNumber,
+//          sequenceNumber,
+//          cessationPay,
+//          payrolledBenefit,
+//          receivingOccupationalPension
+//        )
+//      )
+//    }
+//  }
 
   val employmentCollectionHodReads: Reads[EmploymentCollection] = {
-    implicit val employmentHodReads: Reads[Employment] = Employment.employmentHodReads
+    implicit val employmentHodReads: Reads[Employment] = employmentHodNpsReads
     (json: JsValue) => JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
   }
 }
