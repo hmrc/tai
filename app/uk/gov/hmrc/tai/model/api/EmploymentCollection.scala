@@ -64,44 +64,51 @@ object EmploymentCollection {
     }
   }
 
-//  private val employmentHodReads: Reads[Employment] = new Reads[Employment] {
-//    private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
-//
-//    override def reads(json: JsValue): JsResult[Employment] = {
-//      val name = (json \ "employerName").as[String]
-//      val payrollNumber = (json \ "worksNumber").asOpt[String]
-//      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
-//      val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-//      val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
-//      val payeNumber = (json \ "payeNumber").as[String]
-//      val sequenceNumber = (json \ "sequenceNumber").as[Int]
-//      val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
-//      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1")
-//        .asOpt[Boolean]
-//        .getOrElse(false)
-//      val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
-//      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
-//      JsSuccess(
-//        Employment(
-//          name,
-//          status,
-//          payrollNumber,
-//          startDate,
-//          endDate,
-//          Nil,
-//          taxDistrictNumber,
-//          payeNumber,
-//          sequenceNumber,
-//          cessationPay,
-//          payrolledBenefit,
-//          receivingOccupationalPension
-//        )
-//      )
-//    }
-//  }
+  private val employmentHodReads: Reads[Employment] = new Reads[Employment] {
+    private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
+
+    override def reads(json: JsValue): JsResult[Employment] = {
+      val name = (json \ "employerName").as[String]
+      val payrollNumber = (json \ "worksNumber").asOpt[String]
+      val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
+      val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
+      val taxDistrictNumber = numberChecked((json \ "taxDistrictNumber").as[String])
+      val payeNumber = (json \ "payeNumber").as[String]
+      val sequenceNumber = (json \ "sequenceNumber").as[Int]
+      val cessationPay = (json \ "cessationPayThisEmployment").asOpt[BigDecimal]
+      val payrolledBenefit = (json \ "payrolledTaxYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledTaxYear1")
+        .asOpt[Boolean]
+        .getOrElse(false)
+      val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
+      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
+      JsSuccess(
+        Employment(
+          name,
+          status,
+          payrollNumber,
+          startDate,
+          endDate,
+          Nil,
+          taxDistrictNumber,
+          payeNumber,
+          sequenceNumber,
+          cessationPay,
+          payrolledBenefit,
+          receivingOccupationalPension
+        )
+      )
+    }
+  }
 
   val employmentCollectionHodReads: Reads[EmploymentCollection] = {
-    implicit val employmentHodReads: Reads[Employment] = employmentHodNpsReads
-    (json: JsValue) => JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+    val readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
+      implicit val rds: Reads[Employment] = employmentHodNpsReads
+      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+    }
+    val readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
+      implicit val rds: Reads[Employment] = employmentHodReads
+      JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
+    }
+    readsNps orElse readsHip
   }
 }
