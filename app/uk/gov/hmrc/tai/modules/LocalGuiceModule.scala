@@ -21,7 +21,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.config.ApplicationStartUp
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.{CachingEmploymentDetailsConnector, CachingIabdConnector, CachingRtiConnector, CachingTaxAccountConnector, CachingTaxCodeHistoryConnector, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.service.{LockService, LockServiceImpl}
 
 class LocalGuiceModule extends Module {

@@ -29,7 +29,6 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.{EmploymentService, EmploymentServiceNpsImpl}
 
 import java.util.UUID
 import scala.util.Random
@@ -89,8 +88,7 @@ trait IntegrationSpec
         "cache.isEnabled"                            -> false
       )
       .overrides(
-        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi),
-        bind[EmploymentService].to[EmploymentServiceNpsImpl]
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
       )
       .build()
 

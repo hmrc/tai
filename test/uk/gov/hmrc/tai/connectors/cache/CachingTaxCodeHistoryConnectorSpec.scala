@@ -18,17 +18,17 @@ package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.any
 import play.api.Application
-import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.{CachingTaxCodeHistoryConnector, ConnectorBaseSpec, DefaultEmploymentDetailsConnector, DefaultIabdConnector, DefaultRtiConnector, DefaultTaxAccountConnector, DefaultTaxCodeHistoryConnector, EmploymentDetailsConnector, IabdConnector, RtiConnector, TaxAccountConnector, TaxCodeHistoryConnector}
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
+import play.api.inject.bind
+import uk.gov.hmrc.auth.core.AuthorisedFunctions
+import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.service.LockService
 
 import scala.concurrent.Future
