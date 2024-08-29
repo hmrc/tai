@@ -35,6 +35,6 @@ case object TaxCodeHistoryFromIfToggle extends FeatureFlagName {
 case object HipToggle extends FeatureFlagName {
   override val name: String = "hip-toggle"
   override val description: Option[String] = Some(
-    "Enable/disable HIP"
+    "Enable/disable use of HIP instead of Squid for various APIs"
   )
 }

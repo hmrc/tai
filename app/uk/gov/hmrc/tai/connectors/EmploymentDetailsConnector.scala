@@ -68,12 +68,7 @@ class DefaultEmploymentDetailsConnector @Inject() (
         s"$baseUrl/person/$nino/employment/$year"
       }
       val urlToRead = pathUrl(nino)
-      println("\nUSING URL:" + urlToRead)
-      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc)).value.map { x =>
-        println("\nRESPONSE:" + x)
-        x
-
-      }
+      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc)).value
     })
 }
 
