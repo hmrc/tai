@@ -18,17 +18,20 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import play.api
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.Application
 import play.api.http.Status._
-import api.inject.bind
+import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.model.admin.HipToggle
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.Future
 import scala.util.Random
 
 class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
@@ -39,12 +42,9 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   val etag: Int = intGen
   val iabdType: Int = intGen
   val empSeqNum: Int = intGen
+
   val hipBaseUrl: String = s"/v1/api/employment/employee/${nino.nino}"
   val employmentsUrl: String = s"$hipBaseUrl/tax-year/$year/employment-details"
-  val iabdsUrl: String = s"$hipBaseUrl/iabds/$year"
-  val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
-  val taxAccountUrl: String = s"$hipBaseUrl/tax-account/$year/calculation"
-  val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
   lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder()
@@ -84,16 +84,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
-  "NpsConnector" when {
-    "npsPathUrl is called" must {
-      "fetch the path url" when {
-        "given a nino and path" in {
-          val arg = "path"
-          sut.npsPathUrl(nino, arg) contains s"$hipBaseUrl/$arg"
-        }
-      }
-    }
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipToggle, isEnabled = true))
+    )
+  }
 
+  "DefaultEmploymentDetailsConnector" when {
     "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {

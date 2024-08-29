@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-class DefaultEmploymentDetailsConnectorNpsSpec extends ConnectorBaseSpec with NpsFormatter {
+class DefaultEmploymentDetailsConnectorHipToggleOffSpec extends ConnectorBaseSpec with NpsFormatter {
 
   def intGen: Int = Random.nextInt(50)
 
@@ -44,7 +44,7 @@ class DefaultEmploymentDetailsConnectorNpsSpec extends ConnectorBaseSpec with Np
   val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
   val taxAccountUrl: String = s"$npsBaseUrl/tax-account/$year/calculation"
   val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
-  lazy val sut: DefaultEmploymentDetailsConnectorNps = inject[DefaultEmploymentDetailsConnectorNps]
+  lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
@@ -53,7 +53,7 @@ class DefaultEmploymentDetailsConnectorNpsSpec extends ConnectorBaseSpec with Np
       bind[RtiConnector].to[DefaultRtiConnector],
       bind[TaxCodeHistoryConnector].to[DefaultTaxCodeHistoryConnector],
       bind[IabdConnector].to[DefaultIabdConnector],
-      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnectorNps],
+      bind[EmploymentDetailsConnector].to[DefaultEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[DefaultTaxAccountConnector]
     )
     .build()
@@ -70,29 +70,21 @@ class DefaultEmploymentDetailsConnectorNpsSpec extends ConnectorBaseSpec with Np
         )
     )
 
-  val employment = s"""{
-                      |  "sequenceNumber": $intGen,
-                      |  "startDate": "28/02/2023",
-                      |  "taxDistrictNumber": "${intGen.toString}",
-                      |  "payeNumber": "${intGen.toString}",
-                      |  "employerName": "Big corp",
-                      |  "employmentType": 1,
-                      |  "worksNumber": "${intGen.toString}",
-                      |  "cessationPayThisEmployment": $intGen
-                      |}""".stripMargin
+  val employment =
+    s"""{
+       |  "sequenceNumber": $intGen,
+       |  "startDate": "28/02/2023",
+       |  "taxDistrictNumber": "${intGen.toString}",
+       |  "payeNumber": "${intGen.toString}",
+       |  "employerName": "Big corp",
+       |  "employmentType": 1,
+       |  "worksNumber": "${intGen.toString}",
+       |  "cessationPayThisEmployment": $intGen
+       |}""".stripMargin
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
-  "DefaultEmploymentDetailsConnectorNps" when {
-    "npsPathUrl is called" must {
-      "fetch the path url" when {
-        "given a nino and path" in {
-          val arg = "path"
-          sut.npsPathUrl(nino, arg) contains s"$npsBaseUrl/$arg"
-        }
-      }
-    }
-
+  "DefaultEmploymentDetailsConnector (HIP toggle off)" when {
     "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {

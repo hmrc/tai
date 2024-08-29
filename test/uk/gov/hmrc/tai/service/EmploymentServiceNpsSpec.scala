@@ -19,14 +19,18 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
-import uk.gov.hmrc.tai.model.api.EmploymentCollection
+import uk.gov.hmrc.tai.model.admin.HipToggle
+import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodNpsReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -40,7 +44,9 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.jdk.CollectionConverters.ListHasAsScala
 
-class EmploymentServiceNpsImplSpec extends BaseSpec {
+class EmploymentServiceNpsSpec extends BaseSpec {
+
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
   private val mocEmploymentDetailsConnector = mock[DefaultEmploymentDetailsConnector]
   private val mockRtiConnector = mock[RtiConnector]
@@ -48,10 +54,13 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder)
+    reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder, mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggle))).thenReturn(
+      Future.successful(FeatureFlag(HipToggle, isEnabled = false))
+    )
   }
 
-  "EmploymentService.employments" should {
+  "EmploymentService.employments (HipToggle OFF)" should {
     "return employments for passed nino and year" in {
       val employmentsForYear = Seq(employment)
 
@@ -97,7 +106,7 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentCollection.employmentHodNpsReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodNpsReads))
       argsAccounts mustBe List(AnnualAccount(0, TaxYear(), Available, List(), List()))
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
@@ -150,7 +159,7 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
       val argsNino: Seq[Nino] = ninoCaptor.getAllValues.asScala.toSeq
       val argsTaxYear: Seq[TaxYear] = taxYearCaptor.getAllValues.asScala.toSeq
 
-      argsEmployments mustBe List(jsonEmployment.as[Employment](EmploymentCollection.employmentHodNpsReads))
+      argsEmployments mustBe List(jsonEmployment.as[Employment](employmentHodNpsReads))
       argsAccounts mustBe List.empty
       argsNino mustBe List(nino)
       argsTaxYear mustBe List(TaxYear())
@@ -588,7 +597,7 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
 
   private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
 
-  private val employment = Employment(
+  private def employment = Employment(
     "TEST",
     Live,
     Some("12345"),
@@ -613,7 +622,7 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
     pdfService: PdfService,
     auditable: Auditor
   ) =
-    new EmploymentServiceNpsImpl(
+    new EmploymentService(
       employmentDetailsConnector,
       rtiConnector,
       employmentBuilder,
@@ -621,6 +630,7 @@ class EmploymentServiceNpsImplSpec extends BaseSpec {
       iFormSubmissionService,
       fileUploadService,
       pdfService,
-      auditable
+      auditable,
+      mockFeatureFlagService
     )
 }

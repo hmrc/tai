@@ -20,11 +20,14 @@ import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status.NOT_FOUND
+import play.api.libs.json.Reads
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
+import uk.gov.hmrc.tai.model.admin.HipToggle
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
 import uk.gov.hmrc.tai.model.domain._
@@ -39,20 +42,24 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
-trait EmploymentService {
-  protected implicit val ec: ExecutionContext
-  protected val employmentDetailsConnector: EmploymentDetailsConnector
-  protected val rtiConnector: RtiConnector
-  protected val employmentBuilder: EmploymentBuilder
-  protected val personRepository: PersonRepository
-  protected val iFormSubmissionService: IFormSubmissionService
-  protected val fileUploadService: FileUploadService
-  protected val pdfService: PdfService
-  protected val auditable: Auditor
+@Singleton
+class EmploymentService @Inject() (
+  employmentDetailsConnector: EmploymentDetailsConnector,
+  rtiConnector: RtiConnector,
+  employmentBuilder: EmploymentBuilder,
+  personRepository: PersonRepository,
+  iFormSubmissionService: IFormSubmissionService,
+  fileUploadService: FileUploadService,
+  pdfService: PdfService,
+  auditable: Auditor,
+  featureFlagService: FeatureFlagService
+)(implicit ec: ExecutionContext) {
 
-  protected val logger: Logger = Logger(getClass.getName)
+  private val logger: Logger = Logger(getClass.getName)
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
+
+  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
 
   private def endEmploymentFileName(envelopeId: String) =
     s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
@@ -66,14 +73,36 @@ trait EmploymentService {
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
-  protected val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMMdd")
-
-  protected def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
-
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments]
+  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
+    val futureReads: Future[Reads[EmploymentCollection]] = featureFlagService.get(HipToggle).map { toggle =>
+      employmentCollectionHodReads(hipToggle = toggle.isEnabled)
+    }
+
+    val employmentsCollectionEitherT = EitherT(
+      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).value.flatMap {
+        case Left(e) => Future(Left(e))
+        case Right(hodResponse) =>
+          futureReads.map { reads =>
+            Right(
+              hodResponse.body
+                .as[EmploymentCollection](reads)
+                .copy(etag = hodResponse.etag)
+            )
+          }
+      }
+    )
+
+    for {
+      employmentsCollection <- employmentsCollectionEitherT
+      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
+                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
+                    case Left(_)                             => Right(Seq.empty)
+                  }
+    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
+  }
 
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,
@@ -90,6 +119,8 @@ trait EmploymentService {
         }
       case Left(error) => Left(error)
     }
+
+  def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 
   def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit
     hc: HeaderCarrier,
@@ -233,71 +264,4 @@ trait EmploymentService {
       envelopeId
     }
 
-}
-
-@Singleton
-class EmploymentServiceNpsImpl @Inject() (
-  override protected val employmentDetailsConnector: EmploymentDetailsConnector,
-  override protected val rtiConnector: RtiConnector,
-  override protected val employmentBuilder: EmploymentBuilder,
-  override protected val personRepository: PersonRepository,
-  override protected val iFormSubmissionService: IFormSubmissionService,
-  override protected val fileUploadService: FileUploadService,
-  override protected val pdfService: PdfService,
-  override protected val auditable: Auditor
-)(implicit protected val ec: ExecutionContext)
-    extends EmploymentService {
-
-  override def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val employmentsCollectionEitherT =
-      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
-        hodResponse.body
-          .as[EmploymentCollection](employmentCollectionHodReads(hipToggle = false))
-          .copy(etag = hodResponse.etag)
-      }
-
-    for {
-      employmentsCollection <- employmentsCollectionEitherT
-      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-                    case Left(_)                             => Right(Seq.empty)
-                  }
-    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
-  }
-}
-
-@Singleton
-class EmploymentServiceImpl @Inject() (
-  override protected val employmentDetailsConnector: EmploymentDetailsConnector,
-  override protected val rtiConnector: RtiConnector,
-  override protected val employmentBuilder: EmploymentBuilder,
-  override protected val personRepository: PersonRepository,
-  override protected val iFormSubmissionService: IFormSubmissionService,
-  override protected val fileUploadService: FileUploadService,
-  override protected val pdfService: PdfService,
-  override protected val auditable: Auditor
-)(implicit protected val ec: ExecutionContext)
-    extends EmploymentService {
-  override def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val employmentsCollectionEitherT =
-      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
-        hodResponse.body
-          .as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
-          .copy(etag = hodResponse.etag)
-      }
-
-    for {
-      employmentsCollection <- employmentsCollectionEitherT
-      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-                    case Left(_)                             => Right(Seq.empty)
-                  }
-    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
-  }
 }

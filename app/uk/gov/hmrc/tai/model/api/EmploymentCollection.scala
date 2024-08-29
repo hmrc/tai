@@ -64,7 +64,7 @@ object EmploymentCollection {
     }
   }
 
-  private val employmentHodReads: Reads[Employment] = new Reads[Employment] {
+  val employmentHodReads: Reads[Employment] = new Reads[Employment] {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {

@@ -31,3 +31,10 @@ case object TaxCodeHistoryFromIfToggle extends FeatureFlagName {
     "get the tax code history from IF and not DES"
   )
 }
+
+case object HipToggle extends FeatureFlagName {
+  override val name: String = "hip-toggle"
+  override val description: Option[String] = Some(
+    "Enable/disable HIP"
+  )
+}
