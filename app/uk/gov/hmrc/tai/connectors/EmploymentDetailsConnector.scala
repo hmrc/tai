@@ -50,12 +50,7 @@ class DefaultEmploymentDetailsConnector @Inject() (
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends EmploymentDetailsConnector {
-  /*
-https://{hostname}:{port}/v1/api/employment/employee/{nino}/tax-year/{taxYear}/employment-details
 
-:37803/v1/api/employment/employee/JC677981B/tax-year/2024
-
-   */
   def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
@@ -73,7 +68,12 @@ https://{hostname}:{port}/v1/api/employment/employee/{nino}/tax-year/{taxYear}/e
         s"$baseUrl/person/$nino/employment/$year"
       }
       val urlToRead = pathUrl(nino)
-      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc)).value
+      println("\nUSING URL:" + urlToRead)
+      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc)).value.map { x =>
+        println("\nRESPONSE:" + x)
+        x
+
+      }
     })
 }
 
