@@ -27,7 +27,7 @@ import uk.gov.hmrc.tai.service._
 class LocalGuiceModule extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     val hipEnabled: Boolean = configuration.getOptional[Boolean]("hip.enabled").getOrElse(false)
-    val hipBindings = if (hipEnabled) {
+    val employmentBindings = if (hipEnabled) {
       Seq(
         bind[EmploymentDetailsConnector].qualifiedWith("default").to[DefaultEmploymentDetailsConnector],
         bind[EmploymentService].to[EmploymentServiceImpl]
@@ -52,6 +52,6 @@ class LocalGuiceModule extends Module {
       bind[EmploymentDetailsConnector].to[CachingEmploymentDetailsConnector],
       bind[TaxAccountConnector].to[CachingTaxAccountConnector],
       bind[TaxAccountConnector].qualifiedWith("default").to[DefaultTaxAccountConnector]
-    ) ++ hipBindings
+    ) ++ employmentBindings
   }
 }

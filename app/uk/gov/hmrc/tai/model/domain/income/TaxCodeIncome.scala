@@ -85,7 +85,7 @@ object TaxCodeIncomeStatus {
     }
   }
 
-  def employmentStatusFromHip(json: JsValue): TaxCodeIncomeStatus = {
+  def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
     val employmentStatus = (json \ "employmentStatus").asOpt[String]
 
     employmentStatus match {

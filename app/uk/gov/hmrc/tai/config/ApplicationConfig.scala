@@ -30,11 +30,6 @@ trait HodConfig {
 abstract class BaseConfig
 
 @Singleton
-class HipFeatureConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
-  def hipEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("hip.enabled").getOrElse(false)
-}
-
-@Singleton
 class PdfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
   lazy val baseURL: String = servicesConfig.baseUrl("pdf-generator-service")
 }

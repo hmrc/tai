@@ -40,54 +40,19 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 trait EmploymentService {
+  protected implicit val ec: ExecutionContext
+  protected val employmentDetailsConnector: EmploymentDetailsConnector
+  protected val rtiConnector: RtiConnector
+  protected val employmentBuilder: EmploymentBuilder
+  protected val personRepository: PersonRepository
+  protected val iFormSubmissionService: IFormSubmissionService
+  protected val fileUploadService: FileUploadService
+  protected val pdfService: PdfService
+  protected val auditable: Auditor
 
-  def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments]
-
-  def employmentAsEitherT(nino: Nino, id: Int)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employment]
-
-  def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
-
-  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, String]
-
-  def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String]
-
-  def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): Future[String]
-
-  def updatePreviousYearIncome(nino: Nino, year: TaxYear, incorrectEmployment: IncorrectEmployment)(implicit
-    hc: HeaderCarrier
-  ): Future[String]
-}
-
-@Singleton
-class EmploymentServiceImpl @Inject() (
-  employmentDetailsConnector: EmploymentDetailsConnector,
-  rtiConnector: RtiConnector,
-  employmentBuilder: EmploymentBuilder,
-  personRepository: PersonRepository,
-  iFormSubmissionService: IFormSubmissionService,
-  fileUploadService: FileUploadService,
-  pdfService: PdfService,
-  auditable: Auditor
-)(implicit ec: ExecutionContext)
-    extends EmploymentService {
-
-  private val logger: Logger = Logger(getClass.getName)
+  protected val logger: Logger = Logger(getClass.getName)
 
   private val EndEmploymentAuditRequest = "EndEmploymentRequest"
-
-  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
 
   private def endEmploymentFileName(envelopeId: String) =
     s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
@@ -101,27 +66,16 @@ class EmploymentServiceImpl @Inject() (
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
-  override def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+  protected val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYYMMdd")
+
+  protected def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
+
+  def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val employmentsCollectionEitherT =
-      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
-        hodResponse.body
-          .as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
-          .copy(etag = hodResponse.etag)
-      }
+  ): EitherT[Future, UpstreamErrorResponse, Employments]
 
-    for {
-      employmentsCollection <- employmentsCollectionEitherT
-      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-                    case Left(_)                             => Right(Seq.empty)
-                  }
-    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
-  }
-
-  override def employmentAsEitherT(nino: Nino, id: Int)(implicit
+  def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employment] =
@@ -137,7 +91,7 @@ class EmploymentServiceImpl @Inject() (
       case Left(error) => Left(error)
     }
 
-  override def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit
+  def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, String] =
@@ -182,7 +136,7 @@ class EmploymentServiceImpl @Inject() (
       envelopeId
     }
 
-  override def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
+  def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
     for {
       person <- personRepository.getPerson(nino)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, employment)
@@ -217,7 +171,7 @@ class EmploymentServiceImpl @Inject() (
       envelopeId
     }
 
-  override def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(implicit
+  def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): Future[String] =
@@ -252,7 +206,7 @@ class EmploymentServiceImpl @Inject() (
       envelopeId
     }
 
-  override def updatePreviousYearIncome(nino: Nino, year: TaxYear, incorrectEmployment: IncorrectEmployment)(implicit
+  def updatePreviousYearIncome(nino: Nino, year: TaxYear, incorrectEmployment: IncorrectEmployment)(implicit
     hc: HeaderCarrier
   ): Future[String] =
     iFormSubmissionService.uploadIForm(
@@ -283,34 +237,16 @@ class EmploymentServiceImpl @Inject() (
 
 @Singleton
 class EmploymentServiceNpsImpl @Inject() (
-  employmentDetailsConnector: EmploymentDetailsConnector,
-  rtiConnector: RtiConnector,
-  employmentBuilder: EmploymentBuilder,
-  personRepository: PersonRepository,
-  iFormSubmissionService: IFormSubmissionService,
-  fileUploadService: FileUploadService,
-  pdfService: PdfService,
-  auditable: Auditor
-)(implicit ec: ExecutionContext)
+  override protected val employmentDetailsConnector: EmploymentDetailsConnector,
+  override protected val rtiConnector: RtiConnector,
+  override protected val employmentBuilder: EmploymentBuilder,
+  override protected val personRepository: PersonRepository,
+  override protected val iFormSubmissionService: IFormSubmissionService,
+  override protected val fileUploadService: FileUploadService,
+  override protected val pdfService: PdfService,
+  override protected val auditable: Auditor
+)(implicit protected val ec: ExecutionContext)
     extends EmploymentService {
-
-  private val logger: Logger = Logger(getClass.getName)
-
-  private val EndEmploymentAuditRequest = "EndEmploymentRequest"
-
-  private val dateFormat = DateTimeFormatter.ofPattern("YYYYMMdd")
-
-  private def endEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def endEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-EndEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
-
-  private def addEmploymentFileName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-iform.pdf"
-
-  private def addEmploymentMetaDataName(envelopeId: String) =
-    s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
   override def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -331,163 +267,37 @@ class EmploymentServiceNpsImpl @Inject() (
                   }
     } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
   }
+}
 
-  override def employmentAsEitherT(nino: Nino, id: Int)(implicit
+@Singleton
+class EmploymentServiceImpl @Inject() (
+  override protected val employmentDetailsConnector: EmploymentDetailsConnector,
+  override protected val rtiConnector: RtiConnector,
+  override protected val employmentBuilder: EmploymentBuilder,
+  override protected val personRepository: PersonRepository,
+  override protected val iFormSubmissionService: IFormSubmissionService,
+  override protected val fileUploadService: FileUploadService,
+  override protected val pdfService: PdfService,
+  override protected val auditable: Auditor
+)(implicit protected val ec: ExecutionContext)
+    extends EmploymentService {
+  override def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employment] =
-    employmentsAsEitherT(nino, TaxYear()).transform {
-      case Right(employments) =>
-        employments.employmentById(id) match {
-          case Some(employment) => Right(employment)
-          case None =>
-            val sequenceNumbers = employments.sequenceNumbers.mkString(", ")
-            logger.warn(s"employment id: $id not found in employment sequence numbers: $sequenceNumbers")
-            Left(UpstreamErrorResponse("Not found", NOT_FOUND))
-        }
-      case Left(error) => Left(error)
-    }
+  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
+    val employmentsCollectionEitherT =
+      employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).map { hodResponse =>
+        hodResponse.body
+          .as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+          .copy(etag = hodResponse.etag)
+      }
 
-  override def endEmployment(nino: Nino, id: Int, endEmployment: EndEmployment)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, String] =
     for {
-      person <- EitherT[Future, UpstreamErrorResponse, Person](personRepository.getPerson(nino).map(Right(_)))
-      existingEmployment <- employmentAsEitherT(nino, id)
-      templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
-      endEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf <-
-        EitherT[Future, UpstreamErrorResponse, Array[Byte]](pdfService.generatePdf(endEmploymentHtml).map(Right(_)))
-      envelopeId <- EitherT[Future, UpstreamErrorResponse, String](fileUploadService.createEnvelope().map(Right(_)))
-      endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                .toString()
-                                .getBytes
-      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](
-             fileUploadService
-               .uploadFile(pdf, envelopeId, endEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-               .map(Right(_))
-           )
-      _ <- EitherT[Future, UpstreamErrorResponse, HttpResponse](
-             fileUploadService
-               .uploadFile(
-                 endEmploymentMetadata,
-                 envelopeId,
-                 endEmploymentMetaDataName(envelopeId),
-                 MimeContentType.ApplicationXml
-               )
-               .map(Right(_))
-           )
-    } yield {
-      logger.info("Envelope Id for end employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        EndEmploymentAuditRequest,
-        detail = Map(
-          "nino"        -> nino.nino,
-          "envelope Id" -> envelopeId,
-          "end-date"    -> endEmployment.endDate.toString
-        )
-      )
-
-      envelopeId
-    }
-
-  override def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
-    for {
-      person <- personRepository.getPerson(nino)
-      templateModel = EmploymentPensionViewModel(TaxYear(), person, employment)
-      addEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf        <- pdfService.generatePdf(addEmploymentHtml)
-      envelopeId <- fileUploadService.createEnvelope()
-      addEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
-                                .toString()
-                                .getBytes
-      _ <- fileUploadService
-             .uploadFile(pdf, envelopeId, addEmploymentFileName(envelopeId), MimeContentType.ApplicationPdf)
-      _ <- fileUploadService.uploadFile(
-             addEmploymentMetadata,
-             envelopeId,
-             addEmploymentMetaDataName(envelopeId),
-             MimeContentType.ApplicationXml
-           )
-    } yield {
-      logger.info("Envelope Id for add employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.AddEmploymentAuditTxnName,
-        detail = Map(
-          "nino"         -> nino.nino,
-          "envelope Id"  -> envelopeId,
-          "start-date"   -> employment.startDate.toString(),
-          "payrollNo"    -> employment.payrollNumber,
-          "employerName" -> employment.employerName
-        )
-      )
-
-      envelopeId
-    }
-
-  override def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): Future[String] =
-    iFormSubmissionService.uploadIForm(
-      nino,
-      IFormConstants.IncorrectEmploymentSubmissionKey,
-      "TES1",
-      (person: Person) =>
-        {
-          for {
-            existingEmployment <- employmentAsEitherT(nino, id)
-            templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, existingEmployment)
-          } yield EmploymentIForm(templateModel).toString
-        }.value.map {
-          case Right(result) => result
-          case Left(error)   => throw error
-        }
-    ) map { envelopeId =>
-      logger.info("Envelope Id for incorrect employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.IncorrectEmploymentAuditTxnName,
-        detail = Map(
-          "nino"                    -> nino.nino,
-          "envelope Id"             -> envelopeId,
-          "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
-          "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
-          "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
-        )
-      )
-
-      envelopeId
-    }
-
-  override def updatePreviousYearIncome(nino: Nino, year: TaxYear, incorrectEmployment: IncorrectEmployment)(implicit
-    hc: HeaderCarrier
-  ): Future[String] =
-    iFormSubmissionService.uploadIForm(
-      nino,
-      IFormConstants.UpdatePreviousYearIncomeSubmissionKey,
-      "TES1",
-      (person: Person) =>
-        Future.successful(EmploymentIForm(EmploymentPensionViewModel(year, person, incorrectEmployment)).toString)
-    ) map { envelopeId =>
-      logger.info("Envelope Id for updatePreviousYearIncome- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.UpdatePreviousYearIncomeAuditTxnName,
-        detail = Map(
-          "nino"                    -> nino.nino,
-          "envelope Id"             -> envelopeId,
-          "taxYear"                 -> year.year.toString,
-          "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
-          "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
-          "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
-        )
-      )
-
-      envelopeId
-    }
-
+      employmentsCollection <- employmentsCollectionEitherT
+      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
+                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
+                    case Left(_)                             => Right(Seq.empty)
+                  }
+    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
+  }
 }

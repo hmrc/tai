@@ -29,6 +29,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.{EmploymentService, EmploymentServiceNpsImpl}
 
 import java.util.UUID
 import scala.util.Random
@@ -82,11 +83,14 @@ trait IntegrationSpec
         "microservice.services.nps-hod.host"         -> "127.0.0.1",
         "microservice.services.if-hod.host"          -> "127.0.0.1",
         "microservice.services.if-hod.port"          -> server.port(),
+        "microservice.services.hip-hod.port"         -> server.port(),
+        "microservice.services.hip-hod.host"         -> "127.0.0.1",
         "auditing.enabled"                           -> false,
         "cache.isEnabled"                            -> false
       )
       .overrides(
-        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi),
+        bind[EmploymentService].to[EmploymentServiceNpsImpl]
       )
       .build()
 

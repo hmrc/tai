@@ -84,7 +84,7 @@ object EmploymentCollection {
           .asOpt[Boolean]
           .getOrElse(false)
       val receivingOccupationalPension = (json \ "activeOccupationalPension").as[Boolean]
-      val status = TaxCodeIncomeStatus.employmentStatusFromHip(json)
+      val status = TaxCodeIncomeStatus.employmentStatus(json)
       JsSuccess(
         Employment(
           name,
