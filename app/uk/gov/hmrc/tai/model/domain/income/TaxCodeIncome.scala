@@ -84,6 +84,20 @@ object TaxCodeIncomeStatus {
         throw new RuntimeException("Invalid employment status")
     }
   }
+
+  def employmentStatusFromHip(json: JsValue): TaxCodeIncomeStatus = {
+    val employmentStatus = (json \ "employmentStatus").asOpt[String]
+
+    employmentStatus match {
+      case Some("Live")               => Live
+      case Some("Potentially Ceased") => PotentiallyCeased
+      case Some("Permanently Ceased") => Ceased
+      case Some("Ceased")             => Ceased
+      case default =>
+        logger.warn(s"Invalid Employment Status -> $default")
+        throw new RuntimeException("Invalid employment status")
+    }
+  }
 }
 
 sealed trait IabdUpdateSource

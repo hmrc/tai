@@ -92,7 +92,17 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
           getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
 
         employment.employments mustBe sampleSingleEmployment
+
       }
+
+      "reading single employment from Hod where format is NPS format" in {
+        val employment =
+          getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+
+        employment.employments mustBe sampleSingleEmployment
+
+      }
+
       "reading multiple employments from Hod" in {
         val employment =
           getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
