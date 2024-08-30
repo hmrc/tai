@@ -118,24 +118,40 @@ object EmploymentCollection {
     }
   }
 
+  private def trySecondReads(
+    secondReads: Reads[EmploymentCollection],
+    jsValue: JsValue,
+    firstReadsOutcome: Either[JsResultException, JsError]
+  ): JsResult[EmploymentCollection] =
+    (Try(secondReads.reads(jsValue)), firstReadsOutcome) match {
+      case (Success(value @ JsSuccess(_, _)), _)                      => value
+      case (Success(JsError(_)), Right(firstReadsErrors))             => firstReadsErrors
+      case (Success(JsError(_)), Left(firstReadsException))           => throw firstReadsException
+      case (Failure(_: JsResultException), Right(firstReadsErrors))   => firstReadsErrors
+      case (Failure(_: JsResultException), Left(firstReadsException)) => throw firstReadsException
+      case (Failure(exception), _)                                    => throw exception
+    }
+
+  /*
+    If the second reads fails then return the first reads errors instead of the second.
+   */
+  private def combineReads(
+    firstReads: Reads[EmploymentCollection],
+    secondReads: Reads[EmploymentCollection]
+  ): Reads[EmploymentCollection] =
+    Reads { jsValue =>
+      Try(firstReads.reads(jsValue)) match {
+        case Success(value @ JsSuccess(_, _))       => value
+        case Success(firstReadsErrors @ JsError(_)) => trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
+        case Failure(e: JsResultException)          => trySecondReads(secondReads, jsValue, Left(e))
+        case Failure(exception)                     => throw exception
+      }
+    }
+
   def employmentCollectionHodReads(hipToggle: Boolean): Reads[EmploymentCollection] =
     if (hipToggle) {
-      Reads { jsValue =>
-        readsHip.reads(jsValue) match {
-          case value @ JsSuccess(_, _) => value
-          case hipErrors @ JsError(_) =>
-            Try(readsNps.reads(jsValue)) match {
-              case Success(value @ JsSuccess(_, _)) => value
-              /*
-                If the NPS reads fails then return the HIP errors instead of the NPS errors.
-               */
-              case Success(JsError(_))           => hipErrors
-              case Failure(_: JsResultException) => hipErrors
-              case Failure(exception)            => throw exception
-            }
-        }
-      }
+      combineReads(readsHip, readsNps)
     } else {
-      readsNps
+      combineReads(readsNps, readsHip)
     }
 }
