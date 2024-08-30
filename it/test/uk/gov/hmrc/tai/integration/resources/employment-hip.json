@@ -1,0 +1,29 @@
+{
+  "nationalInsuranceNumber": "$NINO",
+  "taxYear": 2023,
+  "individualsEmploymentDetails": [
+    {
+      "employmentSequenceNumber": 1,
+      "payeSchemeType": 0,
+      "payeSequenceNumber": 1,
+      "employerNumber": 13498962,
+      "payeSchemeOperatorName": "Test employment name",
+      "employerReference": "120MA83247",
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "jobTitle": "Made up data",
+      "worksNumber": "EMP/EMP0000001",
+      "startingTaxCode": "BR",
+      "taxCodeOperation": "Cumulative",
+      "otherIncomeSource": false,
+      "jobSeekersAllowance": false,
+      "activeOccupationalPension": true,
+      "employerManualCorrespondence": false,
+      "p161Identifier": false,
+      "creationMediaType": "Internet",
+      "employmentRecordSourceType": "RTI",
+      "startDateSource": "N/A",
+      "startDate": "2013-03-18"
+    }
+  ]
+}
