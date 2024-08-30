@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
 import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import java.io.File
 import java.time.LocalDate
 import scala.io.BufferedSource
+import scala.util.{Failure, Try}
 
 class EmploymentCollectionNpsSpec extends PlaySpec with TaxCodeHistoryConstants {
 
@@ -99,6 +100,17 @@ class EmploymentCollectionNpsSpec extends PlaySpec with TaxCodeHistoryConstants 
           getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = false))
 
         employment.employments mustBe sampleSingleEmployment
+      }
+
+      "reading single employment from Hod where invalid payload returns NPS errors and not HIP errors" in {
+        val actual = Try(
+          Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReads(hipToggle = false))
+        )
+        actual mustBe Failure(
+          JsResultException(
+            Seq((__, List(JsonValidationError(List("'employerName' is undefined on object. Available keys are 'a'")))))
+          )
+        )
       }
 
       "reading multiple employments from Hod" in {
