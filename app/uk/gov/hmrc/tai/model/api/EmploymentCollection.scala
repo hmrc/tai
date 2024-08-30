@@ -23,6 +23,7 @@ import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 
 import java.time.LocalDate
+import scala.util.{Failure, Success, Try}
 
 case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
 
@@ -119,7 +120,21 @@ object EmploymentCollection {
 
   def employmentCollectionHodReads(hipToggle: Boolean): Reads[EmploymentCollection] =
     if (hipToggle) {
-      readsHip orElse readsNps
+      Reads { jsValue =>
+        readsHip.reads(jsValue) match {
+          case value @ JsSuccess(_, _) => value
+          case hipErrors @ JsError(_) =>
+            Try(readsNps.reads(jsValue)) match {
+              case Success(value @ JsSuccess(_, _)) => value
+              /*
+                If the NPS reads fails then return the HIP errors instead of the NPS errors.
+               */
+              case Success(JsError(_))           => hipErrors
+              case Failure(_: JsResultException) => hipErrors
+              case Failure(exception)            => throw exception
+            }
+        }
+      }
     } else {
       readsNps
     }

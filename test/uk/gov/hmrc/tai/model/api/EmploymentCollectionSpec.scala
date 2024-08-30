@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
 import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -26,6 +26,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import java.io.File
 import java.time.LocalDate
 import scala.io.BufferedSource
+import scala.util.{Failure, Try}
 
 class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
@@ -95,12 +96,23 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
       }
 
-      "reading single employment from Hod where format is NPS format" in {
+      "reading single employment from Hod where format is NPS format instead of HIP format" in {
         val employment =
           getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
 
         employment.employments mustBe sampleSingleEmployment
+      }
 
+      "reading single employment from Hod where invalid payload returns HIP errors and not NPS errors" in {
+        val actual = Try(
+          Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+        )
+
+        actual mustBe Failure(
+          JsResultException(
+            Seq((__ \ "individualsEmploymentDetails", List(JsonValidationError(List("error.path.missing")))))
+          )
+        )
       }
 
       "reading multiple employments from Hod" in {
