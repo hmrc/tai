@@ -21,15 +21,15 @@ import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
+import uk.gov.hmrc.tai.util.JsonHelper._
 
 import java.time.LocalDate
-import scala.util.{Failure, Success, Try}
 
 case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
 
 object EmploymentCollection {
   implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
-  val employmentHodNpsReads: Reads[Employment] = new Reads[Employment] {
+  def employmentHodNpsReads: Reads[Employment] = new Reads[Employment] {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
 
     override def reads(json: JsValue): JsResult[Employment] = {
@@ -65,7 +65,7 @@ object EmploymentCollection {
     }
   }
 
-  val employmentHodReads: Reads[Employment] = new Reads[Employment] {
+  def employmentHodReads: Reads[Employment] = new Reads[Employment] {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {
@@ -105,12 +105,12 @@ object EmploymentCollection {
     }
   }
 
-  private val readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
+  private def readsNps: Reads[EmploymentCollection] = { (json: JsValue) =>
     implicit val rds: Reads[Employment] = employmentHodNpsReads
     JsSuccess(EmploymentCollection(json.as[Seq[Employment]], None))
   }
 
-  private val readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
+  private def readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
     val readsSeqEmployment =
       (__ \ "individualsEmploymentDetails").read[Seq[Employment]](Reads.seq(employmentHodReads))
     readsSeqEmployment.reads(json).map { seqEmployment =>
@@ -118,40 +118,15 @@ object EmploymentCollection {
     }
   }
 
-  private def trySecondReads(
-    secondReads: Reads[EmploymentCollection],
-    jsValue: JsValue,
-    firstReadsOutcome: Either[JsResultException, JsError]
-  ): JsResult[EmploymentCollection] =
-    (Try(secondReads.reads(jsValue)), firstReadsOutcome) match {
-      case (Success(value @ JsSuccess(_, _)), _)                      => value
-      case (Success(JsError(_)), Right(firstReadsErrors))             => firstReadsErrors
-      case (Success(JsError(_)), Left(firstReadsException))           => throw firstReadsException
-      case (Failure(_: JsResultException), Right(firstReadsErrors))   => firstReadsErrors
-      case (Failure(_: JsResultException), Left(firstReadsException)) => throw firstReadsException
-      case (Failure(exception), _)                                    => throw exception
-    }
+  /*
+    If toggle switched on then we still need to cater for payloads in NPS format which may still be
+    present in the cache.
+   */
+  lazy val employmentCollectionHodReadsHIP: Reads[EmploymentCollection] = readsHip orElseTry readsNps
 
   /*
-    If the second reads fails then return the first reads errors instead of the second.
+    If toggle switched on then for some reason has to be switched off then we have to cater
+    for payloads in HIP format even though toggle is off.
    */
-  private def combineReads(
-    firstReads: Reads[EmploymentCollection],
-    secondReads: Reads[EmploymentCollection]
-  ): Reads[EmploymentCollection] =
-    Reads { jsValue =>
-      Try(firstReads.reads(jsValue)) match {
-        case Success(value @ JsSuccess(_, _))       => value
-        case Success(firstReadsErrors @ JsError(_)) => trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
-        case Failure(e: JsResultException)          => trySecondReads(secondReads, jsValue, Left(e))
-        case Failure(exception)                     => throw exception
-      }
-    }
-
-  def employmentCollectionHodReads(hipToggle: Boolean): Reads[EmploymentCollection] =
-    if (hipToggle) {
-      combineReads(readsHip, readsNps)
-    } else {
-      combineReads(readsNps, readsHip)
-    }
+  lazy val employmentCollectionHodReadsNPS: Reads[EmploymentCollection] = readsNps orElseTry readsHip
 }

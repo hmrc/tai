@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.admin.HipToggle
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
+import uk.gov.hmrc.tai.model.api.EmploymentCollection.{employmentCollectionHodReadsHIP, employmentCollectionHodReadsNPS}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
@@ -78,7 +78,11 @@ class EmploymentService @Inject() (
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] = {
     val futureReads: Future[Reads[EmploymentCollection]] = featureFlagService.get(HipToggle).map { toggle =>
-      employmentCollectionHodReads(hipToggle = toggle.isEnabled)
+      if (toggle.isEnabled) {
+        employmentCollectionHodReadsHIP
+      } else {
+        employmentCollectionHodReadsNPS
+      }
     }
 
     val employmentsCollectionEitherT = EitherT(

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReads
+import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
 import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
@@ -90,7 +90,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
     "un-marshall employment json" when {
       "reading single employment from Hod" in {
         val employment =
-          getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+          getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReadsHIP)
 
         employment.employments mustBe sampleSingleEmployment
 
@@ -98,14 +98,14 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
       "reading single employment from Hod where format is NPS format instead of HIP format" in {
         val employment =
-          getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+          getJson("npsSingleEmployment").as[EmploymentCollection](employmentCollectionHodReadsHIP)
 
         employment.employments mustBe sampleSingleEmployment
       }
 
       "reading single employment from Hod where invalid payload returns HIP errors and not NPS errors" in {
         val actual = Try(
-          Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+          Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReadsHIP)
         )
 
         actual mustBe Failure(
@@ -117,7 +117,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
       "reading multiple employments from Hod" in {
         val employment =
-          getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReads(hipToggle = true))
+          getJson("hipDualEmployment").as[EmploymentCollection](employmentCollectionHodReadsHIP)
 
         employment.employments mustBe sampleDualEmployment
       }
@@ -125,7 +125,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
     "Remove any leading zeroes from a numeric 'taxDistrictNumber' field" in {
       val employment = getJson("hipLeadingZeroTaxDistrictNumber").as[EmploymentCollection](
-        employmentCollectionHodReads(hipToggle = true)
+        employmentCollectionHodReadsHIP
       )
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
@@ -133,7 +133,7 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
     "Correctly handle a non numeric 'taxDistrictNumber' field" in {
       val employment = getJson("hipNonNumericTaxDistrictNumber").as[EmploymentCollection](
-        employmentCollectionHodReads(hipToggle = true)
+        employmentCollectionHodReadsHIP
       )
       employment.employments.head.taxDistrictNumber mustBe "000"
       employment.employments.head.sequenceNumber mustBe 2
