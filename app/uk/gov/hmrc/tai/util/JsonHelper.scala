@@ -47,7 +47,7 @@ object JsonHelper {
       }
     }
   }
-  
+
   /*
     Same as orElse but if the second reads fails then return the first reads' errors instead of the second.
     Otherwise we wouldn't know what had failed.
