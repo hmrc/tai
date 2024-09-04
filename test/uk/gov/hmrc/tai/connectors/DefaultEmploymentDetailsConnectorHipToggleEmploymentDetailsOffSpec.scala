@@ -18,16 +18,20 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.Application
 import play.api.http.Status._
 import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import scala.concurrent.Future
 import scala.util.Random
 
 class DefaultEmploymentDetailsConnectorHipToggleEmploymentDetailsOffSpec extends ConnectorBaseSpec with NpsFormatter {
@@ -84,6 +88,13 @@ class DefaultEmploymentDetailsConnectorHipToggleEmploymentDetailsOffSpec extends
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
+    )
+  }
+
   "DefaultEmploymentDetailsConnector (HIP toggle off)" when {
     "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
@@ -92,12 +103,13 @@ class DefaultEmploymentDetailsConnectorHipToggleEmploymentDetailsOffSpec extends
           val employmentListJson = JsArray(Seq(employmentAsJson))
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(OK)
-                .withBody(employmentListJson.toString())
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .willReturn(
+                aResponse()
+                  .withStatus(OK)
+                  .withBody(employmentListJson.toString())
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue mustBe
