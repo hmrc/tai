@@ -20,11 +20,11 @@ import cats.data.EitherT
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.model.admin.HipToggle
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,7 +54,7 @@ class DefaultEmploymentDetailsConnector @Inject() (
   def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
-    EitherT(featureFlagService.get(HipToggle).flatMap { toggle =>
+    EitherT(featureFlagService.get(HipToggleEmploymentDetails).flatMap { toggle =>
       val (baseUrl, originatorId) =
         if (toggle.isEnabled) {
           (hipConfig.baseURL, hipConfig.originatorId)

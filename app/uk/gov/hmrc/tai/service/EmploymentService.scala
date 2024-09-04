@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
-import uk.gov.hmrc.tai.model.admin.HipToggle
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.{employmentCollectionHodReadsHIP, employmentCollectionHodReadsNPS}
 import uk.gov.hmrc.tai.model.domain._
@@ -77,13 +77,14 @@ class EmploymentService @Inject() (
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employments] = {
-    val futureReads: Future[Reads[EmploymentCollection]] = featureFlagService.get(HipToggle).map { toggle =>
-      if (toggle.isEnabled) {
-        employmentCollectionHodReadsHIP
-      } else {
-        employmentCollectionHodReadsNPS
+    val futureReads: Future[Reads[EmploymentCollection]] =
+      featureFlagService.get(HipToggleEmploymentDetails).map { toggle =>
+        if (toggle.isEnabled) {
+          employmentCollectionHodReadsHIP
+        } else {
+          employmentCollectionHodReadsNPS
+        }
       }
-    }
 
     val employmentsCollectionEitherT = EitherT(
       employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).value.flatMap {

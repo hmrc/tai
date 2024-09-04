@@ -29,7 +29,7 @@ import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, HodResponse, RtiConnector}
-import uk.gov.hmrc.tai.model.admin.HipToggle
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -85,8 +85,8 @@ class EmploymentServiceSpec extends BaseSpec {
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder, mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggle))).thenReturn(
-      Future.successful(FeatureFlag(HipToggle, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
     )
   }
 

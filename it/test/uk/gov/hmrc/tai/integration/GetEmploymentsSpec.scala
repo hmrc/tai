@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggle, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,8 +46,8 @@ class GetEmploymentsSpec extends IntegrationSpec {
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
       Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggle))).thenReturn(
-      Future.successful(FeatureFlag(HipToggle, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
     )
 
     server.stubFor(get(urlEqualTo(hipEmploymentUrl)).willReturn(ok(employmentHipJson)))

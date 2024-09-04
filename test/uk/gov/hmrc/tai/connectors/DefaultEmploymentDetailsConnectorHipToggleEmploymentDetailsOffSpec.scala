@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.util.Random
 
-class DefaultEmploymentDetailsConnectorHipToggleOffSpec extends ConnectorBaseSpec with NpsFormatter {
+class DefaultEmploymentDetailsConnectorHipToggleEmploymentDetailsOffSpec extends ConnectorBaseSpec with NpsFormatter {
 
   def intGen: Int = Random.nextInt(50)
 

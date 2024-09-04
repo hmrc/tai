@@ -27,7 +27,7 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.model.admin.HipToggle
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -86,8 +86,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggle))).thenReturn(
-      Future.successful(FeatureFlag(HipToggle, isEnabled = true))
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
     )
   }
 
