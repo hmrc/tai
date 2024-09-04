@@ -66,10 +66,10 @@ object EmploymentCollection {
   }
 
   def employmentHodReads: Reads[Employment] = new Reads[Employment] {
-    private def splitEmpRef(empRef: String): (String, String) =
+    private def splitEmpRef(empRef: String): JsResult[(String, String)] =
       empRef.split("/").toSeq match {
-        case Seq(taxDistrictNumber, payeNumber) => (taxDistrictNumber, payeNumber)
-        case _                                  => ("", empRef)
+        case Seq(taxDistrictNumber, payeNumber) => JsSuccess((taxDistrictNumber, payeNumber))
+        case _                                  => JsError(s"Invalid employerReference $empRef")
       }
 
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
@@ -82,31 +82,36 @@ object EmploymentCollection {
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-      val (taxDistrictNumber, payeNumber) = splitEmpRef(employerReference)
-      val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
-      val cessationPay = (json \ "cessationPayForEmployment").asOpt[BigDecimal]
-      val payrolledBenefit =
-        (json \ "payrolledCurrentYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledNextYear")
-          .asOpt[Boolean]
-          .getOrElse(false)
-      val receivingOccupationalPension = (json \ "activeOccupationalPension").as[Boolean]
-      val status = TaxCodeIncomeStatus.employmentStatus(json)
-      JsSuccess(
-        Employment(
-          name,
-          status,
-          payrollNumber,
-          startDate,
-          endDate,
-          Nil,
-          taxDistrictNumber,
-          payeNumber,
-          sequenceNumber,
-          cessationPay,
-          payrolledBenefit,
-          receivingOccupationalPension
-        )
-      )
+
+      splitEmpRef(employerReference) match {
+        case JsSuccess(Tuple2(taxDistrictNumber, payeNumber), _) =>
+          val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
+          val cessationPay = (json \ "cessationPayForEmployment").asOpt[BigDecimal]
+          val payrolledBenefit =
+            (json \ "payrolledCurrentYear").asOpt[Boolean].getOrElse(false) || (json \ "payrolledNextYear")
+              .asOpt[Boolean]
+              .getOrElse(false)
+          val receivingOccupationalPension = (json \ "activeOccupationalPension").as[Boolean]
+          val status = TaxCodeIncomeStatus.employmentStatus(json)
+          JsSuccess(
+            Employment(
+              name,
+              status,
+              payrollNumber,
+              startDate,
+              endDate,
+              Nil,
+              taxDistrictNumber,
+              payeNumber,
+              sequenceNumber,
+              cessationPay,
+              payrolledBenefit,
+              receivingOccupationalPension
+            )
+          )
+        case errors @ JsError(_) => errors
+      }
+
     }
   }
 

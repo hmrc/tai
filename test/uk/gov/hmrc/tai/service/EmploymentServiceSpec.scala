@@ -62,7 +62,7 @@ class EmploymentServiceSpec extends BaseSpec {
                                   |      "payeSequenceNumber": 1,
                                   |      "employerNumber": 13498962,
                                   |      "payeSchemeOperatorName": "HM Revenue & Customs Building 9 (Benton Park View)",
-                                  |      "employerReference": "120MA83247",
+                                  |      "employerReference": "120/MA83247",
                                   |      "employmentRecordType": "SECONDARY",
                                   |      "employmentStatus": "Live",
                                   |      "jobTitle": "Made up data",
