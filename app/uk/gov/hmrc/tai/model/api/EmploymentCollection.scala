@@ -66,6 +66,12 @@ object EmploymentCollection {
   }
 
   def employmentHodReads: Reads[Employment] = new Reads[Employment] {
+    private def splitEmpRef(empRef: String): (String, String) =
+      empRef.split("/").toSeq match {
+        case Seq(taxDistrictNumber, payeNumber) => (taxDistrictNumber, payeNumber)
+        case _                                  => ("", empRef)
+      }
+
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
     override def reads(json: JsValue): JsResult[Employment] = {
@@ -76,8 +82,7 @@ object EmploymentCollection {
       val payrollNumber = (json \ "worksNumber").asOpt[String]
       val startDate = (json \ "startDate").as[LocalDate](dateReadsFromHod)
       val endDate = (json \ "endDate").asOpt[LocalDate](dateReadsFromHod)
-      val taxDistrictNumber = employerReference.take(3)
-      val payeNumber = employerReference.substring(3)
+      val (taxDistrictNumber, payeNumber) = splitEmpRef(employerReference)
       val sequenceNumber = (json \ "employmentSequenceNumber").as[Int]
       val cessationPay = (json \ "cessationPayForEmployment").asOpt[BigDecimal]
       val payrolledBenefit =
