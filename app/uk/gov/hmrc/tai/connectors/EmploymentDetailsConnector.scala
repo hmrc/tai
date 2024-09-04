@@ -55,11 +55,11 @@ class DefaultEmploymentDetailsConnector @Inject() (
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     EitherT(featureFlagService.get(HipToggleEmploymentDetails).flatMap { toggle =>
-      val (baseUrl, originatorId) =
+      val (baseUrl, originatorId, extraInfo) =
         if (toggle.isEnabled) {
-          (hipConfig.baseURL, hipConfig.originatorId)
+          (hipConfig.baseURL, hipConfig.originatorId, Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)))
         } else {
-          (npsConfig.baseURL, npsConfig.originatorId)
+          (npsConfig.baseURL, npsConfig.originatorId, None)
         }
 
       def pathUrl(nino: Nino): String = if (toggle.isEnabled) {
@@ -68,18 +68,33 @@ class DefaultEmploymentDetailsConnector @Inject() (
         s"$baseUrl/person/$nino/employment/$year"
       }
       val urlToRead = pathUrl(nino)
-      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc)).value
+      httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc, extraInfo)).value
     })
 }
 
 trait EmploymentDetailsConnector {
-  def basicHeaders(originatorId: String, hc: HeaderCarrier): Seq[(String, String)] =
+  def basicHeaders(
+    originatorId: String,
+    hc: HeaderCarrier,
+    hipExtraInfo: Option[(String, String)]
+  ): Seq[(String, String)] = {
+    val extraFields: Seq[(String, String)] =
+      hipExtraInfo
+        .map { ei =>
+          Seq(
+            "clientId"     -> ei._1,
+            "clientSecret" -> ei._2
+          )
+        }
+        .fold[Seq[(String, String)]](Nil)(identity)
+
     Seq(
       "Gov-Uk-Originator-Id" -> originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
       "CorrelationId"        -> UUID.randomUUID().toString
-    )
+    ) ++ extraFields
+  }
 
   def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
     hc: HeaderCarrier

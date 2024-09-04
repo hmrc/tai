@@ -90,6 +90,8 @@ class HipConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
   override lazy val environment = ""
   override lazy val authorization = ""
   override lazy val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
+  lazy val clientId: String = servicesConfig.getConfString("hip-hod.clientId", "local")
+  lazy val clientSecret: String = servicesConfig.getConfString("hip-hod.clientSecret", "local")
 }
 
 @Singleton
