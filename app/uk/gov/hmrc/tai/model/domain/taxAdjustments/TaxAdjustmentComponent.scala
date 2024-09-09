@@ -103,7 +103,7 @@ object TaxAdjustmentComponent {
       TaxAdjustmentComponent(taxAdjustmentType, amount)
     }
 
-  val taxReliefFormattersReads = new Reads[Seq[TaxAdjustmentComponent]] {
+  private val taxReliefFormattersReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
       (json \ "totalLiability" \ "basicRateExtensions").asOpt[JsObject] match {
         case Some(js) =>
@@ -125,7 +125,7 @@ object TaxAdjustmentComponent {
       }
   }
 
-  val alreadyTaxedAtSourceReads = new Reads[Seq[TaxAdjustmentComponent]] {
+  private val alreadyTaxedAtSourceReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
       (json \ "totalLiability" \ "alreadyTaxedAtSource").asOpt[JsObject] match {
         case Some(js) =>
@@ -148,62 +148,56 @@ object TaxAdjustmentComponent {
       }
   }
 
-  val otherTaxDueReads = new Reads[Seq[TaxAdjustmentComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
-      (json \ "totalLiability" \ "otherTaxDue").asOpt[JsObject] match {
-        case Some(js) =>
-          val excessGiftAidTax = readTaxAdjustmentComponent(js, "excessGiftAidTax", ExcessGiftAidTax)
-          val excessWidowsAndOrphans = readTaxAdjustmentComponent(js, "excessWidowsAndOrphans", ExcessWidowsAndOrphans)
-          val pensionPaymentsAdjustment =
-            readTaxAdjustmentComponent(js, "pensionPaymentsAdjustment", PensionPaymentsAdjustment)
-          val childBenefit = readTaxAdjustmentComponent(js, "childBenefit", ChildBenefit)
+  private val otherTaxDueReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) =>
+    (json \ "totalLiability" \ "otherTaxDue").asOpt[JsObject] match {
+      case Some(js) =>
+        val excessGiftAidTax = readTaxAdjustmentComponent(js, "excessGiftAidTax", ExcessGiftAidTax)
+        val excessWidowsAndOrphans = readTaxAdjustmentComponent(js, "excessWidowsAndOrphans", ExcessWidowsAndOrphans)
+        val pensionPaymentsAdjustment =
+          readTaxAdjustmentComponent(js, "pensionPaymentsAdjustment", PensionPaymentsAdjustment)
+        val childBenefit = readTaxAdjustmentComponent(js, "childBenefit", ChildBenefit)
 
-          JsSuccess(
-            flattenTaxAdjustmentComponents(
-              excessGiftAidTax,
-              excessWidowsAndOrphans,
-              pensionPaymentsAdjustment,
-              childBenefit
-            )
+        JsSuccess(
+          flattenTaxAdjustmentComponents(
+            excessGiftAidTax,
+            excessWidowsAndOrphans,
+            pensionPaymentsAdjustment,
+            childBenefit
           )
-        case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
-      }
-  }
+        )
+      case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
+    }
 
-  val reliefsGivingBackTaxReads = new Reads[Seq[TaxAdjustmentComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
-      (json \ "totalLiability" \ "reliefsGivingBackTax").asOpt[JsObject] match {
-        case Some(js) =>
-          val enterpriseInvestment =
-            readTaxAdjustmentComponent(js, "enterpriseInvestmentSchemeRelief", EnterpriseInvestmentSchemeRelief)
-          val concession = readTaxAdjustmentComponent(js, "concessionalRelief", ConcessionalRelief)
-          val maintenancePayments = readTaxAdjustmentComponent(js, "maintenancePayments", MaintenancePayments)
-          val marriedCouplesAllowance =
-            readTaxAdjustmentComponent(js, "marriedCouplesAllowance", MarriedCouplesAllowance)
-          val doubleTaxation = readTaxAdjustmentComponent(js, "doubleTaxationRelief", DoubleTaxationRelief)
+  private val reliefsGivingBackTaxReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) =>
+    (json \ "totalLiability" \ "reliefsGivingBackTax").asOpt[JsObject] match {
+      case Some(js) =>
+        val enterpriseInvestment =
+          readTaxAdjustmentComponent(js, "enterpriseInvestmentSchemeRelief", EnterpriseInvestmentSchemeRelief)
+        val concession = readTaxAdjustmentComponent(js, "concessionalRelief", ConcessionalRelief)
+        val maintenancePayments = readTaxAdjustmentComponent(js, "maintenancePayments", MaintenancePayments)
+        val marriedCouplesAllowance =
+          readTaxAdjustmentComponent(js, "marriedCouplesAllowance", MarriedCouplesAllowance)
+        val doubleTaxation = readTaxAdjustmentComponent(js, "doubleTaxationRelief", DoubleTaxationRelief)
 
-          JsSuccess(
-            flattenTaxAdjustmentComponents(
-              enterpriseInvestment,
-              concession,
-              maintenancePayments,
-              marriedCouplesAllowance,
-              doubleTaxation
-            )
+        JsSuccess(
+          flattenTaxAdjustmentComponents(
+            enterpriseInvestment,
+            concession,
+            maintenancePayments,
+            marriedCouplesAllowance,
+            doubleTaxation
           )
-        case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
-      }
-  }
+        )
+      case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
+    }
 
   // TODO: DDCNL-9376 Need version of tax-account toggled on
-  val taxAdjustmentComponentReads = new Reads[Seq[TaxAdjustmentComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
-      val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
-      val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
-      val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
-      val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
-      JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
-    }
+  val taxAdjustmentComponentReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) => {
+    val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
+    val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
+    val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
+    val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
+    JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
   }
 }
 

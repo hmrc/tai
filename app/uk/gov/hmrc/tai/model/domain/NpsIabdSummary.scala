@@ -30,6 +30,7 @@ object NpsIabdSummary {
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
