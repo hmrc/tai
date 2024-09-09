@@ -18,20 +18,23 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
-import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import java.net.URL
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
+class TaxAccountConnectorHipToggleOffSpec extends ConnectorBaseSpec with WireMockHelper {
 
   trait ConnectorSetup {
 
@@ -52,7 +55,9 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
       inject[HttpHandler],
       npsConfig,
       desConfig,
-      taxAccountUrls
+      taxAccountUrls,
+      app.injector.instanceOf[HipConfig],
+      mockFeatureFlagService
     )
 
     val taxYear: TaxYear = TaxYear()
@@ -90,6 +95,13 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
         )
     )
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+  }
 
   "Tax Account Connector" when {
 
