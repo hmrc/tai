@@ -52,7 +52,7 @@ object CodingComponent {
 
   private type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]
 
-  val incomeSourceReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
+  private val incomeSourceReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
     val codingComponents: Seq[CodingComponent] = (json \ "incomeSources").validate[JsArray] match {
       case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson).toSeq
       case _                            => Seq.empty[CodingComponent]
@@ -161,7 +161,7 @@ object CodingComponent {
     34 -> BRDifferenceTaxReduction
   )
 
-  val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
+  private val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
       val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
       val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)

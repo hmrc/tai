@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import java.time.LocalDate
 import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.IabdSummary.iabdSummaryReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
+
+import java.time.LocalDate
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
@@ -187,7 +188,7 @@ object TaxCodeIncome {
     }
   }
 
-  val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = new Reads[TaxCodeIncome] {
+  private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = new Reads[TaxCodeIncome] {
     override def reads(json: JsValue): JsSuccess[TaxCodeIncome] = {
       val incomeSourceType = taxCodeIncomeType(json)
       val employmentId = (json \ "employmentId").asOpt[Int]
@@ -220,26 +221,25 @@ object TaxCodeIncome {
   }
 
   // TODO: DDCNL-9376 Need version of tax-account toggled on
-  val taxCodeIncomeSourcesReads = new Reads[Seq[TaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxCodeIncome]] = {
-      val taxCodeIncomes = (json \ "incomeSources")
-        .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
-        .getOrElse(Seq.empty[TaxCodeIncome])
-      JsSuccess(taxCodeIncomes)
-    }
+  val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
+    val taxCodeIncomes = (json \ "incomeSources")
+      .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
+      .getOrElse(Seq.empty[TaxCodeIncome])
+    JsSuccess(taxCodeIncomes)
   }
 
   private def taxCodeIncomeType(json: JsValue): TaxComponentType = {
-    def indicator(indicatorType: String) = (json \ indicatorType).asOpt[Boolean].getOrElse(false)
+    def indicator(indicatorType: String): Boolean = (json \ indicatorType).asOpt[Boolean].getOrElse(false)
 
-    if (indicator("pensionIndicator"))
+    if (indicator("pensionIndicator")) {
       PensionIncome
-    else if (indicator("jsaIndicator"))
+    } else if (indicator("jsaIndicator")) {
       JobSeekerAllowanceIncome
-    else if (indicator("otherIncomeSourceIndicator"))
+    } else if (indicator("otherIncomeSourceIndicator")) {
       OtherIncome
-    else
+    } else {
       EmploymentIncome
+    }
   }
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
