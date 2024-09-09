@@ -40,6 +40,7 @@ object CodingComponent {
       (JsPath \ "inputAmount").writeNullable[BigDecimal]
   )(unapplyCodingComponentForApiJson _)
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)

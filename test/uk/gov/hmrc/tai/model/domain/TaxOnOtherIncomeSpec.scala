@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, Json}
-import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryReads, taxOnOtherIncomeRead, taxOnOtherIncomeReads}
+import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryReads, taxOnOtherIncomeRead}
 
 class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
 
@@ -154,7 +154,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe Some(TaxOnOtherIncome(40))
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe Some(40)
       }
 
       "non-coded income is present and equal to highest rate income " in {
@@ -199,7 +199,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe Some(TaxOnOtherIncome(400))
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe Some(400)
       }
 
       "non-coded income is present and scattered in multiple rate bands " in {
@@ -250,7 +250,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe Some(TaxOnOtherIncome(2600))
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe Some(2600)
       }
 
       "non-coded income is present and highest rate is 20%" in {
@@ -289,7 +289,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe Some(TaxOnOtherIncome(20))
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe Some(20)
       }
 
       "non-coded income is not present" in {
@@ -321,8 +321,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe None
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe None
       }
 
       "non-coded income is present and tax bands are not present" in {
@@ -352,7 +351,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe None
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe None
       }
 
       "non-coded income is present but tax bands income is null" in {
@@ -390,8 +389,7 @@ class TaxOnOtherIncomeSpec extends PlaySpec with MockitoSugar {
             )
           )
         )
-
-        json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) mustBe None
+        json.as[Option[BigDecimal]](taxOnOtherIncomeRead) mustBe None
       }
     }
   }

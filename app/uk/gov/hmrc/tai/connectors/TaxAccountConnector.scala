@@ -57,17 +57,9 @@ class DefaultTaxAccountConnector @Inject() (
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends TaxAccountConnector {
-  private def getUuid = UUID.randomUUID().toString
+  private def getUuid: String = UUID.randomUUID().toString
 
-//  private def hcWithHodHeaders(implicit hc: HeaderCarrier) =
-//    Seq(
-//      "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
-//      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-//      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-//      "CorrelationId"        -> getUuid
-//    )
-
-  private def hcWithDesHeaders(implicit hc: HeaderCarrier) =
+  private def hcWithDesHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
       "Gov-Uk-Originator-Id" -> desConfig.originatorId,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),

@@ -117,9 +117,11 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
       }
   }
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
     taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -149,6 +151,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
     }
   }
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
 
     val taxAdjustmentComponents = taxAccountDetails.map(

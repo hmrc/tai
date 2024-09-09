@@ -195,6 +195,7 @@ object TaxAdjustmentComponent {
       }
   }
 
+  // TODO: DDCNL-9376 Need version of tax-account toggled on
   val taxAdjustmentComponentReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] = {
       val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
