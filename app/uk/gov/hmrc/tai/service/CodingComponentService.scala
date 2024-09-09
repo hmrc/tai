@@ -26,6 +26,8 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// TODO: DDCNL-9376: Need to add toggle service
+
 @Singleton
 class CodingComponentService @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext) {
 

@@ -188,39 +188,37 @@ object TaxCodeIncome {
     }
   }
 
-  private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = new Reads[TaxCodeIncome] {
-    override def reads(json: JsValue): JsSuccess[TaxCodeIncome] = {
-      val incomeSourceType = taxCodeIncomeType(json)
-      val employmentId = (json \ "employmentId").asOpt[Int]
-      val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
-      val description = incomeSourceType.toString
-      val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
-      val name = (json \ "name").asOpt[String].getOrElse("")
-      val basisOperation =
-        (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
-      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
-      val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(
-        TaxCodeIncome(
-          incomeSourceType,
-          employmentId,
-          amount,
-          description,
-          taxCode,
-          name,
-          basisOperation,
-          status,
-          iyaCy,
-          totalIya,
-          iyaCyPlusOne
-        )
+  private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = (json: JsValue) => {
+    val incomeSourceType = taxCodeIncomeType(json)
+    val employmentId = (json \ "employmentId").asOpt[Int]
+    val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
+    val description = incomeSourceType.toString
+    val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
+    val name = (json \ "name").asOpt[String].getOrElse("")
+    val basisOperation =
+      (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
+    val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
+    val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    JsSuccess(
+      TaxCodeIncome(
+        incomeSourceType,
+        employmentId,
+        amount,
+        description,
+        taxCode,
+        name,
+        basisOperation,
+        status,
+        iyaCy,
+        totalIya,
+        iyaCyPlusOne
       )
-    }
+    )
   }
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
     val taxCodeIncomes = (json \ "incomeSources")
       .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))

@@ -27,11 +27,11 @@ case class TaxOnOtherIncome(tax: BigDecimal)
 object TaxOnOtherIncome {
   private val NonCodedIncome = 19
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val taxOnOtherIncomeRead: Reads[Option[BigDecimal]] = (json: JsValue) =>
     JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val taxAccountSummaryReads: Reads[BigDecimal] = (json: JsValue) => {
     val taxOnOtherIncome =
       json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)

@@ -31,6 +31,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// TODO: DDCNL-9376: Need to add toggle service
 @Singleton
 class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext) {
 
@@ -49,6 +50,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
       }
   }
 
+  // TODO: DDCNL-9376 Use toggle service
   def reliefsGivingBackTaxComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val reliefsGivingBackTaxComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -71,6 +73,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
       }
   }
 
+  // TODO: DDCNL-9376 Use toggle service
   def otherTaxDueComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val otherTaxDueComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -93,6 +96,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
       }
   }
 
+  // TODO: DDCNL-9376 Use toggle service
   def alreadyTaxedAtSourceComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val alreadyTaxedSourcesComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -117,11 +121,11 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
       }
   }
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Use toggle service
   def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
     taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeRead))
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Use toggle service
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -151,9 +155,8 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(impl
     }
   }
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
-  def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
-
+  // TODO: DDCNL-9376 Use toggle service
+  private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val taxAdjustmentComponents = taxAccountDetails.map(
       _.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads)
     )

@@ -191,7 +191,7 @@ object TaxAdjustmentComponent {
       case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
     }
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val taxAdjustmentComponentReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) => {
     val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
     val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)

@@ -41,7 +41,7 @@ case class OtherNonTaxCodeIncome(
 object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
     val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
     JsSuccess(nonTaxCodeIncomes(extractedIabds))

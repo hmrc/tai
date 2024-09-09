@@ -21,7 +21,7 @@ import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
 case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)
 
 object NpsIabdSummary {
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
     val categories =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
@@ -30,7 +30,7 @@ object NpsIabdSummary {
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
-  // TODO: DDCNL-9376 Need version of tax-account toggled on
+  // TODO: DDCNL-9376 Duplicate reads
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
