@@ -34,25 +34,20 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
     }
 
   private def sensitiveReadsJsValue[A <: JsValue: Format]: Reads[SensitiveJsValue] = {
-    case jsString @ JsString(s) =>
-      if (mongoConfig.mongoEncryptionEnabled) {
-        Try(encrypterDecrypter.decrypt(Crypted(s))) match {
-          case Success(plainText) =>
-            JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
+    case JsString(s) =>
+      Try(encrypterDecrypter.decrypt(Crypted(s))) match {
+        case Success(plainText) =>
+          JsSuccess(SensitiveJsValue(Json.parse(plainText.value).as[A]))
 
-          /*
+        /*
             Both of the below cases cater for two scenarios where the value is not encrypted:-
               either an unencrypted JsString or any other JsValue.
             This is to avoid breaking users' session in case data written before encryption introduced.
-           */
+         */
 
-          case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
-          case Failure(exception)            => throw exception
-        }
-      } else {
-        JsSuccess(SensitiveJsValue(jsString))
+        case Failure(_: SecurityException) => JsSuccess(SensitiveJsValue(JsString(s).as[A]))
+        case Failure(exception)            => throw exception
       }
-
     case js: JsValue => JsSuccess(SensitiveJsValue(js))
   }
 
