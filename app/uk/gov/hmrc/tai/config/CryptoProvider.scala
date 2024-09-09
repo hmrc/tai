@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.nps
+package uk.gov.hmrc.tai.config
 
-import play.api.libs.json._
+import play.api.Configuration
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Decrypter, Encrypter}
 
-case class NpsIabdRoot(
-  nino: String,
-  employmentSequenceNumber: Option[Int] = None,
-  `type`: Int,
-  grossAmount: Option[BigDecimal] = None,
-  netAmount: Option[BigDecimal] = None,
-  source: Option[Int] = None,
-  receiptDate: Option[NpsDate] = None,
-  captureDate: Option[NpsDate] = None
-)
+import javax.inject.{Inject, Provider, Singleton}
 
-object NpsIabdRoot {
-  implicit val format: OFormat[NpsIabdRoot] = Json.format[NpsIabdRoot]
+@Singleton
+class CryptoProvider @Inject() (
+  configuration: Configuration
+) extends Provider[Encrypter with Decrypter] {
+
+  override def get(): Encrypter with Decrypter =
+    new ApplicationCrypto(configuration.underlying).JsonCrypto
 }
