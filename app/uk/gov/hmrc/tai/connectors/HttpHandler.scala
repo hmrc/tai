@@ -21,7 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
-import play.api.libs.json.{JsArray, JsValue, Writes}
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.metrics.Metrics
@@ -39,7 +39,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     EitherT(httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = url, headers = headers))
       .map { response =>
-        HodResponse(response.json.as[JsArray], response.header("ETag").map(_.toInt))
+        HodResponse(response.json, response.header("ETag").map(_.toInt))
       }
 
   def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(implicit

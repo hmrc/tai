@@ -31,3 +31,10 @@ case object TaxCodeHistoryFromIfToggle extends FeatureFlagName {
     "get the tax code history from IF and not DES"
   )
 }
+
+case object HipToggleEmploymentDetails extends FeatureFlagName {
+  override val name: String = "hip-toggle-employment-details"
+  override val description: Option[String] = Some(
+    "Enable/disable use of HIP instead of Squid for the employment details API"
+  )
+}

@@ -83,6 +83,18 @@ class NpsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
 }
 
 @Singleton
+class HipConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+  lazy val path: String = servicesConfig.getConfString("hip-hod.path", "")
+
+  override lazy val baseURL: String = s"${servicesConfig.baseUrl("hip-hod")}$path"
+  override lazy val environment = ""
+  override lazy val authorization = ""
+  override lazy val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
+  lazy val clientId: String = servicesConfig.getConfString("hip-hod.clientId", "local")
+  lazy val clientSecret: String = servicesConfig.getConfString("hip-hod.clientSecret", "local")
+}
+
+@Singleton
 class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
   lazy val mongoEncryptionEnabled: Boolean =

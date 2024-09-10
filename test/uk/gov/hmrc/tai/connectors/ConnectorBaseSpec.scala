@@ -32,7 +32,7 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, RequestId, SessionId}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.service.LockService
 import uk.gov.hmrc.tai.util.{FakeAsyncCacheApi, WireMockHelper}
 
@@ -59,12 +59,15 @@ trait ConnectorBaseSpec
         "microservice.services.des-hod.host"                -> "127.0.0.1",
         "microservice.services.nps-hod.port"                -> server.port(),
         "microservice.services.nps-hod.host"                -> "127.0.0.1",
+        "microservice.services.hip-hod.port"                -> server.port(),
+        "microservice.services.hip-hod.host"                -> "127.0.0.1",
         "microservice.services.citizen-details.port"        -> server.port(),
         "microservice.services.paye.port"                   -> server.port(),
         "microservice.services.file-upload.port"            -> server.port(),
         "microservice.services.file-upload-frontend.port"   -> server.port(),
         "microservice.services.pdf-generator-service.port"  -> server.port(),
         "microservice.services.nps-hod.originatorId"        -> npsOriginatorId,
+        "microservice.services.hip-hod.originatorId"        -> hipOriginatorId,
         "microservice.services.des-hod.originatorId"        -> desOriginatorId,
         "microservice.services.des-hod.da-pta.originatorId" -> desPtaOriginatorId,
         "microservice.services.if-hod.port"                 -> server.port(),
@@ -87,6 +90,9 @@ trait ConnectorBaseSpec
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
       Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
     )
   }
 

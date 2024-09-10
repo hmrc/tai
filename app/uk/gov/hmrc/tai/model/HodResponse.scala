@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model
 
 import play.api.libs.json._
 
-case class HodResponse(body: JsArray, etag: Option[Int])
+case class HodResponse(body: JsValue, etag: Option[Int])
 
 object HodResponse {
   implicit val format: OFormat[HodResponse] = Json.format[HodResponse]
