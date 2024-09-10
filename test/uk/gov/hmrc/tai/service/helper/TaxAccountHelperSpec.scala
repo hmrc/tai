@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchersSugar.eqTo
-import play.api.libs.json.{JsArray, JsNull, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
@@ -34,77 +34,71 @@ class TaxAccountHelperSpec extends BaseSpec {
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
   private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector, mockFeatureFlagService)
 
-  private val taxAccountSummaryNpsJson = Json.obj(
-    "totalLiability" -> Json.obj(
-      "totalLiability" -> 1111,
-      "basicRateExtensions" -> Json.obj(
-        "personalPensionPayment"       -> 600,
-        "personalPensionPaymentRelief" -> 100,
-        "giftAidPaymentsRelief"        -> 200
-      ),
-      "reliefsGivingBackTax" -> Json.obj(
-        "enterpriseInvestmentSchemeRelief" -> 100,
-        "concessionalRelief"               -> 100.50,
-        "maintenancePayments"              -> 200,
-        "marriedCouplesAllowance"          -> 300,
-        "doubleTaxationRelief"             -> 400
-      ),
-      "otherTaxDue" -> Json.obj(
-        "excessGiftAidTax"          -> 100,
-        "excessWidowsAndOrphans"    -> 100,
-        "pensionPaymentsAdjustment" -> 200,
-        "childBenefit"              -> 300
-      ),
-      "alreadyTaxedAtSource" -> Json.obj(
-        "taxOnBankBSInterest"               -> 100,
-        "taxCreditOnUKDividends"            -> 100,
-        "taxCreditOnForeignInterest"        -> 200,
-        "taxCreditOnForeignIncomeDividends" -> 300
-      ),
-      "nonSavings" -> Json.obj(
-        "totalIncome" -> Json.obj(
-          "iabdSummaries" -> JsArray(
-            Seq(
-              Json.obj(
-                "amount"         -> 100,
-                "type"           -> 19,
-                "npsDescription" -> "Non-Coded Income",
-                "employmentId"   -> JsNull
-              ),
-              Json.obj(
-                "amount"         -> 100,
-                "type"           -> 84,
-                "npsDescription" -> "Job-Seeker Allowance",
-                "employmentId"   -> JsNull
-              )
-            )
-          )
-        ),
-        "taxBands" -> JsArray(
-          Seq(
-            Json.obj(
-              "bandType" -> "B",
-              "income"   -> 1000,
-              "taxCode"  -> "BR",
-              "rate"     -> 40
-            ),
-            Json.obj(
-              "bandType" -> "D0",
-              "taxCode"  -> "BR",
-              "income"   -> 1000,
-              "rate"     -> 20
-            )
-          )
-        )
-      )
-    )
-  )
+  private val taxAccountSummaryNpsJson = Json
+    .parse("""{
+             |  "nationalInsuranceNumber": "AA000003",
+             |  "taxYear": 2023,
+             |  "totalLiabilityDetails": {
+             |    "nonSavings": {
+             |      "totalIncomeDetails": {
+             |        "summaryIABDDetailsList": [],
+             |        "summaryIABDEstimatedPayDetailsList": [
+             |          {
+             |            "amount": 100,
+             |            "type": "Non-Coded Income (019)"
+             |          },
+             |          {
+             |            "amount": 100,
+             |            "type": "Job Seekers Allowance (084)"
+             |          }
+             |        ]
+             |      },
+             |      "taxBandDetails": [
+             |        {
+             |          "bandType": "B",
+             |          "taxCode": "BR",
+             |          "icome": 1000,
+             |          "rate": 40
+             |        },
+             |        {
+             |          "bandType": "D0",
+             |          "taxCode": "BR",
+             |          "icome": 1000,
+             |          "rate": 20
+             |        }
+             |      ]
+             |    },
+             |    "basicRateExtensionsDetails": {
+             |      "summaryIABDDetailsList": [],
+             |      "personalPensionPayment": 600,
+             |      "personalPensionPaymentRelief": 100,
+             |      "giftAidPaymentsRelief": 200
+             |    },
+             |    "reliefsGivingBackTaxDetails": {
+             |      "summaryIABDDetailsList": [],
+             |      "enterpriseInvestmentSchemeRelief": 100,
+             |      "concessionalRelief": 100.5,
+             |      "maintenancePayments": 200,
+             |      "marriedCouplesAllowance": 300,
+             |      "doubleTaxationRelief": 400
+             |    },
+             |    "otherTaxDueDetails": {
+             |      "summaryIABDDetailsList": [],
+             |      "excessGiftAidTax": 100,
+             |      "excessWidowsAndOrphans": 100,
+             |      "pensionPaymentsAdjustment": 200,
+             |      "childBenefit": 300
+             |    },
+             |    "totalLiability": 1111
+             |  }
+             |}""".stripMargin)
+    .as[JsObject]
 
   private val taxAccountDetails = Future.successful(taxAccountSummaryNpsJson)
   private val emptyTaxAccountDetails = Future.successful(Json.obj())
   private def createJsonWithDeductions(deductions: JsArray) = {
-    val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
-    taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
+    val incomeSources = Json.arr(Json.obj("deductionsDetails" -> deductions))
+    taxAccountSummaryNpsJson ++ Json.obj("employmentDetailsList" -> incomeSources)
   }
 
   override protected def beforeEach(): Unit = {
@@ -118,6 +112,9 @@ class TaxAccountHelperSpec extends BaseSpec {
   "TotalEstimatedTax" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
+
+        println("\nHELLO!!!\n" + Json.stringify(taxAccountSummaryNpsJson))
+
         val underpaymentDeduction = Json.arr(
           Json.obj(
             "npsDescription" -> "Underpayment from previous year",

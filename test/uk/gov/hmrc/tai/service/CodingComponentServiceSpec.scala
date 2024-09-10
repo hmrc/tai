@@ -138,45 +138,42 @@ class CodingComponentServiceSpec extends BaseSpec {
     }
   }
 
-  private val npsJsonResponse: JsObject = Json.obj(
-    "taxAccountId" -> JsString("id"),
-    "nino"         -> JsString(nino.nino),
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"     -> JsNumber(1),
-          "employmentType"   -> JsNumber(1),
-          "taxCode"          -> JsString("1150L"),
-          "pensionIndicator" -> JsBoolean(true),
-          "basisOperation"   -> JsNumber(1),
-          "employmentStatus" -> JsNumber(1),
-          "name"             -> JsString("employer"),
-          "deductions" -> JsArray(
-            Seq(
-              Json.obj(
-                "npsDescription" -> JsString("Estimated Tax You Owe This Year"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(45)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Underpayment form previous year"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(35)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Outstanding Debt Restriction"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(41)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Something we aren't interested in"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(888)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
+  private val npsJsonResponse: JsObject = Json
+    .parse("""{
+             |  "nationalInsuranceNumber": "AA000003",
+             |  "taxAccountIdentifier": "id",
+             |  "taxYear": 2023,
+             |  "employmentDetailsList": [
+             |    {
+             |      "employmentSequenceNumber": 1,
+             |      "employmentRecordType": "PRIMARY",
+             |      "employmentStatus": "Ceased",
+             |      "activePension": true,
+             |      "payeSchemeOperatorName": "employer",
+             |      "taxCode": "1150L",
+             |      "deductionsDetails": [
+             |        {
+             |          "type": "Non-qualifying Relocation Expenses (045)",
+             |          "summaryIABDDetailsList": [],
+             |          "adjustedAmount": 10
+             |        },
+             |        {
+             |          "type": "Van Benefit (035)",
+             |          "summaryIABDDetailsList": [],
+             |          "adjustedAmount": 10
+             |        },
+             |        {
+             |          "type": "Educational Services (041)",
+             |          "summaryIABDDetailsList": [],
+             |          "adjustedAmount": 10
+             |        },
+             |        {
+             |          "summaryIABDDetailsList": [],
+             |          "adjustedAmount": 10
+             |        }
+             |      ]
+             |    }
+             |  ]
+             |}""".stripMargin)
+    .as[JsObject]
 }
