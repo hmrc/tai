@@ -42,7 +42,7 @@ import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 import scala.util.Random
 
 class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
-
+  private val nino: Nino = new Generator(new Random).nextNino
   "TaxCodeHistory reads" must {
     "return a TaxCodeHistory given valid Json" in {
       val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
@@ -82,6 +82,4 @@ class TaxCodeHistorySpec extends PlaySpec with TaxCodeHistoryConstants {
       taxCodeHistory.applicableTaxCodeRecords mustBe Seq(primaryEmployment)
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
 }

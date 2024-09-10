@@ -18,9 +18,9 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, _}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
@@ -28,8 +28,11 @@ import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateRespons
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
+import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.service.SensitiveFormatService
+import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
@@ -40,14 +43,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingIabdConnector @Inject() (
   @Named("default") underlying: IabdConnector,
   cachingConnector: CachingConnector,
-  invalidateCaches: InvalidateCaches
-) extends IabdConnector {
+  invalidateCaches: InvalidateCaches,
+  sensitiveFormatService: SensitiveFormatService
+)(implicit ec: ExecutionContext)
+    extends IabdConnector {
 
   override def iabds(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cachingConnector.cache(s"iabds-$nino-${taxYear.year}") {
-      underlying
-        .iabds(nino: Nino, taxYear: TaxYear)
-    }
+    cachingConnector
+      .cache(s"iabds-$nino-${taxYear.year}") {
+        underlying
+          .iabds(nino: Nino, taxYear: TaxYear)
+          .map(SensitiveJsValue)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
 
   override def updateTaxCodeAmount(
     nino: Nino,
@@ -66,7 +74,7 @@ class CachingIabdConnector @Inject() (
   ): Future[List[NpsIabdRoot]] =
     cachingConnector.cache(s"iabds-$nino-$year-$iabdType") {
       underlying.getIabdsForType(nino, year, iabdType)
-    }
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[List[NpsIabdRoot]], implicitly)
 
   override def updateExpensesData(
     nino: Nino,
@@ -164,7 +172,6 @@ class DefaultIabdConnector @Inject() (
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier
   ): Future[List[NpsIabdRoot]] = {
-
     val urlToRead = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
     httpHandler
       .getFromApi(url = urlToRead, api = APITypes.DesIabdSpecificAPI, headers = headersForGetIabdsForType)

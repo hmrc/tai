@@ -24,7 +24,9 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
+import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
+import uk.gov.hmrc.tai.service.SensitiveFormatService
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CachingEmploymentDetailsConnector @Inject() (
   @Named("default") underlying: EmploymentDetailsConnector,
-  cachingConnector: CachingConnector
+  cachingConnector: CachingConnector,
+  sensitiveFormatService: SensitiveFormatService
 ) extends EmploymentDetailsConnector {
 
   override def getEmploymentDetailsAsEitherT(nino: Nino, year: Int)(implicit
@@ -40,7 +43,7 @@ class CachingEmploymentDetailsConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
     cachingConnector.cacheEitherT(s"employment-details-$nino-$year") {
       underlying.getEmploymentDetailsAsEitherT(nino, year)
-    }
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[HodResponse], implicitly)
 }
 
 class DefaultEmploymentDetailsConnector @Inject() (
@@ -67,6 +70,7 @@ class DefaultEmploymentDetailsConnector @Inject() (
       } else {
         s"$baseUrl/person/$nino/employment/$year"
       }
+
       val urlToRead = pathUrl(nino)
       httpHandler.getFromApiAsEitherT(urlToRead, basicHeaders(originatorId, hc, extraInfo)).value
     })

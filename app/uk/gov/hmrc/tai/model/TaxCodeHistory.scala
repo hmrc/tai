@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model
 import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
-import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.json._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
@@ -40,7 +40,6 @@ case class TaxCodeHistory(nino: String, taxCodeRecord: Seq[TaxCodeRecord]) {
 }
 
 object TaxCodeHistory {
-
   implicit val reads: Reads[TaxCodeHistory] = (
     (JsPath \ "nino").read[String] and
       (JsPath \ "taxCodeRecord").read[Seq[TaxCodeRecord]]
