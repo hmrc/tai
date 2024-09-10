@@ -28,6 +28,7 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
+import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 

@@ -27,6 +27,8 @@ import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.SensitiveFormatService
+import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.util.UUID
@@ -35,17 +37,27 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CachingTaxAccountConnector @Inject() (
   @Named("default") underlying: TaxAccountConnector,
-  cachingConnector: CachingConnector
-) extends TaxAccountConnector {
+  cachingConnector: CachingConnector,
+  sensitiveFormatService: SensitiveFormatService
+)(implicit ec: ExecutionContext)
+    extends TaxAccountConnector {
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cachingConnector.cache(s"tax-account-$nino-${taxYear.year}") {
-      underlying.taxAccount(nino: Nino, taxYear: TaxYear)
-    }
+    cachingConnector
+      .cache(s"tax-account-$nino-${taxYear.year}") {
+        underlying
+          .taxAccount(nino: Nino, taxYear: TaxYear)
+          .map(SensitiveJsValue)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] =
-    cachingConnector.cache(s"tax-account-history-$nino-$iocdSeqNo") {
-      underlying.taxAccountHistory(nino: Nino, iocdSeqNo: Int)
-    }
+    cachingConnector
+      .cache(s"tax-account-history-$nino-$iocdSeqNo") {
+        underlying
+          .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
+          .map(SensitiveJsValue)
+      }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
+      .map(_.decryptedValue)
 }
 
 class DefaultTaxAccountConnector @Inject() (

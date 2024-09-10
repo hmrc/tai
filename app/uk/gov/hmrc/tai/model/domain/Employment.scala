@@ -38,8 +38,6 @@ case class Employment(
   receivingOccupationalPension: Boolean
 ) {
 
-  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
-
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
     annualAccounts.exists(annualAccount =>
       annualAccount.realTimeStatus == TemporarilyUnavailable && annualAccount.taxYear == year
