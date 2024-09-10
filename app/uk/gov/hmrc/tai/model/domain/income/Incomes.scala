@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityHipToggleOffReads
 import uk.gov.hmrc.tai.model.domain._
 
 case class UntaxedInterest(
@@ -42,8 +42,8 @@ object OtherNonTaxCodeIncome {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
   // TODO: DDCNL-9376 Duplicate reads
-  val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
-    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+  val otherNonTaxCodeIncomeHipToggleOffReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads)
     JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 

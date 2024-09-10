@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsSuccess, JsValue, Reads}
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.totalLiabilityIabds
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.totalLiabilityIabdsHipToggleOff
 import uk.gov.hmrc.tai.model.domain.RateBand.incomeAndRateBands
 
 import scala.annotation.tailrec
@@ -28,11 +28,11 @@ object TaxOnOtherIncome {
   private val NonCodedIncome = 19
 
   // TODO: DDCNL-9376 Duplicate reads
-  val taxOnOtherIncomeRead: Reads[Option[BigDecimal]] = (json: JsValue) =>
+  val taxOnOtherIncomeHipToggleOffReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
     JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
 
   // TODO: DDCNL-9376 Duplicate reads
-  val taxAccountSummaryReads: Reads[BigDecimal] = (json: JsValue) => {
+  val taxAccountSummaryHipToggleOffReads: Reads[BigDecimal] = (json: JsValue) => {
     val taxOnOtherIncome =
       json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)
     val totalLiabilityTax = (json \ "totalLiability" \ "totalLiability").asOpt[BigDecimal].getOrElse(BigDecimal(0))
@@ -41,7 +41,7 @@ object TaxOnOtherIncome {
   }
 
   private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
-    val iabdSummaries = totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
+    val iabdSummaries = totalLiabilityIabdsHipToggleOff(json, "totalIncome", Seq("nonSavings"))
     val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
 
     @tailrec

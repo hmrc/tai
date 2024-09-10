@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqReads
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.incomeCategorySeqHipToggleOffReads
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -99,7 +99,7 @@ class TotalTaxServiceSpec extends BaseSpec {
       val result = sut.totalTax(nino, TaxYear()).futureValue
 
       result.incomeCategories must contain theSameElementsAs incomeCategories.as[Seq[IncomeCategory]](
-        incomeCategorySeqReads
+        incomeCategorySeqHipToggleOffReads
       )
       result.reliefsGivingBackTax mustBe None
       result.otherTaxDue mustBe None

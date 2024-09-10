@@ -17,11 +17,15 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json._
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -31,7 +35,16 @@ class CodingComponentServiceSpec extends BaseSpec {
 
   private val emptyJson = Json.arr()
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val taxCodeId = 1
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+  }
 
   "codingComponents" must {
     "return empty list of coding components" when {
@@ -39,7 +52,7 @@ class CodingComponentServiceSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe Nil
@@ -57,7 +70,7 @@ class CodingComponentServiceSpec extends BaseSpec {
           CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction")
         )
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
@@ -70,7 +83,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(emptyJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe Nil
@@ -86,7 +99,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(basicIncomeSourcesJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -101,7 +114,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(basicTotalLiabilityJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -118,7 +131,7 @@ class CodingComponentServiceSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(combinedJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected

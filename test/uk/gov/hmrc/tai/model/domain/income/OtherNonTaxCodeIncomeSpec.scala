@@ -20,7 +20,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeHipToggleOffReads
 
 import scala.util.Random
 
@@ -33,7 +33,7 @@ class OtherNonTaxCodeIncomeSpec extends PlaySpec {
           "taxAccountId" -> "id",
           "nino"         -> nino.nino
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeHipToggleOffReads) mustBe empty
       }
 
       "total liability is null in tax account" in {
@@ -42,7 +42,7 @@ class OtherNonTaxCodeIncomeSpec extends PlaySpec {
           "nino"           -> nino.nino,
           "totalLiability" -> JsNull
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeHipToggleOffReads) mustBe empty
       }
     }
 
@@ -57,7 +57,7 @@ class OtherNonTaxCodeIncomeSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads) mustBe Seq(
+        json.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeHipToggleOffReads) mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),

@@ -17,8 +17,12 @@
 package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsArray, JsNull, Json}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -26,9 +30,9 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 
 class TaxAccountHelperSpec extends BaseSpec {
-
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
-  private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector)
+  private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector, mockFeatureFlagService)
 
   private val taxAccountSummaryNpsJson = Json.obj(
     "totalLiability" -> Json.obj(
@@ -101,6 +105,14 @@ class TaxAccountHelperSpec extends BaseSpec {
   private def createJsonWithDeductions(deductions: JsArray) = {
     val incomeSources = Json.arr(Json.obj("deductions" -> deductions))
     taxAccountSummaryNpsJson ++ Json.obj("incomeSources" -> incomeSources)
+  }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
   }
 
   "TotalEstimatedTax" must {

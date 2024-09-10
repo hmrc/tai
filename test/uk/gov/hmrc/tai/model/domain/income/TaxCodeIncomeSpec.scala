@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.{employmentFilter, newEstimatedPayTypeFilter, taxCodeIncomeSourcesReads}
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.{employmentFilter, newEstimatedPayTypeFilter, taxCodeIncomeSourcesHipToggleOffReads}
 
 class TaxCodeIncomeSpec extends PlaySpec {
   private val totalIncome: JsObject = Json.obj(
@@ -96,7 +96,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result.head.amount mustBe 111
       }
 
@@ -114,7 +114,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result.head.amount mustBe 1111
       }
     }
@@ -134,7 +134,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result.head.amount mustBe 0
       }
 
@@ -150,7 +150,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNumber(2),
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result.head.amount mustBe 0
       }
     }
@@ -172,7 +172,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             EmploymentIncome,
@@ -203,7 +203,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             PensionIncome,
@@ -233,7 +233,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNull,
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             JobSeekerAllowanceIncome,
@@ -263,7 +263,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNull,
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -293,7 +293,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNull,
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -323,7 +323,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNull,
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -355,7 +355,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "basisOperation"             -> JsNull,
           "employmentStatus"           -> JsNumber(1)
         )
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -386,7 +386,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -412,7 +412,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
         val json = Json.obj(
           "taxYear" -> JsNumber(2017)
         )
-        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads) mustBe Nil
+        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads) mustBe Nil
       }
 
       "fields provided with null values" in {
@@ -421,7 +421,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "totalLiability" -> JsNull,
           "incomeSources"  -> JsNull
         )
-        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads) mustBe Nil
+        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads) mustBe Nil
       }
     }
 
@@ -454,7 +454,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads) mustBe
+        json.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads) mustBe
           Seq(
             TaxCodeIncome(
               EmploymentIncome,
@@ -502,7 +502,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(1)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -535,7 +535,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(2)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -568,7 +568,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(3)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -604,7 +604,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "inYearAdjustmentIntoCYPlusOne" -> JsNumber(10.60)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -637,7 +637,7 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(3)
         )
 
-        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val result = arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -670,7 +670,8 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNumber(4)
         )
 
-        val ex = the[RuntimeException] thrownBy arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val ex =
+          the[RuntimeException] thrownBy arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         ex.getMessage mustBe "Invalid employment status"
       }
 
@@ -687,7 +688,8 @@ class TaxCodeIncomeSpec extends PlaySpec {
           "employmentStatus"           -> JsNull
         )
 
-        val ex = the[RuntimeException] thrownBy arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesReads)
+        val ex =
+          the[RuntimeException] thrownBy arrayOf(json).as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads)
         ex.getMessage mustBe "Invalid employment status"
       }
     }

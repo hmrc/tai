@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeHipToggleOffReads
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
@@ -136,7 +136,7 @@ class IncomeService @Inject() (
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
-      val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads)
+      val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeHipToggleOffReads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 

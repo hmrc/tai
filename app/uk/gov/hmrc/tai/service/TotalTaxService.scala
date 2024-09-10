@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqReads, taxFreeAllowanceReads}
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqHipToggleOffReads, taxFreeAllowanceHipToggleOffReads}
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -36,7 +36,7 @@ class TotalTaxService @Inject() (
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] = {
     val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
     for {
-      incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
+      incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads))
       totalTaxAmount       <- taxAccountHelper.totalEstimatedTax(nino, year)
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
@@ -57,5 +57,5 @@ class TotalTaxService @Inject() (
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
     taxAccountConnector
       .taxAccount(nino, year)
-      .map(_.as[BigDecimal](taxFreeAllowanceReads))
+      .map(_.as[BigDecimal](taxFreeAllowanceHipToggleOffReads))
 }

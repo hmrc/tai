@@ -22,16 +22,16 @@ case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount:
 
 object NpsIabdSummary {
   // TODO: DDCNL-9376 Duplicate reads
-  val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
+  val iabdsFromTotalLiabilityHipToggleOffReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
     val categories =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-    val totalIncomeList = totalLiabilityIabds(json, "totalIncome", categories)
-    val allowReliefDeductsList = totalLiabilityIabds(json, "allowReliefDeducts", categories)
+    val totalIncomeList = totalLiabilityIabdsHipToggleOff(json, "totalIncome", categories)
+    val allowReliefDeductsList = totalLiabilityIabdsHipToggleOff(json, "allowReliefDeducts", categories)
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
   // TODO: DDCNL-9376 Duplicate reads
-  def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
+  def totalLiabilityIabdsHipToggleOff(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
     }

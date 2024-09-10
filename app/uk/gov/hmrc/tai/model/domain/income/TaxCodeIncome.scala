@@ -219,7 +219,7 @@ object TaxCodeIncome {
   }
 
   // TODO: DDCNL-9376 Duplicate reads
-  val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
+  val taxCodeIncomeSourcesHipToggleOffReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
     val taxCodeIncomes = (json \ "incomeSources")
       .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
       .getOrElse(Seq.empty[TaxCodeIncome])

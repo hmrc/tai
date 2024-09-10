@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityHipToggleOffReads
 
 import scala.util.Random
 
@@ -40,7 +40,7 @@ class NpsIabdSummarySpec extends PlaySpec {
           )
         )
       )
-      val result = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+      val result = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads)
       result mustBe Seq(NpsIabdSummary(1, Some(1), 1, "desc"), NpsIabdSummary(1, Some(1), 1, "desc"))
     }
 
@@ -81,7 +81,7 @@ class NpsIabdSummarySpec extends PlaySpec {
           )
         )
       )
-      json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads).size mustBe 33
+      json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads).size mustBe 33
     }
 
     "extract iabd summaries of type 'allowReliefDeducts' from six categories of interest" in {
@@ -121,7 +121,7 @@ class NpsIabdSummarySpec extends PlaySpec {
           )
         )
       )
-      json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads).size mustBe 33
+      json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads).size mustBe 33
     }
 
     "return empty sequence" when {
@@ -148,7 +148,7 @@ class NpsIabdSummarySpec extends PlaySpec {
             )
           )
         )
-        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads) mustBe empty
+        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads) mustBe empty
       }
 
       "no iabd summaries are present within any of the six categories for each of 'totalIncome' or 'allowReliefDeducts'" in {
@@ -181,7 +181,7 @@ class NpsIabdSummarySpec extends PlaySpec {
             )
           )
         )
-        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads) mustBe empty
+        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads) mustBe empty
       }
     }
 
@@ -242,7 +242,7 @@ class NpsIabdSummarySpec extends PlaySpec {
             )
           )
         )
-        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads).size mustBe 66
+        json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads).size mustBe 66
       }
     }
   }

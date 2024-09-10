@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.taxAdjustments
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentReads
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentHipToggleOffReads
 
 class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
   "taxAdjustmentComponentReads" must {
@@ -31,7 +31,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
 
@@ -49,7 +50,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
           TaxAdjustmentComponent(ConcessionalRelief, 100.5),
           TaxAdjustmentComponent(MaintenancePayments, 200),
@@ -71,7 +72,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
           TaxAdjustmentComponent(ConcessionalRelief, 100.5),
           TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
@@ -92,7 +93,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
   }
@@ -106,7 +108,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
 
@@ -123,7 +126,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(ExcessGiftAidTax, 100),
           TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
           TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
@@ -143,7 +146,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(ExcessGiftAidTax, 100),
           TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
           TaxAdjustmentComponent(PensionPaymentsAdjustment, 200)
@@ -162,7 +165,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
   }
@@ -176,7 +180,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
 
@@ -193,7 +198,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
           TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
           TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
@@ -213,7 +218,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
           TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200)
         )
@@ -231,7 +236,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
   }
@@ -251,7 +257,9 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) must contain theSameElementsAs Seq(
+        json.as[Seq[TaxAdjustmentComponent]](
+          taxAdjustmentComponentHipToggleOffReads
+        ) must contain theSameElementsAs Seq(
           TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
           TaxAdjustmentComponent(ConcessionalRelief, 100.5),
           TaxAdjustmentComponent(MaintenancePayments, 200),
@@ -272,7 +280,9 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) must contain theSameElementsAs Seq(
+        json.as[Seq[TaxAdjustmentComponent]](
+          taxAdjustmentComponentHipToggleOffReads
+        ) must contain theSameElementsAs Seq(
           TaxAdjustmentComponent(ExcessGiftAidTax, 100),
           TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
           TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
@@ -292,7 +302,9 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) must contain theSameElementsAs Seq(
+        json.as[Seq[TaxAdjustmentComponent]](
+          taxAdjustmentComponentHipToggleOffReads
+        ) must contain theSameElementsAs Seq(
           TaxAdjustmentComponent(TaxOnBankBSInterest, 100),
           TaxAdjustmentComponent(TaxCreditOnUKDividends, 100),
           TaxAdjustmentComponent(TaxCreditOnForeignInterest, 200),
@@ -330,7 +342,9 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) must contain theSameElementsAs Seq(
+        json.as[Seq[TaxAdjustmentComponent]](
+          taxAdjustmentComponentHipToggleOffReads
+        ) must contain theSameElementsAs Seq(
           TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
           TaxAdjustmentComponent(ConcessionalRelief, 100.5),
           TaxAdjustmentComponent(MaintenancePayments, 200),
@@ -361,7 +375,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
 
       "no details in basic rate extension is present" in {
@@ -375,7 +390,8 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq.empty[TaxAdjustmentComponent]
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq
+          .empty[TaxAdjustmentComponent]
       }
     }
 
@@ -391,7 +407,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(PersonalPensionPayment, 600),
           TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
           TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
@@ -408,7 +424,7 @@ class TaxAdjustmentComponentSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentReads) mustBe Seq(
+        json.as[Seq[TaxAdjustmentComponent]](taxAdjustmentComponentHipToggleOffReads) mustBe Seq(
           TaxAdjustmentComponent(PersonalPensionPayment, 600),
           TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
         )

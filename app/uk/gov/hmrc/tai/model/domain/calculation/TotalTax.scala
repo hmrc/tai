@@ -86,7 +86,7 @@ object IncomeCategory {
   implicit val formats: OFormat[IncomeCategory] = Json.format[IncomeCategory]
 
   // TODO: DDCNL-9376 Duplicate reads
-  val incomeCategorySeqReads: Reads[Seq[IncomeCategory]] = (json: JsValue) => {
+  val incomeCategorySeqHipToggleOffReads: Reads[Seq[IncomeCategory]] = (json: JsValue) => {
     val categoryNames =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
     val incomeCategoryList = incomeCategories(json, categoryNames)
@@ -94,7 +94,7 @@ object IncomeCategory {
   }
 
   // TODO: DDCNL-9376 Duplicate reads
-  val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
+  val taxFreeAllowanceHipToggleOffReads: Reads[BigDecimal] = (json: JsValue) => {
     val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
     val totalLiability = (json \ "totalLiability").as[JsValue]
     JsSuccess(

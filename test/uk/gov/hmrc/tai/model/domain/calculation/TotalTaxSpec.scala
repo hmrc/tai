@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, JsResultException, Json}
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqReads, taxFreeAllowanceReads}
+import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory.{incomeCategorySeqHipToggleOffReads, taxFreeAllowanceHipToggleOffReads}
 
 class TotalTaxSpec extends PlaySpec {
 
@@ -27,7 +27,7 @@ class TotalTaxSpec extends PlaySpec {
       "totalLiabilities field is null" in {
         val json = Json.obj("totalLiability" -> JsNull)
 
-        json.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
+        json.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads) mustBe empty
       }
       "all the 6 income categories as null" in {
         val json = Json.obj(
@@ -41,7 +41,7 @@ class TotalTaxSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
+        json.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads) mustBe empty
       }
     }
 
@@ -80,7 +80,7 @@ class TotalTaxSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[IncomeCategory]](incomeCategorySeqReads) must contain theSameElementsAs
+        json.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads) must contain theSameElementsAs
           Seq(
             IncomeCategory(NonSavingsIncomeCategory, 1000.12, 1000.13, 1000.14, Nil),
             IncomeCategory(UntaxedInterestIncomeCategory, 0, 0, 0, Nil),
@@ -186,7 +186,7 @@ class TotalTaxSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[IncomeCategory]](incomeCategorySeqReads) must contain theSameElementsAs
+        json.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads) must contain theSameElementsAs
           Seq(
             IncomeCategory(
               NonSavingsIncomeCategory,
@@ -315,7 +315,7 @@ class TotalTaxSpec extends PlaySpec {
           )
         )
         val error = intercept[Exception] {
-          json.as[Seq[IncomeCategory]](incomeCategorySeqReads)
+          json.as[Seq[IncomeCategory]](incomeCategorySeqHipToggleOffReads)
         }
         error mustBe a[JsResultException]
       }
@@ -335,7 +335,7 @@ class TotalTaxSpec extends PlaySpec {
             )
           )
 
-          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+          json.as[BigDecimal](taxFreeAllowanceHipToggleOffReads) mustBe 0
         }
 
         "some income categories have allowance relief deduct" in {
@@ -358,7 +358,7 @@ class TotalTaxSpec extends PlaySpec {
             )
           )
 
-          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+          json.as[BigDecimal](taxFreeAllowanceHipToggleOffReads) mustBe 200
         }
 
         "ignore untaxed interest income categories" in {
@@ -385,7 +385,7 @@ class TotalTaxSpec extends PlaySpec {
             )
           )
 
-          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
+          json.as[BigDecimal](taxFreeAllowanceHipToggleOffReads) mustBe 200
         }
 
         "all income categories are present" in {
@@ -424,7 +424,7 @@ class TotalTaxSpec extends PlaySpec {
             )
           )
 
-          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
+          json.as[BigDecimal](taxFreeAllowanceHipToggleOffReads) mustBe 500
         }
       }
     }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.libs.json.{JsArray, JsPath, JsResult, JsSuccess, JsValue, Reads, Writes}
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityHipToggleOffReads
 import uk.gov.hmrc.tai.model.domain.TaxComponentType.taxComponentTypeWrites
 import uk.gov.hmrc.tai.model.domain._
 
@@ -41,7 +41,7 @@ object CodingComponent {
   )(unapplyCodingComponentForApiJson _)
 
   // TODO: DDCNL-9376 Duplicate reads
-  val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
+  val codingComponentHipToggleOffReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
     val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
@@ -163,7 +163,7 @@ object CodingComponent {
 
   private val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads)
       val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
       val (benefits, otherCodingComponents) = codingComponents.partition {
         _.componentType match {

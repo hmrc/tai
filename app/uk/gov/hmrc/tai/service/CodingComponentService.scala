@@ -17,11 +17,14 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentReads
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentHipToggleOffReads
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,15 +32,31 @@ import scala.concurrent.{ExecutionContext, Future}
 // TODO: DDCNL-9376: Need to add toggle service
 
 @Singleton
-class CodingComponentService @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext) {
+class CodingComponentService @Inject() (
+  taxAccountConnector: TaxAccountConnector,
+  featureFlagService: FeatureFlagService
+)(implicit ec: ExecutionContext) {
+
+  private def getReads[A](readsToggleOff: Reads[A], readsToggleOn: Reads[A]): Future[Reads[A]] =
+    featureFlagService.get(HipToggleTaxAccount).map { flag =>
+      if (flag.isEnabled) {
+        readsToggleOn
+      } else {
+        readsToggleOff
+      }
+    }
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
-    taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
+    getReads(codingComponentHipToggleOffReads, codingComponentHipToggleOffReads).flatMap { codingComponentReads =>
+      taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
+    }
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
-    taxAccountConnector
-      .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-      .map(_.as[Seq[CodingComponent]](codingComponentReads))
+    getReads(codingComponentHipToggleOffReads, codingComponentHipToggleOffReads).flatMap { codingComponentReads =>
+      taxAccountConnector
+        .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
+        .map(_.as[Seq[CodingComponent]](codingComponentReads))
+    }
 }

@@ -192,7 +192,7 @@ object TaxAdjustmentComponent {
     }
 
   // TODO: DDCNL-9376 Duplicate reads
-  val taxAdjustmentComponentReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) => {
+  val taxAdjustmentComponentHipToggleOffReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) => {
     val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
     val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
     val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
