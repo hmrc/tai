@@ -29,7 +29,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class TaxAccountHelperSpec extends BaseSpec {
+class TaxAccountHelperHipToggleOffSpec extends BaseSpec {
   private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
   private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector, mockFeatureFlagService)
@@ -111,11 +111,11 @@ class TaxAccountHelperSpec extends BaseSpec {
     super.beforeEach()
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
   }
 
-  "TotalEstimatedTax" must {
+  "TotalEstimatedTax (hip toggle off)" must {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
         val underpaymentDeduction = Json.arr(
@@ -226,7 +226,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "Reliefs Giving Back Tax Components" must {
+  "Reliefs Giving Back Tax Components (hip toggle off)" must {
     "return only reliefs giving back tax components" in {
       val sut = createSUT()
       val result = sut.reliefsGivingBackTaxComponents(taxAccountDetails).futureValue
@@ -255,7 +255,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "Other Tax Due Components" must {
+  "Other Tax Due Components  (hip toggle off)" must {
     "return only other tax due components" in {
       val sut = createSUT()
       val result = sut.otherTaxDueComponents(taxAccountDetails).futureValue
@@ -283,7 +283,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "Already Taxed At Sources Components" must {
+  "Already Taxed At Sources Components  (hip toggle off)" must {
     "return only already taxed at source components" in {
       val sut = createSUT()
       val result = sut.alreadyTaxedAtSourceComponents(taxAccountDetails).futureValue
@@ -311,7 +311,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "TaxOnOtherIncome" must {
+  "TaxOnOtherIncome  (hip toggle off)" must {
     "return tax on other income rate" in {
       val sut = createSUT()
       val result = sut.taxOnOtherIncome(taxAccountDetails).futureValue
@@ -329,7 +329,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "Tax Reliefs Component" must {
+  "Tax Reliefs Component  (hip toggle off)" must {
     "return tax relief components including gift aid payment" in {
       val jsonWithGiftAidPayment = taxAccountSummaryNpsJson ++ Json.obj(
         "incomeSources" -> Json.arr(
@@ -389,7 +389,7 @@ class TaxAccountHelperSpec extends BaseSpec {
     }
   }
 
-  "Tax Adjustment Components" must {
+  "Tax Adjustment Components (hip toggle off)" must {
     "return tax adjustment components" when {
       "components are present" in {
         val sut = createSUT()

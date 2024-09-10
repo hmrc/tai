@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class CodingComponentServiceSpec extends BaseSpec {
+class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
 
   private val emptyJson = Json.arr()
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
@@ -42,11 +42,11 @@ class CodingComponentServiceSpec extends BaseSpec {
     super.beforeEach()
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
   }
 
-  "codingComponents" must {
+  "codingComponents (hip toggle off)" must {
     "return empty list of coding components" when {
       "connector returns json with no NpsComponents of interest" in {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
