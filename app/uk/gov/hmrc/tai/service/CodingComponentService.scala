@@ -23,8 +23,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentHipToggleOffReads
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,7 +46,10 @@ class CodingComponentService @Inject() (
     }
 
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
-    getReads(codingComponentHipToggleOffReads, codingComponentHipToggleOffReads).flatMap { codingComponentReads =>
+    getReads(
+      CodingComponentHipToggleOff.codingComponentReads,
+      CodingComponentHipToggleOff.codingComponentReads
+    ).flatMap { codingComponentReads =>
       taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
     }
 
@@ -56,5 +58,5 @@ class CodingComponentService @Inject() (
   ): Future[Seq[CodingComponent]] =
     taxAccountConnector
       .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-      .map(_.as[Seq[CodingComponent]](codingComponentHipToggleOffReads))
+      .map(_.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads))
 }

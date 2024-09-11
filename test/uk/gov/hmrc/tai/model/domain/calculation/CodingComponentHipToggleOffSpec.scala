@@ -24,8 +24,8 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentW
 
 import scala.util.Random
 
-class CodingComponentSpec extends PlaySpec {
-  import CodingComponentSpec._
+class CodingComponentHipToggleOffSpec extends PlaySpec {
+  import CodingComponentHipToggleOffSpec._
   "codingComponentReads" must {
     "return empty list" when {
       "no NpsComponents of interest are present in the list of income deductions, within the supplied nps tax account json" in {
@@ -752,7 +752,8 @@ class CodingComponentSpec extends PlaySpec {
 
 }
 
-object CodingComponentSpec {
+
+object CodingComponentHipToggleOffSpec {
   private val nino: Nino = new Generator(new Random).nextNino
   private val combinedNpsDeductionJson = Json.obj(
     "taxAccountId" -> "id",
@@ -860,9 +861,9 @@ object CodingComponentSpec {
   )
 
   private def npsIncomeSourceJson(
-    allowances: Seq[JsObject] = Seq.empty[JsObject],
-    deductions: Seq[JsObject] = Seq.empty[JsObject]
-  ) = Json.obj(
+                                   allowances: Seq[JsObject] = Seq.empty[JsObject],
+                                   deductions: Seq[JsObject] = Seq.empty[JsObject]
+                                 ) = Json.obj(
     "taxAccountId" -> "id",
     "nino"         -> nino.nino,
     "incomeSources" -> JsArray(
@@ -913,9 +914,9 @@ object CodingComponentSpec {
     )
 
   private def taxAccountJsonWithIabds(
-    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
-  ): JsObject =
+                                       incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+                                       allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
+                                     ): JsObject =
     Json.obj(
       "taxAccountId" -> "id",
       "nino"         -> nino.nino,

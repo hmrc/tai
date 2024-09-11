@@ -25,12 +25,10 @@ import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryHipToggleOffReads, taxOnOtherIncomeHipToggleOffReads}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentHipToggleOffReads
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentHipToggleOffReads
 //import uk.gov.hmrc.tai.model.domain.taxAdjustments.{GiftAidPayments, TaxAdjustment, _}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,7 +53,10 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
     (for {
       readsTaxAccountSummary <- getReads(taxAccountSummaryHipToggleOffReads, taxAccountSummaryHipToggleOffReads)
-      readsCodingComponent   <- getReads(codingComponentHipToggleOffReads, codingComponentHipToggleOffReads)
+      readsCodingComponent <- getReads(
+                                CodingComponentHipToggleOff.codingComponentReads,
+                                CodingComponentHipToggleOff.codingComponentReads
+                              )
     } yield taxAccountConnector
       .taxAccount(nino, year)
       .flatMap { taxAccount =>
@@ -158,9 +159,12 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
     }
 
     for {
-      readsCodingComponent <- getReads(codingComponentHipToggleOffReads, codingComponentHipToggleOffReads)
-      codingComponents     <- taxAccountDetails.map(_.as[Seq[CodingComponent]](readsCodingComponent))
-      taxReliefComponents  <- taxReliefsComponentsFuture
+      readsCodingComponent <- getReads(
+                                CodingComponentHipToggleOff.codingComponentReads,
+                                CodingComponentHipToggleOff.codingComponentReads
+                              )
+      codingComponents    <- taxAccountDetails.map(_.as[Seq[CodingComponent]](readsCodingComponent))
+      taxReliefComponents <- taxReliefsComponentsFuture
     } yield {
       val giftAidPayments = codingComponents.find(_.componentType == GiftAidPayments).flatMap(_.inputAmount)
       val components = giftAidPayments.collect { case amount =>
