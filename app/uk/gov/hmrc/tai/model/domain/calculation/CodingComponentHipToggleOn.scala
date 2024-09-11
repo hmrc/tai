@@ -72,11 +72,12 @@ object CodingComponentHipToggleOn {
       case _ => Seq.empty[CodingComponent]
     }
 
+// TODO: What if type has something not in enum list? Also what if type not present? All fields seem to be optional
   private def taxComponentFromNpsComponent(
     npsComponentJson: JsValue,
     codingComponentFactory: CodingComponentFactory
   ): Option[CodingComponent] = {
-    val amount = (npsComponentJson \ "amount").as[BigDecimal]
+    val amount = (npsComponentJson \ "adjustedAmount").as[BigDecimal]
 
     val fullType = (npsComponentJson \ "type").as[String]
     fullType.replace(")", "").split("\\(").toSeq match {

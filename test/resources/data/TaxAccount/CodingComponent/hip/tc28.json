@@ -1,0 +1,64 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 2,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 2
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 2,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 2
+          },
+          {
+            "amount": 2,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 2
+          }
+        ]
+      }
+    }
+  }
+}

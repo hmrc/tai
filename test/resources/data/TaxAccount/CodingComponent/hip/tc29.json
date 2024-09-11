@@ -1,0 +1,88 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "Blind Persons Allowance (014)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "BPA Received from Spouse/Civil Partner (015)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Community Investment Tax Credit (016)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Gifts of Shares to Charity (017)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Retirement Annuity Payments (018)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Job Expenses (055)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Flat Rate Job Expenses (056)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Professional Subscriptions (057)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Hotel and Meal Expenses (058)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Other Expenses (059)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Vehicle Expenses (060)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Mileage Allowance Relief (061)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Venture Capital Trust (090)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Loss relief (102)",
+            "employmentSequenceNumber": 1
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": []
+      }
+    }
+  }
+}

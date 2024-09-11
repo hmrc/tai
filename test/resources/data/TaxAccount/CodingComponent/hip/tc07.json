@@ -1,0 +1,75 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "taxCode": "1150L",
+      "allowancesDetails": [],
+      "deductionsDetails": [
+        {
+          "type": "Maintenance Payments (006)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "BPA Received from Spouse/Civil Partner (015)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Benefit in Kind (028)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Medical Insurance (030)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Van Benefit (035)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Beneficial Loan (037)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Asset Transfer (040)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Educational Services (041)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Entertaining (042)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Expenses (043)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Mileage (044)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Non-qualifying Relocation Expenses (045)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        }
+      ]
+    }
+  ]
+}

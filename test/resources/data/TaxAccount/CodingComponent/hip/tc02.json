@@ -1,0 +1,20 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "taxCode": "1150L",
+      "allowancesDetails": [
+        {
+          "type": "Loan Interest Amount (011)",
+          "sourceAmount": 100,
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10
+        }
+      ]
+    }
+  ]
+}

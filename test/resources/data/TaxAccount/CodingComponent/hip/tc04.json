@@ -1,0 +1,33 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "taxCode": "1150L",
+      "deductionsDetails": [
+        {
+          "type": "Non-qualifying Relocation Expenses (045)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10
+        },
+        {
+          "type": "Van Benefit (035)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10
+        },
+        {
+          "type": "Educational Services (041)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10
+        },
+        {
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "type": "Medical Insurance (030)"
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": []
+      }
+    }
+  }
+}
