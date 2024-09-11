@@ -22,9 +22,9 @@ import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipToggleOff.{incomeCate
 
 import scala.io.Source
 
-class TotalTaxSpec extends PlaySpec {
+class TotalTaxHipToggleOffSpec extends PlaySpec {
 
-  private val basePath = "test/resources/data/TaxAccount/TotalTax/hip/"
+  private val basePath = "test/resources/data/TaxAccount/TotalTax/nps/"
   private def readFile(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
     val bufferedSource = Source.fromFile(jsonFilePath)

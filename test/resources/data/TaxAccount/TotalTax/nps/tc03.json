@@ -1,0 +1,32 @@
+{
+  "totalLiability": {
+    "nonSavings": {
+      "totalTax": 1000.12,
+      "totalTaxableIncome": 1000.13,
+      "totalIncome": {
+        "amount": 1000.14
+      }
+    },
+    "untaxedInterest": {},
+    "bankInterest": {
+      "totalTax": null,
+      "totalTaxableIncome": null,
+      "totalIncome": null
+    },
+    "ukDividends": {
+      "totalIncome": {}
+    },
+    "foreignInterest": {
+      "totalIncome": {
+        "amount": null
+      }
+    },
+    "foreignDividends": {
+      "totalTax": 1000.23,
+      "totalTaxableIncome": 1000.24,
+      "totalIncome": {
+        "amount": 1000.25
+      }
+    }
+  }
+}

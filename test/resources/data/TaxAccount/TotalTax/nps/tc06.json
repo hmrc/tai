@@ -1,0 +1,10 @@
+{
+  "totalLiability": {
+    "nonSavings": null,
+    "untaxedInterest": null,
+    "bankInterest": null,
+    "ukDividends": null,
+    "foreignInterest": null,
+    "foreignDividends": null
+  }
+}
