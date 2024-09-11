@@ -27,11 +27,13 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.HodResponse
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -47,6 +49,8 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   val hipBaseUrl: String = s"/v1/api/employment/employee/${nino.nino}"
   val employmentsUrl: String = s"$hipBaseUrl/tax-year/$year/employment-details"
   lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
+  val token: String =
+    "Basic " + Base64.getEncoder.encodeToString(s"clientId:clientSecret".getBytes(StandardCharsets.UTF_8))
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
@@ -96,13 +100,11 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
     "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {
-
           val employmentListJson = JsArray(Seq(employmentAsJson))
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(OK)
@@ -125,8 +127,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(BAD_REQUEST)
@@ -145,8 +146,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(NOT_FOUND)
@@ -165,8 +165,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(LOCKED)
@@ -185,8 +184,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(INTERNAL_SERVER_ERROR)
@@ -205,8 +203,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
           server.stubFor(
             get(urlEqualTo(employmentsUrl))
-              .withHeader("clientId", equalTo("clientId"))
-              .withHeader("clientSecret", equalTo("clientSecret"))
+              .withHeader("Authorization", equalTo(token))
               .willReturn(
                 aResponse()
                   .withStatus(BAD_GATEWAY)

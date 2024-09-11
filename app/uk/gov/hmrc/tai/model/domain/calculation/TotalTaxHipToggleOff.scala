@@ -62,7 +62,7 @@ object TotalTaxHipToggleOff extends Logging {
     JsSuccess(
       categoryNames map (category =>
         (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
-        ) sum
+      ) sum
     )
   }
 
@@ -98,4 +98,3 @@ object TotalTaxHipToggleOff extends Logging {
     }.toList
   }
 }
-
