@@ -1,0 +1,65 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 10,
+          "type": 11
+        }
+      ]
+    }
+  ],
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 1,
+            "type": 16,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 17,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 18,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": [
+          {
+            "amount": 1,
+            "type": 98,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 99,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          }
+        ]
+      }
+    }
+  }
+}

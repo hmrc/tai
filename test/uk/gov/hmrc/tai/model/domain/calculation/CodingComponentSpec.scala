@@ -22,37 +22,26 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
+import scala.io.Source
 import scala.util.Random
 
 class CodingComponentSpec extends PlaySpec {
   import CodingComponentSpec._
+
+  private val basePath = "test/resources/data/TaxAccount/CodingComponent/hip/"
+  private def readFile(fileName: String): JsValue = {
+    val jsonFilePath = basePath + fileName
+    val bufferedSource = Source.fromFile(jsonFilePath)
+    val source = bufferedSource.mkString("")
+    bufferedSource.close()
+    Json.parse(source)
+  }
+
   "codingComponentReads" must {
     "return empty list" when {
       "no NpsComponents of interest are present in the list of income deductions, within the supplied nps tax account json" in {
-        val noNpsComponentOfInterestNpsJson = Json.obj(
-          "taxAccountId" -> "id",
-          "nino"         -> nino.nino,
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"   -> 1,
-                "employmentType" -> 1,
-                "taxCode"        -> "1150L",
-                "deductions" -> JsArray(
-                  Seq(
-                    Json.obj(
-                      "npsDescription" -> "Something we aren't interested in",
-                      "amount"         -> 10,
-                      "type"           -> 888
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-
-        noNpsComponentOfInterestNpsJson.as[Seq[CodingComponent]](
+        val payload = readFile("tc01.json")
+        payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         ) mustBe empty
       }
@@ -60,31 +49,9 @@ class CodingComponentSpec extends PlaySpec {
 
     "return a single allowance coding component" when {
       "single type 11 NpsComponent (PersonalAllowanceStandard) is present, within income allowances" in {
-        val personalAllowanceStandardNpsJson = Json.obj(
-          "taxAccountId" -> "id",
-          "nino"         -> nino.nino,
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"   -> 1,
-                "employmentType" -> 1,
-                "taxCode"        -> "1150L",
-                "allowances" -> JsArray(
-                  Seq(
-                    Json.obj(
-                      "npsDescription" -> "personal allowance",
-                      "amount"         -> 10,
-                      "type"           -> 11,
-                      "sourceAmount"   -> 100
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
 
-        personalAllowanceStandardNpsJson.as[Seq[CodingComponent]](
+        val payload = readFile("tc02.json")
+        payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         ) mustBe
           Seq(CodingComponent(PersonalAllowancePA, None, 10, "personal allowance", Some(100)))
@@ -93,32 +60,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return a single deduction coding component" when {
       "single type 35 NpsComponent is present (underpayment from previous year), within income deductions" in {
-
-        val underPaymentFromPreviousYearNpsJson = Json.obj(
-          "taxAccountId" -> "id",
-          "nino"         -> nino.nino,
-          "incomeSources" -> JsArray(
-            Seq(
-              Json.obj(
-                "employmentId"   -> 1,
-                "employmentType" -> 1,
-                "taxCode"        -> "1150L",
-                "deductions" -> JsArray(
-                  Seq(
-                    Json.obj(
-                      "npsDescription" -> "Underpayment form previous year",
-                      "amount"         -> 10,
-                      "type"           -> 35,
-                      "sourceAmount"   -> JsNull
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-
-        underPaymentFromPreviousYearNpsJson.as[Seq[CodingComponent]](
+        val payload = readFile("tc03.json")
+        payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         ) mustBe
           Seq(CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Underpayment form previous year"))
@@ -127,7 +70,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return multiple deduction coding components" when {
       "multiple NpsComponents of interest are present within the income deductions" in {
-        combinedNpsDeductionJson.as[Seq[CodingComponent]](
+        val payload = readFile("tc04.json")
+        payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         ) mustBe
           Seq(
@@ -140,7 +84,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return multiple allowance coding components" when {
       "multiple NpsComponents of interest are present within income deductions" in {
-        combinedNpsAllowanceJson.as[Seq[CodingComponent]](
+        val payload = readFile("tc05.json")
+        payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         ) mustBe
           Seq(
@@ -156,14 +101,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return all allowances received" when {
       "multiple allowances are present" in {
-        val json = npsIncomeSourceJson(
-          allowances = npsComponents(
-            Seq(5, 6, 7, 8, 10, 11, 12, 13, 17, 18, 20, 21, 28, 29, 30, 31, 32),
-            amount = 100
-          )
-        )
-
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
+        val payload = readFile("tc06.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
           CodingComponent(PersonalPensionPayments, None, 100, "nps-desc"),
           CodingComponent(GiftAidPayments, None, 100, "nps-desc"),
           CodingComponent(EnterpriseInvestmentScheme, None, 100, "nps-desc"),
@@ -188,11 +127,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return all deductions" when {
       "multiple deductions are present" in {
-        val json = npsIncomeSourceJson(
-          deductions = npsComponents(Seq(6, 15, 28, 30, 35, 37, 40, 41, 42, 43, 44, 45), amount = 100)
-        )
-
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
+        val payload = readFile("tc07.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
           CodingComponent(MarriedCouplesAllowanceToWifeMAW, None, 100, "nps-desc"),
           CodingComponent(BalancingCharge, None, 100, "nps-desc"),
           CodingComponent(UnderpaymentRestriction, None, 100, "nps-desc"),
@@ -211,12 +147,8 @@ class CodingComponentSpec extends PlaySpec {
 
     "return non-tax-code incomes from income sources" when {
       "there are non-tax-code incomes present" in {
-        val json = npsIncomeSourceJson(
-          deductions =
-            npsComponents(Seq(1, 2, 3, 4, 5, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 32, 38), amount = 100)
-        )
-
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
+        val payload = readFile("tc08.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq(
           CodingComponent(StatePension, None, 100, "nps-desc"),
           CodingComponent(PublicServicesPension, None, 100, "nps-desc"),
           CodingComponent(ForcesPension, None, 100, "nps-desc"),
@@ -244,42 +176,26 @@ class CodingComponentSpec extends PlaySpec {
   "totalLiabilityReads" must {
     "return empty list" when {
       "there is no total liability present in tax account" in {
-        val json = Json.obj(
-          "taxAccountId" -> "id",
-          "nino"         -> nino.nino
-        )
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe empty
+        val payload = readFile("tc09.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe empty
       }
       "total liability is null in tax account" in {
-        val json = Json.obj(
-          "taxAccountId"   -> "id",
-          "nino"           -> nino.nino,
-          "totalLiability" -> JsNull
-        )
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe empty
+        val payload = readFile("tc10.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe empty
       }
       "No Benefits or Allowances were found within the provided iabd summaries" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(999, 888, 777), 1))
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc11.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
         result mustBe Seq.empty[CodingComponent]
       }
       "an empty iabd summary array is present within the tax account json" in {
-        val json = taxAccountJsonWithIabds()
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc12.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
         result mustBe Seq.empty[CodingComponent]
       }
       "processing a solitary nps iabd json fragment that does not declare a type" in {
-        val json = taxAccountJsonWithIabds(
-          Seq(
-            Json.obj(
-              "amount"             -> 120.22,
-              "npsDescription"     -> "Something with no type declared",
-              "employmentId"       -> 13,
-              "estimatesPaySource" -> 1
-            )
-          )
-        )
-        json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq
+        val payload = readFile("tc13.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe Seq
           .empty[CodingComponent]
       }
     }
@@ -287,12 +203,9 @@ class CodingComponentSpec extends PlaySpec {
     "generate Benefit instances of the appropriate TaxComponentType" when {
 
       "processing nps iabd summaries that correspond to known benefit types" in {
-        val npsBenefitTypesMinusBenInKind = Seq(8, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-          46, 47, 48, 49, 50, 51, 52, 53, 54, 117)
-        val jsIabdSeq = npsBenefitTypesMinusBenInKind.map(npsIabdSummary)
-        val json = taxAccountJsonWithIabds(jsIabdSeq)
+        val payload = readFile("tc14.json")
         val benefitComponents =
-          json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+          payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         benefitComponents.size mustBe 28
         benefitComponents.map(_.componentType) must contain allElementsOf Seq(
@@ -332,41 +245,27 @@ class CodingComponentSpec extends PlaySpec {
         val benInKindComponentSeq =
           benInKindJson.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
         benInKindComponentSeq.size mustBe 1
-        benInKindComponentSeq(0).componentType mustBe BenefitInKind
+        benInKindComponentSeq.head.componentType mustBe BenefitInKind
       }
     }
 
     "generate Benefit instances with correctly populated content" in {
-
-      taxAccountJsonWithIabds(
-        Seq(
-          Json.obj(
-            "amount"             -> 120.22,
-            "type"               -> 31,
-            "npsDescription"     -> "An example car benefit",
-            "employmentId"       -> 13,
-            "estimatesPaySource" -> 1
-          )
-        )
-      ).as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
+      val payload1 = readFile("tc15.json")
+      payload1.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
         Seq(CodingComponent(CarBenefit, Some(13), 120.22, "An example car benefit"))
 
-      taxAccountJsonWithIabds(
-        Seq(
-          Json.obj(
-            "type"               -> 30,
-            "estimatesPaySource" -> 1
-          )
-        )
-      ).as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
+      val payload2 = readFile("tc16.json")
+
+      payload2.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
         Seq(CodingComponent(MedicalInsurance, None, 0, ""))
     }
 
     "extract individual benefits in kind for a single employment" when {
 
       "benefits in kind total amount matches the sum of individual benefit in kind amounts" in {
-        val benInKindIabds = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
-        val result = taxAccountJsonWithIabds(benInKindIabds).as[Seq[CodingComponent]](
+        val payload = readFile("tc17.json")
+
+        val result = payload.as[Seq[CodingComponent]](
           CodingComponentHipToggleOff.codingComponentReads
         )
 
@@ -377,8 +276,8 @@ class CodingComponentSpec extends PlaySpec {
         )
       }
       "a benefits in kind total amount is not present within iabd summaries" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(38, 39, 40), 1))
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc18.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -387,8 +286,8 @@ class CodingComponentSpec extends PlaySpec {
         )
       }
       "a benefits in kind total amount is present, but it has an amount value of zero" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 0))
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc19.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -401,19 +300,17 @@ class CodingComponentSpec extends PlaySpec {
     "extract only the benefit in kind total for a single employment" when {
 
       "benefits in kind total amount does not match the sum of individual benefit in kind amounts" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 4))
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc20.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(CodingComponent(BenefitInKind, Some(1), 4, "desc"))
       }
     }
 
     "exclude any 'benefits from employment' from the amount reconciliation process" in {
-      val benInKindIabds = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 5)
-      val benFromEmployIabds = npsIabdSummaries(1, Seq(29, 30), 1)
-      val json = taxAccountJsonWithIabds(benInKindIabds ++ benFromEmployIabds)
+      val payload = readFile("tc21.json")
 
-      val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
@@ -425,10 +322,8 @@ class CodingComponentSpec extends PlaySpec {
     "extract the correct benefits in kind across multiple employments" when {
 
       "total and individual amounts match for all employments" in {
-        val json1 = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
-        val json2 = npsIabdSummaries(2, Seq(51, 52, 53), 2) ++ npsIabdSummaries(2, Seq(28), 6)
-        val json = taxAccountJsonWithIabds(json1 ++ json2)
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc22.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -440,10 +335,8 @@ class CodingComponentSpec extends PlaySpec {
         )
       }
       "total and individual amounts match for only one employment" in {
-        val json1 = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
-        val json2 = npsIabdSummaries(2, Seq(51, 52, 53), 2) ++ npsIabdSummaries(2, Seq(28), 25)
-        val json = taxAccountJsonWithIabds(json1 ++ json2)
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc23.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -453,10 +346,8 @@ class CodingComponentSpec extends PlaySpec {
         )
       }
       "total and individual amounts match for one employment, and total is not present for the other" in {
-        val json1 = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
-        val json2 = npsIabdSummaries(2, Seq(51, 52, 53), 2)
-        val json = taxAccountJsonWithIabds(json1 ++ json2)
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc24.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -468,10 +359,8 @@ class CodingComponentSpec extends PlaySpec {
         )
       }
       "total and individual amounts do not match for one employment, and total is not present for the other" in {
-        val json1 = npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 30)
-        val json2 = npsIabdSummaries(2, Seq(51, 52, 53), 2)
-        val json = taxAccountJsonWithIabds(json1 ++ json2)
-        val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+        val payload = readFile("tc25.json")
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(BenefitInKind, Some(1), 30, "desc"),
@@ -483,17 +372,8 @@ class CodingComponentSpec extends PlaySpec {
     }
 
     "Ignore a benefit in kind that does not have an employmentId" in {
-
-      val benInKindIabdWithoutEmpId = Json.obj(
-        "amount"             -> 1,
-        "type"               -> 38,
-        "npsDescription"     -> "desc",
-        "estimatesPaySource" -> 1
-      )
-      val json = taxAccountJsonWithIabds(
-        npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3) :+ benInKindIabdWithoutEmpId
-      )
-      val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+      val payload = readFile("tc26.json")
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(Accommodation, Some(1), 1, "desc"),
@@ -503,26 +383,8 @@ class CodingComponentSpec extends PlaySpec {
     }
 
     "return all benefits from employment, regardless of presence of an employmentId" in {
-
-      val bensFromEmploymentWithoutEmpId = Seq(
-        Json.obj(
-          "amount"             -> 1,
-          "type"               -> 33,
-          "npsDescription"     -> "desc",
-          "estimatesPaySource" -> 1
-        ),
-        Json.obj(
-          "amount"             -> 1,
-          "type"               -> 34,
-          "npsDescription"     -> "desc",
-          "estimatesPaySource" -> 1
-        )
-      )
-
-      val json = taxAccountJsonWithIabds(
-        bensFromEmploymentWithoutEmpId ++ npsIabdSummaries(1, Seq(38, 39, 40), 1) ++ npsIabdSummaries(1, Seq(28), 3)
-      )
-      val result = json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+      val payload = readFile("tc27.json")
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(ServiceBenefit, None, 1, "desc"),
@@ -534,11 +396,6 @@ class CodingComponentSpec extends PlaySpec {
     }
 
     "include all benefit components detailed within total liability iabd summaries across multiple locations" in {
-
-      val incomeIabdSummaries = npsIabdSummaries(1, Seq(29, 30, 44), 1) ++ npsIabdSummaries(2, Seq(45, 49), 2)
-      val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(51, 52), 1) ++ npsIabdSummaries(2, Seq(46, 50), 2)
-      val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
-
       val expectedCodingComponents = Seq(
         CodingComponent(CarFuelBenefit, Some(1), 1, "desc"),
         CodingComponent(MedicalInsurance, Some(1), 1, "desc"),
@@ -550,8 +407,8 @@ class CodingComponentSpec extends PlaySpec {
         CodingComponent(NurseryPlaces, Some(2), 2, "desc"),
         CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "desc")
       )
-
-      json.as[Seq[CodingComponent]](
+      val payload = readFile("tc28.json")
+      payload.as[Seq[CodingComponent]](
         CodingComponentHipToggleOff.codingComponentReads
       ) must contain allElementsOf expectedCodingComponents
     }
@@ -559,10 +416,9 @@ class CodingComponentSpec extends PlaySpec {
     "return Allowance instances of the appropriate TaxComponentType" when {
 
       "processing nps iabd summaries that correspond to known allowance types" in {
-        val exhaustiveNpsAllowanceTypes = Seq(14, 15, 16, 17, 18, 55, 56, 57, 58, 59, 60, 61, 90, 102)
-        val json = taxAccountJsonWithIabds(exhaustiveNpsAllowanceTypes.map(npsIabdSummary))
+        val payload = readFile("tc29.json")
         val allowanceComponents =
-          json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
+          payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads)
 
         allowanceComponents.size mustBe 14
         allowanceComponents.map(_.componentType) mustBe
@@ -586,18 +442,8 @@ class CodingComponentSpec extends PlaySpec {
     }
 
     "generate Allowance instances with correctly populated content" in {
-
-      taxAccountJsonWithIabds(
-        Seq(
-          Json.obj(
-            "amount"             -> 120.22,
-            "type"               -> 55,
-            "npsDescription"     -> "An example job expenses allowance",
-            "employmentId"       -> 13,
-            "estimatesPaySource" -> 1
-          )
-        )
-      ).as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
+      val payload = readFile("tc30.json")
+      payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
         Seq(CodingComponent(JobExpenses, Some(13), 120.22, "An example job expenses allowance"))
 
       taxAccountJsonWithIabds(
@@ -612,18 +458,14 @@ class CodingComponentSpec extends PlaySpec {
     }
 
     "include all allowance components detailed within total liability iabd summaries across multiple locations" in {
-      val incomeIabdSummaries = npsIabdSummaries(1, Seq(16, 17, 18), 1)
-      val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(98, 99), 1)
-      val json = taxAccountJsonWithIabds(incomeIabdSummaries, allowReliefIabdSummaries)
-
       val expectedCodingComponents =
         Seq(
           CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "desc"),
           CodingComponent(GiftsSharesCharity, Some(1), 1, "desc"),
           CodingComponent(RetirementAnnuityPayments, Some(1), 1, "desc")
         )
-
-      json.as[Seq[CodingComponent]](
+      val payload = readFile("tc31.json")
+      payload.as[Seq[CodingComponent]](
         CodingComponentHipToggleOff.codingComponentReads
       ) must contain allElementsOf expectedCodingComponents
     }
@@ -631,42 +473,8 @@ class CodingComponentSpec extends PlaySpec {
 
   "codingComponentReads" must {
     "merge the coding components coming from incomeSourceReads and totalLiabilityReads into a new list" in {
-      val incomeIabdSummaries = npsIabdSummaries(1, Seq(16, 17, 18), 1)
-      val allowReliefIabdSummaries = npsIabdSummaries(1, Seq(98, 99), 1)
-      val json = Json.obj(
-        "taxAccountId" -> "id",
-        "nino"         -> nino.nino,
-        "incomeSources" -> JsArray(
-          Seq(
-            Json.obj(
-              "employmentId"   -> 1,
-              "employmentType" -> 1,
-              "taxCode"        -> "1150L",
-              "allowances" -> JsArray(
-                Seq(
-                  Json.obj(
-                    "npsDescription" -> "personal allowance",
-                    "amount"         -> 10,
-                    "type"           -> 11
-                  )
-                )
-              )
-            )
-          )
-        ),
-        "totalLiability" -> Json.obj(
-          "nonSavings" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "iabdSummaries" -> JsArray(incomeIabdSummaries)
-            ),
-            "allowReliefDeducts" -> Json.obj(
-              "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
-            )
-          )
-        )
-      )
-
-      json.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
+      val payload = readFile("tc32.json")
+      payload.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads) mustBe
         Seq(
           CodingComponent(PersonalAllowancePA, None, 10, "personal allowance"),
           CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "desc"),
@@ -754,149 +562,6 @@ class CodingComponentSpec extends PlaySpec {
 
 object CodingComponentSpec {
   private val nino: Nino = new Generator(new Random).nextNino
-  private val combinedNpsDeductionJson = Json.obj(
-    "taxAccountId" -> "id",
-    "nino"         -> nino.nino,
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"   -> 1,
-          "employmentType" -> 1,
-          "taxCode"        -> "1150L",
-          "deductions" -> JsArray(
-            Seq(
-              Json.obj(
-                "npsDescription" -> "Estimated Tax You Owe This Year",
-                "amount"         -> 10,
-                "type"           -> 45
-              ),
-              Json.obj(
-                "npsDescription" -> "Underpayment form previous year",
-                "amount"         -> 10,
-                "type"           -> 35
-              ),
-              Json.obj(
-                "npsDescription" -> "Outstanding Debt Restriction",
-                "amount"         -> 10,
-                "type"           -> 41
-              ),
-              Json.obj(
-                "npsDescription" -> "Something we aren't interested in",
-                "amount"         -> 10,
-                "type"           -> 888
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-
-  private val combinedNpsAllowanceJson = Json.obj(
-    "taxAccountId" -> "id",
-    "nino"         -> nino.nino,
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"   -> 1,
-          "employmentType" -> 1,
-          "taxCode"        -> "1150L",
-          "deductions" -> JsArray(
-            Seq(
-              Json.obj(
-                "npsDescription" -> "Estimated Tax You Owe This Year",
-                "amount"         -> 10,
-                "type"           -> 45
-              ),
-              Json.obj(
-                "npsDescription" -> "Underpayment form previous year",
-                "amount"         -> 10,
-                "type"           -> 35
-              ),
-              Json.obj(
-                "npsDescription" -> "Outstanding Debt Restriction",
-                "amount"         -> 10,
-                "type"           -> 41
-              ),
-              Json.obj(
-                "npsDescription" -> "Something we aren't interested in",
-                "amount"         -> 10,
-                "type"           -> 888
-              )
-            )
-          ),
-          "allowances" -> JsArray(
-            Seq(
-              Json.obj(
-                "npsDescription" -> "personal allowance",
-                "amount"         -> 10,
-                "type"           -> 11
-              ),
-              Json.obj(
-                "npsDescription" -> "personal allowance",
-                "amount"         -> 10,
-                "type"           -> 12
-              ),
-              Json.obj(
-                "npsDescription" -> "personal allowance",
-                "amount"         -> 10,
-                "type"           -> 13
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Job expenses"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(1)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Something we aren't interested in"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(888)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-
-  private def npsIncomeSourceJson(
-    allowances: Seq[JsObject] = Seq.empty[JsObject],
-    deductions: Seq[JsObject] = Seq.empty[JsObject]
-  ) = Json.obj(
-    "taxAccountId" -> "id",
-    "nino"         -> nino.nino,
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"   -> 1,
-          "employmentType" -> 1,
-          "taxCode"        -> "1150L",
-          "deductions"     -> JsArray(deductions),
-          "allowances"     -> JsArray(allowances)
-        )
-      )
-    )
-  )
-
-  private def npsIabdSummaries(empId: Int, types: Seq[Int], amount: Int): Seq[JsObject] =
-    types.map { tp =>
-      Json.obj(
-        "amount"             -> amount,
-        "type"               -> tp,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> empId,
-        "estimatesPaySource" -> 1
-      )
-    }
-
-  private def npsComponents(types: Seq[Int], amount: Int): Seq[JsObject] =
-    types.map { tp =>
-      Json.obj(
-        "npsDescription" -> "nps-desc",
-        "amount"         -> amount,
-        "type"           -> tp
-      )
-    }
 
   private def npsIabdSummary(iadbType: Int): JsObject =
     npsIabdSummaries(1, iadbType).head
@@ -913,7 +578,7 @@ object CodingComponentSpec {
     )
 
   private def taxAccountJsonWithIabds(
-    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
+    incomeIabdSummaries: Seq[JsObject],
     allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
   ): JsObject =
     Json.obj(
