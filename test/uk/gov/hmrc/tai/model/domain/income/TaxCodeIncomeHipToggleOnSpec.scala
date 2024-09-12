@@ -72,7 +72,7 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
   "taxCodeIncomeSourceReads" must {
     "read taxCodeIncome" when {
       "all income source indicators are false" in {
-      // TODO: BasisOfOperation need mapping from Majd - have emailed him
+        // TODO: BasisOfOperation need mapping from Majd - have emailed him
         val payload = readFile("TC05.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
         result mustBe Seq(
@@ -90,8 +90,6 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
             BigDecimal(0)
           )
         )
-
-
 
       }
 

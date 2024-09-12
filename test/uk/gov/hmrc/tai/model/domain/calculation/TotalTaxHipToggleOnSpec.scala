@@ -22,7 +22,7 @@ import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipToggleOn.{incomeCateg
 
 import scala.io.Source
 
-class TotalTaxSpec extends PlaySpec {
+class TotalTaxHipToggleOnSpec extends PlaySpec {
 
   private val basePath = "test/resources/data/TaxAccount/TotalTax/hip/"
   private def readFile(fileName: String): JsValue = {
