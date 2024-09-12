@@ -22,7 +22,7 @@ import play.api.libs.json.{JsPath, Reads}
 object IabdSummaryHipToggleOn {
   implicit val iabdSummaryReads: Reads[IabdSummary] = (
     (JsPath \ "type").read[Int] and
-      (JsPath \ "employmentId").readNullable[Int] and// TODO: employmentId
+      (JsPath \ "employmentId").readNullable[Int] and // TODO: employmentId
       (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
   )(IabdSummary.apply _)
 }

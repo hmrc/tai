@@ -23,9 +23,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.TaxOnOtherIncome.{taxAccountSummaryHipToggleOffReads, taxOnOtherIncomeHipToggleOffReads}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff}
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentHipToggleOffReads
 //import uk.gov.hmrc.tai.model.domain.taxAdjustments.{GiftAidPayments, TaxAdjustment, _}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
@@ -52,20 +51,30 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
     (for {
-      readsTaxAccountSummary <- getReads(taxAccountSummaryHipToggleOffReads, taxAccountSummaryHipToggleOffReads)
+      readsTaxAccountSummary <- getReads(
+                                  TaxOnOtherIncomeHipToggleOff.taxAccountSummaryReads,
+                                  TaxOnOtherIncomeHipToggleOn.taxAccountSummaryReads
+                                )
       readsCodingComponent <- getReads(
                                 CodingComponentHipToggleOff.codingComponentReads,
-                                CodingComponentHipToggleOff.codingComponentReads
+                                CodingComponentHipToggleOn.codingComponentReads
                               )
     } yield taxAccountConnector
       .taxAccount(nino, year)
       .flatMap { taxAccount =>
         val totalTax = taxAccount.as[BigDecimal](readsTaxAccountSummary)
+
+        println("\nDEBUG1:" + totalTax)
+
         val componentsCanAffectTotal = taxAccount
           .as[Seq[CodingComponent]](readsCodingComponent)
           .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
+
+        println("\nDEBUG2:" + componentsCanAffectTotal)
+
         Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
       }).flatten
+
   }
 
   // TODO: DDCNL-9376 Use toggle service
@@ -141,7 +150,10 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
 
   // TODO: DDCNL-9376 Use toggle service
   def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
-    getReads(taxOnOtherIncomeHipToggleOffReads, taxOnOtherIncomeHipToggleOffReads).flatMap { taxOnOtherIncomeReads =>
+    getReads(
+      TaxOnOtherIncomeHipToggleOff.taxOnOtherIncomeTaxValueReads,
+      TaxOnOtherIncomeHipToggleOn.taxOnOtherIncomeTaxValueReads
+    ).flatMap { taxOnOtherIncomeReads =>
       taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeReads))
     }
 
@@ -161,7 +173,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
     for {
       readsCodingComponent <- getReads(
                                 CodingComponentHipToggleOff.codingComponentReads,
-                                CodingComponentHipToggleOff.codingComponentReads
+                                CodingComponentHipToggleOn.codingComponentReads
                               )
       codingComponents    <- taxAccountDetails.map(_.as[Seq[CodingComponent]](readsCodingComponent))
       taxReliefComponents <- taxReliefsComponentsFuture

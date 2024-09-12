@@ -1,6 +1,6 @@
 {
   "nationalInsuranceNumber": "AA000003",
-  "taxYear": <CY>,
+  "taxYear": 2023,
   "totalLiabilityDetails": {
     "nonSavings": {
       "totalIncomeDetails": {
@@ -8,6 +8,8 @@
         "type": "",
         "summaryIABDDetailsList": []
       },
+      "totalTax": 1000.12,
+      "totalTaxableIncome": 1000.13,
       "taxBandDetails": [
         {
           "bandType": "B",
@@ -62,7 +64,9 @@
         "amount": 1000.25,
         "type": "",
         "summaryIABDDetailsList": []
-      }
+      },
+      "totalTax": 1000.23,
+      "totalTaxableIncome": 1000.24
     }
   }
 }

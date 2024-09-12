@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.model.domain
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, Reads}
 
-
 object IabdSummaryHipToggleOff {
   implicit val iabdSummaryReads: Reads[IabdSummary] = (
     (JsPath \ "type").read[Int] and

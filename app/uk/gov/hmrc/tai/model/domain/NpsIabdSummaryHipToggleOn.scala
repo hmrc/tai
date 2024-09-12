@@ -25,13 +25,13 @@ object NpsIabdSummaryHipToggleOn {
   val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
     val categories =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-    val totalIncomeList = totalLiabilityIabdsOff(json, "totalIncomeDetails", categories)
-    val allowReliefDeductsList = totalLiabilityIabdsOff(json, "allowanceReliefDeductionsDetails", categories)
+    val totalIncomeList = totalLiabilityIabds(json, "totalIncomeDetails", categories)
+    val allowReliefDeductsList = totalLiabilityIabds(json, "allowanceReliefDeductionsDetails", categories)
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
   // TODO: DDCNL-9376 Duplicate reads
-  private def totalLiabilityIabdsOff(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
+  def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
     }
