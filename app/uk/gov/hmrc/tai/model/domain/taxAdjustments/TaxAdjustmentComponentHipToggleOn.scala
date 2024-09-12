@@ -126,13 +126,13 @@ object TaxAdjustmentComponentHipToggleOn {
     val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
     val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
     val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
-    
-    println("\n0:" + json)
-    println("\n1:" + reliefsGivingBackComponents)
-    println("\n2:" + otherTaxDues)
-    println("\n3:" + alreadyTaxedAtSources)
-    println("\n4:" + taxReliefComponent)
-    
+
+//    println("\n0:" + json)
+//    println("\n1:" + reliefsGivingBackComponents)
+//    println("\n2:" + otherTaxDues)
+//    println("\n3:" + alreadyTaxedAtSources)
+//    println("\n4:" + taxReliefComponent)
+
     JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
   }
 }

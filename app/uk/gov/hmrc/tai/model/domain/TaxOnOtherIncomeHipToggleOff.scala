@@ -47,7 +47,7 @@ object TaxOnOtherIncomeHipToggleOff {
   }
 
   private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
-    val iabdSummaries = NpsIabdSummaryHipToggleOn.totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
+    val iabdSummaries = NpsIabdSummaryHipToggleOff.totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
     val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
 
     @tailrec
