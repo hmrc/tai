@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsSuccess, JsValue, Reads}
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.totalLiabilityIabdsHipToggleOff
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOff.totalLiabilityIabds
 import uk.gov.hmrc.tai.model.domain.RateBand.incomeAndRateBands
 
 import scala.annotation.tailrec
@@ -41,7 +41,7 @@ object TaxOnOtherIncome {
   }
 
   private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
-    val iabdSummaries = totalLiabilityIabdsHipToggleOff(json, "totalIncome", Seq("nonSavings"))
+    val iabdSummaries = totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
     val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
 
     @tailrec

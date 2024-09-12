@@ -1,1 +1,5 @@
-{"nationalInsuranceNumber":"AA000003","taxYear":<CY>,"totalLiabilityDetails":{}}
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": <CY>,
+  "totalLiabilityDetails": {}
+}

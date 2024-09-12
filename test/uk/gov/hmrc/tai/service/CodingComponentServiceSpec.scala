@@ -65,9 +65,9 @@ class CodingComponentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(npsJsonResponse))
 
         val codingComponentList: Seq[CodingComponent] = Seq(
-          CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Estimated Tax You Owe This Year"),
-          CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Underpayment form previous year"),
-          CodingComponent(OutstandingDebt, None, 10, "Outstanding Debt Restriction")
+          CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Non-qualifying Relocation Expenses", None),
+          CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Van Benefit", None),
+          CodingComponent(OutstandingDebt, None, 10, "Educational Services", None)
         )
 
         val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
@@ -168,6 +168,7 @@ class CodingComponentServiceSpec extends BaseSpec {
              |          "adjustedAmount": 10
              |        },
              |        {
+             |          "type": "Educational Services (888)",
              |          "summaryIABDDetailsList": [],
              |          "adjustedAmount": 10
              |        }

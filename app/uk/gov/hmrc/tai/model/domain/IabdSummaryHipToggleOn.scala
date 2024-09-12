@@ -16,4 +16,13 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-case class NpsIabdSummary(componentType: Int, employmentId: Option[Int], amount: BigDecimal, description: String)
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, Reads}
+
+object IabdSummaryHipToggleOn {
+  implicit val iabdSummaryReads: Reads[IabdSummary] = (
+    (JsPath \ "type").read[Int] and
+      (JsPath \ "employmentId").readNullable[Int] and// TODO: employmentId
+      (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
+  )(IabdSummary.apply _)
+}

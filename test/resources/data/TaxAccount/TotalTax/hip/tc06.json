@@ -1,1 +1,12 @@
-{"nationalInsuranceNumber":"AA000003","taxYear":<CY>,"totalLiabilityDetails":{"nonSavings":{},"untaxedInterest":{},"bankInterest":{},"ukDividends":{},"foreignInterest":{},"foreignDividends":{}}}
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": <CY>,
+  "totalLiabilityDetails": {
+    "nonSavings": {},
+    "untaxedInterest": {},
+    "bankInterest": {},
+    "ukDividends": {},
+    "foreignInterest": {},
+    "foreignDividends": {}
+  }
+}

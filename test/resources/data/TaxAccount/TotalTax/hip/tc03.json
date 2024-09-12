@@ -1,1 +1,39 @@
-{"nationalInsuranceNumber":"AA000003","taxYear":<CY>,"totalLiabilityDetails":{"nonSavings":{"totalIncomeDetails":{"amount":1000.14,"summaryIABDDetailsList":[]}},"untaxedInterest":{},"bankInterest":{"totalIncomeDetails":{"summaryIABDDetailsList":[]}},"ukDividends":{"totalIncomeDetails":{"summaryIABDDetailsList":[]}},"foreignInterest":{"totalIncomeDetails":{"summaryIABDDetailsList":[]}},"foreignDividends":{"totalIncomeDetails":{"amount":1000.25,"summaryIABDDetailsList":[]}}}}
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": <CY>,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "amount": 1000.14,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "untaxedInterest": {},
+    "bankInterest": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "ukDividends": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignInterest": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignDividends": {
+      "totalIncomeDetails": {
+        "amount": 1000.25,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    }
+  }
+}

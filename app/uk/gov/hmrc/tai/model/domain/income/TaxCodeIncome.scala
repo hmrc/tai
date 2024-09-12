@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model.domain.income
 
 import play.api.Logger
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.IabdSummary.iabdSummaryReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
@@ -190,7 +189,7 @@ object TaxCodeIncome {
 
   private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = (json: JsValue) => {
     val incomeSourceType = taxCodeIncomeType(json)
-    val employmentId = (json \ "employmentId").asOpt[Int]
+    val employmentId = (json \ "employmentId").asOpt[Int] // TODO: employmentId
     val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
     val description = incomeSourceType.toString
     val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
@@ -242,7 +241,8 @@ object TaxCodeIncome {
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdSummaries: Option[Seq[IabdSummary]] =
-      (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries").asOpt[Seq[IabdSummary]](Reads.seq(iabdSummaryReads))
+      (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries")
+        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipToggleOff.iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
       _.find(iabd =>
         newEstimatedPayTypeFilter(iabd) &&

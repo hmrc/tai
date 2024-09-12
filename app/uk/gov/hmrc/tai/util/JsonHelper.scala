@@ -56,4 +56,33 @@ object JsonHelper {
     def orElseTry(bReads: Reads[A]): Reads[A] =
       combineReads(reads, bReads)
   }
+
+  def parseType(fullType: String): Option[(String, Int)] = {
+    val trimmedValue = fullType.trim
+    if (trimmedValue.endsWith(")")) {
+      val reversedValue = trimmedValue.reverse
+      val bracket = reversedValue.indexOf("(")
+      if (bracket > 1) {
+        val numberAsString = reversedValue.substring(1, bracket).reverse
+        val description = reversedValue.substring(bracket + 1).reverse.trim
+        Some((description, numberAsString.toInt))
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  def parseTypeOrException(fullType: String): (String, Int) = parseType(fullType).getOrElse(
+    throw JsResultException(Seq((__, Seq(JsonValidationError(s"Invalid type: $fullType")))))
+  )
+
+  val readsTypeTuple: Reads[(String, Int)] = { fullType =>
+    parseType(fullType.as[String]) match {
+      case Some(t) => JsSuccess(t)
+      case None    => JsError(JsonValidationError(s"Invalid type: $fullType"))
+    }
+  }
+
 }

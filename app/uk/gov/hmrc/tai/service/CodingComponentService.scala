@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff}
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,7 +48,7 @@ class CodingComponentService @Inject() (
   def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
     getReads(
       CodingComponentHipToggleOff.codingComponentReads,
-      CodingComponentHipToggleOff.codingComponentReads
+      CodingComponentHipToggleOn.codingComponentReads
     ).flatMap { codingComponentReads =>
       taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
     }

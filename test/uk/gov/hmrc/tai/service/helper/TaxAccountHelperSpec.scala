@@ -113,8 +113,6 @@ class TaxAccountHelperSpec extends BaseSpec {
     "return totalEstimatedTax from the TaxAccountSummary connector" when {
       "underpayment from previous year present" in {
 
-        println("\nHELLO!!!\n" + Json.stringify(taxAccountSummaryNpsJson))
-
         val underpaymentDeduction = Json.arr(
           Json.obj(
             "npsDescription" -> "Underpayment from previous year",

@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.util
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import uk.gov.hmrc.tai.util.JsonHelper.OrElseTry
+import uk.gov.hmrc.tai.util.JsonHelper.{OrElseTry, parseType}
 
 import scala.util.{Failure, Try}
 
@@ -69,5 +69,23 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
       Try(combinedReads.reads(JsNumber(3))) mustBe Failure(exception)
     }
 
+  }
+
+  "parseType" must {
+    "return correct tuple when number present in brackets with leading zeros" in {
+      parseType("test (002)") mustBe Some(("test", 2))
+    }
+
+    "return correct tuple when number present in brackets without leading zeros" in {
+      parseType("test (2)") mustBe Some(("test", 2))
+    }
+
+    "return correct tuple when number only present in brackets" in {
+      parseType("(2)") mustBe Some(("", 2))
+    }
+
+    "return None when no number present" in {
+      parseType("test") mustBe None
+    }
   }
 }

@@ -1,1 +1,24 @@
-{"nationalInsuranceNumber":"AA000003","taxYear":<CY>,"totalLiabilityDetails":{"nonSavings":{"allowanceReliefDeductionsDetails":{"amount":100,"summaryIABDDetailsList":[]}},"untaxedInterest":{},"bankInterest":{},"ukDividends":{"allowanceReliefDeductionsDetails":{"amount":100,"summaryIABDDetailsList":[]}},"foreignInterest":{},"foreignDividends":{}}}
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": <CY>,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "untaxedInterest": {},
+    "bankInterest": {},
+    "ukDividends": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignInterest": {},
+    "foreignDividends": {}
+  }
+}

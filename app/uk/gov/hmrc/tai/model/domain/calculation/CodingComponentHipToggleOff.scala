@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityHipToggleOffReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOff.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 
 object CodingComponentHipToggleOff {
@@ -144,7 +144,7 @@ object CodingComponentHipToggleOff {
 
   private val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
     override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads)
+      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
       val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
       val (benefits, otherCodingComponents) = codingComponents.partition {
         _.componentType match {

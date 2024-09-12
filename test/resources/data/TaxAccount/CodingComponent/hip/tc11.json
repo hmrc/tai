@@ -5,23 +5,28 @@
   "totalLiabilityDetails": {
     "nonSavings": {
       "totalIncomeDetails": {
+        "type": "",
         "summaryIABDDetailsList": [],
         "summaryIABDEstimatedPayDetailsList": [
           {
             "amount": 1,
+            "type": "desc (999)",
             "employmentSequenceNumber": 1
           },
           {
             "amount": 1,
+            "type": "desc (888)",
             "employmentSequenceNumber": 1
           },
           {
             "amount": 1,
+            "type": "desc (777)",
             "employmentSequenceNumber": 1
           }
         ]
       },
       "allowanceReliefDeductionsDetails": {
+        "type": "",
         "summaryIABDDetailsList": [],
         "summaryIABDEstimatedPayDetailsList": []
       }

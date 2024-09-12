@@ -29,6 +29,7 @@
           "adjustedAmount": 10
         },
         {
+          "type": "Something we aren't interested in (888)",
           "summaryIABDDetailsList": [],
           "adjustedAmount": 10
         }
@@ -50,6 +51,7 @@
           "adjustedAmount": 10
         },
         {
+          "type": "Something we aren't interested in (888)",
           "summaryIABDDetailsList": [],
           "adjustedAmount": 10
         }

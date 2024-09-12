@@ -5,6 +5,7 @@
   "totalLiabilityDetails": {
     "nonSavings": {
       "totalIncomeDetails": {
+        "type": "",
         "summaryIABDDetailsList": [],
         "summaryIABDEstimatedPayDetailsList": [
           {
@@ -45,6 +46,7 @@
         ]
       },
       "allowanceReliefDeductionsDetails": {
+        "type": "",
         "summaryIABDDetailsList": [],
         "summaryIABDEstimatedPayDetailsList": []
       }

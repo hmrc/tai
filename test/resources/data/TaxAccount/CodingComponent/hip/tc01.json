@@ -9,6 +9,7 @@
       "taxCode": "1150L",
       "deductionsDetails": [
         {
+          "type": "Something we aren't interested in (888)",
           "summaryIABDDetailsList": [],
           "adjustedAmount": 10
         }

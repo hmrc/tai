@@ -17,13 +17,15 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummary.iabdsFromTotalLiabilityHipToggleOffReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOn.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
 
 object CodingComponentHipToggleOn {
   // TODO: DDCNL-9376 Duplicate reads
   val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
+
     val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
     val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
 
@@ -72,20 +74,16 @@ object CodingComponentHipToggleOn {
       case _ => Seq.empty[CodingComponent]
     }
 
-// TODO: What if type has something not in enum list? Also what if type not present? All fields seem to be optional
   private def taxComponentFromNpsComponent(
     npsComponentJson: JsValue,
     codingComponentFactory: CodingComponentFactory
   ): Option[CodingComponent] = {
-    val amount = (npsComponentJson \ "adjustedAmount").as[BigDecimal]
-
     val fullType = (npsComponentJson \ "type").as[String]
-    fullType.replace(")", "").split("\\(").toSeq match {
-      case Seq(description, typeKeyAsString) =>
-        val sourceAmount = (npsComponentJson \ "sourceAmount").asOpt[BigDecimal]
-        codingComponentFactory(typeKeyAsString.toInt, amount, description, sourceAmount)
-      case _ => throw JsResultException(Seq((__, Seq(JsonValidationError(s"Invalid type: $fullType")))))
-    }
+    val (description, typeKey) = parseTypeOrException(fullType)
+    val amount = (npsComponentJson \ "adjustedAmount").as[BigDecimal]
+    val sourceAmount = (npsComponentJson \ "sourceAmount").asOpt[BigDecimal]
+    codingComponentFactory(typeKey, amount, description, sourceAmount)
+
   }
 
   private val npsComponentDeductionMap: Map[Int, DeductionComponentType] = Map(
@@ -146,19 +144,19 @@ object CodingComponentHipToggleOn {
     34 -> BRDifferenceTaxReduction
   )
 
-  private val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityHipToggleOffReads)
-      val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
-      val (benefits, otherCodingComponents) = codingComponents.partition {
-        _.componentType match {
-          case _: BenefitComponentType => true
-          case _                       => false
-        }
+  private val totalLiabilityReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
+
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+    val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
+
+    val (benefits, otherCodingComponents) = codingComponents.partition {
+      _.componentType match {
+        case _: BenefitComponentType => true
+        case _                       => false
       }
-      val reconciledBenefits = reconcileBenefits(benefits)
-      JsSuccess(otherCodingComponents ++ reconciledBenefits)
     }
+    val reconciledBenefits = reconcileBenefits(benefits)
+    JsSuccess(otherCodingComponents ++ reconciledBenefits)
   }
 
   private def codingComponentsFromIabdSummaries(iabds: Seq[NpsIabdSummary]): Seq[CodingComponent] =
