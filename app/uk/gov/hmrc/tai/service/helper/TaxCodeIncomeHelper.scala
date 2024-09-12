@@ -21,7 +21,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome.taxCodeIncomeSourcesHipToggleOffReads
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
@@ -33,11 +32,11 @@ class TaxCodeIncomeHelper @Inject() (
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService
 )(implicit ec: ExecutionContext) {
-
+// TODO: Add feature toggle service here? Currently only doing off - need to call TaxCodeIncomeHipToggleOn
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val taxCodeIncomeFuture = taxAccountConnector
       .taxAccount(nino, year)
-      .map(_.as[Seq[TaxCodeIncome]](taxCodeIncomeSourcesHipToggleOffReads))
+      .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads))
     lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
 
     for {

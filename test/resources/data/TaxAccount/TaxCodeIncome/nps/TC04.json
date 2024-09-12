@@ -1,0 +1,17 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 3,
+      "taxCode": "1150L",
+      "payAndTax": null,
+      "pensionIndicator": true,
+      "jsaIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "name": "PensionProvider1",
+      "basisOperation": 2,
+      "employmentStatus": 1
+    }
+  ]
+}

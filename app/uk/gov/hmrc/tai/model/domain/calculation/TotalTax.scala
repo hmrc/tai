@@ -20,7 +20,6 @@ import play.api.Logging
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustment
 
-import scala.language.postfixOps
 case class TaxBand(
   bandType: String,
   code: String,

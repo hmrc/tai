@@ -104,5 +104,9 @@ object NonTaxCodeIncome {
 case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTaxCodeIncome)
 
 object Incomes {
-  implicit val format: Format[Incomes] = Json.format[Incomes]
+  implicit val format: Format[Incomes] = {
+    import TaxCodeIncome._
+    import TaxCodeIncomeHipToggleOff._
+    Json.format[Incomes]
+  }
 }

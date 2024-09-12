@@ -1,0 +1,24 @@
+{
+  "taxYear": 2017,
+  "totalLiability": {
+    "untaxedInterest": {
+      "totalTaxableIncome": 123
+    }
+  },
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "taxCode": "1150L",
+      "name": "Employer1",
+      "basisOperation": 1,
+      "employmentStatus": 1
+    },
+    {
+      "employmentId": 2,
+      "taxCode": "1100L",
+      "name": "Employer2",
+      "basisOperation": 2,
+      "employmentStatus": 1
+    }
+  ]
+}

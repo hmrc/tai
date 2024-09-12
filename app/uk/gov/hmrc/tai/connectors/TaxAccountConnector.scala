@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import play.api.http.MimeTypes
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
@@ -31,7 +32,8 @@ import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import java.util.UUID
+import java.nio.charset.StandardCharsets
+import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -83,7 +85,6 @@ class DefaultTaxAccountConnector @Inject() (
     )
 
   def taxAccount(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[JsValue] =
-    //   httpHandler.getFromApi(taxAccountUrls.taxAccountUrl(nino, taxYear), APITypes.NpsTaxAccountAPI, hcWithHodHeaders)
     featureFlagService.get(HipToggleTaxAccount).flatMap { toggle =>
       val (baseUrl, originatorId, extraInfo) =
         if (toggle.isEnabled) {
@@ -94,10 +95,8 @@ class DefaultTaxAccountConnector @Inject() (
 
       def pathUrl(nino: Nino): String = if (toggle.isEnabled) {
         s"$baseUrl/person/${nino.nino}/tax-account/${taxYear.year}"
-        // s"$baseUrl/employment/employee/$nino/tax-year/$year/employment-details"
       } else {
-        s"$baseUrl/person/${nino.nino}/tax-account/${taxYear.year}"
-        // s"$baseUrl/person/$nino/employment/$year"
+        s"${npsConfig.baseURL}/person/${nino.nino}/tax-account/${taxYear.year}"
       }
 
       val urlToRead = pathUrl(nino)
@@ -120,22 +119,18 @@ trait TaxAccountConnector {
     hc: HeaderCarrier,
     hipExtraInfo: Option[(String, String)]
   ): Seq[(String, String)] = {
-    val extraFields: Seq[(String, String)] =
-      hipExtraInfo
-        .map { ei =>
-          Seq(
-            "clientId"     -> ei._1,
-            "clientSecret" -> ei._2
-          )
-        }
-        .fold[Seq[(String, String)]](Nil)(identity)
-
+    val hipAuth = hipExtraInfo.fold[Seq[(String, String)]](Seq.empty) { case (clientId, clientSecret) =>
+      val token = Base64.getEncoder.encodeToString(s"$clientId:$clientSecret".getBytes(StandardCharsets.UTF_8))
+      Seq(
+        HeaderNames.authorisation -> s"Basic $token"
+      )
+    }
     Seq(
-      "Gov-Uk-Originator-Id" -> originatorId,
-      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-      "CorrelationId"        -> UUID.randomUUID().toString
-    ) ++ extraFields
+      play.api.http.HeaderNames.CONTENT_TYPE -> MimeTypes.JSON,
+      "Gov-Uk-Originator-Id"                 -> originatorId,
+      HeaderNames.xSessionId                 -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId                 -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"                        -> UUID.randomUUID().toString
+    ) ++ hipAuth
   }
-
 }
