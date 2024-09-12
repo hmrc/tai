@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentReads
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustmentComponentHipToggleOff, TaxAdjustmentComponentHipToggleOn}
 //import uk.gov.hmrc.tai.model.domain.taxAdjustments.{GiftAidPayments, TaxAdjustment, _}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -123,6 +123,21 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
   def alreadyTaxedAtSourceComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val alreadyTaxedSourcesComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
+//        ArraySeq(
+//          TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100),
+//          TaxAdjustmentComponent(ConcessionalRelief, 100.5),
+//          TaxAdjustmentComponent(MaintenancePayments, 200),
+//          TaxAdjustmentComponent(MarriedCouplesAllowance, 300),
+//          TaxAdjustmentComponent(DoubleTaxationRelief, 400),
+//          TaxAdjustmentComponent(ExcessGiftAidTax, 100),
+//          TaxAdjustmentComponent(ExcessWidowsAndOrphans, 100),
+//          TaxAdjustmentComponent(PensionPaymentsAdjustment, 200),
+//          TaxAdjustmentComponent(ChildBenefit, 300),
+//          TaxAdjustmentComponent(PersonalPensionPayment, 600),
+//          TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100),
+//          TaxAdjustmentComponent(GiftAidPaymentsRelief, 200)
+//        )
+
         taxAdjustment.taxAdjustmentComponents.filter {
           _.taxAdjustmentType match {
             case _: AlreadyTaxedAtSource => true
@@ -187,7 +202,10 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
   private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] =
     for {
       readsTaxAdjustmentComponent <-
-        getReads(taxAdjustmentComponentReads, taxAdjustmentComponentReads)
+        getReads(
+          TaxAdjustmentComponentHipToggleOff.taxAdjustmentComponentReads,
+          TaxAdjustmentComponentHipToggleOn.taxAdjustmentComponentReads
+        )
       taxAdjustments <-
         taxAccountDetails.map(_.as[Seq[TaxAdjustmentComponent]](readsTaxAdjustmentComponent))
     } yield

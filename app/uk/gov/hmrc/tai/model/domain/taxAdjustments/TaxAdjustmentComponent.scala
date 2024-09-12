@@ -88,6 +88,10 @@ object TaxReliefComponent {
 
 case class TaxAdjustmentComponent(taxAdjustmentType: TaxAdjustmentType, taxAdjustmentAmount: BigDecimal)
 
+object TaxAdjustmentComponent {
+  implicit val format: Format[TaxAdjustmentComponent] = Json.format[TaxAdjustmentComponent]
+}
+
 case class TaxAdjustment(amount: BigDecimal, taxAdjustmentComponents: Seq[TaxAdjustmentComponent])
 
 object TaxAdjustment {

@@ -20,7 +20,7 @@ import play.api.libs.json.{JsArray, JsValue}
 
 object RateBandHipToggleOn {
   def incomeAndRateBands(json: JsValue): Seq[RateBand] = {
-  
+
     val bands = (json \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails").asOpt[JsArray]
     val details = bands.map(_.value.collect {
       case js if (js \ "income").asOpt[BigDecimal].isDefined =>
@@ -29,7 +29,7 @@ object RateBandHipToggleOn {
 
     details match {
       case Some(rateBands) => rateBands.toSeq.sortBy(-_.rate)
-      case None => Seq.empty[RateBand]
+      case None            => Seq.empty[RateBand]
     }
   }
 }

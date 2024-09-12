@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.taxAdjustments
 
 import play.api.libs.json._
 
-object TaxAdjustmentComponentHipToggleOff {
+object TaxAdjustmentComponentHipToggleOn {
 
   def flattenTaxAdjustmentComponents(components: Option[TaxAdjustmentComponent]*): Seq[TaxAdjustmentComponent] =
     components.toSeq.flatten
@@ -34,7 +34,7 @@ object TaxAdjustmentComponentHipToggleOff {
 
   private val taxReliefFormattersReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
-      (json \ "totalLiability" \ "basicRateExtensions").asOpt[JsObject] match {
+      (json \ "totalLiabilityDetails" \ "basicRateExtensionsDetails").asOpt[JsObject] match {
         case Some(js) =>
           val personalPensionPayment = readTaxAdjustmentComponent(js, "personalPensionPayment", PersonalPensionPayment)
           val personalPensionPaymentRelief =
@@ -56,7 +56,7 @@ object TaxAdjustmentComponentHipToggleOff {
 
   private val alreadyTaxedAtSourceReads = new Reads[Seq[TaxAdjustmentComponent]] {
     override def reads(json: JsValue): JsResult[Seq[TaxAdjustmentComponent]] =
-      (json \ "totalLiability" \ "alreadyTaxedAtSource").asOpt[JsObject] match {
+      (json \ "totalLiabilityDetails" \ "alreadyTaxedAtSourceDetails").asOpt[JsObject] match {
         case Some(js) =>
           val taxOnBankInterest = readTaxAdjustmentComponent(js, "taxOnBankBSInterest", TaxOnBankBSInterest)
           val taxOnUkDividends = readTaxAdjustmentComponent(js, "taxCreditOnUKDividends", TaxCreditOnUKDividends)
@@ -78,7 +78,7 @@ object TaxAdjustmentComponentHipToggleOff {
   }
 
   private val otherTaxDueReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) =>
-    (json \ "totalLiability" \ "otherTaxDue").asOpt[JsObject] match {
+    (json \ "totalLiabilityDetails" \ "otherTaxDueDetails").asOpt[JsObject] match {
       case Some(js) =>
         val excessGiftAidTax = readTaxAdjustmentComponent(js, "excessGiftAidTax", ExcessGiftAidTax)
         val excessWidowsAndOrphans = readTaxAdjustmentComponent(js, "excessWidowsAndOrphans", ExcessWidowsAndOrphans)
@@ -98,7 +98,7 @@ object TaxAdjustmentComponentHipToggleOff {
     }
 
   private val reliefsGivingBackTaxReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) =>
-    (json \ "totalLiability" \ "reliefsGivingBackTax").asOpt[JsObject] match {
+    (json \ "totalLiabilityDetails" \ "reliefsGivingBackTaxDetails").asOpt[JsObject] match {
       case Some(js) =>
         val enterpriseInvestment =
           readTaxAdjustmentComponent(js, "enterpriseInvestmentSchemeRelief", EnterpriseInvestmentSchemeRelief)
@@ -126,6 +126,13 @@ object TaxAdjustmentComponentHipToggleOff {
     val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
     val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
     val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
+    
+    println("\n0:" + json)
+    println("\n1:" + reliefsGivingBackComponents)
+    println("\n2:" + otherTaxDues)
+    println("\n3:" + alreadyTaxedAtSources)
+    println("\n4:" + taxReliefComponent)
+    
     JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
   }
 }
