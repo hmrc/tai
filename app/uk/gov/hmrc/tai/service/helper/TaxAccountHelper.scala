@@ -25,7 +25,7 @@ import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentHipToggleOffReads
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustmentComponent.taxAdjustmentComponentReads
 //import uk.gov.hmrc.tai.model.domain.taxAdjustments.{GiftAidPayments, TaxAdjustment, _}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -187,7 +187,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
   private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] =
     for {
       readsTaxAdjustmentComponent <-
-        getReads(taxAdjustmentComponentHipToggleOffReads, taxAdjustmentComponentHipToggleOffReads)
+        getReads(taxAdjustmentComponentReads, taxAdjustmentComponentReads)
       taxAdjustments <-
         taxAccountDetails.map(_.as[Seq[TaxAdjustmentComponent]](readsTaxAdjustmentComponent))
     } yield
