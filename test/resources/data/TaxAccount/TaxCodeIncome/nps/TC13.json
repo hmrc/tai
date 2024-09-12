@@ -1,9 +1,0 @@
-{
-  "taxAccountId": "id",
-  "nino": "CB003400A",
-  "incomeSources": [
-    {
-      "taxYear": 2017
-    }
-  ]
-}

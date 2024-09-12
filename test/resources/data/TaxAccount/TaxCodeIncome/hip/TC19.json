@@ -1,0 +1,19 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentStatus": "Permanently Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": true,
+      "taxCode": "1150L",
+      "totalInYearAdjustment": 30.4,
+      "totalInYearAdjustmentIntoCurrentYear": 10.2,
+      "totalInYearAdjustmentIntoNextYear": 10.6,
+      "payAndTax": {}
+    }
+  ]
+}

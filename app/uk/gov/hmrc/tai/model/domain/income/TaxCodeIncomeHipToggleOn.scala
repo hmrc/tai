@@ -36,14 +36,14 @@ object TaxCodeIncomeHipToggleOn {
 
   private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = (json: JsValue) => {
     val incomeSourceType = taxCodeIncomeType(json)
-    val employmentId = (json \ "employmentId").asOpt[Int] // TODO: employmentId
+    val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
     val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
     val description = incomeSourceType.toString
     val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
-    val name = (json \ "name").asOpt[String].getOrElse("")
+    val name = (json \ "payeSchemeOperatorName").asOpt[String].getOrElse("")
     val basisOperation =
       (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
-    val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
+    val status = TaxCodeIncomeStatus.employmentStatus(json)
     val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
@@ -66,7 +66,7 @@ object TaxCodeIncomeHipToggleOn {
 
   // TODO: DDCNL-9376 Duplicate reads
   val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
-    val taxCodeIncomes = (json \ "incomeSources")
+    val taxCodeIncomes = (json \ "employmentDetailsList")
       .asOpt[Seq[TaxCodeIncome]](Reads.seq(TaxCodeIncomeHipToggleOn.taxCodeIncomeSourceReads))
       .getOrElse(Seq.empty[TaxCodeIncome])
     JsSuccess(taxCodeIncomes)
@@ -88,8 +88,8 @@ object TaxCodeIncomeHipToggleOn {
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdSummaries: Option[Seq[IabdSummary]] =
-      (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries")
-        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipToggleOff.iabdSummaryReads))
+      (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDEstimatedPayDetailsList")
+        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipToggleOn.iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
       _.find(iabd =>
         newEstimatedPayTypeFilter(iabd) &&

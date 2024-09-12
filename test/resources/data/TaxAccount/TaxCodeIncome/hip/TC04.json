@@ -1,0 +1,17 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 3,
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "PensionProvider1",
+      "taxCode": "1150L",
+      "payAndTax": {}
+    }
+  ]
+}

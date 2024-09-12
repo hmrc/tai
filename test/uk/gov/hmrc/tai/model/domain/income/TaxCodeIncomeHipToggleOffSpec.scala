@@ -32,38 +32,6 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     Json.parse(source).as[JsObject]
   }
 
-  private val totalIncome: JsObject = Json.obj(
-    "npsDescription" -> JsNull,
-    "amount"         -> JsNumber(1234),
-    "iabdSummaries" -> JsArray(
-      Seq(
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(27),
-          "employmentId"   -> JsNumber(1),
-          "npsDescription" -> JsString("New Estimated Pay")
-        ),
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(29),
-          "employmentId"   -> JsNumber(1),
-          "npsDescription" -> JsString("New Estimated Pay")
-        ),
-        Json.obj(
-          "amount"         -> JsNumber(1111),
-          "type"           -> JsNumber(27),
-          "employmentId"   -> JsNumber(2),
-          "npsDescription" -> JsString("New Estimated Pay")
-        )
-      )
-    )
-  )
-
-  private def arrayOf(json: JsObject): JsObject =
-    Json.obj(
-      "incomeSources" -> Json.arr(json)
-    )
-
   "taxCodeIncomeSourcesRead should use totalTaxableIncome to read amount" must {
     "return a value for the total taxable income from NPS tax response" when {
 
@@ -270,7 +238,9 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
   "taxAccountReads" must {
     "deserialize the tax account json into the case class with none values" when {
       "none of the fields are provided" in {
-        val payload = readFile("TC13.json")
+        val payload = Json.obj(
+          "taxYear" -> JsNumber(2017)
+        )
         payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads) mustBe Nil
       }
 
