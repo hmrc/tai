@@ -61,7 +61,8 @@ object TotalTaxHipToggleOn extends Logging {
     val totalLiability = (json \ "totalLiabilityDetails").as[JsValue]
     JsSuccess(
       categoryNames map (category =>
-        (totalLiability \ category \ "allowanceReliefDeductionsDetails" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
+        (totalLiability \ category \ "allowanceReliefDeductionsDetails" \ "amount")
+          .asOpt[BigDecimal] getOrElse BigDecimal(0)
       ) sum
     )
   }

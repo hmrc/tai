@@ -64,13 +64,9 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
       .flatMap { taxAccount =>
         val totalTax = taxAccount.as[BigDecimal](readsTaxAccountSummary)
 
-        println("\nDEBUG1:" + totalTax)
-
         val componentsCanAffectTotal = taxAccount
           .as[Seq[CodingComponent]](readsCodingComponent)
           .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
-
-        println("\nDEBUG2:" + componentsCanAffectTotal)
 
         Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
       }).flatten

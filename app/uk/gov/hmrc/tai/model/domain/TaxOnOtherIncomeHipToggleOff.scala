@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsSuccess, JsValue, Reads}
-import uk.gov.hmrc.tai.model.domain.RateBand.incomeAndRateBands
 
 import scala.annotation.tailrec
 
@@ -68,7 +67,7 @@ object TaxOnOtherIncomeHipToggleOff {
         case _ => throw new RuntimeException("Incorrect rate band")
       }
 
-    (nonCodedIncomeAmount, incomeAndRateBands(json)) match {
+    (nonCodedIncomeAmount, RateBandHipToggleOff.incomeAndRateBands(json)) match {
       case (None, _)      => JsSuccess(None)
       case (Some(_), Nil) => JsSuccess(None)
       case (Some(amount), incomeAndRateBands) =>

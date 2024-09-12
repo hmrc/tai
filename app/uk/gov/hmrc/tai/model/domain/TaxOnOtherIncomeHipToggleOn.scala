@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsSuccess, JsValue, Reads}
-import uk.gov.hmrc.tai.model.domain.RateBand.incomeAndRateBands
 
 import scala.annotation.tailrec
 
@@ -28,10 +27,10 @@ object TaxOnOtherIncomeHipToggleOn {
     // TODO: DDCNL-9376 Duplicate reads
     val taxOnOtherIncomeHipToggleOffReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
       JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
-  
+
     // TODO: DDCNL-9376 Duplicate reads
     val taxAccountSummaryHipToggleOffReads: Reads[BigDecimal] = (json: JsValue) => {
-    
+
    */
 
   // TODO: DDCNL-9376 Duplicate reads
@@ -42,8 +41,8 @@ object TaxOnOtherIncomeHipToggleOn {
   val taxAccountSummaryReads: Reads[BigDecimal] = (json: JsValue) => {
     val taxOnOtherIncome =
       json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)
-    val totalLiabilityTax = (json \ "totalLiabilityDetails" \ "totalLiability").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-
+    val totalLiabilityTax =
+      (json \ "totalLiabilityDetails" \ "totalLiability").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     JsSuccess(totalLiabilityTax - taxOnOtherIncome)
   }
 
@@ -53,10 +52,10 @@ object TaxOnOtherIncomeHipToggleOn {
 
     @tailrec
     def calculateTaxOnOtherIncome(
-                                   incomeAndRateBands: Seq[RateBand],
-                                   nonCodedIncome: BigDecimal,
-                                   total: BigDecimal = 0
-                                 ): BigDecimal =
+      incomeAndRateBands: Seq[RateBand],
+      nonCodedIncome: BigDecimal,
+      total: BigDecimal = 0
+    ): BigDecimal =
       incomeAndRateBands match {
         case Nil => total
         case xs if nonCodedIncome > xs.head.income =>
@@ -68,8 +67,8 @@ object TaxOnOtherIncomeHipToggleOn {
         case _ => throw new RuntimeException("Incorrect rate band")
       }
 
-    (nonCodedIncomeAmount, incomeAndRateBands(json)) match {
-      case (None, _) => JsSuccess(None)
+    (nonCodedIncomeAmount, RateBandHipToggleOn.incomeAndRateBands(json)) match {
+      case (None, _)      => JsSuccess(None)
       case (Some(_), Nil) => JsSuccess(None)
       case (Some(amount), incomeAndRateBands) =>
         val remainingTaxOnOtherIncome = calculateTaxOnOtherIncome(incomeAndRateBands, amount)

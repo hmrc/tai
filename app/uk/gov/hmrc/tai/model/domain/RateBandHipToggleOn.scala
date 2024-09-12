@@ -16,4 +16,20 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-case class RateBand(income: BigDecimal, rate: BigDecimal)
+import play.api.libs.json.{JsArray, JsValue}
+
+object RateBandHipToggleOn {
+  def incomeAndRateBands(json: JsValue): Seq[RateBand] = {
+  
+    val bands = (json \ "totalLiabilityDetails" \ "nonSavings" \ "taxBandDetails").asOpt[JsArray]
+    val details = bands.map(_.value.collect {
+      case js if (js \ "income").asOpt[BigDecimal].isDefined =>
+        RateBand((js \ "income").as[BigDecimal], (js \ "rate").as[BigDecimal])
+    })
+
+    details match {
+      case Some(rateBands) => rateBands.toSeq.sortBy(-_.rate)
+      case None => Seq.empty[RateBand]
+    }
+  }
+}
