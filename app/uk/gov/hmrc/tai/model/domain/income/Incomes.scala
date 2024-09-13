@@ -54,21 +54,12 @@ object NonTaxCodeIncome {
 case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTaxCodeIncome)
 
 object Incomes {
-//  implicit val format: Format[Incomes] = {
-//    import TaxCodeIncome._
-//    import TaxCodeIncomeHipToggleOff._
-//    Json.format[Incomes]
-//  }
-
-  implicit val writes: Writes[Incomes] = {
-    /*
-      The Hip toggle only affects the Reads. We only require the Writes
-      here so we can safely import TaxCodeIncomeHipToggleOff here.
-     */
-
+  /*
+    The Hip toggle only affects the Reads. We only require the Writes
+    here so we can safely import TaxCodeIncomeHipToggleOff.
+   */
+  implicit val format: Format[Incomes] = {
     import TaxCodeIncomeHipToggleOff._
-    Writes(is => Json.format[Incomes].writes(is))
-
+    Json.format[Incomes]
   }
-
 }
