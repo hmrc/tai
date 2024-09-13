@@ -18,16 +18,20 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status.NOT_FOUND
-import play.api.libs.json.{JsArray, JsObject, Json}
+import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
@@ -38,9 +42,17 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import java.time.LocalDate
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.io.Source
 
-class IncomeServiceSpec extends BaseSpec {
-
+class IncomeServiceHipToggleOffSpec extends BaseSpec {
+  private val basePath = "test/resources/data/TaxAccount/IncomeService/nps/"
+  private def readFile(fileName: String): JsValue = {
+    val jsonFilePath = basePath + fileName
+    val bufferedSource = Source.fromFile(jsonFilePath)
+    val source = bufferedSource.mkString("")
+    bufferedSource.close()
+    Json.parse(source)
+  }
   private val etag = ETag("1")
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
@@ -75,7 +87,7 @@ class IncomeServiceSpec extends BaseSpec {
         "estimatesPaySource" -> 1
       )
     }
-
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private def createSUT(
     employmentService: EmploymentService = mock[EmploymentService],
     citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
@@ -90,8 +102,17 @@ class IncomeServiceSpec extends BaseSpec {
       taxAccountConnector,
       iabdService,
       taxCodeIncomeHelper,
-      auditor
+      auditor,
+      mockFeatureFlagService
     )
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+  }
 
   "untaxedInterest" must {
     val mockTaxAccountConnector = mock[TaxAccountConnector]
@@ -99,8 +120,8 @@ class IncomeServiceSpec extends BaseSpec {
     "return untaxed interest" when {
       "it is present" in {
         val untaxedInterest = UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "desc")
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(readFile("TC01.json")))
 
         val SUT = createSUT(taxAccountConnector = mockTaxAccountConnector)
         val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
@@ -845,13 +866,8 @@ class IncomeServiceSpec extends BaseSpec {
 
     "return non-tax-code incomes" when {
       "there is non-tax-code income present and bank-accounts are not present" in {
-        val json = taxAccountJsonWithIabds(
-          npsIabdSummaries(
-            Seq(19, 20, 21, 22, 23, 24, 25, 26, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80,
-              81, 82, 83, 84, 85, 86, 87, 88, 89, 94, 116, 123, 125)
-          )
-        )
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(readFile("TC02.json")))
 
         val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 
@@ -894,8 +910,8 @@ class IncomeServiceSpec extends BaseSpec {
       }
 
       "non-tax-code income and bank accounts are present" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(readFile("TC03.json")))
 
         val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 
@@ -908,8 +924,8 @@ class IncomeServiceSpec extends BaseSpec {
 
       "bypass any bank account retrieval and return no untaxed interest" when {
         "no UntaxedInterestIncome is present" in {
-          val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(70)))
-          when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+          when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+            .thenReturn(Future.successful(readFile("TC04.json")))
 
           val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 
@@ -920,8 +936,8 @@ class IncomeServiceSpec extends BaseSpec {
       }
 
       "bbsi api throws exception" in {
-        val json = taxAccountJsonWithIabds(npsIabdSummaries(Seq(82)))
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(json))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any()))
+          .thenReturn(Future.successful(readFile("TC05.json")))
 
         val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 
