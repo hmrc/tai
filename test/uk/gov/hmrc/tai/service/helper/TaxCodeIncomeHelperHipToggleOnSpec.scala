@@ -286,6 +286,8 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
 
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
+        // TODO: Blocked by basis of operation query. Tests above should be reviewed too once we have mappings
+
         result mustBe Seq(
           TaxCodeIncome(
             EmploymentIncome,
@@ -317,6 +319,7 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             Some(LocalDate.parse("2017-04-10"))
           )
         )
+
       }
     }
   }

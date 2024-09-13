@@ -32,6 +32,8 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
     Json.parse(source).as[JsObject]
   }
 
+  // TODO: Blocked by basis of operation query. Tests above should be reviewed too once we have mappings
+
   "taxCodeIncomeSourcesRead should use totalTaxableIncome to read amount" must {
     "return a value for the total taxable income from NPS tax response" when {
 
