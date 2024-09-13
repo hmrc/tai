@@ -17,11 +17,14 @@
 package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
+import org.mockito.ArgumentMatchersSugar.eqTo
+import play.api.libs.json._
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.EmploymentIncome
-import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.income.{AgentContact, Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
+import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -29,72 +32,87 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class TaxCodeIncomeHelperSpec extends BaseSpec {
-
+class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
   private val mockIabdService = mock[IabdService]
-  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService)
+  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService, mockFeatureFlagService)
 
-  private val taxAccountJson: JsObject = Json.obj(
-    "taxYear" -> JsNumber(2022),
-    "totalLiability" -> Json.obj(
-      "untaxedInterest" -> Json.obj(
-        "totalTaxableIncome" -> JsNumber(123)
-      )
-    ),
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"     -> JsNumber(1),
-          "taxCode"          -> JsString("1150L"),
-          "name"             -> JsString("Employer1"),
-          "basisOperation"   -> JsNumber(1),
-          "employmentStatus" -> JsNumber(1)
-        ),
-        Json.obj(
-          "employmentId"     -> JsNumber(2),
-          "taxCode"          -> JsString("1100L"),
-          "name"             -> JsString("Employer2"),
-          "basisOperation"   -> JsNumber(2),
-          "employmentStatus" -> JsNumber(1)
-        )
-      )
-    )
-  )
+  private val taxAccountJson: JsObject = Json
+    .parse("""{
+             |   "nationalInsuranceNumber":"AA000003",
+             |   "taxYear":2023,
+             |   "totalLiabilityDetails":{
+             |      "untaxedInterest":{
+             |         "totalTaxableIncome":123
+             |      }
+             |   },
+             |   "employmentDetailsList":[
+             |      {
+             |         "employmentSequenceNumber":1,
+             |         "employmentStatus":"Ceased",
+             |         "payeSchemeOperatorName":"Employer1",
+             |         "taxCode":"1150L",
+             |         "basisOfOperation":"Week1/Month1"
+             |      },
+             |      {
+             |         "employmentSequenceNumber":2,
+             |         "employmentStatus":"Ceased",
+             |         "payeSchemeOperatorName":"Employer2",
+             |         "taxCode":"1100L",
+             |         "basisOfOperation":"Cumulative"
+             |      }
+             |   ]
+             |}""".stripMargin)
+    .as[JsObject]
 
-  private val taxAccountJsonWithTaxableIncome: JsObject = Json.obj(
-    "taxYear" -> JsNumber(2022),
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"     -> JsNumber(1),
-          "taxCode"          -> JsString("1150L"),
-          "name"             -> JsString("Employer1"),
-          "basisOperation"   -> JsNumber(1),
-          "employmentStatus" -> JsNumber(1),
-          "payAndTax" -> Json.obj(
-            "totalIncome" -> Json.obj(
-              "amount" -> JsNumber(2500),
-              "iabdSummaries" -> JsArray(
-                Seq(
-                  Json.obj(
-                    "amount"         -> JsNumber(2500),
-                    "type"           -> JsNumber(27),
-                    "npsDescription" -> JsString("New Estimated Pay"),
-                    "employmentId"   -> JsNumber(1)
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
+  private val taxAccountJsonWithTaxableIncome: JsObject = Json
+    .parse("""{
+             |   "nationalInsuranceNumber":"AA000003",
+             |   "taxYear":"<CY>",
+             |   "employmentDetailsList":[
+             |      {
+             |         "employmentSequenceNumber":1,
+             |         "employmentStatus":"Ceased",
+             |         "payeSchemeOperatorName":"Employer1",
+             |         "taxCode":"1150L",
+             |         "basisOfOperation":"Week1/Month1",
+             |         "payAndTax":{
+             |            "totalIncomeDetails":{
+             |               "amount":2500,
+             |               "type":"",
+             |               "summaryIABDDetailsList":[
+             |                  
+             |               ],
+             |               "summaryIABDEstimatedPayDetailsList":[
+             |                  {
+             |                     "amount":2500,
+             |                     "type":"New Estimated Pay (027)",
+             |                     "employmentSequenceNumber":1
+             |                  }
+             |               ]
+             |            }
+             |         }
+             |      }
+             |   ]
+             |}""".stripMargin)
+    .as[JsObject]
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
     )
-  )
+  }
 
   "fetchTaxCodeIncomes" must {
     "return a sequence of taxCodeIncomes" when {
       "provided with valid nino" in {
+
+//      writeFile(Json.stringify(taxAccountJson), "TC01.json")
+//        writeFile(Json.stringify(taxAccountJsonWithTaxableIncome), "TC02.json")
+
         val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
@@ -107,32 +125,37 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
           TaxCodeIncome(
             EmploymentIncome,
             Some(1),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0),
+            OtherBasisOperation,
+            Ceased,
+            0,
+            0,
+            0,
+            None,
+            None,
             None
           ),
           TaxCodeIncome(
             EmploymentIncome,
             Some(2),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0),
+            Ceased,
+            0,
+            0,
+            0,
+            None,
+            None,
             None
           )
         )
+
       }
 
       "iabd returns data for different employment" in {
@@ -157,29 +180,33 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
           TaxCodeIncome(
             EmploymentIncome,
             Some(1),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0),
+            OtherBasisOperation,
+            Ceased,
+            0,
+            0,
+            0,
+            None,
+            None,
             None
           ),
           TaxCodeIncome(
             EmploymentIncome,
             Some(2),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0),
+            Ceased,
+            0,
+            0,
+            0,
+            None,
+            None,
             None
           )
         )
@@ -208,29 +235,34 @@ class TaxCodeIncomeHelperSpec extends BaseSpec {
           TaxCodeIncome(
             EmploymentIncome,
             Some(1),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
+            OtherBasisOperation,
+            Ceased,
+            0,
+            0,
+            0,
+            None,
+            None,
+            None
           ),
           TaxCodeIncome(
             EmploymentIncome,
             Some(2),
-            BigDecimal(0),
+            0,
             "EmploymentIncome",
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0),
-            Some(AgentContact)
+            Ceased,
+            0,
+            0,
+            0,
+            Some(AgentContact),
+            None,
+            None
           )
         )
       }

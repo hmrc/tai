@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.domain._
 
 import scala.util.Random
 
-class OtherNonTaxCodeIncomeSpec extends PlaySpec {
+class OtherNonTaxCodeIncomeHipToggleOffSpec extends PlaySpec {
   private val nino: Nino = new Generator(new Random).nextNino
   "otherNonTaxCodeIncomeReads" must {
     "return empty sequence" when {

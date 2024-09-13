@@ -17,9 +17,12 @@
 package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
+import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -30,18 +33,30 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class TaxCodeIncomeHelper @Inject() (
   taxAccountConnector: TaxAccountConnector,
-  iabdService: IabdService
+  iabdService: IabdService,
+  featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext) {
-// TODO: Add feature toggle service here? Currently only doing off - need to call TaxCodeIncomeHipToggleOn
+  private def getReads[A](readsToggleOff: Reads[A], readsToggleOn: Reads[A]): Future[Reads[A]] =
+    featureFlagService.get(HipToggleTaxAccount).map { flag =>
+      if (flag.isEnabled) {
+        readsToggleOn
+      } else {
+        readsToggleOff
+      }
+    }
+
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
-    lazy val taxCodeIncomeFuture = taxAccountConnector
-      .taxAccount(nino, year)
-      .map(_.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads))
     lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
 
     for {
-      taxCodeIncomes <- taxCodeIncomeFuture
-      iabdDetails    <- iabdDetailsFuture
+      reads <- getReads(
+                 TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads,
+                 TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads
+               )
+      taxCodeIncomes <- taxAccountConnector
+                          .taxAccount(nino, year)
+                          .map(_.as[Seq[TaxCodeIncome]](reads))
+      iabdDetails <- iabdDetailsFuture
     } yield taxCodeIncomes.map { taxCodeIncome =>
       addIabdDetailsToTaxCodeIncome(iabdDetails, taxCodeIncome)
     }
