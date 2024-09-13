@@ -32,8 +32,6 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
     Json.parse(source).as[JsObject]
   }
 
-  // TODO: Blocked by basis of operation query. Tests above should be reviewed too once we have mappings
-
   "taxCodeIncomeSourcesRead should use totalTaxableIncome to read amount" must {
     "return a value for the total taxable income from NPS tax response" when {
 
@@ -74,7 +72,6 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
   "taxCodeIncomeSourceReads" must {
     "read taxCodeIncome" when {
       "all income source indicators are false" in {
-        // TODO: BasisOfOperation need mapping from Majd - have emailed him
         val payload = readFile("TC05.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
         result mustBe Seq(
@@ -92,34 +89,33 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
             BigDecimal(0)
           )
         )
-
       }
 
       "pension indicator is true" in {
         val payload = readFile("TC06.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
 
-
-
-//          TaxCodeIncome(
-//            PensionIncome,
-//            Some(1),
-//            BigDecimal(1111),
-//            "PensionIncome",
-//            "1150L",
-//            "PensionProvider1",
-//            OtherBasisOperation,
-//            Live,
-//            BigDecimal(0),
-//            BigDecimal(0),
-//            BigDecimal(0)
-//          )
+        result mustBe Seq(
+          TaxCodeIncome(
+            PensionIncome,
+            Some(1),
+            BigDecimal(1111),
+            "PensionIncome",
+            "1150L",
+            "PensionProvider1",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0)
+          )
         )
       }
 
       "jobSeekers indicator is true" in {
         val payload = readFile("TC07.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
+
         result mustBe Seq(
           TaxCodeIncome(
             JobSeekerAllowanceIncome,
@@ -363,19 +359,20 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
       "values are present within tax account JSON" in {
         val payload = readFile("TC19.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
+
         result mustBe Seq(
           TaxCodeIncome(
-            OtherIncome,
-            Some(1),
-            BigDecimal(0),
-            "OtherIncome",
-            "1150L",
-            "",
-            OtherBasisOperation,
-            Ceased,
-            BigDecimal(10.20),
-            BigDecimal(30.40),
-            BigDecimal(10.60)
+            componentType = OtherIncome,
+            employmentId = Some(1),
+            amount = BigDecimal(0),
+            description = "OtherIncome",
+            taxCode = "1150L",
+            name = "",
+            basisOperation = OtherBasisOperation,
+            status = Ceased,
+            inYearAdjustmentIntoCY = BigDecimal(10.20),
+            totalInYearAdjustment = BigDecimal(30.40),
+            inYearAdjustmentIntoCYPlusOne = BigDecimal(10.60)
           )
         )
       }
@@ -405,7 +402,7 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
     }
 
     "error out" when {
-      "provided with employmentStatus as 4" in {
+      "provided with invalid employmentStatus" in {
         val payload = readFile("TC21.json")
         val ex =
           the[RuntimeException] thrownBy payload.as[Seq[TaxCodeIncome]](

@@ -47,9 +47,9 @@ object TaxCodeIncomeHipToggleOn {
     val basisOperation =
       (json \ "basisOfOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
     val status = TaxCodeIncomeStatus.employmentStatus(json)
-    val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val iyaCy = (json \ "totalInYearAdjustmentIntoCurrentYear").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-    val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+    val iyaCyPlusOne = (json \ "totalInYearAdjustmentIntoNextYear").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     JsSuccess(
       TaxCodeIncome(
         incomeSourceType,
@@ -77,11 +77,11 @@ object TaxCodeIncomeHipToggleOn {
   private def taxCodeIncomeType(json: JsValue): TaxComponentType = {
     def indicator(indicatorType: String): Boolean = (json \ indicatorType).asOpt[Boolean].getOrElse(false)
 
-    if (indicator("pensionIndicator")) {
+    if (indicator("activePension")) {
       PensionIncome
-    } else if (indicator("jsaIndicator")) {
+    } else if (indicator("jobSeekersAllowance")) {
       JobSeekerAllowanceIncome
-    } else if (indicator("otherIncomeSourceIndicator")) {
+    } else if (indicator("otherIncome")) {
       OtherIncome
     } else {
       EmploymentIncome

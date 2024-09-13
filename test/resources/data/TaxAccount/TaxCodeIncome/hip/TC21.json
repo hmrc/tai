@@ -5,7 +5,7 @@
   "employmentDetailsList": [
     {
       "employmentSequenceNumber": 1,
-      "employmentStatus": "Ceased",
+      "employmentStatus": "Unknown",
       "jobSeekersAllowance": false,
       "activePension": false,
       "otherIncome": true,
