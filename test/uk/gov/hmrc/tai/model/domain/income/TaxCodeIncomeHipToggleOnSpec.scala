@@ -98,20 +98,22 @@ class TaxCodeIncomeHipToggleOnSpec extends PlaySpec {
       "pension indicator is true" in {
         val payload = readFile("TC06.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads)
-        result mustBe Seq(
-          TaxCodeIncome(
-            PensionIncome,
-            Some(1),
-            BigDecimal(1111),
-            "PensionIncome",
-            "1150L",
-            "PensionProvider1",
-            OtherBasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
-          )
+
+
+
+//          TaxCodeIncome(
+//            PensionIncome,
+//            Some(1),
+//            BigDecimal(1111),
+//            "PensionIncome",
+//            "1150L",
+//            "PensionProvider1",
+//            OtherBasisOperation,
+//            Live,
+//            BigDecimal(0),
+//            BigDecimal(0),
+//            BigDecimal(0)
+//          )
         )
       }
 

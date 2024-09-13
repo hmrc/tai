@@ -26,9 +26,12 @@ object TaxCodeIncomeHipToggleOn {
 
   private val basisOperationReads = new Reads[BasisOperation] {
     override def reads(json: JsValue): JsResult[BasisOperation] = {
-      val result = json.asOpt[Int] match {
-        case Some(1) => Week1Month1BasisOperation
-        case _       => OtherBasisOperation
+      val result = json.asOpt[String] match {
+        case Some("Week1/Month1") => Week1Month1BasisOperation
+//        case Some("Cumulative") => CumulativeOperation
+//        case Some("Week1/Month1,Not Operated") => Week1Month1NotOperatedOperation
+//        case Some("Cumulative,Not Operated") => CumulativeNotOperatedOperation
+        case _ => OtherBasisOperation
       }
       JsSuccess(result)
     }
@@ -42,7 +45,7 @@ object TaxCodeIncomeHipToggleOn {
     val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
     val name = (json \ "payeSchemeOperatorName").asOpt[String].getOrElse("")
     val basisOperation =
-      (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
+      (json \ "basisOfOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
     val status = TaxCodeIncomeStatus.employmentStatus(json)
     val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
     val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))

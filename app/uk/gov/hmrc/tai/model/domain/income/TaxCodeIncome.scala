@@ -25,6 +25,9 @@ import java.time.LocalDate
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
+case object CumulativeOperation extends BasisOperation
+case object Week1Month1NotOperatedOperation extends BasisOperation
+case object CumulativeNotOperatedOperation extends BasisOperation
 case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {

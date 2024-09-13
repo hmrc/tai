@@ -26,7 +26,6 @@ import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustmentComponentHipToggleOff, TaxAdjustmentComponentHipToggleOn}
-//import uk.gov.hmrc.tai.model.domain.taxAdjustments.{GiftAidPayments, TaxAdjustment, _}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -72,7 +71,6 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
 
   }
 
-  // TODO: DDCNL-9376 Use toggle service
   def reliefsGivingBackTaxComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     val reliefsGivingBackTaxComponents = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>

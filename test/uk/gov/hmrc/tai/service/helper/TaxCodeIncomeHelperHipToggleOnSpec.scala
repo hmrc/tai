@@ -50,14 +50,14 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
              |   "employmentDetailsList":[
              |      {
              |         "employmentSequenceNumber":1,
-             |         "employmentStatus":"Ceased",
+             |         "employmentStatus":"Live",
              |         "payeSchemeOperatorName":"Employer1",
              |         "taxCode":"1150L",
              |         "basisOfOperation":"Week1/Month1"
              |      },
              |      {
              |         "employmentSequenceNumber":2,
-             |         "employmentStatus":"Ceased",
+             |         "employmentStatus":"Live",
              |         "payeSchemeOperatorName":"Employer2",
              |         "taxCode":"1100L",
              |         "basisOfOperation":"Cumulative"
@@ -69,20 +69,23 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
   private val taxAccountJsonWithTaxableIncome: JsObject = Json
     .parse("""{
              |   "nationalInsuranceNumber":"AA000003",
-             |   "taxYear":"<CY>",
+             |   "taxYear":2023,
              |   "employmentDetailsList":[
              |      {
              |         "employmentSequenceNumber":1,
-             |         "employmentStatus":"Ceased",
+             |         "employmentStatus":"Live",
              |         "payeSchemeOperatorName":"Employer1",
              |         "taxCode":"1150L",
              |         "basisOfOperation":"Week1/Month1",
              |         "payAndTax":{
              |            "totalIncomeDetails":{
              |               "amount":2500,
-             |               "type":"",
              |               "summaryIABDDetailsList":[
-             |                  
+             |                  {
+             |                     "amount":2500,
+             |                     "type":"New Estimated Pay (027)",
+             |                     "employmentSequenceNumber":1
+             |                  }
              |               ],
              |               "summaryIABDEstimatedPayDetailsList":[
              |                  {
@@ -109,10 +112,6 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
   "fetchTaxCodeIncomes" must {
     "return a sequence of taxCodeIncomes" when {
       "provided with valid nino" in {
-
-//      writeFile(Json.stringify(taxAccountJson), "TC01.json")
-//        writeFile(Json.stringify(taxAccountJsonWithTaxableIncome), "TC02.json")
-
         val iabdDetailsSeq = Seq.empty[IabdDetails]
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
@@ -129,8 +128,8 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            OtherBasisOperation,
-            Ceased,
+            Week1Month1BasisOperation,
+            Live,
             0,
             0,
             0,
@@ -146,7 +145,7 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Ceased,
+            Live,
             0,
             0,
             0,
@@ -184,8 +183,8 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            OtherBasisOperation,
-            Ceased,
+            Week1Month1BasisOperation,
+            Live,
             0,
             0,
             0,
@@ -201,7 +200,7 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Ceased,
+            Live,
             0,
             0,
             0,
@@ -239,8 +238,8 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "EmploymentIncome",
             "1150L",
             "Employer1",
-            OtherBasisOperation,
-            Ceased,
+            Week1Month1BasisOperation,
+            Live,
             0,
             0,
             0,
@@ -256,7 +255,7 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
             "1100L",
             "Employer2",
             OtherBasisOperation,
-            Ceased,
+            Live,
             0,
             0,
             0,

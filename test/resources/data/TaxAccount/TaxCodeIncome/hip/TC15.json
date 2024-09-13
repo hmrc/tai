@@ -9,15 +9,17 @@
   "employmentDetailsList": [
     {
       "employmentSequenceNumber": 1,
-      "employmentStatus": "Ceased",
+      "employmentStatus": "Live",
       "payeSchemeOperatorName": "Employer1",
-      "taxCode": "1150L"
+      "taxCode": "1150L",
+      "basisOfOperation": "Week1/Month1"
     },
     {
       "employmentSequenceNumber": 2,
-      "employmentStatus": "Ceased",
+      "employmentStatus": "Live",
       "payeSchemeOperatorName": "Employer2",
-      "taxCode": "1100L"
+      "taxCode": "1100L",
+      "basisOfOperation": "Cumulative"
     }
   ]
 }

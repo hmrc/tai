@@ -1,11 +1,11 @@
 {
   "nationalInsuranceNumber": "AA000003",
-  "taxAccountIdentifier": "id",
+  "taxAccountIdentifier": 1,
   "taxYear": 2023,
   "employmentDetailsList": [
     {
       "employmentSequenceNumber": 1,
-      "employmentStatus": "Ceased",
+      "employmentStatus": "Live",
       "jobSeekersAllowance": false,
       "activePension": false,
       "otherIncome": true,
