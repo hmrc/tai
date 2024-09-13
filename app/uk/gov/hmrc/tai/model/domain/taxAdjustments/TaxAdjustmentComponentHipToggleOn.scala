@@ -120,18 +120,11 @@ object TaxAdjustmentComponentHipToggleOn {
       case _ => JsSuccess(Seq.empty[TaxAdjustmentComponent])
     }
 
-  // TODO: DDCNL-9376 Duplicate reads
   val taxAdjustmentComponentReads: Reads[Seq[TaxAdjustmentComponent]] = (json: JsValue) => {
     val reliefsGivingBackComponents = json.as[Seq[TaxAdjustmentComponent]](reliefsGivingBackTaxReads)
     val otherTaxDues = json.as[Seq[TaxAdjustmentComponent]](otherTaxDueReads)
     val alreadyTaxedAtSources = json.as[Seq[TaxAdjustmentComponent]](alreadyTaxedAtSourceReads)
     val taxReliefComponent = json.as[Seq[TaxAdjustmentComponent]](taxReliefFormattersReads)
-
-//    println("\n0:" + json)
-//    println("\n1:" + reliefsGivingBackComponents)
-//    println("\n2:" + otherTaxDues)
-//    println("\n3:" + alreadyTaxedAtSources)
-//    println("\n4:" + taxReliefComponent)
 
     JsSuccess(reliefsGivingBackComponents ++ otherTaxDues ++ alreadyTaxedAtSources ++ taxReliefComponent)
   }

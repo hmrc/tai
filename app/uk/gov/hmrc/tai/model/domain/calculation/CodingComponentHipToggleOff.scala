@@ -21,7 +21,6 @@ import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOff.iabdsFromTotalLia
 import uk.gov.hmrc.tai.model.domain._
 
 object CodingComponentHipToggleOff {
-  // TODO: DDCNL-9376 Duplicate reads
   val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
 
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)

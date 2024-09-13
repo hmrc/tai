@@ -47,7 +47,6 @@ object TotalTaxHipToggleOn extends Logging {
     }
   }
 
-  // TODO: DDCNL-9376 Duplicate reads
   val incomeCategorySeqReads: Reads[Seq[IncomeCategory]] = (json: JsValue) => {
     val categoryNames =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
@@ -55,7 +54,6 @@ object TotalTaxHipToggleOn extends Logging {
     JsSuccess(incomeCategoryList)
   }
 
-  // TODO: DDCNL-9376 Duplicate reads
   val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
     val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
     val totalLiability = (json \ "totalLiabilityDetails").as[JsValue]

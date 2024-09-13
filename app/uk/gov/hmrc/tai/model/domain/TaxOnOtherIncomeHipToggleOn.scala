@@ -23,21 +23,9 @@ import scala.annotation.tailrec
 object TaxOnOtherIncomeHipToggleOn {
   private val NonCodedIncome = 19
 
-  /*
-    // TODO: DDCNL-9376 Duplicate reads
-    val taxOnOtherIncomeHipToggleOffReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
-      JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
-
-    // TODO: DDCNL-9376 Duplicate reads
-    val taxAccountSummaryHipToggleOffReads: Reads[BigDecimal] = (json: JsValue) => {
-
-   */
-
-  // TODO: DDCNL-9376 Duplicate reads
   val taxOnOtherIncomeTaxValueReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
     JsSuccess(json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax))
 
-  // TODO: DDCNL-9376 Duplicate reads
   val taxAccountSummaryReads: Reads[BigDecimal] = (json: JsValue) => {
     val taxOnOtherIncome =
       json.as[Option[TaxOnOtherIncome]](taxOnOtherIncomeReads) map (_.tax) getOrElse BigDecimal(0)

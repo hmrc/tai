@@ -21,7 +21,6 @@ import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
 
 object NpsIabdSummaryHipToggleOn {
 
-  // TODO: DDCNL-9376 Duplicate reads
   val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
     val categories =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
@@ -30,7 +29,6 @@ object NpsIabdSummaryHipToggleOn {
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
-  // TODO: DDCNL-9376 Duplicate reads
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
       (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]

@@ -22,7 +22,6 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
 
 object CodingComponentHipToggleOn {
-  // TODO: DDCNL-9376 Duplicate reads
   val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
 

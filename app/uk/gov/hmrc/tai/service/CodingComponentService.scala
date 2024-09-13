@@ -56,7 +56,12 @@ class CodingComponentService @Inject() (
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
   ): Future[Seq[CodingComponent]] =
-    taxAccountConnector
-      .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
-      .map(_.as[Seq[CodingComponent]](CodingComponentHipToggleOff.codingComponentReads))
+    getReads(
+      CodingComponentHipToggleOff.codingComponentReads,
+      CodingComponentHipToggleOn.codingComponentReads
+    ).flatMap { codingComponentReads =>
+      taxAccountConnector
+        .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
+        .map(_.as[Seq[CodingComponent]](codingComponentReads))
+    }
 }

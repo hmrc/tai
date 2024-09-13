@@ -36,7 +36,7 @@ object TaxCodeIncomeHipToggleOff {
 
   private val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = (json: JsValue) => {
     val incomeSourceType = taxCodeIncomeType(json)
-    val employmentId = (json \ "employmentId").asOpt[Int] // TODO: employmentId
+    val employmentId = (json \ "employmentId").asOpt[Int]
     val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
     val description = incomeSourceType.toString
     val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
@@ -64,7 +64,6 @@ object TaxCodeIncomeHipToggleOff {
     )
   }
 
-  // TODO: DDCNL-9376 Duplicate reads
   val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
     val taxCodeIncomes = (json \ "incomeSources")
       .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))

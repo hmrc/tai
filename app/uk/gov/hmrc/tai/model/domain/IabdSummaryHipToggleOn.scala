@@ -26,5 +26,5 @@ object IabdSummaryHipToggleOn {
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
         (JsPath \ "employmentSequenceNumber").readNullable[Int] and
         (JsPath \ "amount").readNullable[BigDecimal].map(_.getOrElse(BigDecimal(0)))
-    ).apply((a, b, c) => IabdSummary(a._2, b, c))
+    )((typeTuple, empSeqNo, amount) => IabdSummary(typeTuple._2, empSeqNo, amount))
 }

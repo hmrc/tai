@@ -64,7 +64,6 @@ object TaxCodeIncomeHipToggleOn {
     )
   }
 
-  // TODO: DDCNL-9376 Duplicate reads
   val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
     val taxCodeIncomes = (json \ "employmentDetailsList")
       .asOpt[Seq[TaxCodeIncome]](Reads.seq(TaxCodeIncomeHipToggleOn.taxCodeIncomeSourceReads))
