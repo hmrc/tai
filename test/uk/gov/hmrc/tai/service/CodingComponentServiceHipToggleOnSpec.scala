@@ -22,7 +22,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -30,8 +29,18 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
+import scala.io.Source
 
-class CodingComponentServiceSpec extends BaseSpec {
+class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
+
+  private val basePath = "test/resources/data/TaxAccount/CodingComponentService/hip/"
+  private def readFile(fileName: String): JsValue = {
+    val jsonFilePath = basePath + fileName
+    val bufferedSource = Source.fromFile(jsonFilePath)
+    val source = bufferedSource.mkString("")
+    bufferedSource.close()
+    Json.parse(source)
+  }
 
   private val emptyJson = Json.arr()
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
@@ -46,7 +55,7 @@ class CodingComponentServiceSpec extends BaseSpec {
     )
   }
 
-  "codingComponents" must {
+  "codingComponents (hip toggle on)" must {
     "return empty list of coding components" when {
       "connector returns json with no NpsComponents of interest" in {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
@@ -62,8 +71,7 @@ class CodingComponentServiceSpec extends BaseSpec {
     "return a list of coding components" when {
       "connector returns json with more than one tax components" in {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(npsJsonResponse))
-
+          .thenReturn(Future.successful(readFile("TC01.json")))
         val codingComponentList: Seq[CodingComponent] = Seq(
           CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Non-qualifying Relocation Expenses", None),
           CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Van Benefit", None),
@@ -74,6 +82,7 @@ class CodingComponentServiceSpec extends BaseSpec {
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
+
       }
     }
   }
@@ -91,29 +100,24 @@ class CodingComponentServiceSpec extends BaseSpec {
 
     "return a Success[Seq[CodingComponent]] for valid json of income sources" in {
       val expected = List[CodingComponent](
-        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
-        CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000))
+        CodingComponent(PersonalAllowancePA, None, 11850, "Loan Interest Amount", Some(11850)),
+        CodingComponent(BRDifferenceTaxReduction, None, 10000, "Taxable Expenses Benefit", Some(10000))
       )
-
-      val basicIncomeSourcesJson = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(basicIncomeSourcesJson))
-
+        .thenReturn(Future.successful(readFile("TC02.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
+
     }
 
     "returns a Success[Seq[CodingComponent]] for valid json of total liabilities" in {
       val expected = List[CodingComponent](
         CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
       )
-
-      val basicTotalLiabilityJson = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(basicTotalLiabilityJson))
-
+        .thenReturn(Future.successful(readFile("TC03.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
@@ -122,59 +126,18 @@ class CodingComponentServiceSpec extends BaseSpec {
 
     "returns a Success[Seq[CodingComponent]] for valid json of total liabilities and income sources" in {
       val expected = List[CodingComponent](
-        CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
-        CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000)),
+        CodingComponent(PersonalAllowancePA, None, 11850, "Loan Interest Amount", Some(11850)),
+        CodingComponent(BRDifferenceTaxReduction, None, 10000, "Taxable Expenses Benefit", Some(10000)),
         CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
       )
 
-      val combinedJson = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(combinedJson))
-
+        .thenReturn(Future.successful(readFile("TC04.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
+
     }
   }
-
-  private val npsJsonResponse: JsObject = Json
-    .parse("""{
-             |  "nationalInsuranceNumber": "AA000003",
-             |  "taxAccountIdentifier": "id",
-             |  "taxYear": 2023,
-             |  "employmentDetailsList": [
-             |    {
-             |      "employmentSequenceNumber": 1,
-             |      "employmentRecordType": "PRIMARY",
-             |      "employmentStatus": "Ceased",
-             |      "activePension": true,
-             |      "payeSchemeOperatorName": "employer",
-             |      "taxCode": "1150L",
-             |      "deductionsDetails": [
-             |        {
-             |          "type": "Non-qualifying Relocation Expenses (045)",
-             |          "summaryIABDDetailsList": [],
-             |          "adjustedAmount": 10
-             |        },
-             |        {
-             |          "type": "Van Benefit (035)",
-             |          "summaryIABDDetailsList": [],
-             |          "adjustedAmount": 10
-             |        },
-             |        {
-             |          "type": "Educational Services (041)",
-             |          "summaryIABDDetailsList": [],
-             |          "adjustedAmount": 10
-             |        },
-             |        {
-             |          "type": "Educational Services (888)",
-             |          "summaryIABDDetailsList": [],
-             |          "adjustedAmount": 10
-             |        }
-             |      ]
-             |    }
-             |  ]
-             |}""".stripMargin)
-    .as[JsObject]
 }

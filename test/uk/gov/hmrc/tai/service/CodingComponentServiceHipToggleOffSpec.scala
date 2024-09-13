@@ -22,7 +22,6 @@ import play.api.libs.json._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.factory.TaxAccountHistoryFactory
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
@@ -30,8 +29,18 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
+import scala.io.Source
 
 class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
+
+  private val basePath = "test/resources/data/TaxAccount/CodingComponentService/nps/"
+  private def readFile(fileName: String): JsValue = {
+    val jsonFilePath = basePath + fileName
+    val bufferedSource = Source.fromFile(jsonFilePath)
+    val source = bufferedSource.mkString("")
+    bufferedSource.close()
+    Json.parse(source)
+  }
 
   private val emptyJson = Json.arr()
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
@@ -62,8 +71,7 @@ class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
     "return a list of coding components" when {
       "connector returns json with more than one tax components" in {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
-          .thenReturn(Future.successful(npsJsonResponse))
-
+          .thenReturn(Future.successful(readFile("TC01.json")))
         val codingComponentList: Seq[CodingComponent] = Seq(
           CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Estimated Tax You Owe This Year"),
           CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Underpayment form previous year"),
@@ -94,11 +102,8 @@ class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
         CodingComponent(PersonalAllowancePA, None, 11850, "Personal Allowance", Some(11850)),
         CodingComponent(BRDifferenceTaxReduction, None, 10000, "BR Difference Tax Reduction", Some(10000))
       )
-
-      val basicIncomeSourcesJson = TaxAccountHistoryFactory.basicIncomeSourcesJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(basicIncomeSourcesJson))
-
+        .thenReturn(Future.successful(readFile("TC02.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
@@ -109,11 +114,8 @@ class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
       val expected = List[CodingComponent](
         CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
       )
-
-      val basicTotalLiabilityJson = TaxAccountHistoryFactory.basicTotalLiabilityJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(basicTotalLiabilityJson))
-
+        .thenReturn(Future.successful(readFile("TC03.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
@@ -127,56 +129,12 @@ class CodingComponentServiceHipToggleOffSpec extends BaseSpec {
         CodingComponent(CarBenefit, Some(1), 2000, "Car Benefit", None)
       )
 
-      val combinedJson = TaxAccountHistoryFactory.combinedIncomeSourcesTotalLiabilityJson(nino)
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
-        .thenReturn(Future.successful(combinedJson))
-
+        .thenReturn(Future.successful(readFile("TC04.json")))
       val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
     }
   }
-
-  private val npsJsonResponse: JsObject = Json.obj(
-    "taxAccountId" -> JsString("id"),
-    "nino"         -> JsString(nino.nino),
-    "incomeSources" -> JsArray(
-      Seq(
-        Json.obj(
-          "employmentId"     -> JsNumber(1),
-          "employmentType"   -> JsNumber(1),
-          "taxCode"          -> JsString("1150L"),
-          "pensionIndicator" -> JsBoolean(true),
-          "basisOperation"   -> JsNumber(1),
-          "employmentStatus" -> JsNumber(1),
-          "name"             -> JsString("employer"),
-          "deductions" -> JsArray(
-            Seq(
-              Json.obj(
-                "npsDescription" -> JsString("Estimated Tax You Owe This Year"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(45)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Underpayment form previous year"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(35)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Outstanding Debt Restriction"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(41)
-              ),
-              Json.obj(
-                "npsDescription" -> JsString("Something we aren't interested in"),
-                "amount"         -> JsNumber(10),
-                "type"           -> JsNumber(888)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
 }

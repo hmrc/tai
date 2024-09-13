@@ -33,6 +33,13 @@ trait BaseSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures
     with Injecting {
 
+  def writeFile(content: String, fileName: String): Unit = {
+    import java.io._
+    val pw = new PrintWriter(new File(s"//home/digital367027/Desktop/temp/$fileName"))
+    pw.write(content)
+    pw.close()
+  }
+
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""
 
