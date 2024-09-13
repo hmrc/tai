@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Format, Json, OFormat, Writes}
 
 case class ApiResponse[T](data: T, links: Seq[ApiLink])
 

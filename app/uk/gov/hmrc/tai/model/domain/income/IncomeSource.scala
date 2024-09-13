@@ -16,15 +16,19 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat, Writes}
 import uk.gov.hmrc.tai.model.domain.Employment
 
 case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
 
 object IncomeSource {
-  implicit val incomeSourceFormat: Format[IncomeSource] = {
-    import TaxCodeIncome._
+  implicit val incomeSourceFormat: Writes[IncomeSource] = {
+    /*
+    The Hip toggle only affects the Reads. We only require the Writes
+    here so we can safely import TaxCodeIncomeHipToggleOff here.
+     */
+
     import TaxCodeIncomeHipToggleOff._
-    Json.format[IncomeSource]
+    Writes(is => Json.format[IncomeSource].writes(is))
   }
 }
