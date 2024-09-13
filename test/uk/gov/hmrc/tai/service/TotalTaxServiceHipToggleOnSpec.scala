@@ -17,10 +17,13 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
-import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipToggleOff.incomeCategorySeqReads
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
+import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTaxHipToggleOn}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -28,63 +31,84 @@ import uk.gov.hmrc.tai.util.BaseSpec
 
 import scala.concurrent.Future
 
-class TotalTaxServiceSpec extends BaseSpec {
+class TotalTaxServiceHipToggleOnSpec extends BaseSpec {
   val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   val mockTaxAccountHelper: TaxAccountHelper = mock[TaxAccountHelper]
   val mockTaxAccountSummaryService: TaxAccountSummaryService = mock[TaxAccountSummaryService]
   class Dummy
   val incomeCategoryHodFormatters = new Dummy
-
+  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockTaxAccountConnector, mockTaxAccountHelper, mockTaxAccountSummaryService)
     when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
       .thenReturn(Future.successful(incomeCategories))
+    reset(mockFeatureFlagService)
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
+    )
   }
 
   private def createSUT(
     taxAccountConnector: TaxAccountConnector,
     taxAccountHelper: TaxAccountHelper
   ) =
-    new TotalTaxService(taxAccountConnector, taxAccountHelper)
+    new TotalTaxService(taxAccountConnector, taxAccountHelper, mockFeatureFlagService)
   val sut: TotalTaxService = createSUT(mockTaxAccountConnector, mockTaxAccountHelper)
 
-  val incomeCategories: JsObject = Json.obj(
-    "taxYear" -> TaxYear().year,
-    "totalLiability" -> Json.obj(
-      "ukDividends" -> Json.obj(
-        "totalTax"           -> 0,
-        "totalTaxableIncome" -> 0,
-        "totalIncome"        -> 0,
-        "taxBands" -> Json.arr(
-          Json.obj(
-            "bandType"  -> "",
-            "taxCode"   -> "",
-            "income"    -> 0,
-            "tax"       -> 0,
-            "lowerBand" -> null,
-            "upperBand" -> null,
-            "rate"      -> 0
-          ),
-          Json.obj(
-            "bandType"  -> "B",
-            "taxCode"   -> "BR",
-            "income"    -> 10000,
-            "tax"       -> 500,
-            "lowerBand" -> 5000,
-            "upperBand" -> 20000,
-            "rate"      -> 10
-          )
-        )
-      ),
-      "foreignDividends" -> Json.obj(
-        "totalTax"           -> 1000.23,
-        "totalTaxableIncome" -> 1000.24,
-        "totalIncome"        -> 1000.25,
-        "allowReliefDeducts" -> Json.obj("amount" -> 100)
-      )
-    )
-  )
+  val incomeCategories: JsObject = Json
+    .parse("""{
+             |   "nationalInsuranceNumber":"AA000003",
+             |   "taxYear":2023,
+             |   "totalLiabilityDetails":{
+             |      "ukDividends":{
+             |         "totalIncomeDetails":{
+             |            "type":"",
+             |            "summaryIABDDetailsList":[
+             |               
+             |            ]
+             |         },
+             |         "totalTax":0,
+             |         "totalTaxableIncome":0,
+             |         "taxBandDetails":[
+             |            {
+             |               "bandType":"",
+             |               "taxCode":"",
+             |               "income":0,
+             |               "tax":0,
+             |               "rate":0
+             |            },
+             |            {
+             |               "bandType":"B",
+             |               "taxCode":"BR",
+             |               "income":10000,
+             |               "tax":500,
+             |               "lowerBand":5000,
+             |               "upperBand":20000,
+             |               "rate":10
+             |            }
+             |         ]
+             |      },
+             |      "foreignDividends":{
+             |         "totalIncomeDetails":{
+             |            "type":"",
+             |            "summaryIABDDetailsList":[
+             |               
+             |            ]
+             |         },
+             |         "allowanceReliefDeductionsDetails":{
+             |            "amount":100,
+             |            "type":"",
+             |            "summaryIABDDetailsList":[
+             |               
+             |            ]
+             |         },
+             |         "totalTax":1000.23,
+             |         "totalTaxableIncome":1000.24
+             |      }
+             |   }
+             |}""".stripMargin)
+    .as[JsObject]
 
   "totalTax" must {
     "return the income categories that is coming from TaxAccountConnector" in {
@@ -97,10 +121,10 @@ class TotalTaxServiceSpec extends BaseSpec {
       when(mockTaxAccountHelper.taxOnOtherIncome(any())).thenReturn(Future.successful(None))
 
       val result = sut.totalTax(nino, TaxYear()).futureValue
-
       result.incomeCategories must contain theSameElementsAs incomeCategories.as[Seq[IncomeCategory]](
-        incomeCategorySeqReads
+        TotalTaxHipToggleOn.incomeCategorySeqReads
       )
+
       result.reliefsGivingBackTax mustBe None
       result.otherTaxDue mustBe None
       result.alreadyTaxedAtSource mustBe None

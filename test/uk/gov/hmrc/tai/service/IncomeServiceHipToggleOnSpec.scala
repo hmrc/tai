@@ -922,8 +922,6 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
           UntaxedInterest(UntaxedInterestIncome, Some(1), 100, "Untaxed Interest")
         )
 
-
-
       }
 
       "bypass any bank account retrieval and return no untaxed interest" when {

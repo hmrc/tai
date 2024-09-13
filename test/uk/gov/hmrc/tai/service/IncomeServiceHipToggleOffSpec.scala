@@ -58,35 +58,6 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
     AuthenticatedRequest(FakeRequest(), nino)
 
-  private def taxAccountJsonWithIabds(
-    incomeIabdSummaries: Seq[JsObject] = Seq.empty[JsObject],
-    allowReliefIabdSummaries: Seq[JsObject] = Seq.empty[JsObject]
-  ): JsObject =
-    Json.obj(
-      "taxAccountId" -> "id",
-      "nino"         -> nino.nino,
-      "totalLiability" -> Json.obj(
-        "nonSavings" -> Json.obj(
-          "totalIncome" -> Json.obj(
-            "iabdSummaries" -> JsArray(incomeIabdSummaries)
-          ),
-          "allowReliefDeducts" -> Json.obj(
-            "iabdSummaries" -> JsArray(allowReliefIabdSummaries)
-          )
-        )
-      )
-    )
-
-  private def npsIabdSummaries(types: Seq[Int]): Seq[JsObject] =
-    types.map { tp =>
-      Json.obj(
-        "amount"             -> 100,
-        "type"               -> tp,
-        "npsDescription"     -> "desc",
-        "employmentId"       -> 1,
-        "estimatesPaySource" -> 1
-      )
-    }
   private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private def createSUT(
     employmentService: EmploymentService = mock[EmploymentService],
