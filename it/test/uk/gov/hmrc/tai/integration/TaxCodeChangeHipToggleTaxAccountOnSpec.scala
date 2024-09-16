@@ -25,7 +25,7 @@ import play.api.http.Status._
 import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsBoolean, Json}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, writeableOf_AnyContentAsEmpty, status => getStatus}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService

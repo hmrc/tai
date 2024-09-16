@@ -38,7 +38,6 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   private val mockFeatureFlagService = mock[FeatureFlagService]
 
-
   override def beforeEach(): Unit = {
     super.beforeEach()
 

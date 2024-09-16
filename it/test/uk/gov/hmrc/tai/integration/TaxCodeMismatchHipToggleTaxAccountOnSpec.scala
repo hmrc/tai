@@ -59,15 +59,10 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
   }
 
-
-
-
   override def fakeApplication(): Application =
     guiceAppBuilder
       .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
       .build()
-  
-  
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
