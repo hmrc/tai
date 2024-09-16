@@ -58,6 +58,7 @@ class TotalTaxServiceHipToggleOffSpec extends BaseSpec {
   val sut: TotalTaxService = createSUT(mockTaxAccountConnector, mockTaxAccountHelper)
 
   val incomeCategories: JsObject = Json.obj(
+    "nino"    -> nino,
     "taxYear" -> TaxYear().year,
     "totalLiability" -> Json.obj(
       "ukDividends" -> Json.obj(

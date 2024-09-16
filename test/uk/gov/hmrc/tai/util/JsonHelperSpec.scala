@@ -103,6 +103,12 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
   private val testReadsFail = Reads[Test](_ => JsError())
   private val testReadsB = Reads[Test](_ => JsSuccess(test2))
   private val mockFeatureFlagService = mock[FeatureFlagService]
+  private val jsonToggleOff = Json.obj(
+    "nino" -> ""
+  )
+  private val jsonToggleOn = Json.obj(
+    "nationalInsuranceNumber" -> ""
+  )
 
   "getReads" must {
     "use second reads when toggle is off and first fails" in {
@@ -110,7 +116,7 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = false)))
       val actualReads =
         Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsFail, testReadsB), Duration.Inf)
-      val actualValue = actualReads.reads(Json.obj())
+      val actualValue = actualReads.reads(jsonToggleOff)
       actualValue mustBe JsSuccess(test2)
     }
 
@@ -119,7 +125,7 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = false)))
       val actualReads =
         Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsA, testReadsB), Duration.Inf)
-      val actualValue = actualReads.reads(Json.obj())
+      val actualValue = actualReads.reads(jsonToggleOff)
       actualValue mustBe JsSuccess(test1)
     }
 
@@ -128,7 +134,7 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = true)))
       val actualReads =
         Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsB, testReadsFail), Duration.Inf)
-      val actualValue = actualReads.reads(Json.obj())
+      val actualValue = actualReads.reads(jsonToggleOn)
       actualValue mustBe JsSuccess(test2)
     }
 
@@ -137,7 +143,7 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
         .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = true)))
       val actualReads =
         Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsB, testReadsA), Duration.Inf)
-      val actualValue = actualReads.reads(Json.obj())
+      val actualValue = actualReads.reads(jsonToggleOn)
       actualValue mustBe JsSuccess(test1)
     }
   }

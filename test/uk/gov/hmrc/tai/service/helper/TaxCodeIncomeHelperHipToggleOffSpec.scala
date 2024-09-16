@@ -18,14 +18,13 @@ package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.ArgumentMatchersSugar.eqTo
-import play.api.libs.json.{JsArray, JsNumber, JsObject, JsString, Json}
+import play.api.libs.json._
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.EmploymentIncome
-import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.income.{AgentContact, Live, OtherBasisOperation, TaxCodeIncome, Week1Month1BasisOperation}
+import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -40,6 +39,7 @@ class TaxCodeIncomeHelperHipToggleOffSpec extends BaseSpec {
   private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService, mockFeatureFlagService)
 
   private val taxAccountJson: JsObject = Json.obj(
+    "nino"    -> nino,
     "taxYear" -> JsNumber(2022),
     "totalLiability" -> Json.obj(
       "untaxedInterest" -> Json.obj(
@@ -67,6 +67,7 @@ class TaxCodeIncomeHelperHipToggleOffSpec extends BaseSpec {
   )
 
   private val taxAccountJsonWithTaxableIncome: JsObject = Json.obj(
+    "nino"    -> nino,
     "taxYear" -> JsNumber(2022),
     "incomeSources" -> JsArray(
       Seq(

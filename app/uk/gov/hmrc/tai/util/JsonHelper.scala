@@ -34,7 +34,8 @@ object JsonHelper {
       firstReadsOutcome: Either[JsResultException, JsError]
     ): JsResult[A] =
       (Try(secondReads.reads(jsValue)), firstReadsOutcome) match {
-        case (Success(value @ JsSuccess(_, _)), _)                      => value
+        case (Success(value @ JsSuccess(_, _)), _) =>
+          value
         case (Success(JsError(_)), Right(firstReadsErrors))             => firstReadsErrors
         case (Success(JsError(_)), Left(firstReadsException))           => throw firstReadsException
         case (Failure(_: JsResultException), Right(firstReadsErrors))   => firstReadsErrors
@@ -43,10 +44,12 @@ object JsonHelper {
       }
     Reads { jsValue =>
       Try(firstReads.reads(jsValue)) match {
-        case Success(value @ JsSuccess(_, _))       => value
-        case Success(firstReadsErrors @ JsError(_)) => trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
-        case Failure(e: JsResultException)          => trySecondReads(secondReads, jsValue, Left(e))
-        case Failure(exception)                     => throw exception
+        case Success(value @ JsSuccess(_, _)) =>
+          value
+        case Success(firstReadsErrors @ JsError(_)) =>
+          trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
+        case Failure(e: JsResultException) => trySecondReads(secondReads, jsValue, Left(e))
+        case Failure(exception)            => throw exception
       }
     }
   }
@@ -88,14 +91,32 @@ object JsonHelper {
     }
   }
 
-  def getReads[A](featureFlagService: FeatureFlagService, readsToggleOff: Reads[A], readsToggleOn: Reads[A])(implicit
-    ec: ExecutionContext
-  ): Future[Reads[A]] =
+  private val readsCheckFormatToggleOff = Reads[JsValue] { jsValue =>
+    if ((jsValue \ "nino").isDefined) {
+      JsSuccess(jsValue)
+    } else {
+      JsError()
+    }
+  }
+
+  private val readsCheckFormatToggleOn = Reads[JsValue] { jsValue =>
+    if ((jsValue \ "nationalInsuranceNumber").isDefined) {
+      JsSuccess(jsValue)
+    } else {
+      JsError()
+    }
+  }
+
+  def getReads[A](
+    featureFlagService: FeatureFlagService,
+    readsToggleOff: Reads[A],
+    readsToggleOn: Reads[A]
+  )(implicit ec: ExecutionContext): Future[Reads[A]] =
     featureFlagService.get(HipToggleTaxAccount).map { flag =>
       if (flag.isEnabled) {
-        readsToggleOn orElseTry readsToggleOff
+        (readsCheckFormatToggleOn andThen readsToggleOn) orElseTry readsToggleOff
       } else {
-        readsToggleOff orElseTry readsToggleOn
+        (readsCheckFormatToggleOff andThen readsToggleOff) orElseTry readsToggleOn
       }
     }
 

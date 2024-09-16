@@ -35,6 +35,7 @@ class TaxAccountHelperHipToggleOffSpec extends BaseSpec {
   private def createSUT() = new TaxAccountHelper(mockTaxAccountConnector, mockFeatureFlagService)
 
   private val taxAccountSummaryNpsJson = Json.obj(
+    "nino" -> nino,
     "totalLiability" -> Json.obj(
       "totalLiability" -> 1111,
       "basicRateExtensions" -> Json.obj(
