@@ -32,10 +32,11 @@ case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
   def apply(constant: String): BasisOperation =
-    if (constant == Week1Month1)
+    if (constant == Week1Month1) {
       Week1Month1BasisOperation
-    else
+    } else {
       OtherBasisOperation
+    }
 
   implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)

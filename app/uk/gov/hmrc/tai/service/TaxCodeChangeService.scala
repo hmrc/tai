@@ -118,8 +118,12 @@ class TaxCodeChangeServiceImpl @Inject() (
       val unconfirmedTaxCodeList: Seq[String] =
         unconfirmedTaxCodes.map(income => sanitizeCode(income.taxCode, income.basisOperation))
 
+// TODO: Issue is below I think BasisOperation.apply - need to take account of hip toggle
+
       val confirmedTaxCodeList: Seq[String] =
-        confirmedTaxCodes.current.map(income => sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation)))
+        confirmedTaxCodes.current.map { income =>
+          sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation))
+        }
 
       logger.debug(s"Unconfirmed tax codes \n $unconfirmedTaxCodeList")
       logger.debug(s"Confirmed tax codes \n $confirmedTaxCodeList")

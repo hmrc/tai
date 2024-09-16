@@ -28,10 +28,7 @@ object TaxCodeIncomeHipToggleOn {
     override def reads(json: JsValue): JsResult[BasisOperation] = {
       val result = json.asOpt[String] match {
         case Some("Week1/Month1") => Week1Month1BasisOperation
-//        case Some("Cumulative") => CumulativeOperation
-//        case Some("Week1/Month1,Not Operated") => Week1Month1NotOperatedOperation
-//        case Some("Cumulative,Not Operated") => CumulativeNotOperatedOperation
-        case _ => OtherBasisOperation
+        case _                    => OtherBasisOperation
       }
       JsSuccess(result)
     }
