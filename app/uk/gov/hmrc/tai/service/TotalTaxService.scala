@@ -17,16 +17,14 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipToggleOff.taxFreeAllowanceReads
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax, TotalTaxHipToggleOff, TotalTaxHipToggleOn}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
+import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,19 +34,12 @@ class TotalTaxService @Inject() (
   taxAccountHelper: TaxAccountHelper,
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext) {
-  private def getReads[A](readsToggleOff: Reads[A], readsToggleOn: Reads[A]): Future[Reads[A]] =
-    featureFlagService.get(HipToggleTaxAccount).map { flag =>
-      if (flag.isEnabled) {
-        readsToggleOn
-      } else {
-        readsToggleOff
-      }
-    }
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] = {
     val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
 
     for {
-      reads <- getReads(
+      reads <- JsonHelper.getReads(
+                 featureFlagService,
                  TotalTaxHipToggleOff.incomeCategorySeqReads,
                  TotalTaxHipToggleOn.incomeCategorySeqReads
                )
@@ -71,12 +62,15 @@ class TotalTaxService @Inject() (
   }
 
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
-    getReads(
-      TotalTaxHipToggleOff.taxFreeAllowanceReads,
-      TotalTaxHipToggleOn.taxFreeAllowanceReads
-    ).flatMap { reads =>
-      taxAccountConnector
-        .taxAccount(nino, year)
-        .map(_.as[BigDecimal](reads))
-    }
+    JsonHelper
+      .getReads(
+        featureFlagService,
+        TotalTaxHipToggleOff.taxFreeAllowanceReads,
+        TotalTaxHipToggleOn.taxFreeAllowanceReads
+      )
+      .flatMap { reads =>
+        taxAccountConnector
+          .taxAccount(nino, year)
+          .map(_.as[BigDecimal](reads))
+      }
 }

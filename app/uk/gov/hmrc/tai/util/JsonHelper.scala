@@ -17,7 +17,10 @@
 package uk.gov.hmrc.tai.util
 
 import play.api.libs.json._
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object JsonHelper {
@@ -84,5 +87,16 @@ object JsonHelper {
       case None    => JsError(JsonValidationError(s"Invalid type: $fullType"))
     }
   }
+
+  def getReads[A](featureFlagService: FeatureFlagService, readsToggleOff: Reads[A], readsToggleOn: Reads[A])(implicit
+    ec: ExecutionContext
+  ): Future[Reads[A]] =
+    featureFlagService.get(HipToggleTaxAccount).map { flag =>
+      if (flag.isEnabled) {
+        readsToggleOn orElseTry readsToggleOff
+      } else {
+        readsToggleOff orElseTry readsToggleOn
+      }
+    }
 
 }

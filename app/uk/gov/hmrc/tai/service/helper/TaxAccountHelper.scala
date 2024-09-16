@@ -17,17 +17,17 @@
 package uk.gov.hmrc.tai.service.helper
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Reads}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustmentComponentHipToggleOff, TaxAdjustmentComponentHipToggleOn}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,25 +35,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, featureFlagService: FeatureFlagService)(
   implicit ec: ExecutionContext
 ) {
-
-  private def getReads[A](readsToggleOff: Reads[A], readsToggleOn: Reads[A]): Future[Reads[A]] =
-    featureFlagService.get(HipToggleTaxAccount).map { flag =>
-      if (flag.isEnabled) {
-        readsToggleOn
-      } else {
-        readsToggleOff
-      }
-    }
-
   def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
     (for {
-      readsTaxAccountSummary <- getReads(
+      readsTaxAccountSummary <- JsonHelper.getReads(
+                                  featureFlagService,
                                   TaxOnOtherIncomeHipToggleOff.taxAccountSummaryReads,
                                   TaxOnOtherIncomeHipToggleOn.taxAccountSummaryReads
                                 )
-      readsCodingComponent <- getReads(
+      readsCodingComponent <- JsonHelper.getReads(
+                                featureFlagService,
                                 CodingComponentHipToggleOff.codingComponentReads,
                                 CodingComponentHipToggleOn.codingComponentReads
                               )
@@ -140,12 +132,15 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
   }
 
   def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
-    getReads(
-      TaxOnOtherIncomeHipToggleOff.taxOnOtherIncomeTaxValueReads,
-      TaxOnOtherIncomeHipToggleOn.taxOnOtherIncomeTaxValueReads
-    ).flatMap { taxOnOtherIncomeReads =>
-      taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeReads))
-    }
+    JsonHelper
+      .getReads(
+        featureFlagService,
+        TaxOnOtherIncomeHipToggleOff.taxOnOtherIncomeTaxValueReads,
+        TaxOnOtherIncomeHipToggleOn.taxOnOtherIncomeTaxValueReads
+      )
+      .flatMap { taxOnOtherIncomeReads =>
+        taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeReads))
+      }
 
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
@@ -160,7 +155,8 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
     }
 
     for {
-      readsCodingComponent <- getReads(
+      readsCodingComponent <- JsonHelper.getReads(
+                                featureFlagService,
                                 CodingComponentHipToggleOff.codingComponentReads,
                                 CodingComponentHipToggleOn.codingComponentReads
                               )
@@ -179,7 +175,8 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
   private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] =
     for {
       readsTaxAdjustmentComponent <-
-        getReads(
+        JsonHelper.getReads(
+          featureFlagService,
           TaxAdjustmentComponentHipToggleOff.taxAdjustmentComponentReads,
           TaxAdjustmentComponentHipToggleOn.taxAdjustmentComponentReads
         )

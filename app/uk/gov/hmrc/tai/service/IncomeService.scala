@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import play.api.libs.json.Reads
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -27,12 +26,12 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
+import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,15 +46,6 @@ class IncomeService @Inject() (
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends Logging {
-
-  private def getReads[A](readsToggleOff: Reads[A], readsToggleOn: Reads[A]): Future[Reads[A]] =
-    featureFlagService.get(HipToggleTaxAccount).map { flag =>
-      if (flag.isEnabled) {
-        readsToggleOn
-      } else {
-        readsToggleOff
-      }
-    }
 
   def nonMatchingCeasedEmployments(nino: Nino, year: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -145,28 +135,31 @@ class IncomeService @Inject() (
   }
 
   def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
-    getReads(
-      OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads,
-      OtherNonTaxCodeIncomeHipToggleOn.otherNonTaxCodeIncomeReads
-    ).flatMap { reads =>
-      taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
-        val nonTaxCodeIncome =
-          jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
-        val (untaxedInterestIncome, otherNonTaxCodeIncome) =
-          nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
+    JsonHelper
+      .getReads(
+        featureFlagService,
+        OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads,
+        OtherNonTaxCodeIncomeHipToggleOn.otherNonTaxCodeIncomeReads
+      )
+      .flatMap { reads =>
+        taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
+          val nonTaxCodeIncome =
+            jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
+          val (untaxedInterestIncome, otherNonTaxCodeIncome) =
+            nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
-        if (untaxedInterestIncome.nonEmpty) {
-          val income = untaxedInterestIncome.head
-          val untaxedInterest =
-            UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
-          Future.successful(
-            Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
-          )
-        } else {
-          Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
+          if (untaxedInterestIncome.nonEmpty) {
+            val income = untaxedInterestIncome.head
+            val untaxedInterest =
+              UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
+            Future.successful(
+              Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
+            )
+          } else {
+            Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
+          }
         }
       }
-    }
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit
     headerCarrier: HeaderCarrier,

@@ -16,11 +16,18 @@
 
 package uk.gov.hmrc.tai.util
 
+import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
+import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.util.JsonHelper.{OrElseTry, parseType}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Try}
 
 class JsonHelperSpec extends PlaySpec with MockitoSugar {
@@ -86,6 +93,52 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
 
     "return None when no number present" in {
       parseType("test") mustBe None
+    }
+  }
+
+  private case class Test(field1: String, field2: String)
+  private val test1 = Test("first", "first")
+  private val test2 = Test("second", "second")
+  private val testReadsA = Reads[Test](_ => JsSuccess(test1))
+  private val testReadsFail = Reads[Test](_ => JsError())
+  private val testReadsB = Reads[Test](_ => JsSuccess(test2))
+  private val mockFeatureFlagService = mock[FeatureFlagService]
+
+  "getReads" must {
+    "use second reads when toggle is off and first fails" in {
+      when(mockFeatureFlagService.get(any()))
+        .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = false)))
+      val actualReads =
+        Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsFail, testReadsB), Duration.Inf)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test2)
+    }
+
+    "use first reads when toggle is off and first succeeds" in {
+      when(mockFeatureFlagService.get(any()))
+        .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = false)))
+      val actualReads =
+        Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsA, testReadsB), Duration.Inf)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test1)
+    }
+
+    "use second reads when toggle is on and first fails" in {
+      when(mockFeatureFlagService.get(any()))
+        .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = true)))
+      val actualReads =
+        Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsB, testReadsFail), Duration.Inf)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test2)
+    }
+
+    "use first reads when toggle is on and first succeeds" in {
+      when(mockFeatureFlagService.get(any()))
+        .thenReturn(Future.successful(FeatureFlag(name = HipToggleTaxAccount, isEnabled = true)))
+      val actualReads =
+        Await.result(JsonHelper.getReads[Test](mockFeatureFlagService, testReadsB, testReadsA), Duration.Inf)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test1)
     }
   }
 }
