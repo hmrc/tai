@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOff.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
 
 case class UntaxedInterest(
@@ -56,10 +55,10 @@ case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTax
 object Incomes {
   /*
     The Hip toggle only affects the Reads. We only require the Writes
-    here so we can safely import TaxCodeIncomeHipToggleOff.
+    here therefore we can safely import TaxCodeIncomeHipToggleOff.
    */
   implicit val format: Format[Incomes] = {
-    import TaxCodeIncomeHipToggleOff._
+    import TaxCodeIncomeHipToggleOff.reads
     Json.format[Incomes]
   }
 }
