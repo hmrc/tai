@@ -150,8 +150,6 @@ class TaxCodeIncomeHelperHipToggleOffSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(taxAccountJson))
         when(mockIabdService.retrieveIabdDetails(any(), any())(any())).thenReturn(Future.successful(iabdDetailsSeq))
-        writeFile(Json.stringify(taxAccountJson), "TC01.json")
-        writeFile(Json.stringify(taxAccountJsonWithTaxableIncome), "TC02.json")
         val result = createSut().fetchTaxCodeIncomes(nino, TaxYear()).futureValue
 
         result mustBe Seq(

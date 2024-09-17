@@ -21,9 +21,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
+import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
-import play.api.inject.bind
 import uk.gov.hmrc.tai.controllers.FakeTaiPlayApplication
 import uk.gov.hmrc.tai.mocks.MockAuthenticationPredicate
 
@@ -32,13 +32,6 @@ import scala.concurrent.ExecutionContext
 trait BaseSpec
     extends PlaySpec with MockitoSugar with MockAuthenticationPredicate with FakeTaiPlayApplication with ScalaFutures
     with Injecting {
-
-  def writeFile(content: String, fileName: String): Unit = {
-    import java.io._
-    val pw = new PrintWriter(new File(s"//home/digital367027/Desktop/temp/$fileName"))
-    pw.write(content)
-    pw.close()
-  }
 
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""
