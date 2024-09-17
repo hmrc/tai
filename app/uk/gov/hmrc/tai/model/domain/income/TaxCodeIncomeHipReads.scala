@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 
-object TaxCodeIncomeHipToggleOn {
+object TaxCodeIncomeHipReads {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -66,7 +66,7 @@ object TaxCodeIncomeHipToggleOn {
 
   val taxCodeIncomeSourcesReads: Reads[Seq[TaxCodeIncome]] = (json: JsValue) => {
     val taxCodeIncomes = (json \ "employmentDetailsList")
-      .asOpt[Seq[TaxCodeIncome]](Reads.seq(TaxCodeIncomeHipToggleOn.taxCodeIncomeSourceReads))
+      .asOpt[Seq[TaxCodeIncome]](Reads.seq(TaxCodeIncomeHipReads.taxCodeIncomeSourceReads))
       .getOrElse(Seq.empty[TaxCodeIncome])
     JsSuccess(taxCodeIncomes)
   }
@@ -88,7 +88,7 @@ object TaxCodeIncomeHipToggleOn {
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdSummaries: Option[Seq[IabdSummary]] =
       (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDEstimatedPayDetailsList")
-        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipToggleOn.iabdSummaryReads))
+        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipReads.iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
       _.find(iabd =>
         newEstimatedPayTypeFilter(iabd) &&
@@ -117,5 +117,5 @@ object TaxCodeIncomeHipToggleOn {
     compare.getOrElse(false)
   }
 
-  implicit val reads: Reads[TaxCodeIncome] = TaxCodeIncomeHipToggleOn.taxCodeIncomeSourceReads
+  implicit val reads: Reads[TaxCodeIncome] = TaxCodeIncomeHipReads.taxCodeIncomeSourceReads
 }

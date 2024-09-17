@@ -22,8 +22,8 @@ import uk.gov.hmrc.tai.model.domain._
 
 import scala.io.Source
 
-class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
-  private val basePath = "test/resources/data/TaxAccount/TaxCodeIncome/nps/"
+class TaxCodeIncomeHipReadsSpec extends PlaySpec {
+  private val basePath = "test/resources/data/TaxAccount/TaxCodeIncome/hip/"
   private def readFile(fileName: String): JsObject = {
     val jsonFilePath = basePath + fileName
     val bufferedSource = Source.fromFile(jsonFilePath)
@@ -38,14 +38,14 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
       "estimated pay is available in iabds" in {
         val payload = readFile("TC01.json")
         val result =
-          payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+          payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result.head.amount mustBe 111
 
       }
 
       "estimated pay is available in iabds for the correct employment id" in {
         val payload = readFile("TC02.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result.head.amount mustBe 1111
       }
     }
@@ -55,14 +55,14 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
       "pay and tax is not available" in {
 
         val payload = readFile("TC03.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result.head.amount mustBe 0
       }
 
       "employmentId does not match" in {
 
         val payload = readFile("TC04.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result.head.amount mustBe 0
       }
     }
@@ -73,7 +73,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "read taxCodeIncome" when {
       "all income source indicators are false" in {
         val payload = readFile("TC05.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             EmploymentIncome,
@@ -93,7 +93,8 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "pension indicator is true" in {
         val payload = readFile("TC06.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+
         result mustBe Seq(
           TaxCodeIncome(
             PensionIncome,
@@ -113,7 +114,8 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "jobSeekers indicator is true" in {
         val payload = readFile("TC07.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+
         result mustBe Seq(
           TaxCodeIncome(
             JobSeekerAllowanceIncome,
@@ -133,7 +135,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "other income source indicator is true" in {
         val payload = readFile("TC08.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -153,7 +155,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "employment id is not available" in {
         val payload = readFile("TC09.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -173,7 +175,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "taxCode is not available" in {
         val payload = readFile("TC10.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -195,7 +197,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "utilize totalTaxableIncomeReads to read amount" when {
       "provided with whole json" in {
         val payload = readFile("TC11.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -215,7 +217,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
 
       "provided with missing payAndTax element" in {
         val payload = readFile("TC12.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -241,19 +243,19 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
         val payload = Json.obj(
           "taxYear" -> JsNumber(2017)
         )
-        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads) mustBe Nil
+        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads) mustBe Nil
       }
 
       "fields provided with null values" in {
         val payload = readFile("TC14.json")
-        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads) mustBe Nil
+        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads) mustBe Nil
       }
     }
 
     "deserialize the tax account json into the case class with all values" when {
       "all of the fields are provided" in {
         val payload = readFile("TC15.json")
-        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads) mustBe
+        payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads) mustBe
           Seq(
             TaxCodeIncome(
               EmploymentIncome,
@@ -290,7 +292,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "read status as live" when {
       "provided with employmentStatus as 1" in {
         val payload = readFile("TC16.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -312,7 +314,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "read status as potentially ceased" when {
       "provided with employmentStatus as 2" in {
         val payload = readFile("TC17.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -334,7 +336,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "read status as ceased" when {
       "provided with employmentStatus as 3" in {
         val payload = readFile("TC18.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -356,20 +358,21 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     "read in year adjustment amounts" when {
       "values are present within tax account JSON" in {
         val payload = readFile("TC19.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+
         result mustBe Seq(
           TaxCodeIncome(
-            OtherIncome,
-            Some(1),
-            BigDecimal(0),
-            "OtherIncome",
-            "1150L",
-            "",
-            OtherBasisOperation,
-            Ceased,
-            BigDecimal(10.20),
-            BigDecimal(30.40),
-            BigDecimal(10.60)
+            componentType = OtherIncome,
+            employmentId = Some(1),
+            amount = BigDecimal(0),
+            description = "OtherIncome",
+            taxCode = "1150L",
+            name = "",
+            basisOperation = OtherBasisOperation,
+            status = Ceased,
+            inYearAdjustmentIntoCY = BigDecimal(10.20),
+            totalInYearAdjustment = BigDecimal(30.40),
+            inYearAdjustmentIntoCYPlusOne = BigDecimal(10.60)
           )
         )
       }
@@ -379,7 +382,7 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
       "values are absent from tax account JSON" in {
 
         val payload = readFile("TC20.json")
-        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads)
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
             OtherIncome,
@@ -399,11 +402,11 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
     }
 
     "error out" when {
-      "provided with employmentStatus as 4" in {
+      "provided with invalid employmentStatus" in {
         val payload = readFile("TC21.json")
         val ex =
           the[RuntimeException] thrownBy payload.as[Seq[TaxCodeIncome]](
-            TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads
+            TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads
           )
         ex.getMessage mustBe "Invalid employment status"
       }
@@ -413,56 +416,56 @@ class TaxCodeIncomeHipToggleOffSpec extends PlaySpec {
         val payload = readFile("TC22.json")
         val ex =
           the[RuntimeException] thrownBy payload.as[Seq[TaxCodeIncome]](
-            TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads
+            TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads
           )
         ex.getMessage mustBe "Invalid employment status"
       }
     }
   }
 
-  "TaxCodeIncomeHipToggleOff.newEstimatedPayTypeFilter" must {
+  "TaxCodeIncomeHipToggleOn.newEstimatedPayTypeFilter" must {
     "return true" when {
       "new estimated pay is available" in {
         val iabd = IabdSummary(27, Some(1), 11111)
-        TaxCodeIncomeHipToggleOff.newEstimatedPayTypeFilter(iabd) mustBe true
+        TaxCodeIncomeHipReads.newEstimatedPayTypeFilter(iabd) mustBe true
       }
     }
 
     "return false" when {
       "new estimated pay is not available" in {
         val iabd = IabdSummary(28, Some(1), 11111)
-        TaxCodeIncomeHipToggleOff.newEstimatedPayTypeFilter(iabd) mustBe false
+        TaxCodeIncomeHipReads.newEstimatedPayTypeFilter(iabd) mustBe false
       }
     }
   }
 
-  "TaxCodeIncomeHipToggleOff.employmentFilter" must {
+  "TaxCodeIncomeHipToggleOn.employmentFilter" must {
     "return true" when {
       "iabd employment match with nps employment" in {
         val iabd = IabdSummary(27, Some(1), 11111)
-        TaxCodeIncomeHipToggleOff.employmentFilter(iabd, Some(1)) mustBe true
+        TaxCodeIncomeHipReads.employmentFilter(iabd, Some(1)) mustBe true
       }
     }
 
     "return false" when {
       "iabd employment does not match nps employment" in {
         val iabd = IabdSummary(27, Some(1), 11111)
-        TaxCodeIncomeHipToggleOff.employmentFilter(iabd, Some(2)) mustBe false
+        TaxCodeIncomeHipReads.employmentFilter(iabd, Some(2)) mustBe false
       }
 
       "iabd employment is not available" in {
         val iabd = IabdSummary(27, None, 11111)
-        TaxCodeIncomeHipToggleOff.employmentFilter(iabd, Some(2)) mustBe false
+        TaxCodeIncomeHipReads.employmentFilter(iabd, Some(2)) mustBe false
       }
 
       "nps employment is not available" in {
         val iabd = IabdSummary(27, Some(1), 11111)
-        TaxCodeIncomeHipToggleOff.employmentFilter(iabd, None) mustBe false
+        TaxCodeIncomeHipReads.employmentFilter(iabd, None) mustBe false
       }
 
       "iabd employment and nps employment are not available" in {
         val iabd = IabdSummary(27, None, 11111)
-        TaxCodeIncomeHipToggleOff.employmentFilter(iabd, None) mustBe false
+        TaxCodeIncomeHipReads.employmentFilter(iabd, None) mustBe false
       }
     }
   }

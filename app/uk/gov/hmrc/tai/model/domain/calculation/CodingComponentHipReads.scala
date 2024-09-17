@@ -17,13 +17,14 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipToggleOff.iabdsFromTotalLiabilityReads
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipReads.iabdsFromTotalLiabilityReads
 import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.util.JsonHelper.parseTypeOrException
 
-object CodingComponentHipToggleOff {
+object CodingComponentHipReads {
   val codingComponentReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
-
     val taxComponentsFromIncomeSources = json.as[Seq[CodingComponent]](incomeSourceReads)
+
     val taxComponentsFromLiabilities = json.as[Seq[CodingComponent]](totalLiabilityReads)
     val taxComponents = taxComponentsFromIncomeSources ++ taxComponentsFromLiabilities
 
@@ -33,7 +34,7 @@ object CodingComponentHipToggleOff {
   private type CodingComponentFactory = (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent]
 
   private val incomeSourceReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
-    val codingComponents: Seq[CodingComponent] = (json \ "incomeSources").validate[JsArray] match {
+    val codingComponents: Seq[CodingComponent] = (json \ "employmentDetailsList").validate[JsArray] match {
       case JsSuccess(incomesJsArray, _) => incomesJsArray.value.flatMap(codingComponentsFromJson).toSeq
       case _                            => Seq.empty[CodingComponent]
     }
@@ -54,9 +55,9 @@ object CodingComponentHipToggleOff {
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
         npsComponentNonTaxCodeIncomeMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
-    codingComponentsFromIncomeSources(incomeJsVal, "deductions", deductionFactory) ++
-      codingComponentsFromIncomeSources(incomeJsVal, "allowances", allowanceFactory) ++
-      codingComponentsFromIncomeSources(incomeJsVal, "deductions", nonTaxCodeIncomeFactory)
+    codingComponentsFromIncomeSources(incomeJsVal, "deductionsDetails", deductionFactory) ++
+      codingComponentsFromIncomeSources(incomeJsVal, "allowancesDetails", allowanceFactory) ++
+      codingComponentsFromIncomeSources(incomeJsVal, "deductionsDetails", nonTaxCodeIncomeFactory)
   }
 
   private def codingComponentsFromIncomeSources(
@@ -76,11 +77,12 @@ object CodingComponentHipToggleOff {
     npsComponentJson: JsValue,
     codingComponentFactory: CodingComponentFactory
   ): Option[CodingComponent] = {
-    val description = (npsComponentJson \ "npsDescription").as[String]
-    val amount = (npsComponentJson \ "amount").as[BigDecimal]
-    val typeKey = (npsComponentJson \ "type").as[Int]
+    val fullType = (npsComponentJson \ "type").as[String]
+    val (description, typeKey) = parseTypeOrException(fullType)
+    val amount = (npsComponentJson \ "adjustedAmount").as[BigDecimal]
     val sourceAmount = (npsComponentJson \ "sourceAmount").asOpt[BigDecimal]
     codingComponentFactory(typeKey, amount, description, sourceAmount)
+
   }
 
   private val npsComponentDeductionMap: Map[Int, DeductionComponentType] = Map(
@@ -141,19 +143,19 @@ object CodingComponentHipToggleOff {
     34 -> BRDifferenceTaxReduction
   )
 
-  private val totalLiabilityReads: Reads[Seq[CodingComponent]] = new Reads[Seq[CodingComponent]] {
-    override def reads(json: JsValue): JsResult[Seq[CodingComponent]] = {
-      val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
-      val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
-      val (benefits, otherCodingComponents) = codingComponents.partition {
-        _.componentType match {
-          case _: BenefitComponentType => true
-          case _                       => false
-        }
+  private val totalLiabilityReads: Reads[Seq[CodingComponent]] = (json: JsValue) => {
+
+    val extractedIabds: Seq[NpsIabdSummary] = json.as[Seq[NpsIabdSummary]](iabdsFromTotalLiabilityReads)
+    val codingComponents = codingComponentsFromIabdSummaries(extractedIabds)
+
+    val (benefits, otherCodingComponents) = codingComponents.partition {
+      _.componentType match {
+        case _: BenefitComponentType => true
+        case _                       => false
       }
-      val reconciledBenefits = reconcileBenefits(benefits)
-      JsSuccess(otherCodingComponents ++ reconciledBenefits)
     }
+    val reconciledBenefits = reconcileBenefits(benefits)
+    JsSuccess(otherCodingComponents ++ reconciledBenefits)
   }
 
   private def codingComponentsFromIabdSummaries(iabds: Seq[NpsIabdSummary]): Seq[CodingComponent] =
@@ -178,6 +180,7 @@ object CodingComponentHipToggleOff {
 
   private def reconcileBenefitsForEmployment(benefits: Seq[CodingComponent]): Seq[CodingComponent] = {
     def isBenefitInKind(tc: CodingComponent) = tc.componentType == BenefitInKind
+
     val individuals = benefits.filterNot(isBenefitInKind)
     benefits.find(isBenefitInKind) match {
       case Some(total) if total.amount > 0 && total.amount != individuals.map(_.amount).sum => Seq(total)

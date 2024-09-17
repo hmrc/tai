@@ -18,20 +18,16 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status.NOT_FOUND
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
@@ -58,7 +54,6 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
     AuthenticatedRequest(FakeRequest(), nino)
 
-  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private def createSUT(
     employmentService: EmploymentService = mock[EmploymentService],
     citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector],
@@ -73,17 +68,8 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
       taxAccountConnector,
       iabdService,
       taxCodeIncomeHelper,
-      auditor,
-      mockFeatureFlagService
+      auditor
     )
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
-  }
 
   "untaxedInterest" must {
     val mockTaxAccountConnector = mock[TaxAccountConnector]

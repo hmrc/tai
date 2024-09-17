@@ -17,10 +17,7 @@
 package uk.gov.hmrc.tai.util
 
 import play.api.libs.json._
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object JsonHelper {
@@ -63,7 +60,7 @@ object JsonHelper {
       combineReads(reads, bReads)
   }
 
-  def parseType(fullType: String): Option[(String, Int)] = {
+  private def parseType(fullType: String): Option[(String, Int)] = {
     val trimmedValue = fullType.trim
     if (trimmedValue.endsWith(")")) {
       val reversedValue = trimmedValue.reverse
@@ -91,33 +88,15 @@ object JsonHelper {
     }
   }
 
-  private val readsCheckFormatToggleOff = Reads[JsValue] { jsValue =>
-    if ((jsValue \ "nino").isDefined) {
-      JsSuccess(jsValue)
-    } else {
-      JsError()
-    }
-  }
-
-  private val readsCheckFormatToggleOn = Reads[JsValue] { jsValue =>
-    if ((jsValue \ "nationalInsuranceNumber").isDefined) {
-      JsSuccess(jsValue)
-    } else {
-      JsError()
-    }
-  }
-
-  def getReads[A](
-    featureFlagService: FeatureFlagService,
-    readsToggleOff: Reads[A],
-    readsToggleOn: Reads[A]
-  )(implicit ec: ExecutionContext): Future[Reads[A]] =
-    featureFlagService.get(HipToggleTaxAccount).map { flag =>
-      if (flag.isEnabled) {
-        (readsCheckFormatToggleOn andThen readsToggleOn) orElseTry readsToggleOff
+  def selectReads[A](
+    readsSquid: Reads[A],
+    readsHip: Reads[A]
+  ): Reads[A] =
+    Reads[A] { jsValue =>
+      if ((jsValue \ "nationalInsuranceNumber").isDefined) {
+        readsHip.reads(jsValue)
       } else {
-        (readsCheckFormatToggleOff andThen readsToggleOff) orElseTry readsToggleOn
+        readsSquid.reads(jsValue)
       }
     }
-
 }

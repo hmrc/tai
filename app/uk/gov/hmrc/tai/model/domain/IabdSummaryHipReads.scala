@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsPath, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 
-object IabdSummaryHipToggleOn {
+object IabdSummaryHipReads {
   implicit val iabdSummaryReads: Reads[IabdSummary] =
     (
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and

@@ -19,12 +19,12 @@ package uk.gov.hmrc.tai.model.domain.income
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 
-object OtherNonTaxCodeIncomeHipToggleOff {
+object OtherNonTaxCodeIncomeSquidReads {
   implicit val format: Format[OtherNonTaxCodeIncome] = Json.format[OtherNonTaxCodeIncome]
 
   val otherNonTaxCodeIncomeReads: Reads[Seq[OtherNonTaxCodeIncome]] = (json: JsValue) => {
     val extractedIabds: Seq[NpsIabdSummary] =
-      json.as[Seq[NpsIabdSummary]](NpsIabdSummaryHipToggleOff.iabdsFromTotalLiabilityReads)
+      json.as[Seq[NpsIabdSummary]](NpsIabdSummarySquidReads.iabdsFromTotalLiabilityReads)
     JsSuccess(nonTaxCodeIncomes(extractedIabds))
   }
 

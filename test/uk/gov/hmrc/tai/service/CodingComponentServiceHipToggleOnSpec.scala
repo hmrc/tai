@@ -61,7 +61,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
         when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
           .thenReturn(Future.successful(emptyJson))
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe Nil
@@ -78,7 +78,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
           CodingComponent(OutstandingDebt, None, 10, "Educational Services", None)
         )
 
-        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+        val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
         val result = sut.codingComponents(nino, TaxYear()).futureValue
         result mustBe codingComponentList
@@ -92,7 +92,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(emptyJson))
 
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe Nil
@@ -105,7 +105,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
       )
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC02.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -118,7 +118,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
       )
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC03.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected
@@ -133,7 +133,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
 
       when(mockTaxAccountConnector.taxAccountHistory(meq(nino), meq(taxCodeId))(any()))
         .thenReturn(Future.successful(readFile("TC04.json")))
-      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector, mockFeatureFlagService)
+      val sut: CodingComponentService = new CodingComponentService(mockTaxAccountConnector)
 
       val result = sut.codingComponentsForTaxCodeId(nino, taxCodeId).futureValue
       result mustBe expected

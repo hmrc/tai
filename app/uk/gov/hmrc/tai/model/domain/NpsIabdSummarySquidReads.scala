@@ -17,28 +17,27 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
-import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
 
-object NpsIabdSummaryHipToggleOn {
-
+object NpsIabdSummarySquidReads {
   val iabdsFromTotalLiabilityReads: Reads[Seq[NpsIabdSummary]] = (json: JsValue) => {
     val categories =
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-    val totalIncomeList = totalLiabilityIabds(json, "totalIncomeDetails", categories)
-    val allowReliefDeductsList = totalLiabilityIabds(json, "allowanceReliefDeductionsDetails", categories)
+    val totalIncomeList = totalLiabilityIabds(json, "totalIncome", categories)
+    val allowReliefDeductsList = totalLiabilityIabds(json, "allowReliefDeducts", categories)
     JsSuccess(totalIncomeList ++ allowReliefDeductsList)
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
     val iabdJsArray = categories.flatMap { category =>
-      (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
+      (json \ "totalLiability" \ category \ subPath \ "iabdSummaries").asOpt[JsArray]
     }
+
     iabdJsArray.flatMap(_.value) collect {
-      case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
-        val fullType = (json \ "type").as[String]
-        val (description, componentType) = parseTypeOrException(fullType)
-        val employmentId = (json \ "employmentSequenceNumber").asOpt[Int]
+      case json if (json \ "type").asOpt[Int].isDefined =>
+        val componentType = (json \ "type").as[Int]
+        val employmentId = (json \ "employmentId").asOpt[Int]
         val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+        val description = (json \ "npsDescription").asOpt[String].getOrElse("")
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
   }

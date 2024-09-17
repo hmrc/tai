@@ -22,7 +22,6 @@ import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
@@ -42,8 +41,7 @@ class IncomeService @Inject() (
   taxAccountConnector: TaxAccountConnector,
   iabdService: IabdService,
   taxCodeIncomeHelper: TaxCodeIncomeHelper,
-  auditor: Auditor,
-  featureFlagService: FeatureFlagService
+  auditor: Auditor
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -134,32 +132,29 @@ class IncomeService @Inject() (
     }
   }
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
-    JsonHelper
-      .getReads(
-        featureFlagService,
-        OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads,
-        OtherNonTaxCodeIncomeHipToggleOn.otherNonTaxCodeIncomeReads
-      )
-      .flatMap { reads =>
-        taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
-          val nonTaxCodeIncome =
-            jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
-          val (untaxedInterestIncome, otherNonTaxCodeIncome) =
-            nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
+  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
+    val reads = JsonHelper.selectReads(
+      OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads,
+      OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads
+    )
+    taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
+      val nonTaxCodeIncome =
+        jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
+      val (untaxedInterestIncome, otherNonTaxCodeIncome) =
+        nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
-          if (untaxedInterestIncome.nonEmpty) {
-            val income = untaxedInterestIncome.head
-            val untaxedInterest =
-              UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
-            Future.successful(
-              Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
-            )
-          } else {
-            Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
-          }
-        }
+      if (untaxedInterestIncome.nonEmpty) {
+        val income = untaxedInterestIncome.head
+        val untaxedInterest =
+          UntaxedInterest(income.incomeComponentType, income.employmentId, income.amount, income.description)
+        Future.successful(
+          Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(Some(untaxedInterest), otherNonTaxCodeIncome))
+        )
+      } else {
+        Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
+    }
+  }
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit
     headerCarrier: HeaderCarrier,

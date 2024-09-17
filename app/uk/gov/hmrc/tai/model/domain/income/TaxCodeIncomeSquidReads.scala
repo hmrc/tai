@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
 
-object TaxCodeIncomeHipToggleOff {
+object TaxCodeIncomeSquidReads {
 
   private val logger: Logger = Logger(getClass.getName)
 
@@ -88,7 +88,7 @@ object TaxCodeIncomeHipToggleOff {
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
     val iabdSummaries: Option[Seq[IabdSummary]] =
       (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries")
-        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipToggleOff.iabdSummaryReads))
+        .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummarySquidReads.iabdSummaryReads))
     val iabdSummary = iabdSummaries.flatMap {
       _.find(iabd =>
         newEstimatedPayTypeFilter(iabd) &&

@@ -17,13 +17,9 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
-import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTaxHipToggleOn}
+import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTaxHipReads}
 import uk.gov.hmrc.tai.model.domain.taxAdjustments._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
@@ -37,23 +33,18 @@ class TotalTaxServiceHipToggleOnSpec extends BaseSpec {
   val mockTaxAccountSummaryService: TaxAccountSummaryService = mock[TaxAccountSummaryService]
   class Dummy
   val incomeCategoryHodFormatters = new Dummy
-  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockTaxAccountConnector, mockTaxAccountHelper, mockTaxAccountSummaryService)
     when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
       .thenReturn(Future.successful(incomeCategories))
-    reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
-    )
   }
 
   private def createSUT(
     taxAccountConnector: TaxAccountConnector,
     taxAccountHelper: TaxAccountHelper
   ) =
-    new TotalTaxService(taxAccountConnector, taxAccountHelper, mockFeatureFlagService)
+    new TotalTaxService(taxAccountConnector, taxAccountHelper)
   val sut: TotalTaxService = createSUT(mockTaxAccountConnector, mockTaxAccountHelper)
 
   val incomeCategories: JsObject = Json
@@ -122,7 +113,7 @@ class TotalTaxServiceHipToggleOnSpec extends BaseSpec {
 
       val result = sut.totalTax(nino, TaxYear()).futureValue
       result.incomeCategories must contain theSameElementsAs incomeCategories.as[Seq[IncomeCategory]](
-        TotalTaxHipToggleOn.incomeCategorySeqReads
+        TotalTaxHipReads.incomeCategorySeqReads
       )
 
       result.reliefsGivingBackTax mustBe None

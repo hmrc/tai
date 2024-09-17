@@ -19,7 +19,6 @@ package uk.gov.hmrc.tai.service.helper
 import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.income._
@@ -32,18 +31,18 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class TaxCodeIncomeHelper @Inject() (
   taxAccountConnector: TaxAccountConnector,
-  iabdService: IabdService,
-  featureFlagService: FeatureFlagService
+  iabdService: IabdService
 )(implicit ec: ExecutionContext) {
   def fetchTaxCodeIncomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[TaxCodeIncome]] = {
     lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
 
+    val reads = JsonHelper.selectReads(
+      TaxCodeIncomeSquidReads.taxCodeIncomeSourcesReads,
+      TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads
+    )
+
     for {
-      reads <- JsonHelper.getReads(
-                 featureFlagService,
-                 TaxCodeIncomeHipToggleOff.taxCodeIncomeSourcesReads,
-                 TaxCodeIncomeHipToggleOn.taxCodeIncomeSourcesReads
-               )
+
       taxCodeIncomes <- taxAccountConnector
                           .taxAccount(nino, year)
                           .map(_.as[Seq[TaxCodeIncome]](reads))

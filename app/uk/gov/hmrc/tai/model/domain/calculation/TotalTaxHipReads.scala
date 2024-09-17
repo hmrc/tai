@@ -21,7 +21,7 @@ import play.api.libs.json._
 
 import scala.language.postfixOps
 
-object TotalTaxHipToggleOff extends Logging {
+object TotalTaxHipReads extends Logging {
 
   val taxBandReads: Reads[Option[TaxBand]] = (json: JsValue) => {
     val bandType = (json \ "bandType").as[String]
@@ -56,10 +56,11 @@ object TotalTaxHipToggleOff extends Logging {
 
   val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
     val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-    val totalLiability = (json \ "totalLiability").as[JsValue]
+    val totalLiability = (json \ "totalLiabilityDetails").as[JsValue]
     JsSuccess(
       categoryNames map (category =>
-        (totalLiability \ category \ "allowReliefDeducts" \ "amount").asOpt[BigDecimal] getOrElse BigDecimal(0)
+        (totalLiability \ category \ "allowanceReliefDeductionsDetails" \ "amount")
+          .asOpt[BigDecimal] getOrElse BigDecimal(0)
       ) sum
     )
   }
@@ -77,14 +78,14 @@ object TotalTaxHipToggleOff extends Logging {
 
   private def incomeCategories(json: JsValue, categories: Seq[String]): Seq[IncomeCategory] = {
     val categoryMap: Map[String, Option[JsObject]] =
-      categories.map(category => (category, (json \ "totalLiability" \ category).asOpt[JsObject])).toMap
+      categories.map(category => (category, (json \ "totalLiabilityDetails" \ category).asOpt[JsObject])).toMap
 
     categoryMap.collect { case (category, Some(jsObject)) =>
       val totalTax = (jsObject \ "totalTax").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val totalTaxableIncome = (jsObject \ "totalTaxableIncome").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val totalIncome = (jsObject \ "totalIncome" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+      val totalIncome = (jsObject \ "totalIncomeDetails" \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
       val taxBands =
-        (jsObject \ "taxBands").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
+        (jsObject \ "taxBandDetails").asOpt[Seq[TaxBand]](Reads.seq[Option[TaxBand]](taxBandReads).map(_.flatten))
       val inComeCategory = categoryTypeFactory(category)
       IncomeCategory(
         inComeCategory,

@@ -20,7 +20,7 @@ import play.api.libs.json.{JsSuccess, JsValue, Reads}
 
 import scala.annotation.tailrec
 
-object TaxOnOtherIncomeHipToggleOff {
+object TaxOnOtherIncomeSquidReads {
   private val NonCodedIncome = 19
 
   val taxOnOtherIncomeTaxValueReads: Reads[Option[BigDecimal]] = (json: JsValue) =>
@@ -35,7 +35,7 @@ object TaxOnOtherIncomeHipToggleOff {
   }
 
   private val taxOnOtherIncomeReads: Reads[Option[TaxOnOtherIncome]] = (json: JsValue) => {
-    val iabdSummaries = NpsIabdSummaryHipToggleOff.totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
+    val iabdSummaries = NpsIabdSummarySquidReads.totalLiabilityIabds(json, "totalIncome", Seq("nonSavings"))
     val nonCodedIncomeAmount = iabdSummaries.find(_.componentType == NonCodedIncome).map(_.amount)
 
     @tailrec

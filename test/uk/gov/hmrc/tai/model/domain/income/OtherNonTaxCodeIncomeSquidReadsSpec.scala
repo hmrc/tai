@@ -23,7 +23,7 @@ import uk.gov.hmrc.tai.model.domain._
 
 import scala.util.Random
 
-class OtherNonTaxCodeIncomeHipToggleOffSpec extends PlaySpec {
+class OtherNonTaxCodeIncomeSquidReadsSpec extends PlaySpec {
   private val nino: Nino = new Generator(new Random).nextNino
   "otherNonTaxCodeIncomeReads" must {
     "return empty sequence" when {
@@ -32,7 +32,7 @@ class OtherNonTaxCodeIncomeHipToggleOffSpec extends PlaySpec {
           "taxAccountId" -> "id",
           "nino"         -> nino.nino
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads) mustBe empty
       }
 
       "total liability is null in tax account" in {
@@ -41,7 +41,7 @@ class OtherNonTaxCodeIncomeHipToggleOffSpec extends PlaySpec {
           "nino"           -> nino.nino,
           "totalLiability" -> JsNull
         )
-        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads) mustBe empty
+        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads) mustBe empty
       }
     }
 
@@ -56,7 +56,7 @@ class OtherNonTaxCodeIncomeHipToggleOffSpec extends PlaySpec {
           )
         )
 
-        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeHipToggleOff.otherNonTaxCodeIncomeReads) mustBe Seq(
+        json.as[Seq[OtherNonTaxCodeIncome]](OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads) mustBe Seq(
           OtherNonTaxCodeIncome(NonCodedIncome, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(Commission, Some(1), 100, "desc"),
           OtherNonTaxCodeIncome(OtherIncomeEarned, Some(1), 100, "desc"),

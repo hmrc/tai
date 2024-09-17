@@ -18,7 +18,7 @@ package uk.gov.hmrc.tai.model.domain.taxAdjustments
 
 import play.api.libs.json._
 
-object TaxAdjustmentComponentHipToggleOff {
+object TaxAdjustmentComponentSquidReads {
 
   def flattenTaxAdjustmentComponents(components: Option[TaxAdjustmentComponent]*): Seq[TaxAdjustmentComponent] =
     components.toSeq.flatten

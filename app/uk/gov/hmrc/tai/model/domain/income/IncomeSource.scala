@@ -27,7 +27,7 @@ object IncomeSource {
     here therefore we can safely import TaxCodeIncomeHipToggleOff.
    */
   implicit val incomeSourceFormat: Writes[IncomeSource] = {
-    import TaxCodeIncomeHipToggleOff._
+    import TaxCodeIncomeSquidReads._
     Json.format[IncomeSource]
   }
 

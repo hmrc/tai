@@ -18,13 +18,13 @@ package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, JsValue, Json}
-import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipToggleOn.{incomeCategorySeqReads, taxFreeAllowanceReads}
+import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxSquidReads.{incomeCategorySeqReads, taxFreeAllowanceReads}
 
 import scala.io.Source
 
-class TotalTaxHipToggleOnSpec extends PlaySpec {
+class TotalTaxSquidReadsSpec extends PlaySpec {
 
-  private val basePath = "test/resources/data/TaxAccount/TotalTax/hip/"
+  private val basePath = "test/resources/data/TaxAccount/TotalTax/nps/"
   private def readFile(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
     val bufferedSource = Source.fromFile(jsonFilePath)
@@ -39,10 +39,10 @@ class TotalTaxHipToggleOnSpec extends PlaySpec {
         val payload = readFile("tc01.json")
         payload.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
       }
-//      "all the 6 income categories as null" in {
-//        val payload = readFile("tc02.json")
-//        payload.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
-//      }
+      "all the 6 income categories as null" in {
+        val payload = readFile("tc02.json")
+        payload.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
+      }
     }
 
     "return the list of the 6 income categories without tax bands" when {
@@ -57,7 +57,6 @@ class TotalTaxHipToggleOnSpec extends PlaySpec {
             IncomeCategory(ForeignInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
           )
-
       }
     }
 
@@ -123,7 +122,6 @@ class TotalTaxHipToggleOnSpec extends PlaySpec {
             IncomeCategory(ForeignInterestIncomeCategory, 0, 0, 0, Nil),
             IncomeCategory(ForeignDividendsIncomeCategory, 1000.23, 1000.24, 1000.25, Nil)
           )
-
       }
     }
 
@@ -139,10 +137,10 @@ class TotalTaxHipToggleOnSpec extends PlaySpec {
 
     "taxFreeAllowanceReads" must {
       "return taxFreeAllowance" when {
-//        "all the 6 income categories as null" in {
-//          val payload = readFile("tc06.json")
-//          payload.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
-//        }
+        "all the 6 income categories as null" in {
+          val payload = readFile("tc06.json")
+          payload.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+        }
 
         "some income categories have allowance relief deduct" in {
           val payload = readFile("tc07.json")

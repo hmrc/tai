@@ -17,12 +17,8 @@
 package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json._
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.admin.HipToggleTaxAccount
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -33,10 +29,9 @@ import java.time.LocalDate
 import scala.concurrent.Future
 
 class TaxCodeIncomeHelperHipToggleOffSpec extends BaseSpec {
-  private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val mockTaxAccountConnector = mock[TaxAccountConnector]
   private val mockIabdService = mock[IabdService]
-  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService, mockFeatureFlagService)
+  private def createSut() = new TaxCodeIncomeHelper(mockTaxAccountConnector, mockIabdService)
 
   private val taxAccountJson: JsObject = Json.obj(
     "nino"    -> nino,
@@ -96,14 +91,6 @@ class TaxCodeIncomeHelperHipToggleOffSpec extends BaseSpec {
       )
     )
   )
-
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
-    )
-  }
 
   "fetchTaxCodeIncomes" must {
     "return a sequence of taxCodeIncomes" when {

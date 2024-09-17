@@ -25,8 +25,8 @@ import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentW
 import scala.io.Source
 import scala.util.Random
 
-class CodingComponentHipToggleOnSpec extends PlaySpec {
-  import CodingComponentHipToggleOnSpec._
+class CodingComponentHipReadsSpec extends PlaySpec {
+  import CodingComponentHipReadsSpec._
 
   private val basePath = "test/resources/data/TaxAccount/CodingComponent/hip/"
   private def readFile(fileName: String): JsValue = {
@@ -42,7 +42,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       "no NpsComponents of interest are present in the list of income deductions, within the supplied nps tax account json" in {
         val payload = readFile("tc01.json")
         payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         ) mustBe empty
       }
     }
@@ -52,7 +52,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
         val payload = readFile("tc02.json")
         payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         ) mustBe
           Seq(CodingComponent(PersonalAllowancePA, None, 10, "Loan Interest Amount", Some(100)))
       }
@@ -62,7 +62,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       "single type 35 NpsComponent is present (underpayment from previous year), within income deductions" in {
         val payload = readFile("tc03.json")
         payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         ) mustBe
           Seq(CodingComponent(UnderPaymentFromPreviousYear, None, 10, "Van Benefit"))
       }
@@ -72,7 +72,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       "multiple NpsComponents of interest are present within the income deductions" in {
         val payload = readFile("tc04.json")
         payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         ) mustBe
           Seq(
             CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Non-qualifying Relocation Expenses"),
@@ -87,7 +87,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
         val payload = readFile("tc05.json")
         payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         ) mustBe
           Seq(
             CodingComponent(EstimatedTaxYouOweThisYear, None, 10, "Non-qualifying Relocation Expenses", None),
@@ -104,7 +104,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
     "return all allowances received" when {
       "multiple allowances are present" in {
         val payload = readFile("tc06.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe Seq(
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq(
           CodingComponent(PersonalPensionPayments, None, 100, "Personal Pension Payments", None),
           CodingComponent(GiftAidPayments, None, 100, "Maintenance Payments", None),
           CodingComponent(EnterpriseInvestmentScheme, None, 100, "Total gift aid Payments", None),
@@ -130,7 +130,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
     "return all deductions" when {
       "multiple deductions are present" in {
         val payload = readFile("tc07.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe Seq(
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq(
           CodingComponent(MarriedCouplesAllowanceToWifeMAW, None, 100, "Maintenance Payments", None),
           CodingComponent(BalancingCharge, None, 100, "BPA Received from Spouse/Civil Partner", None),
           CodingComponent(UnderpaymentRestriction, None, 100, "Benefit in Kind", None),
@@ -150,7 +150,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
     "return non-tax-code incomes from income sources" when {
       "there are non-tax-code incomes present" in {
         val payload = readFile("tc08.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe Seq(
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq(
           CodingComponent(StatePension, None, 100, "Gift Aid Payments", None),
           CodingComponent(PublicServicesPension, None, 100, "Gift Aid treated as paid in previous tax year", None),
           CodingComponent(ForcesPension, None, 100, "One off Gift Aid Payments", None),
@@ -179,25 +179,25 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
     "return empty list" when {
       "there is no total liability present in tax account" in {
         val payload = readFile("tc09.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe empty
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe empty
       }
       "total liability is null in tax account" in {
         val payload = readFile("tc10.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe empty
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe empty
       }
       "No Benefits or Allowances were found within the provided iabd summaries" in {
         val payload = readFile("tc11.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
         result mustBe Seq.empty[CodingComponent]
       }
       "an empty iabd summary array is present within the tax account json" in {
         val payload = readFile("tc12.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
         result mustBe Seq.empty[CodingComponent]
       }
       "processing a solitary nps iabd json fragment that does not declare a type" in {
         val payload = readFile("tc13.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe Seq
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq
           .empty[CodingComponent]
       }
     }
@@ -206,7 +206,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       "processing nps iabd summaries that correspond to known benefit types" in {
         val payload = readFile("tc14.json")
         val benefitComponents =
-          payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+          payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
         benefitComponents.size mustBe 28
 
         benefitComponents.map(_.componentType) must contain allElementsOf Seq(
@@ -244,7 +244,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
         val benInKindJson = taxAccountJsonWithIabds(jsBenInKindIabdSeq)
         val benInKindComponentSeq =
-          benInKindJson.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+          benInKindJson.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
         benInKindComponentSeq.size mustBe 1
         benInKindComponentSeq.head.componentType mustBe BenefitInKind
       }
@@ -252,12 +252,12 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
     "generate Benefit instances with correctly populated content" in {
       val payload1 = readFile("tc15.json")
-      payload1.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe
+      payload1.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe
         Seq(CodingComponent(CarBenefit, Some(13), 120.22, "Car Benefit"))
 
       val payload2 = readFile("tc16.json")
 
-      payload2.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe
+      payload2.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe
         Seq(CodingComponent(MedicalInsurance, None, 0, "Medical Insurance"))
     }
 
@@ -267,7 +267,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
         val payload = readFile("tc17.json")
 
         val result = payload.as[Seq[CodingComponent]](
-          CodingComponentHipToggleOn.codingComponentReads
+          CodingComponentHipReads.codingComponentReads
         )
 
         result mustBe Seq(
@@ -278,7 +278,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       }
       "a benefits in kind total amount is not present within iabd summaries" in {
         val payload = readFile("tc18.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -289,7 +289,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       }
       "a benefits in kind total amount is present, but it has an amount value of zero" in {
         val payload = readFile("tc19.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -303,7 +303,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
       "benefits in kind total amount does not match the sum of individual benefit in kind amounts" in {
         val payload = readFile("tc20.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(CodingComponent(BenefitInKind, Some(1), 4, "Benefit in Kind", None))
       }
@@ -312,7 +312,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
     "exclude any 'benefits from employment' from the amount reconciliation process" in {
       val payload = readFile("tc21.json")
 
-      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(CarFuelBenefit, Some(1), 1, "Car Fuel Benefit", None),
@@ -326,7 +326,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
       "total and individual amounts match for all employments" in {
         val payload = readFile("tc22.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -352,7 +352,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       }
       "total and individual amounts match for only one employment" in {
         val payload = readFile("tc23.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -364,7 +364,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       }
       "total and individual amounts match for one employment, and total is not present for the other" in {
         val payload = readFile("tc24.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -390,7 +390,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       }
       "total and individual amounts do not match for one employment, and total is not present for the other" in {
         val payload = readFile("tc25.json")
-        val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+        val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         result mustBe Seq(
           CodingComponent(BenefitInKind, Some(1), 30, "Benefit in Kind", None),
@@ -416,7 +416,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
     "Ignore a benefit in kind that does not have an employmentId" in {
       val payload = readFile("tc26.json")
-      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(Accommodation, Some(1), 1, "Accommodation", None),
@@ -428,7 +428,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
     "return all benefits from employment, regardless of presence of an employmentId" in {
       val payload = readFile("tc27.json")
-      val result = payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+      val result = payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
       result mustBe Seq(
         CodingComponent(ServiceBenefit, None, 1, "Service Benefit", None),
@@ -467,7 +467,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
       val payload = readFile("tc28.json")
       payload.as[Seq[CodingComponent]](
-        CodingComponentHipToggleOn.codingComponentReads
+        CodingComponentHipReads.codingComponentReads
       ) must contain allElementsOf expectedCodingComponents
     }
 
@@ -476,7 +476,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
       "processing nps iabd summaries that correspond to known allowance types" in {
         val payload = readFile("tc29.json")
         val allowanceComponents =
-          payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads)
+          payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
 
         allowanceComponents.size mustBe 14
         allowanceComponents.map(_.componentType) mustBe
@@ -501,7 +501,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
     "generate Allowance instances with correctly populated content" in {
       val payload = readFile("tc30.json")
-      payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe
+      payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe
         Seq(CodingComponent(JobExpenses, Some(13), 120.22, "Job Expenses", None))
 
       taxAccountJsonWithIabds(
@@ -511,7 +511,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
             "estimatesPaySource" -> 1
           )
         )
-      ).as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe
+      ).as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe
         Seq(CodingComponent(HotelAndMealExpenses, None, 0, "test", None))
 
     }
@@ -526,14 +526,14 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
 
       val payload = readFile("tc31.json")
       payload.as[Seq[CodingComponent]](
-        CodingComponentHipToggleOn.codingComponentReads
+        CodingComponentHipReads.codingComponentReads
       ) must contain allElementsOf expectedCodingComponents
     }
 
     "codingComponentReads" must {
       "merge the coding components coming from incomeSourceReads and totalLiabilityReads into a new list" in {
         val payload = readFile("tc32.json")
-        payload.as[Seq[CodingComponent]](CodingComponentHipToggleOn.codingComponentReads) mustBe
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe
           Seq(
             CodingComponent(PersonalAllowancePA, None, 10, "Loan Interest Amount", None),
             CodingComponent(CommunityInvestmentTaxCredit, Some(1), 1, "Community Investment Tax Credit", None),
@@ -620,7 +620,7 @@ class CodingComponentHipToggleOnSpec extends PlaySpec {
   }
 }
 
-object CodingComponentHipToggleOnSpec {
+object CodingComponentHipReadsSpec {
   private val nino: Nino = new Generator(new Random).nextNino
 
   private def npsIabdSummary(iadbType: Int): JsObject =

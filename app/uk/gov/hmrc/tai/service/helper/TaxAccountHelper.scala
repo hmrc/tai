@@ -20,36 +20,33 @@ import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipToggleOff, CodingComponentHipToggleOn}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustmentComponentHipToggleOff, TaxAdjustmentComponentHipToggleOn}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments.{AlreadyTaxedAtSource, OtherTaxDue, ReliefsGivingBackTax, TaxAdjustment, TaxAdjustmentComponent, TaxReliefComponent}
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads, CodingComponentSquidReads}
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.{TaxAdjustment, _}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, featureFlagService: FeatureFlagService)(
-  implicit ec: ExecutionContext
+class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector)(implicit
+  ec: ExecutionContext
 ) {
   def totalEstimatedTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val componentTypesCanAffectTotalEst: Seq[TaxComponentType] =
       Seq(UnderPaymentFromPreviousYear, OutstandingDebt, EstimatedTaxYouOweThisYear)
-    (for {
-      readsTaxAccountSummary <- JsonHelper.getReads(
-                                  featureFlagService,
-                                  TaxOnOtherIncomeHipToggleOff.taxAccountSummaryReads,
-                                  TaxOnOtherIncomeHipToggleOn.taxAccountSummaryReads
-                                )
-      readsCodingComponent <- JsonHelper.getReads(
-                                featureFlagService,
-                                CodingComponentHipToggleOff.codingComponentReads,
-                                CodingComponentHipToggleOn.codingComponentReads
-                              )
-    } yield taxAccountConnector
+    val readsTaxAccountSummary = JsonHelper.selectReads(
+      TaxOnOtherIncomeSquidReads.taxAccountSummaryReads,
+      TaxOnOtherIncomeHipReads.taxAccountSummaryReads
+    )
+
+    val readsCodingComponent = JsonHelper.selectReads(
+      CodingComponentSquidReads.codingComponentReads,
+      CodingComponentHipReads.codingComponentReads
+    )
+
+    taxAccountConnector
       .taxAccount(nino, year)
       .flatMap { taxAccount =>
         val totalTax = taxAccount.as[BigDecimal](readsTaxAccountSummary)
@@ -59,7 +56,7 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
           .filter(c => componentTypesCanAffectTotalEst.contains(c.componentType))
 
         Future(totalTax + componentsCanAffectTotal.map(_.inputAmount.getOrElse(BigDecimal(0))).sum)
-      }).flatten
+      }
 
   }
 
@@ -131,17 +128,14 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
       }
   }
 
-  def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] =
-    JsonHelper
-      .getReads(
-        featureFlagService,
-        TaxOnOtherIncomeHipToggleOff.taxOnOtherIncomeTaxValueReads,
-        TaxOnOtherIncomeHipToggleOn.taxOnOtherIncomeTaxValueReads
+  def taxOnOtherIncome(taxAccountDetails: Future[JsValue]): Future[Option[BigDecimal]] = {
+    val taxOnOtherIncomeReads = JsonHelper
+      .selectReads(
+        TaxOnOtherIncomeSquidReads.taxOnOtherIncomeTaxValueReads,
+        TaxOnOtherIncomeHipReads.taxOnOtherIncomeTaxValueReads
       )
-      .flatMap { taxOnOtherIncomeReads =>
-        taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeReads))
-      }
-
+    taxAccountDetails.map(_.as[Option[BigDecimal]](taxOnOtherIncomeReads))
+  }
   def taxReliefComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
     lazy val taxReliefsComponentsFuture = taxAdjustmentComponents(taxAccountDetails).map {
       case Some(taxAdjustment) =>
@@ -154,16 +148,17 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
       case None => Seq.empty[TaxAdjustmentComponent]
     }
 
+    val readsCodingComponent = JsonHelper.selectReads(
+      CodingComponentSquidReads.codingComponentReads,
+      CodingComponentHipReads.codingComponentReads
+    )
+
     for {
-      readsCodingComponent <- JsonHelper.getReads(
-                                featureFlagService,
-                                CodingComponentHipToggleOff.codingComponentReads,
-                                CodingComponentHipToggleOn.codingComponentReads
-                              )
       codingComponents    <- taxAccountDetails.map(_.as[Seq[CodingComponent]](readsCodingComponent))
       taxReliefComponents <- taxReliefsComponentsFuture
     } yield {
-      val giftAidPayments = codingComponents.find(_.componentType == GiftAidPayments).flatMap(_.inputAmount)
+      val giftAidPayments =
+        codingComponents.find(_.componentType == uk.gov.hmrc.tai.model.domain.GiftAidPayments).flatMap(_.inputAmount)
       val components = giftAidPayments.collect { case amount =>
         taxReliefComponents :+ TaxAdjustmentComponent(taxAdjustments.GiftAidPayments, amount)
       } getOrElse taxReliefComponents
@@ -172,14 +167,14 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
     }
   }
 
-  private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] =
+  private[helper] def taxAdjustmentComponents(taxAccountDetails: Future[JsValue]): Future[Option[TaxAdjustment]] = {
+    val readsTaxAdjustmentComponent =
+      JsonHelper.selectReads(
+        TaxAdjustmentComponentSquidReads.taxAdjustmentComponentReads,
+        TaxAdjustmentComponentHipReads.taxAdjustmentComponentReads
+      )
     for {
-      readsTaxAdjustmentComponent <-
-        JsonHelper.getReads(
-          featureFlagService,
-          TaxAdjustmentComponentHipToggleOff.taxAdjustmentComponentReads,
-          TaxAdjustmentComponentHipToggleOn.taxAdjustmentComponentReads
-        )
+
       taxAdjustments <-
         taxAccountDetails.map(_.as[Seq[TaxAdjustmentComponent]](readsTaxAdjustmentComponent))
     } yield
@@ -188,5 +183,5 @@ class TaxAccountHelper @Inject() (taxAccountConnector: TaxAccountConnector, feat
       } else {
         None
       }
-
+  }
 }
