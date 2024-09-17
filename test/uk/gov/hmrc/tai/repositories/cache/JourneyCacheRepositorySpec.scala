@@ -197,8 +197,6 @@ class JourneyCacheRepositorySpec extends BaseSpec {
       )(any())
     }
 
-    // update income
-
     "persist a named journey cache, and return the updated cache *UpdateIncome" when {
 
       "no existing cache is present for the specified journey *UpdateIncome" in {

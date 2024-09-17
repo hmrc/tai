@@ -45,15 +45,15 @@ object CodingComponentHipReads {
 
     def allowanceFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
-        npsComponentAllowanceMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
+        hipComponentAllowanceMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
     def deductionFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
-        npsComponentDeductionMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
+        hipComponentDeductionMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
     def nonTaxCodeIncomeFactory: (Int, BigDecimal, String, Option[BigDecimal]) => Option[CodingComponent] =
       (typeKey: Int, amount: BigDecimal, description: String, inputAmount: Option[BigDecimal]) =>
-        npsComponentNonTaxCodeIncomeMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
+        hipComponentNonTaxCodeIncomeMap.get(typeKey).map(CodingComponent(_, None, amount, description, inputAmount))
 
     codingComponentsFromIncomeSources(incomeJsVal, "deductionsDetails", deductionFactory) ++
       codingComponentsFromIncomeSources(incomeJsVal, "allowancesDetails", allowanceFactory) ++
@@ -68,12 +68,12 @@ object CodingComponentHipReads {
     (incomeSourceJson \ incomeSourceJsonElement).validate[JsArray] match {
       case JsSuccess(componentJsArray, _) =>
         componentJsArray.value.toSeq.flatMap { componentJsVal =>
-          taxComponentFromNpsComponent(componentJsVal, codingComponentFactory)
+          taxComponentFromHipComponent(componentJsVal, codingComponentFactory)
         }
       case _ => Seq.empty[CodingComponent]
     }
 
-  private def taxComponentFromNpsComponent(
+  private def taxComponentFromHipComponent(
     npsComponentJson: JsValue,
     codingComponentFactory: CodingComponentFactory
   ): Option[CodingComponent] = {
@@ -85,7 +85,7 @@ object CodingComponentHipReads {
 
   }
 
-  private val npsComponentDeductionMap: Map[Int, DeductionComponentType] = Map(
+  private val hipComponentDeductionMap: Map[Int, DeductionComponentType] = Map(
     6  -> MarriedCouplesAllowanceToWifeMAW,
     15 -> BalancingCharge,
     28 -> UnderpaymentRestriction,
@@ -101,7 +101,7 @@ object CodingComponentHipReads {
     50 -> BRDifferenceTaxCharge
   )
 
-  private val npsComponentNonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
+  private val hipComponentNonTaxCodeIncomeMap: Map[Int, NonTaxCodeIncomeComponentType] = Map(
     1  -> StatePension,
     2  -> PublicServicesPension,
     3  -> ForcesPension,
@@ -122,7 +122,7 @@ object CodingComponentHipReads {
     38 -> EmploymentAndSupportAllowance
   )
 
-  private val npsComponentAllowanceMap: Map[Int, AllowanceComponentType] = Map(
+  private val hipComponentAllowanceMap: Map[Int, AllowanceComponentType] = Map(
     5  -> PersonalPensionPayments,
     6  -> GiftAidPayments,
     7  -> EnterpriseInvestmentScheme,
@@ -160,8 +160,8 @@ object CodingComponentHipReads {
 
   private def codingComponentsFromIabdSummaries(iabds: Seq[NpsIabdSummary]): Seq[CodingComponent] =
     iabds collect {
-      case iabd if npsIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
-        CodingComponent(npsIabdSummariesLookup(iabd.componentType), iabd.employmentId, iabd.amount, iabd.description)
+      case iabd if hipIabdSummariesLookup.isDefinedAt(iabd.componentType) =>
+        CodingComponent(hipIabdSummariesLookup(iabd.componentType), iabd.employmentId, iabd.amount, iabd.description)
     }
 
   private def reconcileBenefits(benefits: Seq[CodingComponent]): Seq[CodingComponent] = {
@@ -188,7 +188,7 @@ object CodingComponentHipReads {
     }
   }
 
-  private val npsIabdBenefitTypesMap: Map[Int, BenefitComponentType] = Map(
+  private val hipIabdBenefitTypesMap: Map[Int, BenefitComponentType] = Map(
     8   -> EmployerProvidedServices,
     28  -> BenefitInKind,
     29  -> CarFuelBenefit,
@@ -220,7 +220,7 @@ object CodingComponentHipReads {
     117 -> NonCashBenefit
   )
 
-  private val npsIabdAllowanceTypesMap: Map[Int, AllowanceComponentType] = Map(
+  private val hipIabdAllowanceTypesMap: Map[Int, AllowanceComponentType] = Map(
     14  -> BlindPersonsAllowance,
     15  -> BpaReceivedFromSpouseOrCivilPartner,
     16  -> CommunityInvestmentTaxCredit,
@@ -237,8 +237,8 @@ object CodingComponentHipReads {
     102 -> LossRelief
   )
 
-  private val npsIabdSummariesLookup: Map[Int, TaxComponentType] =
-    npsIabdBenefitTypesMap ++ npsIabdAllowanceTypesMap
+  private val hipIabdSummariesLookup: Map[Int, TaxComponentType] =
+    hipIabdBenefitTypesMap ++ hipIabdAllowanceTypesMap
 
   private val benefitsFromEmploymentSet: Set[TaxComponentType] = Set(
     CarFuelBenefit,

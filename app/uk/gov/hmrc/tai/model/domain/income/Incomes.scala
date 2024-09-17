@@ -55,7 +55,7 @@ case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTax
 object Incomes {
   /*
     The Hip toggle only affects the Reads. We only require the Writes
-    here therefore we can safely import TaxCodeIncomeHipToggleOff.
+    here therefore we can safely import TaxCodeIncomeSquidReads.
    */
   implicit val format: Format[Incomes] = {
     import TaxCodeIncomeSquidReads.reads

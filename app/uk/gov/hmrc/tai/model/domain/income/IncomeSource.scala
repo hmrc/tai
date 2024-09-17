@@ -24,7 +24,7 @@ case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
 object IncomeSource {
   /*
     The Hip toggle only affects the Reads. We only require the Writes
-    here therefore we can safely import TaxCodeIncomeHipToggleOff.
+    here therefore we can safely import TaxCodeIncomeSquidReads.
    */
   implicit val incomeSourceFormat: Writes[IncomeSource] = {
     import TaxCodeIncomeSquidReads._

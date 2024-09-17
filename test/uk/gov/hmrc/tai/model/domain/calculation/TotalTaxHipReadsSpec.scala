@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.domain.calculation
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsResultException, JsValue, Json}
+import play.api.libs.json.{JsNull, JsResultException, JsValue, Json}
 import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxHipReads.{incomeCategorySeqReads, taxFreeAllowanceReads}
 
 import scala.io.Source
@@ -39,10 +39,22 @@ class TotalTaxHipReadsSpec extends PlaySpec {
         val payload = readFile("tc01.json")
         payload.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
       }
-//      "all the 6 income categories as null" in {
-//        val payload = readFile("tc02.json")
-//        payload.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
-//      }
+
+      "all the 6 income categories as null" in {
+        val json = Json.obj(
+          "totalLiability" -> Json.obj(
+            "nonSavings"       -> JsNull,
+            "untaxedInterest"  -> JsNull,
+            "bankInterest"     -> JsNull,
+            "ukDividends"      -> JsNull,
+            "foreignInterest"  -> JsNull,
+            "foreignDividends" -> JsNull
+          )
+        )
+
+        json.as[Seq[IncomeCategory]](incomeCategorySeqReads) mustBe empty
+      }
+
     }
 
     "return the list of the 6 income categories without tax bands" when {
@@ -139,10 +151,20 @@ class TotalTaxHipReadsSpec extends PlaySpec {
 
     "taxFreeAllowanceReads" must {
       "return taxFreeAllowance" when {
-//        "all the 6 income categories as null" in {
-//          val payload = readFile("tc06.json")
-//          payload.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
-//        }
+        "all the 6 income categories as null" in {
+          val json = Json.obj(
+            "totalLiabilityDetails" -> Json.obj(
+              "nonSavings"       -> JsNull,
+              "untaxedInterest"  -> JsNull,
+              "bankInterest"     -> JsNull,
+              "ukDividends"      -> JsNull,
+              "foreignInterest"  -> JsNull,
+              "foreignDividends" -> JsNull
+            )
+          )
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+        }
 
         "some income categories have allowance relief deduct" in {
           val payload = readFile("tc07.json")
