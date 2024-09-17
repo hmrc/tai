@@ -423,7 +423,7 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeHipToggleOn.newEstimatedPayTypeFilter" must {
+  "TaxCodeIncomeHipReads.newEstimatedPayTypeFilter" must {
     "return true" when {
       "new estimated pay is available" in {
         val iabd = IabdSummary(27, Some(1), 11111)
@@ -439,7 +439,7 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeHipToggleOn.employmentFilter" must {
+  "TaxCodeIncomeHipReads.employmentFilter" must {
     "return true" when {
       "iabd employment match with nps employment" in {
         val iabd = IabdSummary(27, Some(1), 11111)

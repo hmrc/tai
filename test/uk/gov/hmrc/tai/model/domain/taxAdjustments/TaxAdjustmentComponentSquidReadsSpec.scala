@@ -170,7 +170,7 @@ class TaxAdjustmentComponentSquidReadsSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  "TaxAdjustmentComponentHipToggleOff.taxAdjustmentComponentReads" must {
+  "TaxAdjustmentComponentSquidReads.taxAdjustmentComponentReads" must {
     "return none" when {
       "already taxed details is null" in {
         val json = Json.obj(

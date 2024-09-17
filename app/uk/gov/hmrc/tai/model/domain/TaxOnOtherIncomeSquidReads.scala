@@ -55,7 +55,7 @@ object TaxOnOtherIncomeSquidReads {
         case _ => throw new RuntimeException("Incorrect rate band")
       }
 
-    (nonCodedIncomeAmount, RateBandHipToggleOff.incomeAndRateBands(json)) match {
+    (nonCodedIncomeAmount, RateBandSquidReads.incomeAndRateBands(json)) match {
       case (None, _)      => JsSuccess(None)
       case (Some(_), Nil) => JsSuccess(None)
       case (Some(amount), incomeAndRateBands) =>

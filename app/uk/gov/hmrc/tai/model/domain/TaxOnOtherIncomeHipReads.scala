@@ -55,7 +55,7 @@ object TaxOnOtherIncomeHipReads {
         case _ => throw new RuntimeException("Incorrect rate band")
       }
 
-    (nonCodedIncomeAmount, RateBandHipToggleOn.incomeAndRateBands(json)) match {
+    (nonCodedIncomeAmount, RateBandHipReads.incomeAndRateBands(json)) match {
       case (None, _)      => JsSuccess(None)
       case (Some(_), Nil) => JsSuccess(None)
       case (Some(amount), incomeAndRateBands) =>

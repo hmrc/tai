@@ -420,7 +420,7 @@ class TaxCodeIncomeSquidReadsSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeHipToggleOff.newEstimatedPayTypeFilter" must {
+  "TaxCodeIncomeSquidReads.newEstimatedPayTypeFilter" must {
     "return true" when {
       "new estimated pay is available" in {
         val iabd = IabdSummary(27, Some(1), 11111)
@@ -436,7 +436,7 @@ class TaxCodeIncomeSquidReadsSpec extends PlaySpec {
     }
   }
 
-  "TaxCodeIncomeHipToggleOff.employmentFilter" must {
+  "TaxCodeIncomeSquidReads.employmentFilter" must {
     "return true" when {
       "iabd employment match with nps employment" in {
         val iabd = IabdSummary(27, Some(1), 11111)
