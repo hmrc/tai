@@ -25,15 +25,13 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.UntaxedInterestIncome
-import uk.gov.hmrc.tai.model.domain.income.OtherNonTaxCodeIncome.otherNonTaxCodeIncomeReads
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.response._
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, Employments, TaxCodeIncomeComponentType, income}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
+import uk.gov.hmrc.tai.util.JsonHelper
 
-import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -134,9 +132,14 @@ class IncomeService @Inject() (
     }
   }
 
-  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] =
+  def incomes(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Incomes] = {
+    val reads = JsonHelper.selectReads(
+      OtherNonTaxCodeIncomeSquidReads.otherNonTaxCodeIncomeReads,
+      OtherNonTaxCodeIncomeHipReads.otherNonTaxCodeIncomeReads
+    )
     taxAccountConnector.taxAccount(nino, year).flatMap { jsValue =>
-      val nonTaxCodeIncome = jsValue.as[Seq[OtherNonTaxCodeIncome]](otherNonTaxCodeIncomeReads)
+      val nonTaxCodeIncome =
+        jsValue.as[Seq[OtherNonTaxCodeIncome]](reads)
       val (untaxedInterestIncome, otherNonTaxCodeIncome) =
         nonTaxCodeIncome.partition(_.incomeComponentType == UntaxedInterestIncome)
 
@@ -151,6 +154,7 @@ class IncomeService @Inject() (
         Future.successful(Incomes(Seq.empty[TaxCodeIncome], NonTaxCodeIncome(None, otherNonTaxCodeIncome)))
       }
     }
+  }
 
   def employments(filteredTaxCodeIncomes: Seq[TaxCodeIncome], nino: Nino, year: TaxYear)(implicit
     headerCarrier: HeaderCarrier,

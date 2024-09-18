@@ -1,0 +1,18 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "deductions": [
+        {
+          "npsDescription": "Something we aren't interested in",
+          "amount": 10,
+          "type": 888
+        }
+      ]
+    }
+  ]
+}

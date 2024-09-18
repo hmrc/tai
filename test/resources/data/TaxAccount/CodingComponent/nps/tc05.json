@@ -1,0 +1,60 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "deductions": [
+        {
+          "npsDescription": "Estimated Tax You Owe This Year",
+          "amount": 10,
+          "type": 45
+        },
+        {
+          "npsDescription": "Underpayment form previous year",
+          "amount": 10,
+          "type": 35
+        },
+        {
+          "npsDescription": "Outstanding Debt Restriction",
+          "amount": 10,
+          "type": 41
+        },
+        {
+          "npsDescription": "Something we aren't interested in",
+          "amount": 10,
+          "type": 888
+        }
+      ],
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 10,
+          "type": 11
+        },
+        {
+          "npsDescription": "personal allowance",
+          "amount": 10,
+          "type": 12
+        },
+        {
+          "npsDescription": "personal allowance",
+          "amount": 10,
+          "type": 13
+        },
+        {
+          "npsDescription": "Job expenses",
+          "amount": 10,
+          "type": 1
+        },
+        {
+          "npsDescription": "Something we aren't interested in",
+          "amount": 10,
+          "type": 888
+        }
+      ]
+    }
+  ]
+}

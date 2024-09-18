@@ -1,0 +1,32 @@
+{
+  "taxAccountId": "1",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "taxCode": "1150L",
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 1234,
+          "iabdSummaries": [
+            {
+              "amount": 111,
+              "type": 27,
+              "employmentId": 1,
+              "npsDescription": "New Estimated Pay"
+            }
+          ]
+        },
+        "totalTaxableIncome": 1111,
+        "totalTax": 222
+      },
+      "pensionIndicator": true,
+      "jsaIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "name": "PensionProvider1",
+      "basisOperation": 2,
+      "employmentStatus": 1
+    }
+  ]
+}

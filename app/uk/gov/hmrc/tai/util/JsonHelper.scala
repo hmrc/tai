@@ -31,7 +31,8 @@ object JsonHelper {
       firstReadsOutcome: Either[JsResultException, JsError]
     ): JsResult[A] =
       (Try(secondReads.reads(jsValue)), firstReadsOutcome) match {
-        case (Success(value @ JsSuccess(_, _)), _)                      => value
+        case (Success(value @ JsSuccess(_, _)), _) =>
+          value
         case (Success(JsError(_)), Right(firstReadsErrors))             => firstReadsErrors
         case (Success(JsError(_)), Left(firstReadsException))           => throw firstReadsException
         case (Failure(_: JsResultException), Right(firstReadsErrors))   => firstReadsErrors
@@ -40,10 +41,12 @@ object JsonHelper {
       }
     Reads { jsValue =>
       Try(firstReads.reads(jsValue)) match {
-        case Success(value @ JsSuccess(_, _))       => value
-        case Success(firstReadsErrors @ JsError(_)) => trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
-        case Failure(e: JsResultException)          => trySecondReads(secondReads, jsValue, Left(e))
-        case Failure(exception)                     => throw exception
+        case Success(value @ JsSuccess(_, _)) =>
+          value
+        case Success(firstReadsErrors @ JsError(_)) =>
+          trySecondReads(secondReads, jsValue, Right(firstReadsErrors))
+        case Failure(e: JsResultException) => trySecondReads(secondReads, jsValue, Left(e))
+        case Failure(exception)            => throw exception
       }
     }
   }
@@ -56,4 +59,44 @@ object JsonHelper {
     def orElseTry(bReads: Reads[A]): Reads[A] =
       combineReads(reads, bReads)
   }
+
+  private def parseType(fullType: String): Option[(String, Int)] = {
+    val trimmedValue = fullType.trim
+    if (trimmedValue.endsWith(")")) {
+      val reversedValue = trimmedValue.reverse
+      val bracket = reversedValue.indexOf("(")
+      if (bracket > 1) {
+        val numberAsString = reversedValue.substring(1, bracket).reverse
+        val description = reversedValue.substring(bracket + 1).reverse.trim
+        Some((description, numberAsString.toInt))
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  def parseTypeOrException(fullType: String): (String, Int) = parseType(fullType).getOrElse(
+    throw JsResultException(Seq((__, Seq(JsonValidationError(s"Invalid type: $fullType")))))
+  )
+
+  val readsTypeTuple: Reads[(String, Int)] = { fullType =>
+    parseType(fullType.as[String]) match {
+      case Some(t) => JsSuccess(t)
+      case None    => JsError(JsonValidationError(s"Invalid type: $fullType"))
+    }
+  }
+
+  def selectReads[A](
+    readsSquid: Reads[A],
+    readsHip: Reads[A]
+  ): Reads[A] =
+    Reads[A] { jsValue =>
+      if ((jsValue \ "nationalInsuranceNumber").isDefined) {
+        readsHip.reads(jsValue)
+      } else {
+        readsSquid.reads(jsValue)
+      }
+    }
 }

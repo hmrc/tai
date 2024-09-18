@@ -1,0 +1,100 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "taxCode": "1150L",
+      "allowancesDetails": [
+        {
+          "type": "Personal Pension Payments (005)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Maintenance Payments (006)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Total gift aid Payments (007)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Employer Provided Services (008)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Balancing Charge (010)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Loan Interest Amount (011)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Death, Sickness or Funeral Benefits (012)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Married Couples Allowance (MAA) (013)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Gifts of Shares to Charity (017)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Retirement Annuity Payments (018)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Commission (020)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Other Income (Earned) (021)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Benefit in Kind (028)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Car Fuel Benefit (029)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Medical Insurance (030)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Car Benefit (031)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Telephone (032)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        }
+      ],
+      "deductionsDetails": []
+    }
+  ]
+}

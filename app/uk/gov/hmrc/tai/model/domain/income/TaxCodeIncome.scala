@@ -16,23 +16,27 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import java.time.LocalDate
 import play.api.Logger
 import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain.IabdSummary.iabdSummaryReads
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
+import java.time.LocalDate
+
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
+case object CumulativeOperation extends BasisOperation
+case object Week1Month1NotOperatedOperation extends BasisOperation
+case object CumulativeNotOperatedOperation extends BasisOperation
 case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
   def apply(constant: String): BasisOperation =
-    if (constant == Week1Month1)
+    if (constant == Week1Month1) {
       Week1Month1BasisOperation
-    else
+    } else {
       OtherBasisOperation
+    }
 
   implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)
@@ -74,7 +78,6 @@ object TaxCodeIncomeStatus {
 
   def employmentStatusFromNps(json: JsValue): TaxCodeIncomeStatus = {
     val employmentStatus = (json \ "employmentStatus").asOpt[Int]
-
     employmentStatus match {
       case Some(1) => Live
       case Some(2) => PotentiallyCeased
@@ -151,7 +154,6 @@ case class TaxCodeIncome(
 }
 
 object TaxCodeIncome {
-
   implicit val writes: Writes[TaxCodeIncome] = (o: TaxCodeIncome) =>
     JsObject(
       List(
@@ -174,103 +176,4 @@ object TaxCodeIncome {
         case _           => true
       }
     )
-
-  private val logger: Logger = Logger(getClass.getName)
-
-  private val basisOperationReads = new Reads[BasisOperation] {
-    override def reads(json: JsValue): JsResult[BasisOperation] = {
-      val result = json.asOpt[Int] match {
-        case Some(1) => Week1Month1BasisOperation
-        case _       => OtherBasisOperation
-      }
-      JsSuccess(result)
-    }
-  }
-
-  val taxCodeIncomeSourceReads: Reads[TaxCodeIncome] = new Reads[TaxCodeIncome] {
-    override def reads(json: JsValue): JsSuccess[TaxCodeIncome] = {
-      val incomeSourceType = taxCodeIncomeType(json)
-      val employmentId = (json \ "employmentId").asOpt[Int]
-      val amount = totalTaxableIncome(json, employmentId).getOrElse(BigDecimal(0))
-      val description = incomeSourceType.toString
-      val taxCode = (json \ "taxCode").asOpt[String].getOrElse("")
-      val name = (json \ "name").asOpt[String].getOrElse("")
-      val basisOperation =
-        (json \ "basisOperation").asOpt[BasisOperation](basisOperationReads).getOrElse(OtherBasisOperation)
-      val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
-      val iyaCy = (json \ "inYearAdjustmentIntoCY").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val totalIya = (json \ "totalInYearAdjustment").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      val iyaCyPlusOne = (json \ "inYearAdjustmentIntoCYPlusOne").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-      JsSuccess(
-        TaxCodeIncome(
-          incomeSourceType,
-          employmentId,
-          amount,
-          description,
-          taxCode,
-          name,
-          basisOperation,
-          status,
-          iyaCy,
-          totalIya,
-          iyaCyPlusOne
-        )
-      )
-    }
-  }
-
-  val taxCodeIncomeSourcesReads = new Reads[Seq[TaxCodeIncome]] {
-    override def reads(json: JsValue): JsResult[Seq[TaxCodeIncome]] = {
-      val taxCodeIncomes = (json \ "incomeSources")
-        .asOpt[Seq[TaxCodeIncome]](Reads.seq(taxCodeIncomeSourceReads))
-        .getOrElse(Seq.empty[TaxCodeIncome])
-      JsSuccess(taxCodeIncomes)
-    }
-  }
-
-  private def taxCodeIncomeType(json: JsValue): TaxComponentType = {
-    def indicator(indicatorType: String) = (json \ indicatorType).asOpt[Boolean].getOrElse(false)
-
-    if (indicator("pensionIndicator"))
-      PensionIncome
-    else if (indicator("jsaIndicator"))
-      JobSeekerAllowanceIncome
-    else if (indicator("otherIncomeSourceIndicator"))
-      OtherIncome
-    else
-      EmploymentIncome
-  }
-
-  private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
-    val iabdSummaries: Option[Seq[IabdSummary]] =
-      (json \ "payAndTax" \ "totalIncome" \ "iabdSummaries").asOpt[Seq[IabdSummary]](Reads.seq(iabdSummaryReads))
-    val iabdSummary = iabdSummaries.flatMap {
-      _.find(iabd =>
-        newEstimatedPayTypeFilter(iabd) &&
-          employmentFilter(iabd, employmentId)
-      )
-    }
-    iabdSummary.map(_.amount) match {
-      case Some(amount) => Some(amount)
-      case _ =>
-        logger.warn("TotalTaxableIncome is 0")
-        None
-    }
-  }
-
-  def newEstimatedPayTypeFilter(iabdSummary: IabdSummary): Boolean = {
-    val NewEstimatedPay = 27
-    iabdSummary.componentType == NewEstimatedPay
-  }
-
-  def employmentFilter(iabdSummary: IabdSummary, employmentId: Option[Int]): Boolean = {
-    val compare = for {
-      jsEmploymentId <- iabdSummary.employmentId
-      empId          <- employmentId
-    } yield jsEmploymentId == empId
-
-    compare.getOrElse(false)
-  }
-
-  implicit val reads: Reads[TaxCodeIncome] = taxCodeIncomeSourceReads
 }

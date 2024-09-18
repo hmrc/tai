@@ -1,0 +1,104 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "deductions": [
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 1
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 2
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 3
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 4
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 5
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 17
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 18
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 19
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 20
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 21
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 22
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 23
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 24
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 25
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 26
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 27
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 32
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 38
+        }
+      ],
+      "allowances": []
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": 1,
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentStatus": "Live",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": true,
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "amount": 1234,
+          "summaryIABDDetailsList": [
+            {
+              "amount": 1111,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 1
+            },
+            {
+              "amount": 1111,
+              "type": "Car Fuel Benefit (029)",
+              "employmentSequenceNumber": 1
+            },
+            {
+              "amount": 1111,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 2
+            }
+          ],
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 1111,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 1
+            },
+            {
+              "amount": 1111,
+              "type": "Car Fuel Benefit (029)",
+              "employmentSequenceNumber": 1
+            },
+            {
+              "amount": 1111,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 2
+            }
+          ]
+        },
+        "allowanceReliefDeductionsDetails": {},
+        "totalTax": 222,
+        "totalTaxableIncome": 1111
+      }
+    }
+  ]
+}

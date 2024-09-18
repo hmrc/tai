@@ -20,22 +20,36 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentReads
+import uk.gov.hmrc.tai.model.domain.calculation.{CodingComponent, CodingComponentHipReads, CodingComponentSquidReads}
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CodingComponentService @Inject() (taxAccountConnector: TaxAccountConnector)(implicit ec: ExecutionContext) {
+class CodingComponentService @Inject() (
+  taxAccountConnector: TaxAccountConnector
+)(implicit ec: ExecutionContext) {
 
-  def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] =
+  def codingComponents(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CodingComponent]] = {
+    val codingComponentReads = JsonHelper
+      .selectReads(
+        CodingComponentSquidReads.codingComponentReads,
+        CodingComponentHipReads.codingComponentReads
+      )
     taxAccountConnector.taxAccount(nino, year).map(_.as[Seq[CodingComponent]](codingComponentReads))
+  }
 
   def codingComponentsForTaxCodeId(nino: Nino, taxCodeId: Int)(implicit
     hc: HeaderCarrier
-  ): Future[Seq[CodingComponent]] =
+  ): Future[Seq[CodingComponent]] = {
+    val codingComponentReads = JsonHelper
+      .selectReads(
+        CodingComponentSquidReads.codingComponentReads,
+        CodingComponentHipReads.codingComponentReads
+      )
     taxAccountConnector
       .taxAccountHistory(nino = nino, iocdSeqNo = taxCodeId)
       .map(_.as[Seq[CodingComponent]](codingComponentReads))
+  }
 }

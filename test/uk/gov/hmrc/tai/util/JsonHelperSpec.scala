@@ -19,12 +19,11 @@ package uk.gov.hmrc.tai.util
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import uk.gov.hmrc.tai.util.JsonHelper.OrElseTry
+import uk.gov.hmrc.tai.util.JsonHelper.{OrElseTry, parseTypeOrException, readsTypeTuple}
 
 import scala.util.{Failure, Try}
 
 class JsonHelperSpec extends PlaySpec with MockitoSugar {
-
   "orElseTry " must {
     "convert when first reads succeeds" in {
       val reads1: Reads[Int] = implicitly
@@ -67,6 +66,73 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
 
       val combinedReads = reads1 orElseTry reads2
       Try(combinedReads.reads(JsNumber(3))) mustBe Failure(exception)
+    }
+
+  }
+
+  "readsTypeTuple" must {
+    "return correct tuple when number present in brackets with leading zeros" in {
+      readsTypeTuple.reads(JsString("test (002)")) mustBe JsSuccess(("test", 2))
+    }
+
+    "return correct tuple when number present in brackets without leading zeros" in {
+      readsTypeTuple.reads(JsString("test (2)")) mustBe JsSuccess(("test", 2))
+    }
+
+    "return correct tuple when number only present in brackets" in {
+      readsTypeTuple.reads(JsString("(2)")) mustBe JsSuccess(("", 2))
+    }
+
+    "return None when no number present" in {
+      readsTypeTuple.reads(JsString("test")) mustBe JsError(
+        List((__, List(JsonValidationError(List("""Invalid type: "test"""")))))
+      )
+    }
+  }
+
+  "parseTypeOrException" must {
+    "return correct tuple when number present in brackets with leading zeros" in {
+      parseTypeOrException("test (002)") mustBe ("test", 2)
+    }
+
+    "return correct tuple when number present in brackets without leading zeros" in {
+      parseTypeOrException("test (2)") mustBe ("test", 2)
+    }
+
+    "return correct tuple when number only present in brackets" in {
+      parseTypeOrException("(2)") mustBe ("", 2)
+    }
+
+    "throw jsresultexception when no number present" in {
+      a[JsResultException] mustBe thrownBy {
+        parseTypeOrException("test")
+      }
+    }
+  }
+
+  private case class Test(field1: String, field2: String)
+  private val test1 = Test("first", "first")
+  private val test2 = Test("second", "second")
+  private val testReadsA = Reads[Test](_ => JsSuccess(test1))
+  private val testReadsB = Reads[Test](_ => JsSuccess(test2))
+  private val jsonSquidPayload = Json.obj(
+    "nino" -> ""
+  )
+  private val jsonHipPayload = Json.obj(
+    "nationalInsuranceNumber" -> ""
+  )
+
+  "selectReads" must {
+    "use squid reads when squid payload" in {
+      val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(jsonSquidPayload)
+      actualValue mustBe JsSuccess(test1)
+    }
+
+    "use hip reads when hip payload" in {
+      val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(jsonHipPayload)
+      actualValue mustBe JsSuccess(test2)
     }
 
   }

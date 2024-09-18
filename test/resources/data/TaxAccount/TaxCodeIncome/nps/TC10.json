@@ -1,0 +1,46 @@
+{
+  "taxAccountId": "1",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "taxCode": null,
+      "payAndTax": {
+        "totalIncome": {
+          "npsDescription": null,
+          "amount": 1234,
+          "iabdSummaries": [
+            {
+              "amount": 1111,
+              "type": 27,
+              "employmentId": 1,
+              "npsDescription": "New Estimated Pay"
+            },
+            {
+              "amount": 1111,
+              "type": 29,
+              "employmentId": 1,
+              "npsDescription": "New Estimated Pay"
+            },
+            {
+              "amount": 1111,
+              "type": 27,
+              "employmentId": 2,
+              "npsDescription": "New Estimated Pay"
+            }
+          ]
+        },
+        "allowReliefDeducts": null,
+        "totalTaxableIncome": 1111,
+        "totalTax": 222,
+        "taxBands": null
+      },
+      "pensionIndicator": false,
+      "jsaIndicator": false,
+      "otherIncomeSourceIndicator": true,
+      "name": null,
+      "basisOperation": null,
+      "employmentStatus": 1
+    }
+  ]
+}
