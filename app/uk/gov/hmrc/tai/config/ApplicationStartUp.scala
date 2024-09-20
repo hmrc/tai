@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.config
 
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlagNamesLibrary
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+
 
 class ApplicationStartUp {
   FeatureFlagNamesLibrary.addFlags(
@@ -25,7 +26,8 @@ class ApplicationStartUp {
       RtiCallToggle,
       TaxCodeHistoryFromIfToggle,
       HipToggleEmploymentDetails,
-      HipToggleTaxAccount
+      HipToggleTaxAccount,
+      HipToggleIabds
     )
   )
 }

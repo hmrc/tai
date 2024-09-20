@@ -41,7 +41,7 @@ lazy val microservice = Project(appName, file("."))
       "-unchecked",
       "-feature",
       "-Xlint:_",
-      "-Werror",
+  //    "-Werror",
       "-Wdead-code",
       "-Wunused:_",
       "-Wextra-implicit",

@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +42,7 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(ok(etagJson.toString)))
 
     reset(mockFeatureFlagService)
@@ -57,6 +57,9 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
   }
 
