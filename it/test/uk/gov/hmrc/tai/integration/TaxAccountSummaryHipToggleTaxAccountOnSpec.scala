@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +41,7 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     reset(mockFeatureFlagService)
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
@@ -55,6 +55,9 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
   }
 
@@ -75,93 +78,134 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
       result.map(getStatus) mustBe Some(OK)
     }
 
-    "for nps iabds failures" must {
-      "return a BAD_REQUEST when the NPS iabds API returns a BAD_REQUEST" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+    "return an OK response for a valid user with Iabds from HIP" in {
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+        Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+      )
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+      server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(ok(hipIabdsJson)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(BAD_REQUEST)
-      }
+      val result = route(fakeApplication(), request)
+      result.map(getStatus) mustBe Some(OK)
+    }
 
-      "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+    case class APIInfo(name: String, url: String, toggleStatus: Boolean)
+    List(
+      APIInfo("nps", npsIabdsUrl, false),
+      APIInfo("hip", hipIabdsUrl, true)
+    ).foreach { api =>
+      s"for ${api.name} iabds failures" must {
+        s"return a BAD_REQUEST when the ${api.name} iabds API returns a BAD_REQUEST" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
 
-        val result = route(fakeApplication(), request)
-        result.map(getStatus) mustBe Some(NOT_FOUND)
-      }
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
-      "return a NOT_FOUND when the NPS iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(BAD_REQUEST)
+        }
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
-        val requestConst = request
-        (for {
-          _ <- route(app, requestConst).get
-          _ <- route(app, requestConst).get
-        } yield ()).futureValue
+        s"return a NOT_FOUND when the ${api.name} iabds API returns a NOT_FOUND" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
 
-        server.verify(1, WireMock.getRequestedFor(urlEqualTo(npsIabdsUrl)))
-      }
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
 
-      "throws an InternalServerException when the NPS iabds API returns an INTERNAL_SERVER_ERROR" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+          val result = route(fakeApplication(), request)
+          result.map(getStatus) mustBe Some(NOT_FOUND)
+        }
 
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[InternalServerException])
-      }
+        s"return a NOT_FOUND when the ${api.name} iabds API returns a NOT_FOUND and NOT_FOUND response is cached" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
 
-      "throws a HttpException when the NPS iabds API returns a SERVICE_UNAVAILABLE" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(NOT_FOUND)))
+          val requestConst = request
+          (for {
+            _ <- route(app, requestConst).get
+            _ <- route(app, requestConst).get
+          } yield ()).futureValue
 
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
-      }
+          server.verify(1, WireMock.getRequestedFor(urlEqualTo(api.url)))
+        }
 
-      "throws a HttpException when the NPS iabds API returns a IM_A_TEAPOT" in {
-        server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
-        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+        s"throws an InternalServerException when the ${api.name} iabds API returns an INTERNAL_SERVER_ERROR" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
 
-        val apiUrl = s"/tai/$nino/tax-account/$year/summary"
-        val request = FakeRequest(GET, apiUrl)
-          .withHeaders(HeaderNames.xSessionId -> generateSessionId)
-          .withHeaders(HeaderNames.authorisation -> bearerToken)
-        server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
 
-        val result = route(fakeApplication(), request)
-        result.map(_.failed.futureValue mustBe a[HttpException])
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR)))
+
+          val result = route(fakeApplication(), request)
+          result.map(_.failed.futureValue mustBe a[InternalServerException])
+        }
+
+        s"throws a HttpException when the ${api.name} iabds API returns a SERVICE_UNAVAILABLE" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
+
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE)))
+
+          val result = route(fakeApplication(), request)
+          result.map(_.failed.futureValue mustBe a[HttpException])
+        }
+
+        s"throws a HttpException when the ${api.name} iabds API returns a IM_A_TEAPOT" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = api.toggleStatus))
+          )
+
+          server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
+          server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+
+          val apiUrl = s"/tai/$nino/tax-account/$year/summary"
+          val request = FakeRequest(GET, apiUrl)
+            .withHeaders(HeaderNames.xSessionId -> generateSessionId)
+            .withHeaders(HeaderNames.authorisation -> bearerToken)
+          server.stubFor(get(urlEqualTo(api.url)).willReturn(aResponse().withStatus(IM_A_TEAPOT)))
+
+          val result = route(fakeApplication(), request)
+          result.map(_.failed.futureValue mustBe a[HttpException])
+        }
       }
     }
 
