@@ -17,13 +17,16 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.Status._
 import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
-import uk.gov.hmrc.tai.config.{DesConfig, NpsConfig}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -35,7 +38,7 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.net.URL
 import java.time.LocalDate
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -50,12 +53,15 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     inject[HttpHandler],
     inject[NpsConfig],
     inject[DesConfig],
-    iabdUrls
+    inject[HipConfig],
+    iabdUrls,
+    mockFeatureFlagService
   )
 
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
+  val hipUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
 
   val desBaseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
   val iabdsUrl: String = s"$desBaseUrl/iabds/tax-year/${taxYear.year}"
@@ -76,6 +82,17 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       "captureDate"     -> "10/04/2017",
       "typeDescription" -> "Total gift aid Payments",
       "netAmount"       -> 100
+    )
+  )
+
+  private val hipJson = Json.arr(
+    Json.obj(
+      "nationalInsuranceNumber" -> nino.withoutSuffix,
+      "taxYear"                 -> 2017,
+      "type"                    -> "Balancing Charge (010)",
+      "source"                  -> "TELEPHONE CALL",
+      "receiptDate"             -> "2017-04-09",
+      "captureDate"             -> "2017-04-10"
     )
   )
 
@@ -120,7 +137,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         "looking for next tax year" in {
 
           server.stubFor(
-            get(urlEqualTo(npsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
           sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
@@ -167,6 +184,99 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         }
       }
 
+    }
+
+    "toggle to use HIP" must {
+      "return IABD json" in {
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+          Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+        )
+
+        server.stubFor(
+          get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(hipJson.toString()))
+        )
+
+        val actualJson = sut().iabds(nino, taxYear).futureValue
+        actualJson mustBe hipJson
+
+        server.verify(
+          getRequestedFor(urlEqualTo(hipUrl))
+            .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
+        )
+
+      }
+
+      "return empty json" when {
+        "looking for next tax year" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(
+            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
+        }
+
+        "looking for cy+2 year" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(
+            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
+
+          sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
+        }
+      }
+
+      "return error json" when {
+        "NOT_FOUND is returned by the Nps API" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+          sut().iabds(nino, taxYear).futureValue mustBe Json.obj("error" -> "NOT_FOUND")
+        }
+      }
+
+      "return an error" when {
+        "a 400 occurs" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+          sut().iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
+        }
+
+        List(
+          IM_A_TEAPOT,
+          INTERNAL_SERVER_ERROR,
+          SERVICE_UNAVAILABLE
+        ).foreach { httpResponse =>
+          s"a $httpResponse occurs" in {
+            when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+              Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+            )
+
+            server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(httpResponse)))
+
+            sut().iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
+          }
+        }
+      }
     }
   }
 

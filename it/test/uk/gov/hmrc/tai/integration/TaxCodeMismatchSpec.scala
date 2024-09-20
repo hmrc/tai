@@ -29,7 +29,7 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
