@@ -30,7 +30,7 @@ class UpdateIncomeSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(ok(etagJson.toString)))
   }
 

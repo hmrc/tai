@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -66,6 +66,10 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+    )
+
   }
 
   override def fakeApplication(): Application =
@@ -123,7 +127,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -152,7 +156,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace(""""basisOfOperation":"Cumulative",""", """"basisOfOperation":"Week1/Month1",""")
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -189,7 +193,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -216,7 +220,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -243,7 +247,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("1257L", "1000L")
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
