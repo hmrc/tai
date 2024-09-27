@@ -80,7 +80,7 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val iabdType = 27
-  val postNpsIabdsUrl = s"/pay-as-you-earn-individuals/$nino/iabds/$year/employment/$iabdType"
+  val postNpsIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/$year/employment/$iabdType"
 
   "Update Income" must {
     "return an OK response for a valid user" in {
