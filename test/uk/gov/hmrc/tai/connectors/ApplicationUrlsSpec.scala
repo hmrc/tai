@@ -31,7 +31,7 @@ class ApplicationUrlsSpec extends BaseSpec {
   when(mockConfigFileUpload.baseURL).thenReturn("")
 
   val taxAccountUrls = new TaxAccountUrls(mockConfigNps, mockConfigDes)
-  val iabdUrls = new IabdUrls(mockConfigNps)
+  val iabdUrls = new IabdUrls(mockConfigNps, mockConfigDes)
 
   "RtiUrls" must {
     "return the correct urls" when {
@@ -136,7 +136,11 @@ class ApplicationUrlsSpec extends BaseSpec {
 
     "return the correct iabd employment url" when {
       "given argument values" in {
-        iabdUrls.npsIabdEmploymentUrl(nino, TaxYear(2017), 1) mustBe s"/person/${nino.nino}/iabds/2017/employment/1"
+        iabdUrls.npsIabdEmploymentUrl(
+          nino,
+          TaxYear(2017),
+          1
+        ) mustBe s"/pay-as-you-earn/individuals/${nino.nino}/iabds/2017/employment/1"
       }
     }
 
