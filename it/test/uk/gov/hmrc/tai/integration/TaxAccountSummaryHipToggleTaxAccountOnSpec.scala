@@ -32,7 +32,6 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
@@ -78,7 +77,7 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
     }
-    
+
     "return an OK response for a valid user with Iabds from HIP" in {
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
         Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
