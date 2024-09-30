@@ -138,12 +138,15 @@ class DefaultIabdConnector @Inject() (
     originatorId: String
   ): Seq[(String, String)] =
     Seq(
+      "Environment"          -> desConfig.environment,
+      "Authorization"        -> desConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
       HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
       HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString,
       "ETag"                 -> version.toString,
       "X-TXID"               -> txId,
-      "Gov-Uk-Originator-Id" -> originatorId,
-      "CorrelationId"        -> getUuid
+      "Gov-Uk-Originator-Id" -> originatorId
     )
 
   private def headersForGetIabdsForType(implicit hc: HeaderCarrier) =
