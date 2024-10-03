@@ -48,6 +48,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     AuthenticatedRequest(FakeRequest(), nino)
   lazy val iabdUrls: IabdUrls = inject[IabdUrls]
   val iabdType: Int = 27
+  val iabdHipType: String = "New-Estimated-Pay-(027)"
 
   def sut(): IabdConnector = new DefaultIabdConnector(
     inject[HttpHandler],
@@ -61,12 +62,13 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
-  val hipUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
+  val hipIabdsUrl: String = s"/paye/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
 
   val desBaseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
   val iabdsUrl: String = s"$desBaseUrl/iabds/tax-year/${taxYear.year}"
   val iabdsForTypeUrl: String = s"$iabdsUrl?type=$iabdType"
   val updateExpensesUrl: String = s"$desBaseUrl/iabds/${taxYear.year}/$iabdType"
+  val updateExpenseshipIabdsUrl: String = s"/paye/iabd/taxpayer/$nino/tax-year/${taxYear.year}/type/$iabdHipType"
 
   val iabdDetails: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))
@@ -137,7 +139,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         "looking for next tax year" in {
 
           server.stubFor(
-            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+            get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
           sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
@@ -193,14 +195,14 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
 
         server.stubFor(
-          get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(hipJson.toString()))
+          get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(hipJson.toString()))
         )
 
         val actualJson = sut().iabds(nino, taxYear).futureValue
         actualJson mustBe hipJson
 
         server.verify(
-          getRequestedFor(urlEqualTo(hipUrl))
+          getRequestedFor(urlEqualTo(hipIabdsUrl))
             .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
             .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
             .withHeader(HeaderNames.xRequestId, equalTo(requestId))
@@ -219,7 +221,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           )
 
           server.stubFor(
-            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+            get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
           sut().iabds(nino, taxYear.next).futureValue mustBe JsArray.empty
@@ -231,7 +233,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           )
 
           server.stubFor(
-            get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+            get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
           )
 
           sut().iabds(nino, taxYear.next.next).futureValue mustBe JsArray.empty
@@ -244,7 +246,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
           )
 
-          server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
+          server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(NOT_FOUND)))
 
           sut().iabds(nino, taxYear).futureValue mustBe Json.obj("error" -> "NOT_FOUND")
         }
@@ -256,7 +258,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
           )
 
-          server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+          server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(BAD_REQUEST)))
 
           sut().iabds(nino, taxYear).failed.futureValue mustBe a[BadRequestException]
         }
@@ -271,7 +273,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
               Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
             )
 
-            server.stubFor(get(urlEqualTo(hipUrl)).willReturn(aResponse().withStatus(httpResponse)))
+            server.stubFor(get(urlEqualTo(hipIabdsUrl)).willReturn(aResponse().withStatus(httpResponse)))
 
             sut().iabds(nino, taxYear).failed.futureValue mustBe a[HttpException]
           }
@@ -455,253 +457,538 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   }
 
   "updateExpensesData" must {
+    "using NPS" must {
+      "return a status of 200 OK" when {
 
-    "return a status of 200 OK" when {
+        "updating expenses data in DES using a valid update amount" in {
 
-      "updating expenses data in DES using a valid update amount" in {
+          val json = Json.toJson(updateAmount)
 
-        val json = Json.toJson(updateAmount)
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
-        )
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+              )
+              .futureValue
 
-        val response =
-          sut()
-            .updateExpensesData(
+          response.status mustBe OK
+          response.json mustBe json
+
+          server.verify(
+            postRequestedFor(urlEqualTo(updateExpensesUrl))
+              .withHeader("Environment", equalTo("local"))
+              .withHeader("Authorization", equalTo("Bearer desAuthorization"))
+              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+              .withHeader("Etag", equalTo("1"))
+              .withHeader("Originator-Id", equalTo(desPtaOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+              )
+          )
+        }
+      }
+
+      "return a 2xx status" when {
+
+        "the connector returns NO_CONTENT" in {
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
+          )
+
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+              )
+              .futureValue
+
+          response.status mustBe NO_CONTENT
+        }
+
+        "the connector returns ACCEPTED" in {
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(ACCEPTED))
+          )
+
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+              )
+              .futureValue
+
+          response.status mustBe ACCEPTED
+        }
+      }
+
+      "throw a HttpException" when {
+
+        "a 4xx response is returned" in {
+
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
               nino = nino,
               year = taxYear.year,
               iabdType = iabdType,
               version = 1,
-              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
+              expensesData = UpdateIabdEmployeeExpense(100, None),
               apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-            )
-            .futureValue
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
 
-        response.status mustBe OK
-        response.json mustBe json
+        "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
 
-        server.verify(
-          postRequestedFor(urlEqualTo(updateExpensesUrl))
-            .withHeader("Environment", equalTo("local"))
-            .withHeader("Authorization", equalTo("Bearer desAuthorization"))
-            .withHeader("Content-Type", equalTo(TaiConstants.contentType))
-            .withHeader("Etag", equalTo("1"))
-            .withHeader("Originator-Id", equalTo(desPtaOriginatorId))
-            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-            .withHeader(
-              "CorrelationId",
-              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-            )
-        )
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a NOT_FOUND response is returned for NOT_FOUND response status" in {
+
+          val exMessage = "Not Found"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            NOT_FOUND,
+            exMessage
+          )
+        }
+
+        "a 418 response is returned for 418 response status" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            IM_A_TEAPOT,
+            exMessage
+          )
+        }
+
+        "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
+
+          val exMessage = "Internal Server Error"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
+
+        "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
+
+          val exMessage = "Service unavailable"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            SERVICE_UNAVAILABLE,
+            exMessage
+          )
+        }
+
+        "a 5xx response is returned" in {
+
+          val exMessage = "An error occurred"
+
+          server.stubFor(
+            post(urlEqualTo(updateExpensesUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
       }
     }
+    "using HIP" must {
+      "return a status of 200 OK" when {
 
-    "return a 2xx status" when {
+        "updating expenses data in DES using a valid update amount" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
 
-      "the connector returns NO_CONTENT" in {
+          val json = Json.toJson(updateAmount)
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
-        )
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(OK).withBody(json.toString()))
+          )
 
-        val response =
-          sut()
-            .updateExpensesData(
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+              )
+              .futureValue
+
+          response.status mustBe OK
+          response.json mustBe json
+
+          server.verify(
+            putRequestedFor(urlEqualTo(updateExpenseshipIabdsUrl))
+              .withHeader("Environment", equalTo(""))
+              .withHeader("Authorization", equalTo(""))
+              .withHeader("Content-Type", equalTo(TaiConstants.contentType))
+              .withHeader("Originator-Id", equalTo(hipOriginatorId))
+              .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+              .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+              .withHeader(
+                "CorrelationId",
+                matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+              )
+          )
+        }
+      }
+
+      "return a 2xx status" when {
+
+        "the connector returns NO_CONTENT" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(NO_CONTENT))
+          )
+
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+              )
+              .futureValue
+
+          response.status mustBe NO_CONTENT
+        }
+
+        "the connector returns ACCEPTED" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(aResponse().withStatus(ACCEPTED))
+          )
+
+          val response =
+            sut()
+              .updateExpensesData(
+                nino = nino,
+                year = taxYear.year,
+                iabdType = iabdType,
+                version = 1,
+                expensesData = UpdateIabdEmployeeExpense(100, None),
+                apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+              )
+              .futureValue
+
+          response.status mustBe ACCEPTED
+        }
+      }
+
+      "throw a HttpException" when {
+
+        "a 4xx response is returned" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
+              aResponse().withStatus(BAD_REQUEST).withBody(exMessage)
+            )
+          )
+
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
               nino = nino,
               year = taxYear.year,
               iabdType = iabdType,
               version = 1,
-              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          val exMessage = "Bad request"
+
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
+              aResponse().withStatus(BAD_REQUEST).withBody(exMessage)
             )
-            .futureValue
+          )
 
-        response.status mustBe NO_CONTENT
-      }
-
-      "the connector returns ACCEPTED" in {
-
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(ACCEPTED))
-        )
-
-        val response =
-          sut()
-            .updateExpensesData(
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
               nino = nino,
               year = taxYear.year,
               iabdType = iabdType,
               version = 1,
-              expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-              apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            BAD_REQUEST,
+            exMessage
+          )
+        }
+
+        "a NOT_FOUND response is returned for NOT_FOUND response status" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
+
+          val exMessage = "Not Found"
+
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
+              aResponse().withStatus(NOT_FOUND).withBody(exMessage)
             )
-            .futureValue
+          )
 
-        response.status mustBe ACCEPTED
-      }
-    }
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            NOT_FOUND,
+            exMessage
+          )
+        }
 
-    "throw a HttpException" when {
+        "a 418 response is returned for 418 response status" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
 
-      "a 4xx response is returned" in {
+          val exMessage = "An error occurred"
 
-        val exMessage = "Bad request"
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl)).willReturn(
+              aResponse().withStatus(IM_A_TEAPOT).withBody(exMessage)
+            )
+          )
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
-        )
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            IM_A_TEAPOT,
+            exMessage
+          )
+        }
 
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          BAD_REQUEST,
-          exMessage
-        )
-      }
+        "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
 
-      "a BAD_REQUEST response is returned for BAD_REQUEST response status" in {
+          val exMessage = "Internal Server Error"
 
-        val exMessage = "Bad request"
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(BAD_REQUEST).withBody(exMessage))
-        )
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
 
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          BAD_REQUEST,
-          exMessage
-        )
-      }
+        "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
 
-      "a NOT_FOUND response is returned for NOT_FOUND response status" in {
+          val exMessage = "Service unavailable"
 
-        val exMessage = "Not Found"
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl))
+              .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
+          )
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(NOT_FOUND).withBody(exMessage))
-        )
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            SERVICE_UNAVAILABLE,
+            exMessage
+          )
+        }
 
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          NOT_FOUND,
-          exMessage
-        )
-      }
+        "a 5xx response is returned" in {
+          when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+            Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+          )
 
-      "a 418 response is returned for 418 response status" in {
+          val exMessage = "An error occurred"
 
-        val exMessage = "An error occurred"
+          server.stubFor(
+            put(urlEqualTo(updateExpenseshipIabdsUrl))
+              .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
+          )
 
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl)).willReturn(aResponse().withStatus(IM_A_TEAPOT).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          IM_A_TEAPOT,
-          exMessage
-        )
-      }
-
-      "a INTERNAL_SERVER_ERROR response is returned for INTERNAL_SERVER_ERROR response status" in {
-
-        val exMessage = "Internal Server Error"
-
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl))
-            .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          INTERNAL_SERVER_ERROR,
-          exMessage
-        )
-      }
-
-      "a SERVICE_UNAVAILABLE response is returned for SERVICE_UNAVAILABLE response status" in {
-
-        val exMessage = "Service unavailable"
-
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl))
-            .willReturn(aResponse().withStatus(SERVICE_UNAVAILABLE).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          SERVICE_UNAVAILABLE,
-          exMessage
-        )
-      }
-
-      "a 5xx response is returned" in {
-
-        val exMessage = "An error occurred"
-
-        server.stubFor(
-          post(urlEqualTo(updateExpensesUrl))
-            .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody(exMessage))
-        )
-
-        assertConnectorException[HttpException](
-          sut().updateExpensesData(
-            nino = nino,
-            year = taxYear.year,
-            iabdType = iabdType,
-            version = 1,
-            expensesData = List(UpdateIabdEmployeeExpense(100, None)),
-            apiType = APITypes.DesIabdUpdateFlatRateExpensesAPI
-          ),
-          INTERNAL_SERVER_ERROR,
-          exMessage
-        )
+          assertConnectorException[HttpException](
+            sut().updateExpensesData(
+              nino = nino,
+              year = taxYear.year,
+              iabdType = iabdType,
+              version = 1,
+              expensesData = UpdateIabdEmployeeExpense(100, None),
+              apiType = APITypes.HipIabdUpdateEmployeeExpensesAPI
+            ),
+            INTERNAL_SERVER_ERROR,
+            exMessage
+          )
+        }
       }
     }
   }
-
 }
