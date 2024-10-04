@@ -16,30 +16,44 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, put, urlEqualTo}
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HeaderNames, HttpException}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.IabdUpdateExpensesRequest
+import uk.gov.hmrc.tai.model.admin.HipToggleIabds
+
+import scala.concurrent.Future
 
 class PutEmployeeExpensesSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/$year/expenses/employee-expenses/27"
 
-  val postRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
+  val putRequest = Json.toJson(IabdUpdateExpensesRequest(etag.toInt, 123456))
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
+    )
+  }
 
   def request = FakeRequest(POST, apiUrl)
-    .withJsonBody(postRequest)
+    .withJsonBody(putRequest)
     .withHeaders(HeaderNames.authorisation -> bearerToken, HeaderNames.xSessionId -> "sessionId")
 
   val iabdType = "New-Estimated-Pay-(027)"
-  val hipIabdsPutUrl = s"/paye/iabd/taxpayer/$nino/tax-year/$year}/type/$iabdType"
+  val hipIabdsPutUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year/type/$iabdType"
 
   "Put Employee Expenses" must {
     "return an OK response for a valid user" in {
-      server.stubFor(post(hipIabdsPutUrl).willReturn(ok()))
+      server.stubFor(put(hipIabdsPutUrl).willReturn(ok()))
 
       val result = route(fakeApplication(), request)
 
@@ -48,7 +62,7 @@ class PutEmployeeExpensesSpec extends IntegrationSpec {
 
     List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return OK for employment API failures with status code $httpStatus" in {
-        server.stubFor(post(urlEqualTo(hipIabdsPutUrl)).willReturn(aResponse().withStatus(httpStatus)))
+        server.stubFor(put(urlEqualTo(hipIabdsPutUrl)).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
         result.map(_.failed.futureValue mustBe a[HttpException])

@@ -62,13 +62,13 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
-  val hipIabdsUrl: String = s"/paye/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
+  val hipIabdsUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
 
   val desBaseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
   val iabdsUrl: String = s"$desBaseUrl/iabds/tax-year/${taxYear.year}"
   val iabdsForTypeUrl: String = s"$iabdsUrl?type=$iabdType"
   val updateExpensesUrl: String = s"$desBaseUrl/iabds/${taxYear.year}/$iabdType"
-  val updateExpenseshipIabdsUrl: String = s"/paye/iabd/taxpayer/$nino/tax-year/${taxYear.year}/type/$iabdHipType"
+  val updateExpenseshipIabdsUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}/type/$iabdHipType"
 
   val iabdDetails: IabdDetails =
     IabdDetails(Some(nino.withoutSuffix), None, Some(15), Some(10), None, Some(LocalDate.of(2017, 4, 10)))

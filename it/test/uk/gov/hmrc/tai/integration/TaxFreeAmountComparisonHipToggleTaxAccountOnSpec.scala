@@ -33,13 +33,12 @@ import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleTaxAcco
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
   def request = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  private val mockFeatureFlagService = mock[FeatureFlagService]
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -57,11 +56,6 @@ class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   "TaxFreeAmountComparison" must {
     "return an OK response for a valid user" in {
