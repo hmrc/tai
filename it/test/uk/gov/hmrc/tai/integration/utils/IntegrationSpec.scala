@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.tai.integration.utils
 
+import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar.{mock, reset, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -28,16 +31,25 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 trait IntegrationSpec
     extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures with Injecting
     with IntegrationPatience {
+  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
+  val mockFeatureFlagService = mock[FeatureFlagService]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
+    reset(mockFeatureFlagService)
 
     val authResponse =
       s"""
@@ -67,6 +79,26 @@ trait IntegrationSpec
       post(urlEqualTo("/auth/authorise"))
         .willReturn(ok(authResponse))
     )
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
+    )
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+    )
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+      Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
+    )
+
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
+    )
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
@@ -87,7 +119,8 @@ trait IntegrationSpec
       "cache.isEnabled"                            -> false
     )
     .overrides(
-      bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+      bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi),
+      bind[FeatureFlagService].toInstance(mockFeatureFlagService)
     )
 
   override def fakeApplication(): Application = guiceAppBuilder.build()

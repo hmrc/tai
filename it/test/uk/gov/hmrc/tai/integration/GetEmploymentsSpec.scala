@@ -33,8 +33,7 @@ import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle, T
 import scala.concurrent.{ExecutionContext, Future}
 
 class GetEmploymentsSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-  private val mockFeatureFlagService = mock[FeatureFlagService]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -51,11 +50,6 @@ class GetEmploymentsSpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   val apiUrl = s"/tai/$nino/employments/years/$year"
   def request = FakeRequest(GET, apiUrl)

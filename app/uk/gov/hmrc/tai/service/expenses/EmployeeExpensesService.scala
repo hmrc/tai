@@ -43,7 +43,7 @@ class EmployeeExpensesService @Inject() (iabdConnector: IabdConnector) {
       year = taxYear.year,
       iabdType = iabd,
       version = version,
-      expensesData = List(expensesData),
+      expensesData = expensesData,
       apiType = APITypes.DesIabdUpdateEmployeeExpensesAPI
     )
 

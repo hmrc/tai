@@ -31,3 +31,13 @@ case class UpdateIabdEmployeeExpense(grossAmount: Int, source: Option[Int]) {
 object UpdateIabdEmployeeExpense {
   implicit val format: Format[UpdateIabdEmployeeExpense] = Json.format[UpdateIabdEmployeeExpense]
 }
+
+case class UpdateHipIabdEmployeeExpense(currentOptimisticLock: Int, grossAmount: Int) {
+  require(grossAmount >= 0, "grossAmount cannot be less than 0")
+  require(grossAmount <= 999999, "grossAmount cannot be greater than 999999")
+}
+
+object UpdateHipIabdEmployeeExpense {
+  implicit val format: Format[UpdateHipIabdEmployeeExpense] = Json.format[UpdateHipIabdEmployeeExpense]
+
+}

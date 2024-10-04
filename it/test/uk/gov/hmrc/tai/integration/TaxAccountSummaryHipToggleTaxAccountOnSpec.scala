@@ -32,12 +32,10 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-  private val mockFeatureFlagService = mock[FeatureFlagService]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -62,11 +60,6 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
   }
 
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
-
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"
 
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
@@ -78,7 +71,7 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)
     }
-    
+
     "return an OK response for a valid user with Iabds from HIP" in {
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
         Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))

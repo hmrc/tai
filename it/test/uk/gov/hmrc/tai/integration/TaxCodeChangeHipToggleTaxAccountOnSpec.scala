@@ -38,7 +38,7 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
   def request = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
@@ -49,7 +49,6 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  private val mockFeatureFlagService = mock[FeatureFlagService]
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -71,11 +70,6 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
 
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {

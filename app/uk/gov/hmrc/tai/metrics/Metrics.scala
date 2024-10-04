@@ -51,6 +51,7 @@ class Metrics @Inject() (metrics: MetricRegistry) {
     APITypes.DesIabdGetFlatRateExpensesAPI    -> "des-iabd-flat-rate-expenses-get",
     APITypes.DesIabdUpdateEmployeeExpensesAPI -> "des-iabd-flat-rate-expenses-update",
     APITypes.DesIabdGetEmployeeExpensesAPI    -> "des-iabd-flat-rate-expenses-get",
+    APITypes.HipIabdUpdateEmployeeExpensesAPI -> "hip-iabd-flat-rate-expenses-put",
     APITypes.PdfServiceAPI                    -> "pdf-service",
     APITypes.CompanyCarAPI                    -> "company-car",
     APITypes.FusCreateEnvelope                -> "create-envelope",

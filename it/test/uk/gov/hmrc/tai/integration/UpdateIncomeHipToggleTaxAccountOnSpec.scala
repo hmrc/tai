@@ -35,8 +35,6 @@ import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-  private val mockFeatureFlagService = mock[FeatureFlagService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -62,11 +60,6 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   val employmentId = 1
   val apiUrl = s"/tai/$nino/tax-account/snapshots/$year/incomes/tax-code-incomes/$employmentId/estimated-pay"
