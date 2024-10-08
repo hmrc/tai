@@ -165,6 +165,7 @@ class DefaultRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     featureFlagService.getAsEitherT(RtiCallToggle).flatMap { toggle =>
       if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
+        println("\nHERERERE")
         logger.info(s"RTIAPI - call for the year: $taxYear}")
         val ninoWithoutSuffix = withoutSuffix(nino)
 
@@ -179,10 +180,13 @@ class DefaultRtiConnector @Inject() (
           futureResponse
             .map {
               case Right(httpResponse) =>
+                println("\n  RESP" + httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
                 Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
               case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
+                println("\nERRNOT FOUND")
                 Right(Seq.empty)
               case Left(error) =>
+                println("\nERR")
                 logger.error(
                   s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}"
                 )
@@ -194,7 +198,17 @@ class DefaultRtiConnector @Inject() (
         )
       } else {
         logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
-        EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))
+        EitherT.rightT(
+          Seq(
+            AnnualAccount.apply(
+              sequenceNumber = 0,
+              taxYear = taxYear,
+              rtiStatus = TemporarilyUnavailable
+            )
+          )
+        )
+        //  EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))
+
       }
     }
 }
