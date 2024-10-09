@@ -17,9 +17,9 @@
 package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.{Logger, Logging}
 import play.api.libs.json.Reads.localDateReads
-import play.api.libs.json.{Format, JsPath, JsResult, JsSuccess, JsValue, Json, Reads, __}
+import play.api.libs.json._
+import play.api.{Logger, Logging}
 import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple

@@ -26,16 +26,13 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 class EmploymentBuilder @Inject() (auditor: Auditor) {
 
   private val logger: Logger = Logger(getClass.getName)
-
+  // scalastyle:off method.length
   def combineAccountsWithEmployments(
     employments: Seq[Employment],
     accounts: Seq[AnnualAccount],
     nino: Nino,
     taxYear: TaxYear
   )(implicit hc: HeaderCarrier): Employments = {
-
-    println("\ncombine:" + accounts)
-
     def associatedEmployment(account: AnnualAccount, employments: Seq[Employment], nino: Nino, taxYear: TaxYear)(
       implicit hc: HeaderCarrier
     ): Option[Employment] =
@@ -72,17 +69,12 @@ class EmploymentBuilder @Inject() (auditor: Auditor) {
 
     val unified = combinedDuplicates(accountAssignedEmployments)
 
-    println("\n ------------accountassigned> " + accountAssignedEmployments)
-    println("\n ------------> " + unified)
-
     val nonUnified = employments.filterNot(emp => unified.map(_.sequenceNumber).contains(emp.sequenceNumber)) map {
       emp =>
         emp.copy(annualAccounts = Seq(AnnualAccount(emp.sequenceNumber, taxYear, TemporarilyUnavailable, Nil, Nil)))
     }
 
-    val a = Employments(unified ++ nonUnified, None)
-    println("\n ---> " + a)
-    a
+    Employments(unified ++ nonUnified, None)
   }
 
   private def auditAssociatedEmployment(

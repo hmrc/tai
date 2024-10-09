@@ -82,7 +82,6 @@ class CachingRtiConnector @Inject() (
   private def cache[L, A: Format](
     key: String
   )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
-
     def fetchAndCache: IO[Either[L, A]] =
       IO.fromFuture(IO((for {
         result <- f
@@ -92,7 +91,6 @@ class CachingRtiConnector @Inject() (
                  .map(Right(_))
              )
       } yield result).value))
-
     def readAndUpdate: IO[Either[L, A]] =
       IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
         case Right(true) =>
@@ -111,7 +109,6 @@ class CachingRtiConnector @Inject() (
           throw new LockedException(s"Lock for $key could not be acquired")
         case Left(error) => IO(Left(error))
       }
-
     EitherT(
       readAndUpdate
         .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis)
@@ -164,51 +161,46 @@ class DefaultRtiConnector @Inject() (
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     featureFlagService.getAsEitherT(RtiCallToggle).flatMap { toggle =>
-      if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
-        println("\nHERERERE")
-        logger.info(s"RTIAPI - call for the year: $taxYear}")
-        val ninoWithoutSuffix = withoutSuffix(nino)
-
-        val futureResponse: Future[Either[UpstreamErrorResponse, HttpResponse]] = httpClientV2
-          .get(url"${urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear)}")(
-            hc.withExtraHeaders(createHeader(rtiConfig): _*)
-          )
-          .transform(_.withRequestTimeout(rtiConfig.timeoutInMilliseconds.milliseconds))
-          .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
-
-        EitherT(
-          futureResponse
-            .map {
-              case Right(httpResponse) =>
-                println("\n  RESP" + httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
-                Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
-              case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
-                println("\nERRNOT FOUND")
-                Right(Seq.empty)
-              case Left(error) =>
-                println("\nERR")
-                logger.error(
-                  s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}"
-                )
-                Left(error)
-            }
-            .recover { case error: HttpException =>
-              Left(UpstreamErrorResponse(error.message, BAD_GATEWAY))
-            }
-        )
-      } else {
-        logger.info(s"RTIAPI - SKIP RTI call for year: $taxYear}")
-        EitherT.rightT(
-          Seq(
-            AnnualAccount.apply(
-              sequenceNumber = 0,
-              taxYear = taxYear,
-              rtiStatus = TemporarilyUnavailable
+      (toggle.isEnabled, taxYear.year < TaxYear().next.year) match {
+        case (false, _) =>
+          EitherT.rightT(
+            Seq(
+              AnnualAccount(
+                sequenceNumber = 0,
+                taxYear = taxYear,
+                rtiStatus = TemporarilyUnavailable
+              )
             )
           )
-        )
-        //  EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))
+        case (true, false) =>
+          EitherT.leftT(UpstreamErrorResponse(s"RTIAPI - SKIP RTI call for year: $taxYear}", 444))
+        case (true, true) =>
+          logger.info(s"RTIAPI - call for the year: $taxYear}")
+          val ninoWithoutSuffix = withoutSuffix(nino)
 
+          val futureResponse: Future[Either[UpstreamErrorResponse, HttpResponse]] = httpClientV2
+            .get(url"${urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear)}")(
+              hc.withExtraHeaders(createHeader(rtiConfig): _*)
+            )
+            .transform(_.withRequestTimeout(rtiConfig.timeoutInMilliseconds.milliseconds))
+            .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+          EitherT(
+            futureResponse
+              .map {
+                case Right(httpResponse) =>
+                  Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
+                case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
+                  Right(Seq.empty)
+                case Left(error) =>
+                  logger.error(
+                    s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}"
+                  )
+                  Left(error)
+              }
+              .recover { case error: HttpException =>
+                Left(UpstreamErrorResponse(error.message, BAD_GATEWAY))
+              }
+          )
       }
     }
 }
