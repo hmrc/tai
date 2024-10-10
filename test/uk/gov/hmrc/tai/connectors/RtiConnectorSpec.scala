@@ -20,11 +20,16 @@ import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import org.mockito.ArgumentMatchersSugar.eqTo
+import play.api.Application
+import play.api.cache.AsyncCacheApi
 import play.api.http.Status._
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{HeaderNames, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.rti.QaData
@@ -135,6 +140,36 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
 
           verifyOutgoingUpdateHeaders(getRequestedFor(urlEqualTo(url)))
         }
+      }
+
+      "return a left upstream error response" when {
+        "a timeout Http response is received from RTI" in {
+          server.stubFor(
+            get(urlEqualTo(url)).willReturn(
+              aResponse()
+                .withFixedDelay(200)
+            )
+          )
+          val app: Application =
+            GuiceApplicationBuilder()
+              .configure(
+                "microservice.services.des-hod.port"                  -> server.port(),
+                "microservice.services.des-hod.host"                  -> "127.0.0.1",
+                "microservice.services.des-hod.timeoutInMilliseconds" -> 50
+              )
+              .overrides(
+                bind[FeatureFlagService].toInstance(mockFeatureFlagService),
+                bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+              )
+              .build()
+
+          val sut: RtiConnector = app.injector.instanceOf[DefaultRtiConnector]
+          val result: Either[UpstreamErrorResponse, Seq[AnnualAccount]] =
+            sut.getPaymentsForYear(nino, taxYear).value.futureValue
+          result mustBe a[Left[UpstreamErrorResponse, _]]
+          result.leftSide.swap.map(_.statusCode) mustBe Right(BAD_GATEWAY)
+        }
+
       }
 
       "return an empty list" when {

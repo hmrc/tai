@@ -1,0 +1,99 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "deductions": [],
+      "allowances": [
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 5
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 6
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 7
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 8
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 10
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 11
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 12
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 13
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 17
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 18
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 20
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 21
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 28
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 29
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 30
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 31
+        },
+        {
+          "npsDescription": "nps-desc",
+          "amount": 100,
+          "type": 32
+        }
+      ]
+    }
+  ]
+}

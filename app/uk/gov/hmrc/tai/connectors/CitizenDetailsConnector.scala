@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClient: HttpClient, urls: CitizenDetailsUrls)(implicit
   ec: ExecutionContext
-) extends BaseConnector(metrics, httpClient) with Logging {
+) extends BaseConnector with Logging {
 
   override val originatorId: String = ""
 

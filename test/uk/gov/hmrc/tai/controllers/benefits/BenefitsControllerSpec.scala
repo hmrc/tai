@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.controllers.benefits
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
@@ -29,6 +28,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.Random
 
@@ -42,7 +42,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(emptyBenefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -53,7 +53,6 @@ class BenefitsControllerSpec extends BaseSpec {
             ),
             "links" -> Json.arr()
           )
-
         contentAsJson(result) mustBe expectedJson
       }
     }
@@ -88,7 +87,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(benefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -147,7 +146,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(removeCompanyBenefit))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
             .withHeaders(("content-type", "application/json"))

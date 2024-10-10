@@ -1,0 +1,90 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": 7,
+  "date": "2018-08-02",
+  "isCurrentlyEmployed": false,
+  "taxYear": 2023,
+  "previousTaxAccountIdentifier": 6,
+  "previousYearTaxAccountIdentifier": 1,
+  "totalEstimatedTax": 16956,
+  "inYearCalculationsResult": 1,
+  "inYearCalculationAmount": 0,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 25000,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1,
+            "estimatedPaySource": 16
+          },
+          {
+            "amount": 2000,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 11850,
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 11850,
+            "type": "Personal Allowance (PA) (118)"
+          }
+        ]
+      },
+      "totalTax": 3030,
+      "totalTaxableIncome": 15150,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 15150,
+          "tax": 3030,
+          "lowerBand": 0,
+          "upperBand": 34500,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "lowerBand": 34500,
+          "upperBand": 150000,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "lowerBand": 150000,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "untaxedInterest": {},
+    "bankInterest": {},
+    "ukDividends": {},
+    "foreignInterest": {},
+    "foreignDividends": {},
+    "basicRateExtensionsDetails": {
+      "amount": 0,
+      "type": "",
+      "summaryIABDDetailsList": []
+    },
+    "otherTaxDueDetails": {
+      "type": "",
+      "summaryIABDDetailsList": []
+    },
+    "totalLiability": 3030
+  },
+  "employmentDetailsList": []
+}

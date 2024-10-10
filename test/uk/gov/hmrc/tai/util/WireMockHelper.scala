@@ -27,6 +27,8 @@ trait WireMockHelper extends BeforeAndAfterAll with BeforeAndAfterEach {
 
   val npsOriginatorId = "npsOriginatorId"
 
+  val hipOriginatorId = "hipOriginatorId"
+
   val desOriginatorId = "desOriginatorId"
 
   val desPtaOriginatorId = "desPtaOriginatorId"

@@ -18,17 +18,23 @@ package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import play.api
+import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.Application
 import play.api.http.Status._
-import api.inject.bind
+import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsValue, Json}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
+import uk.gov.hmrc.tai.model.HodResponse
+import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.nps2.NpsFormatter
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import scala.concurrent.Future
 import scala.util.Random
 
 class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFormatter {
@@ -39,13 +45,12 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   val etag: Int = intGen
   val iabdType: Int = intGen
   val empSeqNum: Int = intGen
-  val npsBaseUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}"
-  val employmentsUrl: String = s"$npsBaseUrl/employment/$year"
-  val iabdsUrl: String = s"$npsBaseUrl/iabds/$year"
-  val iabdsForTypeUrl: String = s"$iabdsUrl/$iabdType"
-  val taxAccountUrl: String = s"$npsBaseUrl/tax-account/$year/calculation"
-  val updateEmploymentUrl: String = s"$iabdsUrl/employment/$iabdType"
+
+  val hipBaseUrl: String = s"/v1/api/employment/employee/${nino.nino}"
+  val employmentsUrl: String = s"$hipBaseUrl/tax-year/$year/employment-details"
   lazy val sut: DefaultEmploymentDetailsConnector = inject[DefaultEmploymentDetailsConnector]
+  val token: String =
+    "Basic " + Base64.getEncoder.encodeToString(s"clientId:clientSecret".getBytes(StandardCharsets.UTF_8))
 
   override implicit lazy val app: Application = localGuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
@@ -62,7 +67,7 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
   def verifyOutgoingUpdateHeaders(requestPattern: RequestPatternBuilder): Unit =
     server.verify(
       requestPattern
-        .withHeader("Gov-Uk-Originator-Id", equalTo(npsOriginatorId))
+        .withHeader("Gov-Uk-Originator-Id", equalTo(hipOriginatorId))
         .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
         .withHeader(HeaderNames.xRequestId, equalTo(requestId))
         .withHeader(
@@ -84,29 +89,28 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
 
   val employmentAsJson: JsValue = Json.toJson(employment)
 
-  "NpsConnector" when {
-    "npsPathUrl is called" must {
-      "fetch the path url" when {
-        "given a nino and path" in {
-          val arg = "path"
-          sut.npsPathUrl(nino, arg) contains s"$npsBaseUrl/$arg"
-        }
-      }
-    }
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
+    )
+  }
 
+  "DefaultEmploymentDetailsConnector" when {
     "getEmploymentDetailsAsEitherT is called" must {
       "return employments json with success" when {
         "given a nino and a year" in {
-
           val employmentListJson = JsArray(Seq(employmentAsJson))
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(OK)
-                .withBody(employmentListJson.toString())
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(OK)
+                  .withBody(employmentListJson.toString())
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue mustBe
@@ -122,12 +126,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
           val exMessage = "Invalid query"
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(BAD_REQUEST)
-                .withBody(exMessage)
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -139,12 +145,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
           val exMessage = "Could not find employment"
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(NOT_FOUND)
-                .withBody(exMessage)
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(NOT_FOUND)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -156,12 +164,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
           val exMessage = "Locked record"
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(LOCKED)
-                .withBody(exMessage)
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(LOCKED)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -173,12 +183,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
           val exMessage = "An error occurred"
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(INTERNAL_SERVER_ERROR)
-                .withBody(exMessage)
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(INTERNAL_SERVER_ERROR)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue
@@ -190,12 +202,14 @@ class DefaultEmploymentDetailsConnectorSpec extends ConnectorBaseSpec with NpsFo
           val exMessage = "Could not reach gateway"
 
           server.stubFor(
-            get(urlEqualTo(employmentsUrl)).willReturn(
-              aResponse()
-                .withStatus(BAD_GATEWAY)
-                .withBody(exMessage)
-                .withHeader("ETag", s"$etag")
-            )
+            get(urlEqualTo(employmentsUrl))
+              .withHeader("Authorization", equalTo(token))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_GATEWAY)
+                  .withBody(exMessage)
+                  .withHeader("ETag", s"$etag")
+              )
           )
 
           val result = sut.getEmploymentDetailsAsEitherT(nino, year).value.futureValue

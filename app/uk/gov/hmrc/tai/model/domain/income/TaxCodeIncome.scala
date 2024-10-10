@@ -16,28 +16,32 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import java.time.LocalDate
 import play.api.Logger
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.income.TaxCodeIncomeHodFormatters
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
+
+import java.time.LocalDate
 
 sealed trait BasisOperation
 case object Week1Month1BasisOperation extends BasisOperation
+case object CumulativeOperation extends BasisOperation
+case object Week1Month1NotOperatedOperation extends BasisOperation
+case object CumulativeNotOperatedOperation extends BasisOperation
 case object OtherBasisOperation extends BasisOperation
 
 object BasisOperation extends BasisOperation with TaxCodeHistoryConstants {
   def apply(constant: String): BasisOperation =
-    if (constant == Week1Month1)
+    if (constant == Week1Month1) {
       Week1Month1BasisOperation
-    else
+    } else {
       OtherBasisOperation
+    }
 
   implicit val formatBasisOperationType: Format[BasisOperation] = new Format[BasisOperation] {
     override def reads(json: JsValue): JsSuccess[BasisOperation] = JsSuccess(BasisOperation)
 
-    override def writes(basisOperation: BasisOperation) = JsString(basisOperation.toString)
+    override def writes(basisOperation: BasisOperation): JsValue = JsString(basisOperation.toString)
   }
 }
 
@@ -69,7 +73,33 @@ object TaxCodeIncomeStatus {
         throw new RuntimeException("Invalid employment status reads")
     }
 
-    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus) = JsString(taxCodeIncomeStatus.toString)
+    override def writes(taxCodeIncomeStatus: TaxCodeIncomeStatus): JsValue = JsString(taxCodeIncomeStatus.toString)
+  }
+
+  def employmentStatusFromNps(json: JsValue): TaxCodeIncomeStatus = {
+    val employmentStatus = (json \ "employmentStatus").asOpt[Int]
+    employmentStatus match {
+      case Some(1) => Live
+      case Some(2) => PotentiallyCeased
+      case Some(3) => Ceased
+      case default =>
+        logger.warn(s"Invalid Employment Status -> $default")
+        throw new RuntimeException("Invalid employment status")
+    }
+  }
+
+  def employmentStatus(json: JsValue): TaxCodeIncomeStatus = {
+    val employmentStatus = (json \ "employmentStatus").asOpt[String]
+
+    employmentStatus match {
+      case Some("Live")               => Live
+      case Some("Potentially Ceased") => PotentiallyCeased
+      case Some("Permanently Ceased") => Ceased
+      case Some("Ceased")             => Ceased
+      case default =>
+        logger.warn(s"Invalid Employment Status -> $default")
+        throw new RuntimeException("Invalid employment status")
+    }
   }
 }
 
@@ -95,7 +125,7 @@ object IabdUpdateSource extends IabdUpdateSource {
   implicit val formatIabdUpdateSource: Format[IabdUpdateSource] = new Format[IabdUpdateSource] {
     override def reads(json: JsValue): JsSuccess[IabdUpdateSource] = throw new RuntimeException("Not Implemented")
 
-    override def writes(iabdUpdateSource: IabdUpdateSource) = JsString(iabdUpdateSource.toString)
+    override def writes(iabdUpdateSource: IabdUpdateSource): JsValue = JsString(iabdUpdateSource.toString)
   }
   def fromCode(code: Int): Option[IabdUpdateSource] = iabdUpdateSourceMap.get(code)
 }
@@ -123,31 +153,27 @@ case class TaxCodeIncome(
   }
 }
 
-object TaxCodeIncome extends TaxCodeIncomeHodFormatters {
-
-  implicit val writes: Writes[TaxCodeIncome] = new Writes[TaxCodeIncome] {
-    override def writes(o: TaxCodeIncome): JsValue =
-      JsObject(
-        List(
-          "componentType"                 -> Json.toJson(o.componentType),
-          "employmentId"                  -> Json.toJson(o.employmentId),
-          "amount"                        -> Json.toJson(o.amount),
-          "description"                   -> Json.toJson(o.description),
-          "taxCode"                       -> Json.toJson(o.taxCodeWithEmergencySuffix),
-          "name"                          -> Json.toJson(o.name),
-          "basisOperation"                -> Json.toJson(o.basisOperation),
-          "status"                        -> Json.toJson(o.status),
-          "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
-          "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
-          "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),
-          "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
-          "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
-          "updateActionDate"              -> Json.toJson(o.updateActionDate)
-        ).filter {
-          case (_, JsNull) => false
-          case _           => true
-        }
-      )
-  }
-  implicit val reads: Reads[TaxCodeIncome] = taxCodeIncomeSourceReads
+object TaxCodeIncome {
+  implicit val writes: Writes[TaxCodeIncome] = (o: TaxCodeIncome) =>
+    JsObject(
+      List(
+        "componentType"                 -> Json.toJson(o.componentType),
+        "employmentId"                  -> Json.toJson(o.employmentId),
+        "amount"                        -> Json.toJson(o.amount),
+        "description"                   -> Json.toJson(o.description),
+        "taxCode"                       -> Json.toJson(o.taxCodeWithEmergencySuffix),
+        "name"                          -> Json.toJson(o.name),
+        "basisOperation"                -> Json.toJson(o.basisOperation),
+        "status"                        -> Json.toJson(o.status),
+        "inYearAdjustmentIntoCY"        -> Json.toJson(o.inYearAdjustmentIntoCY),
+        "totalInYearAdjustment"         -> Json.toJson(o.totalInYearAdjustment),
+        "inYearAdjustmentIntoCYPlusOne" -> Json.toJson(o.inYearAdjustmentIntoCYPlusOne),
+        "iabdUpdateSource"              -> Json.toJson(o.iabdUpdateSource),
+        "updateNotificationDate"        -> Json.toJson(o.updateNotificationDate),
+        "updateActionDate"              -> Json.toJson(o.updateActionDate)
+      ).filter {
+        case (_, JsNull) => false
+        case _           => true
+      }
+    )
 }

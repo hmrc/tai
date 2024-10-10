@@ -16,43 +16,44 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import javax.inject.Singleton
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvider}
 import uk.gov.hmrc.tai.service.PensionProviderService
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
 
+import javax.inject.Singleton
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class PensionProviderController @Inject() (
   pensionProviderService: PensionProviderService,
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats {
+) extends BackendController(cc) {
 
-  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.async(parse.json) { implicit request =>
-    withJsonBody[AddPensionProvider] { pensionProvider =>
-      pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId =>
-        Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
-      )
-    }
+  def addPensionProvider(nino: Nino): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
+    implicit request =>
+      withJsonBody[AddPensionProvider] { pensionProvider =>
+        pensionProviderService.addPensionProvider(nino, pensionProvider) map (envelopeId =>
+          Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
+        )
+      }
   }
 
-  def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] = authentication.async(parse.json) {
-    implicit request =>
+  def incorrectPensionProvider(nino: Nino, id: Int): Action[JsValue] =
+    authentication.authWithUserDetails.async(parse.json) { implicit request =>
       withJsonBody[IncorrectPensionProvider] { incorrectPension =>
         pensionProviderService.incorrectPensionProvider(nino, id, incorrectPension) map (envelopeId =>
           Ok(Json.toJson(ApiResponse(envelopeId, Nil)))
         )
       }
-  }
+    }
 
 }

@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class JourneyCacheControllerSpec extends BaseSpec {
 
   private def createSUT(repository: JourneyCacheRepository) =
-    new JourneyCacheController(repository, loggedInAuthenticationPredicate, cc)
+    new JourneyCacheController(repository, loggedInAuthenticationAuthJourney, cc)
 
   val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
@@ -162,8 +162,6 @@ class JourneyCacheControllerSpec extends BaseSpec {
         status(result4) mustBe INTERNAL_SERVER_ERROR
       }
     }
-    // update-income
-
     "supply a named journey cache on GET request *UpdateIncome" in {
       val mockRepository = mock[JourneyCacheRepository]
 

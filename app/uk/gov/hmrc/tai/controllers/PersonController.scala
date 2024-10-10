@@ -21,22 +21,22 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.service.PersonService
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class PersonController @Inject() (
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   personService: PersonService,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats {
+) extends BackendController(cc) {
 
-  def person(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+  def person(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     personService.person(nino) map { person =>
       Ok(Json.toJson(ApiResponse(person, Nil)))
     }

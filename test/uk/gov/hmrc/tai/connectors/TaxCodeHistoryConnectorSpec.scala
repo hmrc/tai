@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, getRequestedFor, matching, ok, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
@@ -25,7 +25,7 @@ import play.api.test.Helpers.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, N
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}

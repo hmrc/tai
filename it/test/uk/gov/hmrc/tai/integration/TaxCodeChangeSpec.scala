@@ -85,7 +85,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -113,7 +113,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace(""""basisOperation": 2,""", """"basisOperation": 1,""")
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -150,7 +150,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -177,7 +177,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
@@ -204,7 +204,7 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("1257L", "1000L")
 
         val iabds = FileHelper
-          .loadFile("nino1/iabds.json")
+          .loadFile("nino1/iabdsNps.json")
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 

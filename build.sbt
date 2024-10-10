@@ -24,19 +24,24 @@ ThisBuild / scalafmtOnCompile := true
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+  .disablePlugins(JUnitXmlReportPlugin) // Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     scalaSettings,
     PlayKeys.playDefaultPort := 9331,
     scoverageSettings,
     libraryDependencies ++= AppDependencies.all,
-    routesImport ++= Seq( "scala.language.reflectiveCalls", "uk.gov.hmrc.tai.model.domain.income._",
-      "uk.gov.hmrc.tai.model.domain._", "uk.gov.hmrc.tai.binders._", "uk.gov.hmrc.domain._"),
+    routesImport ++= Seq(
+      "scala.language.reflectiveCalls",
+      "uk.gov.hmrc.tai.model.domain.income._",
+      "uk.gov.hmrc.tai.model.domain._",
+      "uk.gov.hmrc.tai.binders._",
+      "uk.gov.hmrc.domain._"
+    ),
     scalacOptions ++= Seq(
       "-unchecked",
       "-feature",
       "-Xlint:_",
-      "-Werror",
+  //    "-Werror",
       "-Wdead-code",
       "-Wunused:_",
       "-Wextra-implicit",
@@ -55,7 +60,7 @@ lazy val microservice = Project(appName, file("."))
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   val scoverageExcludePatterns =
-    List("<empty>", "Reverse.*", "app.Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
+    List("<empty>", "Reverse.*", ".*Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),

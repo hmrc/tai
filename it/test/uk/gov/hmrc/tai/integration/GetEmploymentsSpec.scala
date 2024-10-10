@@ -16,27 +16,53 @@
 
 package uk.gov.hmrc.tai.integration
 
+import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.MockitoSugar.{mock, when}
+import play.api.Application
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.HeaderNames
+import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class GetEmploymentsSpec extends IntegrationSpec {
-
+  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+  private val mockFeatureFlagService = mock[FeatureFlagService]
   override def beforeEach(): Unit = {
     super.beforeEach()
+
+    when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
+      EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
+      Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
+    )
 
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
     server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
   }
+
+  override def fakeApplication(): Application =
+    guiceAppBuilder
+      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
+      .build()
 
   val apiUrl = s"/tai/$nino/employments/years/$year"
   def request = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  "Get Employment" must {
+  "Get Employment (NPS)" must {
     "return an OK response for a valid user" in {
       val result = route(fakeApplication(), request)
       result.map(getStatus) mustBe Some(OK)

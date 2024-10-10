@@ -1,0 +1,53 @@
+{
+  "nationalInsuranceNumber": "$NINO",
+  "taxYear": 2023,
+  "individualsEmploymentDetails": [
+    {
+      "employmentSequenceNumber": 2,
+      "payeSchemeType": 0,
+      "payeSequenceNumber": 1,
+      "employerNumber": 6,
+      "payeSchemeOperatorName": "EMPLOYER1",
+      "employerReference": "000/00000",
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "jobTitle": "Made up data",
+      "worksNumber": "0000",
+      "taxCodeOperation": "Cumulative",
+      "otherIncomeSource": false,
+      "payrolledNextYear": true,
+      "payrolledCurrentYear": false,
+      "jobSeekersAllowance": false,
+      "activeOccupationalPension": false,
+      "employerManualCorrespondence": false,
+      "p161Identifier": false,
+      "employmentRecordSourceType": "ECC",
+      "startDateSource": "ITYS",
+      "startDate": "2016-04-06"
+    },
+    {
+      "employmentSequenceNumber": 2,
+      "payeSchemeType": 0,
+      "payeSequenceNumber": 1,
+      "employerNumber": 6,
+      "payeSchemeOperatorName": "EMPLOYER2",
+      "employerReference": "000/00000",
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "jobTitle": "Made up data",
+      "worksNumber": "0000",
+      "taxCodeOperation": "Cumulative",
+      "otherIncomeSource": false,
+      "payrolledNextYear": false,
+      "payrolledCurrentYear": false,
+      "jobSeekersAllowance": false,
+      "activeOccupationalPension": false,
+      "employerManualCorrespondence": false,
+      "p161Identifier": false,
+      "employmentRecordSourceType": "ECC",
+      "startDateSource": "ITYS",
+      "startDate": "2016-04-06",
+      "cessationPayForEmployment": 100
+    }
+  ]
+}

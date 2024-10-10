@@ -23,9 +23,11 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
+import uk.gov.hmrc.tai.model.TaxCodeHistory.{reads, writes}
 import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.service.SensitiveFormatService
 
 import java.util.UUID
 import javax.inject.Named
@@ -34,13 +36,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class CachingTaxCodeHistoryConnector @Inject() (
   @Named("default")
   underlying: TaxCodeHistoryConnector,
-  cachingConnector: CachingConnector
+  cachingConnector: CachingConnector,
+  sensitiveFormatService: SensitiveFormatService
 ) extends TaxCodeHistoryConnector {
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
       underlying.taxCodeHistory(nino, year)
-    }
+    }(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory], implicitly)
 
 }
 
@@ -62,7 +65,7 @@ class DefaultTaxCodeHistoryConnector @Inject() (
         HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
         HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
         "CorrelationId"        -> UUID.randomUUID().toString,
-        "OriginatorId"         -> ifConfig.originatorId
+        "originator-id"        -> ifConfig.originatorId
       )
     else
       Seq(

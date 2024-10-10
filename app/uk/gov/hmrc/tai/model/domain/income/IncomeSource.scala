@@ -16,6 +16,19 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
+import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.tai.model.domain.Employment
 
 case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
+
+object IncomeSource {
+  /*
+    The Hip toggle only affects the Reads. We only require the Writes
+    here therefore we can safely import TaxCodeIncomeSquidReads.
+   */
+  implicit val incomeSourceFormat: Writes[IncomeSource] = {
+    import TaxCodeIncomeSquidReads._
+    Json.format[IncomeSource]
+  }
+
+}

@@ -1,0 +1,19 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "taxCode": "1150L",
+      "allowances": [
+        {
+          "npsDescription": "personal allowance",
+          "amount": 10,
+          "type": 11,
+          "sourceAmount": 100
+        }
+      ]
+    }
+  ]
+}

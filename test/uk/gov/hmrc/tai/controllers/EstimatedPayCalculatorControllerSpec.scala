@@ -17,11 +17,11 @@
 package uk.gov.hmrc.tai.controllers
 
 import java.time.LocalDate
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.PayDetails
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -49,7 +49,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
     }
   }
 
-  private def createSUT(authentication: AuthenticationPredicate = loggedInAuthenticationPredicate) =
+  private def createSUT(authentication: AuthJourney = loggedInAuthenticationAuthJourney) =
     new EstimatedPayCalculatorController(authentication, cc)
 
   val date = LocalDate.of(2017, 4, 14)
@@ -65,7 +65,7 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
   private val testCalculation = EstimatedPayCalculator.calculate(payDetails)
 
-  private def createRequest[T](payload: T)(implicit w: Writes[T]) = FakeRequest(
+  private def createRequest[T](payload: T)(implicit w: Writes[T]): FakeRequest[JsValue] = FakeRequest(
     "POST",
     "/",
     FakeHeaders(Seq("Content-type" -> "application/json")),

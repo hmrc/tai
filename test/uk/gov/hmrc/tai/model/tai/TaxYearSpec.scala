@@ -16,12 +16,60 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.tai.TaxYear.{formatTaxYear, taxYearHodReads}
+
+import java.time.LocalDate
 
 class TaxYearSpec extends PlaySpec {
 
+  "taxYearHodReads" must {
+    "Format a valid tax year string from rti" in {
+      val rtiTaxYearJsVal = JsString("16-17")
+      rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016)
+    }
+
+    "Thrwo an error when encountering an invalid tax year string" in {
+      val rtiTaxYearJsVal = JsString("16-")
+      an[IllegalArgumentException] mustBe thrownBy(rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016))
+    }
+  }
+
+  "formatTaxYear writes" must {
+    "write valid json form a TaxYear instance" in {
+      Json.toJson(TaxYear(2015))(TaxYear.formatTaxYear) mustBe JsNumber(2015)
+    }
+  }
+
   "TaxYear" must {
+    "un-marshall Tax year Json" when {
+      "given a TaxYear object" in {
+        Json.toJson(TaxYear(2017)) mustBe JsNumber(2017)
+      }
+    }
+
+    "marshall valid TaxYear object" when {
+      "given a valid json value" in {
+        JsNumber(2017).as[TaxYear] mustBe TaxYear(2017)
+      }
+    }
+
+    "deserialise a Tax Year" when {
+      "given the correct Json type" in {
+        formatTaxYear.reads(JsNumber(2017)) mustBe JsSuccess(TaxYear(2017))
+      }
+    }
+
+    "return as JsError" when {
+      "given the wrong Json type" in {
+        formatTaxYear.reads(JsString("2017")) mustBe JsError("Expected JsNumber, found \"2017\"")
+      }
+    }
+
+    "serialise a TaxYear instance" in {
+      formatTaxYear.writes(TaxYear(2017)) mustBe JsNumber(2017)
+    }
 
     "choose the correct year value" when {
 
@@ -133,4 +181,5 @@ class TaxYearSpec extends PlaySpec {
       TaxYear("17") mustBe TaxYear(2017)
     }
   }
+
 }

@@ -1,0 +1,34 @@
+{
+  "totalLiability": {
+    "nonSavings": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    },
+    "untaxedInterest": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    },
+    "bankInterest": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    },
+    "ukDividends": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    },
+    "foreignInterest": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    },
+    "foreignDividends": {
+      "allowReliefDeducts": {
+        "amount": 100
+      }
+    }
+  }
+}

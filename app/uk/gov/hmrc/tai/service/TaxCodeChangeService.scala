@@ -119,7 +119,9 @@ class TaxCodeChangeServiceImpl @Inject() (
         unconfirmedTaxCodes.map(income => sanitizeCode(income.taxCode, income.basisOperation))
 
       val confirmedTaxCodeList: Seq[String] =
-        confirmedTaxCodes.current.map(income => sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation)))
+        confirmedTaxCodes.current.map { income =>
+          sanitizeCode(income.taxCode, BasisOperation(income.basisOfOperation))
+        }
 
       logger.debug(s"Unconfirmed tax codes \n $unconfirmedTaxCodeList")
       logger.debug(s"Confirmed tax codes \n $confirmedTaxCodeList")

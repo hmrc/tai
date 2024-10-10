@@ -17,26 +17,27 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import cats.effect.unsafe.implicits.global
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.google.inject.{Inject, Singleton}
-import play.api.{Logger, Logging}
 import play.api.http.Status._
 import play.api.libs.json.Format
 import play.api.mvc.Request
+import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpException, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits.{readEitherOf, readRaw}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpException, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
 import uk.gov.hmrc.tai.util.LockedException
 
@@ -73,9 +74,10 @@ class CachingRtiConnector @Inject() (
   @Named("default") underlying: RtiConnector,
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
-  appConfig: RtiConfig
+  appConfig: RtiConfig,
+  sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
-    extends RtiConnector with EmploymentMongoFormatters with Logging {
+    extends RtiConnector with Logging {
 
   private def cache[L, A: Format](
     key: String
@@ -139,19 +141,18 @@ class CachingRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]], implicitly)
 }
 
 @Singleton
 class DefaultRtiConnector @Inject() (
-  httpClient: HttpClient,
+  httpClientV2: HttpClientV2,
   rtiConfig: DesConfig,
   urls: RtiUrls,
   featureFlagService: FeatureFlagService
 )(implicit ec: ExecutionContext)
     extends RtiConnector {
-
-  val logger = Logger(this.getClass)
+  val logger: Logger = Logger(this.getClass)
 
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -166,16 +167,19 @@ class DefaultRtiConnector @Inject() (
       if (toggle.isEnabled && taxYear.year < TaxYear().next.year) {
         logger.info(s"RTIAPI - call for the year: $taxYear}")
         val ninoWithoutSuffix = withoutSuffix(nino)
-        val futureResponse =
-          httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](
-            url = urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear),
-            headers = createHeader(rtiConfig)
+
+        val futureResponse: Future[Either[UpstreamErrorResponse, HttpResponse]] = httpClientV2
+          .get(url"${urls.paymentsForYearUrl(ninoWithoutSuffix, taxYear)}")(
+            hc.withExtraHeaders(createHeader(rtiConfig): _*)
           )
+          .transform(_.withRequestTimeout(rtiConfig.timeoutInMilliseconds.milliseconds))
+          .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+
         EitherT(
           futureResponse
             .map {
               case Right(httpResponse) =>
-                Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+                Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
               case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
                 Right(Seq.empty)
               case Left(error) =>

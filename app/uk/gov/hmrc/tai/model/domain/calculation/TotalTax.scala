@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain.calculation
 
+import play.api.Logging
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.domain.taxAdjustments.TaxAdjustment
 
@@ -29,7 +30,7 @@ case class TaxBand(
   rate: BigDecimal
 )
 
-object TaxBand {
+object TaxBand extends Logging {
   implicit val formats: OFormat[TaxBand] = Json.format[TaxBand]
 }
 

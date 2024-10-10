@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
 case class Adjustment(`type`: AdjustmentType, amount: BigDecimal)
 
 object Adjustment {
-  implicit val format: OFormat[Adjustment] = Json.format[Adjustment]
+  implicit val format: Format[Adjustment] = Json.format[Adjustment]
 }

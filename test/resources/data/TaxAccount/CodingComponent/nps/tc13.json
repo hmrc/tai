@@ -1,0 +1,21 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 120.22,
+            "npsDescription": "Something with no type declared",
+            "employmentId": 13,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": []
+      }
+    }
+  }
+}

@@ -60,6 +60,7 @@ class DesConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("des-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("des-hod.da-pta.originatorId", "")
   lazy val originatorId: String = servicesConfig.getConfString("des-hod.originatorId", "")
+  lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("des-hod.timeoutInMilliseconds", 1000)
 }
 
 @Singleton
@@ -82,12 +83,24 @@ class NpsConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wi
 }
 
 @Singleton
+class HipConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig with HodConfig {
+  lazy val path: String = servicesConfig.getConfString("hip-hod.path", "")
+
+  override lazy val baseURL: String = s"${servicesConfig.baseUrl("hip-hod")}$path"
+  override lazy val environment = ""
+  override lazy val authorization = ""
+  override lazy val originatorId: String = servicesConfig.getConfString("hip-hod.originatorId", "local")
+  lazy val clientId: String = servicesConfig.getConfString("hip-hod.clientId", "local")
+  lazy val clientSecret: String = servicesConfig.getConfString("hip-hod.clientSecret", "local")
+}
+
+@Singleton
 class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   lazy val mongoEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("cache.isEnabled").getOrElse(false)
   lazy val mongoEncryptionEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("mongo.encryption.enabled").getOrElse(true)
   lazy val mongoTTL: Int = runModeConfiguration.getOptional[Int]("tai.cache.expiryInSeconds").getOrElse(900)
-  lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInSeconds").getOrElse(20)
+  lazy val mongoLockTTL: Int = runModeConfiguration.getOptional[Int]("mongo.lock.expiryInMilliseconds").getOrElse(1200)
   lazy val mongoTTLUpdateIncome: Int =
     runModeConfiguration.getOptional[Int]("tai.cache.updateIncome.expiryInSeconds").getOrElse(3600 * 48)
 }
@@ -102,4 +115,9 @@ class RtiConfig @Inject() () extends BaseConfig {
 class CacheMetricsConfig @Inject() (val runModeConfiguration: Configuration) extends BaseConfig {
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
+}
+
+@Singleton
+class PertaxConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
+  val pertaxUrl = servicesConfig.baseUrl("pertax")
 }

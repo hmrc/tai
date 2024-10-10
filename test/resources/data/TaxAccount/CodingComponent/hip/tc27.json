@@ -1,0 +1,48 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "Service Benefit (033)"
+          },
+          {
+            "amount": 1,
+            "type": "Taxable Expenses Benefit (034)"
+          },
+          {
+            "amount": 1,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 3,
+            "type": "Benefit in Kind (028)",
+            "employmentSequenceNumber": 1
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": []
+      }
+    }
+  }
+}

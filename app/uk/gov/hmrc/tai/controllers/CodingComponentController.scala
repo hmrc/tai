@@ -23,9 +23,9 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
-import uk.gov.hmrc.tai.model.domain.formatters.taxComponents.CodingComponentAPIFormatters
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
 import uk.gov.hmrc.tai.util.RequestQueryFilter
@@ -34,17 +34,17 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class CodingComponentController @Inject() (
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   codingComponentService: CodingComponentService,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with RequestQueryFilter with CodingComponentAPIFormatters {
+) extends BackendController(cc) with RequestQueryFilter {
 
   private val logger: Logger = Logger(getClass.getName)
 
-  def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
-    implicit request =>
+  def codingComponentsForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails.async { implicit request =>
       codingComponentService.codingComponents(nino, year) map { codingComponentList =>
         Ok(Json.toJson(ApiResponse(Json.toJson(codingComponentList)(Writes.seq(codingComponentWrites)), Nil)))
       } recover {
@@ -57,5 +57,5 @@ class CodingComponentController @Inject() (
         case e: Throwable =>
           throw e
       }
-  }
+    }
 }
