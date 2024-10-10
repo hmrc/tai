@@ -56,10 +56,9 @@ object TotalTaxHipReads extends Logging {
 
   val taxFreeAllowanceReads: Reads[BigDecimal] = (json: JsValue) => {
     val categoryNames = Seq("nonSavings", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
-    val totalLiability = (json \ "totalLiabilityDetails").as[JsValue]
     JsSuccess(
       categoryNames map (category =>
-        (totalLiability \ category \ "allowanceReliefDeductionsDetails" \ "amount")
+        (json \ "totalLiabilityDetails" \ category \ "allowanceReliefDeductionsDetails" \ "amount")
           .asOpt[BigDecimal] getOrElse BigDecimal(0)
       ) sum
     )
