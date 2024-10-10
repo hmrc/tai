@@ -42,6 +42,7 @@ import scala.io.Source
 
 class IncomeServiceHipToggleOnSpec extends BaseSpec {
   private val basePath = "test/resources/data/TaxAccount/IncomeService/hip/"
+
   private def readFile(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
     val bufferedSource = Source.fromFile(jsonFilePath)
@@ -49,6 +50,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
     bufferedSource.close()
     Json.parse(source)
   }
+
   private val etag = ETag("1")
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =

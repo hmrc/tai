@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{contentAsJson, status, _}
@@ -26,6 +25,7 @@ import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvide
 import uk.gov.hmrc.tai.service.PensionProviderService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PensionProviderControllerSpec extends BaseSpec {

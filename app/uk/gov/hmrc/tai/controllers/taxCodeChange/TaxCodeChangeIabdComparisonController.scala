@@ -24,8 +24,8 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
-import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 
 import scala.concurrent.ExecutionContext
 

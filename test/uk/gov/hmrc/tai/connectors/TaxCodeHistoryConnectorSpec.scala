@@ -76,7 +76,7 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   case class desIFToggle(name: String, toggleState: Boolean)
 
   "taxCodeHistory" when {
-    List(desIFToggle("IF", true), desIFToggle("DES", false)).foreach { toggle =>
+    List(desIFToggle("IF", toggleState = true), desIFToggle("DES", toggleState = false)).foreach { toggle =>
       lazy val url = if (toggle.toggleState) taxCodeChangeFromIfUrl else taxCodeChangeFromDesUrl
       lazy val authorizationToken = if (toggle.toggleState) "Bearer ifAuthorization" else "Bearer desAuthorization"
 

@@ -106,7 +106,7 @@ class MongoConfig @Inject() (val runModeConfiguration: Configuration) extends Ba
 }
 
 @Singleton
-class RtiConfig @Inject() () extends BaseConfig {
+class RtiConfig @Inject() extends BaseConfig {
   val hodRetryDelayInMillis: Int = 200
   val hodRetryMaximum: Int = 20
 }
@@ -119,5 +119,5 @@ class CacheMetricsConfig @Inject() (val runModeConfiguration: Configuration) ext
 
 @Singleton
 class PertaxConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
-  val pertaxUrl = servicesConfig.baseUrl("pertax")
+  val pertaxUrl: String = servicesConfig.baseUrl("pertax")
 }

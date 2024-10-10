@@ -16,17 +16,31 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import java.time.LocalDate
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tai.calculators.EstimatedPayCalculator
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.model.PayDetails
+import uk.gov.hmrc.tai.model.enums.PayFreq
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
+
 class EstimatedPayCalculatorControllerSpec extends BaseSpec {
+
+  val date: LocalDate = LocalDate.of(2017, 4, 14)
+
+  private val payDetails = PayDetails(
+    PayFreq.monthly,
+    Some(1000),
+    Some(500),
+    Some(4),
+    Some(10000),
+    Some(date)
+  )
+
+  private val testCalculation = EstimatedPayCalculator.calculate(payDetails)
 
   "Estimated pay calculator controller" must {
     "return an OK response with CalculatedPay json" when {
@@ -51,19 +65,6 @@ class EstimatedPayCalculatorControllerSpec extends BaseSpec {
 
   private def createSUT(authentication: AuthJourney = loggedInAuthenticationAuthJourney) =
     new EstimatedPayCalculatorController(authentication, cc)
-
-  val date = LocalDate.of(2017, 4, 14)
-
-  private val payDetails = PayDetails(
-    PayFreq.monthly,
-    Some(1000),
-    Some(500),
-    Some(4),
-    Some(10000),
-    Some(date)
-  )
-
-  private val testCalculation = EstimatedPayCalculator.calculate(payDetails)
 
   private def createRequest[T](payload: T)(implicit w: Writes[T]): FakeRequest[JsValue] = FakeRequest(
     "POST",

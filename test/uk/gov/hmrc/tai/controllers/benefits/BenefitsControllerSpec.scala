@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
@@ -158,5 +158,5 @@ class BenefitsControllerSpec extends BaseSpec {
     }
   }
 
-  def randomNino = new Generator(new Random).nextNino
+  def randomNino: Nino = new Generator(new Random).nextNino
 }

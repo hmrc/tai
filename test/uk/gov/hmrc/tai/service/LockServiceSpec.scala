@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+
 class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lock] {
 
   implicit override lazy val app: Application =

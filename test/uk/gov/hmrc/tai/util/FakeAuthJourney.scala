@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Request, Result}
+import play.api.mvc._
 import play.api.test.Helpers
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.auth.{AuthJourney, AuthenticatedRequest}
@@ -36,6 +36,8 @@ object FakeAuthJourney extends AuthJourney {
 
 trait ActionBuilderFixture extends ActionBuilder[AuthenticatedRequest, AnyContent] {
   override def invokeBlock[A](a: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result]
+
   override def parser: BodyParser[AnyContent] = Helpers.stubBodyParser()
+
   override protected def executionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }

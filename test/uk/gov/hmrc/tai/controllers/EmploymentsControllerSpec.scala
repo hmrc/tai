@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.controllers
 
 import cats.data.EitherT
-
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -26,16 +24,17 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, Employments, EndEmployment, IncorrectEmployment}
+import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class EmploymentsControllerSpec extends BaseSpec {
 
-  val emp =
+  val emp: Employment =
     Employment(
       "company name",
       Live,
@@ -47,8 +46,8 @@ class EmploymentsControllerSpec extends BaseSpec {
       "",
       2,
       Some(100),
-      false,
-      true
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = true
     )
 
   val mockEmploymentService: EmploymentService = mock[EmploymentService]

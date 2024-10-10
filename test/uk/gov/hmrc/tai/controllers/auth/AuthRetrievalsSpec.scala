@@ -20,13 +20,13 @@ import org.mockito.ArgumentMatchers._
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.mvc.Results.Ok
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.tai.util.RetrievalOps.Ops
 import uk.gov.hmrc.tai.util.{BaseSpec, EqualsAuthenticatedRequest}
 
@@ -40,10 +40,12 @@ class AuthRetrievalsSpec extends BaseSpec {
   private val mockAuthConnector: AuthConnector = mock[AuthConnector]
   private lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
   type retrievalsType = Option[String] ~ Option[TrustedHelper]
+
   private object Stubs {
     @nowarn("msg=parameter request in method successBlock is never used")
     def successBlock(request: AuthenticatedRequest[_]): Future[Result] = Future.successful(Ok(""))
   }
+
   private val testRequest = FakeRequest("GET", "/paye/benefits/medical-benefit")
 
   val authAction = new AuthRetrievalsImpl(mockAuthConnector, mcc)

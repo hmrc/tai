@@ -59,6 +59,7 @@ class JourneyCacheController @Inject() (
         } recover { case _ =>
           InternalServerError
         }
+
       journeyName match {
         case "update-income" => getCache(CacheId.noSession(request.nino))
         case _               => getCache(CacheId(request.nino))
@@ -75,6 +76,7 @@ class JourneyCacheController @Inject() (
             InternalServerError
           }
         }
+
       journeyName match {
         case "update-income" => getCache(CacheId.noSession(request.nino))
         case _               => getCache(CacheId(request.nino))

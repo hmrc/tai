@@ -32,6 +32,46 @@ import scala.concurrent.Future
 
 class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
 
+  val reliefsGivingBackTax: Option[TaxAdjustment] = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100)))
+  )
+  val otherTaxDue: Option[TaxAdjustment] = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
+  val alreadyTaxedAtSource: Option[TaxAdjustment] = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100)))
+  )
+  val taxReliefComponents: Option[TaxAdjustment] = Some(
+    TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100)))
+  )
+
+  val totalTax: TotalTax = TotalTax(
+    BigDecimal(1000),
+    Seq(
+      IncomeCategory(
+        UkDividendsIncomeCategory,
+        10,
+        20,
+        30,
+        Seq(
+          TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
+          TaxBand(
+            bandType = "B",
+            code = "BR",
+            income = 10000,
+            tax = 500,
+            lowerBand = Some(5000),
+            upperBand = Some(20000),
+            rate = 10
+          )
+        )
+      )
+    ),
+    reliefsGivingBackTax,
+    otherTaxDue,
+    alreadyTaxedAtSource,
+    None,
+    taxReliefComponents
+  )
+
   "totalTax" must {
     "return the total tax details for the given year" in {
       val mockTotalTaxService = mock[TotalTaxService]
@@ -150,42 +190,6 @@ class TotalTaxControllerSpec extends BaseSpec with NpsExceptions {
       }
     }
   }
-
-  val reliefsGivingBackTax = Some(
-    TaxAdjustment(100, Seq(TaxAdjustmentComponent(EnterpriseInvestmentSchemeRelief, 100)))
-  )
-  val otherTaxDue = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(ExcessGiftAidTax, 100))))
-  val alreadyTaxedAtSource = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(TaxOnBankBSInterest, 100))))
-  val taxReliefComponents = Some(TaxAdjustment(100, Seq(TaxAdjustmentComponent(PersonalPensionPaymentRelief, 100))))
-
-  val totalTax = TotalTax(
-    BigDecimal(1000),
-    Seq(
-      IncomeCategory(
-        UkDividendsIncomeCategory,
-        10,
-        20,
-        30,
-        Seq(
-          TaxBand(bandType = "", code = "", income = 0, tax = 0, lowerBand = None, upperBand = None, rate = 0),
-          TaxBand(
-            bandType = "B",
-            code = "BR",
-            income = 10000,
-            tax = 500,
-            lowerBand = Some(5000),
-            upperBand = Some(20000),
-            rate = 10
-          )
-        )
-      )
-    ),
-    reliefsGivingBackTax,
-    otherTaxDue,
-    alreadyTaxedAtSource,
-    None,
-    taxReliefComponents
-  )
 
   private def createSUT(
     totalTaxService: TotalTaxService,

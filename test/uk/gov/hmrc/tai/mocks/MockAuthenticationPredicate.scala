@@ -17,9 +17,9 @@
 package uk.gov.hmrc.tai.mocks
 
 import org.mockito.ArgumentMatchers.any
-import org.scalatest._
 import org.mockito.MockitoSugar
-import play.api.mvc.{ActionBuilder, AnyContent, ControllerComponents, Request, Result}
+import org.scalatest._
+import play.api.mvc._
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
@@ -64,12 +64,13 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
     reset(mockAuthService)
     setupMockAuthRetrievalSuccess(testAuthSuccessResponse)
   }
+
   override protected def afterEach(): Unit = super.afterEach()
 
   def setupMockAuthRetrievalSuccess[X, Y](retrievalValue: X ~ Y): Unit =
     when(mockAuthService.authorised(any()))
       .thenReturn(new mockAuthService.AuthorisedFunction(EmptyPredicate) {
-        override def retrieve[A](retrieval: Retrieval[A]) =
+        override def retrieve[A](retrieval: Retrieval[A]): mockAuthService.AuthorisedFunctionWithResult[A] =
           new mockAuthService.AuthorisedFunctionWithResult[A](EmptyPredicate, retrieval) {
             override def apply[B](body: A => Future[B])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[B] =
               body.apply(retrievalValue.asInstanceOf[A])

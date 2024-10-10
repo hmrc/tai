@@ -24,7 +24,6 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.config.PertaxConfig
-import uk.gov.hmrc.tai.connectors.HttpClientResponse
 import uk.gov.hmrc.tai.model.PertaxResponse
 
 import scala.concurrent.{ExecutionContext, Future}
