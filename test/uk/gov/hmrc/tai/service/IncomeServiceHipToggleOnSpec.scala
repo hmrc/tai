@@ -26,7 +26,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
@@ -42,6 +42,7 @@ import scala.io.Source
 
 class IncomeServiceHipToggleOnSpec extends BaseSpec {
   private val basePath = "test/resources/data/TaxAccount/IncomeService/hip/"
+
   private def readFile(fileName: String): JsValue = {
     val jsonFilePath = basePath + fileName
     val bufferedSource = Source.fromFile(jsonFilePath)
@@ -49,6 +50,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
     bufferedSource.close()
     Json.parse(source)
   }
+
   private val etag = ETag("1")
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =

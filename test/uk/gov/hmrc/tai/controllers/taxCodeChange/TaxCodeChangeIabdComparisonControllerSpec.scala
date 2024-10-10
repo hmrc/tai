@@ -32,6 +32,13 @@ import scala.util.Random
 
 class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
 
+  private def ninoGenerator = new Generator(new Random).nextNino
+
+  private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
+
+  val testController =
+    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationAuthJourney, cc)
+
   "taxCodeChangeIabdComparison" must {
     "respond with OK" when {
       "when given a valid Nino" in {
@@ -90,12 +97,5 @@ class TaxCodeChangeIabdComparisonControllerSpec extends BaseSpec {
       }
     }
   }
-
-  private def ninoGenerator = new Generator(new Random).nextNino
-
-  private val taxFreeAmountComparisonService = mock[TaxFreeAmountComparisonService]
-
-  val testController =
-    new TaxCodeChangeIabdComparisonController(taxFreeAmountComparisonService, loggedInAuthenticationPredicate, cc)
 
 }

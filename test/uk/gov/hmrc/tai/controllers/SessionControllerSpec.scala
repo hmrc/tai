@@ -27,7 +27,7 @@ import scala.concurrent.Future
 class SessionControllerSpec extends BaseSpec {
 
   private def createSUT(sessionRepository: SessionRepository) =
-    new SessionController(sessionRepository, loggedInAuthenticationPredicate, cc)
+    new SessionController(sessionRepository, loggedInAuthenticationAuthJourney, cc)
 
   val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
