@@ -89,8 +89,8 @@ class IabdServiceSpec extends BaseSpec {
           Json.obj(
             "nationalInsuranceNumber" -> "BR5600244",
             "taxYear"                 -> 2017,
-            "type"                    -> "Balancing Charge (010)",
-            "source"                  -> "TELEPHONE CALL",
+            "type"                    -> "Balancing Charge (027)",
+            "source"                  -> "Annual Coding",
             "grossAmount"             -> JsNull,
             "receiptDate"             -> JsNull,
             "captureDate"             -> "2017-04-10",
@@ -124,6 +124,14 @@ class IabdServiceSpec extends BaseSpec {
 
         result mustBe Seq(
           IabdDetails(
+            Some("BR5600244"),
+            None,
+            Some(26),
+            Some(27),
+            None,
+            Some(LocalDate.parse("2017-04-10"))
+          ),
+          IabdDetails(
             Some("KX8600231"),
             Some(2),
             Some(17),
@@ -134,6 +142,7 @@ class IabdServiceSpec extends BaseSpec {
         )
       }
     }
+
 //
 //    "return an empty sequence of IabdDetails" when {
 //      "provided with next tax year" in {
