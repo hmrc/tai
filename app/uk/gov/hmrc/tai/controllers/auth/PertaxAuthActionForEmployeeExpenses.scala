@@ -21,9 +21,9 @@ import play.api.Logging
 import play.api.http.Status.UNAUTHORIZED
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
-import uk.gov.hmrc.benefits.connectors.PertaxConnector
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.tai.connectors.PertaxConnector
 import uk.gov.hmrc.tai.model.PertaxResponse
 
 import scala.concurrent.{ExecutionContext, Future}

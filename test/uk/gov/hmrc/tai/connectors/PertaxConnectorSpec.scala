@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, ok, post, url
 import play.api.Application
 import play.api.http.Status.{UNAUTHORIZED, _}
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.benefits.connectors.PertaxConnector
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.tai.model.PertaxResponse
 import uk.gov.hmrc.tai.util.{BaseSpec, WireMockHelper}

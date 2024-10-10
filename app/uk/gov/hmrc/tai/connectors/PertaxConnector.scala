@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.benefits.connectors
+package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
 import com.google.inject.Inject

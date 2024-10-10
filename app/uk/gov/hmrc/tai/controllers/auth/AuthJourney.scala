@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder}
-import uk.gov.hmrc.benefits.controllers.auth.PertaxAuthAction
 
 @ImplementedBy(classOf[AuthJourneyImpl])
 trait AuthJourney {

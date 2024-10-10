@@ -23,9 +23,8 @@ import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, UN
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.benefits.connectors.PertaxConnector
-import uk.gov.hmrc.benefits.controllers.auth.PertaxAuthAction
 import uk.gov.hmrc.http.UpstreamErrorResponse
+import uk.gov.hmrc.tai.connectors.PertaxConnector
 import uk.gov.hmrc.tai.model.PertaxResponse
 import uk.gov.hmrc.tai.util.BaseSpec
 
