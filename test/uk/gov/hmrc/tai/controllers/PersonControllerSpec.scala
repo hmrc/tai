@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.NotFoundException
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.service.PersonService
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -94,8 +94,8 @@ class PersonControllerSpec extends BaseSpec {
   )
 
   private def createSUT(
-    authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
+    authJourney: AuthJourney = loggedInAuthenticationAuthJourney,
     personService: PersonService = mock[PersonService]
   ) =
-    new PersonController(authenticationPredicate, personService, cc)
+    new PersonController(authJourney, personService, cc)
 }
