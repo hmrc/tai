@@ -1,0 +1,22 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 120.22,
+            "type": 55,
+            "npsDescription": "An example job expenses allowance",
+            "employmentId": 13,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": []
+      }
+    }
+  }
+}

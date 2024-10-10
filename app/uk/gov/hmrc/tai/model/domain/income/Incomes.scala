@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.tai.model.domain.NonTaxCodeIncomeComponentType
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain._
 
 case class UntaxedInterest(
   incomeComponentType: NonTaxCodeIncomeComponentType,
@@ -53,5 +53,12 @@ object NonTaxCodeIncome {
 case class Incomes(taxCodeIncomes: Seq[TaxCodeIncome], nonTaxCodeIncomes: NonTaxCodeIncome)
 
 object Incomes {
-  implicit val format: Format[Incomes] = Json.format[Incomes]
+  /*
+    The Hip toggle only affects the Reads. We only require the Writes
+    here therefore we can safely import TaxCodeIncomeSquidReads.
+   */
+  implicit val format: Format[Incomes] = {
+    import TaxCodeIncomeSquidReads.reads
+    Json.format[Incomes]
+  }
 }

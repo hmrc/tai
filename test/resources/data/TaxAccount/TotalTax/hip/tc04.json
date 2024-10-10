@@ -1,0 +1,97 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "amount": 1000.14,
+        "type": "",
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 1000.12,
+      "totalTaxableIncome": 1000.13,
+      "taxBandDetails": [
+        {
+          "bandType": "PSR",
+          "taxCode": "BR",
+          "income": 500,
+          "upperBand": 5000,
+          "rate": 0
+        },
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 1000,
+          "tax": 100,
+          "upperBand": 10000,
+          "rate": 10
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D1",
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 10000,
+          "upperBand": 30000,
+          "rate": 15
+        }
+      ]
+    },
+    "untaxedInterest": {},
+    "bankInterest": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "ukDividends": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      },
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 10000,
+          "tax": 1000,
+          "lowerBand": 5000,
+          "upperBand": 20000,
+          "rate": 10
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D1",
+          "income": 30000,
+          "tax": 6000,
+          "lowerBand": 20000,
+          "upperBand": 50000,
+          "rate": 20
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D2",
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 50000,
+          "rate": 20
+        }
+      ]
+    },
+    "foreignInterest": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignDividends": {
+      "totalIncomeDetails": {
+        "amount": 1000.25,
+        "type": "",
+        "summaryIABDDetailsList": []
+      },
+      "totalTax": 1000.23,
+      "totalTaxableIncome": 1000.24
+    }
+  }
+}

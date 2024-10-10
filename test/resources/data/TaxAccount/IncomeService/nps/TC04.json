@@ -1,0 +1,22 @@
+{
+  "taxAccountId": "id",
+  "nino": "AY268824A",
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 100,
+            "type": 70,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": []
+      }
+    }
+  }
+}

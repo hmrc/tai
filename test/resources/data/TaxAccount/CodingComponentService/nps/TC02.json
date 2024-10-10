@@ -1,0 +1,78 @@
+{
+  "taxAccountId": 7,
+  "date": "02/08/2018",
+  "nino": "GM132187D",
+  "noCYEmployment": false,
+  "taxYear": "TaxYear(2024)",
+  "previousTaxAccountId": 6,
+  "previousYearTaxAccountId": 1,
+  "nextTaxAccountId": null,
+  "nextYearTaxAccountId": null,
+  "totalEstTax": 16956,
+  "inYearCalcResult": 1,
+  "inYearCalcAmount": 0,
+  "totalLiability": {},
+  "incomeSources": [
+    {
+      "employmentId": 1,
+      "employmentType": 1,
+      "employmentStatus": 1,
+      "employmentTaxDistrictNumber": 754,
+      "employmentPayeRef": "employmentPayeRef",
+      "pensionIndicator": false,
+      "otherIncomeSourceIndicator": false,
+      "jsaIndicator": false,
+      "name": "incomeSourceName",
+      "taxCode": "1035L",
+      "basisOperation": 1,
+      "potentialUnderpayment": null,
+      "totalInYearAdjustment": 0,
+      "inYearAdjustmentIntoCY": 0,
+      "inYearAdjustmentIntoCYPlusOne": 0,
+      "inYearAdjustmentFromPreviousYear": 0,
+      "actualPUPCodedInCYPlusOneTaxYear": 0,
+      "allowances": [
+        {
+          "npsDescription": "Personal Allowance",
+          "amount": 11850,
+          "type": 11,
+          "iabdSummaries": [
+            {
+              "amount": 11850,
+              "type": 118,
+              "npsDescription": "Personal Allowance (PA)",
+              "employmentId": null
+            }
+          ],
+          "sourceAmount": 11850
+        },
+        {
+          "npsDescription": "BR Difference Tax Reduction",
+          "amount": 10000,
+          "type": 34,
+          "iabdSummaries": null,
+          "sourceAmount": 10000
+        }
+      ],
+      "deductions": [
+        {
+          "npsDescription": "car benfit",
+          "amount": 2000,
+          "type": 8,
+          "iabdSummaries": [
+            {
+              "amount": 2000,
+              "type": 31,
+              "npsDescription": "Car Benefit",
+              "employmentId": 1,
+              "defaultEstimatedPay": null,
+              "estimatedPaySource": null
+            }
+          ],
+          "sourceAmount": 2000
+        }
+      ],
+      "payAndTax": {}
+    }
+  ]
+}

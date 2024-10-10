@@ -1,0 +1,105 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "taxCode": "1150L",
+      "allowancesDetails": [],
+      "deductionsDetails": [
+        {
+          "type": "Gift Aid Payments (001)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Gift Aid treated as paid in previous tax year (002)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "One off Gift Aid Payments (003)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Gift Aid after end of tax year (004)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Personal Pension Payments (005)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Gifts of Shares to Charity (017)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Retirement Annuity Payments (018)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Non-Coded Income (019)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Commission (020)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Other Income (Earned) (021)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Other Income (Not Earned) (022)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Part Time Earnings (023)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Tips (024)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Other Earnings (025)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Casual Earnings (026)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "New Estimated Pay (027)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Telephone (032)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        },
+        {
+          "type": "Accommodation (038)",
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 100
+        }
+      ]
+    }
+  ]
+}

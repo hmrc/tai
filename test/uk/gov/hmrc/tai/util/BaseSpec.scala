@@ -22,11 +22,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Injecting
 import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.stubControllerComponents
+import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.tai.connectors.cache.CacheId

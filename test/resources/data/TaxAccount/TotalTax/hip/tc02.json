@@ -1,0 +1,12 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {},
+    "untaxedInterest": {},
+    "bankInterest": {},
+    "ukDividends": {},
+    "foreignInterest": {},
+    "foreignDividends": {}
+  }
+}

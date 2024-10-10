@@ -20,11 +20,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
-import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-
-import scala.util.Random
 
 class TaxCodeMismatchSpec extends IntegrationSpec {
 
@@ -32,9 +29,10 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
     super.beforeEach()
 
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
-    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabdsJson)))
+    server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistoryJson)))
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+    server.stubFor(get(urlEqualTo(rtiUrl)).willReturn(ok(rtiJson)))
   }
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
@@ -52,7 +50,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
       List(500, 501, 502, 503, 504).foreach { status =>
         s"return $status when we receive $status downstream" in {
-          val nino = new Generator(new Random).nextNino
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
           val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
@@ -75,7 +72,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
 
       List(400, 401, 403, 409, 412).foreach { status =>
         s"return $status when we receive $status downstream" in {
-          val nino = new Generator(new Random).nextNino
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
           val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
@@ -97,7 +93,6 @@ class TaxCodeMismatchSpec extends IntegrationSpec {
       }
 
       "return 404 when we receive 404 from downstream" in {
-        val nino = new Generator(new Random).nextNino
         val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
         val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"

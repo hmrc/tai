@@ -20,10 +20,10 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax}
-import uk.gov.hmrc.tai.model.domain.formatters.{IncomeCategoryHodFormatters, TaxAccountSummaryHodFormatters}
+import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TotalTax, TotalTaxHipReads, TotalTaxSquidReads}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
+import uk.gov.hmrc.tai.util.JsonHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,13 +31,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class TotalTaxService @Inject() (
   taxAccountConnector: TaxAccountConnector,
   taxAccountHelper: TaxAccountHelper
-)(implicit ec: ExecutionContext)
-    extends IncomeCategoryHodFormatters with TaxAccountSummaryHodFormatters {
-
+)(implicit ec: ExecutionContext) {
   def totalTax(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TotalTax] = {
     val taxAccountDetails = taxAccountConnector.taxAccount(nino, year)
+
+    val reads = JsonHelper.selectReads(
+      TotalTaxSquidReads.incomeCategorySeqReads,
+      TotalTaxHipReads.incomeCategorySeqReads
+    )
+
     for {
-      incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](incomeCategorySeqReads))
+      incomeCategories     <- taxAccountDetails.map(_.as[Seq[IncomeCategory]](reads))
       totalTaxAmount       <- taxAccountHelper.totalEstimatedTax(nino, year)
       reliefsGivingBackTax <- taxAccountHelper.reliefsGivingBackTaxComponents(taxAccountDetails)
       otherTaxDue          <- taxAccountHelper.otherTaxDueComponents(taxAccountDetails)
@@ -55,8 +59,14 @@ class TotalTaxService @Inject() (
     )
   }
 
-  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] =
+  def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
+    val reads = JsonHelper
+      .selectReads(
+        TotalTaxSquidReads.taxFreeAllowanceReads,
+        TotalTaxHipReads.taxFreeAllowanceReads
+      )
     taxAccountConnector
       .taxAccount(nino, year)
-      .map(_.as[BigDecimal](taxFreeAllowanceReads))
+      .map(_.as[BigDecimal](reads))
+  }
 }

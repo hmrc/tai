@@ -1,0 +1,66 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": 7,
+  "date": "2018-08-02",
+  "isCurrentlyEmployed": false,
+  "taxYear": 2023,
+  "previousTaxAccountIdentifier": 6,
+  "previousYearTaxAccountIdentifier": 1,
+  "totalEstimatedTax": 16956,
+  "inYearCalculationsResult": 1,
+  "inYearCalculationAmount": 0,
+  "totalLiabilityDetails": {},
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Ceased",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "incomeSourceName",
+      "taxCode": "1035L",
+      "basisOfOperation": "Week1/Month1",
+      "totalInYearAdjustment": 0,
+      "totalInYearAdjustmentIntoCurrentYear": 0,
+      "totalInYearAdjustmentIntoNextYear": 0,
+      "totalInYearAdjustmentFromPreviousYear": 0,
+      "allowancesDetails": [
+        {
+          "type": "Loan Interest Amount (011)",
+          "sourceAmount": 11850,
+          "summaryIABDDetailsList": [],
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 11850,
+              "type": "Personal Allowance (PA) (118)"
+            }
+          ],
+          "adjustedAmount": 11850
+        },
+        {
+          "type": "Taxable Expenses Benefit (034)",
+          "sourceAmount": 10000,
+          "summaryIABDDetailsList": [],
+          "adjustedAmount": 10000
+        }
+      ],
+      "deductionsDetails": [
+        {
+          "type": "Employer Provided Services (008)",
+          "sourceAmount": 2000,
+          "summaryIABDDetailsList": [],
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 2000,
+              "type": "Car Benefit (031)",
+              "employmentSequenceNumber": 1
+            }
+          ],
+          "adjustedAmount": 2000
+        }
+      ],
+      "payAndTax": {}
+    }
+  ]
+}

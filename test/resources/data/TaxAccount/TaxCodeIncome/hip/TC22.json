@@ -1,0 +1,15 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": 1,
+  "taxYear": 2023,
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": true,
+      "taxCode": "1150L",
+      "payAndTax": {}
+    }
+  ]
+}

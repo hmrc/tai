@@ -22,6 +22,7 @@ import org.scalatestplus.play.PlaySpec
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json._
 import uk.gov.hmrc.tai.model.rti.RtiEyu
+import uk.gov.hmrc.tai.model.tai.TaxYear.formatTaxYear
 
 class JsonExtraSpec extends PlaySpec with MockitoSugar {
 

@@ -20,19 +20,23 @@ import com.google.inject.{Inject, Singleton}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.model.domain.formatters.IabdDetails
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
+import uk.gov.hmrc.tai.model.domain.response._
+import uk.gov.hmrc.tai.model.domain.{IabdDetails, IabdDetailsToggleOff, IabdDetailsToggleOn}
+import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.IabdTypeConstants
+import uk.gov.hmrc.tai.util.JsonHelper.selectIabdsReads
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class IabdService @Inject() (
   iabdConnector: IabdConnector
-)(implicit ec: ExecutionContext)
-    extends IabdTypeConstants {
+)(implicit ec: ExecutionContext) {
 
-  def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] =
+  def retrieveIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdDetails]] = {
+    val iabdReads = selectIabdsReads(IabdDetailsToggleOff.reads, IabdDetailsToggleOn.reads)
+
     iabdConnector
       .iabds(nino, year)
       .map { responseJson =>
@@ -40,7 +44,19 @@ class IabdService @Inject() (
         if (responseNotFound) {
           throw new NotFoundException(s"No iadbs found for year $year")
         }
-        responseJson.as[Seq[IabdDetails]]
+        responseJson.as[Seq[IabdDetails]](iabdReads).filter(_.`type`.contains(NewEstimatedPay.code))
       }
-      .map(_.filter(_.`type`.contains(NewEstimatedPay)))
+  }
+
+  def updateTaxCodeAmount(nino: Nino, taxYear: TaxYear, employmentId: Int, version: Int, amount: Int)(implicit
+    hc: HeaderCarrier,
+    request: AuthenticatedRequest[_]
+  ): Future[IncomeUpdateResponse] =
+    for {
+      updateAmountResult <-
+        iabdConnector.updateTaxCodeAmount(nino, taxYear, employmentId, version, NewEstimatedPay.code, amount)
+    } yield updateAmountResult match {
+      case HodUpdateSuccess => IncomeUpdateSuccess
+      case HodUpdateFailure => IncomeUpdateFailed(s"Hod update failed for ${taxYear.year} update")
+    }
 }

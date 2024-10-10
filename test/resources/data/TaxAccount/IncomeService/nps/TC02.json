@@ -1,0 +1,288 @@
+{
+  "taxAccountId": "id",
+  "nino": "AY268824A",
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 100,
+            "type": 19,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 20,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 21,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 22,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 23,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 24,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 25,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 26,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 62,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 63,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 64,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 65,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 66,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 67,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 68,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 69,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 70,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 71,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 72,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 74,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 75,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 76,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 77,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 78,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 79,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 80,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 81,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 82,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 83,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 84,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 85,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 86,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 87,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 88,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 89,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 94,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 116,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 123,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 100,
+            "type": 125,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": []
+      }
+    }
+  }
+}

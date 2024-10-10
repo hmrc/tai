@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import play.api.libs.json.{Format, Json, OFormat}
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.LocalDate
+import scala.util.matching.Regex
 
 case class Employment(
   name: String,
@@ -36,8 +38,6 @@ case class Employment(
   receivingOccupationalPension: Boolean
 ) {
 
-  lazy val latestAnnualAccount: Option[AnnualAccount] = if (annualAccounts.isEmpty) None else Some(annualAccounts.max)
-
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
     annualAccounts.exists(annualAccount =>
       annualAccount.realTimeStatus == TemporarilyUnavailable && annualAccount.taxYear == year
@@ -47,6 +47,16 @@ case class Employment(
 
   def annualAccountsForYear(year: TaxYear): Seq[AnnualAccount] = annualAccounts.filter(_.taxYear == year)
 
+}
+
+object Employment {
+  implicit val employmentFormat: Format[Employment] = Json.format[Employment]
+  private val numericWithLeadingZeros: Regex = """^([0]+)([1-9][0-9]*)""".r
+  def numberChecked(stringVal: String): String =
+    stringVal match {
+      case numericWithLeadingZeros(_, numeric) => numeric
+      case _                                   => stringVal
+    }
 }
 
 case class AddEmployment(

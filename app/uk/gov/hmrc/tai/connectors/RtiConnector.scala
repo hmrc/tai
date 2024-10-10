@@ -33,11 +33,11 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
+import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
 import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.formatters.{EmploymentHodFormatters, EmploymentMongoFormatters}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
-import uk.gov.hmrc.tai.service.LockService
+import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
 import uk.gov.hmrc.tai.util.LockedException
 
@@ -74,9 +74,10 @@ class CachingRtiConnector @Inject() (
   @Named("default") underlying: RtiConnector,
   sessionCacheRepository: TaiSessionCacheRepository,
   lockService: LockService,
-  appConfig: RtiConfig
+  appConfig: RtiConfig,
+  sensitiveFormatService: SensitiveFormatService
 )(implicit ec: ExecutionContext)
-    extends RtiConnector with EmploymentMongoFormatters with Logging {
+    extends RtiConnector with Logging {
 
   private def cache[L, A: Format](
     key: String
@@ -140,7 +141,7 @@ class CachingRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }
+    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]], implicitly)
 }
 
 @Singleton
@@ -178,7 +179,7 @@ class DefaultRtiConnector @Inject() (
           futureResponse
             .map {
               case Right(httpResponse) =>
-                Right(httpResponse.json.as[Seq[AnnualAccount]](EmploymentHodFormatters.annualAccountHodReads))
+                Right(httpResponse.json.as[Seq[AnnualAccount]](annualAccountHodReads))
               case Left(UpstreamErrorResponse(_, NOT_FOUND, _, _)) =>
                 Right(Seq.empty)
               case Left(error) =>

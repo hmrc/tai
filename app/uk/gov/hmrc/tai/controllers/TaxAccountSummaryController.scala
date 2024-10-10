@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.api.{ApiFormats, ApiResponse}
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
 import uk.gov.hmrc.tai.util.NpsExceptions
@@ -36,7 +36,7 @@ class TaxAccountSummaryController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with NpsExceptions with ControllerErrorHandler {
+) extends BackendController(cc) with NpsExceptions with ControllerErrorHandler {
 
   def taxAccountSummaryForYear(nino: Nino, year: TaxYear): Action[AnyContent] =
     authentication.authWithUserDetails.async { implicit request =>

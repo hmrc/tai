@@ -1,0 +1,91 @@
+{
+  "totalLiability": {
+    "nonSavings": {
+      "totalTax": 1000.12,
+      "totalTaxableIncome": 1000.13,
+      "totalIncome": {
+        "amount": 1000.14
+      },
+      "taxBands": [
+        {
+          "bandType": "PSR",
+          "taxCode": "BR",
+          "income": 500,
+          "tax": null,
+          "lowerBand": null,
+          "upperBand": 5000,
+          "rate": 0
+        },
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 1000,
+          "tax": 100,
+          "lowerBand": null,
+          "upperBand": 10000,
+          "rate": 10
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D1",
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 10000,
+          "upperBand": 30000,
+          "rate": 15
+        }
+      ]
+    },
+    "untaxedInterest": {},
+    "bankInterest": {
+      "totalTax": null,
+      "totalTaxableIncome": null,
+      "totalIncome": null,
+      "taxBands": null
+    },
+    "ukDividends": {
+      "totalIncome": {},
+      "taxBands": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "income": 10000,
+          "tax": 1000,
+          "lowerBand": 5000,
+          "upperBand": 20000,
+          "rate": 10
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D1",
+          "income": 30000,
+          "tax": 6000,
+          "lowerBand": 20000,
+          "upperBand": 50000,
+          "rate": 20
+        },
+        {
+          "bandType": "D",
+          "taxCode": "D2",
+          "income": 0,
+          "tax": 0,
+          "lowerBand": 50000,
+          "upperBand": null,
+          "rate": 20
+        }
+      ]
+    },
+    "foreignInterest": {
+      "totalIncome": {
+        "amount": null
+      }
+    },
+    "foreignDividends": {
+      "totalTax": 1000.23,
+      "totalTaxableIncome": 1000.24,
+      "totalIncome": {
+        "amount": 1000.25
+      }
+    }
+  }
+}

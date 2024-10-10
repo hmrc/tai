@@ -16,6 +16,12 @@
 
 package uk.gov.hmrc.tai.model
 
+import play.api.libs.json.{Format, Json}
+
 import java.time.LocalDate
 
 case class EmploymentUpdate(employmentId: Int, name: String, endDate: LocalDate)
+
+object EmploymentUpdate {
+  implicit val employmentUpdateFormat: Format[EmploymentUpdate] = Json.format[EmploymentUpdate]
+}

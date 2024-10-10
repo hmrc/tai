@@ -1,0 +1,113 @@
+{
+  "taxAccountId": "id",
+  "nino": "CB003400A",
+  "totalLiability": {
+    "nonSavings": {
+      "totalIncome": {
+        "iabdSummaries": [
+          {
+            "amount": 1,
+            "type": 14,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 15,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 16,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 17,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 18,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 55,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 56,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 57,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 58,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 59,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 60,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 61,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 90,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          },
+          {
+            "amount": 1,
+            "type": 102,
+            "npsDescription": "desc",
+            "employmentId": 1,
+            "estimatesPaySource": 1
+          }
+        ]
+      },
+      "allowReliefDeducts": {
+        "iabdSummaries": []
+      }
+    }
+  }
+}

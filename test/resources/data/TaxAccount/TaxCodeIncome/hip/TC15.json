@@ -1,0 +1,25 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "untaxedInterest": {
+      "totalTaxableIncome": 123
+    }
+  },
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentStatus": "Live",
+      "payeSchemeOperatorName": "Employer1",
+      "taxCode": "1150L",
+      "basisOfOperation": "Week1/Month1"
+    },
+    {
+      "employmentSequenceNumber": 2,
+      "employmentStatus": "Live",
+      "payeSchemeOperatorName": "Employer2",
+      "taxCode": "1100L",
+      "basisOfOperation": "Cumulative"
+    }
+  ]
+}

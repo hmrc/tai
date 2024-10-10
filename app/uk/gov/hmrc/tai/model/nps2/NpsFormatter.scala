@@ -164,7 +164,7 @@ trait NpsFormatter {
 
   implicit val formatIncome: Format[Income] = Format(
     new Reads[Income] {
-      def reads(json: JsValue) = {
+      def reads(json: JsValue): JsResult[Income] = {
         def getVal(name: String): Boolean = (json \ name).asOpt[Boolean].getOrElse(false)
 
         val iType =
@@ -191,48 +191,46 @@ trait NpsFormatter {
         }
       }
     },
-    new Writes[Income] {
-      def writes(v: Income) =
-        JsObject(
-          Seq(
-            "employmentId" -> v.employmentId
-              .map { x =>
-                JsNumber(x)
-              }
-              .getOrElse {
-                JsNull
-              },
-            "employmentType"              -> JsNumber(if (v.isPrimary) 1 else 2),
-            "employmentStatus"            -> JsNumber(v.status.code),
-            "employmentTaxDistrictNumber" -> v.taxDistrict.map(x => JsNumber(x)).getOrElse(JsNull),
-            "employmentPayeRef"           -> JsString(v.payeRef),
-            "pensionIndicator"            -> JsBoolean(v.incomeType == IncomeType.Pension),
-            "jsaIndicator"                -> JsBoolean(v.incomeType == IncomeType.JobSeekersAllowance),
-            "otherIncomeSourceIndicator"  -> JsBoolean(v.incomeType == IncomeType.OtherIncome),
-            "name"                        -> JsString(v.name),
-            "endDate" -> (v.status match {
-              case Income.Ceased(end) => Json.toJson(end)
-              case _                  => JsNull
-            }),
-            "worksNumber" -> v.worksNumber
-              .map {
-                JsString
-              }
-              .getOrElse {
-                JsNull
-              },
-            "taxCode"               -> JsString(v.taxCode),
-            "potentialUnderpayment" -> JsNumber(v.potentialUnderpayment),
-            "employmentRecord" -> v.employmentRecord
-              .map { x =>
-                Json.toJson(x)
-              }
-              .getOrElse {
-                JsNull
-              }
-          )
-        ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
-    }
+    (v: Income) =>
+      JsObject(
+        Seq(
+          "employmentId" -> v.employmentId
+            .map { x =>
+              JsNumber(x)
+            }
+            .getOrElse {
+              JsNull
+            },
+          "employmentType"              -> JsNumber(if (v.isPrimary) 1 else 2),
+          "employmentStatus"            -> JsNumber(v.status.code),
+          "employmentTaxDistrictNumber" -> v.taxDistrict.map(x => JsNumber(x)).getOrElse(JsNull),
+          "employmentPayeRef"           -> JsString(v.payeRef),
+          "pensionIndicator"            -> JsBoolean(v.incomeType == IncomeType.Pension),
+          "jsaIndicator"                -> JsBoolean(v.incomeType == IncomeType.JobSeekersAllowance),
+          "otherIncomeSourceIndicator"  -> JsBoolean(v.incomeType == IncomeType.OtherIncome),
+          "name"                        -> JsString(v.name),
+          "endDate" -> (v.status match {
+            case Income.Ceased(end) => Json.toJson(end)
+            case _                  => JsNull
+          }),
+          "worksNumber" -> v.worksNumber
+            .map {
+              JsString
+            }
+            .getOrElse {
+              JsNull
+            },
+          "taxCode"               -> JsString(v.taxCode),
+          "potentialUnderpayment" -> JsNumber(v.potentialUnderpayment),
+          "employmentRecord" -> v.employmentRecord
+            .map { x =>
+              Json.toJson(x)
+            }
+            .getOrElse {
+              JsNull
+            }
+        )
+      ) ++ v.basisOperation.fold(Json.obj())(x => Json.obj("basisOperation" -> x.toString))
   )
 
   implicit val formatNpsEmployment: Format[NpsEmployment] = (

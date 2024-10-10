@@ -1,0 +1,48 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "untaxedInterest": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "bankInterest": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "ukDividends": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignInterest": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    },
+    "foreignDividends": {
+      "allowanceReliefDeductionsDetails": {
+        "amount": 100,
+        "type": "",
+        "summaryIABDDetailsList": []
+      }
+    }
+  }
+}

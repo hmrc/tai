@@ -75,25 +75,27 @@ trait IntegrationSpec
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
 
-  override def fakeApplication(): Application =
-    GuiceApplicationBuilder()
-      .configure(
-        "microservice.services.auth.port"            -> server.port(),
-        "microservice.services.pertax.port"          -> server.port(),
-        "microservice.services.des-hod.port"         -> server.port(),
-        "microservice.services.des-hod.host"         -> "127.0.0.1",
-        "microservice.services.nps-hod.port"         -> server.port(),
-        "microservice.services.citizen-details.port" -> server.port(),
-        "microservice.services.nps-hod.host"         -> "127.0.0.1",
-        "microservice.services.if-hod.host"          -> "127.0.0.1",
-        "microservice.services.if-hod.port"          -> server.port(),
-        "auditing.enabled"                           -> false,
-        "cache.isEnabled"                            -> false
-      )
-      .overrides(
-        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
-      )
-      .build()
+  protected def guiceAppBuilder: GuiceApplicationBuilder = GuiceApplicationBuilder()
+    .configure(
+      "microservice.services.auth.port"            -> server.port(),
+      "microservice.services.pertax.port"          -> server.port(),
+      "microservice.services.des-hod.port"         -> server.port(),
+      "microservice.services.des-hod.host"         -> "127.0.0.1",
+      "microservice.services.nps-hod.port"         -> server.port(),
+      "microservice.services.citizen-details.port" -> server.port(),
+      "microservice.services.nps-hod.host"         -> "127.0.0.1",
+      "microservice.services.if-hod.host"          -> "127.0.0.1",
+      "microservice.services.if-hod.port"          -> server.port(),
+      "microservice.services.hip-hod.port"         -> server.port(),
+      "microservice.services.hip-hod.host"         -> "127.0.0.1",
+      "auditing.enabled"                           -> false,
+      "cache.isEnabled"                            -> false
+    )
+    .overrides(
+      bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
+    )
+
+  override def fakeApplication(): Application = guiceAppBuilder.build()
 
   val nino: Nino = new Generator(new Random).nextNino
   val year: Int = TaxYear().year
@@ -102,15 +104,21 @@ trait IntegrationSpec
 
   val cidEtagUrl = s"/citizen-details/$nino/etag"
   val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
+  val hipTaxAccountUrl = s"/v1/api/person/$nino/tax-account/$year"
   val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
+  val hipIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year"
   val desTaxCodeHistoryUrl = s"/individuals/tax-code-history/list/$nino/$year?endTaxYear=$year"
   val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
+  val hipEmploymentUrl = s"/v1/api/employment/employee/$nino/tax-year/$year/employment-details"
   val rtiUrl = s"/rti/individual/payments/nino/${nino.withoutSuffix}/tax-year/${TaxYear().twoDigitRange}"
 
   val taxAccountJson: String = FileHelper.loadFile("taxAccount.json")
-  val iabdsJson: String = FileHelper.loadFile("iabds.json")
+  val taxAccountHipJson: String = FileHelper.loadFile("taxAccountHip.json")
+  val npsIabdsJson: String = FileHelper.loadFile("iabdsNps.json")
+  val hipIabdsJson: String = FileHelper.loadFile("iabdsHip.json")
   val taxCodeHistoryJson: String = FileHelper.loadFile("taxCodeHistory.json")
   val employmentJson: String = FileHelper.loadFile("employment.json")
+  val employmentHipJson: String = FileHelper.loadFile("employment-hip.json")
   val rtiJson: String = FileHelper.loadFile("rti.json")
   val etagJson: JsValue = Json.parse(s"""
                                         |{

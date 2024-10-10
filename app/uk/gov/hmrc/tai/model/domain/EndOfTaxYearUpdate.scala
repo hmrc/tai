@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, JsSuccess, JsValue, Json, Reads}
+import uk.gov.hmrc.tai.model.domain.Payment.niFigure
+import uk.gov.hmrc.tai.model.tai.JsonExtra
 
 import java.time.LocalDate
 
@@ -26,5 +28,24 @@ case class EndOfTaxYearUpdate(date: LocalDate, adjustments: Seq[Adjustment]) ext
 }
 
 object EndOfTaxYearUpdate {
-  implicit val format: OFormat[EndOfTaxYearUpdate] = Json.format[EndOfTaxYearUpdate]
+  implicit val format: Format[EndOfTaxYearUpdate] = Json.format[EndOfTaxYearUpdate]
+
+  private[domain] val endOfTaxYearUpdateHodReads: Reads[EndOfTaxYearUpdate] = (json: JsValue) => {
+
+    val optionalAdjustmentAmountMap =
+      (json \ "optionalAdjustmentAmount").asOpt[Map[String, BigDecimal]].getOrElse(Map())
+
+    val rcvdDate = (json \ "rcvdDate").as[LocalDate]
+
+    val adjusts = Seq(
+      optionalAdjustmentAmountMap.get("TotalTaxDelta").map(Adjustment(TaxAdjustment, _)),
+      optionalAdjustmentAmountMap.get("TaxablePayDelta").map(Adjustment(IncomeAdjustment, _)),
+      niFigure(json).flatMap(_.get("EmpeeContribnsDelta")).map(Adjustment(NationalInsuranceAdjustment, _))
+    ).flatten.filter(_.amount != 0)
+
+    JsSuccess(EndOfTaxYearUpdate(rcvdDate, adjusts))
+  }
+
+  private implicit val stringMapFormat: Format[Map[String, BigDecimal]] =
+    JsonExtra.mapFormat[String, BigDecimal]("type", "amount")
 }

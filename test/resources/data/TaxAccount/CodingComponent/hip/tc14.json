@@ -1,0 +1,161 @@
+{
+  "nationalInsuranceNumber": "AA000003",
+  "taxAccountIdentifier": "id",
+  "taxYear": 2023,
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 1,
+            "type": "Employer Provided Services (008)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Car Fuel Benefit (029)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Car Benefit (031)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Telephone (032)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Service Benefit (033)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Taxable Expenses Benefit (034)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Van Benefit (035)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Van Fuel Benefit (036)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Beneficial Loan (037)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Accommodation (038)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Assets (039)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Asset Transfer (040)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Educational Services (041)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Entertaining (042)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Expenses (043)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Mileage (044)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Non-qualifying Relocation Expenses (045)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Nursery Places (046)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Other Items (047)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Payments on Employee's Behalf (048)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Personal Incidental Expenses (049)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Qualifying Relocation Expenses (050)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Employer Provided Professional Subscription (051)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Income Tax Paid but not deducted from Director's Remuneration (052)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Travel and Subsistence (053)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Vouchers and Credit Cards (054)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 1,
+            "type": "Non-Cash Benefit (117)",
+            "employmentSequenceNumber": 1
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "type": "",
+        "summaryIABDDetailsList": [],
+        "summaryIABDEstimatedPayDetailsList": []
+      }
+    }
+  }
+}
+

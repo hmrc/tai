@@ -23,7 +23,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.api.ApiFormats
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateExpensesRequest, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.expenses.EmployeeExpensesService
@@ -37,7 +36,7 @@ class EmployeeExpensesController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ApiFormats with ControllerErrorHandler {
+) extends BackendController(cc) with ControllerErrorHandler {
 
   def updateWorkingFromHomeExpenses(nino: Nino, year: TaxYear, iabd: Int): Action[JsValue] =
     callUpdateEmployeeExpensesData(nino, year, iabd, EmployeeExpensesController.workingFromHome)
