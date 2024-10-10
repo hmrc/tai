@@ -159,7 +159,8 @@ class EmploymentSpec extends PlaySpec {
     }
 
     "return false if annual accounts don't exist for a particular year" in {
-      val accounts = Seq(createAnnualAccount(Available, TaxYear(2019)), createAnnualAccount(Unavailable, TaxYear(2018)))
+      val accounts =
+        Seq(createAnnualAccount(Available, TaxYear(2019)), createAnnualAccount(TemporarilyUnavailable, TaxYear(2018)))
       val employmentWithAccount = singleEmploymentWithAllRefs.head.copy(annualAccounts = accounts)
 
       employmentWithAccount.hasAnnualAccountsForYear(taxYear) mustBe false
@@ -169,7 +170,7 @@ class EmploymentSpec extends PlaySpec {
   "annualAccountsForYear" must {
     "return all annual accounts for the request year" in {
       val expectedAccount1 = createAnnualAccount(Available)
-      val expectedAccount2 = createAnnualAccount(Unavailable)
+      val expectedAccount2 = createAnnualAccount(TemporarilyUnavailable)
       val expectedAccount3 = createAnnualAccount(TemporarilyUnavailable)
 
       val accounts =

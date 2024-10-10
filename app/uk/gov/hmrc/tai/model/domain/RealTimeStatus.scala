@@ -21,7 +21,6 @@ import play.api.libs.json.{Format, JsString, JsSuccess, JsValue}
 sealed trait RealTimeStatus
 case object Available extends RealTimeStatus
 case object TemporarilyUnavailable extends RealTimeStatus
-case object Unavailable extends RealTimeStatus
 
 object RealTimeStatus extends RealTimeStatus {
 
@@ -29,7 +28,7 @@ object RealTimeStatus extends RealTimeStatus {
     override def reads(json: JsValue): JsSuccess[RealTimeStatus] = json.as[String] match {
       case "Available"              => JsSuccess(Available)
       case "TemporarilyUnavailable" => JsSuccess(TemporarilyUnavailable)
-      case "Unavailable"            => JsSuccess(Unavailable)
+      case "Unavailable"            => JsSuccess(TemporarilyUnavailable)
       case _                        => throw new IllegalArgumentException("Invalid real time status value")
     }
 
