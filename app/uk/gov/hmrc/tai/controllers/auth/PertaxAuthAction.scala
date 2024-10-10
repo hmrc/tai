@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.benefits.controllers.auth
+package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
