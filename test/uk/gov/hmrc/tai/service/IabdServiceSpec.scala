@@ -44,34 +44,35 @@ class IabdServiceSpec extends BaseSpec {
         val iabdJson = Json.arr(
           Json.obj(
             "nationalInsuranceNumber" -> "BR5600244",
-            "taxYear"                 -> 2017,
-            "type"                    -> "Balancing Charge (010)",
-            "source"                  -> "TELEPHONE CALL",
-            "grossAmount"             -> JsNull,
-            "receiptDate"             -> JsNull,
-            "captureDate"             -> "2017-04-10",
-            "typeDescription"         -> "Total gift aid Payments",
-            "netAmount"               -> 100
+            "taxYear" -> 2017,
+            "type" -> "Balancing Charge (027)",
+            "source" -> "Annual Coding",
+            "grossAmount" -> JsNull,
+            "receiptDate" -> JsNull,
+            "captureDate" -> "2017-04-10",
+            "typeDescription" -> "Total gift aid Payments",
+            "netAmount" -> 100
           ),
           Json.obj(
-            "nationalInsuranceNumber"  -> "KX8600231",
+            "nationalInsuranceNumber" -> "KX8600231",
             "employmentSequenceNumber" -> 2,
-            "taxYear"                  -> 2017,
-            "type"                     -> "New Estimated Pay (027)",
-            "source"                   -> "EMAIL",
-            "grossAmount"              -> JsNull,
-            "receiptDate"              -> "2017-04-10",
-            "captureDate"              -> "2017-04-10",
-            "typeDescription"          -> "Total gift aid Payments",
-            "netAmount"                -> 100
+            "taxYear" -> 2017,
+            "type" -> "New Estimated Pay (027)",
+            "source" -> "EMAIL",
+            "grossAmount" -> JsNull,
+            "receiptDate" -> "2017-04-10",
+            "captureDate" -> "2017-04-10",
+            "typeDescription" -> "Total gift aid Payments",
+            "netAmount" -> 100
           )
         )
 
-        val json = Json.parse(s"""
-                                 |{
-                                 |   "iabdDetails": ${Json.stringify(iabdJson)}
-                                 |}
-                                 |""".stripMargin)
+        val json = Json.parse(
+          s"""
+             |{
+             |   "iabdDetails": ${Json.stringify(iabdJson)}
+             |}
+             |""".stripMargin)
 
         when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(json))
 
@@ -79,6 +80,14 @@ class IabdServiceSpec extends BaseSpec {
         val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
 
         result mustBe Seq(
+          IabdDetails(
+            Some("BR5600244"),
+            None,
+            Some(26),
+            Some(27),
+            None,
+            Some(LocalDate.parse("2017-04-10"))
+          ),
           IabdDetails(
             Some("KX8600231"),
             Some(2),

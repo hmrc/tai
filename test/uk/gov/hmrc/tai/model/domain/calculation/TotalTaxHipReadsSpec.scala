@@ -166,6 +166,12 @@ class TotalTaxHipReadsSpec extends PlaySpec {
           json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
         }
 
+        "totalLiabilityDetails is not present" in {
+          val json = Json.obj()
+
+          json.as[BigDecimal](taxFreeAllowanceReads) mustBe 0
+        }
+
         "some income categories have allowance relief deduct" in {
           val payload = readFile("tc07.json")
           payload.as[BigDecimal](taxFreeAllowanceReads) mustBe 200
@@ -180,6 +186,7 @@ class TotalTaxHipReadsSpec extends PlaySpec {
           val payload = readFile("tc09.json")
           payload.as[BigDecimal](taxFreeAllowanceReads) mustBe 500
         }
+
       }
     }
   }

@@ -136,6 +136,15 @@ class TotalTaxSquidReadsSpec extends PlaySpec {
     }
 
     "taxFreeAllowanceReads" must {
+
+      "return exception" when {
+        "totalLiabilityDetails is not present" in {
+          val json = Json.obj()
+
+          a[JsResultException] mustBe thrownBy(json.as[BigDecimal](taxFreeAllowanceReads))
+        }
+      }
+
       "return taxFreeAllowance" when {
         "all the 6 income categories as null" in {
           val json = Json.obj(
