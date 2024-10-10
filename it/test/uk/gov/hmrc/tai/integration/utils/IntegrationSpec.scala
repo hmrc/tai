@@ -67,6 +67,10 @@ trait IntegrationSpec
       post(urlEqualTo("/auth/authorise"))
         .willReturn(ok(authResponse))
     )
+    server.stubFor(
+      post(urlEqualTo("/pertax/authorise"))
+        .willReturn(ok("{\"code\": \"ACCESS_GRANTED\", \"message\": \"Access granted\"}"))
+    )
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
@@ -74,6 +78,7 @@ trait IntegrationSpec
   protected def guiceAppBuilder: GuiceApplicationBuilder = GuiceApplicationBuilder()
     .configure(
       "microservice.services.auth.port"            -> server.port(),
+      "microservice.services.pertax.port"          -> server.port(),
       "microservice.services.des-hod.port"         -> server.port(),
       "microservice.services.des-hod.host"         -> "127.0.0.1",
       "microservice.services.nps-hod.port"         -> server.port(),

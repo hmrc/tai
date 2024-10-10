@@ -1,0 +1,140 @@
+{
+  "individual": {
+    "currentNino": "$NINO",
+    "employments": {
+      "employment": [
+        {
+          "currentPayId": "0000",
+          "empRefs": {
+            "aoRef": "00000",
+            "officeNo": "0000",
+            "payeRef": "0000"
+          },
+          "payments": {
+            "inYear": [
+              {
+                "aggregatedEarnings": true,
+                "flexibleDrawdown": {},
+                "hoursWorked": "Up to 15.99",
+                "mandatoryMonetaryAmount": [
+                  {
+                    "amount": 5000.0,
+                    "type": "TaxablePayYTD"
+                  },
+                  {
+                    "amount": 1500.0,
+                    "type": "TotalTaxYTD"
+                  },
+                  {
+                    "amount": 1500.0,
+                    "type": "TaxDeductedOrRefunded"
+                  },
+                  {
+                    "amount": 5000.0,
+                    "type": "TaxablePay"
+                  }
+                ],
+                "monthNo": "1",
+                "niLettersAndValues": [
+                  {
+                    "niFigure": [
+                      {
+                        "amount": 0.0,
+                        "type": "AtLELYTD"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsInPd"
+                      },
+                      {
+                        "amount": 600.0,
+                        "type": "EmpeeContribnsYTD"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsInPd"
+                      },
+                      {
+                        "amount": 5000.0,
+                        "type": "GrossEarningsForNICsYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "LELtoPTYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "PTtoUELYTD"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICInPd"
+                      },
+                      {
+                        "amount": 0.0,
+                        "type": "TotalEmpNICYTD"
+                      }
+                    ],
+                    "niLetter": "A"
+                  }
+                ],
+                "optionalMonetaryAmount": [
+                  {
+                    "amount": 0.0,
+                    "type": "BenefitsTaxedViaPayroll"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "DednsFromNetPay"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsNotPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "EmpeePenContribnsPaid"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "ItemsSubjectToClass1NIC"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "NonTaxOrNICPmt"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "PayAfterStatDedns"
+                  },
+                  {
+                    "amount": 0.0,
+                    "type": "StudentLoanRecovered"
+                  }
+                ],
+                "payFreq": "M3",
+                "payId": "0000",
+                "periodsCovered": 1,
+                "pmtConfidence": 1,
+                "pmtDate": "2016-04-30",
+                "rcvdDate": "2016-04-06",
+                "taxCode": {
+                  "value": "123L"
+                },
+                "taxYear": "16-17"
+              }
+            ]
+          },
+          "sequenceNumber": 39
+        }
+      ]
+    },
+    "relatedTaxYear": "16-17"
+  },
+  "queryResult": 0,
+  "request": {
+    "nino": "$NINO",
+    "relatedTaxYear": "16-17",
+    "requestId": "0000"
+  }
+}

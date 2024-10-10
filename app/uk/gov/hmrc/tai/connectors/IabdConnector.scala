@@ -18,12 +18,14 @@ package uk.gov.hmrc.tai.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import play.api.http.MimeTypes
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -36,11 +38,9 @@ import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, UUID}
-import play.api.http.MimeTypes
-import play.api.libs.json.JsValue
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

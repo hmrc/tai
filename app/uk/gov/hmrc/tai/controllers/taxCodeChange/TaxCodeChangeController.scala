@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HttpException, NotFoundException}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxCodeChangeService
@@ -30,20 +30,20 @@ import uk.gov.hmrc.tai.service.TaxCodeChangeService
 import scala.concurrent.ExecutionContext
 
 class TaxCodeChangeController @Inject() (
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   taxCodeChangeService: TaxCodeChangeService,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+  def hasTaxCodeChanged(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     taxCodeChangeService.hasTaxCodeChanged(nino).map { taxCodeChanged =>
       Ok(Json.toJson(taxCodeChanged))
     }
   }
 
-  def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+  def taxCodeChange(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     taxCodeChangeService.taxCodeChange(nino) map { taxCodeChange =>
       Ok(Json.toJson(ApiResponse(taxCodeChange, Seq.empty)))
     } recover {
@@ -56,7 +56,7 @@ class TaxCodeChangeController @Inject() (
     }
   }
 
-  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
+  def taxCodeMismatch(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     taxCodeChangeService.taxCodeMismatch(nino).map { taxCodeMismatch =>
       Ok(Json.toJson(ApiResponse(taxCodeMismatch, Seq.empty)))
     } recover {
@@ -69,8 +69,8 @@ class TaxCodeChangeController @Inject() (
     }
   }
 
-  def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.async {
-    implicit request =>
+  def mostRecentTaxCodeRecords(nino: Nino, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails.async { implicit request =>
       val latestTaxCodeRecords = taxCodeChangeService.latestTaxCodes(nino, year)
 
       latestTaxCodeRecords.map { records =>
@@ -83,5 +83,5 @@ class TaxCodeChangeController @Inject() (
         case ex: HttpException =>
           InternalServerError(Json.toJson(Map("reason" -> ex.getMessage)))
       }
-  }
+    }
 }
