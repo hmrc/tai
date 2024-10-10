@@ -29,13 +29,14 @@ import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   private val mockFeatureFlagService = mock[FeatureFlagService]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -69,6 +70,7 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
       .build()
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-mismatch"
+
   def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
@@ -85,7 +87,6 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
         s"return $status when we receive $status downstream" in {
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
-          val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
           server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
           val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -107,7 +108,6 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
         s"return $status when we receive $status downstream" in {
           val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
-          val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
           server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
           val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
           server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
@@ -128,7 +128,6 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
       "return 404 when we receive 404 from downstream" in {
         val npsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year"
 
-        val npsTaxAccountUrl = s"/nps-hod-service/services/nps/person/$nino/tax-account/$year"
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccountHipJson)))
         val npsEmploymentUrl = s"/nps-hod-service/services/nps/person/$nino/employment/$year"
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))

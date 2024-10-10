@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TaxAccountSummaryService
@@ -79,7 +79,7 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
   val taxAccountSummaryForYearCY1 = TaxAccountSummary(2222, 1, 56.78, 100.00, 43.22, 200, 100)
   private def createSUT(
     taxAccountSummaryService: TaxAccountSummaryService,
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+    authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
     new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
 

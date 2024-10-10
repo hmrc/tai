@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.controllers.ControllerErrorHandler
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
@@ -31,25 +31,26 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class CompanyCarBenefitController @Inject() (
   companyCarBenefitService: BenefitsService,
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
 ) extends BackendController(cc) with ControllerErrorHandler {
 
-  def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.async { implicit request =>
-    companyCarBenefitService.companyCarBenefits(nino).map {
-      case Nil => NotFound
-      case c =>
-        Ok(
-          Json.toJson(
-            ApiResponse(
-              Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))),
-              Nil
+  def companyCarBenefits(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async {
+    implicit request =>
+      companyCarBenefitService.companyCarBenefits(nino).map {
+        case Nil => NotFound
+        case c =>
+          Ok(
+            Json.toJson(
+              ApiResponse(
+                Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))),
+                Nil
+              )
             )
           )
-        )
-    } recoverWith taxAccountErrorHandler()
+      } recoverWith taxAccountErrorHandler()
   }
 
 }

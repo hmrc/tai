@@ -80,7 +80,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
         val timestamp = Instant.now()
         Await.result(
           deleteAll().flatMap { _ =>
-            insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+            insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
           },
           5 seconds
         )
@@ -93,7 +93,7 @@ class LockServiceSpec extends BaseSpec with DefaultPlayMongoRepositorySupport[Lo
   "releaseLock" should {
     "released the lock" in {
       val timestamp = Instant.now()
-      insert(Lock("some session id", "lockId", timestamp, timestamp.plusSeconds(2)))
+      insert(Lock(sessionIdValue, "lockId", timestamp, timestamp.plusSeconds(2)))
 
       sut.releaseLock[Boolean]("lockId").futureValue
 
