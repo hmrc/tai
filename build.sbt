@@ -60,7 +60,7 @@ lazy val microservice = Project(appName, file("."))
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   val scoverageExcludePatterns =
-    List("<empty>", "Reverse.*", "app.Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
+    List("<empty>", "Reverse.*", ".*Routes.*", "uk.gov.hmrc.BuildInfo.*", "prod.*", "dev.*", "uk.gov.hmrc.tai.config")
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),

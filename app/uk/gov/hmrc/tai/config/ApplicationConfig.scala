@@ -116,3 +116,8 @@ class CacheMetricsConfig @Inject() (val runModeConfiguration: Configuration) ext
   def cacheMetricsEnabled: Boolean =
     runModeConfiguration.getOptional[Boolean]("tai.cacheMetrics.enabled").getOrElse(false)
 }
+
+@Singleton
+class PertaxConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig {
+  val pertaxUrl = servicesConfig.baseUrl("pertax")
+}

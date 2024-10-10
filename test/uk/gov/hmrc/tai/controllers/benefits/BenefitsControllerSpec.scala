@@ -42,7 +42,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(emptyBenefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -87,7 +87,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(benefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -146,7 +146,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(removeCompanyBenefit))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
             .withHeaders(("content-type", "application/json"))

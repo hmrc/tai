@@ -17,14 +17,12 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import cats.data.EitherT
-
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
@@ -33,6 +31,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IncomeService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class IncomeControllerSpec extends BaseSpec {
@@ -43,7 +42,10 @@ class IncomeControllerSpec extends BaseSpec {
     "links" -> Json.arr()
   )
 
-  val mockIncomeService = mock[IncomeService]
+  val mockIncomeService: IncomeService = mock[IncomeService]
+
+  private val untaxedInterest =
+    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest")
 
   val taxCodeIncomes: Seq[TaxCodeIncome] = Seq(
     TaxCodeIncome(
@@ -251,7 +253,7 @@ class IncomeControllerSpec extends BaseSpec {
       when(mockIncomeService.matchedTaxCodeIncomesForYear(any(), meq(TaxYear().next), any(), any())(any(), any()))
         .thenReturn(EitherT.rightT(Seq(IncomeSource(taxCodeIncomes(1), employment))))
 
-      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationAuthJourney)
       val result = sut.matchedTaxCodeIncomesForYear(nino, TaxYear().next, EmploymentIncome, Live)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -335,7 +337,7 @@ class IncomeControllerSpec extends BaseSpec {
         .thenReturn(EitherT.rightT(employments))
 
       val nextTaxYear = TaxYear().next
-      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationPredicate)
+      val sut = createSUT(incomeService = mockIncomeService, authentication = loggedInAuthenticationAuthJourney)
       val result = sut.nonMatchingCeasedEmployments(nino, nextTaxYear)(FakeRequest())
 
       val expectedJson = Json.obj(
@@ -467,12 +469,9 @@ class IncomeControllerSpec extends BaseSpec {
     }
   }
 
-  private val untaxedInterest =
-    UntaxedInterest(UntaxedInterestIncome, None, 123, "Untaxed Interest")
-
   private def createSUT(
     incomeService: IncomeService = mock[IncomeService],
-    authentication: AuthenticationPredicate = loggedInAuthenticationPredicate
+    authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
     new IncomeController(incomeService, authentication, cc)
 
