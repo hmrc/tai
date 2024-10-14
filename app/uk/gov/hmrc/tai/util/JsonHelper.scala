@@ -92,12 +92,9 @@ object JsonHelper {
     readsSquid: Reads[A],
     readsHip: Reads[A]
   ): Reads[A] =
-    Reads[A] { jsValue =>
-      if ((jsValue \ "iabdDetails").isDefined) {
-        readsHip.reads(jsValue)
-      } else {
-        readsSquid.reads(jsValue)
-      }
+    Reads[A] {
+      case jsValue @ (_: JsArray) => readsSquid.reads(jsValue)
+      case jsValue                => readsHip.reads(jsValue)
     }
 
   def selectReads[A](

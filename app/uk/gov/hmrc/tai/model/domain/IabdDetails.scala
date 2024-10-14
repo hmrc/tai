@@ -136,6 +136,6 @@ object IabdDetailsToggleOn extends IabdTypeConstants {
     )
 
   val reads: Reads[Seq[IabdDetails]] =
-    (JsPath \ "iabdDetails").read(Reads.seq(iabdReads))
+    (JsPath \ "iabdDetails").readNullable(Reads.seq(iabdReads)).map(_.getOrElse(Seq.empty))
 
 }
