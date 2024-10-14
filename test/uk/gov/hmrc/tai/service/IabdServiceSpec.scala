@@ -141,6 +141,19 @@ class IabdServiceSpec extends BaseSpec {
           )
         )
       }
+
+      "payload is empty" in {
+        val json = Json.obj(
+          "correlationId" -> ""
+        )
+
+        when(mockIabdConnector.iabds(any(), any())(any())).thenReturn(Future.successful(json))
+
+        val sut = createSut(mockIabdConnector)
+        val result = sut.retrieveIabdDetails(nino, TaxYear()).futureValue
+        result mustBe Seq(
+        )
+      }
     }
 
     "return an empty sequence of IabdDetails" when {
