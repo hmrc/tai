@@ -110,4 +110,28 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
       }
     }
   }
+
+  def putToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
+    hc: HeaderCarrier,
+    writes: Writes[I]
+  ): Future[HttpResponse] = {
+
+    val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
+    }
+
+    httpClient.PUT[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
+      httpResponse status match {
+        case OK | CREATED | ACCEPTED | NO_CONTENT =>
+          metrics.incrementSuccessCounter(api)
+          httpResponse
+        case _ =>
+          logger.warn(
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+          )
+          metrics.incrementFailedCounter(api)
+          throw new HttpException(httpResponse.body, httpResponse.status)
+      }
+    }
+  }
 }

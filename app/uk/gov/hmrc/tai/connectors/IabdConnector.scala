@@ -27,20 +27,23 @@ import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateResponse, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
-import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
+import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpensesAPI}
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
+import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.SensitiveFormatService
 import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
+
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, UUID}
 import play.api.http.MimeTypes
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.tai.model.nps2.IabdType
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -85,7 +88,7 @@ class CachingIabdConnector @Inject() (
     year: Int,
     iabdType: Int,
     version: Int,
-    expensesData: List[UpdateIabdEmployeeExpense],
+    expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
     invalidateCaches.invalidateAll {
@@ -224,24 +227,43 @@ class DefaultIabdConnector @Inject() (
       "ETag"                 -> version.toString
     )
 
+  private def headersForHipUpdateExpensesData(version: Int)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Environment"          -> hipConfig.environment,
+      "Authorization"        -> hipConfig.authorization,
+      "Content-Type"         -> TaiConstants.contentType,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString,
+      "Originator-Id"        -> hipConfig.originatorId,
+      "ETag"                 -> version.toString
+    )
+
   override def updateExpensesData(
     nino: Nino,
     year: Int,
     iabdType: Int,
     version: Int,
-    expensesData: List[UpdateIabdEmployeeExpense],
+    expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
-  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] = {
-
-    val postUrl = s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType"
-
-    httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
-      postUrl,
-      expensesData,
-      apiType,
-      headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
-    )
-  }
+  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
+    featureFlagService.get(HipToggleIabds).flatMap { toggle =>
+      if (toggle.isEnabled) {
+        httpHandler.putToApi[UpdateHipIabdEmployeeExpense](
+          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping.get(iabdType).get}",
+          UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
+          HipIabdUpdateEmployeeExpensesAPI,
+          headersForHipUpdateExpensesData(version)
+        )
+      } else {
+        httpHandler.postToApi[List[UpdateIabdEmployeeExpense]](
+          s"${desConfig.baseURL}/pay-as-you-earn/individuals/$nino/iabds/$year/$iabdType",
+          List(expensesData),
+          apiType,
+          headersForUpdateExpensesData(version, desConfig.daPtaOriginatorId)
+        )
+      }
+    }
 }
 
 trait IabdConnector {
@@ -261,7 +283,7 @@ trait IabdConnector {
     year: Int,
     iabdType: Int,
     version: Int,
-    expensesData: List[UpdateIabdEmployeeExpense],
+    expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse]
 

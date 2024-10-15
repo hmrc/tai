@@ -24,8 +24,6 @@ import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class TaxAccountSummarySpec extends IntegrationSpec {
 
   override def beforeEach(): Unit = {

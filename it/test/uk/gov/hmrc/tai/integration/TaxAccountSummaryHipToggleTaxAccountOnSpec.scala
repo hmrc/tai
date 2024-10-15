@@ -35,8 +35,7 @@ import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, 
 import scala.concurrent.{ExecutionContext, Future}
 
 class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-  private val mockFeatureFlagService = mock[FeatureFlagService]
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -60,11 +59,6 @@ class TaxAccountSummaryHipToggleTaxAccountOnSpec extends IntegrationSpec {
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"
 
