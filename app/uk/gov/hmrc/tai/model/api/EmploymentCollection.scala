@@ -125,7 +125,7 @@ object EmploymentCollection {
       case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
       case _ =>
         (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
-          case None     => Nil
+          case None    => Nil
           case Some(e) => e
         }
     }
