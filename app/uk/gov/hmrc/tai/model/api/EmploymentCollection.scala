@@ -121,8 +121,15 @@ object EmploymentCollection {
   }
 
   private def readsHip: Reads[EmploymentCollection] = { (json: JsValue) =>
-    val readsSeqEmployment =
-      (__ \ "individualsEmploymentDetails").read[Seq[Employment]](Reads.seq(employmentHodReads))
+    val readsSeqEmployment = json match {
+      case _: JsArray => Reads[Seq[Employment]](_ => JsError("Unexpected array - Squid payload?"))
+      case _ =>
+        (__ \ "individualsEmploymentDetails").readNullable[Seq[Employment]](Reads.seq(employmentHodReads)).map {
+          case None     => Nil
+          case Some(e) => e
+        }
+    }
+
     readsSeqEmployment.reads(json).map { seqEmployment =>
       EmploymentCollection(seqEmployment, None)
     }
