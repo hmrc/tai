@@ -27,7 +27,6 @@ class RealTimeStatusSpec extends PlaySpec {
 
         JsString("Available").as[RealTimeStatus] mustBe Available
         JsString("TemporarilyUnavailable").as[RealTimeStatus] mustBe TemporarilyUnavailable
-        JsString("Unavailable").as[RealTimeStatus] mustBe Unavailable
       }
     }
     "throw an exception" when {
@@ -44,7 +43,6 @@ class RealTimeStatusSpec extends PlaySpec {
         Json.toJson(TemporarilyUnavailable)(RealTimeStatus.realTimeStatusFormat.writes(_)) mustBe JsString(
           "TemporarilyUnavailable"
         )
-        Json.toJson(Unavailable)(RealTimeStatus.realTimeStatusFormat.writes(_)) mustBe JsString("Unavailable")
       }
     }
   }
