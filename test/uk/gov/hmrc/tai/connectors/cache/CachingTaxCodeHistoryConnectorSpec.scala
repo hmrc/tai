@@ -39,7 +39,7 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
   private val mockEncryptionService = mock[SensitiveFormatService]
 
   lazy val mockSessionCacheRepository: TaiSessionCacheRepository = mock[TaiSessionCacheRepository]
-  lazy val mockDefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
+  lazy val mockDefaultTaxCodeHistoryConnector: DefaultTaxCodeHistoryConnector = mock[DefaultTaxCodeHistoryConnector]
 
   override implicit lazy val app: Application = GuiceApplicationBuilder()
     .disable[uk.gov.hmrc.tai.modules.LocalGuiceModule]
@@ -60,7 +60,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
   private val taxYear = TaxYear()
 
-  val cachingTaxCodeHistoryConnector = app.injector.instanceOf[CachingTaxCodeHistoryConnector]
+  val cachingTaxCodeHistoryConnector: CachingTaxCodeHistoryConnector =
+    app.injector.instanceOf[CachingTaxCodeHistoryConnector]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
