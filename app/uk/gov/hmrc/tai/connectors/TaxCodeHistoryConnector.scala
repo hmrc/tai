@@ -79,11 +79,21 @@ class DefaultTaxCodeHistoryConnector @Inject() (
 
   override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
     featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
-      val url =
+      val url: String =
         if (toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
         else desUrls.taxCodeChangeFromDesUrl(nino, year)
+
+      val timeout: Int =
+        if (toggle.isEnabled) ifConfig.timeoutInMilliseconds
+        else desConfig.timeoutInMilliseconds
+
       httpHandler
-        .getFromApi(url = url, api = APITypes.TaxCodeChangeAPI, headers = createHeader(toggle.isEnabled))
+        .getFromApi(
+          url = url,
+          api = APITypes.TaxCodeChangeAPI,
+          headers = createHeader(toggle.isEnabled),
+          timeoutInMilliseconds = Some(timeout)
+        )
         .map(json => json.as[TaxCodeHistory])
     }
 }
