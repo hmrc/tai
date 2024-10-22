@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
@@ -100,7 +100,12 @@ class DefaultTaxAccountConnector @Inject() (
       }
 
       val urlToRead = pathUrl(nino)
-      httpHandler.getFromApi(urlToRead, APITypes.NpsTaxAccountAPI, basicHeaders(originatorId, hc, extraInfo))
+      httpHandler
+        .getFromApi(urlToRead, APITypes.NpsTaxAccountAPI, basicHeaders(originatorId, hc, extraInfo))
+        .map {
+          case response if response == JsObject.empty => throw new NotFoundException(response.toString)
+          case response                               => response
+        }
     }
 
   def taxAccountHistory(nino: Nino, iocdSeqNo: Int)(implicit hc: HeaderCarrier): Future[JsValue] = {
