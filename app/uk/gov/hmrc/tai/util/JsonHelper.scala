@@ -102,7 +102,8 @@ object JsonHelper {
     readsHip: Reads[A]
   ): Reads[A] =
     Reads[A] { jsValue =>
-      if ((jsValue \ "nationalInsuranceNumber").isDefined) {
+      def isPayloadEmpty = jsValue.as[JsObject].keys.isEmpty
+      if ((jsValue \ "nationalInsuranceNumber").isDefined || isPayloadEmpty) {
         readsHip.reads(jsValue)
       } else {
         readsSquid.reads(jsValue)

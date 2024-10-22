@@ -135,5 +135,11 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
       actualValue mustBe JsSuccess(test2)
     }
 
+    "use hip reads when empty payload" in {
+      val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test2)
+    }
+
   }
 }

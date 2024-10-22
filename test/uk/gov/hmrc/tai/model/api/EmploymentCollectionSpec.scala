@@ -40,18 +40,18 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
   private val sampleSingleEmployment = List(
     Employment(
-      "EMPLOYER1",
-      Live,
-      Some("0000"),
-      LocalDate.of(2016, 4, 6),
-      None,
-      Nil,
-      "000",
-      "00000",
-      2,
-      Some(100),
-      false,
-      false
+      name = "EMPLOYER1",
+      employmentStatus = Live,
+      payrollNumber = Some("0000"),
+      startDate = LocalDate.of(2016, 4, 6),
+      endDate = None,
+      annualAccounts = Nil,
+      taxDistrictNumber = "000",
+      payeNumber = "00000",
+      sequenceNumber = 2,
+      cessationPay = Some(100),
+      hasPayrolledBenefit = false,
+      receivingOccupationalPension = false
     )
   )
 
