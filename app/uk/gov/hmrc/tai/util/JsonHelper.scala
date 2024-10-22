@@ -97,13 +97,25 @@ object JsonHelper {
       case jsValue                => readsHip.reads(jsValue)
     }
 
-  def selectReads[A](
+  def selectReadsDefaultToHipIfEmpty[A](
     readsSquid: Reads[A],
     readsHip: Reads[A]
   ): Reads[A] =
     Reads[A] { jsValue =>
       def isPayloadEmpty = jsValue.as[JsObject].keys.isEmpty
       if ((jsValue \ "nationalInsuranceNumber").isDefined || isPayloadEmpty) {
+        readsHip.reads(jsValue)
+      } else {
+        readsSquid.reads(jsValue)
+      }
+    }
+
+  def selectReads[A](
+    readsSquid: Reads[A],
+    readsHip: Reads[A]
+  ): Reads[A] =
+    Reads[A] { jsValue =>
+      if ((jsValue \ "nationalInsuranceNumber").isDefined) {
         readsHip.reads(jsValue)
       } else {
         readsSquid.reads(jsValue)

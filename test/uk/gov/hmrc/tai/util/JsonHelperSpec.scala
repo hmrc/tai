@@ -135,8 +135,29 @@ class JsonHelperSpec extends PlaySpec with MockitoSugar {
       actualValue mustBe JsSuccess(test2)
     }
 
-    "use hip reads when empty payload" in {
+    "use squid reads when empty payload" in {
       val actualReads = JsonHelper.selectReads[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(Json.obj())
+      actualValue mustBe JsSuccess(test1)
+    }
+
+  }
+
+  "selectReadsDefaultToHipIfEmpty" must {
+    "use squid reads when squid payload" in {
+      val actualReads = JsonHelper.selectReadsDefaultToHipIfEmpty[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(jsonSquidPayload)
+      actualValue mustBe JsSuccess(test1)
+    }
+
+    "use hip reads when hip payload" in {
+      val actualReads = JsonHelper.selectReadsDefaultToHipIfEmpty[Test](testReadsA, testReadsB)
+      val actualValue = actualReads.reads(jsonHipPayload)
+      actualValue mustBe JsSuccess(test2)
+    }
+
+    "use hip reads when empty payload" in {
+      val actualReads = JsonHelper.selectReadsDefaultToHipIfEmpty[Test](testReadsA, testReadsB)
       val actualValue = actualReads.reads(Json.obj())
       actualValue mustBe JsSuccess(test2)
     }

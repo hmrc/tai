@@ -42,7 +42,7 @@ class CodingComponentServiceHipToggleOnSpec extends BaseSpec {
     Json.parse(source)
   }
 
-  private val emptyJson = Json.arr()
+  private val emptyJson = Json.obj()
   private val mockTaxAccountConnector: TaxAccountConnector = mock[TaxAccountConnector]
   private val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
   private val taxCodeId = 1

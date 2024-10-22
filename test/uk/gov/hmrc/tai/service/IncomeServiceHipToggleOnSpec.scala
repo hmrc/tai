@@ -89,7 +89,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
 
     "return None" when {
       "untaxed interest is not present" in {
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.obj()))
 
         val SUT = createSUT(taxAccountConnector = mockTaxAccountConnector)
         val result = SUT.untaxedInterest(nino)(HeaderCarrier()).futureValue
@@ -810,7 +810,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
     "return empty sequence of tax-code and non-tax code income" when {
       "there is no non-tax-code income present" in {
 
-        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.arr()))
+        when(mockTaxAccountConnector.taxAccount(any(), any())(any())).thenReturn(Future.successful(Json.obj()))
 
         val sut = createSUT(taxAccountConnector = mockTaxAccountConnector)
 

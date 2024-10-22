@@ -223,5 +223,12 @@ class TotalTaxServiceHipToggleOnSpec extends BaseSpec {
 
       result mustBe 100
     }
+    "return zero when empty payload" in {
+      when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
+        .thenReturn(Future.successful(Json.obj()))
+      val result = sut.taxFreeAllowance(nino, TaxYear()).futureValue
+
+      result mustBe 0
+    }
   }
 }

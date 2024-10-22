@@ -61,7 +61,7 @@ class TotalTaxService @Inject() (
 
   def taxFreeAllowance(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[BigDecimal] = {
     val reads = JsonHelper
-      .selectReads(
+      .selectReadsDefaultToHipIfEmpty(
         TotalTaxSquidReads.taxFreeAllowanceReads,
         TotalTaxHipReads.taxFreeAllowanceReads
       )
