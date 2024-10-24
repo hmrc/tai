@@ -234,7 +234,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
       }
     }
 
-    "return a ServiceUnavailableError " when {
+    "return a single annual account item with status temp unavailable" when {
       "the rti toggle is set to false" in {
 
         when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
@@ -242,11 +242,21 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
         )
 
         sut.getPaymentsForYear(nino, taxYear).value.futureValue mustBe
-          a[Left[UpstreamErrorResponse, _]]
+          Right(
+            Seq(
+              AnnualAccount(
+                sequenceNumber = 0,
+                taxYear = taxYear,
+                rtiStatus = TemporarilyUnavailable
+              )
+            )
+          )
 
         server.verify(0, getRequestedFor(urlMatching("/rti/individual/payments/nino/.*")))
       }
+    }
 
+    "return a ServiceUnavailableError " when {
       "the year is CY+1" in {
 
         sut.getPaymentsForYear(nino, taxYear.next).value.futureValue mustBe

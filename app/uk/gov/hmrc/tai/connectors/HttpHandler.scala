@@ -22,17 +22,23 @@ import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
 import play.api.libs.json.{JsValue, Writes}
+import play.api.libs.ws.WSRequest
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
-class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit ec: ExecutionContext) extends Logging {
+class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClientV2: HttpClientV2)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def getFromApiAsEitherT(url: String, headers: Seq[(String, String)])(implicit
     hc: HeaderCarrier
@@ -42,8 +48,8 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
         HodResponse(response.json, response.header("ETag").map(_.toInt))
       }
 
-  def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)])(implicit
-    hc: HeaderCarrier
+  def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)], timeoutInMilliseconds: Option[Int] = None)(
+    implicit hc: HeaderCarrier
   ): Future[JsValue] = {
 
     val timerContext = metrics.startTimer(api)
@@ -71,9 +77,16 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
     }
 
     (for {
-      response <- httpClient.GET[HttpResponse](url = url, headers = headers)
-      _        <- Future.successful(timerContext.stop())
-      _        <- Future.successful(metrics.incrementSuccessCounter(api))
+      response <- httpClientV2
+                    .get(url = url"$url")(hc.withExtraHeaders(headers: _*))
+                    .transform { response: WSRequest =>
+                      timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>
+                        response.withRequestTimeout(timeoutInMilliseconds.milliseconds)
+                      }
+                    }
+                    .execute[HttpResponse](responseHandler, ec)
+      _ <- Future.successful(timerContext.stop())
+      _ <- Future.successful(metrics.incrementSuccessCounter(api))
     } yield response.json) recover {
       case lockedException: LockedException =>
         timerContext.stop()
@@ -97,6 +110,30 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient)(implicit 
     }
 
     httpClient.POST[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
+      httpResponse status match {
+        case OK | CREATED | ACCEPTED | NO_CONTENT =>
+          metrics.incrementSuccessCounter(api)
+          httpResponse
+        case _ =>
+          logger.warn(
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+          )
+          metrics.incrementFailedCounter(api)
+          throw new HttpException(httpResponse.body, httpResponse.status)
+      }
+    }
+  }
+
+  def putToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
+    hc: HeaderCarrier,
+    writes: Writes[I]
+  ): Future[HttpResponse] = {
+
+    val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
+    }
+
+    httpClient.PUT[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
       httpResponse status match {
         case OK | CREATED | ACCEPTED | NO_CONTENT =>
           metrics.incrementSuccessCounter(api)

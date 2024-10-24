@@ -88,6 +88,14 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
 
   "employmentCollectionHodReads (for HIP payloads)" must {
     "un-marshall employment json" when {
+
+      "reading empty response from Hod" in {
+        val employment =
+          Json.obj().as[EmploymentCollection](employmentCollectionHodReadsHIP)
+
+        employment.employments mustBe List()
+      }
+
       "reading single employment from Hod" in {
         val employment =
           getJson("hipSingleEmployment").as[EmploymentCollection](employmentCollectionHodReadsHIP)
@@ -103,14 +111,14 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
         employment.employments mustBe sampleSingleEmployment
       }
 
-      "reading single employment from Hod where invalid payload returns HIP errors and not NPS errors" in {
+      "reading single employment from Hod where invalid payload (array - Squid) returns the HIP errors and not NPS errors" in {
         val actual = Try(
           Json.arr(Json.obj("a" -> "b")).as[EmploymentCollection](employmentCollectionHodReadsHIP)
         )
 
         actual mustBe Failure(
           JsResultException(
-            Seq((__ \ "individualsEmploymentDetails", List(JsonValidationError(List("error.path.missing")))))
+            Seq((__, List(JsonValidationError(List("Unexpected array - Squid payload?")))))
           )
         )
       }

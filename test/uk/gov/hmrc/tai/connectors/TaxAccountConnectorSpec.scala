@@ -234,6 +234,22 @@ class TaxAccountConnectorSpec extends ConnectorBaseSpec with WireMockHelper {
           result.responseCode mustBe SERVICE_UNAVAILABLE
         }
 
+        "return a not found response code when empty payload response " in new ConnectorSetup {
+
+          override def apiEnabled: Boolean = false
+          override def desIsEnabled: Boolean = false
+
+          val url: String =
+            taxAccountUrl(nino, taxYear)
+
+          server.stubFor(get(urlEqualTo(url)).willReturn(ok(Json.obj().toString)))
+
+          val result: NotFoundException =
+            the[NotFoundException] thrownBy Await.result(sut.taxAccount(nino, taxYear), 5 seconds)
+
+          result.responseCode mustBe NOT_FOUND
+        }
+
         "return a LOCKED response code when LOCKED response " in new ConnectorSetup {
 
           override def apiEnabled: Boolean = false

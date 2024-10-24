@@ -19,37 +19,34 @@ package uk.gov.hmrc.tai.integration
 import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{mock, reset, when}
-import play.api.Application
+import org.mockito.MockitoSugar.{reset, when}
 import play.api.http.Status._
-import play.api.inject.bind
 import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.time.format.DateTimeFormatter
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
+
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val apiUrlHasChanged = s"/tai/$nino/tax-account/tax-code-change/exists"
-  def requestHasChanged = FakeRequest(GET, apiUrlHasChanged)
+  def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  private val mockFeatureFlagService = mock[FeatureFlagService]
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -71,11 +68,6 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     )
 
   }
-
-  override def fakeApplication(): Application =
-    guiceAppBuilder
-      .overrides(bind[FeatureFlagService].toInstance(mockFeatureFlagService))
-      .build()
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {

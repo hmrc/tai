@@ -70,6 +70,7 @@ class IfConfig @Inject() (servicesConfig: ServicesConfig) extends BaseConfig wit
   lazy val authorization: String = "Bearer " + servicesConfig.getConfString("if-hod.authorizationToken", "local")
   lazy val daPtaOriginatorId: String = servicesConfig.getConfString("if-hod.da-pta.originatorId", "")
   lazy val originatorId: String = servicesConfig.getConfString("if-hod.originatorId", "")
+  lazy val timeoutInMilliseconds: Int = servicesConfig.getConfInt("if-hod.timeoutInMilliseconds", 1000)
 }
 
 @Singleton

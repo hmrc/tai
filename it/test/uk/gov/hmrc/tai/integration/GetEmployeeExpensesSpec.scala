@@ -34,8 +34,6 @@ class GetEmployeeExpensesSpec extends IntegrationSpec {
   val iabdType = 59
   val desIabdsUrl = s"/pay-as-you-earn/individuals/$nino/iabds/tax-year/$year?type=$iabdType"
 
-  implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
-
   "Get Employment" must {
     "return an OK response for a valid user" in {
       val iabdsType59Json = FileHelper.loadFile("iabdsType59.json")
