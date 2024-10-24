@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.any
-import play.api.libs.json.{JsNull, Json}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import play.api.libs.json.{JsArray, JsNull, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.IabdConnector
 import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.IabdDetails
+import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess, IncomeUpdateFailed, IncomeUpdateSuccess}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 
