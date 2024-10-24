@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -26,6 +25,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
 import scala.util.Random
 
 class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
@@ -329,7 +329,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             2,
@@ -385,7 +385,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12345"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(1, ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(1, ty, TemporarilyUnavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             1,
@@ -399,7 +399,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             Some("12346"),
             LocalDate.parse("2017-07-24"),
             None,
-            List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
+            List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
             "tdNo",
             "payeNumber",
             2,
@@ -475,7 +475,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
               Some("88888"),
               LocalDate.parse("2017-07-24"),
               None,
-              List(AnnualAccount(2, ty, Unavailable, Nil, Nil)),
+              List(AnnualAccount(2, ty, TemporarilyUnavailable, Nil, Nil)),
               "tdNo",
               "payeNumber",
               2,
