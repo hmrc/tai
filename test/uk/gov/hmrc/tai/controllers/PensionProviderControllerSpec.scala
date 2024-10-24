@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{contentAsJson, status, _}
@@ -26,6 +25,7 @@ import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, IncorrectPensionProvide
 import uk.gov.hmrc.tai.service.PensionProviderService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PensionProviderControllerSpec extends BaseSpec {
@@ -43,7 +43,7 @@ class PensionProviderControllerSpec extends BaseSpec {
           .thenReturn(Future.successful(envelopeId))
 
         val sut =
-          new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
+          new PensionProviderController(mockPensionProviderService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.addPensionProvider(nino)(
           FakeRequest("POST", "/", FakeHeaders(), json)
             .withHeaders(("content-type", "application/json"))
@@ -68,7 +68,7 @@ class PensionProviderControllerSpec extends BaseSpec {
         )
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationPredicate, cc)
+        val sut = new PensionProviderController(mockPensionProviderService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.incorrectPensionProvider(nino, id)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(pensionProvider))
             .withHeaders(("content-type", "application/json"))

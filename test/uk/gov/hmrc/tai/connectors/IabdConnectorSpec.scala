@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.admin.HipToggleIabds
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
@@ -38,8 +38,8 @@ import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.net.URL
 import java.time.LocalDate
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class IabdConnectorSpec extends ConnectorBaseSpec {
@@ -107,7 +107,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     )
   )
 
-  val updateAmount = List(IabdUpdateAmount(1, 20000))
+  val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(1, 20000))
 
   implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
 

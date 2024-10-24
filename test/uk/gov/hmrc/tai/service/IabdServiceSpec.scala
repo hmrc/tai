@@ -22,7 +22,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.connectors.IabdConnector
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticatedRequest
+import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess, IncomeUpdateFailed, IncomeUpdateSuccess}
 import uk.gov.hmrc.tai.model.tai.TaxYear
