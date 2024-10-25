@@ -19,18 +19,16 @@ package uk.gov.hmrc.tai.integration
 import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{mock, reset, when}
-import play.api.Application
-import play.api.inject.bind
+import org.mockito.MockitoSugar.{reset, when}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, RtiCallToggle}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class GetEmploymentsHipToggleEmploymentDetailsOnSpec extends IntegrationSpec {
 
@@ -41,9 +39,6 @@ class GetEmploymentsHipToggleEmploymentDetailsOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
-      Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
-    )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
     )
@@ -53,7 +48,7 @@ class GetEmploymentsHipToggleEmploymentDetailsOnSpec extends IntegrationSpec {
   }
 
   val apiUrl = s"/tai/$nino/employments/years/$year"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 

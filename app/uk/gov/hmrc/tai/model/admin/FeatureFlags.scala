@@ -25,13 +25,6 @@ case object RtiCallToggle extends FeatureFlagName {
   )
 }
 
-case object TaxCodeHistoryFromIfToggle extends FeatureFlagName {
-  override val name: String = "tax-code-history-from-if-toggle"
-  override val description: Option[String] = Some(
-    "get the tax code history from IF and not DES"
-  )
-}
-
 case object HipToggleEmploymentDetails extends FeatureFlagName {
   override val name: String = "hip-toggle-employment-details"
   override val description: Option[String] = Some(
