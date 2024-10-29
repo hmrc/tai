@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeHeaders, FakeRequest}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
@@ -42,7 +42,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(emptyBenefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -87,7 +87,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.benefits(any(), any())(any()))
           .thenReturn(Future.successful(benefits))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.benefits(randomNino, TaxYear())(FakeRequest())
         status(result) mustBe OK
         val expectedJson =
@@ -146,7 +146,7 @@ class BenefitsControllerSpec extends BaseSpec {
         when(mockBenefitService.removeCompanyBenefits(meq(nino), meq(removeCompanyBenefit))(any()))
           .thenReturn(Future.successful(envelopeId))
 
-        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationPredicate, cc)
+        val sut = new BenefitsController(mockBenefitService, loggedInAuthenticationAuthJourney, cc)
         val result = sut.removeCompanyBenefits(nino, employmentId)(
           FakeRequest("POST", "/", FakeHeaders(), Json.toJson(removeCompanyBenefit))
             .withHeaders(("content-type", "application/json"))
@@ -158,5 +158,5 @@ class BenefitsControllerSpec extends BaseSpec {
     }
   }
 
-  def randomNino = new Generator(new Random).nextNino
+  def randomNino: Nino = new Generator(new Random).nextNino
 }
