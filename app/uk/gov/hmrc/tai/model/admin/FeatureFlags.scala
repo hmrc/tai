@@ -56,6 +56,6 @@ case object HipToggleIabds extends FeatureFlagName {
 case object HipToggleEmploymentIabds extends FeatureFlagName {
   override val name: String = "hip-toggle-employment-iabds"
   override val description: Option[String] = Some(
-    "Enable/disable use of HIP instead of Squid for the Iabds employment API"
+    "Enable/disable use of HIP instead of Squid for the update Iabds employment API"
   )
 }
