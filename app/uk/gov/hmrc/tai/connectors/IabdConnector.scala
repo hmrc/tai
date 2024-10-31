@@ -182,9 +182,6 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
-    println(
-      "\n>>>>" + s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdType"
-    )
     httpHandler
       .putToApi[IabdUpdateAmount](
         url = s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdType",
