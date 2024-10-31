@@ -16,20 +16,23 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.NotFoundException
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.service.PersonService
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PersonControllerSpec extends BaseSpec {
+
+  val person: Person =
+    Person(nino, "firstname", "surname", Some(LocalDate.of(1982, 5, 26)), Address("l1", "l2", "l3", "pc", "country"))
 
   "taxPayer method" must {
     "return 200" when {
@@ -70,7 +73,7 @@ class PersonControllerSpec extends BaseSpec {
         contentAsJson(result) mustBe expectedJson
       }
     }
-    "expose any underlying excpetion" in {
+    "expose any underlying exception" in {
       val mockPersonService = mock[PersonService]
       when(mockPersonService.person(meq(nino))(any()))
         .thenReturn(Future.failed(new NotFoundException("an example not found exception")))
@@ -83,19 +86,9 @@ class PersonControllerSpec extends BaseSpec {
     }
   }
 
-  val person = Person(
-    nino,
-    "firstname",
-    "surname",
-    Some(LocalDate.of(1982, 5, 26)),
-    Address("l1", "l2", "l3", "pc", "country"),
-    false,
-    false
-  )
-
   private def createSUT(
-    authenticationPredicate: AuthenticationPredicate = loggedInAuthenticationPredicate,
+    authJourney: AuthJourney = loggedInAuthenticationAuthJourney,
     personService: PersonService = mock[PersonService]
   ) =
-    new PersonController(authenticationPredicate, personService, cc)
+    new PersonController(authJourney, personService, cc)
 }

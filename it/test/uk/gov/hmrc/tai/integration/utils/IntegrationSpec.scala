@@ -45,7 +45,7 @@ trait IntegrationSpec
     with IntegrationPatience {
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
 
-  val mockFeatureFlagService = mock[FeatureFlagService]
+  val mockFeatureFlagService: FeatureFlagService = mock[FeatureFlagService]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -80,6 +80,11 @@ trait IntegrationSpec
         .willReturn(ok(authResponse))
     )
 
+    server.stubFor(
+      post(urlEqualTo("/pertax/authorise"))
+        .willReturn(ok("{\"code\": \"ACCESS_GRANTED\", \"message\": \"Access granted\"}"))
+    )
+
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = false))
     )
@@ -111,6 +116,8 @@ trait IntegrationSpec
       "microservice.services.if-hod.port"          -> server.port(),
       "microservice.services.hip-hod.port"         -> server.port(),
       "microservice.services.hip-hod.host"         -> "127.0.0.1",
+      "microservice.services.pertax.host"          -> "127.0.0.1",
+      "microservice.services.pertax.port"          -> server.port(),
       "auditing.enabled"                           -> false,
       "cache.isEnabled"                            -> false
     )

@@ -20,7 +20,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.connectors.cache.CacheId
-import uk.gov.hmrc.tai.controllers.predicates.AuthenticationPredicate
+import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.repositories.deprecated.JourneyCacheRepository
 
 import scala.concurrent.ExecutionContext
@@ -28,12 +28,12 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class TestOnlyCacheController @Inject() (
   repository: JourneyCacheRepository,
-  authentication: AuthenticationPredicate,
+  authentication: AuthJourney,
   cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def delete(): Action[AnyContent] = authentication.async { implicit request =>
+  def delete(): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     repository.deleteUpdateIncome(CacheId.noSession(request.nino)) map { _ =>
       NoContent
     } recover { case _ =>

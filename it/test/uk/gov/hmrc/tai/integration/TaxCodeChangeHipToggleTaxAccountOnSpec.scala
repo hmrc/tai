@@ -22,6 +22,7 @@ import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar.{reset, when}
 import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
 import uk.gov.hmrc.http.HeaderNames
@@ -37,12 +38,12 @@ import scala.concurrent.Future
 class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val apiUrlHasChanged = s"/tai/$nino/tax-account/tax-code-change/exists"
-  def requestHasChanged = FakeRequest(GET, apiUrlHasChanged)
+  def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
