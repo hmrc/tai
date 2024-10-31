@@ -19,20 +19,17 @@ package uk.gov.hmrc.tai.integration
 import cats.data.EitherT
 import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
 import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{mock, reset, when}
-import play.api.Application
-import play.api.inject.bind
+import org.mockito.MockitoSugar.{reset, when}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status => getStatus, _}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle, TaxCodeHistoryFromIfToggle}
+import uk.gov.hmrc.tai.model.admin._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
 
@@ -57,6 +54,9 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+    )
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
   }
