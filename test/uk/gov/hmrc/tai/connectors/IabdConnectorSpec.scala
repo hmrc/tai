@@ -316,6 +316,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             "CorrelationId",
             matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
           )
+          .withRequestBody(equalTo("""[{"employmentSequenceNumber":1,"grossAmount":12345,"source":0}]"""))
       )
     }
 
