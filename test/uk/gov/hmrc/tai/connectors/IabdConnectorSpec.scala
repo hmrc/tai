@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, Intern
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabds
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentIabds, HipToggleIabds}
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -107,9 +107,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     )
   )
 
-  val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(1, 20000))
+  val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(Some(1), 20000))
 
   implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
+    )
+  }
 
   "iabds" when {
     "toggled to use NPS" must {

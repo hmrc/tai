@@ -166,7 +166,70 @@ class DefaultIabdConnector @Inject() (
       }
     }
 
-  // TODO: 9477 - WIP
+  private def updateTaxCodeAmountHip(
+    nino: Nino,
+    taxYear: TaxYear,
+    empId: Int,
+    version: Int,
+    iabdType: Int,
+    amount: Int
+  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
+    val requestHeader: Seq[(String, String)] =
+      Seq(
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+      ) ++ hipAuthHeaders(Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret))) ++ Seq(
+        "gov-uk-originator-id" -> hipConfig.originatorId,
+        "correlationId"        -> getUuid
+      )
+
+    httpHandler
+      .putToApi[IabdUpdateAmount](
+        url = s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdType",
+        data = IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version)),
+        api = APITypes.NpsIabdUpdateEstPayManualAPI,
+        headers = requestHeader
+      )(
+        implicitly,
+        IabdUpdateAmount.writesHip
+      )
+      .map(_ => HodUpdateSuccess)
+      .recover { case _ => HodUpdateFailure }
+  }
+
+  private def updateTaxCodeAmountSquid(
+    nino: Nino,
+    taxYear: TaxYear,
+    empId: Int,
+    version: Int,
+    iabdType: Int,
+    amount: Int
+  )(implicit hc: HeaderCarrier): Future[HodUpdateResponse] = {
+    val requestHeader: Seq[(String, String)] =
+      Seq(
+        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
+      ) ++ Seq(
+        "ETag"                 -> version.toString,
+        "X-TXID"               -> sessionOrUUID,
+        "Gov-Uk-Originator-Id" -> npsConfig.originatorId,
+        "CorrelationId"        -> getUuid
+      )
+
+    httpHandler
+      .postToApi[IabdUpdateAmount](
+        url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType),
+        data = IabdUpdateAmount(employmentSequenceNumber = Some(empId), grossAmount = amount, source = Some(NpsSource)),
+        api = APITypes.NpsIabdUpdateEstPayManualAPI,
+        headers = requestHeader
+      )(
+        implicitly,
+        (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
+      )
+      .map(_ => HodUpdateSuccess)
+      .recover { case _ => HodUpdateFailure }
+  }
+
   override def updateTaxCodeAmount(
     nino: Nino,
     taxYear: TaxYear,
@@ -176,69 +239,13 @@ class DefaultIabdConnector @Inject() (
     amount: Int
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] =
     featureFlagService.get(HipToggleEmploymentIabds).flatMap { toggle =>
-      val (url, originatorId, clientIdAndSecret, iabdUpdateAmount, extraHeaders) =
-        if (toggle.isEnabled) {
-          (
-            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdType",
-            hipConfig.originatorId,
-            Some(Tuple2(hipConfig.clientId, hipConfig.clientSecret)),
-            IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version)),
-            Seq(
-              "gov-uk-originator-id" -> originatorId,
-              "correlationId"        -> getUuid
-            )
-          )
-        } else {
-          (
-            iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType),
-            npsConfig.originatorId,
-            None,
-            IabdUpdateAmount(employmentSequenceNumber = Some(empId), grossAmount = amount, source = Some(NpsSource)),
-            Seq(
-              "ETag"                 -> version.toString,
-              "X-TXID"               -> sessionOrUUID,
-              "Gov-Uk-Originator-Id" -> originatorId,
-              "CorrelationId"        -> getUuid
-            )
-          )
-        }
+      if (toggle.isEnabled) {
+        updateTaxCodeAmountHip(nino, taxYear, empId, version, iabdType, amount)
+      } else {
+        updateTaxCodeAmountSquid(nino, taxYear, empId, version, iabdType, amount)
+      }
 
-      val requestHeader: Seq[(String, String)] =
-        Seq(
-          HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-          HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value)
-        ) ++ hipAuthHeaders(clientIdAndSecret) ++ extraHeaders
-
-      httpHandler
-        .postToApi[IabdUpdateAmount](url, iabdUpdateAmount, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
-          implicitly,
-          (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
-        )
-        .map(_ => HodUpdateSuccess)
-        .recover { case _ => HodUpdateFailure }
     }
-
-//  override def updateTaxCodeAmount(
-//    nino: Nino,
-//    taxYear: TaxYear,
-//    employmentId: Int,
-//    version: Int,
-//    iabdType: Int,
-//    amount: Int
-//  )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HodUpdateResponse] = {
-//    val url = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, iabdType)
-//    val iabdUpdateAmount =
-//      IabdUpdateAmount(employmentSequenceNumber = employmentId, grossAmount = amount, source = Some(NpsSource))
-//    val requestHeader = headerForUpdateTaxCodeAmount(hc, version, sessionOrUUID, npsConfig.originatorId)
-//
-//    httpHandler
-//      .postToApi[IabdUpdateAmount](url, iabdUpdateAmount, APITypes.NpsIabdUpdateEstPayManualAPI, requestHeader)(
-//        implicitly,
-//        (updateAmount: IabdUpdateAmount) => Json.arr(Json.toJson(updateAmount))
-//      )
-//      .map(_ => HodUpdateSuccess)
-//      .recover { case _ => HodUpdateFailure }
-//  }
 
   override def getIabdsForType(nino: Nino, year: Int, iabdType: Int)(implicit
     hc: HeaderCarrier

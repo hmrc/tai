@@ -52,4 +52,7 @@ object IabdUpdateAmount {
           (JsPath \ "currentOptimisticLock").writeNullable[Int]
       )(unlift(IabdUpdateAmount.unapply))
     )
+
+  val writesHip: Writes[IabdUpdateAmount] =
+    formats.transform(_.as[JsObject] + ("source" -> JsString("Cutover")))
 }
