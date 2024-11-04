@@ -31,7 +31,7 @@ import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 
 import scala.concurrent.Future
 
-class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
+class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends IntegrationSpec {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -57,7 +57,7 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
-      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
+      Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
     )
   }
 
@@ -73,11 +73,11 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val iabdType = 27
-  val postNpsIabdsUrl = s"/nps-hod-service/services/nps/person/$nino/iabds/$year/employment/$iabdType"
+  val putNpsIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year/employment/1/type/$iabdType"
 
   "Update Income" must {
     "return an OK response for a valid user" in {
-      server.stubFor(post(postNpsIabdsUrl).willReturn(ok()))
+      server.stubFor(put(putNpsIabdsUrl).willReturn(ok()))
 
       val result = route(fakeApplication(), request)
 
@@ -86,7 +86,7 @@ class UpdateIncomeHipToggleTaxAccountOnSpec extends IntegrationSpec {
 
     List(BAD_REQUEST, NOT_FOUND, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { httpStatus =>
       s"return INTERNAL_SERVER_ERROR when the NPS IABDs POST fails with status code $httpStatus" in {
-        server.stubFor(post(postNpsIabdsUrl).willReturn(aResponse().withStatus(httpStatus)))
+        server.stubFor(put(putNpsIabdsUrl).willReturn(aResponse().withStatus(httpStatus)))
 
         val result = route(fakeApplication(), request)
 

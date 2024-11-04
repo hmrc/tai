@@ -25,11 +25,12 @@ import play.api.libs.json._
  * @param grossAmount : 1000  THIS IS MANDATORY - MUST BE A POSITIVE WHOLE NUMBER
  */
 case class IabdUpdateAmount(
-  employmentSequenceNumber: Int,
+  employmentSequenceNumber: Option[Int] = None,
   grossAmount: Int,
   netAmount: Option[Int] = None,
   receiptDate: Option[String] = None,
-  source: Option[Int] = None
+  source: Option[Int] = None,
+  currentOptimisticLock: Option[Int] = None
 ) {
   require(grossAmount >= 0, "grossAmount cannot be less than 0")
 }
@@ -43,11 +44,15 @@ object IabdUpdateAmount {
     Format(
       Json.reads[IabdUpdateAmount],
       (
-        (JsPath \ empSeqNoFieldName).write[Int] and
+        (JsPath \ empSeqNoFieldName).writeNullable[Int] and
           (JsPath \ "grossAmount").write[Int] and
           (JsPath \ "netAmount").writeNullable[Int] and
           (JsPath \ "receiptDate").writeNullable[String] and
-          (JsPath \ "source").writeNullable[Int]
+          (JsPath \ "source").writeNullable[Int] and
+          (JsPath \ "currentOptimisticLock").writeNullable[Int]
       )(unlift(IabdUpdateAmount.unapply))
     )
+
+  val writesHip: Writes[IabdUpdateAmount] =
+    formats.transform(_.as[JsObject] + ("source" -> JsString("Cutover")))
 }
