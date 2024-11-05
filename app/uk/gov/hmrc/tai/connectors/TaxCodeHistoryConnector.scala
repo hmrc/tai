@@ -19,12 +19,10 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.Inject
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
+import uk.gov.hmrc.tai.config.IfConfig
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.TaxCodeHistory.{reads, writes}
-import uk.gov.hmrc.tai.model.admin.TaxCodeHistoryFromIfToggle
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.SensitiveFormatService
@@ -33,71 +31,52 @@ import java.util.UUID
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
+trait TaxCodeHistoryConnector {
+  def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory]
+}
+
 class CachingTaxCodeHistoryConnector @Inject() (
-  @Named("default")
-  underlying: TaxCodeHistoryConnector,
+  @Named("default") underlying: TaxCodeHistoryConnector,
   cachingConnector: CachingConnector,
   sensitiveFormatService: SensitiveFormatService
 ) extends TaxCodeHistoryConnector {
 
-  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    cachingConnector.cache(s"tax-code-history-$nino-${year.year}") {
+  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    val cacheKey = s"tax-code-history-$nino-${year.year}"
+    cachingConnector.cache(cacheKey) {
       underlying.taxCodeHistory(nino, year)
     }(sensitiveFormatService.sensitiveFormatFromReadsWrites[TaxCodeHistory], implicitly)
+  }
 
 }
 
 class DefaultTaxCodeHistoryConnector @Inject() (
   httpHandler: HttpHandler,
-  desConfig: DesConfig,
   ifConfig: IfConfig,
-  desUrls: TaxCodeChangeFromDesUrl,
-  ifUrls: TaxCodeChangeFromIfUrl,
-  featureFlagService: FeatureFlagService
+  ifUrls: TaxCodeChangeFromIfUrl
 )(implicit ec: ExecutionContext)
     extends TaxCodeHistoryConnector {
 
-  private def createHeader(ifToggle: Boolean)(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    if (ifToggle)
-      Seq(
-        "Environment"          -> ifConfig.environment,
-        "Authorization"        -> ifConfig.authorization,
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId"        -> UUID.randomUUID().toString,
-        "originator-id"        -> ifConfig.originatorId
+  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] = {
+    val url: String = ifUrls.taxCodeChangeUrl(nino, year)
+
+    httpHandler
+      .getFromApi(
+        url = url,
+        api = APITypes.TaxCodeChangeAPI,
+        headers = createHeader(),
+        timeoutInMilliseconds = Some(ifConfig.timeoutInMilliseconds)
       )
-    else
-      Seq(
-        "Environment"          -> desConfig.environment,
-        "Authorization"        -> desConfig.authorization,
-        HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
-        HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
-        "CorrelationId"        -> UUID.randomUUID().toString,
-        "OriginatorId"         -> desConfig.originatorId
-      )
+      .map(_.as[TaxCodeHistory])
+  }
 
-  override def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory] =
-    featureFlagService.get(TaxCodeHistoryFromIfToggle).flatMap { toggle =>
-      val url: String =
-        if (toggle.isEnabled) ifUrls.taxCodeChangeUrl(nino, year)
-        else desUrls.taxCodeChangeFromDesUrl(nino, year)
-
-      val timeout: Int =
-        if (toggle.isEnabled) ifConfig.timeoutInMilliseconds
-        else desConfig.timeoutInMilliseconds
-
-      httpHandler
-        .getFromApi(
-          url = url,
-          api = APITypes.TaxCodeChangeAPI,
-          headers = createHeader(toggle.isEnabled),
-          timeoutInMilliseconds = Some(timeout)
-        )
-        .map(json => json.as[TaxCodeHistory])
-    }
-}
-
-trait TaxCodeHistoryConnector {
-  def taxCodeHistory(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[TaxCodeHistory]
+  private def createHeader()(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      "Environment"          -> ifConfig.environment,
+      "Authorization"        -> ifConfig.authorization,
+      HeaderNames.xSessionId -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"        -> UUID.randomUUID().toString,
+      "originator-id"        -> ifConfig.originatorId
+    )
 }

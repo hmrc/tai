@@ -17,35 +17,24 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{BAD_REQUEST, IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND, SERVICE_UNAVAILABLE}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, NotFoundException}
-import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
-import uk.gov.hmrc.tai.config.{DesConfig, IfConfig}
+import uk.gov.hmrc.tai.config.IfConfig
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.factory.{TaxCodeHistoryFactory, TaxCodeRecordFactory}
 import uk.gov.hmrc.tai.model.TaxCodeHistory
-import uk.gov.hmrc.tai.model.admin.{RtiCallToggle, TaxCodeHistoryFromIfToggle}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.{Primary, Secondary}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.net.URL
-import scala.concurrent.Future
 
 class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
   private val taxYear = TaxYear()
-
-  lazy val desConfig: DesConfig = inject[DesConfig]
   lazy val ifConfig: IfConfig = inject[IfConfig]
-  lazy val desUrls: TaxCodeChangeFromDesUrl = inject[TaxCodeChangeFromDesUrl]
-  lazy val taxCodeChangeFromDesUrl: String = {
-    val path = new URL(desUrls.taxCodeChangeFromDesUrl(nino, taxYear))
-    s"${path.getPath}?${path.getQuery}"
-  }
 
   lazy val ifUrls: TaxCodeChangeFromIfUrl = inject[TaxCodeChangeFromIfUrl]
   lazy val taxCodeChangeFromIfUrl: String = {
@@ -55,164 +44,131 @@ class TaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
 
   def createSut(): TaxCodeHistoryConnector = new DefaultTaxCodeHistoryConnector(
     inject[HttpHandler],
-    desConfig,
     ifConfig,
-    desUrls,
-    ifUrls,
-    mockFeatureFlagService
+    ifUrls
   )
 
   implicit val authenticatedRequest: AuthenticatedRequest[AnyContentAsEmpty.type] =
     AuthenticatedRequest(FakeRequest(), nino)
 
-  override def beforeEach(): Unit = {
+  override def beforeEach(): Unit =
     server.resetAll()
-    reset(mockFeatureFlagService)
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
-      Future.successful(FeatureFlag(RtiCallToggle, isEnabled = false))
-    )
-  }
-
-  case class desIFToggle(name: String, toggleState: Boolean)
 
   "taxCodeHistory" when {
-    List(desIFToggle("IF", toggleState = true), desIFToggle("DES", toggleState = false)).foreach { toggle =>
-      lazy val url = if (toggle.toggleState) taxCodeChangeFromIfUrl else taxCodeChangeFromDesUrl
-      lazy val authorizationToken = if (toggle.toggleState) "Bearer ifAuthorization" else "Bearer desAuthorization"
+    lazy val url = taxCodeChangeFromIfUrl
+    lazy val authorizationToken = "Bearer ifAuthorization"
 
-      s"toggled to use ${toggle.name}" must {
-        "return tax code change json" when {
-          "payroll number is returned" in {
-            val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
+    "return tax code change json" when {
+      "payroll number is returned" in {
+        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino)
 
-            server.stubFor(
-              get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+        )
+
+        val result = createSut().taxCodeHistory(nino, taxYear).futureValue
+
+        result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+
+        server.verify(
+          getRequestedFor(urlEqualTo(url))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(HeaderNames.authorisation, equalTo(authorizationToken))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
             )
+        )
+      }
+      "payroll number is not returned" in {
+        val taxCodeRecord = Seq(
+          TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Primary),
+          TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Secondary)
+        )
 
-            when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-              .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
+        val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino, taxCodeRecord)
 
-            val result = createSut().taxCodeHistory(nino, taxYear).futureValue
+        server.stubFor(
+          get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+        )
 
-            result mustEqual TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+        val result = createSut().taxCodeHistory(nino, taxYear).futureValue
 
-            server.verify(
-              getRequestedFor(urlEqualTo(url))
-                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-                .withHeader(HeaderNames.authorisation, equalTo(authorizationToken))
-                .withHeader(
-                  "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-                )
-            )
-          }
-          "payroll number is not returned" in {
-            val taxCodeRecord = Seq(
-              TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Primary),
-              TaxCodeRecordFactory.createNoPayrollNumberJson(employmentType = Secondary)
-            )
-
-            val expectedJsonResponse = TaxCodeHistoryFactory.createTaxCodeHistoryJson(nino, taxCodeRecord)
-
-            server.stubFor(
-              get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
-            )
-
-            when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-              .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
-
-            val result = createSut().taxCodeHistory(nino, taxYear).futureValue
-
-            result mustEqual TaxCodeHistory(
-              nino.nino,
-              Seq(
-                TaxCodeRecordFactory.createPrimaryEmployment(payrollNumber = None),
-                TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
-              )
-            )
-
-            server.verify(
-              getRequestedFor(urlEqualTo(url))
-                .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
-                .withHeader(HeaderNames.xRequestId, equalTo(requestId))
-                .withHeader(
-                  "CorrelationId",
-                  matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
-                )
-            )
-          }
-        }
-
-        "respond with a JsResultException when given invalid json" in {
-          val expectedJsonResponse = Json.obj(
-            "invalid" -> "invalidjson"
+        result mustEqual TaxCodeHistory(
+          nino.nino,
+          Seq(
+            TaxCodeRecordFactory.createPrimaryEmployment(payrollNumber = None),
+            TaxCodeRecordFactory.createSecondaryEmployment(payrollNumber = None)
           )
+        )
 
-          server.stubFor(
-            get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
-          )
+        server.verify(
+          getRequestedFor(urlEqualTo(url))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "CorrelationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
+        )
+      }
+    }
 
-          when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-            .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
+    "respond with a JsResultException when given invalid json" in {
+      val expectedJsonResponse = Json.obj(
+        "invalid" -> "invalidjson"
+      )
+
+      server.stubFor(
+        get(urlEqualTo(url)).willReturn(ok(expectedJsonResponse.toString))
+      )
+
+      val connector = createSut()
+
+      val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
+
+      result mustBe a[JsResultException]
+    }
+    "return an error" when {
+      "a 400 occurs" in {
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(BAD_REQUEST)))
+
+        val connector = createSut()
+
+        val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
+
+        result mustBe a[BadRequestException]
+      }
+
+      "a 404 occurs" in {
+
+        server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(NOT_FOUND)))
+
+        val connector = createSut()
+
+        val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
+
+        result mustBe a[NotFoundException]
+      }
+
+      List(
+        IM_A_TEAPOT,
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE
+      ).foreach { httpResponse =>
+        s"a $httpResponse occurs" in {
+
+          server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(httpResponse)))
 
           val connector = createSut()
 
           val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
 
-          result mustBe a[JsResultException]
-        }
-        "return an error" when {
-          "a 400 occurs" in {
-
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(BAD_REQUEST)))
-
-            when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-              .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
-
-            val connector = createSut()
-
-            val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
-
-            result mustBe a[BadRequestException]
-          }
-
-          "a 404 occurs" in {
-
-            server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(NOT_FOUND)))
-
-            when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-              .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
-
-            val connector = createSut()
-
-            val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
-
-            result mustBe a[NotFoundException]
-          }
-
-          List(
-            IM_A_TEAPOT,
-            INTERNAL_SERVER_ERROR,
-            SERVICE_UNAVAILABLE
-          ).foreach { httpResponse =>
-            s"a $httpResponse occurs" in {
-
-              server.stubFor(get(urlEqualTo(url)).willReturn(aResponse().withStatus(httpResponse)))
-
-              when(mockFeatureFlagService.get(TaxCodeHistoryFromIfToggle))
-                .thenReturn(Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = toggle.toggleState)))
-
-              val connector = createSut()
-
-              val result = connector.taxCodeHistory(nino, taxYear).failed.futureValue
-
-              result mustBe a[HttpException]
-            }
-          }
+          result mustBe a[HttpException]
         }
       }
     }
   }
-
 }
