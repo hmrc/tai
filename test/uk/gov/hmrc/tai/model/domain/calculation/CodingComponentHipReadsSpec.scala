@@ -543,7 +543,7 @@ class CodingComponentHipReadsSpec extends PlaySpec {
 
       }
 
-      "include all benefit components detailed within total liability iabd summaries across multiple locations & both lists" in {
+      "include all benefit components detailed within total liability iabd summaries across multiple locations & both iabd summary lists" in {
         val expectedCodingComponents = Seq(
           CodingComponent(CarFuelBenefit, Some(1), 1, "Car Fuel Benefit", None),
           CodingComponent(MedicalInsurance, Some(1), 1, "Medical Insurance", None),
