@@ -44,9 +44,6 @@ class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends Integration
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
-    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](TaxCodeHistoryFromIfToggle))).thenReturn(
-      Future.successful(FeatureFlag(TaxCodeHistoryFromIfToggle, isEnabled = false))
-    )
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = true))
     )
