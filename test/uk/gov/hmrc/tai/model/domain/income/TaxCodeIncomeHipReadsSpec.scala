@@ -195,8 +195,28 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
     }
 
     "utilize totalTaxableIncomeReads to read amount" when {
-      "provided with whole json" in {
+      "provided with whole json where summaryIABDEstimatedPayDetailsList has item & summaryIABDDetailsList doesn't" in {
         val payload = readFile("TC11.json")
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+        result mustBe Seq(
+          TaxCodeIncome(
+            OtherIncome,
+            Some(1),
+            BigDecimal(1111),
+            "OtherIncome",
+            "1150L",
+            "",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0)
+          )
+        )
+      }
+
+      "provided with whole json where summaryIABDDetailsList has item & summaryIABDEstimatedPayDetailsList doesn't" in {
+        val payload = readFile("TC23.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
