@@ -200,6 +200,20 @@ class CodingComponentHipReadsSpec extends PlaySpec {
         payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq
           .empty[CodingComponent]
       }
+
+    }
+
+    "return the correct items" when {
+      "processing test scenario 25 payload from HIP E2E testing, incl flat rate expenses and med insurance" in {
+        val payload = readFile("tc34.json")
+        payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq(
+          CodingComponent(PersonalAllowancePA, None, 12570, "Loan Interest Amount", Some(12570)),
+          CodingComponent(EarlyYearsAdjustment, None, 250, "Car Benefit", Some(250)),
+          CodingComponent(StatePension, None, 10700, "Gift Aid Payments", Some(10700)),
+          CodingComponent(FlatRateJobExpenses, None, 1100, "Flat Rate Job Expenses", None),
+          CodingComponent(MedicalInsurance, Some(1), 500, "Medical Insurance", None)
+        )
+      }
     }
 
     "generate Benefit instances of the appropriate TaxComponentType" when {
