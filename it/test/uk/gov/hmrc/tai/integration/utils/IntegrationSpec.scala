@@ -33,7 +33,7 @@ import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentDetails, HipToggleIabds, HipToggleTaxAccount, RtiCallToggle}
+import uk.gov.hmrc.tai.model.admin._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
@@ -90,6 +90,10 @@ trait IntegrationSpec
     )
 
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
+    )
+
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
 

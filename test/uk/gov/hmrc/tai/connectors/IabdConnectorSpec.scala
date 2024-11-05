@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, Intern
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.admin.HipToggleIabds
+import uk.gov.hmrc.tai.model.admin.{HipToggleEmploymentIabds, HipToggleIabds}
 import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
@@ -49,12 +49,13 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   lazy val iabdUrls: IabdUrls = inject[IabdUrls]
   val iabdType: Int = 27
   val iabdHipType: String = "New-Estimated-Pay-(027)"
+  private def hipConfig = inject[HipConfig]
 
   def sut(): IabdConnector = new DefaultIabdConnector(
     inject[HttpHandler],
     inject[NpsConfig],
     inject[DesConfig],
-    inject[HipConfig],
+    hipConfig,
     iabdUrls,
     mockFeatureFlagService
   )
@@ -107,9 +108,16 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     )
   )
 
-  val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(1, 20000))
+  val updateAmount: List[IabdUpdateAmount] = List(IabdUpdateAmount(Some(1), 20000))
 
   implicit lazy val iabdFormats: Format[IabdUpdateAmount] = IabdUpdateAmount.formats
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+      Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
+    )
+  }
 
   "iabds" when {
     "toggled to use NPS" must {
@@ -282,7 +290,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     }
   }
 
-  "updateTaxCodeIncome" when {
+  "updateTaxCodeIncome with HipToggleEmploymentIabds off" when {
     "update nps with the new tax code income" in {
 
       val url: String = {
@@ -308,6 +316,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
             "CorrelationId",
             matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
           )
+          .withRequestBody(equalTo("""[{"employmentSequenceNumber":1,"grossAmount":12345,"source":0}]"""))
       )
     }
 
@@ -346,6 +355,109 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
           sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
           5 seconds
         ) mustBe HodUpdateFailure
+      }
+    }
+  }
+
+  "updateTaxCodeIncome with HipToggleEmploymentIabds on" when {
+    "update nps with the new tax code income" in {
+
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+        Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
+      )
+      val url: String = {
+        val path =
+          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+        s"${path.getPath}"
+      }
+
+      server.stubFor(put(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
+
+      Await.result(
+        sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+        5 seconds
+      ) mustBe HodUpdateSuccess
+
+      server.verify(
+        putRequestedFor(urlEqualTo(url))
+          .withHeader("gov-uk-originator-id", equalTo(hipOriginatorId))
+          .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+          .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+          .withoutHeader("ETag")
+          .withoutHeader("X-TXID")
+          .withHeader(
+            "correlationId",
+            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+          )
+          .withRequestBody(equalTo("""{"grossAmount":12345,"source":"Cutover","currentOptimisticLock":1}"""))
+      )
+    }
+
+    "return a failure status if the update fails" in {
+
+      when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+        Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
+      )
+
+      val url: String = {
+        val path =
+          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+        s"${path.getPath}"
+      }
+
+      server.stubFor(put(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
+
+      Await.result(
+        sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+        5 seconds
+      ) mustBe HodUpdateFailure
+
+      server.verify(
+        putRequestedFor(urlEqualTo(url))
+          .withHeader("gov-uk-originator-id", equalTo(hipOriginatorId))
+          .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+          .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+          .withHeader(
+            "correlationId",
+            matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+          )
+      )
+    }
+
+    List(
+      BAD_REQUEST,
+      NOT_FOUND,
+      IM_A_TEAPOT,
+      INTERNAL_SERVER_ERROR,
+      SERVICE_UNAVAILABLE
+    ).foreach { httpStatus =>
+      s" return a failure status for $httpStatus  response" in {
+
+        when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
+          Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
+        )
+        val url: String = {
+          val path =
+            new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+          s"${path.getPath}"
+        }
+
+        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
+
+        Await.result(
+          sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
+          5 seconds
+        ) mustBe HodUpdateFailure
+        server.verify(
+          putRequestedFor(urlEqualTo(url))
+            .withHeader("gov-uk-originator-id", equalTo(hipOriginatorId))
+            .withHeader(HeaderNames.xSessionId, equalTo(sessionId))
+            .withHeader(HeaderNames.xRequestId, equalTo(requestId))
+            .withHeader(
+              "correlationId",
+              matching("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}")
+            )
+        )
       }
     }
   }
