@@ -203,7 +203,7 @@ class CodingComponentHipReadsSpec extends PlaySpec {
 
     }
 
-    "return the correct items" when {
+    "return correct response" when {
       "processing test scenario 25 payload from HIP E2E testing, incl flat rate expenses and med insurance" in {
         val payload = readFile("tc34.json")
         payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads) mustBe Seq(
@@ -212,6 +212,17 @@ class CodingComponentHipReadsSpec extends PlaySpec {
           CodingComponent(StatePension, None, 10700, "Gift Aid Payments", Some(10700)),
           CodingComponent(FlatRateJobExpenses, None, 1100, "Flat Rate Job Expenses", None),
           CodingComponent(MedicalInsurance, Some(1), 500, "Medical Insurance", None)
+        )
+      }
+    }
+
+    "throw an exception" when {
+      "there are duplicate items in the 2 summary lists" in {
+        val payload = readFile("tc35.json")
+        val exception =
+          the[JsResultException] thrownBy payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
+        exception mustBe JsResultException(errors =
+          List((__, List(JsonValidationError(List("Duplicate component types:List(30, 27)")))))
         )
       }
     }

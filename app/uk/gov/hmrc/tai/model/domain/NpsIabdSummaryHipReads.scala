@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsArray, JsError, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
 
 object NpsIabdSummaryHipReads {
@@ -26,7 +26,13 @@ object NpsIabdSummaryHipReads {
       Seq("nonSavings", "untaxedInterest", "bankInterest", "ukDividends", "foreignInterest", "foreignDividends")
     val totalIncomeList = totalLiabilityIabds(json, "totalIncomeDetails", categories)
     val allowReliefDeductsList = totalLiabilityIabds(json, "allowanceReliefDeductionsDetails", categories)
-    JsSuccess(totalIncomeList ++ allowReliefDeductsList)
+
+    val componentTypes = totalIncomeList.map(_.componentType)
+    componentTypes.diff(componentTypes.distinct).distinct match {
+      case duplicates if duplicates.nonEmpty => JsError("Duplicate component types:" + duplicates)
+      case _                                 => JsSuccess(totalIncomeList ++ allowReliefDeductsList)
+    }
+
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
@@ -49,7 +55,6 @@ object NpsIabdSummaryHipReads {
         (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
       )
       .flatMap(_.value) collect pf
-
     list1 ++ list2
 
   }
