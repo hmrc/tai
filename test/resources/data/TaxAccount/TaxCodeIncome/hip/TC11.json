@@ -14,21 +14,6 @@
         "totalIncomeDetails": {
           "amount": 1234,
           "summaryIABDDetailsList": [
-            {
-              "amount": 1111,
-              "type": "New Estimated Pay (027)",
-              "employmentSequenceNumber": 1
-            },
-            {
-              "amount": 1111,
-              "type": "Car Fuel Benefit (029)",
-              "employmentSequenceNumber": 1
-            },
-            {
-              "amount": 1111,
-              "type": "New Estimated Pay (027)",
-              "employmentSequenceNumber": 2
-            }
           ],
           "summaryIABDEstimatedPayDetailsList": [
             {

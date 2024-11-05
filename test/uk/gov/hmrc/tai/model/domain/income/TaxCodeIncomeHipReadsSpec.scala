@@ -76,17 +76,17 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
-            EmploymentIncome,
-            Some(1),
-            BigDecimal(1111),
-            "EmploymentIncome",
-            "1150L",
-            "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
+            componentType = EmploymentIncome,
+            employmentId = Some(1),
+            amount = BigDecimal(1111),
+            description = "EmploymentIncome",
+            taxCode = "1150L",
+            name = "Employer1",
+            basisOperation = Week1Month1BasisOperation,
+            status = Live,
+            inYearAdjustmentIntoCY = BigDecimal(0),
+            totalInYearAdjustment = BigDecimal(0),
+            inYearAdjustmentIntoCYPlusOne = BigDecimal(0)
           )
         )
       }
@@ -235,7 +235,6 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
         )
       }
     }
-
   }
 
   "taxAccountReads" must {
