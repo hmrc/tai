@@ -235,6 +235,7 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
         )
       }
     }
+
   }
 
   "taxAccountReads" must {

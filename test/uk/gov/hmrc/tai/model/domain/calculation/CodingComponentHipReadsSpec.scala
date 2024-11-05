@@ -542,6 +542,38 @@ class CodingComponentHipReadsSpec extends PlaySpec {
           )
 
       }
+
+      "include all benefit components detailed within total liability iabd summaries across multiple locations & both lists" in {
+        val expectedCodingComponents = Seq(
+          CodingComponent(CarFuelBenefit, Some(1), 1, "Car Fuel Benefit", None),
+          CodingComponent(MedicalInsurance, Some(1), 1, "Medical Insurance", None),
+          CodingComponent(Mileage, Some(1), 1, "Mileage", None),
+          CodingComponent(
+            EmployerProvidedProfessionalSubscription,
+            Some(1),
+            1,
+            "Employer Provided Professional Subscription",
+            None
+          ),
+          CodingComponent(
+            IncomeTaxPaidButNotDeductedFromDirectorsRemuneration,
+            Some(1),
+            1,
+            "Income Tax Paid but not deducted from Director's Remuneration",
+            None
+          ),
+          CodingComponent(NonQualifyingRelocationExpenses, Some(2), 2, "Non-qualifying Relocation Expenses", None),
+          CodingComponent(PersonalIncidentalExpenses, Some(2), 2, "Personal Incidental Expenses", None),
+          CodingComponent(NurseryPlaces, Some(2), 2, "Nursery Places", None),
+          CodingComponent(QualifyingRelocationExpenses, Some(2), 2, "Qualifying Relocation Expenses", None)
+        )
+
+        val payload = readFile("tc33.json")
+        payload.as[Seq[CodingComponent]](
+          CodingComponentHipReads.codingComponentReads
+        ) must contain allElementsOf expectedCodingComponents
+      }
+
     }
 
     "codingComponentWrites" must {

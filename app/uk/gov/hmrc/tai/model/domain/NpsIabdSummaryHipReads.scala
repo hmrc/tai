@@ -30,10 +30,7 @@ object NpsIabdSummaryHipReads {
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
-    val iabdJsArray = categories.flatMap { category =>
-      (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
-    }
-    iabdJsArray.flatMap(_.value) collect {
+    val pf: PartialFunction[JsValue, NpsIabdSummary] = {
       case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
         val fullType = (json \ "type").as[String]
         val (description, componentType) = parseTypeOrException(fullType)
@@ -41,5 +38,19 @@ object NpsIabdSummaryHipReads {
         val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
+    val list1 = categories
+      .flatMap(category =>
+        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDDetailsList").asOpt[JsArray]
+      )
+      .flatMap(_.value) collect pf
+
+    val list2 = categories
+      .flatMap(category =>
+        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
+      )
+      .flatMap(_.value) collect pf
+
+    list1 ++ list2
+
   }
 }
