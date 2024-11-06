@@ -33,6 +33,7 @@ import uk.gov.hmrc.tai.model.enums.APITypes.{APITypes, HipIabdUpdateEmployeeExpe
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot.format
 import uk.gov.hmrc.tai.model.nps2.IabdType
+import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateHipIabdEmployeeExpense, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.service.SensitiveFormatService
@@ -40,6 +41,7 @@ import uk.gov.hmrc.tai.service.SensitiveFormatService.SensitiveJsValue
 import uk.gov.hmrc.tai.util.HodsSource.NpsSource
 import uk.gov.hmrc.tai.util.{InvalidateCaches, TaiConstants}
 
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, UUID}
 import scala.concurrent.{ExecutionContext, Future}
@@ -182,11 +184,13 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
-    val iabdTypeAsString = IabdType.hipMapping(iabdType)
+
+    val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
+
     httpHandler
       .putToApi[IabdUpdateAmount](
         url =
-          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdTypeAsString",
+          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdTypeArgument",
         data = IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version)),
         api = APITypes.NpsIabdUpdateEstPayManualAPI,
         headers = requestHeader
