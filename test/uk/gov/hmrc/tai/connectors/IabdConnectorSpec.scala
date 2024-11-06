@@ -367,7 +367,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       )
       val url: String = {
         val path =
-          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+          new URL(
+            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/New-Estimated-Pay-(027)"
+          )
         s"${path.getPath}"
       }
 
@@ -401,7 +403,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
       val url: String = {
         val path =
-          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+          new URL(
+            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/New-Estimated-Pay-(027)"
+          )
         s"${path.getPath}"
       }
 
@@ -438,7 +442,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
         val url: String = {
           val path =
-            new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+            new URL(
+              s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/New-Estimated-Pay-(027)"
+            )
           s"${path.getPath}"
         }
 

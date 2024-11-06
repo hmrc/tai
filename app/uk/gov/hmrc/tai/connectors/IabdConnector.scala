@@ -182,9 +182,11 @@ class DefaultIabdConnector @Inject() (
         "gov-uk-originator-id" -> hipConfig.originatorId,
         "correlationId"        -> getUuid
       )
+    val iabdTypeAsString = IabdType.hipMapping(iabdType)
     httpHandler
       .putToApi[IabdUpdateAmount](
-        url = s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdType",
+        url =
+          s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdTypeAsString",
         data = IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version)),
         api = APITypes.NpsIabdUpdateEstPayManualAPI,
         headers = requestHeader
