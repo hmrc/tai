@@ -76,17 +76,17 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(
-            EmploymentIncome,
-            Some(1),
-            BigDecimal(1111),
-            "EmploymentIncome",
-            "1150L",
-            "Employer1",
-            Week1Month1BasisOperation,
-            Live,
-            BigDecimal(0),
-            BigDecimal(0),
-            BigDecimal(0)
+            componentType = EmploymentIncome,
+            employmentId = Some(1),
+            amount = BigDecimal(1111),
+            description = "EmploymentIncome",
+            taxCode = "1150L",
+            name = "Employer1",
+            basisOperation = Week1Month1BasisOperation,
+            status = Live,
+            inYearAdjustmentIntoCY = BigDecimal(0),
+            totalInYearAdjustment = BigDecimal(0),
+            inYearAdjustmentIntoCYPlusOne = BigDecimal(0)
           )
         )
       }
@@ -195,8 +195,28 @@ class TaxCodeIncomeHipReadsSpec extends PlaySpec {
     }
 
     "utilize totalTaxableIncomeReads to read amount" when {
-      "provided with whole json" in {
+      "provided with whole json where summaryIABDEstimatedPayDetailsList has item & summaryIABDDetailsList doesn't" in {
         val payload = readFile("TC11.json")
+        val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
+        result mustBe Seq(
+          TaxCodeIncome(
+            OtherIncome,
+            Some(1),
+            BigDecimal(1111),
+            "OtherIncome",
+            "1150L",
+            "",
+            OtherBasisOperation,
+            Live,
+            BigDecimal(0),
+            BigDecimal(0),
+            BigDecimal(0)
+          )
+        )
+      }
+
+      "provided with whole json where summaryIABDDetailsList has item & summaryIABDEstimatedPayDetailsList doesn't" in {
+        val payload = readFile("TC23.json")
         val result = payload.as[Seq[TaxCodeIncome]](TaxCodeIncomeHipReads.taxCodeIncomeSourcesReads)
         result mustBe Seq(
           TaxCodeIncome(

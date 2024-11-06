@@ -86,9 +86,23 @@ object TaxCodeIncomeHipReads {
   }
 
   private def totalTaxableIncome(json: JsValue, employmentId: Option[Int]): Option[BigDecimal] = {
-    val iabdSummaries: Option[Seq[IabdSummary]] =
-      (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDEstimatedPayDetailsList")
+    val iabdSummaries: Option[Seq[IabdSummary]] = {
+      val list1 = (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDEstimatedPayDetailsList")
         .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipReads.iabdSummaryReads))
+
+      val list2: Option[Seq[IabdSummary]] =
+        (json \ "payAndTax" \ "totalIncomeDetails" \ "summaryIABDDetailsList")
+          .asOpt[Seq[IabdSummary]](Reads.seq(IabdSummaryHipReads.iabdSummaryReads))
+
+      (list1, list2) match {
+        case (Some(l1), Some(l2)) => Some(l1 ++ l2)
+        case (None, l @ Some(_))  => l
+        case (l @ Some(_), None)  => l
+        case (None, None)         => None
+      }
+
+    }
+
     val iabdSummary = iabdSummaries.flatMap {
       _.find(iabd =>
         newEstimatedPayTypeFilter(iabd) &&

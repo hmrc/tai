@@ -36,12 +36,13 @@ class TaxAccountHelperHipToggleOnSpec extends BaseSpec {
              |  "totalLiabilityDetails": {
              |    "nonSavings": {
              |      "totalIncomeDetails": {
-             |        "summaryIABDDetailsList": [],
-             |        "summaryIABDEstimatedPayDetailsList": [
+             |        "summaryIABDDetailsList": [
              |          {
              |            "amount": 100,
              |            "type": "Non-Coded Income (019)"
-             |          },
+             |          }        
+             |        ],
+             |        "summaryIABDEstimatedPayDetailsList": [
              |          {
              |            "amount": 100,
              |            "type": "Job Seekers Allowance (084)"
