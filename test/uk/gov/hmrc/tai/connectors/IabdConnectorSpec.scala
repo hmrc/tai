@@ -31,12 +31,12 @@ import uk.gov.hmrc.tai.model.domain.IabdDetails
 import uk.gov.hmrc.tai.model.domain.response.{HodUpdateFailure, HodUpdateSuccess}
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.nps.NpsIabdRoot
-import uk.gov.hmrc.tai.model.nps2.IabdType.NewEstimatedPay
+import uk.gov.hmrc.tai.model.nps2.IabdType.{NewEstimatedPay, hipMapping}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import java.net.URL
+import java.net.{URL, URLEncoder}
 import java.time.LocalDate
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -59,7 +59,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     iabdUrls,
     mockFeatureFlagService
   )
-
+  private val iabdTypeArgument: String = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
@@ -367,7 +367,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       )
       val url: String = {
         val path =
-          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+          new URL(
+            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
+          )
         s"${path.getPath}"
       }
 
@@ -401,7 +403,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
       val url: String = {
         val path =
-          new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+          new URL(
+            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
+          )
         s"${path.getPath}"
       }
 
@@ -438,7 +442,9 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         )
         val url: String = {
           val path =
-            new URL(s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdType")
+            new URL(
+              s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
+            )
           s"${path.getPath}"
         }
 
