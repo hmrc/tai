@@ -28,7 +28,9 @@ import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.admin._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
+import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 
+import java.net.URLEncoder
 import scala.concurrent.Future
 
 class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends IntegrationSpec {
@@ -58,19 +60,19 @@ class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends Integration
     )
   }
 
-  val employmentId = 1
-  val apiUrl = s"/tai/$nino/tax-account/snapshots/$year/incomes/tax-code-incomes/$employmentId/estimated-pay"
+  private val employmentId = 1
+  private val apiUrl = s"/tai/$nino/tax-account/snapshots/$year/incomes/tax-code-incomes/$employmentId/estimated-pay"
 
-  val amount = 123
-  val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
+  private val amount = 123
+  private val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
 
-  def request = FakeRequest(PUT, apiUrl)
+  private def request = FakeRequest(PUT, apiUrl)
     .withJsonBody(postRequest)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  val iabdType = 27
-  val putNpsIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year/employment/1/type/$iabdType"
+  private val iabdTypeArgument = URLEncoder.encode(hipMapping(27), "UTF-8").replace("+", "%20")
+  val putNpsIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year/employment/1/type/$iabdTypeArgument"
 
   "Update Income" must {
     "return an OK response for a valid user" in {
