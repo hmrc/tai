@@ -14,28 +14,38 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.domain
+package uk.gov.hmrc.tai.util
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsPath, JsResultException, JsonValidationError}
-import uk.gov.hmrc.tai.model.domain.NpsIabdSummaryHipReads._
+import uk.gov.hmrc.tai.model.domain.NpsIabdSummary
 
-class NpsIabdSummaryHipReadsDuplicateCheckerSpec extends PlaySpec {
+class SequenceHelperSpec extends PlaySpec {
 
   "checkForDuplicates" must {
+
     "not throw an exception" when {
+
       "there are no duplicates in the provided items" in {
         val items = Seq(
           NpsIabdSummary(27, Some(1), BigDecimal(1000), "Description 1"),
           NpsIabdSummary(28, Some(2), BigDecimal(2000), "Description 2"),
-          NpsIabdSummary(29, Some(3), BigDecimal(3000), "Description 3")
+          NpsIabdSummary(29, Some(3), BigDecimal(3000), "Description 3"),
+          NpsIabdSummary(29, None, BigDecimal(3000), "Description 3")
         )
 
-        checkForDuplicates[NpsIabdSummary](items, item => (item.employmentId, item.componentType))
+        noException should be thrownBy {
+          SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
+            items,
+            item => (item.employmentId, item.componentType),
+            key => s"employmentSequenceNumber: ${key._1} and componentType: ${key._2}"
+          )
+        }
       }
     }
 
     "throw a JsResultException" when {
+
       "there are duplicate items with the same employmentId and componentType" in {
         val items = Seq(
           NpsIabdSummary(27, Some(1), BigDecimal(1000), "Description 1"),
@@ -45,7 +55,11 @@ class NpsIabdSummaryHipReadsDuplicateCheckerSpec extends PlaySpec {
         )
 
         val exception = the[JsResultException] thrownBy {
-          checkForDuplicates[NpsIabdSummary](items, item => (item.employmentId, item.componentType))
+          SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
+            items,
+            item => (item.employmentId, item.componentType),
+            key => s"employmentSequenceNumber: ${key._1} and componentType: ${key._2}"
+          )
         }
 
         exception.errors mustBe Seq(
@@ -53,7 +67,7 @@ class NpsIabdSummaryHipReadsDuplicateCheckerSpec extends PlaySpec {
             JsPath,
             Seq(
               JsonValidationError(
-                "Duplicate entries found for employmentSequenceNumber: Some(1) and componentType: 27; employmentSequenceNumber: Some(2) and componentType: 28"
+                "Duplicate entries found for employmentSequenceNumber: Some(2) and componentType: 28; employmentSequenceNumber: Some(1) and componentType: 27"
               )
             )
           )
@@ -68,7 +82,11 @@ class NpsIabdSummaryHipReadsDuplicateCheckerSpec extends PlaySpec {
         )
 
         val exception = the[JsResultException] thrownBy {
-          checkForDuplicates[NpsIabdSummary](items, item => (item.employmentId, item.componentType))
+          SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
+            items,
+            item => (item.employmentId, item.componentType),
+            key => s"employmentSequenceNumber: ${key._1} and componentType: ${key._2}"
+          )
         }
 
         exception.errors mustBe Seq(

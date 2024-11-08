@@ -227,7 +227,9 @@ class CodingComponentHipReadsSpec extends PlaySpec {
               __,
               List(
                 JsonValidationError(
-                  List("Duplicate entries found for employmentSequenceNumber: Some(1) and componentType: 27")
+                  List(
+                    "Duplicate entries found for employmentSequenceNumber: Some(1) and componentType: 30; employmentSequenceNumber: Some(1) and componentType: 27"
+                  )
                 )
               )
             )

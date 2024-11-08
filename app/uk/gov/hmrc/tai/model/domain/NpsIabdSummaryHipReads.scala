@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{JsArray, JsPath, JsResultException, JsSuccess, JsValue, JsonValidationError, Reads}
+import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
+import uk.gov.hmrc.tai.util.SequenceHelper
 
 object NpsIabdSummaryHipReads {
 
@@ -48,30 +49,14 @@ object NpsIabdSummaryHipReads {
 
     val allItems = extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
 
-    checkForDuplicates[NpsIabdSummary](allItems, (item: NpsIabdSummary) => (item.employmentId, item.componentType))
+    SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
+      allItems,
+      uniqueKey = item => (item.employmentId, item.componentType),
+      keyDescription = { case (employmentId, componentType) =>
+        s"employmentSequenceNumber: $employmentId and componentType: $componentType"
+      }
+    )
 
     allItems
-  }
-
-  def checkForDuplicates[T](items: Seq[T], uniqueKey: T => (Option[Int], Int)): Unit = {
-    val duplicates = items
-      .groupBy(uniqueKey)
-      .collect { case (key, items) if items.size > 1 => key }
-      .toSeq
-      .sorted
-
-    if (duplicates.nonEmpty) {
-      val duplicateMessages = duplicates.distinct
-        .map { case (employmentId, componentType) =>
-          s"employmentSequenceNumber: $employmentId and componentType: $componentType"
-        }
-        .mkString("; ")
-
-      throw JsResultException(
-        Seq(
-          JsPath -> Seq(JsonValidationError(s"Duplicate entries found for $duplicateMessages"))
-        )
-      )
-    }
   }
 }
