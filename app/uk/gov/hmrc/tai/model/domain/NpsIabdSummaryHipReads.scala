@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsArray, JsPath, JsResultException, JsSuccess, JsValue, JsonValidationError, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
 
 object NpsIabdSummaryHipReads {
@@ -30,7 +30,8 @@ object NpsIabdSummaryHipReads {
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
-    val pf: PartialFunction[JsValue, NpsIabdSummary] = {
+
+    val parseSummary: PartialFunction[JsValue, NpsIabdSummary] = {
       case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
         val fullType = (json \ "type").as[String]
         val (description, componentType) = parseTypeOrException(fullType)
@@ -38,19 +39,39 @@ object NpsIabdSummaryHipReads {
         val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
-    val list1 = categories
-      .flatMap(category =>
-        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDDetailsList").asOpt[JsArray]
+
+    def extractItems(listName: String): Seq[NpsIabdSummary] =
+      categories
+        .flatMap(category => (json \ "totalLiabilityDetails" \ category \ subPath \ listName).asOpt[JsArray])
+        .flatMap(_.value)
+        .collect(parseSummary)
+
+    val allItems = extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
+
+    checkForDuplicates[NpsIabdSummary](allItems, (item: NpsIabdSummary) => (item.employmentId, item.componentType))
+
+    allItems
+  }
+
+  def checkForDuplicates[T](items: Seq[T], uniqueKey: T => (Option[Int], Int)): Unit = {
+    val duplicates = items
+      .groupBy(uniqueKey)
+      .collect { case (key, items) if items.size > 1 => key }
+      .toSeq
+      .sorted
+
+    if (duplicates.nonEmpty) {
+      val duplicateMessages = duplicates.distinct
+        .map { case (employmentId, componentType) =>
+          s"employmentSequenceNumber: $employmentId and componentType: $componentType"
+        }
+        .mkString("; ")
+
+      throw JsResultException(
+        Seq(
+          JsPath -> Seq(JsonValidationError(s"Duplicate entries found for $duplicateMessages"))
+        )
       )
-      .flatMap(_.value) collect pf
-
-    val list2 = categories
-      .flatMap(category =>
-        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
-      )
-      .flatMap(_.value) collect pf
-
-    list1 ++ list2
-
+    }
   }
 }
