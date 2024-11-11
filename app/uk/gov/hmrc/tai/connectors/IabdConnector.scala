@@ -188,15 +188,16 @@ class DefaultIabdConnector @Inject() (
     val iabdTypeArgument = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
 
     httpHandler
-      .putToApi[IabdUpdateAmount](
+      .putToApi(
         url =
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/$empId/type/$iabdTypeArgument",
-        data = IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version)),
+        data = Json.toJson(
+          IabdUpdateAmount(grossAmount = amount, source = Some(NpsSource), currentOptimisticLock = Some(version))
+        )(IabdUpdateAmount.writesHip),
         api = APITypes.NpsIabdUpdateEstPayManualAPI,
         headers = requestHeader
       )(
-        implicitly,
-        IabdUpdateAmount.writesHip
+        implicitly
       )
       .map(_ => HodUpdateSuccess)
       .recover { case _ => HodUpdateFailure }
@@ -297,7 +298,7 @@ class DefaultIabdConnector @Inject() (
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
     featureFlagService.get(HipToggleIabds).flatMap { toggle =>
       if (toggle.isEnabled) {
-        httpHandler.putToApi[UpdateHipIabdEmployeeExpense](
+        httpHandler.putToApiHttpClientV1[UpdateHipIabdEmployeeExpense](
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
           HipIabdUpdateEmployeeExpensesAPI,
