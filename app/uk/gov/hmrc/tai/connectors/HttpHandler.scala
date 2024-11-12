@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
-import java.net.URL
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
