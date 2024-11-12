@@ -151,7 +151,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
 
     (for {
       response <- httpClientV2
-                    .put(url = new URL(url))(hc.withExtraHeaders(headers: _*))
+                    .put(url = url"$url")(hc.withExtraHeaders(headers: _*))
                     .withBody(data)
                     .transform { response: WSRequest =>
                       timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>
