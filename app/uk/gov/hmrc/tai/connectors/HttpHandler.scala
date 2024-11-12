@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.enums.APITypes._
 
-import java.net.URL
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -151,7 +150,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
 
     (for {
       response <- httpClientV2
-                    .put(url = new URL(url))(hc.withExtraHeaders(headers: _*))
+                    .put(url = url"$url")(hc.withExtraHeaders(headers: _*))
                     .withBody(data)
                     .transform { response: WSRequest =>
                       timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>

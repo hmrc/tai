@@ -36,7 +36,6 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
-import java.net.{URL, URLEncoder}
 import java.time.LocalDate
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -50,20 +49,22 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   val iabdType: Int = 27
   val iabdHipType: String = "New-Estimated-Pay-(027)"
   private def hipConfig = inject[HipConfig]
+  private def npsConfig = inject[NpsConfig]
 
   def sut(): IabdConnector = new DefaultIabdConnector(
     inject[HttpHandler],
-    inject[NpsConfig],
+    npsConfig,
     inject[DesConfig],
     hipConfig,
     iabdUrls,
     mockFeatureFlagService
   )
-  private val iabdTypeArgument: String = URLEncoder.encode(hipMapping(iabdType), "UTF-8").replace("+", "%20")
+  private val iabdTypeArgument: String = hipMapping(iabdType)
   val taxYear: TaxYear = TaxYear()
 
   val npsUrl: String = s"/nps-hod-service/services/nps/person/${nino.nino}/iabds/${taxYear.year}"
-  val hipIabdsUrl: String = s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
+  lazy val hipIabdsUrl: String =
+    s"/v1/api/iabd/taxpayer/$nino/tax-year/${taxYear.year}"
 
   val desBaseUrl: String = s"/pay-as-you-earn/individuals/${nino.nino}"
   val iabdsUrl: String = s"$desBaseUrl/iabds/tax-year/${taxYear.year}"
@@ -293,10 +294,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
   "updateTaxCodeIncome with HipToggleEmploymentIabds off" when {
     "update nps with the new tax code income" in {
 
-      val url: String = {
-        val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-        s"${path.getPath}"
-      }
+      val url: String = s"${npsConfig.path}/person/${nino.nino}/iabds/${taxYear.year}/employment/27"
 
       server.stubFor(post(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
@@ -322,10 +320,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
 
     "return a failure status if the update fails" in {
 
-      val url: String = {
-        val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-        s"${path.getPath}"
-      }
+      val url: String = iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code)
 
       server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
 
@@ -344,10 +339,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     ).foreach { httpStatus =>
       s" return a failure status for $httpStatus  response" in {
 
-        val url: String = {
-          val path = new URL(iabdUrls.npsIabdEmploymentUrl(nino, taxYear, NewEstimatedPay.code))
-          s"${path.getPath}"
-        }
+        val url: String = s"${npsConfig.path}/person/${nino.nino}/iabds/${taxYear.year}/employment/27"
 
         server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
 
@@ -365,13 +357,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
       when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
         Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
       )
-      val url: String = {
-        val path =
-          new URL(
-            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
-          )
-        s"${path.getPath}"
-      }
+      val url: String =
+        s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 
       server.stubFor(put(urlEqualTo(url)).willReturn(ok(jsonResponse.toString)))
 
@@ -401,13 +388,8 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
       )
 
-      val url: String = {
-        val path =
-          new URL(
-            s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
-          )
-        s"${path.getPath}"
-      }
+      val url: String =
+        s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 
       server.stubFor(put(urlEqualTo(url)).willReturn(aResponse.withStatus(400)))
 
@@ -440,15 +422,10 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
         when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
           Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = true))
         )
-        val url: String = {
-          val path =
-            new URL(
-              s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
-            )
-          s"${path.getPath}"
-        }
+        val url: String =
+          s"${hipConfig.path}/iabd/taxpayer/$nino/tax-year/${taxYear.year}/employment/1/type/$iabdTypeArgument"
 
-        server.stubFor(post(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
+        server.stubFor(put(urlEqualTo(url)).willReturn(aResponse.withStatus(httpStatus)))
 
         Await.result(
           sut().updateTaxCodeAmount(nino, taxYear, 1, 1, NewEstimatedPay.code, 12345),
