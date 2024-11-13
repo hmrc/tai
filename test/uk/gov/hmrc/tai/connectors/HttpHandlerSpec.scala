@@ -19,15 +19,17 @@ package uk.gov.hmrc.tai.connectors
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsString, Json, OFormat}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.model.enums.APITypes
 
+import java.net.URLEncoder
+
 class HttpHandlerSpec extends ConnectorBaseSpec {
 
-  lazy val httpHandler: HttpHandler = inject[HttpHandler]
-
-  lazy val testUrl: String = server.url("testUrl")
+  private lazy val httpHandler: HttpHandler = inject[HttpHandler]
+  private lazy val testUrl: String =
+    server.url(s"/testUrl/${URLEncoder.encode("argument(test)", "UTF-8").replace("+", "%20")}")
   private case class ResponseObject(name: String, age: Int)
   private implicit val responseObjectFormat: OFormat[ResponseObject] = Json.format[ResponseObject]
   private val responseBodyObject = ResponseObject("aaa", 24)
@@ -297,4 +299,85 @@ class HttpHandlerSpec extends ConnectorBaseSpec {
       }
     }
   }
+
+  "putToApi" must {
+
+    val userInput = JsString("userInput")
+
+    Seq(OK, CREATED, ACCEPTED, NO_CONTENT).foreach { responseCode =>
+      s"return json which is coming from http post call with $responseCode response" in {
+        server.stubFor(
+          WireMock
+            .put(anyUrl())
+            .willReturn(
+              aResponse()
+                .withStatus(responseCode)
+                .withBody(Json.toJson(userInput).toString())
+            )
+        )
+
+        val result = httpHandler.putToApi(testUrl, userInput, APITypes.RTIAPI, Seq("test" -> "testHeader")).futureValue
+
+        result.status mustBe responseCode
+        if (responseCode != NO_CONTENT) {
+          result.json mustBe Json.toJson(userInput)
+        }
+        server.verify(
+          putRequestedFor(anyUrl())
+            .withHeader("test", equalTo("testHeader"))
+        )
+      }
+    }
+
+    "return Http exception" when {
+      "http response is NOT_FOUND" in {
+        server.stubFor(
+          WireMock
+            .put(anyUrl())
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
+
+        val result = httpHandler.putToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
+
+        result mustBe a[HttpException]
+
+      }
+
+      "http response is GATEWAY_TIMEOUT" in {
+
+        server.stubFor(
+          WireMock
+            .put(anyUrl())
+            .willReturn(
+              aResponse()
+                .withStatus(GATEWAY_TIMEOUT)
+            )
+        )
+
+        val result = httpHandler.putToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
+
+        result mustBe a[HttpException]
+      }
+
+      "http response is INTERNAL_SERVER_ERROR" in {
+
+        server.stubFor(
+          WireMock
+            .put(anyUrl())
+            .willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
+
+        val result = httpHandler.putToApi(testUrl, userInput, APITypes.RTIAPI, Seq.empty).failed.futureValue
+
+        result mustBe a[HttpException]
+      }
+    }
+  }
+
 }

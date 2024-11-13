@@ -30,7 +30,6 @@ import uk.gov.hmrc.tai.model.admin._
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 
-import java.net.URLEncoder
 import scala.concurrent.Future
 
 class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends IntegrationSpec {
@@ -71,7 +70,7 @@ class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends Integration
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
-  private val iabdTypeArgument = URLEncoder.encode(hipMapping(27), "UTF-8").replace("+", "%20")
+  private val iabdTypeArgument = hipMapping(27)
   val putNpsIabdsUrl = s"/v1/api/iabd/taxpayer/$nino/tax-year/$year/employment/1/type/$iabdTypeArgument"
 
   "Update Income" must {

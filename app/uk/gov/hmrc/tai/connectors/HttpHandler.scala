@@ -124,7 +124,56 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
     }
   }
 
-  def putToApi[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
+  def putToApi(
+    url: String,
+    data: JsValue,
+    api: APITypes,
+    headers: Seq[(String, String)],
+    timeoutInMilliseconds: Option[Int] = None
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
+    val timerContext = metrics.startTimer(api)
+
+    implicit val responseHandler: HttpReads[HttpResponse] = (_: String, url: String, httpResponse: HttpResponse) =>
+      httpResponse.status match {
+        case OK | CREATED | ACCEPTED | NO_CONTENT =>
+          metrics.incrementSuccessCounter(api)
+          httpResponse
+        case _ =>
+          logger.warn(
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+          )
+          metrics.incrementFailedCounter(api)
+          throw new HttpException(httpResponse.body, httpResponse.status)
+      }
+
+    (for {
+      response <- httpClientV2
+                    .put(url = url"$url")(hc.withExtraHeaders(headers: _*))
+                    .withBody(data)
+                    .transform { response: WSRequest =>
+                      timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>
+                        response.withRequestTimeout(timeoutInMilliseconds.milliseconds)
+                      }
+                    }
+                    .execute[HttpResponse](responseHandler, ec)
+      _ <- Future.successful(timerContext.stop())
+      _ <- Future.successful(metrics.incrementSuccessCounter(api))
+    } yield response) recover {
+      case lockedException: LockedException =>
+        timerContext.stop()
+        metrics.incrementSuccessCounter(api)
+        throw lockedException
+      case ex: Exception =>
+        timerContext.stop()
+        metrics.incrementFailedCounter(api)
+        throw ex
+    }
+
+  }
+
+  def putToApiHttpClientV1[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
     hc: HeaderCarrier,
     writes: Writes[I]
   ): Future[HttpResponse] = {
