@@ -1,0 +1,304 @@
+{
+  "nationalInsuranceNumber": "AA232813",
+  "taxAccountIdentifier": 5,
+  "date": "2024-11-04",
+  "isCurrentlyEmployed": false,
+  "taxYear": 2024,
+  "previousTaxAccountIdentifier": 3,
+  "totalEstimatedTax": 3254,
+  "totalEstimatedPayDetails": {
+    "amount": 19000,
+    "summaryIABDEstimatedPayDetailsList": [
+      {
+        "amount": 19000,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 1,
+        "estimatedPaySource": "AGENT CONTACT"
+      }
+    ]
+  },
+  "inYearCalculationsResult": 1,
+  "inYearCalculationAmount": 0,
+  "adjustedNetIncomeDetails": {
+    "amount": 19150,
+    "summaryIABDDetailsList": [
+      {
+        "amount": 500,
+        "type": "Medical Insurance (030)",
+        "employmentSequenceNumber": 1
+      },
+      {
+        "amount": 10700,
+        "type": "State Pension (066)"
+      },
+      {
+        "amount": 1100,
+        "type": "Flat Rate Job Expenses (056)"
+      }
+    ],
+    "summaryIABDEstimatedPayDetailsList": [
+      {
+        "amount": 0,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 2,
+        "estimatedPaySource": "AGENT CONTACT"
+      },
+      {
+        "amount": 19000,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 1,
+        "estimatedPaySource": "AGENT CONTACT"
+      },
+      {
+        "amount": 1000,
+        "type": "New Estimated Pay (027)",
+        "employmentSequenceNumber": 3,
+        "estimatedPaySource": "CALCULATED"
+      }
+    ]
+  },
+  "totalLiabilityDetails": {
+    "nonSavings": {
+      "totalIncomeDetails": {
+        "amount": 20500,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 500,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 10700,
+            "type": "State Pension (066)"
+          },
+          {
+            "amount": 19000,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1,
+            "estimatedPaySource": "AGENT CONTACT"
+          }
+        ],
+        "summaryIABDEstimatedPayDetailsList": [
+          {
+            "amount": 500,
+            "type": "Medical Insurance (030)",
+            "employmentSequenceNumber": 1
+          },
+          {
+            "amount": 0,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 2,
+            "estimatedPaySource": "AGENT CONTACT"
+          },
+          {
+            "amount": 19000,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 1,
+            "estimatedPaySource": "AGENT CONTACT"
+          },
+          {
+            "amount": 1000,
+            "type": "New Estimated Pay (027)",
+            "employmentSequenceNumber": 3,
+            "estimatedPaySource": "CALCULATED"
+          }
+        ]
+      },
+      "allowanceReliefDeductionsDetails": {
+        "amount": 13920,
+        "summaryIABDDetailsList": [
+          {
+            "amount": 250,
+            "type": "Early Years Adjustment (101)"
+          },
+          {
+            "amount": 1100,
+            "type": "Flat Rate Job Expenses (056)"
+          },
+          {
+            "amount": 12570,
+            "type": "Personal Allowance (PA) (118)"
+          }
+        ]
+      },
+      "totalTax": 1316,
+      "totalTaxableIncome": 6580,
+      "taxBandDetails": [
+        {
+          "bandType": "B",
+          "taxCode": "BR",
+          "isBasicRate": true,
+          "income": 6580,
+          "tax": 1316,
+          "lowerBand": 0,
+          "upperBand": 37700,
+          "rate": 20
+        },
+        {
+          "bandType": "D0",
+          "taxCode": "D0",
+          "isBasicRate": false,
+          "lowerBand": 37700,
+          "upperBand": 125140,
+          "rate": 40
+        },
+        {
+          "bandType": "D1",
+          "taxCode": "D1",
+          "isBasicRate": false,
+          "lowerBand": 125140,
+          "upperBand": 0,
+          "rate": 45
+        }
+      ]
+    },
+    "basicRateExtensionsDetails": {
+      "amount": 0
+    },
+    "totalLiability": 1316
+  },
+  "employmentDetailsList": [
+    {
+      "employmentSequenceNumber": 1,
+      "employmentRecordType": "PRIMARY",
+      "employmentStatus": "Live",
+      "employerReference": "840/AZ00066",
+      "jobSeekersAllowance": false,
+      "activePension": false,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "FRED PERRY",
+      "taxCode": "272L",
+      "basisOfOperation": "Cumulative",
+      "potentialUnderpayment": 0,
+      "totalInYearAdjustment": 0,
+      "totalInYearAdjustmentIntoCurrentYear": 0,
+      "totalInYearAdjustmentIntoNextYear": 0,
+      "totalInYearAdjustmentFromPreviousYear": 0,
+      "actualPUPCodedInNextYear": 0,
+      "allowancesDetails": [
+        {
+          "sourceAmount": 1100,
+          "adjustedAmount": 1100,
+          "type": "Gift Aid treated as paid in previous tax year (002)",
+          "summaryIABDDetailsList": [
+            {
+              "amount": 1100,
+              "type": "Flat Rate Job Expenses (056)"
+            }
+          ]
+        },
+        {
+          "sourceAmount": 12570,
+          "adjustedAmount": 12570,
+          "type": "Loan Interest Amount (011)",
+          "summaryIABDDetailsList": [
+            {
+              "amount": 12570,
+              "type": "Personal Allowance (PA) (118)"
+            }
+          ]
+        },
+        {
+          "sourceAmount": 250,
+          "adjustedAmount": 250,
+          "type": "Car Benefit (031)",
+          "summaryIABDDetailsList": [
+            {
+              "amount": 250,
+              "type": "Early Years Adjustment (101)"
+            }
+          ]
+        }
+      ],
+      "deductionsDetails": [
+        {
+          "sourceAmount": 10700,
+          "adjustedAmount": 10700,
+          "type": "Gift Aid Payments (001)",
+          "summaryIABDDetailsList": [
+            {
+              "amount": 10700,
+              "type": "State Pension (066)"
+            }
+          ]
+        },
+        {
+          "sourceAmount": 500,
+          "adjustedAmount": 500,
+          "type": "Married Couples Allowance (MAA) (013)",
+          "summaryIABDDetailsList": [
+            {
+              "amount": 500,
+              "type": "Medical Insurance (030)",
+              "employmentSequenceNumber": 1
+            }
+          ]
+        }
+      ],
+      "payAndTax": {
+        "totalIncomeDetails": {
+          "amount": 19000,
+          "summaryIABDEstimatedPayDetailsList": [
+            {
+              "amount": 19000,
+              "type": "New Estimated Pay (027)",
+              "employmentSequenceNumber": 1,
+              "estimatedPaySource": "AGENT CONTACT"
+            }
+          ]
+        },
+        "allowanceReliefDeductionsDetails": {
+          "amount": 2729.48
+        },
+        "totalTax": 3254,
+        "totalTaxableIncome": 16270,
+        "taxBandDetails": [
+          {
+            "bandType": "B",
+            "taxCode": "BR",
+            "isBasicRate": true,
+            "income": 16270,
+            "tax": 3254,
+            "lowerBand": 0,
+            "upperBand": 37700,
+            "rate": 20
+          },
+          {
+            "bandType": "D0",
+            "taxCode": "D0",
+            "isBasicRate": false,
+            "lowerBand": 37700,
+            "upperBand": 125140,
+            "rate": 40
+          },
+          {
+            "bandType": "D1",
+            "taxCode": "D1",
+            "isBasicRate": false,
+            "lowerBand": 125140,
+            "upperBand": 0,
+            "rate": 45
+          }
+        ]
+      }
+    },
+    {
+      "employmentSequenceNumber": 2,
+      "employmentRecordType": "SECONDARY",
+      "employmentStatus": "Live",
+      "employerReference": "754/HZ00030",
+      "jobSeekersAllowance": false,
+      "activePension": true,
+      "otherIncome": false,
+      "payeSchemeOperatorName": "GRADUATE CONTRACTORS LTD",
+      "taxCode": "BR",
+      "basisOfOperation": "Week1/Month1",
+      "potentialUnderpayment": 0,
+      "totalInYearAdjustment": 0,
+      "totalInYearAdjustmentIntoCurrentYear": 0,
+      "totalInYearAdjustmentIntoNextYear": 0,
+      "totalInYearAdjustmentFromPreviousYear": 0,
+      "actualPUPCodedInNextYear": 0
+    }
+  ]
+}

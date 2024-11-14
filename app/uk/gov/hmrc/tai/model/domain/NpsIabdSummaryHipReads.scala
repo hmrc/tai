@@ -18,6 +18,7 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
+import uk.gov.hmrc.tai.util.SequenceHelper
 
 object NpsIabdSummaryHipReads {
 
@@ -30,7 +31,8 @@ object NpsIabdSummaryHipReads {
   }
 
   def totalLiabilityIabds(json: JsValue, subPath: String, categories: Seq[String]): Seq[NpsIabdSummary] = {
-    val pf: PartialFunction[JsValue, NpsIabdSummary] = {
+
+    val parseSummary: PartialFunction[JsValue, NpsIabdSummary] = {
       case json if (json \ "type").asOpt[(String, Int)](readsTypeTuple).isDefined =>
         val fullType = (json \ "type").as[String]
         val (description, componentType) = parseTypeOrException(fullType)
@@ -38,19 +40,23 @@ object NpsIabdSummaryHipReads {
         val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
-    val list1 = categories
-      .flatMap(category =>
-        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDDetailsList").asOpt[JsArray]
-      )
-      .flatMap(_.value) collect pf
 
-    val list2 = categories
-      .flatMap(category =>
-        (json \ "totalLiabilityDetails" \ category \ subPath \ "summaryIABDEstimatedPayDetailsList").asOpt[JsArray]
-      )
-      .flatMap(_.value) collect pf
+    def extractItems(listName: String): Seq[NpsIabdSummary] =
+      categories
+        .flatMap(category => (json \ "totalLiabilityDetails" \ category \ subPath \ listName).asOpt[JsArray])
+        .flatMap(_.value)
+        .collect(parseSummary)
 
-    list1 ++ list2
+    val allItems = extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
 
+    SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
+      allItems,
+      uniqueKey = item => (item.employmentId, item.componentType),
+      keyDescription = { case (employmentId, componentType) =>
+        s"employmentSequenceNumber: $employmentId and componentType: $componentType"
+      }
+    )
+
+    allItems
   }
 }
