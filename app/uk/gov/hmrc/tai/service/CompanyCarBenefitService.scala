@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,13 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.CompanyCarConnector
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.util.MongoConstants
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CompanyCarBenefitService @Inject() (
   companyCarConnector: CompanyCarConnector
-)(implicit ec: ExecutionContext)
-    extends MongoConstants {
+)(implicit ec: ExecutionContext) {
 
   def carBenefit(nino: Nino, taxYear: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
     val companyCarBenefits = companyCarConnector.carBenefits(nino, taxYear)

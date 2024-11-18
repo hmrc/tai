@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
-import uk.gov.hmrc.tai.util.RequestQueryFilter
 
 import scala.concurrent.ExecutionContext
 
@@ -39,7 +38,7 @@ class CodingComponentController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with RequestQueryFilter {
+) extends BackendController(cc) {
 
   private val logger: Logger = Logger(getClass.getName)
 
