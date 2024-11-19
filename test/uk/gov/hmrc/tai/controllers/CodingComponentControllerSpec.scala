@@ -26,11 +26,11 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.CodingComponentService
-import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions, RequestQueryFilter}
+import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.Future
 
-class CodingComponentControllerSpec extends BaseSpec with RequestQueryFilter with NpsExceptions {
+class CodingComponentControllerSpec extends BaseSpec with NpsExceptions {
 
   "codingComponentsForYear" must {
     "return OK with sequence of coding components" when {
