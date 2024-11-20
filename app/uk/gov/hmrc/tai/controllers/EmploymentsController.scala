@@ -37,7 +37,7 @@ class EmploymentsController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with ControllerErrorHandler {
 
-  def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
+  def employments(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authForEmployeeExpenses.async {
     implicit request =>
       employmentService
         .employmentsAsEitherT(nino, year)
