@@ -52,11 +52,17 @@ class IncomeService @Inject() (
     def filterNonMatchingCeasedEmploymentsWithEndDate(
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]
-    ): Seq[Employment] =
+    ): Seq[Employment] = {
+      /* The employment used for filtering is used from the employments details api not the tax account api.
+         The tax account api hold data from the last coding so when an employment is deleted the employment record is still
+         present in the tax account api with a live status or whatever status was at time of coding.
+         The employment details api has not got this issue. The employment is not present if deleted
+      */
       employments
         .filter(emp => emp.employmentStatus != Live)
         .filter(emp => !taxCodeIncomes.exists(tci => tci.employmentId.contains(emp.sequenceNumber)))
         .filter(_.endDate.isDefined)
+    }
 
     for {
       taxCodeIncomes <- EitherT[Future, UpstreamErrorResponse, Seq[TaxCodeIncome]](
