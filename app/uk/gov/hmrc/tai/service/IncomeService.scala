@@ -53,10 +53,10 @@ class IncomeService @Inject() (
       employments: Seq[Employment],
       taxCodeIncomes: Seq[TaxCodeIncome]
     ): Seq[Employment] = {
-      /* The employment used for filtering is used from the employments details api not the tax account api.
-         The tax account api hold data from the last coding so when an employment is deleted the employment record is still
-         present in the tax account api with a live status or whatever status was at time of coding.
-         The employment details api has not got this issue. The employment is not present if deleted
+      /* Employment filtering uses data from the Employment Details and Payrolled Benefits API, not the Tax Account Details API.
+         The Tax Account Details API retains employment records from the last coding, meaning deleted employments 
+         remain with their last-known status (e.g., 'live'). In contrast, the Employment Details and Payrolled Benefits API
+         does not include deleted employments, ensuring accurate filtering.
       */
       employments
         .filter(emp => emp.employmentStatus != Live)
