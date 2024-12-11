@@ -15,8 +15,9 @@ object AppDependencies {
     "uk.gov.hmrc"   %% s"crypto-json-$playVersion"                  % "7.6.0",
     "org.typelevel" %% "cats-core"                                  % "2.10.0",
     "uk.gov.hmrc"   %% s"mongo-feature-toggles-client-$playVersion" % "1.4.0",
-    "org.typelevel" %% "cats-effect"                                % "3.5.4"
-  )
+    "org.typelevel" %% "cats-effect"                                % "3.5.4",
+    "org.apache.xmlgraphics"        % "fop"                               % "2.9",
+   )
 
   val test: Seq[ModuleID] = Seq(
     "org.mockito"       %% "mockito-scala-scalatest"                         % "1.17.31",

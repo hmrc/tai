@@ -24,12 +24,14 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm, RemoveCompanyBenefitIForm}
+import uk.gov.hmrc.tai.templates.xml.HelloForm
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TestOnlyPdfController @Inject() (
-  ps: PdfService,
+  legacyPdfService: PdfService,
+  contemporaryPdfService: XslFoTransformationService,
   cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
@@ -49,10 +51,20 @@ class TestOnlyPdfController @Inject() (
       case "EmploymentIForm"           => Future.successful(exampleContent_EmploymentIForm)
       case "PensionProviderIForm"      => Future.successful(exampleContent_PensionProviderIForm)
       case "RemoveCompanyBenefitIForm" => Future.successful(exampleContent_PensionProviderIForm)
+      case "hello"                     => Future.successful(example_hello)
       case _                           => Future.successful("<html><body>test</body></html>")
     }
-    content.flatMap(ps.generatePdf)
+    content.flatMap(html =>
+      if (isNewGenerator)
+        Future.successful(contemporaryPdfService.toPdfBytes(html))
+      else
+        legacyPdfService.generatePdf(html)
+    )
   }
+
+  // http://localhost:9331/tai/test-only/pdf/false/hello
+  // http://localhost:9331/tai/test-only/pdf/true/hello
+  def example_hello: String = HelloForm().toString()
 
   // http://localhost:9331/tai/test-only/pdf/false/EmploymentIForm
   // http://localhost:9331/tai/test-only/pdf/true/EmploymentIForm
