@@ -127,6 +127,12 @@ class IncomeService @Inject() (
           employment <- map.get(id).flatMap(_.headOption)
         } yield employment.employmentStatus
 
+        if (employmentStatus.isEmpty) {
+          logger.error(
+            s"No employment found with id `${taxCode.employmentId} in employment destails API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
+          )
+        }
+
         taxCode.copy(status = employmentStatus.getOrElse(taxCode.status))
       }
     }
