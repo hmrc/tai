@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
@@ -41,7 +40,7 @@ class IncomeController @Inject() (
   cc: ControllerComponents
 )(implicit
   ec: ExecutionContext
-) extends BackendController(cc) with ControllerErrorHandler with Logging {
+) extends BackendController(cc) with ControllerErrorHandler {
 
   def untaxedInterest(nino: Nino): Action[AnyContent] = authentication.authWithUserDetails.async { implicit request =>
     incomeService.untaxedInterest(nino).map {
@@ -80,12 +79,7 @@ class IncomeController @Inject() (
         .nonMatchingCeasedEmployments(nino, year)
         .bimap(
           error => errorToResponse(error),
-          result => {
-            if (result.nonEmpty) {
-              logger.error(s"nino ${nino.nino} has non matching ceased employments - see DDCNL-9729")
-            }
-            Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
-          }
+          result => Ok(Json.toJson(ApiResponse(Json.toJson(result), Seq.empty[ApiLink])))
         )
         .merge recoverWith taxAccountErrorHandler()
     }
