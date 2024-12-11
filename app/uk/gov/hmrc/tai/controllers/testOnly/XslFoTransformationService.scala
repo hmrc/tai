@@ -37,7 +37,7 @@ class XslFoTransformationServiceFopImpl @Inject() (
   environment: Environment
 ) extends XslFoTransformationService {
 
-  def toPdfBytes(xslFoDocument: String): Array[Byte] = {
+  override def toPdfBytes(xslFoDocument: String): Array[Byte] = {
 
     val source = createSource(xslFoDocument)
     val transformer = createTransformer()
