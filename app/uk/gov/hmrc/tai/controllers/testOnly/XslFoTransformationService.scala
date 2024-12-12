@@ -63,11 +63,8 @@ class XslFoTransformationServiceFopImpl @Inject() (
     val parser: FopConfParser = new FopConfParser(xconf)
     val builder: FopFactoryBuilder = parser.getFopFactoryBuilder
     val fopFactory: FopFactory = builder.build()
+    val fop = fopFactory.newFop(MimeConstants.MIME_PDF, out)
 
-    val userAgent: FOUserAgent = fopFactory.newFOUserAgent()
-    userAgent.setAccessibility(true)
-
-    val fop = fopFactory.newFop(MimeConstants.MIME_PDF, userAgent, out)
     new SAXResult(fop.getDefaultHandler)
   }
 }
