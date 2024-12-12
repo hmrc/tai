@@ -64,7 +64,7 @@ class TestOnlyPdfController @Inject() (
 
   // http://localhost:9331/tai/test-only/pdf/false/hello
   // http://localhost:9331/tai/test-only/pdf/true/hello
-  def example_hello: String = HelloForm().toString()
+  def example_hello: String = HelloForm().body
 
   // http://localhost:9331/tai/test-only/pdf/false/EmploymentIForm
   // http://localhost:9331/tai/test-only/pdf/true/EmploymentIForm
