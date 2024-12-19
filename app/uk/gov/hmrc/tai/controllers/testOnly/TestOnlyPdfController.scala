@@ -45,10 +45,10 @@ class TestOnlyPdfController @Inject() (
       )
     }
 
-  def pdf(isNewGenerator: Boolean = false, formId: String = "default"): Action[AnyContent] =
+  def pdf(isNewGenerator: Boolean = false, formId: String, dataId: String): Action[AnyContent] =
     Action.async { _ =>
       println(s"--------------TestOnlyPdfController.pdf(isNewGenerator:$isNewGenerator,formId:$formId)")
-      generatePdf(isNewGenerator, formId).map(bytes =>
+      generatePdf(isNewGenerator, formId, dataId).map(bytes =>
         Result(
           header = ResponseHeader(OK),
           body = Strict(ByteString.apply(bytes), contentType = Some("application/pdf"))
@@ -56,7 +56,7 @@ class TestOnlyPdfController @Inject() (
       )
     }
 
-  def generatePdf(isNewGenerator: Boolean, formId: String): Future[Array[Byte]] = {
+  def generatePdf(isNewGenerator: Boolean, formId: String, dataId: String): Future[Array[Byte]] = {
 
     val generator: String => Future[Array[Byte]] = (content: String) =>
       if (isNewGenerator)
@@ -70,43 +70,48 @@ class TestOnlyPdfController @Inject() (
       else
         uk.gov.hmrc.tai.templates.html.HelloForm().body
 
-    def fillEmploymentPensionTemplate(model: EmploymentPensionViewModel): String =
-      if (isNewGenerator)
-        uk.gov.hmrc.tai.templates.xml.EmploymentIForm(model).body
-      else
-        uk.gov.hmrc.tai.templates.html.EmploymentIForm(model).body
+    def fillEmploymentPensionTemplate: (EmploymentPensionViewModel => String) =
+      model =>
+        if (isNewGenerator)
+          uk.gov.hmrc.tai.templates.xml.EmploymentIForm(model).body
+        else
+          uk.gov.hmrc.tai.templates.html.EmploymentIForm(model).body
 
-    def fillRemoveCompanyBenefitTemplate(model: RemoveCompanyBenefitViewModel): String =
-      if (isNewGenerator)
-        uk.gov.hmrc.tai.templates.xml.RemoveCompanyBenefitIForm(model).body
-      else
-        uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(model).body
+    def fillPensionProviderTemplate: (EmploymentPensionViewModel => String) =
+      model =>
+        if (isNewGenerator)
+          uk.gov.hmrc.tai.templates.xml.PensionProviderIForm(model).body
+        else
+          uk.gov.hmrc.tai.templates.html.PensionProviderIForm(model).body
 
-    def fillPensionProviderTemplate(model: EmploymentPensionViewModel): String =
-      if (isNewGenerator)
-        uk.gov.hmrc.tai.templates.xml.PensionProviderIForm(model).body
-      else
-        uk.gov.hmrc.tai.templates.html.PensionProviderIForm(model).body
+    def fillRemoveCompanyBenefitTemplate: (RemoveCompanyBenefitViewModel => String) =
+      model =>
+        if (isNewGenerator)
+          uk.gov.hmrc.tai.templates.xml.RemoveCompanyBenefitIForm(model).body
+        else
+          uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(model).body
 
-    var formSource: String =
-      formId match {
-        case "Employment_emp_isEnd_NO_isAdd_NO" =>
-          fillEmploymentPensionTemplate(emp_isEnd_NO_isAdd_NO)
-        case "Employment_emp_isEnd_YES_isAdd_NO" =>
-          fillEmploymentPensionTemplate(emp_isEnd_YES_isAdd_NO)
-        case "Employment_emp_isEnd_NO_isAdd_YES" =>
-          fillEmploymentPensionTemplate(emp_isEnd_NO_isAdd_YES)
-        case "PensionProvider_emp_isEnd_NO_isAdd_NO" =>
-          fillPensionProviderTemplate(emp_isEnd_NO_isAdd_NO)
-        case "RemoveCompanyBenefit_rcb_isEnd_NO" =>
-          fillRemoveCompanyBenefitTemplate(rcb_isEnd_NO)
-        case "RemoveCompanyBenefit_rcb_isEnd_YES" =>
-          fillRemoveCompanyBenefitTemplate(rcb_isEnd_YES)
-        case _ =>
-          fillDefault()
-      }
+    val forms: Map[String, (Any => String)] = Map(
+      "EmploymentPension" -> fillEmploymentPensionTemplate.compose(d => d.asInstanceOf[EmploymentPensionViewModel]),
+      "Employment"        -> fillEmploymentPensionTemplate.compose(d => d.asInstanceOf[EmploymentPensionViewModel]),
+      "RemoveCompanyBenefit" -> fillRemoveCompanyBenefitTemplate.compose(d =>
+        d.asInstanceOf[RemoveCompanyBenefitViewModel]
+      )
+    )
 
-    generator.apply(formSource)
+    val form: Any => String = forms.get(formId).getOrElse(_ => fillDefault)
+
+    val data = Map(
+      "emp_isEnd_NO_isAdd_NO"  -> emp_isEnd_NO_isAdd_NO,
+      "emp_isEnd_YES_isAdd_NO" -> emp_isEnd_YES_isAdd_NO,
+      "emp_isEnd_NO_isAdd_YES" -> emp_isEnd_NO_isAdd_YES,
+      "rcb_isEnd_NO"           -> rcb_isEnd_NO,
+      "rcb_isEnd_YES"          -> rcb_isEnd_YES
+    ).get(dataId).getOrElse("")
+
+    form.apply(data)
+
+    generator.compose(form).apply(data)
 
   }
 

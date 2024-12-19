@@ -20,60 +20,91 @@
   <body>
     <table border="1px">
      <tr>
+      <th>Form</th>
       <th>New</th>
       <th>Old</th>
      </tr>
      <tr>
+      <th>
+       default
+      </th>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_NO_isAdd_NO")}">Employment_emp_isEnd_NO_isAdd_NO</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"default","default")}">no data</a>
       </td>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_NO_isAdd_NO")}">Employment_emp_isEnd_NO_isAdd_NO</a>
-      </td>
-     </tr>
-
-     <tr>
-      <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_YES_isAdd_NO")}">Employment_emp_isEnd_YES_isAdd_NO</a>
-      </td>
-      <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_YES_isAdd_NO")}">Employment_emp_isEnd_YES_isAdd_NO</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"default","default")}">no data</a>
       </td>
      </tr>
 
      <tr>
+      <th>
+       Employment
+      </th>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_NO_isAdd_YES")}">Employment_emp_isEnd_NO_isAdd_YES</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
       </td>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_NO_isAdd_YES")}">Employment_emp_isEnd_NO_isAdd_YES</a>
-      </td>
-     </tr>
-
-     <tr>
-      <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"PensionProvider_emp_isEnd_NO_isAdd_NO")}">PensionProvider_emp_isEnd_NO_isAdd_NO</a>
-      </td>
-      <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"PensionProvider_emp_isEnd_NO_isAdd_NO")}">PensionProvider_emp_isEnd_NO_isAdd_NO</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
       </td>
      </tr>
 
      <tr>
+      <th>
+       Employment
+      </th>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit_rcb_isEnd_NO")}">RemoveCompanyBenefit_rcb_isEnd_NO</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
       </td>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit_rcb_isEnd_NO")}">RemoveCompanyBenefit_rcb_isEnd_NO</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment","emp_isEnd_YES_isAdd_NO")}">emp_isEnd_YES_isAdd_NO</a>
       </td>
      </tr>
 
      <tr>
+      <th>
+       Employment
+      </th>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit_rcb_isEnd_YES")}">RemoveCompanyBenefit_rcb_isEnd_YES</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
       </td>
       <td>
-       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit_rcb_isEnd_YES")}">RemoveCompanyBenefit_rcb_isEnd_YES</a>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment","emp_isEnd_NO_isAdd_YES")}">emp_isEnd_NO_isAdd_YES</a>
+      </td>
+     </tr>
+
+     <tr>
+      <th>
+       PensionProvider
+      </th>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"PensionProvider","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"PensionProvider","emp_isEnd_NO_isAdd_NO")}">emp_isEnd_NO_isAdd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <th>
+       PensionProvider
+      </th>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit","rcb_isEnd_NO")}">rcb_isEnd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <th>
+       RemoveCompanyBenefit
+      </th>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit","rcb_isEnd_YES")}">rcb_isEnd_YES</a>
       </td>
      </tr>
 

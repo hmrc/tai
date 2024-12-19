@@ -14,13 +14,23 @@
   * limitations under the License.
   *@
 @()
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="OpenSans">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-size="11px" font-family="OpenSans">
+
   <fo:layout-master-set>
-    <fo:simple-page-master master-name="main_template">
-      <fo:region-body/>
+    <fo:simple-page-master master-name="main_template" page-height="297mm" page-width="210mm" margin-top="25.4mm" margin-bottom="25.4mm" margin-left="27mm" margin-right="25.4mm">
+      <fo:region-body region-name="xsl-region-body" margin-top="8mm"/>
+      <fo:region-before region-name="xsl-region-before"/>
     </fo:simple-page-master>
   </fo:layout-master-set>
+
   <fo:page-sequence master-reference="main_template">
+
+    <fo:static-content flow-name="xsl-region-before">
+      <fo:block>
+        <fo:block font-size="10px">HM Revenue &amp; Customs</fo:block>
+        <fo:block font-size="10px" color="grey">Internal HMRC Copy</fo:block>
+      </fo:block>
+    </fo:static-content>
     <fo:flow flow-name="xsl-region-body">
       <fo:block>Hello world!</fo:block>
     </fo:flow>
