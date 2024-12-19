@@ -1,0 +1,82 @@
+@*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@()
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <body>
+    <table border="1px">
+     <tr>
+      <th>New</th>
+      <th>Old</th>
+     </tr>
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_NO_isAdd_NO")}">Employment_emp_isEnd_NO_isAdd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_NO_isAdd_NO")}">Employment_emp_isEnd_NO_isAdd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_YES_isAdd_NO")}">Employment_emp_isEnd_YES_isAdd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_YES_isAdd_NO")}">Employment_emp_isEnd_YES_isAdd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"Employment_emp_isEnd_NO_isAdd_YES")}">Employment_emp_isEnd_NO_isAdd_YES</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"Employment_emp_isEnd_NO_isAdd_YES")}">Employment_emp_isEnd_NO_isAdd_YES</a>
+      </td>
+     </tr>
+
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"PensionProvider_emp_isEnd_NO_isAdd_NO")}">PensionProvider_emp_isEnd_NO_isAdd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"PensionProvider_emp_isEnd_NO_isAdd_NO")}">PensionProvider_emp_isEnd_NO_isAdd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit_rcb_isEnd_NO")}">RemoveCompanyBenefit_rcb_isEnd_NO</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit_rcb_isEnd_NO")}">RemoveCompanyBenefit_rcb_isEnd_NO</a>
+      </td>
+     </tr>
+
+     <tr>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(true,"RemoveCompanyBenefit_rcb_isEnd_YES")}">RemoveCompanyBenefit_rcb_isEnd_YES</a>
+      </td>
+      <td>
+       <a href="@{uk.gov.hmrc.tai.controllers.testOnly.routes.TestOnlyPdfController.pdf(false,"RemoveCompanyBenefit_rcb_isEnd_YES")}">RemoveCompanyBenefit_rcb_isEnd_YES</a>
+      </td>
+     </tr>
+
+    </table>
+  </body>
+</html>
