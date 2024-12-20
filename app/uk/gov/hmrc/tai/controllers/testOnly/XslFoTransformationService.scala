@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.controllers.testOnly
 import com.google.inject.{ImplementedBy, Inject}
 import org.apache.commons.io.output.ByteArrayOutputStream
 import org.apache.fop.apps.{FOUserAgent, FopConfParser, FopFactory, FopFactoryBuilder}
+import org.apache.fop.events.{Event, EventListener}
 import org.apache.xmlgraphics.util.MimeConstants
 import play.api.Environment
 
@@ -63,8 +64,28 @@ class XslFoTransformationServiceFopImpl @Inject() (
     val parser: FopConfParser = new FopConfParser(xconf)
     val builder: FopFactoryBuilder = parser.getFopFactoryBuilder
     val fopFactory: FopFactory = builder.build()
-    val fop = fopFactory.newFop(MimeConstants.MIME_PDF, out)
+    val agent = fopFactory.newFOUserAgent()
 
+    // !!!!!!!!!!!!!!!!!!!
+    val addCustomListener = true
+
+    val e: EventListener = new EventListener {
+      override def processEvent(event: Event): Unit =
+        event match {
+          case ev if !ev.getSeverity.equals(org.apache.fop.events.model.EventSeverity.INFO) =>
+            println("----------------------------ERRRRRRRRRR" + ev.getEventKey)
+          case _ =>
+          // ignore
+        }
+    }
+
+    if (addCustomListener) {
+      println("agent.getEventBroadcaster---hasEventListeners:" + agent.getEventBroadcaster.hasEventListeners)
+      agent.getEventBroadcaster.addEventListener(e)
+      println("agent.getEventBroadcaster---hasEventListeners:" + agent.getEventBroadcaster.hasEventListeners)
+    }
+
+    val fop = agent.newFop(MimeConstants.MIME_PDF, out)
     new SAXResult(fop.getDefaultHandler)
   }
 }
