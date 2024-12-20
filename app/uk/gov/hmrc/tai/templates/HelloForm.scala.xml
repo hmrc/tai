@@ -15,7 +15,7 @@
   *@
 
 @()
-<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-size="11px" font-family="OpenSans">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" language="en" font-size="11px" font-family="OpenSans">
 
   <fo:layout-master-set>
     <fo:simple-page-master master-name="main_template" page-height="297mm" page-width="210mm" margin="1in">
@@ -42,6 +42,7 @@
       <fo:block margin-bottom="5mm">
         <fo:block font-size="11px" font-family="OpenSansBold" margin-bottom="3mm">Tell us somethingt</fo:block>
         <fo:block>Hello World</fo:block>
+        <fo:block hyphenate="true" background-color="gray">qqqqqqqqqqqqqqqqwwwwwwwwwwwwwwwwwwweeeeeeeeeeeeeeerrrrrrrrrrrrtttttttttttyyyyyyyyyyyyyyyyyyyyyyuuuuuuuuu</fo:block>
       </fo:block>
     </fo:flow>
   </fo:page-sequence>

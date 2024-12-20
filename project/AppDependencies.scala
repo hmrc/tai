@@ -16,7 +16,8 @@ object AppDependencies {
     "org.typelevel" %% "cats-core"                                  % "2.10.0",
     "uk.gov.hmrc"   %% s"mongo-feature-toggles-client-$playVersion" % "1.4.0",
     "org.typelevel" %% "cats-effect"                                % "3.5.4",
-    "org.apache.xmlgraphics"        % "fop"                               % "2.9",
+    "org.apache.xmlgraphics"        % "fop"                               % "2.10",
+    "net.sf.offo" % "fop-hyph" % "2.0"
    )
 
   val test: Seq[ModuleID] = Seq(
