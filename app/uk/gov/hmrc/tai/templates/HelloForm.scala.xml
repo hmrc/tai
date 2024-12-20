@@ -42,7 +42,7 @@
       <fo:block margin-bottom="5mm">
         <fo:block font-size="11px" font-family="OpenSansBold" margin-bottom="3mm">Tell us somethingt</fo:block>
         <fo:block>Hello World</fo:block>
-        <fo:block hyphenate="true" background-color="gray">qqqqqqqqqqqqqqqqwwwwwwwwwwwwwwwwwwweeeeeeeeeeeeeeerrrrrrrrrrrrtttttttttttyyyyyyyyyyyyyyyyyyyyyyuuuuuuuuu</fo:block>
+        <fo:block hyphenate="true" background-color="gray">ThequickbrownfoxjumpsoverthelazydogThequickbrownfoxjumpsoverthelazydogThequickbrownfoxjumpsoverthelazydog</fo:block>
       </fo:block>
     </fo:flow>
   </fo:page-sequence>
