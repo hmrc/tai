@@ -93,7 +93,7 @@ class TestOnlyPdfController @Inject() (
 
     val forms: Map[String, (Any => String)] = Map(
       "EmploymentPension" -> fillEmploymentPensionTemplate.compose(d => d.asInstanceOf[EmploymentPensionViewModel]),
-      "Employment"        -> fillEmploymentPensionTemplate.compose(d => d.asInstanceOf[EmploymentPensionViewModel]),
+      "PensionProvider"   -> fillPensionProviderTemplate.compose(d => d.asInstanceOf[EmploymentPensionViewModel]),
       "RemoveCompanyBenefit" -> fillRemoveCompanyBenefitTemplate.compose(d =>
         d.asInstanceOf[RemoveCompanyBenefitViewModel]
       )
