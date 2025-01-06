@@ -26,7 +26,8 @@ class ApplicationStartUp {
       HipToggleEmploymentDetails,
       HipToggleTaxAccount,
       HipToggleIabds,
-      HipToggleEmploymentIabds
+      HipToggleEmploymentIabds,
+      UseApacheFopLibrary
     )
   )
 }

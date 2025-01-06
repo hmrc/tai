@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<fop version="1.0">
+    <accessibility>true</accessibility>
+    <renderers>
+        <renderer mime="application/pdf">
+            <pdf-a-mode>PDF/A-1a</pdf-a-mode>
+            <version>1.4</version>
+            <fonts>
+                <font kerning="yes" embed-url="fonts/OpenSans-Regular.ttf" encoding-mode="single-byte" embedding-mode="subset">
+                    <font-triplet name="OpenSans" style="normal" weight="normal"/>
+                </font>
+                <font kerning="yes" embed-url="fonts/OpenSans-Bold.ttf" encoding-mode="single-byte" embedding-mode="subset">
+                    <font-triplet name="OpenSansBold" style="normal" weight="normal"/>
+                </font>
+            </fonts>
+        </renderer>
+    </renderers>
+</fop>

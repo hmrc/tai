@@ -17,13 +17,57 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.twirl.api.Content
+import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.PdfConnector
+import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
+import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
+import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
+import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
+import uk.gov.hmrc.tai.templates._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PdfService @Inject() (pdfConnector: PdfConnector) {
+class PdfService @Inject() (
+  html2Pdf: PdfConnector,
+  xslFo2Pdf: XslFo2PdfBytesFunction,
+  featureFlagService: FeatureFlagService
+)(implicit
+  ec: ExecutionContext
+) {
 
-  def generatePdf(html: String): Future[Array[Byte]] = pdfConnector.generatePdf(html)
+  @Deprecated
+  def generatePdf(html: String): Future[Array[Byte]] = html2Pdf.generatePdf(html)
 
+  def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_]): Future[Array[Byte]] =
+    featureFlagService.get(UseApacheFopLibrary).map(_.isEnabled).flatMap { enableApacheFop =>
+      if (enableApacheFop)
+        Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
+      else
+        generatePdf(pdfReport.htmlDocument())
+    }
+}
+
+object PdfService {
+
+  class EmploymentIFormReportRequest(model: EmploymentPensionViewModel) extends PdfGeneratorRequest(model) {
+    override def htmlDocument(): String = html.EmploymentIForm(model).body
+    override def xmlFoDocument(): Array[Byte] = xml.EmploymentIForm(model).body.getBytes
+  }
+
+  class PensionProviderIFormRequest(model: EmploymentPensionViewModel) extends PdfGeneratorRequest(model) {
+    override def htmlDocument(): String = html.PensionProviderIForm(model).body
+    override def xmlFoDocument(): Array[Byte] = xml.PensionProviderIForm(model).body.getBytes
+  }
+
+  class RemoveCompanyBenefitIFormRequest(model: RemoveCompanyBenefitViewModel) extends PdfGeneratorRequest(model) {
+    override def htmlDocument(): String = html.RemoveCompanyBenefitIForm(model).body
+    override def xmlFoDocument(): Array[Byte] = xml.RemoveCompanyBenefitIForm(model).body.getBytes
+  }
+
+  sealed abstract class PdfGeneratorRequest[T](model: T) {
+    def htmlDocument(): String
+    def xmlFoDocument(): Array[Byte]
+  }
 }

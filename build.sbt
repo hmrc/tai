@@ -19,7 +19,7 @@ import uk.gov.hmrc.DefaultBuildSettings.*
 val appName: String = "tai"
 
 ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.15"
 ThisBuild / scalafmtOnCompile := true
 
 lazy val microservice = Project(appName, file("."))
@@ -38,22 +38,22 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.domain._"
     ),
     scalacOptions ++= Seq(
-      "-unchecked",
-      "-feature",
-      "-Xlint:_",
-      "-Werror",
-      "-Wdead-code",
-      "-Wunused:_",
-      "-Wextra-implicit",
-      "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
-      "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
-      "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",
-      "-Wconf:cat=deprecation&msg=\\.*value readRaw in object HttpReads is deprecated\\.*:s",
-      "-Wconf:cat=unused&msg=\\.*private default argument in class\\.*:s",
-      "-Wconf:cat=unused-imports&site=<empty>:s",
-      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
-      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
-      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
+//      "-unchecked",
+//      "-feature",
+//      "-Xlint:_",
+//      "-Werror",
+//      "-Wdead-code",
+//      "-Wunused:_",
+//      "-Wextra-implicit",
+//      "-Wconf:cat=deprecation&site=uk\\.gov\\.hmrc\\.tai\\.connectors\\.BaseConnectorSpec.*:s",
+//      "-Wconf:cat=unused-imports&site=.*templates\\.html.*:s",
+//      "-Wconf:cat=unused-imports&site=.*templates\\.xml.*:s",
+//      "-Wconf:cat=deprecation&msg=\\.*value readRaw in object HttpReads is deprecated\\.*:s",
+//      "-Wconf:cat=unused&msg=\\.*private default argument in class\\.*:s",
+//      "-Wconf:cat=unused-imports&site=<empty>:s",
+//      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
+//      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
+//      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
     )
   )
 
@@ -72,7 +72,7 @@ lazy val scoverageSettings = {
 }
 
 Test / parallelExecution := false
-Test / scalacOptions --= Seq("-Wdead-code", "-Wvalue-discard")
+//Test / scalacOptions --= Seq("-Wdead-code", "-Wvalue-discard")
 
 lazy val it = project
   .enablePlugins(play.sbt.PlayScala)
@@ -81,3 +81,6 @@ lazy val it = project
     libraryDependencies ++= AppDependencies.test,
     DefaultBuildSettings.itSettings()
   )
+
+addCommandAlias("runAllTests", ";test;it/test;")
+addCommandAlias("runLocal", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")

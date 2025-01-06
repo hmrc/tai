@@ -15,5 +15,8 @@
 
 DELETE        /tai/test-only/journey-cache/delete-update-income             @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyCacheController.delete()
 
+GET           /tai/test-only/pdf/:isNewGenerator/:contentId/:dataId         @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.pdf(isNewGenerator:Boolean,contentId:String,dataId: String)
+GET           /tai/test-only/pdf                                            @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.index()
+
 ->            /                                                             prod.Routes
 ->            /tai                                                          mongoFeatureTogglesTestOnly.Routes
