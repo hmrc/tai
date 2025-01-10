@@ -60,7 +60,7 @@ class TestOnlyPdfController @Inject() (
         "rcb_isEnd_YES" -> rcb_isEnd_YES
       )
 
-      var request: PdfGeneratorRequest[_] = if (formId == "EmploymentIFormReportRequest") {
+      val request: PdfGeneratorRequest[_] = if (formId == "EmploymentIFormReportRequest") {
         new EmploymentIFormReportRequest(dataEmp.get(dataId).get)
       } else if (formId == "PensionProviderIFormRequest") {
         new PensionProviderIFormRequest(dataEmp.get(dataId).get)
@@ -77,7 +77,7 @@ class TestOnlyPdfController @Inject() (
           if (isEnabled != useNewGenerator) {
             featureFlagService.set(UseApacheFopLibrary, useNewGenerator)
           } else {
-            Future.successful()
+            Future.successful((): Unit)
           }
         }
         .flatMap(_ =>
@@ -94,7 +94,7 @@ class TestOnlyPdfController @Inject() (
 }
 
 trait TestData {
-  var emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
+  val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
     "AA000000A",
     "firstname",
@@ -116,10 +116,10 @@ trait TestData {
     "my story"
   )
 
-  var emp_isEnd_YES_isAdd_NO =
+  val emp_isEnd_YES_isAdd_NO =
     emp_isEnd_NO_isAdd_NO.copy(isEnd = "Yes")
 
-  var emp_isEnd_NO_isAdd_YES =
+  val emp_isEnd_NO_isAdd_YES =
     emp_isEnd_NO_isAdd_NO.copy(isAdd = "Yes")
 
   val rcb_isEnd_NO = RemoveCompanyBenefitViewModel(

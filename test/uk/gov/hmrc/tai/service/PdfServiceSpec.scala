@@ -123,7 +123,7 @@ class PdfServiceSpec extends BaseSpec {
     featureFlagService: FeatureFlagService
   ) = new PdfService(html2Pdf, xslFo2Pdf, featureFlagService)
 
-  private var emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
+  private val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
     "AA000000A",
     "firstname",

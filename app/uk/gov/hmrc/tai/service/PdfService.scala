@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import play.twirl.api.Content
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.PdfConnector
 import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
@@ -26,6 +25,7 @@ import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
 import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 import uk.gov.hmrc.tai.templates._
 
+import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -37,7 +37,7 @@ class PdfService @Inject() (
   ec: ExecutionContext
 ) {
 
-  @Deprecated
+//  @deprecated(message = "calls to pdf-generator-service should be replaced by lib such as appachefop", since = "TBC")
   def generatePdf(html: String): Future[Array[Byte]] = html2Pdf.generatePdf(html)
 
   def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_]): Future[Array[Byte]] =
@@ -66,6 +66,7 @@ object PdfService {
     override def xmlFoDocument(): Array[Byte] = xml.RemoveCompanyBenefitIForm(model).body.getBytes
   }
 
+  @nowarn
   sealed abstract class PdfGeneratorRequest[T](model: T) {
     def htmlDocument(): String
     def xmlFoDocument(): Array[Byte]

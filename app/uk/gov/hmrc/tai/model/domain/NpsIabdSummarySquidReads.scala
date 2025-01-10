@@ -33,11 +33,11 @@ object NpsIabdSummarySquidReads {
     }
 
     iabdJsArray.flatMap(_.value) collect {
-      case json if (json \ "type").asOpt[Int].isDefined =>
-        val componentType = (json \ "type").as[Int]
-        val employmentId = (json \ "employmentId").asOpt[Int]
-        val amount = (json \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
-        val description = (json \ "npsDescription").asOpt[String].getOrElse("")
+      case jsonValue if (jsonValue \ "type").asOpt[Int].isDefined =>
+        val componentType = (jsonValue \ "type").as[Int]
+        val employmentId = (jsonValue \ "employmentId").asOpt[Int]
+        val amount = (jsonValue \ "amount").asOpt[BigDecimal].getOrElse(BigDecimal(0))
+        val description = (jsonValue \ "npsDescription").asOpt[String].getOrElse("")
         NpsIabdSummary(componentType, employmentId, amount, description)
     }
   }
