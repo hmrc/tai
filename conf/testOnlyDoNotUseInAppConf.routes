@@ -12,8 +12,5 @@
 # Add all the application routes to the prod.routes file
 # microservice specific routes
 
-
-DELETE        /tai/test-only/journey-cache/delete-update-income             @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyCacheController.delete()
-
 ->            /                                                             prod.Routes
 ->            /tai                                                          mongoFeatureTogglesTestOnly.Routes
