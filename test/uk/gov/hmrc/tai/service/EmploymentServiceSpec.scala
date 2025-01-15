@@ -265,7 +265,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(person))
 
         val mockPdfService = mock[PdfService]
-        when(mockPdfService.generatePdf(any()))
+        when(mockPdfService.generatePdfDocumentBytes(any()))
           .thenReturn(Future.successful(pdfBytes))
 
         val mockFileUploadService = mock[FileUploadService]
@@ -332,7 +332,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
-      when(mockPdfService.generatePdf(any()))
+      when(mockPdfService.generatePdfDocumentBytes(any()))
         .thenReturn(Future.successful(pdfBytes))
 
       val mockFileUploadService = mock[FileUploadService]
@@ -375,7 +375,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(person))
 
         val mockPdfService = mock[PdfService]
-        when(mockPdfService.generatePdf(any()))
+        when(mockPdfService.generatePdfDocumentBytes(any()))
           .thenReturn(Future.successful(pdfBytes))
 
         val mockFileUploadService = mock[FileUploadService]
@@ -420,7 +420,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
-      when(mockPdfService.generatePdf(any()))
+      when(mockPdfService.generatePdfDocumentBytes(any()))
         .thenReturn(Future.successful(pdfBytes))
 
       val mockFileUploadService = mock[FileUploadService]

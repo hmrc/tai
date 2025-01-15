@@ -26,8 +26,8 @@ import uk.gov.hmrc.tai.model.domain.benefits._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
+import uk.gov.hmrc.tai.service.PdfService.RemoveCompanyBenefitIFormRequest
 import uk.gov.hmrc.tai.service._
-import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
 import uk.gov.hmrc.tai.util.IFormConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,26 +61,33 @@ class BenefitsService @Inject() (
       "TES1",
       (person: Person) =>
         Future.successful(
-          RemoveCompanyBenefitIForm(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit)).toString
+          new RemoveCompanyBenefitIFormRequest(RemoveCompanyBenefitViewModel(person, removeCompanyBenefit))
         )
     ) map { envelopeId =>
       logger.info("Envelope Id for RemoveCompanyBenefit- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.RemoveCompanyBenefitAuditTxnName,
-        detail = Map(
-          "nino"                      -> nino.nino,
-          "envelope Id"               -> envelopeId,
-          "telephone contact allowed" -> removeCompanyBenefit.contactByPhone,
-          "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
-          "Company Benefit Name"      -> removeCompanyBenefit.benefitType,
-          "Amount Received"           -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
-          "Date Ended"                -> removeCompanyBenefit.stopDate
-        )
-      )
-
-      envelopeId
+      sendRemoveCompanyBenefitsAudit(envelopeId, nino, removeCompanyBenefit)
     }
+
+  private def sendRemoveCompanyBenefitsAudit(
+    envelopeId: String,
+    nino: Nino,
+    removeCompanyBenefit: RemoveCompanyBenefit
+  )(implicit hc: HeaderCarrier) = {
+    auditable.sendDataEvent(
+      transactionName = IFormConstants.RemoveCompanyBenefitAuditTxnName,
+      detail = Map(
+        "nino"                      -> nino.nino,
+        "envelope Id"               -> envelopeId,
+        "telephone contact allowed" -> removeCompanyBenefit.contactByPhone,
+        "telephone number"          -> removeCompanyBenefit.phoneNumber.getOrElse(""),
+        "Company Benefit Name"      -> removeCompanyBenefit.benefitType,
+        "Amount Received"           -> removeCompanyBenefit.valueOfBenefit.getOrElse(""),
+        "Date Ended"                -> removeCompanyBenefit.stopDate
+      )
+    )
+
+    envelopeId
+  }
 
   private def filterBenefits(codingComponents: Seq[CodingComponent]): Benefits = {
 

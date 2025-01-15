@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.{MimeContentType, Person}
 import uk.gov.hmrc.tai.model.templates.PdfSubmission
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
+import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 
 import java.time.format.DateTimeFormatter
@@ -51,12 +52,12 @@ class IFormSubmissionService @Inject() (
     nino: Nino,
     iformSubmissionKey: String,
     iformId: String,
-    iformGenerationFunc: (Person) => Future[String]
+    iformGenerationFunc: (Person) => Future[PdfGeneratorRequest[_]]
   )(implicit hc: HeaderCarrier): Future[String] =
     for {
       person     <- personRepository.getPerson(nino)
       formData   <- iformGenerationFunc(person)
-      pdf        <- pdfService.generatePdf(formData)
+      pdf        <- pdfService.generatePdfDocumentBytes(formData)
       envelopeId <- fileUploadService.createEnvelope()
       metadata = PdfSubmissionMetadata(PdfSubmission(nino.withoutSuffix, iformId, 2)).toString().getBytes
       _ <- fileUploadService

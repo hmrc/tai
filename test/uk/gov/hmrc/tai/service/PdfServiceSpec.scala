@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
@@ -33,49 +32,9 @@ import scala.concurrent.Future
 
 class PdfServiceSpec extends BaseSpec {
 
-  "PdfService DEPRECATED" should {
-    "return the pdf as bytes " when {
-      "generatePdf is called successfully" in {
-
-        val htmlAsString = "<ht ___ not tested ___ ml>"
-        val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-
-        val mockHtml2Pdf = mock[PdfConnector]
-        when(mockHtml2Pdf.generatePdf(ArgumentMatchers.eq(htmlAsString)))
-          .thenReturn(Future.successful(pdfBytes))
-
-        val mockXslFo2PdfBytesFunction = mock[XslFo2PdfBytesFunction]
-        val mockFeatureFlagService = mock[FeatureFlagService]
-
-        val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
-        val result = sut.generatePdf(htmlAsString).futureValue
-
-        result mustBe pdfBytes
-      }
-    }
-
-    "propagate an HttpException" when {
-      "generatePdf is called and the pdf connector generates an HttpException" in {
-        val htmlAsString = "<ht ___ not tested ___ ml>"
-
-        val mockHtml2Pdf = mock[PdfConnector]
-        when(mockHtml2Pdf.generatePdf(ArgumentMatchers.eq(htmlAsString)))
-          .thenReturn(Future.failed(new HttpException("", 0)))
-
-        val mockXslFo2PdfBytesFunction = mock[XslFo2PdfBytesFunction]
-        val mockFeatureFlagService = mock[FeatureFlagService]
-
-        val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
-        val result = sut.generatePdf(htmlAsString).failed.futureValue
-
-        result mustBe a[HttpException]
-      }
-    }
-  }
-
   "PdfService generatePdfDocumentBytes using PDF generator" should {
     "return the pdf as bytes " when {
-      "generatePdf is called successfully" in {
+      "generatePdf is called successfully" in new Setup {
 
         val mockHtml2Pdf = mock[PdfConnector]
         val mockXslFo2PdfBytesFunction = inject[XslFo2PdfBytesFunction]
@@ -93,11 +52,29 @@ class PdfServiceSpec extends BaseSpec {
         result mustBe pdfBytes
       }
     }
+
+    "propagate an HttpException" when {
+      "generatePdf is called and the pdf connector generates a HttpException" in new Setup {
+        val mockHtml2Pdf = mock[PdfConnector]
+        val mockXslFo2PdfBytesFunction = inject[XslFo2PdfBytesFunction]
+        val mockFeatureFlagService = mock[FeatureFlagService]
+        val sut = createSut(mockHtml2Pdf, mockXslFo2PdfBytesFunction, mockFeatureFlagService)
+
+        when(mockFeatureFlagService.get(any())).thenReturn(Future.successful(FeatureFlag(UseApacheFopLibrary, false)))
+
+        when(mockHtml2Pdf.generatePdf(any())).thenReturn(Future.failed(new HttpException("", 1)))
+
+        val request = new EmploymentIFormReportRequest(emp_isEnd_NO_isAdd_NO)
+
+        val result = sut.generatePdfDocumentBytes(request).failed.futureValue
+        result mustBe a[HttpException]
+      }
+    }
   }
 
   "PdfService generatePdfDocumentBytes using Apache FOP" should {
     "return the pdf as bytes " when {
-      "generatePdf is called successfully" in {
+      "generatePdf is called successfully" in new Setup {
 
         val mockHtml2Pdf = mock[PdfConnector]
         val mockXslFo2PdfBytesFunction = mock[XslFo2PdfBytesFunction]
@@ -117,31 +94,34 @@ class PdfServiceSpec extends BaseSpec {
     }
   }
 
-  private def createSut(
-    html2Pdf: PdfConnector,
-    xslFo2Pdf: XslFo2PdfBytesFunction,
-    featureFlagService: FeatureFlagService
-  ) = new PdfService(html2Pdf, xslFo2Pdf, featureFlagService)
+  trait Setup {
+    def createSut(
+      html2Pdf: PdfConnector,
+      xslFo2Pdf: XslFo2PdfBytesFunction,
+      featureFlagService: FeatureFlagService
+    ) = new PdfService(html2Pdf, xslFo2Pdf, featureFlagService)
 
-  private val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
-    "6 April 2017 to 5 April 2018",
-    "AA000000A",
-    "firstname",
-    "lastname",
-    "1 January 1900",
-    "Yes",
-    "0123456789",
-    "address line 1",
-    "address line 2",
-    "address line 3",
-    "postcode",
-    "No",
-    "No",
-    "No",
-    "pension name",
-    "99999999999",
-    "2 February 2000",
-    "3 March 2100",
-    "my story"
-  )
+    val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
+      "6 April 2017 to 5 April 2018",
+      "AA000000A",
+      "firstname",
+      "lastname",
+      "1 January 1900",
+      "Yes",
+      "0123456789",
+      "address line 1",
+      "address line 2",
+      "address line 3",
+      "postcode",
+      "No",
+      "No",
+      "No",
+      "pension name",
+      "99999999999",
+      "2 February 2000",
+      "3 March 2100",
+      "my story"
+    )
+  }
+
 }

@@ -63,7 +63,7 @@ class TestOnlyPdfController @Inject() (
       val request: PdfGeneratorRequest[_] = if (formId == "EmploymentIFormReportRequest") {
         new EmploymentIFormReportRequest(dataEmp.get(dataId).get)
       } else if (formId == "PensionProviderIFormRequest") {
-        new PensionProviderIFormRequest(dataEmp.get(dataId).get)
+        new PensionProviderIFormRequest(dataEmp(dataId))
       } else if (formId == "RemoveCompanyBenefitIFormRequest") {
         new RemoveCompanyBenefitIFormRequest(dataComp.get(dataId).get)
       } else {

@@ -34,9 +34,9 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
-import uk.gov.hmrc.tai.templates.html.EmploymentIForm
 import uk.gov.hmrc.tai.templates.xml.PdfSubmissionMetadata
 import uk.gov.hmrc.tai.util.IFormConstants
+import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -72,6 +72,72 @@ class EmploymentService @Inject() (
 
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
+
+  private def sendEndEmploymentAudit(envelopeId: String, nino: Nino, endEmployment: EndEmployment)(implicit
+    hc: HeaderCarrier
+  ): String = {
+    auditable.sendDataEvent(
+      transactionName = EndEmploymentAuditRequest,
+      detail = Map(
+        "nino"        -> nino.nino,
+        "envelope Id" -> envelopeId,
+        "end-date"    -> endEmployment.endDate.toString
+      )
+    )
+    envelopeId
+  }
+
+  private def sendAddEmploymentAudit(envelopeId: String, nino: Nino, employment: AddEmployment)(implicit
+    hc: HeaderCarrier
+  ): String = {
+    auditable.sendDataEvent(
+      transactionName = IFormConstants.AddEmploymentAuditTxnName,
+      detail = Map(
+        "nino"         -> nino.nino,
+        "envelope Id"  -> envelopeId,
+        "start-date"   -> employment.startDate.toString,
+        "payrollNo"    -> employment.payrollNumber,
+        "employerName" -> employment.employerName
+      )
+    )
+    envelopeId
+  }
+
+  private def sendIncorrectEmploymentAudit(envelopeId: String, nino: Nino, incorrectEmployment: IncorrectEmployment)(
+    implicit hc: HeaderCarrier
+  ): String = {
+    auditable.sendDataEvent(
+      transactionName = IFormConstants.IncorrectEmploymentAuditTxnName,
+      detail = Map(
+        "nino"                    -> nino.nino,
+        "envelope Id"             -> envelopeId,
+        "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
+        "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
+        "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
+      )
+    )
+    envelopeId
+  }
+
+  private def sendUpdatePreviousYearIncomeAudit(
+    envelopeId: String,
+    nino: Nino,
+    year: TaxYear,
+    incorrectEmployment: IncorrectEmployment
+  )(implicit hc: HeaderCarrier): String = {
+    auditable.sendDataEvent(
+      transactionName = IFormConstants.UpdatePreviousYearIncomeAuditTxnName,
+      detail = Map(
+        "nino"                    -> nino.nino,
+        "envelope Id"             -> envelopeId,
+        "taxYear"                 -> year.year.toString,
+        "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
+        "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
+        "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
+      )
+    )
+    envelopeId
+  }
 
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
@@ -135,9 +201,10 @@ class EmploymentService @Inject() (
       person <- EitherT[Future, UpstreamErrorResponse, Person](personRepository.getPerson(nino).map(Right(_)))
       existingEmployment <- employmentAsEitherT(nino, id)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, endEmployment, existingEmployment)
-      endEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf <-
-        EitherT[Future, UpstreamErrorResponse, Array[Byte]](pdfService.generatePdf(endEmploymentHtml).map(Right(_)))
+      endEmploymentHtmlOrXml = new EmploymentIFormReportRequest(templateModel)
+      pdf <- EitherT[Future, UpstreamErrorResponse, Array[Byte]](
+               pdfService.generatePdfDocumentBytes(endEmploymentHtmlOrXml).map(Right(_))
+             )
       envelopeId <- EitherT[Future, UpstreamErrorResponse, String](fileUploadService.createEnvelope().map(Right(_)))
       endEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
                                 .toString()
@@ -159,25 +226,15 @@ class EmploymentService @Inject() (
            )
     } yield {
       logger.info("Envelope Id for end employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        EndEmploymentAuditRequest,
-        detail = Map(
-          "nino"        -> nino.nino,
-          "envelope Id" -> envelopeId,
-          "end-date"    -> endEmployment.endDate.toString
-        )
-      )
-
-      envelopeId
+      sendEndEmploymentAudit(envelopeId, nino, endEmployment)
     }
 
   def addEmployment(nino: Nino, employment: AddEmployment)(implicit hc: HeaderCarrier): Future[String] =
     for {
       person <- personRepository.getPerson(nino)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, employment)
-      addEmploymentHtml = EmploymentIForm(templateModel).toString
-      pdf        <- pdfService.generatePdf(addEmploymentHtml)
+      endEmploymentHtmlOrXml = new EmploymentIFormReportRequest(templateModel)
+      pdf        <- pdfService.generatePdfDocumentBytes(endEmploymentHtmlOrXml)
       envelopeId <- fileUploadService.createEnvelope()
       addEmploymentMetadata = PdfSubmissionMetadata(PdfSubmission(ninoWithoutSuffix(nino), "TES1", 2))
                                 .toString()
@@ -192,19 +249,7 @@ class EmploymentService @Inject() (
            )
     } yield {
       logger.info("Envelope Id for add employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.AddEmploymentAuditTxnName,
-        detail = Map(
-          "nino"         -> nino.nino,
-          "envelope Id"  -> envelopeId,
-          "start-date"   -> employment.startDate.toString(),
-          "payrollNo"    -> employment.payrollNumber,
-          "employerName" -> employment.employerName
-        )
-      )
-
-      envelopeId
+      sendAddEmploymentAudit(envelopeId, nino, employment)
     }
 
   def incorrectEmployment(nino: Nino, id: Int, incorrectEmployment: IncorrectEmployment)(implicit
@@ -220,26 +265,14 @@ class EmploymentService @Inject() (
           for {
             existingEmployment <- employmentAsEitherT(nino, id)
             templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectEmployment, existingEmployment)
-          } yield EmploymentIForm(templateModel).toString
+          } yield new EmploymentIFormReportRequest(templateModel)
         }.value.map {
           case Right(result) => result
           case Left(error)   => throw error
         }
     ) map { envelopeId =>
       logger.info("Envelope Id for incorrect employment- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.IncorrectEmploymentAuditTxnName,
-        detail = Map(
-          "nino"                    -> nino.nino,
-          "envelope Id"             -> envelopeId,
-          "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
-          "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
-          "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
-        )
-      )
-
-      envelopeId
+      sendIncorrectEmploymentAudit(envelopeId, nino, incorrectEmployment)
     }
 
   def updatePreviousYearIncome(nino: Nino, year: TaxYear, incorrectEmployment: IncorrectEmployment)(implicit
@@ -250,23 +283,12 @@ class EmploymentService @Inject() (
       IFormConstants.UpdatePreviousYearIncomeSubmissionKey,
       "TES1",
       (person: Person) =>
-        Future.successful(EmploymentIForm(EmploymentPensionViewModel(year, person, incorrectEmployment)).toString)
+        Future.successful(
+          new EmploymentIFormReportRequest(EmploymentPensionViewModel(year, person, incorrectEmployment))
+        )
     ) map { envelopeId =>
       logger.info("Envelope Id for updatePreviousYearIncome- " + envelopeId)
-
-      auditable.sendDataEvent(
-        transactionName = IFormConstants.UpdatePreviousYearIncomeAuditTxnName,
-        detail = Map(
-          "nino"                    -> nino.nino,
-          "envelope Id"             -> envelopeId,
-          "taxYear"                 -> year.year.toString,
-          "what-you-told-us"        -> incorrectEmployment.whatYouToldUs.length.toString,
-          "telephoneContactAllowed" -> incorrectEmployment.telephoneContactAllowed,
-          "telephoneNumber"         -> incorrectEmployment.telephoneNumber.getOrElse("")
-        )
-      )
-
-      envelopeId
+      sendUpdatePreviousYearIncomeAudit(envelopeId, nino, year, incorrectEmployment)
     }
 
 }

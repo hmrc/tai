@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logging
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.connectors.PdfConnector
 import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
@@ -35,17 +36,17 @@ class PdfService @Inject() (
   featureFlagService: FeatureFlagService
 )(implicit
   ec: ExecutionContext
-) {
-
-//  @deprecated(message = "calls to pdf-generator-service should be replaced by lib such as appachefop", since = "TBC")
-  def generatePdf(html: String): Future[Array[Byte]] = html2Pdf.generatePdf(html)
+) extends Logging {
 
   def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_]): Future[Array[Byte]] =
     featureFlagService.get(UseApacheFopLibrary).map(_.isEnabled).flatMap { enableApacheFop =>
-      if (enableApacheFop)
+      if (enableApacheFop) {
+        logger.warn("PDF GENERATION - using Apache FOP")
         Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
-      else
-        generatePdf(pdfReport.htmlDocument())
+      } else {
+        logger.warn("PDF GENERATION - Using pdf-generator -service")
+        html2Pdf.generatePdf(pdfReport.htmlDocument())
+      }
     }
 }
 
