@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import org.apache.pekko.util.ByteString
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status._
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
@@ -41,7 +43,7 @@ import scala.concurrent.duration._
 @Singleton
 class FileUploadConnector @Inject() (
   metrics: Metrics,
-  httpClient: HttpClient,
+  httpClientV2: HttpClientV2,
   wsClient: WSClient,
   urls: FileUploadUrls,
   config: FileUploadConfig
@@ -57,25 +59,33 @@ class FileUploadConnector @Inject() (
     val envelopeBody: JsValue = Json.obj("callbackUrl" -> config.callbackUrl)
 
     val timerContext = metrics.startTimer(FusCreateEnvelope)
-    httpClient
-      .POST[JsValue, HttpResponse](urls.envelopesUrl, envelopeBody)
-      .map { response =>
-        timerContext.stop()
+    val url = urls.envelopesUrl
 
-        if (response.status == CREATED) {
-          metrics.incrementSuccessCounter(FusCreateEnvelope)
+    val futureResponse = httpClientV2
+      .post(url"$url")
+      .withBody(envelopeBody)
+      .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
 
-          envelopeId(response)
-            .getOrElse {
+    futureResponse
+      .map {
+        case Right(response) =>
+          timerContext.stop()
+          if (response.status == CREATED) {
+            metrics.incrementSuccessCounter(FusCreateEnvelope)
+            envelopeId(response).getOrElse {
               logger.warn("FileUploadConnector.createEnvelope - No envelope id returned by file upload service")
               throw new RuntimeException("No envelope id returned by file upload service")
             }
-        } else {
-          logger.warn(
-            s"FileUploadConnector.createEnvelope - failed to create envelope with status [${response.status}]"
-          )
+          } else {
+            logger.warn(
+              s"FileUploadConnector.createEnvelope - failed to create envelope with status [${response.status}]"
+            )
+            throw new RuntimeException("File upload envelope creation failed")
+          }
+        case Left(error) =>
+          timerContext.stop()
+          logger.warn(s"FileUploadConnector.createEnvelope - Upstream error occurred: ${error.statusCode}")
           throw new RuntimeException("File upload envelope creation failed")
-        }
       }
       .recover { case _: Exception =>
         logger.warn("FileUploadConnector.createEnvelope - call to create envelope failed")
@@ -155,21 +165,32 @@ class FileUploadConnector @Inject() (
 
   def closeEnvelope(envId: String)(implicit hc: HeaderCarrier): Future[String] = {
     val timerContext = metrics.startTimer(FusCloseEnvelope)
-    httpClient
-      .POST[JsValue, HttpResponse](urls.routingUrl, routingRequest(envId))
-      .map { response =>
-        timerContext.stop()
-        if (response.status == CREATED) {
-          metrics.incrementSuccessCounter(FusCloseEnvelope)
-          envelopeId(response)
-            .getOrElse {
+    val url = urls.routingUrl
+    val futureResponse = httpClientV2
+      .post(url"$url")
+      .withBody(routingRequest(envId))
+      .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+
+    futureResponse
+      .map {
+        case Right(response) =>
+          timerContext.stop()
+          if (response.status == CREATED) {
+            metrics.incrementSuccessCounter(FusCloseEnvelope)
+            envelopeId(response).getOrElse {
               logger.warn("FileUploadConnector.closeEnvelope - No envelope id returned by file upload service")
               throw new RuntimeException("No envelope id returned by file upload service")
             }
-        } else {
-          logger.warn(s"FileUploadConnector.closeEnvelope - failed to close envelope with status [${response.status}]")
+          } else {
+            logger.warn(
+              s"FileUploadConnector.closeEnvelope - failed to close envelope with status [${response.status}]"
+            )
+            throw new RuntimeException("File upload envelope routing request failed")
+          }
+        case Left(error) =>
+          timerContext.stop()
+          logger.warn(s"FileUploadConnector.closeEnvelope - Upstream error occurred: ${error.statusCode}")
           throw new RuntimeException("File upload envelope routing request failed")
-        }
       }
       .recover { case _: Exception =>
         logger.warn("FileUploadConnector.closeEnvelope - call to close envelope failed")
