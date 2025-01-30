@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar.{reset, when}
 import play.api.http.Status._
-import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
@@ -120,6 +120,13 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
+        }
+        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountNps)))
@@ -149,6 +156,13 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
+        }
+        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
