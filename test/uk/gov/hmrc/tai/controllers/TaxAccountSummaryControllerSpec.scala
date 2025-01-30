@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
+import uk.gov.hmrc.tai.model.api.ApiResponse
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.model.tai.TaxYear
-import uk.gov.hmrc.tai.service.TaxAccountSummaryService
+import uk.gov.hmrc.tai.service.{MissingEmploymentException, TaxAccountSummaryService}
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 
 import scala.concurrent.Future
@@ -46,19 +47,24 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
         status(result) mustBe OK
 
         val expectedJson = Json.obj(
-          "data" -> Json.obj(
-            "totalEstimatedTax"                  -> 2222,
-            "taxFreeAmount"                      -> 1,
-            "totalInYearAdjustmentIntoCY"        -> 56.78,
-            "totalInYearAdjustment"              -> 100.00,
-            "totalInYearAdjustmentIntoCYPlusOne" -> 43.22,
-            "totalEstimatedIncome"               -> 200,
-            "taxFreeAllowance"                   -> 100
-          ),
+          "data"  -> Json.toJson(taxAccountSummaryForYearCY1),
           "links" -> Json.arr()
         )
         contentAsJson(result) mustBe expectedJson
       }
+    }
+
+    "return NotFound with JSON response when MissingEmploymentException is thrown" in {
+      val mockTaxAccountSummaryService = mock[TaxAccountSummaryService]
+      when(mockTaxAccountSummaryService.taxAccountSummary(meq(nino), meq(TaxYear()))(any(), any()))
+        .thenReturn(Future.failed(new MissingEmploymentException(nino.nino, TaxYear().year)))
+
+      val sut = createSUT(mockTaxAccountSummaryService)
+      val result = sut.taxAccountSummaryForYear(nino, TaxYear())(FakeRequest())
+      status(result) mustBe NOT_FOUND
+      contentAsJson(result) mustBe Json.toJson(
+        ApiResponse(s"Missing employment records for NINO ${nino.nino} in tax year ${TaxYear().year}", Nil)
+      )
     }
 
     "return Locked exception" when {
@@ -83,5 +89,4 @@ class TaxAccountSummaryControllerSpec extends BaseSpec with NpsExceptions {
     authentication: AuthJourney = loggedInAuthenticationAuthJourney
   ) =
     new TaxAccountSummaryController(taxAccountSummaryService, authentication, cc)
-
 }

@@ -18,12 +18,11 @@ package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.http.Status.NOT_FOUND
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
@@ -173,94 +172,6 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
       val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
 
       result mustBe taxCodeIncomes.map(_.copy(status = Ceased))
-    }
-
-    "return the list of taxCodeIncomes for passed nino even if employments is nil" in {
-      val taxCodeIncomes = Seq(
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(1),
-          BigDecimal(0),
-          "EmploymentIncome",
-          "1150L",
-          "Employer1",
-          Week1Month1BasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        ),
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(2),
-          BigDecimal(0),
-          "EmploymentIncome",
-          "1100L",
-          "Employer2",
-          OtherBasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        )
-      )
-
-      val mockEmploymentService = mock[EmploymentService]
-      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
-        .thenReturn(Future.successful(taxCodeIncomes))
-
-      when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
-        .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
-
-      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
-      val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
-
-      result mustBe taxCodeIncomes
-    }
-
-    "return the list of taxCodeIncomes for passed nino even if employments fails" in {
-      val taxCodeIncomes = Seq(
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(1),
-          BigDecimal(0),
-          "EmploymentIncome",
-          "1150L",
-          "Employer1",
-          Week1Month1BasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        ),
-        TaxCodeIncome(
-          EmploymentIncome,
-          Some(2),
-          BigDecimal(0),
-          "EmploymentIncome",
-          "1100L",
-          "Employer2",
-          OtherBasisOperation,
-          Live,
-          BigDecimal(0),
-          BigDecimal(0),
-          BigDecimal(0)
-        )
-      )
-
-      val mockEmploymentService = mock[EmploymentService]
-      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
-        .thenReturn(Future.successful(taxCodeIncomes))
-
-      when(mockEmploymentService.employmentsAsEitherT(any[Nino], any[TaxYear])(any[HeaderCarrier], any()))
-        .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
-
-      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
-      val result = sut.taxCodeIncomes(nino, TaxYear())(HeaderCarrier(), FakeRequest()).futureValue
-
-      result mustBe taxCodeIncomes
     }
   }
 
@@ -1386,6 +1297,156 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
 
       val result = SUT.updateTaxCodeIncome(nino, taxYear, 1, 1234)(HeaderCarrier(), implicitly)
       result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
+    }
+  }
+
+  "taxCodeIncomes" must {
+    "return a list of matched taxCodeIncomes when employments match" in {
+      val taxYear = TaxYear()
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(1),
+          1000,
+          "Employment 1",
+          "1250L",
+          "Employer1",
+          OtherBasisOperation,
+          Live,
+          0,
+          0,
+          0
+        ),
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(2),
+          2000,
+          "Employment 2",
+          "1100L",
+          "Employer2",
+          OtherBasisOperation,
+          Live,
+          0,
+          0,
+          0
+        )
+      )
+
+      val employments = Employments(
+        Seq(
+          Employment(
+            "Employer1",
+            Live,
+            Some("12345"),
+            LocalDate.now(),
+            None,
+            Nil,
+            "",
+            "",
+            1,
+            None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
+          Employment(
+            "Employer2",
+            Live,
+            Some("67890"),
+            LocalDate.now(),
+            None,
+            Nil,
+            "",
+            "",
+            2,
+            None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
+        ),
+        None
+      )
+
+      val mockEmploymentService = mock[EmploymentService]
+      when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+        .thenReturn(EitherT.rightT(employments))
+
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+      val result = sut.taxCodeIncomes(nino, taxYear).futureValue
+
+      result mustBe taxCodeIncomes
+    }
+
+    "throw MissingEmploymentException when no employments match taxCodeIncomes" in {
+      val taxYear = TaxYear()
+      val taxCodeIncomes = Seq(
+        TaxCodeIncome(
+          EmploymentIncome,
+          Some(3),
+          1000,
+          "Employment 3",
+          "1250L",
+          "Employer3",
+          OtherBasisOperation,
+          Live,
+          0,
+          0,
+          0
+        )
+      )
+
+      val employments = Employments(
+        Seq(
+          Employment(
+            "Employer1",
+            Live,
+            Some("12345"),
+            LocalDate.now(),
+            None,
+            Nil,
+            "",
+            "",
+            1,
+            None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          ),
+          Employment(
+            "Employer2",
+            Live,
+            Some("67890"),
+            LocalDate.now(),
+            None,
+            Nil,
+            "",
+            "",
+            2,
+            None,
+            hasPayrolledBenefit = false,
+            receivingOccupationalPension = false
+          )
+        ),
+        None
+      )
+
+      val mockEmploymentService = mock[EmploymentService]
+      when(mockEmploymentService.employmentsAsEitherT(any(), any())(any(), any()))
+        .thenReturn(EitherT.rightT(employments))
+
+      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
+      when(mockTaxCodeIncomeHelper.fetchTaxCodeIncomes(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeIncomes))
+
+      val sut = createSUT(employmentService = mockEmploymentService, taxCodeIncomeHelper = mockTaxCodeIncomeHelper)
+
+      val result = sut.taxCodeIncomes(nino, taxYear)
+      result.failed.futureValue mustBe a[MissingEmploymentException]
+      result.failed.futureValue.getMessage must include(
+        s"Missing employment records for NINO ${nino.nino} in tax year ${taxYear.year}"
+      )
     }
   }
 }
