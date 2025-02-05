@@ -73,6 +73,22 @@ class EmploymentService @Inject() (
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
+  def employmentOnly(nino: Nino, taxYear: TaxYear, employmentId: Int)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Option[Employment]] =
+    for {
+      toggle   <- featureFlagService.getAsEitherT(HipToggleEmploymentDetails)
+      response <- employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year)
+    } yield {
+      val reads = if (toggle.isEnabled) {
+        employmentCollectionHodReadsHIP
+      } else {
+        employmentCollectionHodReadsNPS
+      }
+
+      response.body.as[EmploymentCollection](reads).employments.find(_.sequenceNumber == employmentId)
+    }
+
   def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier,
     request: Request[_]

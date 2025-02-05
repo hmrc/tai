@@ -59,6 +59,20 @@ class EmploymentsController @Inject() (
         .merge recoverWith taxAccountErrorHandler()
   }
 
+  def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails.async { implicit request =>
+      employmentService
+        .employmentOnly(nino, year, id)
+        .fold(
+          error => errorToResponse(error),
+          employmentOption =>
+            employmentOption.fold(NotFound(s"Employment id `$id` for tax year `$year` could not be found")) {
+              employment =>
+                Ok(Json.toJson(ApiResponse(employment, Nil)))
+            }
+        )
+    }
+
   def endEmployment(nino: Nino, id: Int): Action[JsValue] = authentication.authWithUserDetails.async(parse.json) {
     implicit request =>
       withJsonBody[EndEmployment] { endEmployment =>

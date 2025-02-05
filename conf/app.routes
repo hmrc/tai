@@ -14,6 +14,11 @@ POST          /:nino/employments                                                
 PUT           /:nino/employments/:id/end-date                                                                         @uk.gov.hmrc.tai.controllers.EmploymentsController.endEmployment(nino: Nino, id: Int)
 POST          /:nino/employments/:id/reason                                                                           @uk.gov.hmrc.tai.controllers.EmploymentsController.incorrectEmployment(nino: Nino, id: Int)
 
+GET           /:nino/employment-only/:id/years/:year                                                                   @uk.gov.hmrc.tai.controllers.EmploymentsController.employmentOnly(nino: Nino, id: Int, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
+#RTI payments
+GET           /:nino/rti-payments/years/:year                                                                      @uk.gov.hmrc.tai.controllers.RtiController.getPaymentsForYear(nino: Nino, year: uk.gov.hmrc.tai.model.tai.TaxYear)
+
 POST          /:nino/pensionProvider                                                                                  @uk.gov.hmrc.tai.controllers.PensionProviderController.addPensionProvider(nino: Nino)
 POST          /:nino/pensionProvider/:id/reason                                                                       @uk.gov.hmrc.tai.controllers.PensionProviderController.incorrectPensionProvider(nino: Nino, id: Int)
 
