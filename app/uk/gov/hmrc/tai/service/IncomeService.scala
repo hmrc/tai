@@ -134,9 +134,9 @@ class IncomeService @Inject() (
 
       if (matchedTaxCodes.isEmpty) {
         throw new MissingEmploymentException(nino.nino, year.year)
+      } else {
+        matchedTaxCodes
       }
-
-      matchedTaxCodes
     }
   }
 

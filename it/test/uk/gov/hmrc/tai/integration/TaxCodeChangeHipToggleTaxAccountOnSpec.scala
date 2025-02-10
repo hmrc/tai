@@ -47,6 +47,13 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
+  def updateEmploymentJsonSequence(json: JsValue, sequenceNumber: Int): String = {
+    val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+      obj.as[JsObject] + ("sequenceNumber" -> JsNumber(sequenceNumber))
+    }
+    Json.prettyPrint(JsArray(updatedEmploymentJson))
+  }
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -121,10 +128,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val json: JsValue = Json.parse(employmentJson)
-        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
-          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
-        }
-        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
 
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
@@ -157,10 +161,7 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val json: JsValue = Json.parse(employmentJson)
-        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
-          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
-        }
-        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
 
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))

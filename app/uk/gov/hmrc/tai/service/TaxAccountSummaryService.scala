@@ -45,11 +45,9 @@ class TaxAccountSummaryService @Inject() (
     for {
       totalEstimatedTax       <- taxAccountHelper.totalEstimatedTax(nino, year)
       taxFreeAmountComponents <- codingComponentService.codingComponents(nino, year)
-      taxCodeIncomes <- incomeService.taxCodeIncomes(nino, year).recoverWith { case ex: MissingEmploymentException =>
-                          Future.failed(ex)
-                        }
-      totalTax         <- totalTaxService.totalTax(nino, year)
-      taxFreeAllowance <- totalTaxService.taxFreeAllowance(nino, year)
+      taxCodeIncomes          <- incomeService.taxCodeIncomes(nino, year)
+      totalTax                <- totalTaxService.totalTax(nino, year)
+      taxFreeAllowance        <- totalTaxService.taxFreeAllowance(nino, year)
     } yield {
 
       val taxFreeAmount = taxFreeAmountCalculation(taxFreeAmountComponents)
