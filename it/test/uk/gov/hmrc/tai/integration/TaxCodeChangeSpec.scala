@@ -21,7 +21,7 @@ import play.api.http.Status._
 import play.api.libs.json.{JsArray, JsBoolean, JsNumber, JsObject, JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, writeableOf_AnyContentAsEmpty, status => getStatus}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
@@ -40,6 +40,13 @@ class TaxCodeChangeSpec extends IntegrationSpec {
   def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  def updateEmploymentJsonSequence(json: JsValue, sequenceNumber: Int): String = {
+    val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+      obj.as[JsObject] + ("sequenceNumber" -> JsNumber(sequenceNumber))
+    }
+    Json.prettyPrint(JsArray(updatedEmploymentJson))
+  }
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {
@@ -91,10 +98,8 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val json: JsValue = Json.parse(employmentJson)
-        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
-          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
-        }
-        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
 
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
@@ -126,10 +131,8 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
         val json: JsValue = Json.parse(employmentJson)
-        val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
-          obj.as[JsObject] + ("sequenceNumber" -> JsNumber(16))
-        }
-        val finalEmploymentJson = Json.prettyPrint(JsArray(updatedEmploymentJson))
+
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
 
         server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
