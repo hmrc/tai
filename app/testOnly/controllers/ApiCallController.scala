@@ -39,9 +39,10 @@ class ApiCallController @Inject() (
   def employmentDetails(nino: Nino, taxYear: Int): Action[AnyContent] = Action.async { implicit request =>
     defaultEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear).value.map {
       case Left(errorResponse) =>
-        InternalServerError(
+        Status(errorResponse.statusCode)(
           s"Error response - status is: ${errorResponse.statusCode} and response message is ${errorResponse.message}"
         )
+
       case Right(response) => Ok(s"Response body is ${response.body}")
     }
   }
