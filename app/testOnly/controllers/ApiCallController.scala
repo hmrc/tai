@@ -43,20 +43,20 @@ class ApiCallController @Inject() (
           s"Error response - status is: ${errorResponse.statusCode} and response message is ${errorResponse.message}"
         )
 
-      case Right(response) => Ok(s"Response body is ${response.body}")
+      case Right(response) => Ok(response.body)
     }
   }
 
   def taxAccount(nino: Nino, taxYear: Int): Action[AnyContent] = Action.async { implicit request =>
     defaultTaxAccountConnector.taxAccount(nino, TaxYear(taxYear)).map { jsValue =>
-      Ok(s"Response body is $jsValue")
+      Ok(jsValue)
     } recover { case _: NotFoundException =>
       NotFound
     }
   }
   def iabds(nino: Nino, taxYear: Int): Action[AnyContent] = Action.async { implicit request =>
     defaultIabdConnector.iabds(nino, TaxYear(taxYear)).map { jsValue =>
-      Ok(s"Response body is $jsValue")
+      Ok(jsValue)
     } recover { case _: NotFoundException =>
       NotFound
     }
