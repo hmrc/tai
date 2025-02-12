@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
-import play.api.http.Status.OK
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HttpClient, _}
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain.{Person, PersonFormatter}
@@ -30,8 +31,8 @@ import uk.gov.hmrc.tai.model.enums.APITypes
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClient: HttpClient, urls: CitizenDetailsUrls)(implicit
-  ec: ExecutionContext
+class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClientV2: HttpClientV2, urls: CitizenDetailsUrls)(
+  implicit ec: ExecutionContext
 ) extends BaseConnector with Logging {
 
   override val originatorId: String = ""
@@ -40,38 +41,61 @@ class CitizenDetailsConnector @Inject() (metrics: Metrics, httpClient: HttpClien
     val api = APITypes.NpsPersonAPI
     val url = urls.designatoryDetailsUrl(nino)
 
+    implicit val responseHandler: HttpReads[HttpResponse] = (_: String, url: String, httpResponse: HttpResponse) =>
+      httpResponse.status match {
+        case Status.OK | Status.LOCKED =>
+          metrics.incrementSuccessCounter(api)
+          httpResponse
+        case _ =>
+          logger.warn(
+            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+          )
+          metrics.incrementFailedCounter(api)
+          throw new HttpException(httpResponse.body, httpResponse.status)
+      }
+
     val timerContext = metrics.startTimer(api)
-    val futureResponse = httpClient.GET[HttpResponse](url)
+
+    val futureResponse = httpClientV2
+      .get(url = url"$url")
+      .execute[HttpResponse](responseHandler, ec)
+
     futureResponse.flatMap { httpResponse =>
       timerContext.stop()
 
       httpResponse.status match {
         case Status.OK =>
-          metrics.incrementSuccessCounter(api)
           val person = httpResponse.json.as[Person](PersonFormatter.personHodRead)
           Future.successful(person)
         case Status.LOCKED =>
-          metrics.incrementSuccessCounter(api)
-
-          Future.successful(
-            Person.createLockedUser(nino)
-          )
+          Future.successful(Person.createLockedUser(nino))
         case _ =>
-          logger.warn(s"Calling person details from citizen details failed: " + httpResponse.status + " url " + url)
+          logger.warn(s"Calling person details from citizen details failed: ${httpResponse.status} url $url")
           metrics.incrementFailedCounter(api)
           Future.failed(new HttpException(httpResponse.body, httpResponse.status))
       }
     }
   }
 
-  def getEtag(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[ETag]] =
-    httpClient.GET(urls.etagUrl(nino)) flatMap { response =>
-      response.status match {
-        case OK =>
-          Future.successful(response.json.asOpt[ETag])
-        case errorStatus =>
-          logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
-          Future.successful(None)
-      }
+  def getEtag(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[ETag]] = {
+
+    val url = urls.etagUrl(nino)
+    val futureResponse: Future[Either[UpstreamErrorResponse, HttpResponse]] = httpClientV2
+      .get(url"$url")
+      .execute[Either[UpstreamErrorResponse, HttpResponse]](readEitherOf(readRaw), ec)
+
+    futureResponse.flatMap {
+      case Right(httpResponse) =>
+        httpResponse.status match {
+          case Status.OK =>
+            Future.successful(httpResponse.json.asOpt[ETag])
+          case errorStatus =>
+            logger.error(s"[CitizenDetailsService.getEtag] Failed to get an ETag from citizen-details: $errorStatus")
+            Future.successful(None)
+        }
+      case Left(error) =>
+        logger.error(s"[CitizenDetailsService.getEtag] Upstream error occurred: ${error.statusCode} url: $url")
+        Future.successful(None)
     }
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionId}
 import uk.gov.hmrc.mongo.{CurrentTimestampSupport, MongoComponent, TimestampSupport}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector}
 import uk.gov.hmrc.tai.integration.utils.FakeAsyncCacheApi
 import uk.gov.hmrc.tai.model.domain.{Address, Person, PersonFormatter}
-import uk.gov.hmrc.tai.repositories.deprecated.{TaiCacheRepository, TaiUpdateIncomeCacheRepository}
+import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -71,12 +71,6 @@ class TaiCacheRepositoryItSpec
 
   private lazy val sut: TaiCacheRepository = new TaiCacheRepository(
     new TaiCacheConnector(mongoComponent, mockConfig, timestampSupport),
-    mockConfig,
-    configuration
-  )
-
-  private lazy val sutUpdateIncome: TaiUpdateIncomeCacheRepository = new TaiUpdateIncomeCacheRepository(
-    new TaiUpdateIncomeCacheConnector(mongoComponent, mockConfig, timestampSupport),
     mockConfig,
     configuration
   )
@@ -144,64 +138,6 @@ class TaiCacheRepositoryItSpec
 
         cachedData mustBe None
       }
-    }
-  }
-
-  // update-income
-  "insert and read the data from mongodb *Update-Income" when {
-    "data has been passed *Update-Income" in {
-      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
-
-      Some(data) mustBe cachedData
-    }
-
-    "data has been passed without key *Update-Income" in {
-
-      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
-
-      Some(data) mustBe cachedData
-
-    }
-
-    "saved and returned json is valid *Update-Income" in {
-      val data = sutUpdateIncome
-        .createOrUpdateIncome[Person](cacheId, Person(nino, "Name", "Surname", None, Address("", "", "", "", "")))(
-          PersonFormatter.personMongoFormat
-        )
-        .futureValue
-      val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personMongoFormat).futureValue
-      cachedData mustBe Some(data)
-    }
-  }
-
-  "delete the data from cache using createOrUpdateIncome *Update-Income" when {
-
-    "calling removeById *Update-Income" in {
-      val data = sutUpdateIncome.createOrUpdateIncome[String](cacheId, "DATA").futureValue
-      val cachedData = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
-      Some(data) mustBe cachedData
-
-      sutUpdateIncome.createOrUpdateIncome(cacheId, Map.empty[String, String]).futureValue
-
-      val dataAfterRemove = sutUpdateIncome.findUpdateIncome[String](cacheId).futureValue
-      dataAfterRemove mustBe None
-    }
-  }
-
-  "return None" when {
-    "returned json is invalid" in {
-      val badJson = Json
-        .parse("""
-                 | {
-                 |  "invalid": "key"
-                 | }
-                 |""".stripMargin)
-        .toString
-      sutUpdateIncome.createOrUpdateIncome[String](cacheId, badJson).futureValue
-      val cachedData = sutUpdateIncome.findUpdateIncome[Person](cacheId)(PersonFormatter.personHodRead).futureValue
-      cachedData mustBe None
     }
   }
 }

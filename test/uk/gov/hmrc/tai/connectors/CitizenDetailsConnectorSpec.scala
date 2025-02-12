@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import play.api.http.Status._
 import play.api.libs.json._
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain.Address
 import uk.gov.hmrc.tai.model.enums.APITypes
-
-import scala.concurrent.Future
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
@@ -45,7 +44,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
                                         |}
     """.stripMargin)
 
-  val jsonPayload = Json
+  val jsonPayload: String = Json
     .parse(s"""
               |{
               | "etag":"1",
@@ -86,8 +85,8 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
         "LName",
         Some(LocalDate.parse("1975-09-15")),
         Address(Some("1 Test Line"), Some("Test Line 2"), None, Some("TEST"), Some("GREAT BRITAIN")),
-        false,
-        false
+        isDeceased = false,
+        manualCorrespondenceInd = false
       )
     }
 
@@ -182,7 +181,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
           get(urlEqualTo(eTagUrl))
             .willReturn(
               aResponse()
-                .withStatus(BAD_REQUEST)
+                .withStatus(httpResponse)
             )
         )
 
@@ -235,12 +234,10 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
       when(metrics.startTimer(any()))
         .thenReturn(mockTimerContext)
 
-      val httpClient = mock[HttpClient]
+      val connector = new CitizenDetailsConnector(metrics, inject[HttpClientV2], inject[CitizenDetailsUrls])
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
-
-      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
-        Future.successful(HttpResponse(OK, jsonPayload))
+      server.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(OK).withBody(jsonPayload))
       )
 
       connector.getPerson(nino).futureValue
@@ -255,14 +252,12 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
       when(metrics.startTimer(any()))
         .thenReturn(mockTimerContext)
 
-      val httpClient = mock[HttpClient]
+      val connector = new CitizenDetailsConnector(metrics, inject[HttpClientV2], inject[CitizenDetailsUrls])
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
-
-      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
-        Future.successful(HttpResponse(LOCKED, "a locked user"))
+      server.stubFor(
+        get(anyUrl())
+          .willReturn(aResponse().withStatus(LOCKED).withBody("a locked user"))
       )
-
       connector.getPerson(nino).futureValue
 
       verify(metrics).incrementSuccessCounter(meq(APITypes.NpsPersonAPI))
@@ -275,12 +270,12 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
       when(metrics.startTimer(any()))
         .thenReturn(mockTimerContext)
 
-      val httpClient = mock[HttpClient]
+      val connector = new CitizenDetailsConnector(metrics, inject[HttpClientV2], inject[CitizenDetailsUrls])
 
-      val connector = new CitizenDetailsConnector(metrics, httpClient, inject[CitizenDetailsUrls])
-
-      when(httpClient.GET[HttpResponse](any(), any(), any())(any(), any(), any())).thenReturn(
-        Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "an error occured"))
+      server.stubFor(
+        get(anyUrl()).willReturn(
+          aResponse().withStatus(INTERNAL_SERVER_ERROR).withBody("an error occurred")
+        )
       )
 
       connector.getPerson(nino).failed.futureValue

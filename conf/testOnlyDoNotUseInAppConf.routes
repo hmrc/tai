@@ -12,11 +12,12 @@
 # Add all the application routes to the prod.routes file
 # microservice specific routes
 
+->            /                                                             prod.Routes
+->            /tai                                                          mongoFeatureTogglesTestOnly.Routes
 
-DELETE        /tai/test-only/journey-cache/delete-update-income             @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyCacheController.delete()
+GET           /v1/api/employment/employee/:nino/tax-year/:taxYear/employment-details   @testOnly.controllers.ApiCallController.employmentDetails(nino: Nino, taxYear: Int)
+GET           /v1/api/person/:nino/tax-account/:taxYear                                @testOnly.controllers.ApiCallController.taxAccount(nino: Nino, taxYear: Int)
+GET           /v1/api/iabd/taxpayer/:nino/tax-year/:taxYear                            @testOnly.controllers.ApiCallController.iabds(nino: Nino, taxYear: Int)
 
 GET           /tai/test-only/pdf/:isNewGenerator/:contentId/:dataId         @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.pdf(isNewGenerator:Boolean,contentId:String,dataId: String)
 GET           /tai/test-only/pdf                                            @uk.gov.hmrc.tai.controllers.testOnly.TestOnlyPdfController.index()
-
-->            /                                                             prod.Routes
-->            /tai                                                          mongoFeatureTogglesTestOnly.Routes

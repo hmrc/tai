@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.util
 
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector, TaiUpdateIncomeCacheConnector}
+import uk.gov.hmrc.tai.connectors.cache.{CacheId, TaiCacheConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 
@@ -26,8 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class InvalidateCaches @Inject() (
   taiCacheConnector: TaiCacheConnector,
-  taiSessionCacheRepository: TaiSessionCacheRepository,
-  taiUpdateIncomeCacheConnector: TaiUpdateIncomeCacheConnector
+  taiSessionCacheRepository: TaiSessionCacheRepository
 )(implicit
   ec: ExecutionContext
 ) {
@@ -36,7 +35,6 @@ class InvalidateCaches @Inject() (
     val cacheId = CacheId(request.nino).value
     for {
       _      <- taiCacheConnector.deleteEntity(cacheId)
-      _      <- taiUpdateIncomeCacheConnector.deleteEntity(cacheId)
       _      <- taiSessionCacheRepository.deleteAllFromSession
       result <- f
     } yield result
