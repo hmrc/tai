@@ -19,7 +19,7 @@ import uk.gov.hmrc.DefaultBuildSettings.*
 val appName: String = "tai"
 
 ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.15"
 ThisBuild / scalafmtOnCompile := true
 
 lazy val microservice = Project(appName, file("."))
@@ -81,3 +81,6 @@ lazy val it = project
     libraryDependencies ++= AppDependencies.test,
     DefaultBuildSettings.itSettings()
   )
+
+addCommandAlias("runAllTests", ";test;it/test;")
+addCommandAlias("runLocal", "run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes")

@@ -52,3 +52,10 @@ case object HipToggleEmploymentIabds extends FeatureFlagName {
     "Enable/disable use of HIP instead of Squid for the update Iabds employment API"
   )
 }
+
+case object UseApacheFopLibrary extends FeatureFlagName {
+  override val name: String = "use-apache-fop-library"
+  override val description: Option[String] = Some(
+    "Use ApacheFopLibrary instead of PDF_GENERATOR_SERVICE"
+  )
+}
