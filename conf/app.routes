@@ -46,12 +46,6 @@ GET           /:nino/tax-account/:year/total-tax                                
 
 POST          /file-upload/callback                                                                                   @uk.gov.hmrc.tai.controllers.FileUploadController.fileUploadCallback()
 
-# journey cache api - for tai-frontend service use
-GET           /journey-cache/:journey                                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.currentCache(journey: String)
-GET           /journey-cache/:journey/values/:key                                                                     @uk.gov.hmrc.tai.controllers.JourneyCacheController.currentCacheValue(journey: String, key: String)
-POST          /journey-cache/:journey                                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.cached(journey: String)
-DELETE        /journey-cache/:journey                                                                                 @uk.gov.hmrc.tai.controllers.JourneyCacheController.flush(journey: String)
-DELETE        /journey-cache/:journey/:empId                                                                          @uk.gov.hmrc.tai.controllers.JourneyCacheController.flushWithEmpId(journey: String, empId: Int)
 
 # Invalidate Session Cache
 DELETE        /session-cache                                                                                          @uk.gov.hmrc.tai.controllers.SessionController.invalidateCache
