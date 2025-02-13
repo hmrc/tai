@@ -21,10 +21,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlE
 import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.MockitoSugar.{reset, when}
 import play.api.http.Status._
-import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.libs.json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, writeableOf_AnyContentAsEmpty, status => getStatus}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
@@ -46,6 +46,13 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
   def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  def updateEmploymentJsonSequence(json: JsValue, sequenceNumber: Int): String = {
+    val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+      obj.as[JsObject] + ("sequenceNumber" -> JsNumber(sequenceNumber))
+    }
+    Json.prettyPrint(JsArray(updatedEmploymentJson))
+  }
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -120,6 +127,10 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountNps)))
@@ -149,6 +160,10 @@ class TaxCodeChangeHipToggleTaxAccountOnSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(hipTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))

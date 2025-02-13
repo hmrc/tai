@@ -18,9 +18,10 @@ package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.http.Status._
-import play.api.libs.json.{JsArray, JsBoolean, Json}
+import play.api.libs.json.{JsArray, JsBoolean, JsNumber, JsObject, JsValue, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, status => getStatus, writeableOf_AnyContentAsEmpty}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, route, writeableOf_AnyContentAsEmpty, status => getStatus}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.{FileHelper, IntegrationSpec}
 import uk.gov.hmrc.tai.model.domain.income.BasisOperation.Week1Month1
@@ -31,14 +32,21 @@ import java.time.format.DateTimeFormatter
 class TaxCodeChangeSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-code-change"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
   val apiUrlHasChanged = s"/tai/$nino/tax-account/tax-code-change/exists"
-  def requestHasChanged = FakeRequest(GET, apiUrlHasChanged)
+  def requestHasChanged: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrlHasChanged)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
+
+  def updateEmploymentJsonSequence(json: JsValue, sequenceNumber: Int): String = {
+    val updatedEmploymentJson = json.as[JsArray].value.map { obj =>
+      obj.as[JsObject] + ("sequenceNumber" -> JsNumber(sequenceNumber))
+    }
+    Json.prettyPrint(JsArray(updatedEmploymentJson))
+  }
 
   "TaxCodeChange" must {
     "return an OK response for a valid user" in {
@@ -89,6 +97,11 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
@@ -117,6 +130,11 @@ class TaxCodeChangeSpec extends IntegrationSpec {
           .replace("<cyDate>", TaxYear().start.plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
           .replace("<cyYear>", TaxYear().start.getYear.toString)
 
+        val json: JsValue = Json.parse(employmentJson)
+
+        val finalEmploymentJson = updateEmploymentJsonSequence(json, 16)
+
+        server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(finalEmploymentJson)))
         server.stubFor(get(urlEqualTo(desTaxCodeHistoryUrl)).willReturn(ok(taxCodeHistory)))
         server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccount)))
         server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(iabds)))
