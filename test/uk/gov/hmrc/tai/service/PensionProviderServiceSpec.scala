@@ -26,7 +26,7 @@ import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
-import uk.gov.hmrc.tai.templates.html.{EmploymentIForm, PensionProviderIForm}
+import uk.gov.hmrc.tai.templates.xml.{EmploymentIForm, PensionProviderIForm}
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import scala.concurrent.Future
@@ -100,7 +100,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mock[EmploymentService])
 
         val result = sut.addPensionProviderForm(pensionProvider)(person).futureValue
-        result.htmlDocument() mustBe PensionProviderIForm(
+        result.toString mustBe PensionProviderIForm(
           EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
         ).body
       }
@@ -193,7 +193,7 @@ class PensionProviderServiceSpec extends BaseSpec {
         val sut = createSut(mock[IFormSubmissionService], mock[Auditor], mockEmploymentService)
 
         val result = sut.incorrectPensionProviderForm(nino, 1, pensionProvider)(hc, FakeRequest())(person).futureValue
-        result.htmlDocument() mustBe EmploymentIForm(
+        result.toString mustBe EmploymentIForm(
           EmploymentPensionViewModel(TaxYear(), person, pensionProvider, employment)
         ).body
 

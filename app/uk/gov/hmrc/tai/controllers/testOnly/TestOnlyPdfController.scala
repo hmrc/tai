@@ -20,19 +20,16 @@ import com.google.inject.Inject
 import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity.Strict
 import play.api.mvc.{Action, AnyContent, ControllerComponents, ResponseHeader, Result}
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class TestOnlyPdfController @Inject() (
   pdfService: PdfService,
-  cc: ControllerComponents,
-  featureFlagService: FeatureFlagService
+  cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with TestData {
 
@@ -47,7 +44,7 @@ class TestOnlyPdfController @Inject() (
       )
     }
 
-  def pdf(useNewGenerator: Boolean = false, formId: String, dataId: String): Action[AnyContent] =
+  def pdf(formId: String, dataId: String): Action[AnyContent] =
     Action.async { _ =>
       val dataEmp = Map(
         "emp_isEnd_NO_isAdd_NO"  -> emp_isEnd_NO_isAdd_NO,
@@ -61,29 +58,17 @@ class TestOnlyPdfController @Inject() (
       )
 
       val request: PdfGeneratorRequest[_] = if (formId == "EmploymentIFormReportRequest") {
-        new EmploymentIFormReportRequest(dataEmp.get(dataId).get)
+        new EmploymentIFormReportRequest(dataEmp(dataId))
       } else if (formId == "PensionProviderIFormRequest") {
         new PensionProviderIFormRequest(dataEmp(dataId))
       } else if (formId == "RemoveCompanyBenefitIFormRequest") {
-        new RemoveCompanyBenefitIFormRequest(dataComp.get(dataId).get)
+        new RemoveCompanyBenefitIFormRequest(dataComp(dataId))
       } else {
         throw new Exception("unknown form")
       }
 
-      featureFlagService
-        .get(UseApacheFopLibrary)
-        .map(_.isEnabled)
-        .flatMap { isEnabled =>
-          if (isEnabled != useNewGenerator) {
-            featureFlagService.set(UseApacheFopLibrary, useNewGenerator)
-          } else {
-            Future.successful((): Unit)
-          }
-        }
-        .flatMap(_ =>
-          pdfService
-            .generatePdfDocumentBytes(request)
-        )
+      pdfService
+        .generatePdfDocumentBytes(request)
         .map(bytes =>
           Result(
             header = ResponseHeader(OK),
@@ -94,7 +79,7 @@ class TestOnlyPdfController @Inject() (
 }
 
 trait TestData {
-  val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
+  val emp_isEnd_NO_isAdd_NO: EmploymentPensionViewModel = EmploymentPensionViewModel(
     "6 April 2017 to 5 April 2018",
     "AA000000A",
     "firstname",
@@ -116,13 +101,13 @@ trait TestData {
     "my story"
   )
 
-  val emp_isEnd_YES_isAdd_NO =
+  val emp_isEnd_YES_isAdd_NO: EmploymentPensionViewModel =
     emp_isEnd_NO_isAdd_NO.copy(isEnd = "Yes")
 
-  val emp_isEnd_NO_isAdd_YES =
+  val emp_isEnd_NO_isAdd_YES: EmploymentPensionViewModel =
     emp_isEnd_NO_isAdd_NO.copy(isAdd = "Yes")
 
-  val rcb_isEnd_NO = RemoveCompanyBenefitViewModel(
+  val rcb_isEnd_NO: RemoveCompanyBenefitViewModel = RemoveCompanyBenefitViewModel(
     "AA000000A",
     "firstname",
     "lastname",
@@ -141,5 +126,5 @@ trait TestData {
     "On or after 3 March 2100"
   )
 
-  val rcb_isEnd_YES = rcb_isEnd_NO.copy(isEnd = "Yes")
+  val rcb_isEnd_YES: RemoveCompanyBenefitViewModel = rcb_isEnd_NO.copy(isEnd = "Yes")
 }

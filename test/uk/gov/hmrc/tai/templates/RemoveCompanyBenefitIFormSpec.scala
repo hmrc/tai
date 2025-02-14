@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.templates
 
 import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import org.scalatestplus.play.PlaySpec
-import play.twirl.api.Html
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
 
@@ -31,66 +31,76 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
       "the html document is created" in {
 
         val sut = createSUT(removeCompanyBenefitModel)
-        val doc = Jsoup.parse(sut.toString())
-        doc.title mustBe "What do you want to do?"
-        doc.select("h1").text() mustBe "Tell us about benefit from employment"
-        doc.select("h2").text() mustBe "Internal Information"
-        doc.select("h3:nth-of-type(1)").text() mustBe "Summary"
-        doc.select("h3:nth-of-type(2)").text() mustBe "Your details"
-        doc.select("h3:nth-of-type(3)").text() mustBe "What do you want to tell us?"
-        doc.select("h3:nth-of-type(4)").text() mustBe "Benefit details"
+        val doc = Jsoup.parse(sut.body, "", Parser.xmlParser)
+        doc.getElementsByAttributeValue("font-size", "14px").text() mustBe "Tell us about benefit from employment"
+        doc.getElementsByAttributeValue("font-size", "13px").text() mustBe "Internal Information"
+        doc.getElementsByAttributeValue("font-size", "12px").text() mustBe "Summary"
+        doc.getElementsByAttributeValue("font-size", "11px").get(1).text() mustBe "Your details"
+        doc.getElementsByAttributeValue("font-size", "11px").get(2).text() mustBe "What do you want to tell us?"
+        doc.getElementsByAttributeValue("font-size", "11px").get(3).text() mustBe "Benefit details"
       }
     }
     "display the 'Your details' section of the remove company benefit iform" when {
       "an removeCompanyBenefitModel is provided" in {
 
         val sut = createSUT(removeCompanyBenefitModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
 
-        val doc = Jsoup.parse(sut.toString())
+        val yourDetailsTable = doc.getElementsByTag("fo:table").first()
 
-        val yourDetailsTable = doc.select("table:nth-of-type(1) > tbody")
+        val nationalInsuranceNumberTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(0)
+        nationalInsuranceNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "National Insurance number"
+        nationalInsuranceNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text mustBe removeCompanyBenefitModel.nino
 
-        val nationalInsuranceNumberTableRow = yourDetailsTable.select("tr:nth-of-type(1)")
+        val firstNameTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(1)
 
-        nationalInsuranceNumberTableRow.select("td:nth-of-type(1)").text() mustBe "National Insurance number"
-        nationalInsuranceNumberTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.nino
+        firstNameTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "First name"
+        firstNameTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe removeCompanyBenefitModel.firstName
 
-        val firstNameTableRow = yourDetailsTable.select("tr:nth-of-type(2)")
+        val surnameTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(2)
 
-        firstNameTableRow.select("td:nth-of-type(1)").text() mustBe "First name"
-        firstNameTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.firstName
+        surnameTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Last name"
+        surnameTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe removeCompanyBenefitModel.lastName
 
-        val surnameTableRow = yourDetailsTable.select("tr:nth-of-type(3)")
+        val dobTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(3)
 
-        surnameTableRow.select("td:nth-of-type(1)").text() mustBe "Last name"
-        surnameTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.lastName
+        dobTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Date of birth"
+        dobTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe removeCompanyBenefitModel.dateOfBirth
 
-        val dobTableRow = yourDetailsTable.select("tr:nth-of-type(4)")
+        val telephoneNumberQuestionTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(4)
 
-        dobTableRow.select("td:nth-of-type(1)").text() mustBe "Date of birth"
-        dobTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.dateOfBirth
-
-        val telephoneNumberQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(5)")
-
-        telephoneNumberQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Can we contact you by telephone?"
         telephoneNumberQuestionTableRow
-          .select("td:nth-of-type(2)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "Can we contact you by telephone?"
+        telephoneNumberQuestionTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
           .text() mustBe removeCompanyBenefitModel.telephoneContactAllowed
 
-        val telephoneNumberTableRow = yourDetailsTable.select("tr:nth-of-type(6)")
+        val telephoneNumberTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(5)
 
-        telephoneNumberTableRow.select("td:nth-of-type(1)").text() mustBe "Telephone number"
-        telephoneNumberTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.telephoneNumber
+        telephoneNumberTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Telephone number"
+        telephoneNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.telephoneNumber
 
-        val ukAddressQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(7)")
+        val ukAddressQuestionTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(6)
 
-        ukAddressQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Is your address in the UK?"
-        ukAddressQuestionTableRow.select("td:nth-of-type(2)").text() mustBe "Yes"
+        ukAddressQuestionTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Is your address in the UK?"
+        ukAddressQuestionTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe "Yes"
 
-        val ukAddressTableRow = yourDetailsTable.select("tr:nth-of-type(8)")
+        val ukAddressTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(7)
 
-        ukAddressTableRow.select("td:nth-of-type(1)").text() mustBe "UK address"
-        ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe
+        ukAddressTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "UK address"
+        ukAddressTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe
           s"${removeCompanyBenefitModel.addressLine1} ${removeCompanyBenefitModel.addressLine2} " +
           s"${removeCompanyBenefitModel.addressLine3} ${removeCompanyBenefitModel.postcode}"
       }
@@ -99,31 +109,42 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
       "an removeCompanyBenefitModel is provided" in {
 
         val sut = createSUT(removeCompanyBenefitModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
 
-        val doc = Jsoup.parse(sut.toString())
+        val whatDoYouWantToTellUsSection = doc.getElementsByTag("fo:table").get(1)
 
-        val whatDoYouWantToTellUsSection = doc.select("table:nth-of-type(2) > tbody")
-
-        val incorrectCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
+        val incorrectCompanyBenefitSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(0)
 
         incorrectCompanyBenefitSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have a company benefit that is incorrect?"
-        incorrectCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isUpdate
+        incorrectCompanyBenefitSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.isUpdate
 
-        val missingCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
+        val missingCompanyBenefitSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(1)
 
         missingCompanyBenefitSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have a company benefit that is missing?"
-        missingCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isAdd
+        missingCompanyBenefitSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.isAdd
 
-        val endedCompanyBenefitSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
+        val endedCompanyBenefitSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(2)
 
         endedCompanyBenefitSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have a company benefit that has ended?"
-        endedCompanyBenefitSection.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.isEnd
+        endedCompanyBenefitSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.isEnd
       }
     }
     "display the 'Benefit details' section of the remove company benefit iform" which {
@@ -131,24 +152,36 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
 
         val sut = createSUT(removeCompanyBenefitModel)
 
-        val doc = Jsoup.parse(sut.toString())
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
 
-        val yourBenefitDetailsTable = doc.select("table:nth-of-type(3) > tbody")
+        val yourBenefitDetailsTable = doc.getElementsByTag("fo:table").get(2)
 
-        val benefitNameTableRow = yourBenefitDetailsTable.select("tr:nth-of-type(1)")
+        val benefitNameTableRow = yourBenefitDetailsTable.getElementsByTag("fo:table-row").get(0)
 
-        benefitNameTableRow.select("td:nth-of-type(1)").text() mustBe "Name of company benefit that has ended?"
-        benefitNameTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.companyBenefitName
+        benefitNameTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "Name of company benefit that has ended?"
+        benefitNameTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.companyBenefitName
 
-        val amountReceivedTableRow = yourBenefitDetailsTable.select("tr:nth-of-type(2)")
+        val amountReceivedTableRow = yourBenefitDetailsTable.getElementsByTag("fo:table-row").get(1)
 
-        amountReceivedTableRow.select("td:nth-of-type(1)").text() mustBe "Total amount of company benefit received"
-        amountReceivedTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.amountReceived
+        amountReceivedTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "Total amount of company benefit received"
+        amountReceivedTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe removeCompanyBenefitModel.amountReceived
 
-        val benefitEndedTableRow = yourBenefitDetailsTable.select("tr:nth-of-type(3)")
+        val benefitEndedTableRow = yourBenefitDetailsTable.getElementsByTag("fo:table-row").get(2)
 
-        benefitEndedTableRow.select("td:nth-of-type(1)").text() mustBe "Company benefit ended on"
-        benefitEndedTableRow.select("td:nth-of-type(2)").text() mustBe removeCompanyBenefitModel.endDate
+        benefitEndedTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Company benefit ended on"
+        benefitEndedTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe removeCompanyBenefitModel.endDate
       }
     }
   }
@@ -173,7 +206,7 @@ class RemoveCompanyBenefitIFormSpec extends PlaySpec {
       "10030",
       "On or after 6 April 2017"
     )
-  private def createSUT(viewModel: RemoveCompanyBenefitViewModel): Html =
-    uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm(viewModel)
+  private def createSUT(viewModel: RemoveCompanyBenefitViewModel) =
+    uk.gov.hmrc.tai.templates.xml.RemoveCompanyBenefitIForm(viewModel)
 
 }

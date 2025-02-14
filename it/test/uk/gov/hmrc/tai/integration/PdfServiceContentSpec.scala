@@ -23,10 +23,6 @@ import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.TableFor3
 import org.scalatest.prop.Tables.Table
 import play.api.test.Helpers.await
-import uk.gov.hmrc.mongoFeatureToggles.model.FeatureFlag
-import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.connectors.PdfConnector
-import uk.gov.hmrc.tai.model.admin.UseApacheFopLibrary
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
 import uk.gov.hmrc.tai.service.PdfService
 import uk.gov.hmrc.tai.service.PdfService.{EmploymentIFormReportRequest, PdfGeneratorRequest, PensionProviderIFormRequest, RemoveCompanyBenefitIFormRequest}
@@ -41,10 +37,7 @@ class PdfServiceContentSpec extends BaseSpec with PdfServiceContentSpecHelper {
 
   private val sut: PdfService = {
     val injectedXslFo2PdfBytesFunction = inject[XslFo2PdfBytesFunction]
-    val mockHtml2Pdf = mock[PdfConnector]
-    val mockFeatureFlagService = mock[FeatureFlagService]
-    when(mockFeatureFlagService.get(any())).thenReturn(Future.successful(FeatureFlag(UseApacheFopLibrary, true)))
-    new PdfService(mockHtml2Pdf, injectedXslFo2PdfBytesFunction, mockFeatureFlagService)
+    new PdfService(injectedXslFo2PdfBytesFunction)
   }
 
   "PdfService generatePdfDocumentBytes, when using Apache FOP" should {
