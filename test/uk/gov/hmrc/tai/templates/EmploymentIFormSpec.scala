@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.templates
 
 import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import org.scalatestplus.play.PlaySpec
-import play.twirl.api.Html
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 
@@ -33,17 +33,20 @@ class EmploymentIFormSpec extends PlaySpec {
       "the html document is created" in {
 
         val sut = createSUT(endEmploymentViewModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
 
-        val doc = Jsoup.parse(sut.toString())
-
-        doc.title mustBe "What do you want to do?"
-        doc.select("h1").text() mustBe "Tell us about income from employment or pension"
-        doc.select("h2").text() mustBe "Internal Information"
-        doc.select("h3:nth-of-type(1)").text() mustBe "Summary"
-        doc.select("h3:nth-of-type(2)").text() mustBe "Tell us what tax year your query is about"
-        doc.select("h3:nth-of-type(3)").text() mustBe "Your details"
-        doc.select("h3:nth-of-type(4)").text() mustBe "What do you want to tell us?"
-        doc.select("h3:nth-of-type(5)").text() mustBe "Employer details"
+        doc
+          .getElementsByAttributeValue("font-size", "14px")
+          .text() mustBe "Tell us about income from employment or pension"
+        doc.getElementsByAttributeValue("font-size", "13px").text() mustBe "Internal Information"
+        doc.getElementsByAttributeValue("font-size", "12px").text() mustBe "Summary"
+        doc
+          .getElementsByAttributeValue("font-size", "11px")
+          .get(1)
+          .text() mustBe "Tell us what tax year your query is about"
+        doc.getElementsByAttributeValue("font-size", "11px").get(2).text() mustBe "Your details"
+        doc.getElementsByAttributeValue("font-size", "11px").get(3).text() mustBe "What do you want to tell us?"
+        doc.getElementsByAttributeValue("font-size", "11px").get(4).text() mustBe "Employer details"
       }
     }
 
@@ -51,12 +54,11 @@ class EmploymentIFormSpec extends PlaySpec {
       "an employmentPensionViewModel is provided" in {
 
         val sut = createSUT(endEmploymentViewModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
 
-        val doc = Jsoup.parse(sut.toString())
-
-        val tableRow = doc.select("table:nth-of-type(1) > tbody > tr")
-        tableRow.select("td:nth-of-type(1)").text() mustBe "Which tax year is your query about?"
-        tableRow.select("td:nth-of-type(2)").text() mustBe "2017-2018"
+        val tableRow = doc.getElementsByTag("fo:table").first()
+        tableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Which tax year is your query about?"
+        tableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe "2017-2018"
       }
     }
 
@@ -64,52 +66,63 @@ class EmploymentIFormSpec extends PlaySpec {
       "an employmentPensionViewModel is provided" in {
 
         val sut = createSUT(endEmploymentViewModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+        val yourDetailsTable = doc.getElementsByTag("fo:table").get(1)
 
-        val doc = Jsoup.parse(sut.toString())
+        val nationalInsuranceNumberTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(0)
 
-        val yourDetailsTable = doc.select("table:nth-of-type(2) > tbody")
+        nationalInsuranceNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "National Insurance number"
+        nationalInsuranceNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.nino
 
-        val nationalInsuranceNumberTableRow = yourDetailsTable.select("tr:nth-of-type(1)")
+        val firstNameTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(1)
 
-        nationalInsuranceNumberTableRow.select("td:nth-of-type(1)").text() mustBe "National Insurance number"
-        nationalInsuranceNumberTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.nino
+        firstNameTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "First name"
+        firstNameTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe endEmploymentViewModel.firstName
 
-        val firstNameTableRow = yourDetailsTable.select("tr:nth-of-type(2)")
+        val surnameTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(2)
 
-        firstNameTableRow.select("td:nth-of-type(1)").text() mustBe "First name"
-        firstNameTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.firstName
+        surnameTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Last name"
+        surnameTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe endEmploymentViewModel.lastName
 
-        val surnameTableRow = yourDetailsTable.select("tr:nth-of-type(3)")
+        val dobTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(3)
 
-        surnameTableRow.select("td:nth-of-type(1)").text() mustBe "Last name"
-        surnameTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.lastName
+        dobTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Date of birth"
+        dobTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe endEmploymentViewModel.dateOfBirth
 
-        val dobTableRow = yourDetailsTable.select("tr:nth-of-type(4)")
+        val telephoneNumberQuestionTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(4)
 
-        dobTableRow.select("td:nth-of-type(1)").text() mustBe "Date of birth"
-        dobTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.dateOfBirth
-
-        val telephoneNumberQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(5)")
-
-        telephoneNumberQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Can we contact you by telephone?"
         telephoneNumberQuestionTableRow
-          .select("td:nth-of-type(2)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
+          .text() mustBe "Can we contact you by telephone?"
+        telephoneNumberQuestionTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
           .text() mustBe endEmploymentViewModel.telephoneContactAllowed
 
-        val telephoneNumberTableRow = yourDetailsTable.select("tr:nth-of-type(6)")
+        val telephoneNumberTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(5)
 
-        telephoneNumberTableRow.select("td:nth-of-type(1)").text() mustBe "Telephone number"
-        telephoneNumberTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.telephoneNumber
+        telephoneNumberTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Telephone number"
+        telephoneNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.telephoneNumber
 
-        val ukAddressQuestionTableRow = yourDetailsTable.select("tr:nth-of-type(7)")
+        val ukAddressQuestionTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(6)
 
-        ukAddressQuestionTableRow.select("td:nth-of-type(1)").text() mustBe "Is your address in the UK?"
-        ukAddressQuestionTableRow.select("td:nth-of-type(2)").text() mustBe "Yes"
+        ukAddressQuestionTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Is your address in the UK?"
+        ukAddressQuestionTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe "Yes"
 
-        val ukAddressTableRow = yourDetailsTable.select("tr:nth-of-type(8)")
+        val ukAddressTableRow = yourDetailsTable.getElementsByTag("fo:table-row").get(7)
 
-        ukAddressTableRow.select("td:nth-of-type(1)").text() mustBe "UK address"
-        ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe
+        ukAddressTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "UK address"
+        ukAddressTableRow.getElementsByTag("fo:table-cell").get(1).text() mustBe
           s"${endEmploymentViewModel.addressLine1} ${endEmploymentViewModel.addressLine2} " +
           s"${endEmploymentViewModel.addressLine3} ${endEmploymentViewModel.postcode}"
       }
@@ -119,31 +132,41 @@ class EmploymentIFormSpec extends PlaySpec {
       "an employmentPensionViewModel is provided" in {
 
         val sut = createSUT(endEmploymentViewModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+        val whatDoYouWantToTellUsSection = doc.getElementsByTag("fo:table").get(2)
 
-        val doc = Jsoup.parse(sut.toString())
-
-        val whatDoYouWantToTellUsSection = doc.select("table:nth-of-type(3) > tbody")
-
-        val incorrectEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
+        val incorrectEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(0)
 
         incorrectEmploymentOrPensionSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have an employment or pension that is incorrect?"
-        incorrectEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.isUpdate
+        incorrectEmploymentOrPensionSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.isUpdate
 
-        val missingEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
+        val missingEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(1)
 
         missingEmploymentOrPensionSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have an employment or pension that is missing?"
-        missingEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.isAdd
+        missingEmploymentOrPensionSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.isAdd
 
-        val endedEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
+        val endedEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(2)
 
         endedEmploymentOrPensionSection
-          .select("td:nth-of-type(1)")
+          .getElementsByTag("fo:table-cell")
+          .get(0)
           .text() mustBe "Do you have an employment or pension that has ended?"
-        endedEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.isEnd
+        endedEmploymentOrPensionSection
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.isEnd
       }
     }
 
@@ -151,38 +174,43 @@ class EmploymentIFormSpec extends PlaySpec {
       "contains employer name and payroll number questions" in {
 
         val sut = createSUT(endEmploymentViewModel)
+        val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+        val yourEmployerDetailsTable = doc.getElementsByTag("fo:table").get(3)
 
-        val doc = Jsoup.parse(sut.toString())
+        val employerNameTableRow = yourEmployerDetailsTable.getElementsByTag("fo:table-row").get(0)
 
-        val yourEmployerDetailsTable = doc.select("table:nth-of-type(4) > tbody")
+        employerNameTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Employer name"
+        employerNameTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.employmentPensionName
 
-        val employerNameTableRow = yourEmployerDetailsTable.select("tr:nth-of-type(1)")
+        val payrollNumberTableRow = yourEmployerDetailsTable.getElementsByTag("fo:table-row").get(1)
 
-        employerNameTableRow.select("td:nth-of-type(1)").text() mustBe "Employer name"
-        employerNameTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.employmentPensionName
-
-        val payrollNumberTableRow = yourEmployerDetailsTable.select("tr:nth-of-type(2)")
-
-        payrollNumberTableRow.select("td:nth-of-type(1)").text() mustBe "Do you know your payroll number?"
-        payrollNumberTableRow.select("td:nth-of-type(2)").text() mustBe endEmploymentViewModel.payrollNumber
+        payrollNumberTableRow.getElementsByTag("fo:table-cell").get(0).text() mustBe "Do you know your payroll number?"
+        payrollNumberTableRow
+          .getElementsByTag("fo:table-cell")
+          .get(1)
+          .text() mustBe endEmploymentViewModel.payrollNumber
       }
 
       "contains an end employment line" when {
         "employmentPensionViewModel is provided with end employment" in {
 
           val sut = createSUT(endEmploymentViewModel)
+          val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+          val yourEmployerDetailsTable = doc.getElementsByTag("fo:table").get(3)
 
-          val doc = Jsoup.parse(sut.toString())
-
-          val yourEmployerDetailsTable = doc.select("table:nth-of-type(4) > tbody")
-
-          val employmentOrPensionEndedQuestionTableRow = yourEmployerDetailsTable.select("tr:nth-of-type(3)")
+          val employmentOrPensionEndedQuestionTableRow =
+            yourEmployerDetailsTable.getElementsByTag("fo:table-row").get(2)
 
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Has your employment or pension ended?"
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(2)")
+            .getElementsByTag("fo:table-cell")
+            .get(1)
             .text() mustBe s"My employment has ended on ${endEmploymentViewModel.endDate}"
         }
       }
@@ -191,18 +219,20 @@ class EmploymentIFormSpec extends PlaySpec {
         "employmentPensionViewModel is provided with add employment" in {
 
           val sut = createSUT(addEmploymentViewModel)
-
           val doc = Jsoup.parse(sut.toString())
 
-          val yourEmployerDetailsTable = doc.select("table:nth-of-type(4) > tbody")
+          val yourEmployerDetailsTable = doc.getElementsByTag("fo:table").get(3)
 
-          val employmentOrPensionEndedQuestionTableRow = yourEmployerDetailsTable.select("tr:nth-of-type(3)")
+          val employmentOrPensionEndedQuestionTableRow =
+            yourEmployerDetailsTable.getElementsByTag("fo:table-row").get(2)
 
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Tell us what is incorrect and why:"
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(2)")
+            .getElementsByTag("fo:table-cell")
+            .get(1)
             .text() mustBe s"I want to add a missing " +
             s"employment which started on ${addEmploymentViewModel.startDate}"
         }
@@ -211,18 +241,19 @@ class EmploymentIFormSpec extends PlaySpec {
       "contains what you told us" when {
         "incorrect view model is provided" in {
           val sut = createSUT(incorrectEmploymentViewModel)
+          val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+          val yourEmployerDetailsTable = doc.getElementsByTag("fo:table").get(3)
 
-          val doc = Jsoup.parse(sut.toString())
-
-          val yourEmployerDetailsTable = doc.select("table:nth-of-type(4) > tbody")
-
-          val employmentOrPensionEndedQuestionTableRow = yourEmployerDetailsTable.select("tr:nth-of-type(3)")
+          val employmentOrPensionEndedQuestionTableRow =
+            yourEmployerDetailsTable.getElementsByTag("fo:table-row").get(2)
 
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Tell us what is incorrect and why:"
           employmentOrPensionEndedQuestionTableRow
-            .select("td:nth-of-type(2)")
+            .getElementsByTag("fo:table-cell")
+            .get(1)
             .text() mustBe incorrectEmploymentViewModel.whatYouToldUs
         }
       }
@@ -230,33 +261,41 @@ class EmploymentIFormSpec extends PlaySpec {
       "displays YES on update" when {
         "incorrect view model is provided" in {
           val sut = createSUT(incorrectEmploymentViewModel)
+          val doc = Jsoup.parse(sut.toString(), "", Parser.xmlParser)
+          val whatDoYouWantToTellUsSection = doc.getElementsByTag("fo:table").get(2)
 
-          val doc = Jsoup.parse(sut.toString())
-
-          val whatDoYouWantToTellUsSection = doc.select("table:nth-of-type(3) > tbody")
-
-          val incorrectEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(1)")
+          val incorrectEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(0)
 
           incorrectEmploymentOrPensionSection
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Do you have an employment or pension that is incorrect?"
           incorrectEmploymentOrPensionSection
-            .select("td:nth-of-type(2)")
+            .getElementsByTag("fo:table-cell")
+            .get(1)
             .text() mustBe incorrectEmploymentViewModel.isUpdate
 
-          val missingEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(2)")
+          val missingEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(1)
 
           missingEmploymentOrPensionSection
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Do you have an employment or pension that is missing?"
-          missingEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe incorrectEmploymentViewModel.isAdd
+          missingEmploymentOrPensionSection
+            .getElementsByTag("fo:table-cell")
+            .get(1)
+            .text() mustBe incorrectEmploymentViewModel.isAdd
 
-          val endedEmploymentOrPensionSection = whatDoYouWantToTellUsSection.select("tr:nth-of-type(3)")
+          val endedEmploymentOrPensionSection = whatDoYouWantToTellUsSection.getElementsByTag("fo:table-row").get(2)
 
           endedEmploymentOrPensionSection
-            .select("td:nth-of-type(1)")
+            .getElementsByTag("fo:table-cell")
+            .get(0)
             .text() mustBe "Do you have an employment or pension that has ended?"
-          endedEmploymentOrPensionSection.select("td:nth-of-type(2)").text() mustBe incorrectEmploymentViewModel.isEnd
+          endedEmploymentOrPensionSection
+            .getElementsByTag("fo:table-cell")
+            .get(1)
+            .text() mustBe incorrectEmploymentViewModel.isEnd
         }
       }
     }
@@ -333,6 +372,6 @@ class EmploymentIFormSpec extends PlaySpec {
       "WHAT YOU TOLD US"
     )
 
-  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
-    uk.gov.hmrc.tai.templates.html.EmploymentIForm(viewModel)
+  private def createSUT(viewModel: EmploymentPensionViewModel) =
+    uk.gov.hmrc.tai.templates.xml.EmploymentIForm(viewModel)
 }

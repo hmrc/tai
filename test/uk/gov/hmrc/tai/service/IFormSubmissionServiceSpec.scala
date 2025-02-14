@@ -20,14 +20,20 @@ import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
+import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
+import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
 
 import java.nio.file.{Files, Paths}
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class IFormSubmissionServiceSpec extends BaseSpec {
+
+  val employmentIFormReportRequest = new EmploymentIFormReportRequest(
+    EmploymentPensionViewModel("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "")
+  )
 
   "IFormSubmissionService" should {
     "create and submit an iform and return an envelope id after submission" in {
@@ -36,7 +42,7 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
-      when(mockPdfService.generatePdf(any()))
+      when(mockPdfService.generatePdfDocumentBytes(any()))
         .thenReturn(Future.successful(pdfBytes))
 
       val mockFileUploadService = mock[FileUploadService]
@@ -46,7 +52,10 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
-      val messageId = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).futureValue
+
+      val messageId = sut
+        .uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(employmentIFormReportRequest))(hc)
+        .futureValue
 
       messageId mustBe "1"
 
@@ -72,12 +81,15 @@ class IFormSubmissionServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(person))
 
       val mockPdfService = mock[PdfService]
-      when(mockPdfService.generatePdf(any()))
+      when(mockPdfService.generatePdfDocumentBytes(any()))
         .thenReturn(Future.failed(new RuntimeException("Error")))
 
       val sut = createSUT(mockPersonRepository, mockPdfService, mockFileUploadService)
 
-      val result = sut.uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(""))(hc).failed.futureValue
+      val result = sut
+        .uploadIForm(nino, iformSubmissionKey, iformId, (_: Person) => Future(employmentIFormReportRequest))(hc)
+        .failed
+        .futureValue
 
       result mustBe a[RuntimeException]
 

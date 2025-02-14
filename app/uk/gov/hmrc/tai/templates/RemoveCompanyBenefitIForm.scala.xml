@@ -1,0 +1,197 @@
+@*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.tai.util.IFormConstants
+@(viewmodel: uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel)
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-size="11px" font-family="OpenSans">
+
+    <fo:layout-master-set>
+        <fo:simple-page-master master-name="main_template" page-height="297mm" page-width="210mm" margin="1in">
+            <fo:region-body region-name="xsl-region-body" margin-top="12mm"/>
+            <fo:region-before region-name="xsl-region-before" extent="12mm"/>
+        </fo:simple-page-master>
+    </fo:layout-master-set>
+
+    <fo:page-sequence master-reference="main_template">
+
+        <fo:static-content flow-name="xsl-region-before">
+            <fo:block>
+                <fo:block font-size="10px">HM Revenue &amp; Customs</fo:block>
+                <fo:block font-size="10px" color="grey">Internal HMRC Copy</fo:block>
+            </fo:block>
+        </fo:static-content>
+
+        <fo:flow flow-name="xsl-region-body">
+
+            <fo:block font-size="14px" font-family="OpenSansBold" margin-bottom="4mm">Tell us about benefit from employment</fo:block>
+            <fo:block font-size="13px" font-family="OpenSansBold" margin-bottom="4mm">Internal Information</fo:block>
+            <fo:block font-size="12px" font-family="OpenSansBold" margin-bottom="0mm">Summary</fo:block>
+
+            <fo:block margin-bottom="5mm">
+                <fo:block font-size="11px" font-family="OpenSansBold" margin-bottom="3mm">Your details</fo:block>
+                <fo:block>
+                    <fo:table display-align="center" table-layout="fixed" border-collapse="separate" border-separation="2mm">
+                        <fo:table-column column-width="65mm"/>
+                        <fo:table-column column-width="80mm"/>
+                        <fo:table-body>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    National Insurance number
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.nino
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    First name
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.firstName
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Last name
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.lastName
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Date of birth
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block margin-right="20mm">
+                                    @viewmodel.dateOfBirth
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Can we contact you by telephone?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.telephoneContactAllowed
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Telephone number
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.telephoneNumber
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Is your address in the UK?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    Yes
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm" >
+                                    UK address
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    <fo:block>@viewmodel.addressLine1</fo:block>
+                                    <fo:block>@viewmodel.addressLine2</fo:block>
+                                    <fo:block>@viewmodel.addressLine3</fo:block>
+                                    <fo:block>@viewmodel.postcode</fo:block>
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                        </fo:table-body>
+                    </fo:table>
+                </fo:block>
+            </fo:block>
+
+            <fo:block margin-bottom="5mm">
+                <fo:block font-size="11px" font-family="OpenSansBold" margin-bottom="3mm">What do you want to tell us?</fo:block>
+                <fo:block>
+                    <fo:table display-align="center" table-layout="fixed" border-collapse="separate" border-separation="2mm">
+                        <fo:table-column column-width="95mm"/>
+                        <fo:table-column column-width="50mm"/>
+                        <fo:table-body>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Do you have a company benefit that is incorrect?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.isUpdate
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Do you have a company benefit that is missing?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.isAdd
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Do you have a company benefit that has ended?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.isEnd
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                        </fo:table-body>
+                    </fo:table>
+                </fo:block>
+            </fo:block>
+
+            <fo:block margin-bottom="5mm">
+                <fo:block font-size="11px" font-family="OpenSansBold" margin-bottom="3mm">Benefit details</fo:block>
+                <fo:block>
+@if(viewmodel.isEnd == IFormConstants.Yes){
+                    <fo:table display-align="center" table-layout="fixed" border-collapse="separate" border-separation="2mm">
+                        <fo:table-column column-width="95mm"/>
+                        <fo:table-column column-width="50mm"/>
+                        <fo:table-body>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Name of company benefit that has ended?
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.companyBenefitName
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Total amount of company benefit received
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.amountReceived
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                            <fo:table-row>
+                                <fo:table-cell><fo:block margin-right="5mm">
+                                    Company benefit ended on
+                                </fo:block></fo:table-cell>
+                                <fo:table-cell><fo:block>
+                                    @viewmodel.endDate
+                                </fo:block></fo:table-cell>
+                            </fo:table-row>
+                        </fo:table-body>
+                    </fo:table>
+}
+                </fo:block>
+            </fo:block>
+        </fo:flow>
+    </fo:page-sequence>
+</fo:root>
