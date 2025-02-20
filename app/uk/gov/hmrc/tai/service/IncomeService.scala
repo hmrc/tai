@@ -108,10 +108,10 @@ class IncomeService @Inject() (
   def untaxedInterest(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[income.UntaxedInterest]] =
     incomes(nino, TaxYear()).map(_.nonTaxCodeIncomes.untaxedInterest)
 
-  def taxCodeIncomes(
-    nino: Nino,
-    year: TaxYear
-  )(implicit hc: HeaderCarrier, request: Request[_]): Future[Seq[TaxCodeIncome]] = {
+  def taxCodeIncomes(nino: Nino, year: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): Future[Seq[TaxCodeIncome]] = {
     lazy val eventualIncomes = taxCodeIncomeHelper.fetchTaxCodeIncomes(nino, year)
     lazy val eventualEmployments = employmentService
       .employmentsAsEitherT(nino, year)
@@ -125,17 +125,20 @@ class IncomeService @Inject() (
       employments <- eventualEmployments
       taxCodes    <- eventualIncomes
     } yield {
-      val employmentMap = employments.employments.groupBy(_.sequenceNumber)
-      val matchedTaxCodes = taxCodes.flatMap { taxCode =>
-        taxCode.employmentId.flatMap(employmentMap.get).flatMap(_.headOption).map { employment =>
-          taxCode.copy(status = employment.employmentStatus)
-        }
-      }
+      val map = employments.employments.groupBy(_.sequenceNumber)
+      taxCodes.map { taxCode =>
+        val employmentStatus = for {
+          id         <- taxCode.employmentId
+          employment <- map.get(id).flatMap(_.headOption)
+        } yield employment.employmentStatus
 
-      if (matchedTaxCodes.isEmpty) {
-        throw new MissingEmploymentException(nino.nino, year.year)
-      } else {
-        matchedTaxCodes
+        if (employmentStatus.isEmpty) {
+          logger.error(
+            s"No employment found with id `${taxCode.employmentId} in employment destails API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
+          )
+        }
+
+        taxCode.copy(status = employmentStatus.getOrElse(taxCode.status))
       }
     }
   }
