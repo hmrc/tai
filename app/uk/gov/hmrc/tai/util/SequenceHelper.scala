@@ -23,7 +23,7 @@ object SequenceHelper {
   def checkForDuplicates[T, K](items: Seq[T], uniqueKey: T => K, keyDescription: K => String): Unit = {
     val duplicates = items
       .groupBy(uniqueKey)
-      .collect { case (key, items) if items.size > 1 => key }
+      .collect { case (key, itemSeq) if itemSeq.size > 1 => key }
       .toSeq
 
     if (duplicates.nonEmpty) {

@@ -17,45 +17,59 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
-import uk.gov.hmrc.http.HttpException
-import uk.gov.hmrc.tai.connectors.PdfConnector
+import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
+import uk.gov.hmrc.tai.service.PdfService.EmploymentIFormReportRequest
+import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
 import uk.gov.hmrc.tai.util.BaseSpec
 
-import scala.concurrent.Future
+import java.nio.file.{Files, Paths}
 
 class PdfServiceSpec extends BaseSpec {
 
-  "PdfService" should {
+  "PdfService generatePdfDocumentBytes using Apache FOP" should {
     "return the pdf as bytes " when {
-      "generatePdf is called successfully" in {
-        val htmlAsString = "<html>test</html>"
+      "generatePdf is called successfully" in new Setup {
 
-        val mockPdfConnector = mock[PdfConnector]
-        when(mockPdfConnector.generatePdf(any()))
-          .thenReturn(Future.successful(htmlAsString.getBytes))
+        val mockXslFo2PdfBytesFunction = mock[XslFo2PdfBytesFunction]
+        val sut = createSut(mockXslFo2PdfBytesFunction)
 
-        val sut = createSut(mockPdfConnector)
-        val result = sut.generatePdf(htmlAsString).futureValue
+        val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+        when(mockXslFo2PdfBytesFunction(any())).thenReturn(pdfBytes)
 
-        result mustBe htmlAsString.getBytes
-      }
-    }
+        val request = new EmploymentIFormReportRequest(emp_isEnd_NO_isAdd_NO)
 
-    "propagate an HttpException" when {
-      "generatePdf is called and the pdf connector generates an HttpException" in {
-        val htmlAsString = "<html>test</html>"
-
-        val mockPdfConnector = mock[PdfConnector]
-        when(mockPdfConnector.generatePdf(any()))
-          .thenReturn(Future.failed(new HttpException("", 0)))
-
-        val sut = createSut(mockPdfConnector)
-        val result = sut.generatePdf(htmlAsString).failed.futureValue
-
-        result mustBe a[HttpException]
+        val result = sut.generatePdfDocumentBytes(request).futureValue
+        result mustBe pdfBytes
       }
     }
   }
 
-  private def createSut(pdfConnector: PdfConnector) = new PdfService(pdfConnector)
+  trait Setup {
+    def createSut(
+      xslFo2Pdf: XslFo2PdfBytesFunction
+    ) = new PdfService(xslFo2Pdf)
+
+    val emp_isEnd_NO_isAdd_NO = EmploymentPensionViewModel(
+      "6 April 2017 to 5 April 2018",
+      "AA000000A",
+      "firstname",
+      "lastname",
+      "1 January 1900",
+      "Yes",
+      "0123456789",
+      "address line 1",
+      "address line 2",
+      "address line 3",
+      "postcode",
+      "No",
+      "No",
+      "No",
+      "pension name",
+      "99999999999",
+      "2 February 2000",
+      "3 March 2100",
+      "my story"
+    )
+  }
+
 }

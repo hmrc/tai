@@ -17,13 +17,45 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{Inject, Singleton}
-import uk.gov.hmrc.tai.connectors.PdfConnector
+import play.api.Logging
+import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, RemoveCompanyBenefitViewModel}
+import uk.gov.hmrc.tai.service.PdfService.PdfGeneratorRequest
+import uk.gov.hmrc.tai.service.helper.XslFo2PdfBytesFunction
+import uk.gov.hmrc.tai.templates._
 
+import scala.annotation.nowarn
 import scala.concurrent.Future
 
 @Singleton
-class PdfService @Inject() (pdfConnector: PdfConnector) {
+class PdfService @Inject() (
+  xslFo2Pdf: XslFo2PdfBytesFunction
+) extends Logging {
 
-  def generatePdf(html: String): Future[Array[Byte]] = pdfConnector.generatePdf(html)
+  def generatePdfDocumentBytes(pdfReport: PdfGeneratorRequest[_]): Future[Array[Byte]] =
+    Future.successful(xslFo2Pdf(pdfReport.xmlFoDocument()))
 
+}
+
+object PdfService {
+
+  class EmploymentIFormReportRequest(model: EmploymentPensionViewModel) extends PdfGeneratorRequest(model) {
+    override def xmlFoDocument(): Array[Byte] = xml.EmploymentIForm(model).body.getBytes
+    override def toString: String = xml.EmploymentIForm(model).body
+  }
+
+  class PensionProviderIFormRequest(model: EmploymentPensionViewModel) extends PdfGeneratorRequest(model) {
+    override def xmlFoDocument(): Array[Byte] = xml.PensionProviderIForm(model).body.getBytes
+    override def toString: String = xml.PensionProviderIForm(model).body
+  }
+
+  class RemoveCompanyBenefitIFormRequest(model: RemoveCompanyBenefitViewModel) extends PdfGeneratorRequest(model) {
+    override def xmlFoDocument(): Array[Byte] = xml.RemoveCompanyBenefitIForm(model).body.getBytes
+    override def toString: String = xml.RemoveCompanyBenefitIForm(model).body
+  }
+
+  @nowarn
+  sealed abstract class PdfGeneratorRequest[T](model: T) {
+    def xmlFoDocument(): Array[Byte]
+    def toString: String
+  }
 }

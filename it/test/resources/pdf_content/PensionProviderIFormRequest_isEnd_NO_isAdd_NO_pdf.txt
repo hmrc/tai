@@ -1,0 +1,38 @@
+HM Revenue & Customs
+Internal HMRC Copy
+Tell us about income from employment or pension
+Internal Information
+Summary
+Tell us what tax year your query is about
+Which tax year is your query 
+about? 6 April 2017 to 5 April 2018
+Your details
+National Insurance number AA000000A
+First name firstname
+Last name lastname
+Date of birth 1 January 1900
+Can we contact you by 
+telephone? Yes
+Telephone number 0123456789
+Is your address in the UK? Yes
+UK address
+address line 1
+address line 2
+address line 3
+postcode
+What do you want to tell us?
+Do you have an employment or pension that is 
+incorrect? No
+Do you have an employment or pension that is missing? No
+Do you have an employment or pension that has ended? No
+Is your employment or pension missing? My pension is 
+missing
+Pension details
+Pension provider's name pension name
+Do you know your pension 
+number? 99999999999
+First date you were paid 2 February 2000
+Tell us what is incorrect and 
+why:
+I want to add a pension provider for which 
+I got first payment on 2 February 2000
