@@ -21,6 +21,25 @@ ThisBuild / majorVersion := 3
 ThisBuild / scalaVersion := "3.3.4"
 ThisBuild / scalafmtOnCompile := true
 
+ThisBuild / scalacOptions ++= Seq(
+  "-unchecked",
+  "-feature",
+  "-Wvalue-discard",
+  "-Werror",
+  "-Wconf:msg=unused import&src=html/.*:s",
+  "-Wconf:msg=unused import&src=xml/.*:s",
+  "-Wconf:msg=unused&src=.*RoutesPrefix\\.scala:s",
+  "-Wconf:msg=unused&src=.*Routes\\.scala:s",
+  "-Wconf:msg=unused&src=.*ReverseRoutes\\.scala:s",
+  "-Xfatal-warnings",
+  "-Wconf:msg=Flag.*repeatedly:s"
+)
+
+Compile / TwirlKeys.compileTemplates / scalacOptions ++= Seq(
+  "-Wconf:msg=unused import&src=.*\\.html.*:s",
+  "-Wconf:msg=unused import&src=.*\\.xml.*:s"
+)
+
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin) // Required to prevent https://github.com/scalatest/scalatest/issues/1427
@@ -34,14 +53,6 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.tai.model.domain._",
       "uk.gov.hmrc.tai.binders._",
       "uk.gov.hmrc.domain._"
-    ),
-    scalacOptions ++= Seq(
-      "-unchecked",
-      "-feature",
-      "-Wvalue-discard",
-      "-Werror",
-      "-Xfatal-warnings",
-      "-Wconf:msg=Flag.*repeatedly:s"
     )
   )
 

@@ -68,6 +68,8 @@ case class TaxAccount(
 }
 
 object TaxAccount {
-  def unapply(t: TaxAccount): Option[(Option[Long], Option[LocalDate], BigDecimal, Map[TaxObject.Type.Value, TaxDetail], Seq[Income], List[Iabd])] =
+  def unapply(t: TaxAccount): Option[
+    (Option[Long], Option[LocalDate], BigDecimal, Map[TaxObject.Type.Value, TaxDetail], Seq[Income], List[Iabd])
+  ] =
     Some((t.id, t.date, t.tax, t.taxObjects, t.incomes, t.freeIabds))
 }

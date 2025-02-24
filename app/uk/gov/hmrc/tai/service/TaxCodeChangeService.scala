@@ -31,7 +31,6 @@ import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
 import java.time.LocalDate
-import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -67,7 +66,6 @@ class TaxCodeChangeServiceImpl @Inject() (
         false
       }
 
-  @nowarn("msg=match may not be exhaustive")
   def taxCodeChange(nino: Nino)(implicit hc: HeaderCarrier): Future[TaxCodeChange] =
     taxCodeHistory(nino, TaxYear()) map { taxCodeHistory =>
       val taxCodeRecordList = taxCodeHistory.taxCodeRecord

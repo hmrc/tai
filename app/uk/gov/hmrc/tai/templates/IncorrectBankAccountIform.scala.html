@@ -88,7 +88,7 @@
                 </tr>
 
                 @viewmodel.interest match {
-                   case Some(interest) =>
+                   case Some(interest) => {
                        <tr>
                            <td>Correct amount of gross interest</td>
                            <td>@interest</td>
@@ -97,7 +97,8 @@
                            <td>Tell us what is incorrect and why</td>
                            <td>My gross interest is wrong</td>
                         </tr>
-                   case None => {
+                   }
+                    case None => {
                             <tr>
                                 <td>Tell us what is incorrect and why</td>
                                 <td>I never had this account</td>

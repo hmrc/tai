@@ -178,7 +178,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClientV2: HttpClientV2)(impli
 
   }
 
-  def putToApiHttpClientV1[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
+  def putToApiHttpClientV2[I](url: String, data: I, api: APITypes, headers: Seq[(String, String)])(implicit
     hc: HeaderCarrier,
     writes: Writes[I]
   ): Future[HttpResponse] = {
