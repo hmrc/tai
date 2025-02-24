@@ -28,3 +28,8 @@ case class TaxBand(
   upperBand: Option[BigDecimal] = None,
   rate: BigDecimal
 )
+
+object TaxBand {
+  def unapply(t: TaxBand): Option[(Option[String], Option[String], BigDecimal, BigDecimal, Option[BigDecimal], Option[BigDecimal], BigDecimal)] =
+    Some((t.bandType, t.code, t.income, t.tax, t.lowerBand, t.upperBand, t.rate))
+}

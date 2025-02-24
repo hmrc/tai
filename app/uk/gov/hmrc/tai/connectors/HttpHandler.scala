@@ -21,32 +21,36 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, CREATED, NO_CONTENT, OK}
-import play.api.libs.json.{JsValue, Writes}
-import play.api.libs.ws.WSRequest
+import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.ws.{WSRequest, writeableOf_JsValue}
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
-import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.HodResponse
-import uk.gov.hmrc.tai.model.enums.APITypes._
+import uk.gov.hmrc.tai.model.enums.APITypes.*
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 @Singleton
-class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClientV2: HttpClientV2)(implicit
+class HttpHandler @Inject() (metrics: Metrics, httpClientV2: HttpClientV2)(implicit
   ec: ExecutionContext
 ) extends Logging {
 
   def getFromApiAsEitherT(url: String, headers: Seq[(String, String)])(implicit
     hc: HeaderCarrier
   ): EitherT[Future, UpstreamErrorResponse, HodResponse] =
-    EitherT(httpClient.GET[Either[UpstreamErrorResponse, HttpResponse]](url = url, headers = headers))
-      .map { response =>
-        HodResponse(response.json, response.header("ETag").map(_.toInt))
-      }
+    EitherT(
+      httpClientV2
+        .get(url"$url")
+        .setHeader(headers: _*)
+        .execute[Either[UpstreamErrorResponse, HttpResponse]]
+    ).map { response =>
+      HodResponse(response.json, response.header("ETag").map(_.toInt))
+    }
 
   def getFromApi(url: String, api: APITypes, headers: Seq[(String, String)], timeoutInMilliseconds: Option[Int] = None)(
     implicit hc: HeaderCarrier
@@ -54,34 +58,32 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
 
     val timerContext = metrics.startTimer(api)
 
-    implicit val responseHandler: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse =
-        response.status match {
-          case Status.OK => response
-          case Status.NOT_FOUND =>
-            logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
-            throw new NotFoundException(response.body)
-          case Status.INTERNAL_SERVER_ERROR =>
-            logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
-            throw new InternalServerException(response.body)
-          case Status.BAD_REQUEST =>
-            logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
-            throw new BadRequestException(response.body)
-          case Status.LOCKED =>
-            logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
-            throw new LockedException(response.body)
-          case _ =>
-            logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
-            throw new HttpException(response.body, response.status)
-        }
-    }
+    implicit val responseHandler: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) =>
+      response.status match {
+        case Status.OK => response
+        case Status.NOT_FOUND =>
+          logger.warn(s"HttpHandler - No DATA Found error returned from $api for url $url")
+          throw new NotFoundException(response.body)
+        case Status.INTERNAL_SERVER_ERROR =>
+          logger.warn(s"HttpHandler - Internal Server error returned from $api for url $url")
+          throw new InternalServerException(response.body)
+        case Status.BAD_REQUEST =>
+          logger.warn(s"HttpHandler - Bad request exception returned from $api for url $url")
+          throw new BadRequestException(response.body)
+        case Status.LOCKED =>
+          logger.warn(s"HttpHandler - Locked response returned from $api for url $url")
+          throw new LockedException(response.body)
+        case _ =>
+          logger.warn(s"HttpHandler - A Server error returned from $api for url $url")
+          throw new HttpException(response.body, response.status)
+      }
 
     (for {
       response <- httpClientV2
                     .get(url = url"$url")(hc.withExtraHeaders(headers: _*))
-                    .transform { response: WSRequest =>
-                      timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>
-                        response.withRequestTimeout(timeoutInMilliseconds.milliseconds)
+                    .transform { (response: WSRequest) =>
+                      timeoutInMilliseconds.fold(response) { timeout =>
+                        response.withRequestTimeout(timeout.milliseconds)
                       }
                     }
                     .execute[HttpResponse](responseHandler, ec)
@@ -105,23 +107,26 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
     writes: Writes[I]
   ): Future[HttpResponse] = {
 
-    val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-    }
+    val rawHttpReads: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) => response
 
-    httpClient.POST[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
-      httpResponse status match {
-        case OK | CREATED | ACCEPTED | NO_CONTENT =>
-          metrics.incrementSuccessCounter(api)
-          httpResponse
-        case _ =>
-          logger.warn(
-            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
-          )
-          metrics.incrementFailedCounter(api)
-          throw new HttpException(httpResponse.body, httpResponse.status)
+    httpClientV2
+      .post(url"$url")
+      .withBody(Json.toJson(data))
+      .setHeader(headers: _*)
+      .execute(rawHttpReads, ec)
+      .map { httpResponse =>
+        httpResponse.status match {
+          case OK | CREATED | ACCEPTED | NO_CONTENT =>
+            metrics.incrementSuccessCounter(api)
+            httpResponse
+          case _ =>
+            logger.warn(
+              s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+            )
+            metrics.incrementFailedCounter(api)
+            throw new HttpException(httpResponse.body, httpResponse.status)
+        }
       }
-    }
   }
 
   def putToApi(
@@ -152,7 +157,7 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
       response <- httpClientV2
                     .put(url = url"$url")(hc.withExtraHeaders(headers: _*))
                     .withBody(data)
-                    .transform { response: WSRequest =>
+                    .transform { (response: WSRequest) =>
                       timeoutInMilliseconds.fold(response) { timeoutInMilliseconds =>
                         response.withRequestTimeout(timeoutInMilliseconds.milliseconds)
                       }
@@ -178,22 +183,25 @@ class HttpHandler @Inject() (metrics: Metrics, httpClient: HttpClient, httpClien
     writes: Writes[I]
   ): Future[HttpResponse] = {
 
-    val rawHttpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-      override def read(method: String, url: String, response: HttpResponse): HttpResponse = response
-    }
+    val rawHttpReads: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) => response
 
-    httpClient.PUT[I, HttpResponse](url, data, headers)(writes, rawHttpReads, hc, ec) map { httpResponse =>
-      httpResponse status match {
-        case OK | CREATED | ACCEPTED | NO_CONTENT =>
-          metrics.incrementSuccessCounter(api)
-          httpResponse
-        case _ =>
-          logger.warn(
-            s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
-          )
-          metrics.incrementFailedCounter(api)
-          throw new HttpException(httpResponse.body, httpResponse.status)
+    httpClientV2
+      .put(url"$url")
+      .withBody(Json.toJson(data))
+      .setHeader(headers: _*)
+      .execute(rawHttpReads, ec)
+      .map { httpResponse =>
+        httpResponse.status match {
+          case OK | CREATED | ACCEPTED | NO_CONTENT =>
+            metrics.incrementSuccessCounter(api)
+            httpResponse
+          case _ =>
+            logger.warn(
+              s"HttpHandler - Error received with status: ${httpResponse.status} for url $url with message body ${httpResponse.body}"
+            )
+            metrics.incrementFailedCounter(api)
+            throw new HttpException(httpResponse.body, httpResponse.status)
+        }
       }
-    }
   }
 }

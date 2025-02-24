@@ -17,8 +17,6 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.{ImplementedBy, Inject}
-
-import java.time.LocalDate
 import play.api.Logging
 import play.api.mvc.Request
 import uk.gov.hmrc.domain.Nino
@@ -32,6 +30,7 @@ import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeMismatch, TaxCodeRecord}
 import uk.gov.hmrc.tai.util.DateTimeHelper.dateTimeOrdering
 import uk.gov.hmrc.tai.util.{TaiConstants, TaxCodeHistoryConstants}
 
+import java.time.LocalDate
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -46,7 +45,7 @@ class TaxCodeChangeServiceImpl @Inject() (
 
   def hasTaxCodeChanged(nino: Nino)(implicit hc: HeaderCarrier, request: Request[_]): Future[Boolean] =
     taxCodeHistory(nino, TaxYear())
-      .flatMap { taxCodeHistory: TaxCodeHistory =>
+      .flatMap { (taxCodeHistory: TaxCodeHistory) =>
         if (validForService(taxCodeHistory.applicableTaxCodeRecords)) {
           logger.debug("change is valid for service")
           taxCodeMismatch(nino).map { taxCodeMismatch =>
@@ -77,7 +76,9 @@ class TaxCodeChangeServiceImpl @Inject() (
 
         val recordsGroupedByDate: Map[LocalDate, Seq[TaxCodeRecord]] =
           taxCodeHistory.applicableTaxCodeRecords.groupBy(_.dateOfCalculation)
-        val currentDate :: previousDate :: _ = recordsGroupedByDate.keys.toList.sorted
+        val sortedDates = recordsGroupedByDate.keys.toList.sorted
+        val currentDate = sortedDates.headOption.get
+        val previousDate = sortedDates.drop(1).headOption.get
         val currentRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(currentDate)
         val previousRecords: Seq[TaxCodeRecord] = recordsGroupedByDate(previousDate)
         val previousEndDate = currentRecords.head.dateOfCalculation.minusDays(1)
@@ -101,7 +102,7 @@ class TaxCodeChangeServiceImpl @Inject() (
         logger.warn(s"Only one tax code record returned for $nino")
 
         TaxCodeChange(Seq(TaxCodeSummary(taxCodeRecordList.head, TaxYear().end)), Seq())
-      } else if (taxCodeRecordList.size == 0) {
+      } else if (taxCodeRecordList.isEmpty) {
         logger.warn(s"Zero tax code records returned for $nino")
         TaxCodeChange(Seq.empty[TaxCodeSummary], Seq.empty[TaxCodeSummary])
       } else {

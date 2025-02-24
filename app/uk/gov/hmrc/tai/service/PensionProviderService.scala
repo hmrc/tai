@@ -53,7 +53,7 @@ class PensionProviderService @Inject() (
         detail = Map(
           "nino"                -> nino.nino,
           "envelope Id"         -> envelopeId,
-          "start-date"          -> pensionProvider.startDate.toString(),
+          "start-date"          -> pensionProvider.startDate.toString,
           "pensionNumber"       -> pensionProvider.pensionNumber,
           "pensionProviderName" -> pensionProvider.pensionProviderName
         )
@@ -62,10 +62,9 @@ class PensionProviderService @Inject() (
       envelopeId
     }
 
-  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = { person: Person =>
+  private[service] def addPensionProviderForm(pensionProvider: AddPensionProvider) = (person: Person) =>
     val templateModel = EmploymentPensionViewModel(TaxYear(), person, pensionProvider)
     Future.successful(PensionProviderIForm(templateModel).toString)
-  }
 
   def incorrectPensionProvider(nino: Nino, id: Int, incorrectPensionProvider: IncorrectPensionProvider)(implicit
     hc: HeaderCarrier,
@@ -97,7 +96,7 @@ class PensionProviderService @Inject() (
     nino: Nino,
     id: Int,
     incorrectPensionProvider: IncorrectPensionProvider
-  )(implicit hc: HeaderCarrier, request: Request[_]) = { person: Person =>
+  )(implicit hc: HeaderCarrier, request: Request[_]) = (person: Person) =>
     (for {
       existingEmployment <- employmentService.employmentAsEitherT(nino, id)
       templateModel = EmploymentPensionViewModel(TaxYear(), person, incorrectPensionProvider, existingEmployment)
@@ -105,5 +104,4 @@ class PensionProviderService @Inject() (
       case Right(result) => result
       case Left(error)   => throw error
     }
-  }
 }

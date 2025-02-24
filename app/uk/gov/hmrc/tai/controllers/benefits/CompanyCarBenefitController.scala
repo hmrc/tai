@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.controllers.benefits
 
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -42,14 +42,8 @@ class CompanyCarBenefitController @Inject() (
       companyCarBenefitService.companyCarBenefits(nino).map {
         case Nil => NotFound
         case c =>
-          Ok(
-            Json.toJson(
-              ApiResponse(
-                Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))),
-                Nil
-              )
-            )
-          )
+          implicit val apiResponseWrites: Writes[ApiResponse[JsValue]] = ApiResponse.apiFormat[JsValue]
+          Ok(Json.toJson(ApiResponse(Json.obj("companyCarBenefits" -> c.map(Json.toJson(_))), Nil)))
       } recoverWith taxAccountErrorHandler()
   }
 

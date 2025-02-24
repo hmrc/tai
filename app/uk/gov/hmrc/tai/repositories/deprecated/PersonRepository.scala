@@ -35,7 +35,7 @@ class PersonRepository @Inject() (
 
   def getPerson(nino: Nino)(implicit hc: HeaderCarrier): Future[Person] = {
     val cacheId = CacheId(nino)
-    getPersonFromStorage(cacheId).flatMap { person: Option[Person] =>
+    getPersonFromStorage(cacheId).flatMap { (person: Option[Person]) =>
       person match {
         case Some(person) => Future.successful(person)
         case _            => getPersonFromAPI(nino, cacheId)

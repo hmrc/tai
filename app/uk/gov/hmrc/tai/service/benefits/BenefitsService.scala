@@ -21,12 +21,12 @@ import play.api.Logger
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.benefits._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.benefits.*
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.RemoveCompanyBenefitViewModel
-import uk.gov.hmrc.tai.service._
+import uk.gov.hmrc.tai.service.*
 import uk.gov.hmrc.tai.templates.html.RemoveCompanyBenefitIForm
 import uk.gov.hmrc.tai.util.IFormConstants
 
@@ -112,7 +112,7 @@ class BenefitsService @Inject() (
   private def reconcileCompanyCarsInBenefits(benefits: Benefits, nino: Nino, taxYear: TaxYear)(implicit
     hc: HeaderCarrier
   ): Future[Benefits] =
-    companyCarBenefitService.carBenefit(nino, taxYear).map { c: Seq[CompanyCarBenefit] =>
+    companyCarBenefitService.carBenefit(nino, taxYear).map { (c: Seq[CompanyCarBenefit]) =>
       val reconciledBenefits = reconcileCarBenefits(benefits.companyCarBenefits, c)
       benefits.copy(companyCarBenefits = reconciledBenefits)
     } recover { case NonFatal(e) =>

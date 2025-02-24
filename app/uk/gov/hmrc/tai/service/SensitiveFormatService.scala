@@ -17,14 +17,14 @@
 package uk.gov.hmrc.tai.service
 
 import com.google.inject.Inject
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText, Sensitive}
 import uk.gov.hmrc.tai.config.MongoConfig
 
 import scala.util.{Failure, Success, Try}
 
 class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decrypter, mongoConfig: MongoConfig) {
-  import SensitiveFormatService._
+  import SensitiveFormatService.*
 
   private def writeJsValueWithEncryption(jsValue: JsValue): JsValue =
     if (mongoConfig.mongoEncryptionEnabled) {
@@ -67,9 +67,8 @@ class SensitiveFormatService @Inject() (encrypterDecrypter: Encrypter with Decry
       }
     }
 
-  private def sensitiveWritesJsValue[A](writes: Writes[A]): Writes[A] = { o: A =>
-    writeJsValueWithEncryption(writes.writes(o))
-  }
+  private def sensitiveWritesJsValue[A](writes: Writes[A]): Writes[A] =
+    (o: A) => writeJsValueWithEncryption(writes.writes(o))
 
   def sensitiveFormatJsValue[A <: JsValue: Format]: Format[SensitiveJsValue] =
     Format(sensitiveReadsJsValue, sjo => writeJsValueWithEncryption(sjo.decryptedValue))

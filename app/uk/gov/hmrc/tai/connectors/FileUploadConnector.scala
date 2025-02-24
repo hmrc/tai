@@ -16,29 +16,29 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.google.inject.{Inject, Singleton}
 import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.apache.pekko.pattern.retry
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.util.ByteString
-import com.google.inject.{Inject, Singleton}
 import play.api.Logging
-import play.api.http.Status._
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
-import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
+import play.api.libs.ws.{WSClient, writeableOf_JsValue}
 import play.api.mvc.MultipartFormData.{DataPart, FilePart}
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.config.FileUploadConfig
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.domain.MimeContentType
-import uk.gov.hmrc.tai.model.enums.APITypes._
+import uk.gov.hmrc.tai.model.enums.APITypes.*
 import uk.gov.hmrc.tai.model.fileupload.EnvelopeSummary
 import uk.gov.hmrc.tai.model.fileupload.formatters.FileUploadFormatters
 
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 
 @Singleton
 class FileUploadConnector @Inject() (
@@ -52,7 +52,7 @@ class FileUploadConnector @Inject() (
 
   implicit val scheduler: Scheduler = ActorSystem().scheduler
 
-  def routingRequest(envelopeId: String): JsValue =
+  private def routingRequest(envelopeId: String): JsValue =
     Json.obj("envelopeId" -> envelopeId, "application" -> "TAI", "destination" -> "DMS")
 
   def createEnvelope(implicit hc: HeaderCarrier): Future[String] = {
@@ -104,20 +104,18 @@ class FileUploadConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val url: String = urls.fileUrl(envelopeId, fileId)
     envelope(envelopeId)
-      .flatMap(envelopeSummary =>
-        envelopeSummary match {
-          case Some(es) if es.isOpen =>
-            uploadFileCall(byteArray, fileName, contentType, url, awsClient)
-          case Some(es) if !es.isOpen =>
-            logger.warn(
-              s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId"
-            )
-            Future.failed(new RuntimeException("Incorrect Envelope State"))
-          case _ =>
-            logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
-            Future.failed(new RuntimeException("Could Not Read Envelope State"))
-        }
-      )
+      .flatMap {
+        case Some(es) if es.isOpen =>
+          uploadFileCall(byteArray, fileName, contentType, url, awsClient)
+        case Some(es) if !es.isOpen =>
+          logger.warn(
+            s"FileUploadConnector.uploadFile - invalid envelope state for uploading file envelope: $envelopeId"
+          )
+          Future.failed(new RuntimeException("Incorrect Envelope State"))
+        case _ =>
+          logger.warn(s"FileUploadConnector.uploadFile - could not read envelope state for envelope: $envelopeId")
+          Future.failed(new RuntimeException("Could Not Read Envelope State"))
+      }
       .recoverWith { case _: RuntimeException =>
         logger.warn("FileUploadConnector.uploadFile - unable to find envelope")
         metrics.incrementFailedCounter(FusUploadFile)
@@ -125,7 +123,7 @@ class FileUploadConnector @Inject() (
       }
   }
 
-  def uploadFileCall(
+  private def uploadFileCall(
     byteArray: Array[Byte],
     fileName: String,
     contentType: MimeContentType,
