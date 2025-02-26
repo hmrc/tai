@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tai.integration.utils
 
 import cats.data.EitherT
+import cats.instances.future.*
 import com.github.tomakehurst.wiremock.client.WireMock.{ok, post, urlEqualTo}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{mock, reset, when}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.cache.AsyncCacheApi
@@ -33,7 +35,7 @@ import play.api.test.Injecting
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
-import uk.gov.hmrc.tai.model.admin._
+import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 import java.util.UUID
@@ -104,6 +106,7 @@ trait IntegrationSpec
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = false))
     )
+    ()
   }
 
   lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()

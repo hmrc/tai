@@ -17,8 +17,9 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import cats.data.EitherT
-import cats.implicits._
+import cats.implicits.*
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, spy, times, verify, when}
 import play.api.Application
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.inject.bind
@@ -32,7 +33,7 @@ import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongo.lock.MongoLockRepository
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.*
 import uk.gov.hmrc.tai.model.domain.{AnnualAccount, Available, FourWeekly, Payment}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
@@ -70,7 +71,7 @@ class CachingRtiConnectorSpec extends ConnectorBaseSpec {
   override def beforeEach(): Unit = {
     reset(mockRtiConnector, mockSessionCacheRepository, spyLockService, mockEncryptionService)
     when(mockEncryptionService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]])
-      .thenAnswer((reads: Reads[Seq[AnnualAccount]], writes: Writes[Seq[AnnualAccount]]) => Format(reads, writes))
+      .thenReturn(Format(implicitly[Reads[Seq[AnnualAccount]]], implicitly[Writes[Seq[AnnualAccount]]]))
   }
 
   def connector: CachingRtiConnector = app.injector.instanceOf[CachingRtiConnector]

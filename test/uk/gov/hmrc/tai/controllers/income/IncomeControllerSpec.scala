@@ -17,14 +17,16 @@
 package uk.gov.hmrc.tai.controllers.income
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json._
-import play.api.test.Helpers._
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
+import play.api.libs.json.*
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.domain.response.{IncomeUpdateFailed, IncomeUpdateResponse, InvalidAmount}
 import uk.gov.hmrc.tai.model.tai.TaxYear

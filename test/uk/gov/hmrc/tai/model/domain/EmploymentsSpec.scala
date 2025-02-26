@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
+
 class EmploymentsSpec extends PlaySpec {
 
   val currentTaxYear: TaxYear = TaxYear()
-  val previousTaxYear = currentTaxYear.prev
-  val now = LocalDate.now()
+  val previousTaxYear: TaxYear = currentTaxYear.prev
+  val now: LocalDate = LocalDate.now()
 
-  val annualAccountCTY = createAnnualAccount()
-  val annualAccountPTY = createAnnualAccount(taxYear = previousTaxYear)
+  val annualAccountCTY: AnnualAccount = createAnnualAccount()
+  val annualAccountPTY: AnnualAccount = createAnnualAccount(taxYear = previousTaxYear)
 
-  val employment1 = Employment(
+  val employment1: Employment = Employment(
     "TEST",
     Live,
     Some("12345"),

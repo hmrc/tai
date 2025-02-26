@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchersSugar.eqTo
-import play.api.http.Status._
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.when
+import play.api.http.Status.*
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, LockedException, NotFoundException}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
@@ -30,7 +31,7 @@ import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.WireMockHelper
 
 import java.net.URL
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
@@ -101,6 +102,7 @@ class TaxAccountConnectorHipToggleOffSpec extends ConnectorBaseSpec with WireMoc
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleTaxAccount))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
+    ()
   }
 
   "Tax Account Connector" when {

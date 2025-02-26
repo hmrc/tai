@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.util.JsonHelper.{OrElseTry, parseTypeOrException, readsTypeTuple}
 
 import scala.util.{Failure, Try}

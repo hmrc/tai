@@ -67,7 +67,7 @@ object IabdDetailsToggleOn extends IabdTypeConstants {
     case e => JsError(s"Invalid iabd source: $e")
   }
 
-  lazy val mapIabdSource: Map[String, Int] = Map(
+  private lazy val mapIabdSource: Map[String, Int] = Map(
     "Cutover"               -> 0,
     "P161"                  -> 1,
     "P161W"                 -> 2,

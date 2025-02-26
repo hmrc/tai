@@ -17,12 +17,13 @@
 package uk.gov.hmrc.tai.integration
 
 import cats.data.EitherT
+import cats.instances.future.*
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
@@ -53,6 +54,7 @@ class TaxCodeMismatchHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
+    ()
 
   }
 

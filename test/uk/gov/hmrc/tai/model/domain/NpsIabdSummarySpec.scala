@@ -25,6 +25,19 @@ import scala.util.Random
 
 class NpsIabdSummarySpec extends PlaySpec {
 
+  private val nino: Nino = new Generator(new Random).nextNino
+
+  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
+    for {
+      _ <- 1 to noOfIabds
+    } yield Json.obj(
+      "amount"             -> 1,
+      "type"               -> iabdType,
+      "npsDescription"     -> "desc",
+      "employmentId"       -> 1,
+      "estimatesPaySource" -> 1
+    )
+
   "iabdsFromTotalLiabilityReads" must {
 
     "extract iabd summaries from a single category" in {
@@ -246,16 +259,4 @@ class NpsIabdSummarySpec extends PlaySpec {
       }
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-
-  private def npsIabdSummaries(noOfIabds: Int, iabdType: Int = 1): Seq[JsObject] =
-    for {
-      _ <- 1 to noOfIabds
-    } yield Json.obj(
-      "amount"             -> 1,
-      "type"               -> iabdType,
-      "npsDescription"     -> "desc",
-      "employmentId"       -> 1,
-      "estimatesPaySource" -> 1
-    )
 }

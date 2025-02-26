@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.connectors.cache
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, spy, times, verify, when}
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -25,7 +26,7 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.mongo.cache.DataKey
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.auth.MicroserviceAuthorisedFunctions
-import uk.gov.hmrc.tai.connectors._
+import uk.gov.hmrc.tai.connectors.*
 import uk.gov.hmrc.tai.factory.TaxCodeHistoryFactory
 import uk.gov.hmrc.tai.model.TaxCodeHistory
 import uk.gov.hmrc.tai.model.tai.TaxYear
@@ -67,7 +68,8 @@ class CachingTaxCodeHistoryConnectorSpec extends ConnectorBaseSpec {
     super.beforeEach()
     reset(mockSessionCacheRepository, mockDefaultTaxCodeHistoryConnector, mockEncryptionService)
     when(mockEncryptionService.sensitiveFormatFromReadsWrites[JsObject])
-      .thenAnswer((reads: Reads[JsObject], writes: Writes[JsObject]) => Format(reads, writes))
+      .thenReturn(Format(implicitly[Reads[JsObject]], implicitly[Writes[JsObject]]))
+    ()
   }
 
   "taxCodeHistory" when {

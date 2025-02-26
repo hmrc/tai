@@ -16,18 +16,34 @@
 
 package uk.gov.hmrc.tai.service
 
-import java.time.LocalDate
 import org.mockito.ArgumentMatchers.{any, contains}
+import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.nio.file.{Files, Paths}
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class IFormSubmissionServiceSpec extends BaseSpec {
+  private val iformSubmissionKey = "testSubmissionKey"
+  private val iformId = "testIformId"
+
+  private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
+
+  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+
+  private val formatter = DateTimeFormatter.ofPattern("YYYYMMdd")
+
+  private def createSUT(
+    personRepository: PersonRepository,
+    pdfService: PdfService,
+    fileUploadService: FileUploadService
+  ) =
+    new IFormSubmissionService(personRepository, pdfService, fileUploadService)
 
   "IFormSubmissionService" should {
     "create and submit an iform and return an envelope id after submission" in {
@@ -95,20 +111,4 @@ class IFormSubmissionServiceSpec extends BaseSpec {
       )(any())
     }
   }
-
-  private val iformSubmissionKey = "testSubmissionKey"
-  private val iformId = "testIformId"
-
-  private val person: Person = Person(nino, "", "", None, Address("", "", "", "", ""))
-
-  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-
-  private val formatter = DateTimeFormatter.ofPattern("YYYYMMdd")
-
-  private def createSUT(
-    personRepository: PersonRepository,
-    pdfService: PdfService,
-    fileUploadService: FileUploadService
-  ) =
-    new IFormSubmissionService(personRepository, pdfService, fileUploadService)
 }

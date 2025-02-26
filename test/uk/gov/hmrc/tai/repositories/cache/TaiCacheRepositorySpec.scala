@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.repositories.cache
 
 import org.mockito.ArgumentMatchers.{any, anyString}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.Configuration
 import play.api.libs.json.{JsObject, JsString, Json}
@@ -60,6 +61,7 @@ class TaiCacheRepositorySpec extends BaseSpec with IntegrationPatience {
   override protected def beforeEach(): Unit = {
     reset(taiRepository)
     when(taiRepository.save[String](any())(any(), any())(any())).thenReturn(cacheItemWithoutData)
+    ()
   }
 
   "Cache Connector" must {

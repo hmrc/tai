@@ -16,21 +16,20 @@
 
 package uk.gov.hmrc.tai.controllers.auth
 
-import org.mockito.ArgumentMatchers._
+import org.mockito.ArgumentMatchers.{any, argThat}
+import org.mockito.Mockito.{spy, times, verify, when}
 import play.api.Application
-import play.api.http.Status.OK
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Results.Ok
 import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.TrustedHelper
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.tai.util.RetrievalOps.Ops
 import uk.gov.hmrc.tai.util.{BaseSpec, EqualsAuthenticatedRequest}
 
-import scala.annotation.nowarn
 import scala.concurrent.Future
 
 class AuthRetrievalsSpec extends BaseSpec {
@@ -41,8 +40,7 @@ class AuthRetrievalsSpec extends BaseSpec {
   private lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
   type retrievalsType = Option[String] ~ Option[TrustedHelper]
 
-  private object Stubs {
-    @nowarn("msg=parameter request in method successBlock is never used")
+  private class Stubs {
     def successBlock(request: AuthenticatedRequest[_]): Future[Result] = Future.successful(Ok(""))
   }
 
@@ -64,7 +62,7 @@ class AuthRetrievalsSpec extends BaseSpec {
           )
             .thenReturn(retrievalResult)
 
-          val stubs = spy(Stubs)
+          val stubs = spy(new Stubs)
 
           val result = authAction.invokeBlock(testRequest, stubs.successBlock)
 
@@ -77,7 +75,7 @@ class AuthRetrievalsSpec extends BaseSpec {
 
       "logged in with as a trusted helper for a different user" must {
         "be successfully redirected to the service page and see different user's data" in {
-          val attorney = TrustedHelper("principal", "attorney", "returnLink", otherNino.nino)
+          val attorney = TrustedHelper("principal", "attorney", "returnLink", Some(otherNino.nino))
 
           val retrievalResult: Future[retrievalsType] =
             Future.successful(Some(nino.nino) ~ Some(attorney))
@@ -88,7 +86,7 @@ class AuthRetrievalsSpec extends BaseSpec {
           )
             .thenReturn(retrievalResult)
 
-          val stubs = spy(Stubs)
+          val stubs = spy(new Stubs)
 
           val result = authAction.invokeBlock(testRequest, stubs.successBlock)
           status(result) mustBe OK
@@ -113,7 +111,9 @@ class AuthRetrievalsSpec extends BaseSpec {
           )
             .thenReturn(retrievalResult)
 
-          val result = authAction.invokeBlock(testRequest, Stubs.successBlock)
+          val stubs = new Stubs
+
+          val result = authAction.invokeBlock(testRequest, stubs.successBlock)
 
           a[RuntimeException] should be thrownBy status(result)
         }
@@ -130,7 +130,7 @@ class AuthRetrievalsSpec extends BaseSpec {
           )
             .thenReturn(retrievalResult)
 
-          val stubs = spy(Stubs)
+          val stubs = spy(new Stubs)
 
           val result = authAction.invokeBlock(testRequest, stubs.successBlock)
 
@@ -149,7 +149,8 @@ class AuthRetrievalsSpec extends BaseSpec {
           when(mockAuthConnector.authorise(any(), any())(any(), any()))
             .thenReturn(Future.failed(new MissingBearerToken))
 
-          val result = authAction.invokeBlock(testRequest, Stubs.successBlock)
+          val stubs = new Stubs
+          val result = authAction.invokeBlock(testRequest, stubs.successBlock)
 
           status(result) mustBe UNAUTHORIZED
         }

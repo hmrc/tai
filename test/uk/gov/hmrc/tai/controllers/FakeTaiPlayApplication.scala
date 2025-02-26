@@ -25,7 +25,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 trait FakeTaiPlayApplication extends GuiceOneAppPerSuite with PatienceConfiguration with TestSuite {
   this: TestSuite =>
 
-  val additionalConfiguration = Map[String, Any]("metrics.enabled" -> false)
+  val additionalConfiguration: Map[String, Any] = Map[String, Any]("metrics.enabled" -> false)
 
   implicit override lazy val app: Application =
     new GuiceApplicationBuilder()

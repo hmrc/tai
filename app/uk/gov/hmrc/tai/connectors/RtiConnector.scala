@@ -193,7 +193,7 @@ class DefaultRtiConnector @Inject() (
                   Right(Seq.empty)
                 case Left(error) =>
                   logger.error(
-                    s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage()}"
+                    s"RTIAPI - ${error.statusCode} error returned from RTI HODS with message ${error.getMessage}"
                   )
                   Left(error)
               }

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tai.repositories
 
-import java.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{never, times, verify, when}
 import org.scalatest.concurrent.IntegrationPatience
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.connectors.CitizenDetailsConnector
@@ -25,13 +25,14 @@ import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.deprecated.{PersonRepository, TaiCacheRepository}
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
 
-  val address = Address("line1", "line2", "line3", "postcode", "country")
+  val address: Address = Address("line1", "line2", "line3", "postcode", "country")
   val personMongoKey = "PersonData"
-  val dateOfBirth = LocalDate.parse("2017-02-01")
+  val dateOfBirth: LocalDate = LocalDate.parse("2017-02-01")
 
   def createSUT(taiCacheRepository: TaiCacheRepository, citizenDetailsConnector: CitizenDetailsConnector) =
     new PersonRepository(taiCacheRepository, citizenDetailsConnector)
@@ -40,7 +41,7 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
     "retrieve person details from mongo cache, bypassing an API call" when {
       "cached data is present for the requested nino" in {
 
-        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address)
 
         val mockCacheConnector = mock[TaiCacheRepository]
         val citizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -63,7 +64,7 @@ class PersonRepositorySpec extends BaseSpec with IntegrationPatience {
     "retrieve person details from the person API, and update the mongo cache" when {
       "no cache data is currently held for the requested nino" in {
 
-        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address, false, false)
+        val person = Person(Nino(nino.nino), "firstName1", "lastName1", Some(dateOfBirth), address)
 
         val mockCacheConnector = mock[TaiCacheRepository]
         val citizenDetailsConnector = mock[CitizenDetailsConnector]

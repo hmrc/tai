@@ -17,9 +17,10 @@
 package uk.gov.hmrc.tai.service.helper
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.libs.json.{JsArray, JsObject, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.taxAdjustments._
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.BaseSpec
 

@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.connectors.cache
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.concurrent.IntegrationPatience
 import play.api.libs.json.Json
 import uk.gov.hmrc.tai.config.CacheMetricsConfig
@@ -29,6 +30,18 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 
 class CachingSpec extends BaseSpec with IntegrationPatience {
+
+  val mongoKey = "mongoKey1"
+
+  def cacheTest = new CachingTest
+
+  val taiCacheRepository: TaiCacheRepository = mock[TaiCacheRepository]
+  val metrics: Metrics = mock[Metrics]
+  val cacheMetricsConfig: CacheMetricsConfig = mock[CacheMetricsConfig]
+
+  when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
+
+  class CachingTest extends Caching(taiCacheRepository, metrics, cacheMetricsConfig)
 
   "cache" must {
     "return the json from cache" when {
@@ -64,7 +77,7 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
     }
   }
 
-  val taxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
+  val taxCodeHistory: TaxCodeHistory = TaxCodeHistoryFactory.createTaxCodeHistory(nino)
 
   "cacheFromApiV2" must {
     "return the TaxCodeHistory from cache" when {
@@ -96,15 +109,4 @@ class CachingSpec extends BaseSpec with IntegrationPatience {
       }
     }
   }
-
-  val mongoKey = "mongoKey1"
-
-  def cacheTest = new CachingTest
-  val taiCacheRepository = mock[TaiCacheRepository]
-  val metrics = mock[Metrics]
-  val cacheMetricsConfig = mock[CacheMetricsConfig]
-
-  when(cacheMetricsConfig.cacheMetricsEnabled).thenReturn(true)
-
-  class CachingTest extends Caching(taiCacheRepository, metrics, cacheMetricsConfig)
 }

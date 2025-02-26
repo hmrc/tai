@@ -17,8 +17,8 @@
 package uk.gov.hmrc.tai.model.domain.income
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.domain._
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.domain.*
 
 import scala.io.Source
 

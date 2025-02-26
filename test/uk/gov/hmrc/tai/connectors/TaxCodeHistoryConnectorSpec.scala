@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import play.api.libs.json.{JsResultException, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest

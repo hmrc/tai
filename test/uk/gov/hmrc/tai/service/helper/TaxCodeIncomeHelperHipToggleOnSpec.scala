@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.service.helper
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.libs.json._
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
-import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.income.*
 import uk.gov.hmrc.tai.model.domain.{EmploymentIncome, IabdDetails}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService

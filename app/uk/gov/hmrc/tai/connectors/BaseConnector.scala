@@ -23,7 +23,7 @@ abstract class BaseConnector extends RawResponseReads with Logging {
 
   def originatorId: String
 
-  val defaultVersion: Int = -1
+  private val defaultVersion: Int = -1
 
   def getVersionFromHttpHeader(httpResponse: HttpResponse): Int = {
     // todo: etag should be inserted in the case class with the data in order to avoid mis-use

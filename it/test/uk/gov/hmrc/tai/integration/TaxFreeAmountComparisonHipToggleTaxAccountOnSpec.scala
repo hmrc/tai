@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.integration
 
 import cats.data.EitherT
+import cats.instances.future.*
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
@@ -32,7 +34,7 @@ import scala.concurrent.Future
 class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 
@@ -49,6 +51,7 @@ class TaxFreeAmountComparisonHipToggleTaxAccountOnSpec extends IntegrationSpec {
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleTaxAccount, isEnabled = false))
     )
+    ()
   }
 
   "TaxFreeAmountComparison" must {

@@ -56,8 +56,8 @@ object NpsData extends NpsFormatter {
     result.get
   }
 
-  def getTaxSummary = getTaxSummaryDetails(taxSummaryDetailsJson)
-  def getNpsTaxAccountJson = getJson(NpsTaxAccountJson)
-  def getFETaxAccountJson = getJson(FETaxAccountJson)
-  def getNpsTaxAccountMultipleAllowancesJson = getJson(NpsTaxAccountMultipleAllowancesJson)
+  def getTaxSummary: TaxSummaryDetails = getTaxSummaryDetails(taxSummaryDetailsJson)
+  def getNpsTaxAccountJson: JsValue = getJson(NpsTaxAccountJson)
+  def getFETaxAccountJson: JsValue = getJson(FETaxAccountJson)
+  def getNpsTaxAccountMultipleAllowancesJson: JsValue = getJson(NpsTaxAccountMultipleAllowancesJson)
 }

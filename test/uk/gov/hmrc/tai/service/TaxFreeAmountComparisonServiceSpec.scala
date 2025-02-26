@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import uk.gov.hmrc.http.BadRequestException
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
 import uk.gov.hmrc.tai.model.api.{TaxCodeChange, TaxCodeSummary}
@@ -28,6 +29,75 @@ import uk.gov.hmrc.tai.util.{BaseSpec, TaxCodeHistoryConstants}
 import scala.concurrent.Future
 
 class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryConstants {
+
+  val PRIMARY_PREVIOUS_TAX_CODE_ID = 1
+
+  private def stubTaxCodeChange: TaxCodeChange = {
+    val currentStartDate = TaxYear().start.plusDays(2)
+    val currentEndDate = TaxYear().end
+    val previousStartDate = TaxYear().start
+    val previousEndDate = currentStartDate.minusDays(1)
+    val payrollNumberPrev = "123"
+    val payrollNumberCurr = "456"
+
+    val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
+      TaxCodeSummary(
+        PRIMARY_PREVIOUS_TAX_CODE_ID,
+        "1185L",
+        Cumulative,
+        previousStartDate,
+        previousEndDate,
+        "Employer 1",
+        Some(payrollNumberPrev),
+        pensionIndicator = false,
+        primary = true
+      ),
+      TaxCodeSummary(
+        2,
+        "BR",
+        Cumulative,
+        previousStartDate,
+        previousEndDate,
+        "Employer 2",
+        Some(payrollNumberPrev),
+        pensionIndicator = false,
+        primary = false
+      )
+    )
+
+    val currentTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
+      TaxCodeSummary(
+        3,
+        "1000L",
+        Cumulative,
+        currentStartDate,
+        currentEndDate,
+        "Employer 1",
+        Some(payrollNumberCurr),
+        pensionIndicator = false,
+        primary = true
+      ),
+      TaxCodeSummary(
+        4,
+        "185L",
+        Cumulative,
+        currentStartDate,
+        currentEndDate,
+        "Employer 2",
+        Some(payrollNumberCurr),
+        pensionIndicator = false,
+        primary = false
+      )
+    )
+
+    TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
+  }
+
+  private def createTestService(
+    taxCodeChangeService: TaxCodeChangeServiceImpl,
+    codingComponentService: CodingComponentService
+  ): TaxFreeAmountComparisonService =
+    new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
 
   "taxFreeAmountComparison" should {
     "return a sequence of current coding components" when {
@@ -144,74 +214,4 @@ class TaxFreeAmountComparisonServiceSpec extends BaseSpec with TaxCodeHistoryCon
       }
     }
   }
-
-  val PRIMARY_PREVIOUS_TAX_CODE_ID = 1
-
-  private def stubTaxCodeChange: TaxCodeChange = {
-    val currentStartDate = TaxYear().start.plusDays(2)
-    val currentEndDate = TaxYear().end
-    val previousStartDate = TaxYear().start
-    val previousEndDate = currentStartDate.minusDays(1)
-    val payrollNumberPrev = "123"
-    val payrollNumberCurr = "456"
-
-    val previousTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
-      TaxCodeSummary(
-        PRIMARY_PREVIOUS_TAX_CODE_ID,
-        "1185L",
-        Cumulative,
-        previousStartDate,
-        previousEndDate,
-        "Employer 1",
-        Some(payrollNumberPrev),
-        pensionIndicator = false,
-        primary = true
-      ),
-      TaxCodeSummary(
-        2,
-        "BR",
-        Cumulative,
-        previousStartDate,
-        previousEndDate,
-        "Employer 2",
-        Some(payrollNumberPrev),
-        pensionIndicator = false,
-        primary = false
-      )
-    )
-
-    val currentTaxCodeRecords: Seq[TaxCodeSummary] = Seq(
-      TaxCodeSummary(
-        3,
-        "1000L",
-        Cumulative,
-        currentStartDate,
-        currentEndDate,
-        "Employer 1",
-        Some(payrollNumberCurr),
-        pensionIndicator = false,
-        primary = true
-      ),
-      TaxCodeSummary(
-        4,
-        "185L",
-        Cumulative,
-        currentStartDate,
-        currentEndDate,
-        "Employer 2",
-        Some(payrollNumberCurr),
-        pensionIndicator = false,
-        primary = false
-      )
-    )
-
-    TaxCodeChange(currentTaxCodeRecords, previousTaxCodeRecords)
-  }
-
-  private def createTestService(
-    taxCodeChangeService: TaxCodeChangeServiceImpl,
-    codingComponentService: CodingComponentService
-  ): TaxFreeAmountComparisonService =
-    new TaxFreeAmountComparisonService(taxCodeChangeService, codingComponentService)
-
 }

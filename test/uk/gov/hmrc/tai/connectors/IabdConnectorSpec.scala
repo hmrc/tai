@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchersSugar.eqTo
-import play.api.http.Status._
-import play.api.libs.json._
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.when
+import play.api.http.Status.*
+import play.api.libs.json.*
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.{BadRequestException, HeaderNames, HttpException, InternalServerException, NotFoundException}
@@ -37,7 +38,7 @@ import uk.gov.hmrc.tai.model.{IabdUpdateAmount, UpdateIabdEmployeeExpense}
 import uk.gov.hmrc.tai.util.TaiConstants
 
 import java.time.LocalDate
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
@@ -118,6 +119,7 @@ class IabdConnectorSpec extends ConnectorBaseSpec {
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleEmploymentIabds, isEnabled = false))
     )
+    ()
   }
 
   "iabds" when {

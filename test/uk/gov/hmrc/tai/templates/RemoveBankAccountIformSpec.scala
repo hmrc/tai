@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.templates
 
-import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -24,10 +23,29 @@ import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.CloseBankAccount
 
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class RemoveBankAccountIformSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
+  private val dateOfBirth = LocalDate.parse("2017-02-01")
+
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
+
+  private val startOfTaxYearCloseDate = TaxYear().start
+
+  private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
+  private val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, None)
+
+  private def removeBankAccountTemplate(viewModel: CloseBankAccount = closeBankAccount) =
+    uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(viewModel)
 
   "Remove Bank Account Iform" must {
     "display Logo" in {
@@ -155,21 +173,4 @@ class RemoveBankAccountIformSpec extends PlaySpec {
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "I do not know"
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-  private val dateOfBirth = LocalDate.parse("2017-02-01")
-
-  private val personDetails = Person(
-    Nino(nino.nino),
-    "test",
-    "tester",
-    Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country")
-  )
-
-  private val startOfTaxYearCloseDate = TaxYear().start
-
-  private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
-  private val closeBankAccount = CloseBankAccount(personDetails, TaxYear(), bankAccount, startOfTaxYearCloseDate, None)
-  private def removeBankAccountTemplate(viewModel: CloseBankAccount = closeBankAccount) =
-    uk.gov.hmrc.tai.templates.html.RemoveBankAccountIform(viewModel)
 }

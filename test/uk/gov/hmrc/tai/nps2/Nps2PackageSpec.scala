@@ -16,19 +16,126 @@
 
 package uk.gov.hmrc.tai.nps2
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.enums.PayFreq
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.enums.{BasisOperation, PayFreq}
 import uk.gov.hmrc.tai.model.nps2
-import uk.gov.hmrc.tai.model.tai.NoOfMonths
-import nps2._
+import uk.gov.hmrc.tai.model.nps2.*
 import uk.gov.hmrc.tai.model.nps2.IabdType.GiftAidPayments
 import uk.gov.hmrc.tai.model.nps2.IabdUpdateSource.Letter
 import uk.gov.hmrc.tai.model.nps2.Income.{IncomeType, Status}
-import uk.gov.hmrc.tai.model.enums.BasisOperation
+import uk.gov.hmrc.tai.model.tai.NoOfMonths
+
+import java.time.LocalDate
 
 class Nps2PackageSpec extends PlaySpec with NpsFormatter {
+
+  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
+    for {
+      case (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
+      error: JsonValidationError <- errors
+      message: String            <- error.messages
+    } yield path.toString() + " -> " + message
+
+  private def stripFormatting(string: String): String =
+    string.stripMargin.replaceAll("\\n+", "")
+
+  private val fixedDate = LocalDate.parse("2017-12-12")
+
+  private val testTaxBand = TaxBand(
+    bandType = Some("dummyType"),
+    code = Some("ABCD123"),
+    income = 33000,
+    tax = 8000,
+    lowerBand = Some(5000),
+    upperBand = Some(20000),
+    rate = 33
+  )
+
+  private val testIabd = Iabd(
+    amount = 10,
+    iabdType = GiftAidPayments,
+    source = Letter,
+    description = "dummyDescription",
+    employmentSequence = Some(32)
+  )
+
+  private val iabdList = List(testIabd, testIabd, testIabd)
+
+  private val testComponent = Component(
+    amount = 34000.30,
+    sourceAmount = Some(32000.70),
+    iabds = List(testIabd)
+  )
+
+  private val testLiabilityMapKey = TaxObject.Type.NonSavings
+
+  private val testLiabilityMapValue = TaxDetail(
+    totalTax = Some(123.1),
+    totalTaxableIncome = Some(999.1),
+    totalIncome = Some(333.1),
+    taxBands = List(testTaxBand, testTaxBand)
+  )
+
+  private val testLiabilityMapValueEmpty = TaxDetail(
+    totalTax = None,
+    totalTaxableIncome = None,
+    totalIncome = Some(333.1),
+    taxBands = List(testTaxBand, testTaxBand)
+  )
+
+  private val testLiabilityMapValueEmptyTaxBands =
+    TaxDetail(totalTax = Some(123.1), totalTaxableIncome = Some(999.1), totalIncome = Some(333.1), taxBands = Nil)
+
+  private val testNpsEmployment = NpsEmployment(
+    employerName = Some("EMPLOYER1"),
+    isPrimary = true,
+    sequenceNumber = 1,
+    worksNumber = Some("1234"),
+    districtNumber = 1,
+    iabds = List(testIabd),
+    cessationPay = Some(2200.22),
+    start = fixedDate
+  )
+
+  private val testIncome = Income(
+    employmentId = Some(1),
+    isPrimary = true,
+    incomeType = IncomeType.Employment,
+    status = Status(Some(1), ceased = Some(fixedDate)),
+    taxDistrict = Some(1),
+    payeRef = "000",
+    name = "name",
+    worksNumber = Some("1234"),
+    taxCode = "AB1234",
+    potentialUnderpayment = 20.20,
+    employmentRecord = Some(testNpsEmployment),
+    basisOperation = Some(BasisOperation.Week1Month1)
+  )
+
+  private val testIncomeNoEmpIdTaxDistrict = Income(
+    employmentId = None,
+    isPrimary = false,
+    incomeType = IncomeType.Employment,
+    status = Status(Some(1), ceased = Some(fixedDate)),
+    taxDistrict = None,
+    payeRef = "000",
+    name = "name",
+    worksNumber = Some("1234"),
+    taxCode = "AB1234",
+    potentialUnderpayment = 20.20,
+    employmentRecord = Some(testNpsEmployment),
+    basisOperation = Some(BasisOperation.Week1Month1)
+  )
+
+  private val testTaxAccount = TaxAccount(
+    id = Some(12345),
+    date = Some(fixedDate),
+    tax = 12000.32,
+    taxObjects = Map(testLiabilityMapKey -> testLiabilityMapValue),
+    incomes = List(testIncome),
+    freeIabds = List(testIabd)
+  )
 
   "package" must {
     "provide Json formatting of enumeration types" when {
@@ -657,112 +764,4 @@ class Nps2PackageSpec extends PlaySpec with NpsFormatter {
       }
     }
   }
-
-  private def extractErrorsPerPath(exception: JsResultException): Seq[String] =
-    for {
-      (path: JsPath, errors: Seq[JsonValidationError]) <- exception.errors.toSeq
-      error: JsonValidationError                       <- errors.toSeq
-      message: String                                  <- error.messages
-    } yield path.toString() + " -> " + message
-
-  private def stripFormatting(string: String): String =
-    string.stripMargin.replaceAll("\\n+", "")
-
-  private val fixedDate = LocalDate.parse("2017-12-12")
-
-  private val testTaxBand = TaxBand(
-    bandType = Some("dummyType"),
-    code = Some("ABCD123"),
-    income = 33000,
-    tax = 8000,
-    lowerBand = Some(5000),
-    upperBand = Some(20000),
-    rate = 33
-  )
-
-  private val testIabd = Iabd(
-    amount = 10,
-    iabdType = GiftAidPayments,
-    source = Letter,
-    description = "dummyDescription",
-    employmentSequence = Some(32)
-  )
-
-  private val iabdList = List(testIabd, testIabd, testIabd)
-
-  private val testComponent = Component(
-    amount = 34000.30,
-    sourceAmount = Some(32000.70),
-    iabds = List(testIabd)
-  )
-
-  private val testLiabilityMapKey = TaxObject.Type.NonSavings
-
-  private val testLiabilityMapValue = TaxDetail(
-    totalTax = Some(123.1),
-    totalTaxableIncome = Some(999.1),
-    totalIncome = Some(333.1),
-    taxBands = List(testTaxBand, testTaxBand)
-  )
-
-  private val testLiabilityMapValueEmpty = TaxDetail(
-    totalTax = None,
-    totalTaxableIncome = None,
-    totalIncome = Some(333.1),
-    taxBands = List(testTaxBand, testTaxBand)
-  )
-
-  private val testLiabilityMapValueEmptyTaxBands =
-    TaxDetail(totalTax = Some(123.1), totalTaxableIncome = Some(999.1), totalIncome = Some(333.1), taxBands = Nil)
-
-  private val testNpsEmployment = NpsEmployment(
-    employerName = Some("EMPLOYER1"),
-    isPrimary = true,
-    sequenceNumber = 1,
-    worksNumber = Some("1234"),
-    districtNumber = 1,
-    iabds = List(testIabd),
-    cessationPay = Some(2200.22),
-    start = fixedDate
-  )
-
-  private val testIncome = Income(
-    employmentId = Some(1),
-    isPrimary = true,
-    incomeType = IncomeType.Employment,
-    status = Status(Some(1), ceased = Some(fixedDate)),
-    taxDistrict = Some(1),
-    payeRef = "000",
-    name = "name",
-    worksNumber = Some("1234"),
-    taxCode = "AB1234",
-    potentialUnderpayment = 20.20,
-    employmentRecord = Some(testNpsEmployment),
-    basisOperation = Some(BasisOperation.Week1Month1)
-  )
-
-  private val testIncomeNoEmpIdTaxDistrict = Income(
-    employmentId = None,
-    isPrimary = false,
-    incomeType = IncomeType.Employment,
-    status = Status(Some(1), ceased = Some(fixedDate)),
-    taxDistrict = None,
-    payeRef = "000",
-    name = "name",
-    worksNumber = Some("1234"),
-    taxCode = "AB1234",
-    potentialUnderpayment = 20.20,
-    employmentRecord = Some(testNpsEmployment),
-    basisOperation = Some(BasisOperation.Week1Month1)
-  )
-
-  private val testTaxAccount = TaxAccount(
-    id = Some(12345),
-    date = Some(fixedDate),
-    tax = 12000.32,
-    taxObjects = Map(testLiabilityMapKey -> testLiabilityMapValue),
-    incomes = List(testIncome),
-    freeIabds = List(testIabd)
-  )
-
 }

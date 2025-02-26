@@ -51,7 +51,7 @@ class IFormSubmissionService @Inject() (
     nino: Nino,
     iformSubmissionKey: String,
     iformId: String,
-    iformGenerationFunc: (Person) => Future[String]
+    iformGenerationFunc: Person => Future[String]
   )(implicit hc: HeaderCarrier): Future[String] =
     for {
       person     <- personRepository.getPerson(nino)

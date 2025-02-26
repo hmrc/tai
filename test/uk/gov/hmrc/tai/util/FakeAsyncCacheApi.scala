@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.apache.pekko.Done
 import com.google.inject.Inject
+import org.apache.pekko.Done
 import play.api.cache.AsyncCacheApi
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
-class FakeAsyncCacheApi @Inject() () extends AsyncCacheApi {
+class FakeAsyncCacheApi @Inject() extends AsyncCacheApi {
 
   def set(key: String, value: Any, expiration: Duration): Future[Done] = Future.successful(Done)
 

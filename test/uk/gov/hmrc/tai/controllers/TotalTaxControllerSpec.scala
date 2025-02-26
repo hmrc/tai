@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status, _}
+import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.http.{BadRequestException, LockedException}
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
 import uk.gov.hmrc.tai.model.domain.calculation.{IncomeCategory, TaxBand, TotalTax, UkDividendsIncomeCategory}
-import uk.gov.hmrc.tai.model.domain.taxAdjustments._
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.TotalTaxService
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}

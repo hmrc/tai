@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
-import play.api.http.Status._
+import play.api.http.Status.*
 import uk.gov.hmrc.http.HttpException
 
 class PdfConnectorSpec extends ConnectorBaseSpec {

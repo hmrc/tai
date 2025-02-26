@@ -17,18 +17,18 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar.{reset, times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.crypto.{Crypted, Decrypter, Encrypter, PlainText}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.config.MongoConfig
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.{TaxCodeHistory, TaxCodeRecord}
-import uk.gov.hmrc.tai.service.SensitiveFormatService._
+import uk.gov.hmrc.tai.service.SensitiveFormatService.*
 
 import java.time.LocalDate
 import scala.util.Random
@@ -114,6 +114,7 @@ class SensitiveFormatServiceSpec extends PlaySpec with BeforeAndAfterEach {
     reset(mockEncrypterDecrypter)
     reset(mockMongoConfig)
     when(mockMongoConfig.mongoEncryptionEnabled).thenReturn(true)
+    ()
   }
 
   "sensitiveFormatJsValue" must {

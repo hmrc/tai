@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.integration.cache.connectors
 
-import org.mockito.{Mockito, MockitoSugar}
+import org.mockito.Mockito
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.cache.AsyncCacheApi
 import play.api.inject.bind

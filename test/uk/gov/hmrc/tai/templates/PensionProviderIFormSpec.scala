@@ -25,6 +25,32 @@ import uk.gov.hmrc.tai.model.templates.EmploymentPensionViewModel
 import scala.util.Random
 
 class PensionProviderIFormSpec extends PlaySpec {
+  private val nino = new Generator(new Random()).nextNino
+
+  private val addPensionModel = EmploymentPensionViewModel(
+    "6 April 2017 to 5 April 2018",
+    nino.nino,
+    "firstname",
+    "lastname",
+    "3 April 1982",
+    "Yes",
+    "123456789",
+    "address line 1",
+    "address line 2",
+    "address line 3",
+    "postcode",
+    "Yes",
+    "No",
+    "No",
+    "pension name",
+    "12345",
+    "9 June 2017",
+    "",
+    ""
+  )
+
+  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
+    uk.gov.hmrc.tai.templates.html.PensionProviderIForm(viewModel)
 
   "PensionProviderIForm" must {
     "display the correct static content of pension iform" when {
@@ -175,31 +201,4 @@ class PensionProviderIFormSpec extends PlaySpec {
       }
     }
   }
-
-  private val nino = new Generator(new Random()).nextNino
-
-  private val addPensionModel = EmploymentPensionViewModel(
-    "6 April 2017 to 5 April 2018",
-    nino.nino,
-    "firstname",
-    "lastname",
-    "3 April 1982",
-    "Yes",
-    "123456789",
-    "address line 1",
-    "address line 2",
-    "address line 3",
-    "postcode",
-    "Yes",
-    "No",
-    "No",
-    "pension name",
-    "12345",
-    "9 June 2017",
-    "",
-    ""
-  )
-
-  private def createSUT(viewModel: EmploymentPensionViewModel): Html =
-    uk.gov.hmrc.tai.templates.html.PensionProviderIForm(viewModel)
 }

@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import com.github.tomakehurst.wiremock.client.WireMock._
+import cats.instances.future.*
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.when
 import play.api.Application
 import play.api.cache.AsyncCacheApi
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.AnyContentAsEmpty
@@ -31,7 +33,7 @@ import uk.gov.hmrc.http.{HeaderNames, UpstreamErrorResponse}
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.rti.QaData
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
@@ -65,6 +67,7 @@ class RtiConnectorSpec extends ConnectorBaseSpec {
     when(mockFeatureFlagService.getAsEitherT(eqTo[FeatureFlagName](RtiCallToggle))).thenReturn(
       EitherT.rightT(FeatureFlag(RtiCallToggle, isEnabled = true))
     )
+    ()
   }
 
   "RtiConnector" when {

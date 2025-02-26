@@ -20,7 +20,6 @@ val appName: String = "tai"
 ThisBuild / majorVersion := 3
 ThisBuild / scalaVersion := "3.3.4"
 ThisBuild / scalafmtOnCompile := true
-
 ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-feature",
@@ -33,11 +32,6 @@ ThisBuild / scalacOptions ++= Seq(
   "-Wconf:msg=unused&src=.*ReverseRoutes\\.scala:s",
   "-Xfatal-warnings",
   "-Wconf:msg=Flag.*repeatedly:s"
-)
-
-Compile / TwirlKeys.compileTemplates / scalacOptions ++= Seq(
-  "-Wconf:msg=unused import&src=.*\\.html.*:s",
-  "-Wconf:msg=unused import&src=.*\\.xml.*:s"
 )
 
 lazy val microservice = Project(appName, file("."))
@@ -80,6 +74,9 @@ lazy val scoverageSettings = {
 }
 
 Test / parallelExecution := false
+Test / scalacOptions ++= Seq(
+  "-Wconf:msg=discarded non-Unit value:s"
+)
 
 lazy val it = project
   .enablePlugins(play.sbt.PlayScala)
