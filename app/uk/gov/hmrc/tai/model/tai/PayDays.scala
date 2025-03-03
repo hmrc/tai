@@ -24,30 +24,6 @@ sealed trait PayDays {
   def remainingBiAnnual: Int
 }
 
-object THREE_MONTHS extends PayDays {
-  val days = 90
-  val remainingQuarter = 1
-  val remainingBiAnnual = 1
-}
-
-object NINE_MONTHS extends PayDays {
-  val days = 273
-  val remainingQuarter = 3
-  val remainingBiAnnual = 0
-}
-
-object SIX_MONTHS extends PayDays {
-  val days = 182
-  val remainingQuarter = 2
-  val remainingBiAnnual = 1
-}
-
-object RegularYear extends Enumeration {
-  val NoOfMonths: Value = Value(12)
-  val NoOfDays: Value = Value(365)
-  val NoOfWeeks: Value = Value(52)
-}
-
 object NoOfMonths extends Enumeration {
   val Annually: Value = Value(12)
   val Quarterly: Value = Value(4)

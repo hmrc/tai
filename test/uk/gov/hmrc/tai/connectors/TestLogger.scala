@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model
+package uk.gov.hmrc.tai.connectors
 
-import play.api.libs.json.{Format, Json}
+import play.api.{Logger, Logging}
 
-import java.time.LocalDate
-
-case class EmploymentUpdate(employmentId: Int, name: String, endDate: LocalDate)
-
-object EmploymentUpdate {
-  implicit val employmentUpdateFormat: Format[EmploymentUpdate] = Json.format[EmploymentUpdate]
+trait TestLogger extends Logging {
+  def getLogger: Logger = logger
 }
