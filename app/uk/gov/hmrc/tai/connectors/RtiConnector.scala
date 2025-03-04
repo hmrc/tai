@@ -19,10 +19,10 @@ package uk.gov.hmrc.tai.connectors
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
-import cats.implicits._
+import cats.implicits.*
 import com.google.inject.{Inject, Singleton}
-import play.api.http.Status._
-import play.api.libs.json.Format
+import play.api.http.Status.*
+import play.api.libs.json.{Format, Json, OFormat}
 import play.api.mvc.Request
 import play.api.{Logger, Logging}
 import uk.gov.hmrc.domain.Nino
@@ -34,18 +34,27 @@ import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, RtiConfig}
 import uk.gov.hmrc.tai.model.admin.RtiCallToggle
 import uk.gov.hmrc.tai.model.domain.AnnualAccount.{annualAccountHodReads, format}
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.cache.TaiSessionCacheRepository
 import uk.gov.hmrc.tai.service.{LockService, SensitiveFormatService}
 import uk.gov.hmrc.tai.util.IORetryExtension.Retryable
-import uk.gov.hmrc.tai.util.LockedException
+import uk.gov.hmrc.tai.util.{LockedException, UpstreamErrorResponseFormat}
+import uk.gov.hmrc.tai.util.EitherFormat.given
 
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 import javax.inject.Named
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+
+case class WrapperData[E](data: E, timeStamp: Instant)
+
+object WrapperData {
+  implicit def format[E](implicit fmtL: Format[E]): Format[WrapperData[E]] =
+    Json.format[WrapperData[E]]
+}
 
 trait RtiConnector extends RawResponseReads {
   def getPaymentsForYear(nino: Nino, taxYear: TaxYear)(implicit
@@ -79,36 +88,52 @@ class CachingRtiConnector @Inject() (
 )(implicit ec: ExecutionContext)
     extends RtiConnector with Logging {
 
-  private def cache[L, A: Format](
+  private def cache[L: Format, A: Format](
     key: String
-  )(f: => EitherT[Future, L, A])(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
+  )(
+    f: => EitherT[Future, L, A]
+  )(implicit hc: HeaderCarrier): EitherT[Future, L, A] = {
+
     def fetchAndCache: IO[Either[L, A]] =
-      IO.fromFuture(IO((for {
-        result <- f
-        _ <- EitherT[Future, L, (String, String)](
-               sessionCacheRepository
-                 .putSession[A](DataKey[A](key), result)
-                 .map(Right(_))
-             )
-      } yield result).value))
+      IO.fromFuture(IO(for {
+        result: Either[L, A] <- f.value
+        _ <-
+          sessionCacheRepository
+            .putSession[WrapperData[Either[L, A]]](
+              DataKey[WrapperData[Either[L, A]]](key),
+              WrapperData[Either[L, A]](result, Instant.now)
+            )
+            .map(Right(_))
+      } yield result))
+
     def readAndUpdate: IO[Either[L, A]] =
       IO.fromFuture(IO(lockService.takeLock[L](key).value)).flatMap {
         case Right(true) =>
           IO.fromFuture(
             IO(
               sessionCacheRepository
-                .getFromSession[A](DataKey[A](key))
+                .getFromSession[WrapperData[Either[L, A]]](DataKey[WrapperData[Either[L, A]]](key))
             )
           ).flatMap {
             case None =>
               fetchAndCache
             case Some(value) =>
-              IO(Right(value): Either[L, A])
+              value.data match {
+                case Right(_) => IO(value.data)
+                case Left(_) =>
+                  if (LocalDateTime.now.plusSeconds(120).isAfter(LocalDateTime.now)) {
+                    fetchAndCache
+                  } else {
+                    IO(value.data)
+                  }
+              }
+
           }
         case Right(false) =>
           throw new LockedException(s"Lock for $key could not be acquired")
         case Left(error) => IO(Left(error))
       }
+
     EitherT(
       readAndUpdate
         .simpleRetry(appConfig.hodRetryMaximum, appConfig.hodRetryDelayInMillis.millis)
@@ -138,7 +163,11 @@ class CachingRtiConnector @Inject() (
   ): EitherT[Future, UpstreamErrorResponse, Seq[AnnualAccount]] =
     cache(s"getPaymentsForYear-$nino-${taxYear.year}") {
       underlying.getPaymentsForYear(nino: Nino, taxYear: TaxYear)
-    }(sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]], implicitly)
+    }(
+      UpstreamErrorResponseFormat.format,
+      sensitiveFormatService.sensitiveFormatFromReadsWritesJsArray[Seq[AnnualAccount]],
+      implicitly
+    )
 }
 
 @Singleton
