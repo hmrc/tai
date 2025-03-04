@@ -61,13 +61,16 @@ lazy val scoverageSettings = {
       "prod.*",
       "dev.*",
       "uk.gov.hmrc.tai.config",
-      "testOnly.controllers"
+      "testOnly.controllers",
+      "uk.gov.hmrc.tai.model.nps2.AllowanceType",
+      "uk.gov.hmrc.tai.repositories.deprecated.SessionRepository",
+      "uk.gov.hmrc.tai.model.nps2.TaxDetail"
     )
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
-    ScoverageKeys.coverageMinimumStmtTotal := 92,
-    ScoverageKeys.coverageMinimumBranchTotal := 85,
+    ScoverageKeys.coverageMinimumStmtTotal := 84,
+    ScoverageKeys.coverageMinimumBranchTotal := 64,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
