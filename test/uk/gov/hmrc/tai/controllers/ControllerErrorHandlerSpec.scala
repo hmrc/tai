@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import play.api.test.Helpers.{status, _}
+import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.http.{BadGatewayException, BadRequestException, GatewayTimeoutException, HttpException, InternalServerException, NotFoundException}
 import uk.gov.hmrc.tai.util.{BaseSpec, NpsExceptions}
 

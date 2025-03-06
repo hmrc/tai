@@ -16,19 +16,88 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.domain.{AddPensionProvider, _}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.util.IFormConstants
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class EmploymentPensionViewModelSpec extends PlaySpec {
+
+  private val nino = new Generator(new Random()).nextNino
+  private val person = Person(
+    nino,
+    "firstname",
+    "lastname",
+    Some(LocalDate.parse("1982-04-03")),
+    Address("address line 1", "address line 2", "address line 3", "postcode", "UK")
+  )
+  private val addEmploymentModel = EmploymentPensionViewModel(
+    "6 April 2017 to 5 April 2018",
+    nino.nino,
+    "firstname",
+    "lastname",
+    "3 April 1982",
+    "Yes",
+    "123456789",
+    "address line 1",
+    "address line 2",
+    "address line 3",
+    "postcode",
+    "Yes",
+    "No",
+    "No",
+    "employerName",
+    "12345",
+    "13 December 2018",
+    "",
+    ""
+  )
+
+  private val addPensionModel = EmploymentPensionViewModel(
+    "6 April 2017 to 5 April 2018",
+    nino.nino,
+    "firstname",
+    "lastname",
+    "3 April 1982",
+    "Yes",
+    "123456789",
+    "address line 1",
+    "address line 2",
+    "address line 3",
+    "postcode",
+    "Yes",
+    "No",
+    "No",
+    "pension name",
+    "12345",
+    "9 June 2017",
+    "",
+    ""
+  )
+
+  private val existingEmployment = Employment(
+    "fake employer",
+    Live,
+    Some("12345"),
+    LocalDate.parse("2017-04-04"),
+    None,
+    Seq.empty[AnnualAccount],
+    "33",
+    "44",
+    1,
+    Some(100),
+    false,
+    false
+  )
+
+  private val formatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 
   "EmploymentPensionViewModel 'add employment' apply method" must {
     "generate a view model with date of birth" when {
@@ -230,73 +299,4 @@ class EmploymentPensionViewModelSpec extends PlaySpec {
       sut.payrollNumber mustBe "12345"
     }
   }
-
-  private val nino = new Generator(new Random()).nextNino
-  private val person = Person(
-    nino,
-    "firstname",
-    "lastname",
-    Some(LocalDate.parse("1982-04-03")),
-    Address("address line 1", "address line 2", "address line 3", "postcode", "UK")
-  )
-  private val addEmploymentModel = EmploymentPensionViewModel(
-    "6 April 2017 to 5 April 2018",
-    nino.nino,
-    "firstname",
-    "lastname",
-    "3 April 1982",
-    "Yes",
-    "123456789",
-    "address line 1",
-    "address line 2",
-    "address line 3",
-    "postcode",
-    "Yes",
-    "No",
-    "No",
-    "employerName",
-    "12345",
-    "13 December 2018",
-    "",
-    ""
-  )
-
-  private val addPensionModel = EmploymentPensionViewModel(
-    "6 April 2017 to 5 April 2018",
-    nino.nino,
-    "firstname",
-    "lastname",
-    "3 April 1982",
-    "Yes",
-    "123456789",
-    "address line 1",
-    "address line 2",
-    "address line 3",
-    "postcode",
-    "Yes",
-    "No",
-    "No",
-    "pension name",
-    "12345",
-    "9 June 2017",
-    "",
-    ""
-  )
-
-  private val existingEmployment = Employment(
-    "fake employer",
-    Live,
-    Some("12345"),
-    LocalDate.parse("2017-04-04"),
-    None,
-    Seq.empty[AnnualAccount],
-    "33",
-    "44",
-    1,
-    Some(100),
-    false,
-    false
-  )
-
-  private val formatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 }

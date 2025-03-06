@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import java.time.LocalDate
-import org.scalacheck._
-import Gen._
+import org.scalacheck.*
+import org.scalacheck.Gen.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 /*
  * A ScalaCheck generator for RtiData records, some day this may be used to
  * perform property-based testing or for implementation of a smart-stub
- * (infinite amount of deterministicly random records for testing)
+ * (infinite amount of deterministic random records for testing)
  */
 object RtiGenerator {
 
@@ -41,7 +41,7 @@ object RtiGenerator {
     to: LocalDate = LocalDate.of(2016, 5, 1)
   ): Gen[LocalDate] = {
     val dist = ChronoUnit.DAYS.between(from, to)
-    choose(0, dist).map(from.plusDays)
+    choose(0L, dist).map(from.plusDays)
   }
 
   val year: Gen[RtiPayment] = for {
@@ -66,7 +66,7 @@ object RtiGenerator {
     typeId.getOrElse(false)
   )
 
-  def alphaNumStr(min: Int, max: Int) =
+  def alphaNumStr(min: Int, max: Int): Gen[String] =
     choose(min, max)
       .flatMap {
         listOfN(_, oneOf(alphaUpperChar, numChar, numChar, numChar))
@@ -99,7 +99,7 @@ object RtiGenerator {
   val rtiData: Gen[RtiData] = for {
     nino           <- nino
     relatedTaxYear <- choose(2012, 2016).map(TaxYear(_))
-    requestId      <- choose(1, 100000000000000L)
+    requestId      <- choose(1L, 100000000000000L)
     emps           <- choose(0, 10).flatMap(listOfN(_, employment))
   } yield RtiData(
     nino,

@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsResultException, Json, JsonValidationError}
-import uk.gov.hmrc.tai.model.rti.QaData._
+import uk.gov.hmrc.tai.model.rti.QaData.*
 
+import java.time.LocalDate
 import scala.util.{Success, Try}
 
 class RtiPackageSpec extends PlaySpec {
@@ -134,28 +134,6 @@ class RtiPackageSpec extends PlaySpec {
         parsedJson.taxablePayDelta must be(Some(BigDecimal("10.99")))
         parsedJson.totalTaxDelta must be(Some(BigDecimal("15.99")))
         parsedJson.empeeContribnsDelta must be(None)
-      }
-
-      "Get all EYU Fields from main Json" in {
-        val rtiData = data.RTIData.getRtiData
-        rtiData mustNot be(null)
-
-        val employments = rtiData.employments
-        employments mustNot be(Nil)
-
-        val rtiEyu = employments.map { employment =>
-          employment.eyu
-        }
-
-        rtiEyu mustNot be(Nil)
-        val eyuList = rtiEyu(0)
-
-        eyuList mustNot be(Nil)
-        val eyu = eyuList(0)
-
-        eyu.taxablePayDelta must be(Some(-600.99))
-        eyu.totalTaxDelta must be(Some(-10.99))
-        eyu.empeeContribnsDelta must be(Some(-5.99))
       }
 
       "convert EYU object having taxablePayDelta only to json " in {

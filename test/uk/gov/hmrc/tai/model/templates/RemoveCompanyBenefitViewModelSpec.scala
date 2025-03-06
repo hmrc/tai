@@ -16,16 +16,45 @@
 
 package uk.gov.hmrc.tai.model.templates
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.model.domain.benefits.RemoveCompanyBenefit
+import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.util.IFormConstants.{No, Yes}
 
+import java.time.LocalDate
 import scala.util.Random
 
 class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
+
+  private val nino = new Generator(new Random()).nextNino
+
+  private val person = Person(
+    nino,
+    "firstname",
+    "lastname",
+    Some(LocalDate.parse("1984-04-03")),
+    Address("addressLine1", "addressLine2", "addressLine3", "postcode", "UK")
+  )
+
+  private val removeCompanyBenefitModel = RemoveCompanyBenefitViewModel(
+    nino.nino,
+    "firstname",
+    "lastname",
+    "3 April 1984",
+    "Yes",
+    "1234567889",
+    "addressLine1",
+    "addressLine2",
+    "addressLine3",
+    "postcode",
+    "No",
+    "No",
+    "Yes",
+    "Mileage",
+    "10030",
+    "On or after 6 April 2017"
+  )
 
   "RemoveCompanyBenefitViewModel 'RemoveCompanyBenefit' apply method" must {
     "generate a view model with date of birth" when {
@@ -71,34 +100,4 @@ class RemoveCompanyBenefitViewModelSpec extends PlaySpec {
       sut.telephoneContactAllowed mustBe "No"
     }
   }
-
-  private val nino = new Generator(new Random()).nextNino
-
-  private val person = Person(
-    nino,
-    "firstname",
-    "lastname",
-    Some(LocalDate.parse("1984-04-03")),
-    Address("addressLine1", "addressLine2", "addressLine3", "postcode", "UK")
-  )
-
-  private val removeCompanyBenefitModel = RemoveCompanyBenefitViewModel(
-    nino.nino,
-    "firstname",
-    "lastname",
-    "3 April 1984",
-    "Yes",
-    "1234567889",
-    "addressLine1",
-    "addressLine2",
-    "addressLine3",
-    "postcode",
-    "No",
-    "No",
-    "Yes",
-    "Mileage",
-    "10030",
-    "On or after 6 April 2017"
-  )
-
 }

@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.controllers.expenses
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse, NotFoundException}
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney

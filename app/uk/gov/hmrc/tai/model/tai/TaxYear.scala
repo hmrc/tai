@@ -37,7 +37,7 @@ case class TaxYear(year: Int) extends Ordered[TaxYear] {
   def start: LocalDate = LocalDate.of(year, startMonth, startDay)
   def end: LocalDate = LocalDate.of(year + 1, endMonth, endDay)
   def next: TaxYear = TaxYear(year + 1)
-  def prev = TaxYear(year - 1)
+  def prev: TaxYear = TaxYear(year - 1)
   def startPrev: LocalDate = LocalDate.of(prev.year, endMonth, startDay)
   def endPrev: LocalDate = LocalDate.of(prev.year + 1, startMonth, endDay)
   def compare(that: TaxYear): Int = this.year compare that.year

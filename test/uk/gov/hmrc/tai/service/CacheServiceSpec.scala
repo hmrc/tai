@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.service
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{never, times, verify, when}
 import uk.gov.hmrc.tai.config.MongoConfig
 import uk.gov.hmrc.tai.repositories.deprecated.TaiCacheRepository
 import uk.gov.hmrc.tai.util.BaseSpec

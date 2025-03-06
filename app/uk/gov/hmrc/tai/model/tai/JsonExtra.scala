@@ -21,7 +21,7 @@ import play.api.libs.json._
 import scala.util._
 
 object JsonExtra {
-  def mapFormat[K, V](keyLabel: String, valueLabel: String)(implicit kf: Format[K], vf: Format[V]) =
+  def mapFormat[K, V](keyLabel: String, valueLabel: String)(implicit kf: Format[K], vf: Format[V]): Format[Map[K, V]] =
     new Format[Map[K, V]] {
       def writes(m: Map[K, V]): JsValue =
         JsArray(m.map { case (t, v) =>
@@ -34,12 +34,12 @@ object JsonExtra {
       }
     }
 
-  def enumerationFormat(a: Enumeration) = new Format[a.Value] {
-    def reads(json: JsValue) = JsSuccess(a.withName(json.as[String]))
-    def writes(v: a.Value) = JsString(v.toString)
+  def enumerationFormat(a: Enumeration): Format[a.Value] = new Format[a.Value] {
+    def reads(json: JsValue): JsResult[a.Value] = JsSuccess(a.withName(json.as[String]))
+    def writes(v: a.Value): JsValue = JsString(v.toString)
   }
 
-  def bodgeList[T](implicit f: Format[T], log: Logger) = new Format[List[T]] {
+  def bodgeList[T](implicit f: Format[T], log: Logger): Format[List[T]] = new Format[List[T]] {
     override def reads(j: JsValue): JsResult[List[T]] = j match {
       case JsArray(xs) =>
         JsSuccess(

@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.util
 
-import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
@@ -43,10 +43,10 @@ trait BaseSpec
   implicit lazy val ec: ExecutionContext = inject[ExecutionContext]
   val responseBody: String = ""
 
-  lazy val fakeAsyncCacheApi = new FakeAsyncCacheApi()
-
+  lazy val fakeAsyncCacheApi: AsyncCacheApi = new FakeAsyncCacheApi()
   lazy val loggedInAuthenticationAuthJourney: AuthJourney = FakeAuthJourney
   lazy val cc: ControllerComponents = stubControllerComponents()
+
   val sessionIdValue: String = "some session id"
   implicit lazy val hc: HeaderCarrier = HeaderCarrier(sessionId = Some(SessionId(sessionIdValue)))
   val nino: Nino = new Generator(Random).nextNino
@@ -56,9 +56,7 @@ trait BaseSpec
 
   override implicit lazy val app: Application =
     GuiceApplicationBuilder()
-      .overrides(
-        bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi)
-      )
+      .overrides(bind[AsyncCacheApi].toInstance(fakeAsyncCacheApi))
       .build()
 
 }

@@ -16,18 +16,21 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import java.time.LocalDate
 import com.codahale.metrics.Timer
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import play.api.http.Status._
-import play.api.libs.json._
-import uk.gov.hmrc.http._
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{verify, when}
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.*
+import play.api.libs.json.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tai.metrics.Metrics
 import uk.gov.hmrc.tai.model.ETag
 import uk.gov.hmrc.tai.model.domain.Address
 import uk.gov.hmrc.tai.model.enums.APITypes
+
+import java.time.LocalDate
 
 class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
 
@@ -84,9 +87,7 @@ class CitizenDetailsConnectorSpec extends ConnectorBaseSpec {
         "FName",
         "LName",
         Some(LocalDate.parse("1975-09-15")),
-        Address(Some("1 Test Line"), Some("Test Line 2"), None, Some("TEST"), Some("GREAT BRITAIN")),
-        isDeceased = false,
-        manualCorrespondenceInd = false
+        Address(Some("1 Test Line"), Some("Test Line 2"), None, Some("TEST"), Some("GREAT BRITAIN"))
       )
     }
 

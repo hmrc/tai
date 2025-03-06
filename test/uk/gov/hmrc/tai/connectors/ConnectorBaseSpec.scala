@@ -17,11 +17,13 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
 import org.scalactic.source.Position
 import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Application
 import play.api.cache.AsyncCacheApi
@@ -96,6 +98,7 @@ trait ConnectorBaseSpec
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = false))
     )
+    ()
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier(

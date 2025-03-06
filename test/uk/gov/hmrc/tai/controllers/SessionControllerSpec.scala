@@ -17,8 +17,10 @@
 package uk.gov.hmrc.tai.controllers
 
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.tai.repositories.deprecated.SessionRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
@@ -29,7 +31,7 @@ class SessionControllerSpec extends BaseSpec {
   private def createSUT(sessionRepository: SessionRepository) =
     new SessionController(sessionRepository, loggedInAuthenticationAuthJourney, cc)
 
-  val fakeRequest = FakeRequest().withHeaders("X-Session-ID" -> "test")
+  val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders("X-Session-ID" -> "test")
 
   "Session Controller" must {
 

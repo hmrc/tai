@@ -16,16 +16,22 @@
 
 package uk.gov.hmrc.tai.service
 
-import java.time.LocalDate
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
 import uk.gov.hmrc.tai.util.BaseSpec
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class PersonServiceSpec extends BaseSpec {
+
+  val person: Person =
+    Person(nino, "firstname", "surname", Some(LocalDate.now()), Address("l1", "l2", "l3", "pc", "country"))
+
+  def createSUT(personRepository: PersonRepository = mock[PersonRepository]) = new PersonService(personRepository)
 
   "person method" must {
     "return a person model instance, retrieved from the person repository" in {
@@ -45,16 +51,4 @@ class PersonServiceSpec extends BaseSpec {
       result.getMessage mustBe "an example not found exception"
     }
   }
-
-  val person = Person(
-    nino,
-    "firstname",
-    "surname",
-    Some(LocalDate.now()),
-    Address("l1", "l2", "l3", "pc", "country"),
-    false,
-    false
-  )
-  def createSUT(personRepository: PersonRepository = mock[PersonRepository]) = new PersonService(personRepository)
-
 }

@@ -20,6 +20,31 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.TaxBand
 
 class TaxBandCalculatorSpec extends PlaySpec {
+  def sut: TaxBandCalculator.type = TaxBandCalculator
+
+  val taxBandInput: List[TaxBand] = List(
+    TaxBand(
+      income = Some(BigDecimal(30000)),
+      tax = Some(BigDecimal(6000)),
+      lowerBand = Some(BigDecimal(0)),
+      upperBand = Some(BigDecimal(30000)),
+      rate = Some(BigDecimal(20))
+    ),
+    TaxBand(
+      income = Some(BigDecimal(30000)),
+      tax = Some(BigDecimal(12000)),
+      lowerBand = Some(BigDecimal(30000)),
+      upperBand = Some(BigDecimal(150000)),
+      rate = Some(BigDecimal(40))
+    ),
+    TaxBand(
+      income = None,
+      tax = None,
+      lowerBand = Some(BigDecimal(150000)),
+      upperBand = None,
+      rate = Some(BigDecimal(45))
+    )
+  )
 
   "Tax Band Calculator" must {
 
@@ -32,8 +57,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
         val newTaxBands = sut.recreateTaxBands(Some(10000), oldTaxBands = taxBandInput, Nil, 0)
 
         newTaxBands.size mustBe 3
-        newTaxBands(0).get.income mustBe Some(10000)
-        newTaxBands(0).get.tax mustBe Some(2000)
+        newTaxBands.head.get.income mustBe Some(10000)
+        newTaxBands.head.get.tax mustBe Some(2000)
 
         newTaxBands(1).get.income mustBe Some(0)
         newTaxBands(1).get.tax mustBe Some(0)
@@ -46,8 +71,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
         val newTaxBands = sut.recreateTaxBands(Some(10000), oldTaxBands = taxBandInput, Nil, 25000)
 
         newTaxBands.size mustBe 3
-        newTaxBands(0).get.income mustBe Some(5000)
-        newTaxBands(0).get.tax mustBe Some(1000)
+        newTaxBands.head.get.income mustBe Some(5000)
+        newTaxBands.head.get.tax mustBe Some(1000)
 
         newTaxBands(1).get.income mustBe Some(5000)
         newTaxBands(1).get.tax mustBe Some(2000)
@@ -60,8 +85,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
         val newTaxBands = sut.recreateTaxBands(Some(10000), oldTaxBands = taxBandInput, Nil, 145000)
 
         newTaxBands.size mustBe 3
-        newTaxBands(0).get.income mustBe Some(0)
-        newTaxBands(0).get.tax mustBe Some(0)
+        newTaxBands.head.get.income mustBe Some(0)
+        newTaxBands.head.get.tax mustBe Some(0)
 
         newTaxBands(1).get.income mustBe Some(5000)
         newTaxBands(1).get.tax mustBe Some(2000)
@@ -74,8 +99,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
         val newTaxBands = sut.recreateTaxBands(Some(200000), oldTaxBands = taxBandInput, Nil, 5000)
 
         newTaxBands.size mustBe 3
-        newTaxBands(0).get.income mustBe Some(25000)
-        newTaxBands(0).get.tax mustBe Some(5000)
+        newTaxBands.head.get.income mustBe Some(25000)
+        newTaxBands.head.get.tax mustBe Some(5000)
 
         newTaxBands(1).get.income mustBe Some(120000)
         newTaxBands(1).get.tax mustBe Some(48000)
@@ -87,8 +112,8 @@ class TaxBandCalculatorSpec extends PlaySpec {
       "given starting point is 200 and new result income and tax is none" in {
         val newTaxBands = sut.recreateTaxBands(Some(10), oldTaxBands = List(TaxBand(upperBand = Some(200))), Nil, 50)
 
-        newTaxBands(0).get.income mustBe None
-        newTaxBands(0).get.tax mustBe None
+        newTaxBands.head.get.income mustBe None
+        newTaxBands.head.get.tax mustBe None
       }
 
     }
@@ -165,30 +190,4 @@ class TaxBandCalculatorSpec extends PlaySpec {
       }
     }
   }
-
-  def sut = TaxBandCalculator
-
-  val taxBandInput = List(
-    TaxBand(
-      income = Some(BigDecimal(30000)),
-      tax = Some(BigDecimal(6000)),
-      lowerBand = Some(BigDecimal(0)),
-      upperBand = Some(BigDecimal(30000)),
-      rate = Some(BigDecimal(20))
-    ),
-    TaxBand(
-      income = Some(BigDecimal(30000)),
-      tax = Some(BigDecimal(12000)),
-      lowerBand = Some(BigDecimal(30000)),
-      upperBand = Some(BigDecimal(150000)),
-      rate = Some(BigDecimal(40))
-    ),
-    TaxBand(
-      income = None,
-      tax = None,
-      lowerBand = Some(BigDecimal(150000)),
-      upperBand = None,
-      rate = Some(BigDecimal(45))
-    )
-  )
 }

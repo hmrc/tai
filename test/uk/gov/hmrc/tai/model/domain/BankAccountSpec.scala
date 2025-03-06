@@ -21,6 +21,15 @@ import play.api.libs.json.Json
 
 class BankAccountSpec extends PlaySpec {
 
+  val accountNo = "test account no"
+  val bankName = "test bank name"
+  val sortCode = "test sort code"
+  val source = "customer"
+  val numberOfAccountHolders = 1
+
+  val grossInterest1: BigDecimal = 123.45
+  val grossInterest2: BigDecimal = 678.90
+
   "BankAccount" must {
     "not contain bank accounts" when {
       "no data is provided." in {
@@ -42,7 +51,7 @@ class BankAccountSpec extends PlaySpec {
 
         val bankAccounts = jsonBankAccounts.as[Seq[BankAccount]]
         bankAccounts.size mustBe 1
-        val bankAccount1 = bankAccounts(0)
+        val bankAccount1 = bankAccounts.head
 
         bankAccount1.accountNumber mustBe None
         bankAccount1.bankName mustBe None
@@ -69,7 +78,7 @@ class BankAccountSpec extends PlaySpec {
 
       val bankAccounts = jsonBankAccounts.as[Seq[BankAccount]]
       bankAccounts.size mustBe 2
-      val bankAccount1 = bankAccounts(0)
+      val bankAccount1 = bankAccounts.head
 
       bankAccount1.accountNumber mustBe None
       bankAccount1.bankName mustBe None
@@ -106,7 +115,7 @@ class BankAccountSpec extends PlaySpec {
 
       bankAccounts.size mustBe 1
 
-      val bankAccount1 = bankAccounts(0)
+      val bankAccount1 = bankAccounts.head
 
       bankAccount1.accountNumber mustBe Some(accountNo)
       bankAccount1.bankName mustBe Some(bankName)
@@ -116,13 +125,4 @@ class BankAccountSpec extends PlaySpec {
       bankAccount1.numberOfAccountHolders mustBe Some(numberOfAccountHolders)
     }
   }
-
-  val accountNo = "test account no"
-  val bankName = "test bank name"
-  val sortCode = "test sort code"
-  val source = "customer"
-  val numberOfAccountHolders = 1
-
-  val grossInterest1: BigDecimal = 123.45
-  val grossInterest2: BigDecimal = 678.90
 }

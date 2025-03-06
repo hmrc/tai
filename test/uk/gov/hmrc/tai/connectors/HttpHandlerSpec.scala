@@ -17,10 +17,10 @@
 package uk.gov.hmrc.tai.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.http.Status._
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import play.api.http.Status.*
 import play.api.libs.json.{JsString, Json, OFormat}
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.tai.model.enums.APITypes
 
 import java.net.URLEncoder
@@ -321,6 +321,7 @@ class HttpHandlerSpec extends ConnectorBaseSpec {
         result.status mustBe responseCode
         if (responseCode != NO_CONTENT) {
           result.json mustBe Json.toJson(userInput)
+          ()
         }
         server.verify(
           putRequestedFor(anyUrl())

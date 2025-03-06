@@ -198,7 +198,7 @@ class EmploymentService @Inject() (
         detail = Map(
           "nino"         -> nino.nino,
           "envelope Id"  -> envelopeId,
-          "start-date"   -> employment.startDate.toString(),
+          "start-date"   -> employment.startDate.toString,
           "payrollNo"    -> employment.payrollNumber,
           "employerName" -> employment.employerName
         )

@@ -17,15 +17,16 @@
 package uk.gov.hmrc.tai.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
 class TaxFreeAmountComparisonSpec extends IntegrationSpec {
 
   val apiUrl = s"/tai/$nino/tax-account/tax-free-amount-comparison"
-  def request = FakeRequest(GET, apiUrl)
+  def request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(GET, apiUrl)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)
 

@@ -16,20 +16,21 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import java.time.LocalDate
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.functional.syntax.{unlift, _}
-import play.api.libs.json._
+import play.api.libs.functional.syntax.{unlift, *}
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
 import uk.gov.hmrc.tai.model.nps2.Income.IncomeType
 import uk.gov.hmrc.tai.model.tai.{AnnualAccount, JsonExtra}
 import uk.gov.hmrc.tai.model.{TaxSummaryDetails, nps2}
-import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
+
+import java.time.LocalDate
 
 trait NpsFormatter {
 
   implicit val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  import uk.gov.hmrc.tai.model.nps2.TaxObject.Type.{Value => TaxObjectType}
+  import uk.gov.hmrc.tai.model.nps2.TaxObject.Type.Value as TaxObjectType
 
   implicit val formatTaxBand: Format[nps2.TaxBand] = (
     (__ \ "bandType").formatNullable[String] and
@@ -63,33 +64,36 @@ trait NpsFormatter {
       (__ \ "iabdSummaries").format[Seq[Iabd]]
   )(Component.apply, unlift(Component.unapply))
 
-  val taxBandsWithPaBand
+  private val taxBandsWithPaBand
     : PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
     case (totalLiabilitySection, Some(taxBands), Some(paAmount)) if totalLiabilitySection != "untaxedInterest" =>
       Seq(nps2.TaxBand(bandType = Some("pa"), income = paAmount, tax = 0, rate = 0)) ++ taxBands
   }
 
-  val paBandOnly: PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
+  private val paBandOnly
+    : PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
     case (totalLiabilitySection, None, Some(paAmount)) if totalLiabilitySection != "untaxedInterest" =>
       Seq(nps2.TaxBand(bandType = Some("pa"), income = paAmount, tax = 0, rate = 0))
   }
 
-  val taxBandsOnly: PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
+  private val taxBandsOnly
+    : PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
     case (_, Some(taxBands), _) =>
       taxBands
   }
 
-  val emptyTaxBand: PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = {
-    case _ => Nil
+  private val emptyTaxBand
+    : PartialFunction[(String, Option[Seq[nps2.TaxBand]], Option[BigDecimal]), Seq[nps2.TaxBand]] = { case _ =>
+    Nil
   }
 
-  val processLiabilities =
+  private val processLiabilities =
     taxBandsWithPaBand orElse
       paBandOnly orElse
       taxBandsOnly orElse
       emptyTaxBand
 
-  implicit val formatliabilityMap: Format[Map[TaxObjectType, TaxDetail]] = {
+  implicit val formatLiabilityMap: Format[Map[TaxObjectType, TaxDetail]] = {
 
     val fieldNames: Map[TaxObject.Type.Value, String] =
       TaxObject.Type.values.toSeq.map { x =>
@@ -138,28 +142,28 @@ trait NpsFormatter {
 
   }
 
-  val processJSAAllowanceIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
+  private val processJSAAllowanceIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
     case (true, false, _) => IncomeType.JobSeekersAllowance
   }
-  val processPensionIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
+  private val processPensionIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
     case (false, true, _) => IncomeType.Pension
   }
-  val processOtherIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
+  private val processOtherIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
     case (false, false, true) => IncomeType.OtherIncome
   }
-  val processEmploymetIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
+  private val processEmploymentIncomeType: PartialFunction[(Boolean, Boolean, Boolean), IncomeType.Value] = {
     case (false, false, false) => IncomeType.Employment
   }
-  val throwExceptionForUnknownIncomeType: PartialFunction[(Boolean, Boolean, Boolean), Nothing] = {
+  private val throwExceptionForUnknownIncomeType: PartialFunction[(Boolean, Boolean, Boolean), Nothing] = {
     case (jsa, pen, oth) =>
       throw new IllegalArgumentException(s"Unknown Income Type (jsa:$jsa, pension:$pen, other:$oth)")
   }
 
-  val processIncomeTypes =
+  private val processIncomeTypes =
     processJSAAllowanceIncomeType orElse
       processPensionIncomeType orElse
       processOtherIncomeType orElse
-      processEmploymetIncomeType orElse
+      processEmploymentIncomeType orElse
       throwExceptionForUnknownIncomeType
 
   implicit val formatIncome: Format[Income] = Format(
@@ -215,7 +219,7 @@ trait NpsFormatter {
           }),
           "worksNumber" -> v.worksNumber
             .map {
-              JsString
+              JsString.apply
             }
             .getOrElse {
               JsNull

@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
+
+import java.time.LocalDate
 
 class RtiEyuSpec extends PlaySpec {
 
@@ -30,8 +31,8 @@ class RtiEyuSpec extends PlaySpec {
 
         val rtiEyuList: List[RtiEyu] = List(rtiEyu2, rtiEyu3, rtiEyu1)
         val sortedList = rtiEyuList.sorted
-        sortedList.head.rcvdDate mustBe (LocalDate.of(2015, 1, 1))
-        sortedList.last.rcvdDate mustBe (LocalDate.of(2015, 3, 1))
+        sortedList.head.rcvdDate mustBe LocalDate.of(2015, 1, 1)
+        sortedList.last.rcvdDate mustBe LocalDate.of(2015, 3, 1)
       }
     }
   }

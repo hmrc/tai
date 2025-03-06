@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tai.model.tai
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.tai.TaxYear.{formatTaxYear, taxYearHodReads}
 
 import java.time.LocalDate
@@ -30,7 +30,7 @@ class TaxYearSpec extends PlaySpec {
       rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016)
     }
 
-    "Thrwo an error when encountering an invalid tax year string" in {
+    "Throw an error when encountering an invalid tax year string" in {
       val rtiTaxYearJsVal = JsString("16-")
       an[IllegalArgumentException] mustBe thrownBy(rtiTaxYearJsVal.as[TaxYear](taxYearHodReads) mustBe TaxYear(2016))
     }

@@ -17,14 +17,16 @@
 package uk.gov.hmrc.tai.controllers
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{reset, times, verify, when}
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.model.api.ApiResponse
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
-import uk.gov.hmrc.tai.model.domain._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.EmploymentService
 import uk.gov.hmrc.tai.util.BaseSpec

@@ -17,7 +17,7 @@
 package hmrc.nps2
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.nps2.{NpsEmployment, NpsFormatter}
 
 import scala.util.{Success, Try}

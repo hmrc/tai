@@ -17,7 +17,9 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import cats.instances.future.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{doNothing, verify, when}
 import play.api.http.Status.NOT_FOUND
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
@@ -28,15 +30,15 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
 import uk.gov.hmrc.tai.model.ETag
-import uk.gov.hmrc.tai.model.domain._
-import uk.gov.hmrc.tai.model.domain.income._
-import uk.gov.hmrc.tai.model.domain.response._
+import uk.gov.hmrc.tai.model.domain.*
+import uk.gov.hmrc.tai.model.domain.income.*
+import uk.gov.hmrc.tai.model.domain.response.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 import uk.gov.hmrc.tai.util.BaseSpec
 
 import java.time.LocalDate
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 import scala.io.Source
 
@@ -1020,7 +1022,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
             )
 
           val mockAuditor = mock[Auditor]
-          doNothing
+          doNothing()
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -1085,7 +1087,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
             )
 
           val mockAuditor = mock[Auditor]
-          doNothing
+          doNothing()
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -1153,7 +1155,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
             )
 
           val mockAuditor = mock[Auditor]
-          doNothing
+          doNothing()
             .when(mockAuditor)
             .sendDataEvent(any(), any())(any())
 
@@ -1276,7 +1278,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
             )
 
           val mockAuditor = mock[Auditor]
-          doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
+          doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
 
           val SUT = createSUT(
             employmentService = mockEmploymentSvc,
@@ -1330,7 +1332,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
       when(mockCitizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(None))
 
       val mockAuditor = mock[Auditor]
-      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val SUT = createSUT(
         employmentService = mockEmploymentSvc,
@@ -1372,7 +1374,7 @@ class IncomeServiceHipToggleOnSpec extends BaseSpec {
         .thenReturn(Future.successful(incomeAmount))
 
       val mockAuditor = mock[Auditor]
-      doNothing.when(mockAuditor).sendDataEvent(any(), any())(any())
+      doNothing().when(mockAuditor).sendDataEvent(any(), any())(any())
 
       val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
       when(mockCitizenDetailsConnector.getEtag(any())(any())).thenReturn(Future.successful(Some(ETag("not an ETag"))))

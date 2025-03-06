@@ -17,9 +17,10 @@
 package uk.gov.hmrc.tai.mocks
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
-import org.scalatest._
-import play.api.mvc._
+import org.mockito.Mockito.{reset, when}
+import org.scalatest.*
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.*
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
@@ -76,4 +77,5 @@ trait MockAuthenticationPredicate extends BeforeAndAfterEach with MockitoSugar {
               body.apply(retrievalValue.asInstanceOf[A])
           }
       })
+    ()
 }

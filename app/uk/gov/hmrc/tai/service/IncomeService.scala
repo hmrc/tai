@@ -134,7 +134,7 @@ class IncomeService @Inject() (
 
         if (employmentStatus.isEmpty) {
           logger.error(
-            s"No employment found with id `${taxCode.employmentId} in employment destails API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
+            s"No employment found with id `${taxCode.employmentId} in employment details API for nino `${nino.nino}` and tax year `${year.year}`. See DDCNL-9780"
           )
         }
 

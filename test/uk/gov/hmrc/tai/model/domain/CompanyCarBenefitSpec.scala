@@ -27,6 +27,7 @@ import java.time.LocalDate
 import scala.util.Random
 
 class CompanyCarBenefitSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
 
   "companyCarBenefitReads" must {
     "be able to read correct companyCarBenefit json" when {
@@ -199,6 +200,4 @@ class CompanyCarBenefitSpec extends PlaySpec {
       }
     }
   }
-
-  private val nino: Nino = new Generator(new Random).nextNino
 }

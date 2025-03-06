@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.templates
 
-import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
@@ -24,9 +23,25 @@ import uk.gov.hmrc.tai.model.domain.{Address, BankAccount, Person}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.IncorrectBankAccount
 
+import java.time.LocalDate
 import scala.util.Random
 
 class IncorrectBankAccountIformSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
+  private val dateOfBirth = LocalDate.parse("2017-02-01")
+
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
+  private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
+  private val incorrectBankAccount = IncorrectBankAccount(personDetails, TaxYear(), bankAccount)
+
+  private def incorrectBankAccountTemplate(viewModel: IncorrectBankAccount = incorrectBankAccount) =
+    uk.gov.hmrc.tai.templates.html.IncorrectBankAccountIform(viewModel)
 
   "Incorrect Bank Account Iform" must {
     "display Logo" in {
@@ -109,18 +124,4 @@ class IncorrectBankAccountIformSpec extends PlaySpec {
       endSection.select("tr:nth-of-type(7) td:nth-of-type(2)").text() mustBe "My gross interest is wrong"
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-  private val dateOfBirth = LocalDate.parse("2017-02-01")
-
-  private val personDetails = Person(
-    Nino(nino.nino),
-    "test",
-    "tester",
-    Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country")
-  )
-  private val bankAccount = BankAccount(1, Some("123456789"), Some("123456"), Some("TEST"), 10, Some("Source"), Some(0))
-  private val incorrectBankAccount = IncorrectBankAccount(personDetails, TaxYear(), bankAccount)
-  private def incorrectBankAccountTemplate(viewModel: IncorrectBankAccount = incorrectBankAccount) =
-    uk.gov.hmrc.tai.templates.html.IncorrectBankAccountIform(viewModel)
 }

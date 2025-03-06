@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{reset, when}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.calculation.IncomeCategory
 import uk.gov.hmrc.tai.model.domain.calculation.TotalTaxSquidReads.incomeCategorySeqReads
-import uk.gov.hmrc.tai.model.domain.taxAdjustments._
+import uk.gov.hmrc.tai.model.domain.taxAdjustments.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxAccountHelper
 import uk.gov.hmrc.tai.util.BaseSpec
@@ -39,6 +40,7 @@ class TotalTaxServiceHipToggleOffSpec extends BaseSpec {
     reset(mockTaxAccountConnector, mockTaxAccountHelper, mockTaxAccountSummaryService)
     when(mockTaxAccountConnector.taxAccount(meq(nino), meq(TaxYear()))(any()))
       .thenReturn(Future.successful(incomeCategories))
+    ()
   }
 
   private def createSUT(

@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tai.controllers.auth
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers._
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.Application
 import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder

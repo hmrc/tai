@@ -18,8 +18,8 @@ package uk.gov.hmrc.tai.factory
 
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.tai.model.TaxFreeAmountComparison
-import uk.gov.hmrc.tai.model.domain.{CarBenefit, Mileage}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
+import uk.gov.hmrc.tai.model.domain.{CarBenefit, Mileage}
 
 object TaxFreeAmountComparisonFactory {
 

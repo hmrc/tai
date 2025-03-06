@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tai.templates
 
-import java.time.LocalDate
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -25,10 +24,26 @@ import play.twirl.api.Html
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.domain.{Address, Person}
 
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import scala.util.Random
 
 class PersonDetailsTemplateSpec extends PlaySpec {
+  private val nino: Nino = new Generator(new Random).nextNino
+  private val dateOfBirth = LocalDate.parse("2017-02-01")
+  private val dateOfBirthString: String = dateOfBirth.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+
+  private val personDetails = Person(
+    Nino(nino.nino),
+    "test",
+    "tester",
+    Some(dateOfBirth),
+    Address("line1", "line2", "line3", "postcode", "country")
+  )
+
+  val personDetailsTemplate: Html = uk.gov.hmrc.tai.templates.html.PersonDetails(personDetails)
+  val doc: Document = Jsoup.parse(personDetailsTemplate.toString())
+  val yourDetailsTable: Elements = doc.select("table:nth-of-type(1) > tbody")
 
   "Person Details" must {
 
@@ -81,19 +96,4 @@ class PersonDetailsTemplateSpec extends PlaySpec {
       ukAddressTableRow.select("td:nth-of-type(2)").text() mustBe "line1 line2 line3 postcode"
     }
   }
-  private val nino: Nino = new Generator(new Random).nextNino
-  private val dateOfBirth = LocalDate.parse("2017-02-01")
-  private val dateOfBirthString: String = dateOfBirth.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
-
-  private val personDetails = Person(
-    Nino(nino.nino),
-    "test",
-    "tester",
-    Some(dateOfBirth),
-    Address("line1", "line2", "line3", "postcode", "country")
-  )
-
-  val personDetailsTemplate: Html = uk.gov.hmrc.tai.templates.html.PersonDetails(personDetails)
-  val doc: Document = Jsoup.parse(personDetailsTemplate.toString())
-  val yourDetailsTable: Elements = doc.select("table:nth-of-type(1) > tbody")
 }

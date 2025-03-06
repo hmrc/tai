@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.tai.controllers.auth.AuthJourney
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.service.PersonService
 import uk.gov.hmrc.tai.util.BaseSpec
 

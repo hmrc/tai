@@ -16,12 +16,31 @@
 
 package uk.gov.hmrc.tai.model.rti
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-
-import java.time.LocalDate
+import org.scalatest.matchers.should.Matchers.should
 import org.scalatestplus.play.PlaySpec
 
+import java.time.LocalDate
+
 class RtiPaymentSpec extends PlaySpec {
+  val rtiPayment1: RtiPayment = RtiPayment(
+    payFrequency = PayFrequency.Irregular,
+    paidOn = LocalDate.of(2022, 11, 15),
+    submittedOn = LocalDate.now(),
+    taxablePay = 2000,
+    taxablePayYTD = 12000,
+    taxed = 200,
+    taxedYTD = 800
+  )
+
+  val rtiPayment2: RtiPayment = RtiPayment(
+    payFrequency = PayFrequency.Monthly,
+    paidOn = LocalDate.of(2022, 11, 20),
+    submittedOn = LocalDate.now(),
+    taxablePay = 2000,
+    taxablePayYTD = 12000,
+    taxed = 200,
+    taxedYTD = 800
+  )
 
   "RtiPayment compare method" must {
     "implement comparison behaviour" in {
@@ -46,24 +65,4 @@ class RtiPaymentSpec extends PlaySpec {
       }
     }
   }
-
-  val rtiPayment1 = RtiPayment(
-    payFrequency = PayFrequency.Irregular,
-    paidOn = LocalDate.of(2022, 11, 15),
-    submittedOn = LocalDate.now(),
-    taxablePay = 2000,
-    taxablePayYTD = 12000,
-    taxed = 200,
-    taxedYTD = 800
-  )
-
-  val rtiPayment2 = RtiPayment(
-    payFrequency = PayFrequency.Monthly,
-    paidOn = LocalDate.of(2022, 11, 20),
-    submittedOn = LocalDate.now(),
-    taxablePay = 2000,
-    taxablePayYTD = 12000,
-    taxed = 200,
-    taxedYTD = 800
-  )
 }

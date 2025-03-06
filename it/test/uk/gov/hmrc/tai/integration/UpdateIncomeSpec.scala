@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
-import play.api.libs.json.Json
+import com.github.tomakehurst.wiremock.client.WireMock.{status as _, *}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsJson
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
@@ -32,15 +33,16 @@ class UpdateIncomeSpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
     server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(cidEtagUrl)).willReturn(ok(etagJson.toString)))
+    ()
   }
 
   val employmentId = 1
   val apiUrl = s"/tai/$nino/tax-account/snapshots/$year/incomes/tax-code-incomes/$employmentId/estimated-pay"
 
   val amount = 123
-  val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
+  val postRequest: JsValue = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
 
-  def request = FakeRequest(PUT, apiUrl)
+  def request: FakeRequest[AnyContentAsJson] = FakeRequest(PUT, apiUrl)
     .withJsonBody(postRequest)
     .withHeaders(HeaderNames.xSessionId -> generateSessionId)
     .withHeaders(HeaderNames.authorisation -> bearerToken)

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tai.util
 
 import org.mockito.ArgumentMatcher
+import org.mockito.ArgumentMatchers.eq as eqTo
 import org.scalactic.Prettifier
 import org.scalatest.matchers.must.Matchers
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest

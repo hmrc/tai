@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{times, verify}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.model.domain.income.Live
@@ -34,8 +35,8 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
   val auditTransactionName = "NPS RTI Data Mismatch"
 
   trait EmploymentBuilderSetup {
-    val nino = new Generator(new Random).nextNino
-    val mockAuditor = mock[Auditor]
+    val nino: Nino = new Generator(new Random).nextNino
+    val mockAuditor: Auditor = mock[Auditor]
     val testEmploymentBuilder = new EmploymentBuilder(mockAuditor)
   }
 
@@ -43,7 +44,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
     "combine Employment instances (having Nil accounts), with their corresponding AnnualAccount instances" when {
       "each AnnualAccount record has a single matching Employment record by employer designation" in new EmploymentBuilderSetup {
 
-        val employmentsNoPayroll = List(
+        val employmentsNoPayroll: List[Employment] = List(
           Employment(
             "TestEmp1",
             Live,
@@ -74,12 +75,12 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        val accounts = List(
+        val accounts: List[AnnualAccount] = List(
           AnnualAccount(1, TaxYear(2017), Available, Nil, Nil),
           AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments =
+        val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
             .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
             .employments
@@ -126,7 +127,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       "an AnnualAccount record has more than one Employment record that matches by employer designation, " +
         "but one of them also matches by payrollNumber (employee designation)" in new EmploymentBuilderSetup {
 
-          val employmentsNoPayroll = List(
+          val employmentsNoPayroll: List[Employment] = List(
             Employment(
               "TestEmp1",
               Live,
@@ -157,10 +158,10 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             )
           )
 
-          val accounts =
+          val accounts: List[AnnualAccount] =
             List(AnnualAccount(1, TaxYear(2017), Available, Nil, Nil))
 
-          val unifiedEmployments =
+          val unifiedEmployments: Seq[Employment] =
             testEmploymentBuilder
               .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
               .employments
@@ -186,7 +187,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
         }
 
       "multiple AnnualAccount records match the same employment record by employer designation" in new EmploymentBuilderSetup {
-        val employmentsNoPayroll = List(
+        val employmentsNoPayroll: List[Employment] = List(
           Employment(
             "TestEmp1",
             Live,
@@ -217,12 +218,12 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        val accounts = List(
+        val accounts: List[AnnualAccount] = List(
           AnnualAccount(1, TaxYear(2017), Available, Nil, Nil),
           AnnualAccount(2, TaxYear(2017), Available, Nil, Nil)
         )
 
-        val unifiedEmployments =
+        val unifiedEmployments: Seq[Employment] =
           testEmploymentBuilder
             .combineAccountsWithEmployments(employmentsNoPayroll, accounts, nino, TaxYear(2017))
             .employments
@@ -273,7 +274,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       val ty = TaxYear(2017)
 
       "one of the known employments has no corresponding AnnualAccount" in new EmploymentBuilderSetup {
-        val employments = List(
+        val employments: List[Employment] = List(
           Employment(
             "TEST",
             Live,
@@ -304,9 +305,11 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        val accounts = List(AnnualAccount(1, ty, Available, Nil, Nil), AnnualAccount(5, ty, Available, Nil, Nil))
+        val accounts: List[AnnualAccount] =
+          List(AnnualAccount(1, ty, Available, Nil, Nil), AnnualAccount(5, ty, Available, Nil, Nil))
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -343,7 +346,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
       }
 
       "no AnnualAccount records are available" in new EmploymentBuilderSetup {
-        val employments = List(
+        val employments: List[Employment] = List(
           Employment(
             "TEST",
             Live,
@@ -374,9 +377,10 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
           )
         )
 
-        val accounts = Nil
+        val accounts: Nil.type = Nil
 
-        val unified = testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
+        val unified: Seq[Employment] =
+          testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
         unified mustBe List(
           Employment(
@@ -414,7 +418,7 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
 
       "multiple AnnualAccounts exist for one employment record, another record has no corresponding account records, " +
         "and one of the account records matches none of the employment records" in new EmploymentBuilderSetup {
-          val employments = List(
+          val employments: List[Employment] = List(
             Employment(
               "TEST",
               Live,
@@ -445,13 +449,13 @@ class EmploymentBuilderSpec extends PlaySpec with MockitoSugar {
             )
           )
 
-          val accounts = List(
+          val accounts: List[AnnualAccount] = List(
             AnnualAccount(1, ty, Available, Nil, Nil),
             AnnualAccount(1, ty, Available, Nil, Nil),
             AnnualAccount(5, ty, Available, Nil, Nil)
           )
 
-          val unified =
+          val unified: Seq[Employment] =
             testEmploymentBuilder.combineAccountsWithEmployments(employments, accounts, nino, ty).employments
 
           unified mustBe List(

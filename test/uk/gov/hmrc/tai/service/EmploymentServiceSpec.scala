@@ -17,9 +17,11 @@
 package uk.gov.hmrc.tai.service
 
 import cats.data.EitherT
+import cats.instances.future.*
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, contains, eq => meq}
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{contains, eq as meq}
+import org.mockito.Mockito.{doNothing, reset, times, verify, when}
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.libs.json.{JsArray, Json}
 import play.api.test.FakeRequest
@@ -32,7 +34,7 @@ import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnect
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodReads
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
@@ -83,12 +85,54 @@ class EmploymentServiceSpec extends BaseSpec {
                                   |  ]
                                   |}""".stripMargin
 
+  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
+
+  private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
+
+  private def employment = Employment(
+    "TEST",
+    Live,
+    Some("12345"),
+    LocalDate.now(),
+    None,
+    List(AnnualAccount(0, TaxYear(), Available, Nil, Nil)),
+    "",
+    "",
+    2,
+    Some(100),
+    false,
+    false
+  )
+
+  private def createSut(
+    employmentDetailsConnector: DefaultEmploymentDetailsConnector,
+    rtiConnector: RtiConnector,
+    employmentBuilder: EmploymentBuilder,
+    personRepository: PersonRepository,
+    iFormSubmissionService: IFormSubmissionService,
+    fileUploadService: FileUploadService,
+    pdfService: PdfService,
+    auditable: Auditor
+  ) =
+    new EmploymentService(
+      employmentDetailsConnector,
+      rtiConnector,
+      employmentBuilder,
+      personRepository,
+      iFormSubmissionService,
+      fileUploadService,
+      pdfService,
+      auditable,
+      mockFeatureFlagService
+    )
+
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mocEmploymentDetailsConnector, mockRtiConnector, mockEmploymentBuilder, mockFeatureFlagService)
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentDetails))).thenReturn(
       Future.successful(FeatureFlag(HipToggleEmploymentDetails, isEnabled = true))
     )
+    ()
   }
 
   "EmploymentService.employments" should {
@@ -275,7 +319,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         val mockAuditable = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -342,7 +386,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val mockAuditable = mock[Auditor]
-      doNothing
+      doNothing()
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -385,7 +429,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
         val mockAuditable = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -430,7 +474,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful(HttpResponse(200, responseBody)))
 
       val mockAuditable = mock[Auditor]
-      doNothing
+      doNothing()
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -474,7 +518,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -512,7 +556,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing
+      doNothing()
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -548,7 +592,7 @@ class EmploymentServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("1"))
 
         val mockAuditable = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditable)
           .sendDataEvent(any(), any())(any())
 
@@ -587,7 +631,7 @@ class EmploymentServiceSpec extends BaseSpec {
         .thenReturn(Future.successful("1"))
 
       val mockAuditable = mock[Auditor]
-      doNothing
+      doNothing()
         .when(mockAuditable)
         .sendDataEvent(any(), any())(any())
 
@@ -607,45 +651,4 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())
     }
   }
-
-  private val pdfBytes = Files.readAllBytes(Paths.get("test/resources/sample.pdf"))
-
-  private val person = Person(nino, "", "", None, Address("", "", "", "", ""))
-
-  private def employment = Employment(
-    "TEST",
-    Live,
-    Some("12345"),
-    LocalDate.now(),
-    None,
-    List(AnnualAccount(0, TaxYear(), Available, Nil, Nil)),
-    "",
-    "",
-    2,
-    Some(100),
-    false,
-    false
-  )
-
-  private def createSut(
-    employmentDetailsConnector: DefaultEmploymentDetailsConnector,
-    rtiConnector: RtiConnector,
-    employmentBuilder: EmploymentBuilder,
-    personRepository: PersonRepository,
-    iFormSubmissionService: IFormSubmissionService,
-    fileUploadService: FileUploadService,
-    pdfService: PdfService,
-    auditable: Auditor
-  ) =
-    new EmploymentService(
-      employmentDetailsConnector,
-      rtiConnector,
-      employmentBuilder,
-      personRepository,
-      iFormSubmissionService,
-      fileUploadService,
-      pdfService,
-      auditable,
-      mockFeatureFlagService
-    )
 }

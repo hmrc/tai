@@ -71,7 +71,7 @@ class EstimatedPayCalculatorSpec extends PlaySpec {
         calculated.netAnnualPay mustBe Some(BigDecimal(1081))
       }
 
-      "other amount is entered and days have been entered and bounus has been entered" in {
+      "other amount is entered and days have been entered and bonus has been entered" in {
         val payDetails = PayDetails(
           paymentFrequency = PayFreq.other,
           pay = Some(100),

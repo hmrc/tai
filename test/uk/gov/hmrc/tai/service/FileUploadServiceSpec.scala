@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.tai.service
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito
+import org.mockito.Mockito.{doNothing, never, times, verify, when}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.FileUploadConnector
@@ -29,6 +30,12 @@ import uk.gov.hmrc.tai.util.BaseSpec
 import scala.concurrent.Future
 
 class FileUploadServiceSpec extends BaseSpec {
+  private val fileName = "EndEmployment.pdf"
+  private val fileId = "EndEmployment"
+  private val contentType = MimeContentType.ApplicationPdf
+
+  private def createSUT(fileUploadConnector: FileUploadConnector, Auditor: Auditor) =
+    new FileUploadService(fileUploadConnector, Auditor)
 
   "FileUploadService" must {
 
@@ -127,7 +134,7 @@ class FileUploadServiceSpec extends BaseSpec {
         val details = FileUploadCallback("123", "11", "ERROR", Some("VIRUS"))
 
         val mockAuditor = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -150,7 +157,7 @@ class FileUploadServiceSpec extends BaseSpec {
           .thenReturn(Future.successful("123"))
 
         val mockAuditor = mock[Auditor]
-        doNothing
+        doNothing()
           .when(mockAuditor)
           .sendDataEvent(any(), any())(any())
 
@@ -250,11 +257,4 @@ class FileUploadServiceSpec extends BaseSpec {
     }
 
   }
-
-  private val fileName = "EndEmployment.pdf"
-  private val fileId = "EndEmployment"
-  private val contentType = MimeContentType.ApplicationPdf
-
-  private def createSUT(fileUploadConnector: FileUploadConnector, Auditor: Auditor) =
-    new FileUploadService(fileUploadConnector, Auditor)
 }

@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.tai.model.tai
 
-import java.time.LocalDate
-import org.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json._
-import uk.gov.hmrc.tai.model.rti.RtiEyu
+import play.api.libs.json.*
+import uk.gov.hmrc.tai.model.rti.{RtiEyu, formatRtiEyu}
 import uk.gov.hmrc.tai.model.tai.TaxYear.formatTaxYear
+
+import java.time.LocalDate
 
 class JsonExtraSpec extends PlaySpec with MockitoSugar {
 
@@ -40,13 +41,17 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
     "Use JsValue to read input into map" when {
       "given valid input return correct object" in {
         val inputJsValue: JsValue = Json.parse("""[{"foo":2016, "bar":2017}]""")
-        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        val result = JsonExtra
+          .mapFormat[TaxYear, TaxYear]("foo", "bar")(TaxYear.formatTaxYear, TaxYear.formatTaxYear)
+          .reads(inputJsValue)
         result must be(JsSuccess(Map(TaxYear(2016) -> TaxYear(2017))))
       }
 
       "given invalid input return JsError" in {
         val inputJsValue: JsValue = Json.parse("""{}""")
-        val result = JsonExtra.mapFormat("foo", "bar").reads(inputJsValue)
+        val result = JsonExtra
+          .mapFormat[TaxYear, TaxYear]("foo", "bar")(TaxYear.formatTaxYear, TaxYear.formatTaxYear)
+          .reads(inputJsValue)
         result must be(JsError(s"Expected JsArray(...), found {}"))
       }
     }
@@ -61,11 +66,11 @@ class JsonExtraSpec extends PlaySpec with MockitoSugar {
       "read when given Json" in {
         val inputJsValue: JsString = JsString("""FOO""")
         val result = JsonExtra.enumerationFormat(testEnum).reads(inputJsValue)
-        result must be(JsSuccess(testEnum.FOO.leftSideValue))
+        result must be(JsSuccess(testEnum.FOO))
       }
 
       "write when given a value" in {
-        val inputValue = testEnum.BAR.leftSideValue
+        val inputValue = testEnum.BAR
         val result = JsonExtra.enumerationFormat(testEnum).writes(inputValue)
         result must be(JsString("""BAR"""))
       }

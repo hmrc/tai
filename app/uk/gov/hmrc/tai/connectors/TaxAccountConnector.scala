@@ -21,7 +21,7 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, _}
+import uk.gov.hmrc.http.{HeaderCarrier, *}
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
@@ -48,7 +48,7 @@ class CachingTaxAccountConnector @Inject() (
       .cache(s"tax-account-$nino-${taxYear.year}") {
         underlying
           .taxAccount(nino: Nino, taxYear: TaxYear)
-          .map(SensitiveJsValue)
+          .map(SensitiveJsValue.apply)
       }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
 
@@ -57,7 +57,7 @@ class CachingTaxAccountConnector @Inject() (
       .cache(s"tax-account-history-$nino-$iocdSeqNo") {
         underlying
           .taxAccountHistory(nino: Nino, iocdSeqNo: Int)
-          .map(SensitiveJsValue)
+          .map(SensitiveJsValue.apply)
       }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
 }

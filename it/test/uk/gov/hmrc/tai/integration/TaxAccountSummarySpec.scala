@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, ok, urlEqualTo}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.{HeaderNames, HttpException, InternalServerException}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
 
@@ -32,6 +32,7 @@ class TaxAccountSummarySpec extends IntegrationSpec {
     server.stubFor(get(urlEqualTo(npsTaxAccountUrl)).willReturn(ok(taxAccountJson)))
     server.stubFor(get(urlEqualTo(npsIabdsUrl)).willReturn(ok(npsIabdsJson)))
     server.stubFor(get(urlEqualTo(npsEmploymentUrl)).willReturn(ok(employmentJson)))
+    ()
   }
 
   val apiUrl = s"/tai/$nino/tax-account/$year/summary"

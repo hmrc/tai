@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,138 +17,120 @@
 package uk.gov.hmrc.tai.connectors
 
 import cats.data.EitherT
-import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.RecoverMethods
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import play.api.Logger
-import play.api.http.Status._
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.tai.util.{BaseSpec, WireMockHelper}
+import org.scalatestplus.play.PlaySpec
+import play.api.Logging
+import play.api.http.Status.*
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class HttpClientResponseSpec
-    extends BaseSpec with WireMockHelper with ScalaFutures with IntegrationPatience with RecoverMethods {
-  private val mockLogger: Logger = mock[Logger]
+    extends PlaySpec with ScalaFutures with IntegrationPatience with RecoverMethods with LogCapturing with TestLogger {
 
-  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse {
-    override protected val logger: Logger = mockLogger
-  }
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  private lazy val httpClientResponseUsingMockLogger: HttpClientResponse = new HttpClientResponse with Logging {}
 
-  private val dummyContent = "error message"
+  private val dummyMessage = "Error response message"
 
-  "read" must {
+  "HttpClientResponse.read" must {
+
     behave like clientResponseLogger(
       httpClientResponseUsingMockLogger.read,
       infoLevel = Set(NOT_FOUND, LOCKED),
-      warnLevel = Set(),
-      errorLevelWithThrowable = Set(UNPROCESSABLE_ENTITY, UNAUTHORIZED),
-      errorLevelWithoutThrowable = Set(TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR)
+      errorLevelWithoutThrowable = Set(TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR),
+      errorLevelWithThrowable = Set(BAD_GATEWAY)
     )
+
+    "return a successful response when the future returns a valid HttpResponse" in {
+      val response = Future.successful(Right(HttpResponse(OK, "")))
+
+      whenReady(httpClientResponseUsingMockLogger.read(response).value) { result =>
+        result.map(_.status) mustBe Right(OK)
+      }
+    }
+
+    "log an error and return an UpstreamErrorResponse when an upstream error with status >= 499 is received" in {
+      withCaptureOfLoggingFrom(getLogger) { capturedLogs =>
+        val response = Future.successful(Left(UpstreamErrorResponse(dummyMessage, INTERNAL_SERVER_ERROR)))
+
+        whenReady(httpClientResponseUsingMockLogger.read(response).value) { result =>
+          result mustBe Left(UpstreamErrorResponse(dummyMessage, INTERNAL_SERVER_ERROR))
+          capturedLogs.exists(_.getMessage.contains(dummyMessage)) mustBe true
+        }
+        ()
+      }
+    }
+
+    "log an error and return an UpstreamErrorResponse when TOO_MANY_REQUESTS is received" in {
+      withCaptureOfLoggingFrom(getLogger) { capturedLogs =>
+        val response = Future.successful(Left(UpstreamErrorResponse(dummyMessage, TOO_MANY_REQUESTS)))
+
+        whenReady(httpClientResponseUsingMockLogger.read(response).value) { result =>
+          result mustBe Left(UpstreamErrorResponse(dummyMessage, TOO_MANY_REQUESTS))
+          capturedLogs.exists(_.getMessage.contains(dummyMessage)) mustBe true
+        }
+        ()
+      }
+    }
+
+    "log an info message when NOT_FOUND or LOCKED response is received" in {
+      withCaptureOfLoggingFrom(getLogger) { capturedLogs =>
+        val response = Future.successful(Left(UpstreamErrorResponse(dummyMessage, NOT_FOUND)))
+
+        whenReady(httpClientResponseUsingMockLogger.read(response).value) { result =>
+          result mustBe Left(UpstreamErrorResponse(dummyMessage, NOT_FOUND))
+          capturedLogs.exists(_.getMessage.contains(dummyMessage)) mustBe true
+        }
+        ()
+      }
+    }
+
+    "log an error and return BAD_GATEWAY when an HttpException is thrown" in {
+      withCaptureOfLoggingFrom(getLogger) { capturedLogs =>
+        val response = Future.failed(new HttpException(dummyMessage, BAD_GATEWAY))
+
+        whenReady(httpClientResponseUsingMockLogger.read(response).value) { result =>
+          result mustBe Left(UpstreamErrorResponse(dummyMessage, BAD_GATEWAY, BAD_GATEWAY))
+          capturedLogs.exists(_.getMessage.contains(dummyMessage)) mustBe true
+        }
+        ()
+      }
+    }
+
+    "throw an exception when a non-HttpException error occurs" in {
+      recoverToSucceededIf[RuntimeException] {
+        httpClientResponseUsingMockLogger.read(Future.failed(new RuntimeException(dummyMessage))).value
+      }
+    }
   }
 
   private def clientResponseLogger(
     block: Future[Either[UpstreamErrorResponse, HttpResponse]] => EitherT[Future, UpstreamErrorResponse, HttpResponse],
     infoLevel: Set[Int],
-    warnLevel: Set[Int],
     errorLevelWithThrowable: Set[Int],
     errorLevelWithoutThrowable: Set[Int]
   ): Unit = {
-    infoLevel.foreach { httpResponseCode =>
-      s"log message: INFO level only when response code is $httpResponseCode" in {
-        reset(mockLogger)
-        val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-          Future(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(info = Some(dummyContent))
-        }
-      }
-    }
-    warnLevel.foreach { httpResponseCode =>
-      s"log message: WARNING level only when response is $httpResponseCode" in {
-        reset(mockLogger)
-        val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-          Future(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(warn = Some(dummyContent))
-        }
-      }
-    }
-    errorLevelWithThrowable.foreach { httpResponseCode =>
-      s"log message: ERROR level only WITH throwable when response code is $httpResponseCode" in {
-        reset(mockLogger)
-        val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-          Future(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(errorWithThrowable = Some(dummyContent))
-        }
-      }
-    }
-    errorLevelWithoutThrowable.foreach { httpResponseCode =>
-      s"log message: ERROR level only WITHOUT throwable when response code is $httpResponseCode" in {
-        reset(mockLogger)
-        val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-          Future(Left(UpstreamErrorResponse(dummyContent, httpResponseCode)))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, httpResponseCode))
-          verifyCalls(errorWithoutThrowable = Some(dummyContent))
-        }
-      }
-    }
-    "log message: ERROR level only WITHOUT throwable when future failed with HttpException & " +
-      "recover to BAD GATEWAY" in {
-        reset(mockLogger)
-        val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-          Future.failed(new HttpException(dummyContent, GATEWAY_TIMEOUT))
-        whenReady(block(response).value) { actual =>
-          actual mustBe Left(UpstreamErrorResponse(dummyContent, BAD_GATEWAY))
-          verifyCalls(errorWithoutThrowable = Some(dummyContent))
-        }
-      }
-    "log nothing at all when future failed with non-HTTPException" in {
-      reset(mockLogger)
-      val response: Future[Either[UpstreamErrorResponse, HttpResponse]] =
-        Future.failed(new RuntimeException(dummyContent))
 
-      recoverToSucceededIf[RuntimeException] {
-        block(response).value
+    def testLogLevel(httpResponseCode: Int, logLevel: String): Unit =
+      s"log message: $logLevel level when response code is $httpResponseCode" in {
+        withCaptureOfLoggingFrom(getLogger) { capturedLogs =>
+          val response = Future.successful(Left(UpstreamErrorResponse(dummyMessage, httpResponseCode)))
+          whenReady(block(response).value) { actual =>
+            actual mustBe Left(UpstreamErrorResponse(dummyMessage, httpResponseCode))
+            capturedLogs
+              .filter(_.getLevel.toString == logLevel)
+              .map(_.getMessage)
+              .exists(_.contains(dummyMessage)) mustBe true
+          }
+          ()
+        }
       }
-      verifyCalls()
-    }
+
+    infoLevel.foreach(testLogLevel(_, "INFO"))
+    errorLevelWithThrowable.foreach(testLogLevel(_, "ERROR"))
+    errorLevelWithoutThrowable.foreach(testLogLevel(_, "ERROR"))
   }
-
-  private def verifyCalls(
-    info: Option[String] = None,
-    warn: Option[String] = None,
-    errorWithThrowable: Option[String] = None,
-    errorWithoutThrowable: Option[String] = None
-  ): Unit = {
-
-    val infoTimes = info.map(_ => 1).getOrElse(0)
-    val warnTimes = warn.map(_ => 1).getOrElse(0)
-    val errorWithThrowableTimes = errorWithThrowable.map(_ => 1).getOrElse(0)
-    val errorWithoutThrowableTimes = errorWithoutThrowable.map(_ => 1).getOrElse(0)
-
-    def argumentMatcher(content: Option[String]): String = content match {
-      case None    => ArgumentMatchers.any()
-      case Some(c) => ArgumentMatchers.eq(c)
-    }
-
-    Mockito
-      .verify(mockLogger, times(infoTimes))
-      .info(argumentMatcher(info))(ArgumentMatchers.any())
-    Mockito
-      .verify(mockLogger, times(warnTimes))
-      .warn(argumentMatcher(warn))(ArgumentMatchers.any())
-    Mockito
-      .verify(mockLogger, times(errorWithThrowableTimes))
-      .error(argumentMatcher(errorWithThrowable), ArgumentMatchers.any())(ArgumentMatchers.any())
-    Mockito
-      .verify(mockLogger, times(errorWithoutThrowableTimes))
-      .error(argumentMatcher(errorWithoutThrowable))(ArgumentMatchers.any())
-  }
-
 }

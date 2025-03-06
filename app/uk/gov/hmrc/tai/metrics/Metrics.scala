@@ -19,6 +19,7 @@ package uk.gov.hmrc.tai.metrics
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.Timer.Context
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.tai.model.enums
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.enums.APITypes.APITypes
 
@@ -33,7 +34,7 @@ class Metrics @Inject() (metrics: MetricRegistry) {
   val CacheMissCounter = "tai-cache-miss-counter"
   val TimerSuffix = "-timer"
 
-  val metricDescriptions = Map(
+  val metricDescriptions: Map[enums.APITypes.Value, String] = Map(
     APITypes.NpsPersonAPI                     -> "nps-person",
     APITypes.NpsTaxAccountAPI                 -> "nps-tax-account",
     APITypes.NpsEmploymentAPI                 -> "nps-employment",

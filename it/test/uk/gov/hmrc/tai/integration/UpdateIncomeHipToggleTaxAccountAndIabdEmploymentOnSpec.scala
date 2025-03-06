@@ -17,16 +17,17 @@
 package uk.gov.hmrc.tai.integration
 
 import cats.data.EitherT
-import com.github.tomakehurst.wiremock.client.WireMock.{status => _, _}
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.MockitoSugar.{reset, when}
+import cats.instances.future.*
+import com.github.tomakehurst.wiremock.client.WireMock.{status as _, *}
+import org.mockito.ArgumentMatchers.eq as eqTo
+import org.mockito.Mockito.{reset, when}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status => getStatus, _}
+import play.api.test.Helpers.{status as getStatus, *}
 import uk.gov.hmrc.http.HeaderNames
 import uk.gov.hmrc.mongoFeatureToggles.model.{FeatureFlag, FeatureFlagName}
 import uk.gov.hmrc.tai.integration.utils.IntegrationSpec
-import uk.gov.hmrc.tai.model.admin._
+import uk.gov.hmrc.tai.model.admin.*
 import uk.gov.hmrc.tai.model.domain.requests.UpdateTaxCodeIncomeRequest
 import uk.gov.hmrc.tai.model.nps2.IabdType.hipMapping
 
@@ -57,12 +58,12 @@ class UpdateIncomeHipToggleTaxAccountAndIabdEmploymentOnSpec extends Integration
     when(mockFeatureFlagService.get(eqTo[FeatureFlagName](HipToggleEmploymentIabds))).thenReturn(
       Future.successful(FeatureFlag(HipToggleIabds, isEnabled = true))
     )
+    ()
   }
 
   private val employmentId = 1
   private val apiUrl = s"/tai/$nino/tax-account/snapshots/$year/incomes/tax-code-incomes/$employmentId/estimated-pay"
 
-  private val amount = 123
   private val postRequest = Json.toJson(UpdateTaxCodeIncomeRequest(123456))
 
   private def request = FakeRequest(PUT, apiUrl)

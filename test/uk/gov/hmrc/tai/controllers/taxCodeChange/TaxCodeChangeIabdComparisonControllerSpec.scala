@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers.taxCodeChange
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status, _}
+import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.tai.factory.TaxFreeAmountComparisonFactory
 import uk.gov.hmrc.tai.service.TaxFreeAmountComparisonService
 import uk.gov.hmrc.tai.util.BaseSpec

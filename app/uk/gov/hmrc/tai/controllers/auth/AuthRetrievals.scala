@@ -18,8 +18,8 @@ package uk.gov.hmrc.tai.controllers.auth
 
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
+import play.api.mvc.*
 import play.api.mvc.Results.Unauthorized
-import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions}
@@ -41,7 +41,7 @@ class AuthRetrievalsImpl @Inject() (val authConnector: AuthConnector, cc: Contro
     authorised()
       .retrieve(Retrievals.nino and Retrievals.trustedHelper) {
         case _ ~ Some(trustedHelper) =>
-          block(AuthenticatedRequest(request, Nino(trustedHelper.principalNino)))
+          block(AuthenticatedRequest(request, Nino(trustedHelper.principalNino.get)))
         case Some(nino) ~ _ => block(AuthenticatedRequest(request, Nino(nino)))
         case _              => throw new RuntimeException("Can't find valid credentials for user")
       }

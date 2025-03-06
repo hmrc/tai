@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.model.rti
 
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 
 /*
@@ -31,3 +32,10 @@ case class RtiData(
   requestId: String,
   employments: List[RtiEmployment] = Nil
 )
+
+object RtiData {
+  implicit val format: OFormat[RtiData] = Json.format[RtiData]
+
+  def unapply(rti: RtiData): Option[(String, TaxYear, String, List[RtiEmployment])] =
+    Some((rti.nino, rti.taxYear, rti.requestId, rti.employments))
+}

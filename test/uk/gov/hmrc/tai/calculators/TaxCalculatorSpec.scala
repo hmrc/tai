@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.calculators
 
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tai.model.tai.TaxYear
+
+import java.time.LocalDate
 
 class TaxCalculatorSpec extends PlaySpec {
 

@@ -28,7 +28,6 @@ import uk.gov.hmrc.tai.model.domain.benefits.{Benefits, RemoveCompanyBenefit}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService
 
-import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -42,12 +41,11 @@ class BenefitsController @Inject() (
 
   def benefits(nino: Nino, taxYear: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
-      benefitService.benefits(nino, taxYear).map { benefitsFromService: Benefits =>
+      benefitService.benefits(nino, taxYear).map { (benefitsFromService: Benefits) =>
         Ok(Json.toJson(ApiResponse(benefitsFromService, Nil)))
       } recoverWith taxAccountErrorHandler()
   }
 
-  @nowarn("msg=parameter empId in method removeCompanyBenefits is never used")
   def removeCompanyBenefits(nino: Nino, empId: Int): Action[JsValue] =
     authentication.authWithUserDetails.async(parse.json) { implicit request =>
       withJsonBody[RemoveCompanyBenefit] { removeCompanyBenefit =>

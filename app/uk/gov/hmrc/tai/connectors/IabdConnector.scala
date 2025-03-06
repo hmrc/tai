@@ -19,9 +19,9 @@ package uk.gov.hmrc.tai.connectors
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.mongoFeatureToggles.services.FeatureFlagService
 import uk.gov.hmrc.tai.config.{DesConfig, HipConfig, NpsConfig}
 import uk.gov.hmrc.tai.connectors.cache.CachingConnector
@@ -60,7 +60,7 @@ class CachingIabdConnector @Inject() (
       .cache(s"iabds-$nino-${taxYear.year}") {
         underlying
           .iabds(nino: Nino, taxYear: TaxYear)
-          .map(SensitiveJsValue)
+          .map(SensitiveJsValue.apply)
       }(sensitiveFormatService.sensitiveFormatJsValue[JsValue], implicitly)
       .map(_.decryptedValue)
 
@@ -298,7 +298,7 @@ class DefaultIabdConnector @Inject() (
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
     featureFlagService.get(HipToggleIabds).flatMap { toggle =>
       if (toggle.isEnabled) {
-        httpHandler.putToApiHttpClientV1[UpdateHipIabdEmployeeExpense](
+        httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
           HipIabdUpdateEmployeeExpensesAPI,

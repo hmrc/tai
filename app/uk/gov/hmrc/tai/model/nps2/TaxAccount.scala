@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tai.model.nps2
 
-import java.time.LocalDate
 import uk.gov.hmrc.tai.model.enums.BasisOperation
 import uk.gov.hmrc.tai.model.enums.BasisOperation.BasisOperation
+
+import java.time.LocalDate
 
 /*
  * The root object for the NPS tax account, typically this is read in
@@ -64,4 +65,11 @@ case class TaxAccount(
         taxCode
       }
     }
+}
+
+object TaxAccount {
+  def unapply(t: TaxAccount): Option[
+    (Option[Long], Option[LocalDate], BigDecimal, Map[TaxObject.Type.Value, TaxDetail], Seq[Income], List[Iabd])
+  ] =
+    Some((t.id, t.date, t.tax, t.taxObjects, t.incomes, t.freeIabds))
 }

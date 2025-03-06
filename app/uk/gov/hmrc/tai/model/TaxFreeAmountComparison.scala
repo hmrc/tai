@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tai.model
 
+import play.api.libs.functional.syntax.*
 import play.api.libs.json.{JsPath, Writes}
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent
-import play.api.libs.functional.syntax._
 import uk.gov.hmrc.tai.model.domain.calculation.CodingComponent.codingComponentWrites
 
 final case class TaxFreeAmountComparison(previous: Seq[CodingComponent], next: Seq[CodingComponent])
@@ -30,4 +30,6 @@ object TaxFreeAmountComparison {
       (JsPath \ "current").write(Writes.seq[CodingComponent](codingComponentWrites))
   )(unlift(TaxFreeAmountComparison.unapply))
 
+  def unapply(t: TaxFreeAmountComparison): Option[(Seq[CodingComponent], Seq[CodingComponent])] =
+    Some((t.previous, t.next))
 }

@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.tai.controllers.benefits
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.when
 import play.api.libs.json.Json
-import play.api.test.Helpers.{status, _}
+import play.api.test.Helpers.{status, *}
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.tai.model.api.ApiResponse
-import uk.gov.hmrc.tai.model.domain.benefits._
+import uk.gov.hmrc.tai.model.domain.benefits.*
 import uk.gov.hmrc.tai.model.domain.{Accommodation, Assets}
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.benefits.BenefitsService

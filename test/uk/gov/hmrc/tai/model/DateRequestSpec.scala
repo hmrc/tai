@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.model.rti
+package uk.gov.hmrc.tai.model
+
+import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.*
 
 import java.time.LocalDate
-import play.api.libs.json.{Json, OFormat}
 
-case class RtiYTD(
-  payYTD: Option[BigDecimal] = None,
-  payeRef: String,
-  startDate: LocalDate,
-  endDate: LocalDate,
-  estimatedPay: Option[BigDecimal] = None
-)
+class DateRequestSpec extends PlaySpec {
 
-object RtiYTD {
-  implicit val formats: OFormat[RtiYTD] = Json.format[RtiYTD]
+  "DateRequest JSON serialization" must {
+    "serialize and deserialize correctly" in {
+      val request = DateRequest(date = LocalDate.of(2024, 3, 1))
+
+      val json = Json.toJson(request)
+      json.as[DateRequest] mustBe request
+    }
+  }
 }

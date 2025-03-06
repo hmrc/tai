@@ -23,6 +23,10 @@ import play.twirl.api.Html
 
 class QueryYearDetailsSpec extends PlaySpec {
 
+  private val displayableTaxYearRange = "10 October 2017 to 11 October 2017"
+  val queryYearDetailsView: Html = uk.gov.hmrc.tai.templates.html.QueryYearDetails(displayableTaxYearRange)
+  val doc: Document = Jsoup.parse(queryYearDetailsView.toString())
+
   "Query Year Details" must {
     "display headings" in {
       doc.select("h2").text() mustBe "Internal Information"
@@ -38,7 +42,4 @@ class QueryYearDetailsSpec extends PlaySpec {
     }
   }
 
-  private val displayableTaxYearRange = "10 October 2017 to 11 October 2017"
-  val queryYearDetailsView: Html = uk.gov.hmrc.tai.templates.html.QueryYearDetails(displayableTaxYearRange)
-  val doc: Document = Jsoup.parse(queryYearDetailsView.toString())
 }

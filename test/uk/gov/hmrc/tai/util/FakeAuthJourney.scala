@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.util
 
-import play.api.mvc._
+import play.api.mvc.*
 import play.api.test.Helpers
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.tai.controllers.auth.{AuthJourney, AuthenticatedRequest}

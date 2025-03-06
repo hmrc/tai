@@ -18,8 +18,8 @@ package uk.gov.hmrc.tai.auth
 
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.PlayAuthConnector
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpClient
 
 import javax.inject.{Inject, Singleton}
 
@@ -28,10 +28,10 @@ import javax.inject.{Inject, Singleton}
 class MicroserviceAuthConnector @Inject() (
   val environment: Environment,
   val conf: Configuration,
-  val WSHttp: HttpClient,
+  val WSHttp: HttpClientV2,
   servicesConfig: ServicesConfig
 ) extends PlayAuthConnector {
-  lazy val serviceUrl: String = servicesConfig.baseUrl("auth")
-  lazy val http: HttpClient = WSHttp
+  val serviceUrl: String = servicesConfig.baseUrl("auth")
+  val httpClientV2: HttpClientV2 = WSHttp
 }
 // $COVERAGE-ON$

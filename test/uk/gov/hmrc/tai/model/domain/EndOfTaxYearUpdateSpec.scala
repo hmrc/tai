@@ -57,13 +57,13 @@ class EndOfTaxYearUpdateSpec extends PlaySpec {
       result mustBe sampleEndOfTaxYearUpdate
     }
 
-    "read rti json with multip[le adjustments convert adjustment objects" in {
+    "read rti json with multiple adjustments convert adjustment objects" in {
       val result: EndOfTaxYearUpdate =
         getJson("rtiEyuFragmentMultipleAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
       result mustBe sampleEndOfTaxYearUpdateMultipleAdjusts
     }
 
-    "read rti json with multip[le adjustments and ignore those of zero value" in {
+    "read rti json with multiple adjustments and ignore those of zero value" in {
       val result: EndOfTaxYearUpdate =
         getJson("rtiEyuFragmentZeroAdjust").as[EndOfTaxYearUpdate](endOfTaxYearUpdateHodReads)
       result mustBe sampleEndOfTaxYearUpdateTwoAdjusts

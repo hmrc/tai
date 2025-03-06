@@ -17,12 +17,13 @@
 package uk.gov.hmrc.tai.nps2
 
 import data.NpsData
-import java.time.LocalDate
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.tai.model.nps2.TaxObject.Type._
-import uk.gov.hmrc.tai.model.nps2.{NpsEmployment, NpsFormatter, TaxAccount, TaxBand}
 import uk.gov.hmrc.tai.model.enums.BasisOperation
+import uk.gov.hmrc.tai.model.nps2.TaxObject.Type.*
+import uk.gov.hmrc.tai.model.nps2.{NpsEmployment, NpsFormatter, TaxAccount, TaxBand}
+
+import java.time.LocalDate
 
 class TaxAccountSpec extends PlaySpec with NpsFormatter {
 

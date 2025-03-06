@@ -23,3 +23,8 @@ case class Component( // The aggregated amount of this component
   sourceAmount: Option[BigDecimal] = None,
   iabds: Seq[Iabd] = Seq.empty
 )
+
+object Component {
+  def unapply(c: Component): Option[(BigDecimal, Option[BigDecimal], Seq[Iabd])] =
+    Some((c.amount, c.sourceAmount, c.iabds))
+}

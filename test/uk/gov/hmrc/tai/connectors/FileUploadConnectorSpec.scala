@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import org.apache.pekko.stream.Materializer
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 import com.github.tomakehurst.wiremock.stubbing.StubImport.stubImport
-import play.api.http.Status._
+import org.apache.pekko.stream.Materializer
+import play.api.http.Status.*
 import play.api.libs.json.{JsArray, Json}
 import play.api.libs.ws.ahc.AhcWSClient
 import uk.gov.hmrc.http.HeaderNames
@@ -35,7 +35,7 @@ class FileUploadConnectorSpec extends ConnectorBaseSpec {
   val envelopeId: String = "4142477f-9242-4a98-9c8b-73295cfb170c"
   val fileId = "fileId"
   val fileName = "fileName.pdf"
-  val contentType = MimeContentType.ApplicationPdf
+  val contentType: MimeContentType = MimeContentType.ApplicationPdf
 
   lazy val envelopesHeader = s"${server.baseUrl()}/file-upload/envelopes/$envelopeId"
 

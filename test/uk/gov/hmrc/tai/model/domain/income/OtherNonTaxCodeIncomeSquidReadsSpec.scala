@@ -19,7 +19,7 @@ package uk.gov.hmrc.tai.model.domain.income
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsArray, JsNull, JsObject, Json}
 import uk.gov.hmrc.domain.{Generator, Nino}
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 
 import scala.util.Random
 

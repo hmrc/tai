@@ -47,7 +47,7 @@ case class EmploymentPensionViewModel(
 
 object EmploymentPensionViewModel {
 
-  val dateFormat = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(IFormConstants.DateFormat)
 
   def apply(taxYear: TaxYear, person: Person, employment: AddEmployment): EmploymentPensionViewModel =
     EmploymentPensionViewModel(
