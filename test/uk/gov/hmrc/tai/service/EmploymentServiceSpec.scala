@@ -651,4 +651,105 @@ class EmploymentServiceSpec extends BaseSpec {
         .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())
     }
   }
+
+  "employmentWithoutRTIAsEitherT" must {
+    "return employment without RTI for the given nino, id, and tax year" in {
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
+        .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
+
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+        .thenReturn(Employments(Seq(employment), None))
+
+      val sut = createSut(
+        mocEmploymentDetailsConnector,
+        mockRtiConnector,
+        mockEmploymentBuilder,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor]
+      )
+
+      val result =
+        sut.employmentWithoutRTIAsEitherT(nino, 2, TaxYear("2017"))(HeaderCarrier(), FakeRequest()).value.futureValue
+
+      result mustBe Right(employment)
+      verify(mockEmploymentBuilder, times(1)).combineAccountsWithEmployments(any(), any(), any(), any())(any())
+    }
+
+    "return NOT_FOUND when employment does not exist" in {
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
+        .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
+
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+        .thenReturn(Employments(Seq.empty, None))
+
+      val sut = createSut(
+        mocEmploymentDetailsConnector,
+        mockRtiConnector,
+        mockEmploymentBuilder,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor]
+      )
+
+      val result =
+        sut.employmentWithoutRTIAsEitherT(nino, 2, TaxYear("2017"))(HeaderCarrier(), FakeRequest()).value.futureValue
+
+      result mustBe a[Left[UpstreamErrorResponse, _]]
+      result.swap.getOrElse(UpstreamErrorResponse("dummy", IM_A_TEAPOT)).statusCode mustBe NOT_FOUND
+    }
+  }
+
+  "employmentsWithoutRtiAsEitherT" must {
+    "return employments without RTI for the given nino and tax year" in {
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
+        .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
+
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+        .thenReturn(Employments(Seq(employment), None))
+
+      val sut = createSut(
+        mocEmploymentDetailsConnector,
+        mockRtiConnector,
+        mockEmploymentBuilder,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor]
+      )
+
+      val result = sut.employmentsWithoutRtiAsEitherT(nino, TaxYear("2017"))(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(Employments(Seq(employment), None))
+      verify(mockEmploymentBuilder, times(1)).combineAccountsWithEmployments(any(), any(), any(), any())(any())
+    }
+
+    "return an empty list when no employments exist" in {
+      when(mocEmploymentDetailsConnector.getEmploymentDetailsAsEitherT(any(), any())(any))
+        .thenReturn(EitherT.rightT(HodResponse(Json.parse(jsonEmployment), None)))
+
+      when(mockEmploymentBuilder.combineAccountsWithEmployments(any(), any(), any(), any())(any()))
+        .thenReturn(Employments(Seq.empty, None))
+
+      val sut = createSut(
+        mocEmploymentDetailsConnector,
+        mockRtiConnector,
+        mockEmploymentBuilder,
+        mock[PersonRepository],
+        mock[IFormSubmissionService],
+        mock[FileUploadService],
+        mock[PdfService],
+        mock[Auditor]
+      )
+
+      val result = sut.employmentsWithoutRtiAsEitherT(nino, TaxYear("2017"))(HeaderCarrier()).value.futureValue
+
+      result mustBe Right(Employments(Seq.empty, None))
+    }
+  }
 }
