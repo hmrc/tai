@@ -319,4 +319,92 @@ class EmploymentsControllerSpec extends BaseSpec {
       }
     }
   }
+
+  "employmentOnly" must {
+    "return Ok when employment is found for the given nino, id, and tax year" in {
+      when(mockEmploymentService.employmentWithoutRTIAsEitherT(any(), any(), any())(any(), any()))
+        .thenReturn(EitherT.rightT(emp))
+
+      val result = sut.employmentOnly(nino, 2, TaxYear("2017"))(FakeRequest())
+
+      val jsonResult = Json.obj(
+        "data" -> Json.obj(
+          "name"                         -> "company name",
+          "employmentStatus"             -> Live.toString,
+          "payrollNumber"                -> "888",
+          "startDate"                    -> "2017-05-26",
+          "annualAccounts"               -> Json.arr(),
+          "taxDistrictNumber"            -> "",
+          "payeNumber"                   -> "",
+          "sequenceNumber"               -> 2,
+          "cessationPay"                 -> 100,
+          "hasPayrolledBenefit"          -> false,
+          "receivingOccupationalPension" -> true
+        ),
+        "links" -> Json.arr()
+      )
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe jsonResult
+
+      verify(mockEmploymentService, times(1))
+        .employmentWithoutRTIAsEitherT(any(), meq(2), meq(TaxYear("2017")))(any(), any())
+    }
+
+    "return Not Found when employment does not exist" in {
+      when(mockEmploymentService.employmentWithoutRTIAsEitherT(any(), any(), any())(any(), any()))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
+
+      val result = sut.employmentOnly(nino, 3, TaxYear("2017"))(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+      verify(mockEmploymentService, times(1))
+        .employmentWithoutRTIAsEitherT(any(), meq(3), meq(TaxYear("2017")))(any(), any())
+    }
+  }
+
+  "employmentsOnly" must {
+    "return Ok when employments exist for the given nino and tax year" in {
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(any(), any())(any()))
+        .thenReturn(EitherT.rightT(Employments(Seq(emp), None)))
+
+      val result = sut.employmentsOnly(nino, TaxYear("2017"))(FakeRequest())
+
+      val jsonResult = Json.obj(
+        "data" -> Json.obj(
+          "employments" -> Json.arr(
+            Json.obj(
+              "name"                         -> "company name",
+              "employmentStatus"             -> Live.toString,
+              "payrollNumber"                -> "888",
+              "startDate"                    -> "2017-05-26",
+              "annualAccounts"               -> Json.arr(),
+              "taxDistrictNumber"            -> "",
+              "payeNumber"                   -> "",
+              "sequenceNumber"               -> 2,
+              "cessationPay"                 -> 100,
+              "hasPayrolledBenefit"          -> false,
+              "receivingOccupationalPension" -> true
+            )
+          )
+        ),
+        "links" -> Json.arr()
+      )
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe jsonResult
+
+      verify(mockEmploymentService, times(1)).employmentsWithoutRtiAsEitherT(any(), meq(TaxYear("2017")))(any())
+    }
+
+    "return Not Found when employments do not exist" in {
+      when(mockEmploymentService.employmentsWithoutRtiAsEitherT(any(), any())(any()))
+        .thenReturn(EitherT.leftT(UpstreamErrorResponse("not found", NOT_FOUND)))
+
+      val result = sut.employmentsOnly(nino, TaxYear("2017"))(FakeRequest())
+
+      status(result) mustBe NOT_FOUND
+      verify(mockEmploymentService, times(1)).employmentsWithoutRtiAsEitherT(any(), meq(TaxYear("2017")))(any())
+    }
+  }
 }
