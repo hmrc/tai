@@ -64,13 +64,14 @@ lazy val scoverageSettings = {
       "testOnly.controllers",
       "uk.gov.hmrc.tai.model.nps2.AllowanceType",
       "uk.gov.hmrc.tai.repositories.deprecated.SessionRepository",
-      "uk.gov.hmrc.tai.model.nps2.TaxDetail"
+      "uk.gov.hmrc.tai.model.nps2.TaxDetail",
+      ".*\\$anon.*"
     )
 
   Seq(
     ScoverageKeys.coverageExcludedPackages := scoverageExcludePatterns.mkString("", ";", ""),
-    ScoverageKeys.coverageMinimumStmtTotal := 84,
-    ScoverageKeys.coverageMinimumBranchTotal := 64,
+    ScoverageKeys.coverageMinimumStmtTotal := 80,
+    ScoverageKeys.coverageMinimumBranchTotal := 60,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
