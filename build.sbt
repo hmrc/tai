@@ -64,8 +64,7 @@ lazy val scoverageSettings = {
       "testOnly.controllers",
       "uk.gov.hmrc.tai.model.nps2.AllowanceType",
       "uk.gov.hmrc.tai.repositories.deprecated.SessionRepository",
-      "uk.gov.hmrc.tai.model.nps2.TaxDetail",
-      ".*\\$anon.*"
+      "uk.gov.hmrc.tai.model.nps2.TaxDetail"
     )
 
   Seq(
