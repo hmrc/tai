@@ -21,9 +21,9 @@ import play.api.libs.json.Reads
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit
-import uk.gov.hmrc.tai.model.domain.benefits.CompanyCarBenefit.companyCarBenefitReadsFromHod
 import uk.gov.hmrc.tai.model.enums.APITypes
 import uk.gov.hmrc.tai.model.tai.TaxYear
+import uk.gov.hmrc.tai.transformation.CompanyCarBenefitTransformer.*
 
 import scala.concurrent.{ExecutionContext, Future}
 

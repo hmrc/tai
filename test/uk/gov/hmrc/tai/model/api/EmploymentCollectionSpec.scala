@@ -18,9 +18,9 @@ package uk.gov.hmrc.tai.model.api
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
 import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
+import uk.gov.hmrc.tai.transformation.EmploymentCollectionTransformer.employmentCollectionHodReadsHIP
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import java.io.File

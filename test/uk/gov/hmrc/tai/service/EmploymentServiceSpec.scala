@@ -33,7 +33,7 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodReads
+import uk.gov.hmrc.tai.transformation.EmploymentCollectionTransformer.employmentHodReads
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear

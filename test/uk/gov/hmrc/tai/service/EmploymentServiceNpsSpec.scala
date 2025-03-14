@@ -19,9 +19,8 @@ package uk.gov.hmrc.tai.service
 import cats.data.EitherT
 import cats.instances.future.*
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-import org.mockito.ArgumentMatchers.{contains, eq as meq}
-import org.mockito.Mockito.{doNothing, reset, times, verify, when}
+import org.mockito.ArgumentMatchers.{any, contains, eq as eqTo}
+import org.mockito.Mockito.*
 import play.api.http.Status.{IM_A_TEAPOT, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -33,11 +32,11 @@ import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{DefaultEmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.HodResponse
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
-import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentHodNpsReads
 import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.domain.income.Live
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
+import uk.gov.hmrc.tai.transformation.EmploymentCollectionTransformer.*
 import uk.gov.hmrc.tai.util.{BaseSpec, IFormConstants}
 
 import java.nio.file.{Files, Paths}
@@ -389,8 +388,8 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       Await.result(sut.endEmployment(nino, 2, endEmployment)(implicitly, FakeRequest()).value, 5.seconds)
 
       verify(mockAuditable, times(1)).sendDataEvent(
-        meq("EndEmploymentRequest"),
-        meq(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20"))
+        eqTo("EndEmploymentRequest"),
+        eqTo(Map("nino" -> nino.nino, "envelope Id" -> "111", "end-date" -> "2017-06-20"))
       )(any())
     }
   }
@@ -477,8 +476,8 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       sut.addEmployment(nino, addEmployment).futureValue
 
       verify(mockAuditable, times(1)).sendDataEvent(
-        meq(IFormConstants.AddEmploymentAuditTxnName),
-        meq(
+        eqTo(IFormConstants.AddEmploymentAuditTxnName),
+        eqTo(
           Map(
             "nino"         -> nino.nino,
             "envelope Id"  -> "111",
@@ -499,7 +498,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
           mockIFormSubmissionService
-            .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any())
+            .uploadIForm(eqTo(nino), eqTo(IFormConstants.IncorrectEmploymentSubmissionKey), eqTo("TES1"), any())(any())
         )
           .thenReturn(Future.successful("1"))
 
@@ -537,7 +536,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.IncorrectEmploymentSubmissionKey), meq("TES1"), any())(any())
+          .uploadIForm(eqTo(nino), eqTo(IFormConstants.IncorrectEmploymentSubmissionKey), eqTo("TES1"), any())(any())
       )
         .thenReturn(Future.successful("1"))
 
@@ -559,7 +558,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       sut.incorrectEmployment(nino, 1, employment)(implicitly, FakeRequest()).futureValue
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(meq(IFormConstants.IncorrectEmploymentAuditTxnName), meq(map))(any())
+        .sendDataEvent(eqTo(IFormConstants.IncorrectEmploymentAuditTxnName), eqTo(map))(any())
     }
   }
 
@@ -571,7 +570,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
         val mockIFormSubmissionService = mock[IFormSubmissionService]
         when(
           mockIFormSubmissionService
-            .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(
+            .uploadIForm(eqTo(nino), eqTo(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), eqTo("TES1"), any())(
               any()
             )
         )
@@ -612,7 +611,9 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       val mockIFormSubmissionService = mock[IFormSubmissionService]
       when(
         mockIFormSubmissionService
-          .uploadIForm(meq(nino), meq(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), meq("TES1"), any())(any())
+          .uploadIForm(eqTo(nino), eqTo(IFormConstants.UpdatePreviousYearIncomeSubmissionKey), eqTo("TES1"), any())(
+            any()
+          )
       )
         .thenReturn(Future.successful("1"))
 
@@ -634,7 +635,7 @@ class EmploymentServiceNpsSpec extends BaseSpec {
       sut.updatePreviousYearIncome(nino, TaxYear(2016), employment).futureValue
 
       verify(mockAuditable, times(1))
-        .sendDataEvent(meq(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), meq(map))(any())
+        .sendDataEvent(eqTo(IFormConstants.UpdatePreviousYearIncomeAuditTxnName), eqTo(map))(any())
     }
   }
 }

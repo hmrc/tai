@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.benefits
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.domain.BenefitComponentType
-import uk.gov.hmrc.tai.model.domain.benefits.CompanyCar.companyCarReadsFromHod
 
 import java.time.LocalDate
 
@@ -33,36 +32,6 @@ case class CompanyCar(
 
 object CompanyCar {
   implicit val formats: OFormat[CompanyCar] = Json.format[CompanyCar]
-
-  def companyCarReadsFromHod: Reads[CompanyCar] = (json: JsValue) => {
-    val makeModel = (json \ "makeModel").as[String]
-    val carSeqNo = (json \ "carSequenceNumber").as[Int]
-    val dateMadeAvailable = (json \ "dateMadeAvailable").asOpt[LocalDate]
-    val dateWithdrawn = (json \ "dateWithdrawn").asOpt[LocalDate]
-    val fuelBenefit = json \ "fuelBenefit"
-
-    val hasActiveFuelBenefit = fuelBenefit match {
-      case JsDefined(fuel) =>
-        val dateWithdrawn = (fuel \ "dateWithdrawn").asOpt[LocalDate]
-        dateWithdrawn.isEmpty
-      case _ => false
-    }
-
-    val dateFuelBenefitMadeAvailable =
-      if (hasActiveFuelBenefit) (fuelBenefit \ "dateMadeAvailable").asOpt[LocalDate] else None
-
-    JsSuccess(
-      CompanyCar(
-        carSeqNo,
-        makeModel,
-        hasActiveFuelBenefit,
-        dateMadeAvailable,
-        dateFuelBenefitMadeAvailable,
-        dateWithdrawn
-      )
-    )
-  }
-
 }
 
 case class CompanyCarBenefit(
@@ -74,13 +43,6 @@ case class CompanyCarBenefit(
 
 object CompanyCarBenefit {
   implicit val formats: OFormat[CompanyCarBenefit] = Json.format[CompanyCarBenefit]
-
-  val companyCarBenefitReadsFromHod: Reads[CompanyCarBenefit] = (json: JsValue) => {
-    val empSeqNo = (json \ "employmentSequenceNumber").as[Int]
-    val grossAmount = (json \ "grossAmount").as[BigDecimal]
-    val carDetails = (json \ "carDetails").as[Seq[CompanyCar]](Reads.seq(companyCarReadsFromHod))
-    JsSuccess(CompanyCarBenefit(empSeqNo, grossAmount, carDetails))
-  }
 }
 
 case class GenericBenefit(benefitType: BenefitComponentType, employmentId: Option[Int], amount: BigDecimal)
