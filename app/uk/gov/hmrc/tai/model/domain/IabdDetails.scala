@@ -63,7 +63,7 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
       mapIabdSource.get(n) match {
         case Some(iabdSource) => JsSuccess(Some(iabdSource))
         case _ =>
-          logger.warn(s"Unknown iabd source: $n")
+          logger.error(s"Unknown iabd source: $n")
           JsSuccess(None)
 
       }
