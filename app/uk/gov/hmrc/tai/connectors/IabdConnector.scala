@@ -167,15 +167,7 @@ class DefaultIabdConnector @Inject() (
         }
       }
     }
-  /*
-  private def hipAuthHeaders(clientIdAndSecret: Option[(String, String)]): Seq[(String, String)] =
-    clientIdAndSecret.fold[Seq[(String, String)]](Seq.empty) { case (clientId, clientSecret) =>
-      val token = Base64.getEncoder.encodeToString(s"$clientId:$clientSecret".getBytes(StandardCharsets.UTF_8))
-      Seq(
-        HeaderNames.authorisation -> s"Basic $token"
-      )
-    }
-   */
+
   private def updateTaxCodeAmountHip(
     nino: Nino,
     taxYear: TaxYear,
