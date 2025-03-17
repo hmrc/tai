@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tai.model.domain
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Reads.localDateReads
-import play.api.libs.json._
 import play.api.Logging
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.*
+import play.api.libs.json.Reads.localDateReads
 import uk.gov.hmrc.tai.util.DateTimeHelper.formatLocalDateDDMMYYYY
 import uk.gov.hmrc.tai.util.IabdTypeConstants
 import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
@@ -55,16 +55,20 @@ object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
   }
 }
 
-object IabdDetailsToggleOn extends IabdTypeConstants {
+object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
-  private def sourceReads: Reads[Int] = {
+  private def sourceReads: Reads[Option[Int]] = {
     case JsString(n) =>
       mapIabdSource.get(n) match {
-        case Some(iabdSource) => JsSuccess(iabdSource)
-        case _                => JsError(s"Unknown iabd source: $n")
+        case Some(iabdSource) => JsSuccess(Some(iabdSource))
+        case _ =>
+          logger.warn(s"Unknown iabd source: $n")
+          JsSuccess(None)
+
       }
-    case e => JsError(s"Invalid iabd source: $e")
+    case e =>
+      JsError(s"Invalid iabd source: $e")
   }
 
   private lazy val mapIabdSource: Map[String, Int] = Map(
@@ -126,7 +130,7 @@ object IabdDetailsToggleOn extends IabdTypeConstants {
   private val iabdReads: Reads[IabdDetails] =
     ((JsPath \ "nationalInsuranceNumber").read[String] and
       (JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").readNullable[Int](sourceReads) and
+      (JsPath \ "source").read[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads))(
