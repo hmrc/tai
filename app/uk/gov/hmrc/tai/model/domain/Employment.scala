@@ -24,21 +24,21 @@ import java.time.LocalDate
 import scala.util.matching.Regex
 
 case class Employment(
-  name: String,
-  employmentStatus: TaxCodeIncomeStatus,
-  payrollNumber: Option[String],
-  startDate: LocalDate,
-  endDate: Option[LocalDate],
-  annualAccounts: Seq[AnnualAccount],
-  taxDistrictNumber: String,
-  payeNumber: String,
-  sequenceNumber: Int,
-  cessationPay: Option[BigDecimal],
-  hasPayrolledBenefit: Boolean,
-  receivingOccupationalPension: Boolean,
-  componentType: Option[TaxComponentType] = None,
-  startingTaxCode: Option[String] = None
-) {
+                       name: String,
+                       employmentStatus: TaxCodeIncomeStatus,
+                       payrollNumber: Option[String],
+                       startDate: LocalDate,
+                       endDate: Option[LocalDate],
+                       annualAccounts: Seq[AnnualAccount],
+                       taxDistrictNumber: String,
+                       payeNumber: String,
+                       sequenceNumber: Int,
+                       cessationPay: Option[BigDecimal],
+                       hasPayrolledBenefit: Boolean,
+                       receivingOccupationalPension: Boolean,
+                       componentType: Option[TaxComponentType] = None,
+                       startingTaxCode: Option[String] = None
+                     ) {
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
     annualAccounts.exists(annualAccount =>
