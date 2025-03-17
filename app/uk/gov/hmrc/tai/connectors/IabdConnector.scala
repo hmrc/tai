@@ -167,7 +167,15 @@ class DefaultIabdConnector @Inject() (
         }
       }
     }
-
+  /*
+  private def hipAuthHeaders(clientIdAndSecret: Option[(String, String)]): Seq[(String, String)] =
+    clientIdAndSecret.fold[Seq[(String, String)]](Seq.empty) { case (clientId, clientSecret) =>
+      val token = Base64.getEncoder.encodeToString(s"$clientId:$clientSecret".getBytes(StandardCharsets.UTF_8))
+      Seq(
+        HeaderNames.authorisation -> s"Basic $token"
+      )
+    }
+   */
   private def updateTaxCodeAmountHip(
     nino: Nino,
     taxYear: TaxYear,
@@ -296,8 +304,8 @@ class DefaultIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    featureFlagService.get(HipToggleIabds).flatMap { toggle =>
-      if (toggle.isEnabled) {
+    featureFlagService.get(HipToggleIabds).flatMap { _ =>
+      if (false) {
         httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),

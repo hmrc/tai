@@ -63,7 +63,8 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
       mapIabdSource.get(n) match {
         case Some(iabdSource) => JsSuccess(Some(iabdSource))
         case _ =>
-          logger.error(s"Unknown iabd source: $n")
+          val errorMessage = s"Unknown iabd source: $n"
+          logger.error(errorMessage, new RuntimeException(errorMessage))
           JsSuccess(None)
 
       }
@@ -130,13 +131,13 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
   private val iabdReads: Reads[IabdDetails] =
     ((JsPath \ "nationalInsuranceNumber").read[String] and
       (JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").read[Option[Int]](sourceReads) and
+      (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads))(
       (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate) =>
         IabdDetails
-          .apply(Some(nino), employmentSequenceNumber, source, Some(iabdType._2), receiptDate, captureDate)
+          .apply(Some(nino), employmentSequenceNumber, source.flatten, Some(iabdType._2), receiptDate, captureDate)
     )
 
   val reads: Reads[Seq[IabdDetails]] =
