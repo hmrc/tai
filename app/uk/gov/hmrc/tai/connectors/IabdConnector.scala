@@ -296,8 +296,8 @@ class DefaultIabdConnector @Inject() (
     expensesData: UpdateIabdEmployeeExpense,
     apiType: APITypes
   )(implicit hc: HeaderCarrier, request: AuthenticatedRequest[_]): Future[HttpResponse] =
-    featureFlagService.get(HipToggleIabds).flatMap { toggle =>
-      if (toggle.isEnabled) {
+    featureFlagService.get(HipToggleIabds).flatMap { _ =>
+      if (false) {
         httpHandler.putToApiHttpClientV2[UpdateHipIabdEmployeeExpense](
           s"${hipConfig.baseURL}/iabd/taxpayer/$nino/tax-year/$year/type/${IabdType.hipMapping(iabdType)}",
           UpdateHipIabdEmployeeExpense(version, expensesData.grossAmount),
