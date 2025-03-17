@@ -21,7 +21,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxAccountConnector
 import uk.gov.hmrc.tai.model.domain.IabdDetails
-import uk.gov.hmrc.tai.model.domain.income.*
+import uk.gov.hmrc.tai.model.domain.income._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.IabdService
 import uk.gov.hmrc.tai.util.JsonHelper
@@ -60,25 +60,6 @@ class TaxCodeIncomeHelper @Inject() (
       updateActionDate = iabdDetail.flatMap(_.captureDate)
     )
   }
-
-  def fetchIabdDetails(nino: Nino, year: TaxYear)(implicit hc: HeaderCarrier): Future[Seq[IabdIncome]] = {
-    lazy val iabdDetailsFuture = iabdService.retrieveIabdDetails(nino, year)
-
-    for {
-      iabdDetails <- iabdDetailsFuture
-    } yield transformIabdDetailsToIabdIncome(iabdDetails)
-  }
-
-  private def transformIabdDetailsToIabdIncome(iabdDetails: Seq[IabdDetails]): Seq[IabdIncome] =
-    iabdDetails.map { detail =>
-      IabdIncome(
-        employmentId = detail.employmentSequenceNumber,
-        iabdUpdateSource = detail.source.flatMap(IabdUpdateSource.fromCode),
-        updateNotificationDate = detail.receiptDate,
-        updateActionDate = detail.captureDate,
-        grossAmount = detail.grossAmount.orNull
-      )
-    }
 
   def incomeAmountForEmploymentId(nino: Nino, year: TaxYear, employmentId: Int)(implicit
     hc: HeaderCarrier

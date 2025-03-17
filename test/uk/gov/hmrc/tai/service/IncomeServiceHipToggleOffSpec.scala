@@ -1388,28 +1388,4 @@ class IncomeServiceHipToggleOffSpec extends BaseSpec {
       result.futureValue mustBe IncomeUpdateFailed("Could not parse etag")
     }
   }
-
-  "employmentsForYearByStatus" must {
-    "return filtered employments JSON" in {
-      val mockTaxCodeIncomeHelper = mock[TaxCodeIncomeHelper]
-      val mockEmploymentService = mock[EmploymentService]
-
-      when(mockTaxCodeIncomeHelper.fetchIabdDetails(any(), meq(TaxYear().next))(any()))
-        .thenReturn(Future.successful(Seq.empty))
-
-      when(mockEmploymentService.employmentsAsEitherT(any(), meq(TaxYear().next))(any(), any()))
-        .thenReturn(EitherT.rightT(Employments(Seq.empty, None)))
-
-      val sut = createSUT(taxCodeIncomeHelper = mockTaxCodeIncomeHelper, employmentService = mockEmploymentService)
-      val result = sut
-        .employmentsForYearByStatus(nino, TaxYear().next, EmploymentIncome, Live)(
-          HeaderCarrier(),
-          FakeRequest()
-        )
-        .value
-        .futureValue
-
-      result mustBe Right(Seq.empty)
-    }
-  }
 }

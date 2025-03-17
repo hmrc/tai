@@ -24,8 +24,7 @@
       "employmentRecordSourceType": "ECC",
       "startDateSource": "ITYS",
       "startDate": "2016-04-06",
-      "cessationPayForEmployment": 100,
-      "startingTaxCode": "1250L"
+      "cessationPayForEmployment": 100
     }
   ]
 }

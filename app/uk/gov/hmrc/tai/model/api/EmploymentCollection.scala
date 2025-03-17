@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tai.model.api
 
-import play.api.libs.json.*
 import play.api.libs.json.Reads.localDateReads
+import play.api.libs.json._
+import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.Employment.numberChecked
 import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeStatus
-import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome, JobSeekerAllowanceIncome, OtherIncome, PensionIncome, TaxComponentType}
-import uk.gov.hmrc.tai.util.JsonHelper.*
+import uk.gov.hmrc.tai.util.JsonHelper._
 
 import java.time.LocalDate
 
@@ -29,19 +29,6 @@ case class EmploymentCollection(employments: Seq[Employment], etag: Option[Int])
 
 object EmploymentCollection {
   implicit val employmentCollectionFormat: Format[EmploymentCollection] = Json.format[EmploymentCollection]
-
-  private def determineComponentType(
-    activeOccupationalPension: Boolean,
-    jobSeekersAllowance: Option[Boolean],
-    otherIncomeSource: Option[Boolean]
-  ): TaxComponentType =
-    (activeOccupationalPension, jobSeekersAllowance.getOrElse(false), otherIncomeSource.getOrElse(false)) match {
-      case (true, _, _) => PensionIncome
-      case (_, true, _) => JobSeekerAllowanceIncome
-      case (_, _, true) => OtherIncome
-      case _            => EmploymentIncome
-    }
-
   def employmentHodNpsReads: Reads[Employment] = new Reads[Employment] {
     private val dateReadsFromHod: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
 
@@ -58,10 +45,6 @@ object EmploymentCollection {
         .asOpt[Boolean]
         .getOrElse(false)
       val receivingOccupationalPension = (json \ "receivingOccupationalPension").as[Boolean]
-      val startingTaxCode = (json \ "startingTaxCode").asOpt[String]
-      val jobSeekersAllowance = (json \ "receivingJobseekersAllowance").asOpt[Boolean]
-      val otherIncomeSource = (json \ "otherIncomeSourceIndicator").asOpt[Boolean]
-      val componentType = determineComponentType(receivingOccupationalPension, jobSeekersAllowance, otherIncomeSource)
       val status = TaxCodeIncomeStatus.employmentStatusFromNps(json)
       JsSuccess(
         Employment(
@@ -76,9 +59,7 @@ object EmploymentCollection {
           sequenceNumber,
           cessationPay,
           payrolledBenefit,
-          receivingOccupationalPension,
-          Some(componentType),
-          startingTaxCode
+          receivingOccupationalPension
         )
       )
     }
@@ -111,11 +92,6 @@ object EmploymentCollection {
               .asOpt[Boolean]
               .getOrElse(false)
           val receivingOccupationalPension = (json \ "activeOccupationalPension").as[Boolean]
-          val startingTaxCode = (json \ "startingTaxCode").asOpt[String]
-          val jobSeekersAllowance = (json \ "jobSeekersAllowance").asOpt[Boolean]
-          val otherIncomeSource = (json \ "otherIncomeSource").asOpt[Boolean]
-          val componentType =
-            determineComponentType(receivingOccupationalPension, jobSeekersAllowance, otherIncomeSource)
           val status = TaxCodeIncomeStatus.employmentStatus(json)
           JsSuccess(
             Employment(
@@ -130,9 +106,7 @@ object EmploymentCollection {
               sequenceNumber,
               cessationPay,
               payrolledBenefit,
-              receivingOccupationalPension,
-              Some(componentType),
-              startingTaxCode
+              receivingOccupationalPension
             )
           )
         case errors @ JsError(_) => errors

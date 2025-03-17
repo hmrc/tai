@@ -338,36 +338,4 @@ class TaxCodeIncomeHelperHipToggleOnSpec extends BaseSpec {
       }
     }
   }
-
-  "fetchIabdDetails" must {
-    "return a sequence of IabdIncome when provided with valid nino and tax year" in {
-      val iabdDetailsSeq = Seq(
-        IabdDetails(
-          Some(nino.withoutSuffix),
-          Some(1),
-          Some(10),
-          Some(27),
-          Some(LocalDate.parse("2023-04-10")),
-          Some(LocalDate.parse("2023-04-15"))
-        ),
-        IabdDetails(Some(nino.withoutSuffix), Some(2), Some(20), Some(30), None, None)
-      )
-
-      when(mockIabdService.retrieveIabdDetails(meq(nino), meq(TaxYear()))(any()))
-        .thenReturn(Future.successful(iabdDetailsSeq))
-
-      val result = createSut().fetchIabdDetails(nino, TaxYear()).futureValue
-
-      result mustBe Seq(
-        IabdIncome(
-          Some(1),
-          None,
-          Some(LocalDate.parse("2023-04-10")),
-          Some(LocalDate.parse("2023-04-15")),
-          null
-        ),
-        IabdIncome(Some(2), None, None, None, null)
-      )
-    }
-  }
 }

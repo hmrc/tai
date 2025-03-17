@@ -25,9 +25,9 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tai.audit.Auditor
 import uk.gov.hmrc.tai.connectors.{CitizenDetailsConnector, TaxAccountConnector}
 import uk.gov.hmrc.tai.controllers.auth.AuthenticatedRequest
-import uk.gov.hmrc.tai.model.domain.*
-import uk.gov.hmrc.tai.model.domain.income.*
-import uk.gov.hmrc.tai.model.domain.response.*
+import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.income._
+import uk.gov.hmrc.tai.model.domain.response._
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.service.helper.TaxCodeIncomeHelper
 import uk.gov.hmrc.tai.util.JsonHelper
@@ -101,44 +101,6 @@ class IncomeService @Inject() (
     } yield filterMatchingEmploymentsToIncomeSource(
       employments.employments,
       filteredTaxCodeIncomes,
-      status
-    )
-  }
-
-  def employmentsForYearByStatus(
-    nino: Nino,
-    year: TaxYear,
-    incomeType: TaxCodeIncomeComponentType,
-    status: TaxCodeIncomeStatus
-  )(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Seq[IncomeSourceFromSummary]] = {
-
-    def filterEmploymentsByStatus(
-      employments: Seq[Employment],
-      iabdIncome: Seq[IabdIncome],
-      status: TaxCodeIncomeStatus
-    ): Seq[IncomeSourceFromSummary] = {
-
-      val employmentMap: Map[Int, Employment] = employments
-        .filter(emp => status == NotLive && emp.employmentStatus != Live || emp.employmentStatus == status)
-        .map(emp => emp.sequenceNumber -> emp)
-        .toMap
-
-      iabdIncome.flatMap { income =>
-        income.employmentId.flatMap(employmentMap.get).map { emp =>
-          IncomeSourceFromSummary(TaxCodeIncomeSummary(emp.name, emp.startingTaxCode.get, income.grossAmount), emp)
-        }
-      }
-    }
-
-    for {
-      iabdIncome  <- EitherT.right(taxCodeIncomeHelper.fetchIabdDetails(nino, year))
-      employments <- employmentService.employmentsAsEitherT(nino, year)
-    } yield filterEmploymentsByStatus(
-      employments.employments.filter(_.componentType == incomeType),
-      iabdIncome,
       status
     )
   }

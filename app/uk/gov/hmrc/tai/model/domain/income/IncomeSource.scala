@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.tai.model.domain.income
 
-import play.api.libs.json.{Json, OFormat, Writes}
+import play.api.libs.json.{Json, Writes}
 import uk.gov.hmrc.tai.model.domain.Employment
-import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncomeSquidReads.*
-
-import java.time.LocalDate
 
 case class IncomeSource(taxCodeIncome: TaxCodeIncome, employment: Employment)
 
@@ -29,35 +26,9 @@ object IncomeSource {
     The Hip toggle only affects the Reads. We only require the Writes
     here therefore we can safely import TaxCodeIncomeSquidReads.
    */
-  implicit val incomeSourceFormat: Writes[IncomeSource] =
+  implicit val incomeSourceFormat: Writes[IncomeSource] = {
+    import TaxCodeIncomeSquidReads._
     Json.format[IncomeSource]
+  }
 
-}
-
-case class TaxCodeIncomeSummary(
-  name: String,
-  taxCode: String,
-  amount: BigDecimal,
-  employmentId: Option[Int] = None,
-  iabdUpdateSource: Option[IabdUpdateSource] = None,
-  updateNotificationDate: Option[LocalDate] = None,
-  updateActionDate: Option[LocalDate] = None
-)
-
-object TaxCodeIncomeSummary {
-  implicit val format: OFormat[TaxCodeIncomeSummary] = Json.format[TaxCodeIncomeSummary]
-}
-
-case class IabdIncome(
-  employmentId: Option[Int],
-  iabdUpdateSource: Option[IabdUpdateSource],
-  updateNotificationDate: Option[LocalDate],
-  updateActionDate: Option[LocalDate],
-  grossAmount: BigDecimal
-)
-
-case class IncomeSourceFromSummary(taxCodeIncomeSummary: TaxCodeIncomeSummary, employment: Employment)
-
-object IncomeSourceFromSummary {
-  implicit val format: OFormat[IncomeSourceFromSummary] = Json.format[IncomeSourceFromSummary]
 }
