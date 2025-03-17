@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.model.api
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.*
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.employmentCollectionHodReadsHIP
-import uk.gov.hmrc.tai.model.domain.Employment
 import uk.gov.hmrc.tai.model.domain.income.Live
+import uk.gov.hmrc.tai.model.domain.{Employment, EmploymentIncome}
 import uk.gov.hmrc.tai.util.TaxCodeHistoryConstants
 
 import java.io.File
@@ -51,7 +51,9 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       Some(100),
       false,
-      false
+      false,
+      Some(EmploymentIncome),
+      Some("1250L")
     )
   )
 
@@ -68,7 +70,8 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       None,
       true,
-      false
+      false,
+      Some(EmploymentIncome)
     ),
     Employment(
       "EMPLOYER2",
@@ -82,7 +85,8 @@ class EmploymentCollectionSpec extends PlaySpec with TaxCodeHistoryConstants {
       2,
       Some(100),
       false,
-      false
+      false,
+      Some(EmploymentIncome)
     )
   )
 
