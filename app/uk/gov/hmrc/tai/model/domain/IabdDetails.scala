@@ -118,6 +118,7 @@ object IabdDetailsToggleOn extends IabdTypeConstants {
     "Lump Sum (IYC)"        -> 45,
     "Internet Calculated"   -> 46,
     "FPS(RTI)"              -> 47,
+    "BBSI DI"               -> 48,
     "CALCULATED"            -> 49,
     "FWKS"                  -> 50,
     "Home Working Expenses" -> 51,
