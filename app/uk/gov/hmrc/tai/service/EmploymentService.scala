@@ -30,7 +30,7 @@ import uk.gov.hmrc.tai.connectors.{EmploymentDetailsConnector, RtiConnector}
 import uk.gov.hmrc.tai.model.admin.HipToggleEmploymentDetails
 import uk.gov.hmrc.tai.model.api.EmploymentCollection
 import uk.gov.hmrc.tai.model.api.EmploymentCollection.{employmentCollectionHodReadsHIP, employmentCollectionHodReadsNPS}
-import uk.gov.hmrc.tai.model.domain._
+import uk.gov.hmrc.tai.model.domain.*
 import uk.gov.hmrc.tai.model.tai.TaxYear
 import uk.gov.hmrc.tai.model.templates.{EmploymentPensionViewModel, PdfSubmission}
 import uk.gov.hmrc.tai.repositories.deprecated.PersonRepository
@@ -40,6 +40,7 @@ import uk.gov.hmrc.tai.util.IFormConstants
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -73,10 +74,9 @@ class EmploymentService @Inject() (
   private def addEmploymentMetaDataName(envelopeId: String) =
     s"$envelopeId-AddEmployment-${LocalDate.now().format(dateFormat)}-metadata.xml"
 
-  def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
-    hc: HeaderCarrier,
-    request: Request[_]
-  ): EitherT[Future, UpstreamErrorResponse, Employments] = {
+  private def fetchEmploymentsCollection(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, EmploymentCollection] = {
     val futureReads: Future[Reads[EmploymentCollection]] =
       featureFlagService.get(HipToggleEmploymentDetails).map { toggle =>
         if (toggle.isEnabled) {
@@ -86,9 +86,9 @@ class EmploymentService @Inject() (
         }
       }
 
-    val employmentsCollectionEitherT = EitherT(
+    EitherT(
       employmentDetailsConnector.getEmploymentDetailsAsEitherT(nino, taxYear.year).value.flatMap {
-        case Left(e) => Future(Left(e))
+        case Left(e) => Future.successful(Left(e))
         case Right(hodResponse) =>
           futureReads.map { reads =>
             Right(
@@ -99,21 +99,49 @@ class EmploymentService @Inject() (
           }
       }
     )
-
-    for {
-      employmentsCollection <- employmentsCollectionEitherT
-      accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
-                    case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
-                    case Left(_)                             => Right(Seq.empty)
-                  }
-    } yield employmentBuilder.combineAccountsWithEmployments(employmentsCollection.employments, accounts, nino, taxYear)
   }
+
+  def employmentsAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, Employments] = for {
+    employmentsCollection <- fetchEmploymentsCollection(nino, taxYear)
+    accounts <- rtiConnector.getPaymentsForYear(nino, taxYear).transform {
+                  case Right(accounts: Seq[AnnualAccount]) => Right(accounts)
+                  case Left(_)                             => Right(Seq.empty)
+                }
+  } yield employmentBuilder.combineAccountsWithEmployments(
+    employmentsCollection.employments,
+    accounts,
+    nino,
+    taxYear
+  )
 
   def employmentAsEitherT(nino: Nino, id: Int)(implicit
     hc: HeaderCarrier,
     request: Request[_]
   ): EitherT[Future, UpstreamErrorResponse, Employment] =
-    employmentsAsEitherT(nino, TaxYear()).transform {
+    fetchEmploymentById(nino, id, TaxYear(), employmentsAsEitherT)
+
+  def employmentsWithoutRtiAsEitherT(nino: Nino, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier
+  ): EitherT[Future, UpstreamErrorResponse, Employments] =
+    for {
+      employmentsCollection <- fetchEmploymentsCollection(nino, taxYear)
+    } yield employmentBuilder.combineAccountsWithEmployments(
+      employmentsCollection.employments,
+      Seq.empty[AnnualAccount],
+      nino,
+      taxYear
+    )
+
+  private def fetchEmploymentById(
+    nino: Nino,
+    id: Int,
+    taxYear: TaxYear,
+    employmentsFetcher: (Nino, TaxYear) => EitherT[Future, UpstreamErrorResponse, Employments]
+  ): EitherT[Future, UpstreamErrorResponse, Employment] =
+    employmentsFetcher(nino, taxYear).transform {
       case Right(employments) =>
         employments.employmentById(id) match {
           case Some(employment) => Right(employment)
@@ -124,6 +152,12 @@ class EmploymentService @Inject() (
         }
       case Left(error) => Left(error)
     }
+
+  def employmentWithoutRTIAsEitherT(nino: Nino, id: Int, taxYear: TaxYear)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): EitherT[Future, UpstreamErrorResponse, Employment] =
+    fetchEmploymentById(nino, id, taxYear, employmentsWithoutRtiAsEitherT)
 
   def ninoWithoutSuffix(nino: Nino): String = nino.nino.take(8)
 

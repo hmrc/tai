@@ -48,6 +48,28 @@ class EmploymentsController @Inject() (
         .merge recoverWith taxAccountErrorHandler()
   }
 
+  def employmentOnly(nino: Nino, id: Int, year: TaxYear): Action[AnyContent] =
+    authentication.authWithUserDetails.async { implicit request =>
+      employmentService
+        .employmentWithoutRTIAsEitherT(nino, id, year)
+        .bimap(
+          error => errorToResponse(error),
+          employment => Ok(Json.toJson(ApiResponse(employment, Nil)))
+        )
+        .merge recoverWith taxAccountErrorHandler()
+    }
+
+  def employmentsOnly(nino: Nino, year: TaxYear): Action[AnyContent] = authentication.authWithUserDetails.async {
+    implicit request =>
+      employmentService
+        .employmentsWithoutRtiAsEitherT(nino, year)
+        .bimap(
+          error => errorToResponse(error),
+          employments => Ok(Json.toJson(ApiResponse(EmploymentCollection(employments.employments, None), Nil)))
+        )
+        .merge recoverWith taxAccountErrorHandler()
+  }
+
   def employment(nino: Nino, id: Int): Action[AnyContent] = authentication.authWithUserDetails.async {
     implicit request =>
       employmentService
