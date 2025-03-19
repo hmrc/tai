@@ -27,14 +27,14 @@ import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 import java.time.LocalDate
 
 case class IabdDetails(
-                        nino: Option[String],
-                        employmentSequenceNumber: Option[Int],
-                        source: Option[Int],
-                        `type`: Option[Int],
-                        receiptDate: Option[LocalDate],
-                        captureDate: Option[LocalDate],
-                        grossAmount: Option[BigDecimal] = None
-                      )
+  nino: Option[String],
+  employmentSequenceNumber: Option[Int],
+  source: Option[Int],
+  `type`: Option[Int],
+  receiptDate: Option[LocalDate],
+  captureDate: Option[LocalDate],
+  grossAmount: Option[BigDecimal] = None
+)
 
 object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
@@ -46,7 +46,7 @@ object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
       (JsPath \ "type").readNullable[Int] and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "grossAmount").readNullable[BigDecimal]))(IabdDetails.apply _)
+      (JsPath \ "grossAmount").readNullable[BigDecimal])(IabdDetails.apply _)
 
   implicit val reads: Reads[Seq[IabdDetails]] =
     __.read(Reads.seq(iabdReads))
@@ -138,9 +138,17 @@ object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate) =>
+      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
         IabdDetails
-          .apply(Some(nino), employmentSequenceNumber, source.flatten, Some(iabdType._2), receiptDate, captureDate, grossAmount)
+          .apply(
+            Some(nino),
+            employmentSequenceNumber,
+            source.flatten,
+            Some(iabdType._2),
+            receiptDate,
+            captureDate,
+            grossAmount
+          )
     )
 
   val reads: Reads[Seq[IabdDetails]] =
