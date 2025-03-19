@@ -27,14 +27,14 @@ import uk.gov.hmrc.tai.util.JsonHelper.readsTypeTuple
 import java.time.LocalDate
 
 case class IabdDetails(
-  nino: Option[String],
-  employmentSequenceNumber: Option[Int],
-  source: Option[Int],
-  `type`: Option[Int],
-  receiptDate: Option[LocalDate],
-  captureDate: Option[LocalDate],
-  grossAmount: Option[BigDecimal] = None
-)
+                        nino: Option[String],
+                        employmentSequenceNumber: Option[Int],
+                        source: Option[Int],
+                        `type`: Option[Int],
+                        receiptDate: Option[LocalDate],
+                        captureDate: Option[LocalDate],
+                        grossAmount: Option[BigDecimal] = None
+                      )
 
 object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("dd/MM/yyyy")
@@ -46,7 +46,7 @@ object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
       (JsPath \ "type").readNullable[Int] and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
-      (JsPath \ "grossAmount").readNullable[BigDecimal])(IabdDetails.apply _)
+      (JsPath \ "grossAmount").readNullable[BigDecimal]))(IabdDetails.apply _)
 
   implicit val reads: Reads[Seq[IabdDetails]] =
     __.read(Reads.seq(iabdReads))
@@ -57,16 +57,21 @@ object IabdDetailsToggleOff extends IabdTypeConstants with Logging {
   }
 }
 
-object IabdDetailsToggleOn extends IabdTypeConstants {
+object IabdDetailsToggleOn extends IabdTypeConstants with Logging {
   private val dateReads: Reads[LocalDate] = localDateReads("yyyy-MM-dd")
 
-  private def sourceReads: Reads[Int] = {
+  private def sourceReads: Reads[Option[Int]] = {
     case JsString(n) =>
       mapIabdSource.get(n) match {
-        case Some(iabdSource) => JsSuccess(iabdSource)
-        case _                => JsError(s"Unknown iabd source: $n")
+        case Some(iabdSource) => JsSuccess(Some(iabdSource))
+        case _ =>
+          val errorMessage = s"Unknown iabd source: $n"
+          logger.error(errorMessage, new RuntimeException(errorMessage))
+          JsSuccess(None)
+
       }
-    case e => JsError(s"Invalid iabd source: $e")
+    case e =>
+      JsError(s"Invalid iabd source: $e")
   }
 
   private lazy val mapIabdSource: Map[String, Int] = Map(
@@ -128,14 +133,14 @@ object IabdDetailsToggleOn extends IabdTypeConstants {
   private val iabdReads: Reads[IabdDetails] =
     ((JsPath \ "nationalInsuranceNumber").read[String] and
       (JsPath \ "employmentSequenceNumber").readNullable[Int] and
-      (JsPath \ "source").readNullable[Int](sourceReads) and
+      (JsPath \ "source").readNullable[Option[Int]](sourceReads) and
       (JsPath \ "type").read[(String, Int)](readsTypeTuple) and
       (JsPath \ "receiptDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "captureDate").readNullable[LocalDate](dateReads) and
       (JsPath \ "grossAmount").readNullable[BigDecimal])(
-      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate, grossAmount) =>
+      (nino, employmentSequenceNumber, source, iabdType, receiptDate, captureDate) =>
         IabdDetails
-          .apply(Some(nino), employmentSequenceNumber, source, Some(iabdType._2), receiptDate, captureDate, grossAmount)
+          .apply(Some(nino), employmentSequenceNumber, source.flatten, Some(iabdType._2), receiptDate, captureDate, grossAmount)
     )
 
   val reads: Reads[Seq[IabdDetails]] =

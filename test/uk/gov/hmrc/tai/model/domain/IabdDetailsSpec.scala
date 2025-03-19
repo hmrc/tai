@@ -75,4 +75,56 @@ class IabdDetailsSpec extends PlaySpec {
       Json.toJson(expectedModelToggleOff)(IabdDetailsToggleOff.format) mustBe expectedJson
     }
   }
+
+  "IabdDetailsToggleOn" must {
+
+    "deserialize JSON correctly when unknown source type" in {
+      val sampleJsonToggleOn = Json.obj(
+        "iabdDetails" -> Json.arr(
+          Json.obj(
+            "nationalInsuranceNumber"  -> "AB123456C",
+            "employmentSequenceNumber" -> 12345,
+            "source"                   -> "unknown source type",
+            "type"                     -> "Non-Coded Income (019)"
+          )
+        )
+      )
+      val expectedModelToggleOn: IabdDetails = IabdDetails(
+        nino = Some("AB123456C"),
+        employmentSequenceNumber = Some(12345),
+        source = None,
+        `type` = Some(19),
+        receiptDate = None,
+        captureDate = None
+      )
+      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
+        Seq(expectedModelToggleOn),
+        JsPath \ "iabdDetails"
+      )
+    }
+
+    "deserialize JSON correctly when source type is missing" in {
+      val sampleJsonToggleOn = Json.obj(
+        "iabdDetails" -> Json.arr(
+          Json.obj(
+            "nationalInsuranceNumber"  -> "AB123456C",
+            "employmentSequenceNumber" -> 12345,
+            "type"                     -> "Non-Coded Income (019)"
+          )
+        )
+      )
+      val expectedModelToggleOn: IabdDetails = IabdDetails(
+        nino = Some("AB123456C"),
+        employmentSequenceNumber = Some(12345),
+        source = None,
+        `type` = Some(19),
+        receiptDate = None,
+        captureDate = None
+      )
+      sampleJsonToggleOn.validate[Seq[IabdDetails]](IabdDetailsToggleOn.reads) mustBe JsSuccess(
+        Seq(expectedModelToggleOn),
+        JsPath \ "iabdDetails"
+      )
+    }
+  }
 }
