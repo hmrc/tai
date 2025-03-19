@@ -32,7 +32,8 @@ class IabdDetailsSpec extends PlaySpec {
       |    "source": 1,
       |    "type": 100,
       |    "receiptDate": "01/02/2024",
-      |    "captureDate": "10/02/2024"
+      |    "captureDate": "10/02/2024",
+      |    "grossAmount": 5000.75
       |  }
       |]
       |""".stripMargin
@@ -44,7 +45,8 @@ class IabdDetailsSpec extends PlaySpec {
     Some(1),
     Some(100),
     Some(LocalDate.of(2024, 2, 1)),
-    Some(LocalDate.of(2024, 2, 10))
+    Some(LocalDate.of(2024, 2, 10)),
+    Some(BigDecimal(5000.75))
   )
 
   "IabdDetailsToggleOff" must {
@@ -64,7 +66,8 @@ class IabdDetailsSpec extends PlaySpec {
           |  "source": 1,
           |  "type": 100,
           |  "receiptDate": "01/02/2024",
-          |  "captureDate": "10/02/2024"
+          |  "captureDate": "10/02/2024",
+          |  "grossAmount": 5000.75
           |}
           |""".stripMargin
       )

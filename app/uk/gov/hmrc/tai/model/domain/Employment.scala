@@ -35,7 +35,9 @@ case class Employment(
   sequenceNumber: Int,
   cessationPay: Option[BigDecimal],
   hasPayrolledBenefit: Boolean,
-  receivingOccupationalPension: Boolean
+  receivingOccupationalPension: Boolean,
+  componentType: Option[TaxComponentType] = None,
+  startingTaxCode: Option[String] = None
 ) {
 
   def tempUnavailableStubExistsForYear(year: TaxYear): Boolean =
