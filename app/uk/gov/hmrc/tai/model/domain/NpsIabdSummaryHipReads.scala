@@ -18,7 +18,6 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{JsArray, JsSuccess, JsValue, Reads}
 import uk.gov.hmrc.tai.util.JsonHelper.{parseTypeOrException, readsTypeTuple}
-import uk.gov.hmrc.tai.util.SequenceHelper
 
 object NpsIabdSummaryHipReads {
 
@@ -47,16 +46,6 @@ object NpsIabdSummaryHipReads {
         .flatMap(_.value)
         .collect(parseSummary)
 
-    val allItems = extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
-
-    SequenceHelper.checkForDuplicates[NpsIabdSummary, (Option[Int], Int)](
-      allItems,
-      uniqueKey = item => (item.employmentId, item.componentType),
-      keyDescription = { case (employmentId, componentType) =>
-        s"employmentSequenceNumber: $employmentId and componentType: $componentType"
-      }
-    )
-
-    allItems
+    extractItems("summaryIABDDetailsList") ++ extractItems("summaryIABDEstimatedPayDetailsList")
   }
 }
