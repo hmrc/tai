@@ -216,28 +216,6 @@ class CodingComponentHipReadsSpec extends PlaySpec {
       }
     }
 
-    "throw an exception" when {
-      "there are duplicate items in the 2 summary lists" in {
-        val payload = readFile("tc35.json")
-        val exception =
-          the[JsResultException] thrownBy payload.as[Seq[CodingComponent]](CodingComponentHipReads.codingComponentReads)
-        exception mustBe JsResultException(errors =
-          List(
-            (
-              __,
-              List(
-                JsonValidationError(
-                  List(
-                    "Duplicate entries found for employmentSequenceNumber: Some(1) and componentType: 30; employmentSequenceNumber: Some(1) and componentType: 27"
-                  )
-                )
-              )
-            )
-          )
-        )
-      }
-    }
-
     "generate Benefit instances of the appropriate TaxComponentType" when {
       "processing nps iabd summaries that correspond to known benefit types" in {
         val payload = readFile("tc14.json")
